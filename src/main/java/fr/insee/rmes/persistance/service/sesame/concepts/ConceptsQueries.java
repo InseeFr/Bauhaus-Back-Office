@@ -1,0 +1,204 @@
+package fr.insee.rmes.persistance.service.sesame.concepts;
+
+import fr.insee.rmes.config.Config;
+
+public class ConceptsQueries {
+	
+	public static String lastConceptID() {
+		return "SELECT ?notation \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "?concept skos:notation ?notation }} \n"
+				+ "ORDER BY DESC(?notation) \n"
+				+ "LIMIT1";
+	}	
+	
+	public static String conceptsQuery() {
+		return "SELECT DISTINCT ?id ?label \n"
+			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+			+ "?concept skos:notation ?id . \n"
+			+ "?concept skos:prefLabel ?label . \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') }} \n"
+			+ "ORDER BY ?label ";	
+	}
+	
+	public static String conceptsSearchQuery() {
+		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
+			+ "?validationStatus ?definition ?creator \n"
+			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+			+ "?concept skos:notation ?id . \n"
+			+ "?concept skos:prefLabel ?label . \n"
+			+ "?concept dcterms:created ?created . \n"
+			+ "OPTIONAL{?concept dcterms:modified ?modified} . \n"
+			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
+			+ "?concept insee:isValidated ?validationStatus . \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') . \n"
+			+ "?concept dc:creator ?creator . \n"
+			+ "OPTIONAL{?concept skos:definition ?noteUri . \n"
+			+ "?noteUri pav:version ?version . \n"
+			+ "?noteUri evoc:noteLiteral ?definition . \n"
+			+ "?noteUri dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "OPTIONAL {?concept skos:definition ?latest . \n"
+				+ "?latest pav:version ?latestVersion . \n"
+				+ "?latest dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "FILTER (?version < ?latestVersion)} . \n"
+			+ "FILTER (!bound (?latest))}"
+			+ "}} \n"
+			+ "ORDER BY ?label";	
+	}
+		
+	public static String conceptsToValidateQuery() {
+		return "SELECT DISTINCT ?id ?label \n"
+			+ "WHERE { \n"
+			+ "?concept rdf:type skos:Concept . \n"
+			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
+			+ "?concept skos:prefLabel ?label . \n"
+			+ "?concept insee:isValidated 'Provisoire' . \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') } \n"
+			+ "ORDER BY ?label";	
+	}
+		
+	public static String conceptQuery(String id) { 
+
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?creator ?contributor ?disseminationStatus "
+				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n"
+				+ "?concept ?versionnedNote ?versionnedNoteURI . \n"
+				+ "?versionnedNoteURI insee:conceptVersion ?conceptVersion \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
+				+ "OPTIONAL {?concept skos:prefLabel ?prefLabelLg2 . \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n"
+				+ "OPTIONAL {?concept dc:creator ?creator} . \n"
+				+ "?concept dc:contributor ?contributor . \n"
+				+ "?concept insee:disseminationStatus ?disseminationStatus \n"
+				+ "OPTIONAL {?concept insee:additionalMaterial ?additionalMaterial} . \n"
+				+ "?concept dcterms:created ?created . \n"
+				+ "OPTIONAL {?concept dcterms:modified ?modified} . \n"
+				+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
+				+ "?concept insee:isValidated ?isValidated . \n"
+				+ "{OPTIONAL{ \n"
+				+ "SELECT (group_concat(?altLg1;separator=' || ') as ?altLabelLg1) WHERE { \n"
+				+ "?concept skos:altLabel ?altLg1 . \n"
+				+ "FILTER (lang(?altLg1) = '" + Config.LG1 + "')  . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				+ "}}} \n"
+				+ "{OPTIONAL{ \n"
+				+ "SELECT (group_concat(?altLg2;separator=' || ') as ?altLabelLg2) WHERE { \n"
+				+ "?concept skos:altLabel ?altLg2 . \n"
+				+ "FILTER (lang(?altLg2) = '" + Config.LG2 + "')  . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				+ "}}} \n"
+				+ "}} \n"
+				+ "ORDER BY DESC(?conceptVersion) \n"
+				+ "LIMIT 1";
+	}
+	
+	public static String conceptNotesQuery(String id, int conceptVersion) { 
+		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
+				+ "?editorialNoteLg1 ?editorialNoteLg2 ?changeNoteLg1 ?changeNoteLg2 \n"
+				+ "WHERE { \n" 
+				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n" 
+				// Def Lg1
+				+ "OPTIONAL {?concept skos:definition ?defLg1 . \n"
+				+ "?defLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?defLg1 evoc:noteLiteral ?definitionLg1 . \n"
+				+ "?defLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} .  \n"
+				// Def Lg2
+				+ "OPTIONAL {?concept skos:definition ?defLg2 . \n"
+				+ "?defLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?defLg2 evoc:noteLiteral ?definitionLg2 . \n"
+				+ "?defLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} .  \n"
+				// Def courte Lg1
+				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg1 . \n"
+				+ "?scopeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 . \n"
+				+ "?scopeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} .  \n"
+				// Def courte Lg2
+				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg2 . \n"
+				+ "?scopeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 . \n"
+				+ "?scopeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} . \n"
+				// Note edit Lg1
+				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg1 . \n"
+				+ "?editorialLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?editorialLg1 evoc:noteLiteral ?editorialNoteLg1 . \n"
+				+ "?editorialLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} . \n"
+				// Note edit Lg2
+				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg2 . \n"
+				+ "?editorialLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?editorialLg2 evoc:noteLiteral ?editorialNoteLg2 . \n"
+				+ "?editorialLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
+				+ "} . \n"
+				// Note changement Lg1
+				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg1 . \n"
+				+ "?noteChangeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
+				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
+				// Note changement Lg2
+				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg2 . \n"
+				+ "?noteChangeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
+				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
+				+ "} \n";
+	}
+	
+	public static String conceptLinks(String id) {
+		return "SELECT ?id ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 \n"
+				+ "WHERE { \n" 
+				+ "?concept skos:notation '" + id + "' . \n" 
+				
+				+ "{?concept skos:narrower ?conceptlinked . \n"
+				+ "BIND('broader' AS ?typeOfLink)} \n"
+				+ "UNION"
+				+ "{?concept skos:broader ?conceptlinked . \n"
+				+ "BIND('narrower' AS ?typeOfLink)} \n"
+				+ "UNION"
+				+ "{?concept dcterms:references ?conceptlinked . \n"
+				+ "BIND('references' AS ?typeOfLink)} \n"
+				+ "UNION"
+				+ "{?concept dcterms:replaces ?conceptlinked . \n"
+				+ "BIND('succeed' AS ?typeOfLink)} \n"
+				+ "UNION"
+				+ "{?concept skos:related ?conceptlinked . \n"
+				+ "BIND('related' AS ?typeOfLink)} \n"
+				
+				+ "?conceptlinked skos:prefLabel ?prefLabelLg1 . \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
+				+ "OPTIONAL {?conceptlinked skos:prefLabel ?prefLabelLg2 . \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
+				+ "BIND(STRAFTER(STR(?conceptlinked),'/definition/') AS ?id) . \n"				
+				+ "} \n"
+				+ "ORDER BY ?typeOfLink";
+	}
+	
+	public static String isConceptExist(String id) {
+		return "ASK { \n"
+				+ "?concept ?b ?c . \n"
+				+ "?concept skos:notation '" + id + "' \n"
+				+ "}";
+	}
+	
+	public static String getNarrowers(String id) {
+		return "SELECT ?narrowerId { \n"
+				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "?concept skos:narrower ?narrower . \n"
+				+ "?narrower skos:notation ?narrowerId \n"
+				+ "}";
+	}
+	
+	public static String hasBroader(String id) {
+		return "ASK { \n"
+				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "?concept skos:broader ?broader \n"
+				+ "}";			
+	}
+
+}
