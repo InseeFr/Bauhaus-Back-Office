@@ -101,7 +101,6 @@ public class RepositoryGestion {
 	 */
 	public static JSONArray getResponseAsArray(String query) {
 		JSONObject res = new JSONObject(getResponse(query));
-		logger.info("Concept list : " + res);
 		JSONArray resArray = sparqlJSONToResultArrayValues(res);
 		return resArray;
 	}
