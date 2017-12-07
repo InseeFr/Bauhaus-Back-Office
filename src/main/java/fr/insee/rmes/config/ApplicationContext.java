@@ -13,7 +13,7 @@ import org.springframework.core.env.Environment;
         "classpath:gncs-dev.properties",
         "file:${catalina.base}/webapps/gncs-dev.properties",
         "file:${catalina.base}/webapps/gncs-qf.properties",
-        "file:${catalina.base}/webapps/gncs-prod.properties",
+        "file:${catalina.base}/webapps/production.properties",
 }, ignoreResourceNotFound = true)
 public class ApplicationContext {
 
