@@ -51,6 +51,16 @@ public class RmesStampsImpl implements StampsContract {
 					
 				}
 			}
+			// Add SSM Stamps
+			stamps.add("\"SSM-SSP\"");
+			stamps.add("\"SSM-DARES\"");
+			stamps.add("\"SSM-DEPP\"");
+			stamps.add("\"SSM-DESL\"");
+			stamps.add("\"SSM-DREES\"");
+			stamps.add("\"SSM-SDES\"");
+			stamps.add("\"SSM-SDSE\"");
+			stamps.add("\"SSM-MEOS\"");
+			
 			context.close();
 			logger.info("Get stamps succeed");
 		} catch (NamingException e) {
