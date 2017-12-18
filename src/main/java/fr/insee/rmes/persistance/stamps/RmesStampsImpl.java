@@ -60,6 +60,14 @@ public class RmesStampsImpl implements StampsContract {
 			stamps.add("\"SSM-SDES\"");
 			stamps.add("\"SSM-SDSE\"");
 			stamps.add("\"SSM-MEOS\"");
+			stamps.add("\"SSM-OED\"");
+			stamps.add("\"SSM-DSEE\"");
+			stamps.add("\"SSM-SSMSI\"");
+			stamps.add("\"SSM-GF3C\"");
+			stamps.add("\"SSM-DSED\"");
+			stamps.add("\"SSM-DESSI\"");
+			stamps.add("\"SSM-SIES\"");
+			stamps.add("\"SSM-DEPS\"");
 			
 			context.close();
 			logger.info("Get stamps succeed");
