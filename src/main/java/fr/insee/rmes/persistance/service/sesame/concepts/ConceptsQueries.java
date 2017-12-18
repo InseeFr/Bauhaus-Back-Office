@@ -23,11 +23,14 @@ public class ConceptsQueries {
 	
 	public static String conceptsSearchQuery() {
 		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
-			+ "?validationStatus ?definition ?creator \n"
+			+ "?validationStatus ?definition ?creator ?isTopConceptOf \n"
 			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 			+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "?concept dcterms:created ?created . \n"
+			// Not topConceptOf if has broader
+			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
+			+ "BIND (IF(?broader, 'false', 'true') AS ?isTopConceptOf) . \n"
 			+ "OPTIONAL{?concept dcterms:modified ?modified} . \n"
 			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
 			+ "?concept insee:isValidated ?validationStatus . \n"
