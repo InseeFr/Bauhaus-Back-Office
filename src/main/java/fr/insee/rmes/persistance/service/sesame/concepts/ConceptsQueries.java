@@ -23,7 +23,7 @@ public class ConceptsQueries {
 	
 	public static String conceptsSearchQuery() {
 		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
-			+ "?validationStatus ?definition ?creator ?isTopConceptOf \n"
+			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
 			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 			+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
@@ -32,6 +32,7 @@ public class ConceptsQueries {
 			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
 			+ "BIND (IF(?broader, 'false', 'true') AS ?isTopConceptOf) . \n"
 			+ "OPTIONAL{?concept dcterms:modified ?modified} . \n"
+			+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
 			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
 			+ "?concept insee:isValidated ?validationStatus . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') . \n"
