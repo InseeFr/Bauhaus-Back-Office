@@ -94,6 +94,15 @@ public class ConceptsPublicResources {
 	}
 	
 	@GET
+	@Path("/collections/dashboard")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCollectionsDashboard() {
+		ConceptsService service = new ConceptsService();
+		String jsonResultat = service.getCollectionsDashboard();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
 	@Path("/collections/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCollectionsToValidate() {

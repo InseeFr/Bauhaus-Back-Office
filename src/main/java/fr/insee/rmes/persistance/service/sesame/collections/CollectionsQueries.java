@@ -14,6 +14,24 @@ public class CollectionsQueries {
 			+ "ORDER BY ?label ";	
 	}
 	
+	public static String collectionsDashboardQuery() {
+		return "SELECT ?id ?label ?created ?modified ?isValidated ?creator \n"
+			+ "(count(?member) AS ?nbMembers) \n"
+			+ "WHERE { \n"
+			+ "?collection rdf:type skos:Collection . \n"
+			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
+			+ "?collection dcterms:title ?label . \n"
+			+ "?collection dcterms:created ?created . \n"
+			+ "OPTIONAL {?collection dcterms:modified ?modified} . \n"
+			+ "?collection insee:isValidated ?isValidated \n"
+			+ "OPTIONAL {?collection dc:creator ?creator} . \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "')"
+			+ "?collection skos:member ?member . \n"
+			+ " } \n"
+			+ "GROUP BY ?id ?label ?created ?modified ?isValidated ?creator \n"
+			+ "ORDER BY ?label";	
+	}
+	
 	public static String collectionsToValidateQuery() {
 		return "SELECT DISTINCT ?id ?label \n"
 			+ "WHERE { \n"

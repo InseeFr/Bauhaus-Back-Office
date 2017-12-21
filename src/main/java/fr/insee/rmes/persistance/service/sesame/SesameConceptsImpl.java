@@ -62,6 +62,11 @@ public class SesameConceptsImpl implements ConceptsContract {
 	}
 	
 	@Override
+	public String getCollectionsDashboard() {
+		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
+	}
+	
+	@Override
 	public String getCollectionsToValidate() {
 		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
 	}

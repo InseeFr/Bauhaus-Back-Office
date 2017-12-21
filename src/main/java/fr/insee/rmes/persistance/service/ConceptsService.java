@@ -48,6 +48,10 @@ public class ConceptsService {
 		return conceptContract.getCollections();
 	}
 	
+	public String getCollectionsDashboard() {
+		return conceptContract.getCollectionsDashboard();
+	}
+	
 	public String getCollectionsToValidate() {
 		return conceptContract.getCollectionsToValidate();
 	}

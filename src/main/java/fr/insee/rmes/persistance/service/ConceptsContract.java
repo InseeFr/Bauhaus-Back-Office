@@ -25,6 +25,8 @@ public interface ConceptsContract {
 	
 	public String getCollections();
 	
+	public String getCollectionsDashboard();
+	
 	public String getCollectionsToValidate();
 	
 	public String getCollectionByID(String id);
