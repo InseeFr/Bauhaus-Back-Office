@@ -39,7 +39,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = new Export().getConceptData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportConcept(json);
+		InputStream is = jasper.exportConcept(json, "default Mime");
 		return sendMail(mail, is, json);
 	}
 	
@@ -47,7 +47,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = new Export().getCollectionData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportCollection(json);
+		InputStream is = jasper.exportCollection(json, "default Mime");
 		return sendMail(mail, is, json);
 	}
 		
@@ -55,7 +55,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 		String fileName = json.getString("prefLabelLg1");
 		fileName = Normalizer.normalize(fileName.toLowerCase()
-				.replaceAll(" ", "-"), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "") + ".pdf";
+				.replaceAll(" ", "-"), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "") + ".odt";
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
