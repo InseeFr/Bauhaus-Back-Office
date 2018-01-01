@@ -39,7 +39,7 @@ public interface ConceptsContract {
 	
 	public void setConceptsValidation(String body);
 	
-	public Response getConceptExport(String id);
+	public Response getConceptExport(String id, String acceptHeader);
 	
 	public boolean setConceptSend(String id, String body);
 	
@@ -49,7 +49,7 @@ public interface ConceptsContract {
 	
 	public void setCollectionsValidation(String body);
 	
-	public Response getCollectionExport(String id);
+	public Response getCollectionExport(String id, String acceptHeader);
 	
 	public boolean setCollectionSend(String id, String body);
 }

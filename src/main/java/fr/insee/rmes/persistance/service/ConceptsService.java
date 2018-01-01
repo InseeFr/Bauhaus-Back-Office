@@ -76,8 +76,8 @@ public class ConceptsService {
 		conceptContract.setConceptsValidation(body);
 	}
 	
-	public Response getConceptExport(String id) {
-		return conceptContract.getConceptExport(id);
+	public Response getConceptExport(String id, String acceptHeader) {
+		return conceptContract.getConceptExport(id, acceptHeader);
 	}
 	
 	public boolean setConceptSend(String id, String body) {
@@ -96,8 +96,8 @@ public class ConceptsService {
 		conceptContract.setCollectionsValidation(body);
 	}
 	
-	public Response getCollectionExport(String id) {
-		return conceptContract.getCollectionExport(id);
+	public Response getCollectionExport(String id, String acceptHeader) {
+		return conceptContract.getCollectionExport(id, acceptHeader);
 	}
 	
 	public boolean setCollectionSend(String id, String body) {

@@ -125,12 +125,13 @@ public class SesameConceptsImpl implements ConceptsContract {
 	/**
 	 * Export concept(s)
 	 */
-	public Response getConceptExport(String id) {
+	public Response getConceptExport(String id, String acceptHeader) {
 		JSONObject concept = new Export().getConceptData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportConcept(concept);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(concept.getString("prefLabelLg1")).build();
-		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM)
+		InputStream is = jasper.exportConcept(concept, acceptHeader);
+		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)
 				.build();
 	}
@@ -145,12 +146,13 @@ public class SesameConceptsImpl implements ConceptsContract {
 	/**
 	 * Export collection(s)
 	 */
-	public Response getCollectionExport(String id) {
+	public Response getCollectionExport(String id, String acceptHeader) {
 		JSONObject collection = new Export().getCollectionData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportCollection(collection);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(collection.getString("prefLabelLg1")).build();
-		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM)
+		InputStream is = jasper.exportCollection(collection, acceptHeader);
+		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)
 				.build();
 	}

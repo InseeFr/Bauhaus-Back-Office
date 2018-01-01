@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -157,10 +158,12 @@ public class ConceptsPublicResources {
 	
 	@GET
 	@Path("/concept/export/{id}")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getConceptExport(@PathParam("id") String id) {
+	// TODO : Fix issue with good MIME Type
+	//@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	//@Produces("application/vnd.oasis.opendocument.text");
+	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		ConceptsService service = new ConceptsService();
-		return service.getConceptExport(id);
+		return service.getConceptExport(id, acceptHeader);
 	}
 	
 	@POST
@@ -199,9 +202,9 @@ public class ConceptsPublicResources {
 	@GET
 	@Path("/collection/export/{id}")
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getCollectionExport(@PathParam("id") String id) {
+	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		ConceptsService service = new ConceptsService();
-		return service.getCollectionExport(id);
+		return service.getCollectionExport(id, acceptHeader);
 	}
 	
 	@POST
