@@ -123,6 +123,7 @@ public class Jasper {
 				config = new SimpleXlsReportConfiguration();
 				break;
 			case "application/vnd.oasis.opendocument.text":// ODT
+			case "Mail":	
 				exporter = new JROdtExporter();
 				config = new SimpleOdtReportConfiguration();
 				break;
