@@ -39,7 +39,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = new Export().getConceptData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportConcept(json, "default Mime");
+		InputStream is = jasper.exportConcept(json, "Mail");
 		return sendMail(mail, is, json);
 	}
 	
@@ -47,7 +47,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = new Export().getCollectionData(id);
 		Jasper jasper = new Jasper();
-		InputStream is = jasper.exportCollection(json, "default Mime");
+		InputStream is = jasper.exportCollection(json, "Mail");
 		return sendMail(mail, is, json);
 	}
 		

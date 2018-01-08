@@ -158,9 +158,7 @@ public class ConceptsPublicResources {
 	
 	@GET
 	@Path("/concept/export/{id}")
-	// TODO : Fix issue with good MIME Type
-	//@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	//@Produces("application/vnd.oasis.opendocument.text");
+	@Produces({MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text"})
 	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		ConceptsService service = new ConceptsService();
 		return service.getConceptExport(id, acceptHeader);
@@ -201,7 +199,7 @@ public class ConceptsPublicResources {
 
 	@GET
 	@Path("/collection/export/{id}")
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Produces({MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text"})
 	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		ConceptsService service = new ConceptsService();
 		return service.getCollectionExport(id, acceptHeader);

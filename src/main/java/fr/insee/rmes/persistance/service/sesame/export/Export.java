@@ -104,9 +104,9 @@ public class Export {
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			String typeOfLink = jsonO.getString("typeOfLink");
-			if (typeOfLink.equals("broader"))
-				listParents.add(jsonO.getString("prefLabelLg1"));
 			if (typeOfLink.equals("narrower"))
+				listParents.add(jsonO.getString("prefLabelLg1"));
+			if (typeOfLink.equals("broader"))
 				listEnfants.add(jsonO.getString("prefLabelLg1"));
 			if (typeOfLink.equals("references"))
 				listReferences.add(jsonO.getString("prefLabelLg1"));
