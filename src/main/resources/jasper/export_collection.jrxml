@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.1.final using JasperReports Library version 6.3.1  -->
-<!-- 2017-10-03T17:51:43 -->
+<!-- Created with Jaspersoft Studio version 6.5.0.final using JasperReports Library version 6.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="export_concept" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="fe741249-aff5-4c91-ab3c-723e3cb156eb">
 	<parameter name="prefLabelLg1" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -16,21 +15,19 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
 	<title>
 		<band height="80" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Opaque" x="62" y="0" width="430" height="40" forecolor="#FFFFFF" backcolor="#234CA5" uuid="3f68d3c8-f752-4997-ae53-50a17f60d862"/>
+				<reportElement mode="Opaque" x="0" y="0" width="555" height="40" forecolor="#FFFFFF" backcolor="#234CA5" uuid="3f68d3c8-f752-4997-ae53-50a17f60d862"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font fontName="Arial" size="20"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{prefLabelLg1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement mode="Opaque" x="102" y="50" width="350" height="30" forecolor="#FFFFFF" backcolor="#5D87E8" uuid="e09b0953-7f74-465b-8b12-b79406e088c6">
+				<reportElement mode="Opaque" x="0" y="40" width="555" height="40" forecolor="#FFFFFF" backcolor="#5D87E8" uuid="e09b0953-7f74-465b-8b12-b79406e088c6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{prefLabelLg2} != null]]></printWhenExpression>
 				</reportElement>
@@ -42,25 +39,13 @@
 		</band>
 	</title>
 	<detail>
-		<band height="90">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement stretchType="ContainerBottom" x="0" y="40" width="555" height="50" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#457DBB" uuid="b90280a6-dfc9-49b8-9bc5-a9e9b3894801">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
-					<pen lineWidth="2.0" lineColor="#234CA5"/>
-				</box>
-				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
-					<font fontName="Arial"/>
-					<paragraph lineSpacing="Single" leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="20"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{general}]]></textFieldExpression>
-			</textField>
+		<band height="34">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<staticText>
-				<reportElement x="157" y="10" width="240" height="18" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" forecolor="#234CA5" uuid="92599d6a-d22a-4ae0-b304-af9c78428d80">
+				<reportElement x="0" y="0" width="555" height="34" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" forecolor="#234CA5" uuid="92599d6a-d22a-4ae0-b304-af9c78428d80">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -74,40 +59,30 @@
 				<text><![CDATA[Informations générales]]></text>
 			</staticText>
 		</band>
-		<band height="80" splitType="Stretch">
+		<band height="90">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement stretchType="ContainerBottom" x="0" y="0" width="555" height="90" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#457DBB" uuid="b90280a6-dfc9-49b8-9bc5-a9e9b3894801">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<pen lineWidth="2.0" lineColor="#234CA5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="html">
+					<font fontName="Arial"/>
+					<paragraph lineSpacing="Single" leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="20"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{general}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="34" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 			<printWhenExpression><![CDATA[$P{descriptionLg1} != null]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="40" width="270" height="40" isRemoveLineWhenBlank="true" uuid="941f9875-b445-4fc1-80bf-232bde7ec71a">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{descriptionLg1} != null]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<pen lineWidth="2.0" lineColor="#234CA5"/>
-				</box>
-				<textElement textAlignment="Justified" markup="html">
-					<font fontName="Arial"/>
-					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{descriptionLg1}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="285" y="40" width="270" height="40" isRemoveLineWhenBlank="true" uuid="43876db4-fb2a-467c-bdcb-f6a3e62c2f2f">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{descriptionLg2} != null]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<pen lineWidth="2.0" lineColor="#234CA5"/>
-				</box>
-				<textElement textAlignment="Justified" markup="html">
-					<font fontName="Arial"/>
-					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{descriptionLg2}]]></textFieldExpression>
-			</textField>
 			<staticText>
-				<reportElement x="157" y="10" width="240" height="18" isRemoveLineWhenBlank="true" forecolor="#234CA5" uuid="f8394150-790a-481e-b524-11faebc40517">
+				<reportElement x="0" y="0" width="555" height="34" isRemoveLineWhenBlank="true" forecolor="#234CA5" uuid="f8394150-790a-481e-b524-11faebc40517">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{descriptionLg1} != null]]></printWhenExpression>
 				</reportElement>
@@ -123,43 +98,46 @@
 				<text><![CDATA[Description]]></text>
 			</staticText>
 		</band>
-		<band height="80">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		<band height="90">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$P{descriptionLg1} != null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="278" height="90" isRemoveLineWhenBlank="true" uuid="941f9875-b445-4fc1-80bf-232bde7ec71a">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{descriptionLg1} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="2.0" lineColor="#234CA5"/>
+				</box>
+				<textElement textAlignment="Justified" markup="html">
+					<font fontName="Arial"/>
+					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{descriptionLg1}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="278" y="0" width="277" height="90" isRemoveLineWhenBlank="true" uuid="43876db4-fb2a-467c-bdcb-f6a3e62c2f2f">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{descriptionLg2} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="2.0" lineColor="#234CA5"/>
+				</box>
+				<textElement textAlignment="Justified" markup="html">
+					<font fontName="Arial"/>
+					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{descriptionLg2}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="34">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 			<printWhenExpression><![CDATA[$P{membersLg1} != null]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="40" width="270" height="40" isRemoveLineWhenBlank="true" uuid="0add618b-315e-4032-b13d-6247dadd0bc7">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{membersLg1} != null]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<pen lineWidth="2.0" lineColor="#234CA5"/>
-				</box>
-				<textElement textAlignment="Left" markup="html">
-					<font fontName="Arial"/>
-					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{membersLg1}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="" x="285" y="40" width="270" height="40" isRemoveLineWhenBlank="true" uuid="9f107aa9-f9cc-4662-bf53-c1bf49cd4165">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{membersLg2} != null]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<pen lineWidth="2.0" lineColor="#234CA5"/>
-				</box>
-				<textElement textAlignment="Left" markup="html">
-					<font fontName="Arial"/>
-					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{membersLg2}]]></textFieldExpression>
-			</textField>
 			<staticText>
-				<reportElement x="77" y="10" width="400" height="18" isRemoveLineWhenBlank="true" forecolor="#234CA5" uuid="e445dbab-97fc-4737-adb1-03ace2444555">
+				<reportElement x="0" y="0" width="555" height="34" isRemoveLineWhenBlank="true" forecolor="#234CA5" uuid="e445dbab-97fc-4737-adb1-03ace2444555">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[$P{membersLg1} != null]]></printWhenExpression>
 				</reportElement>
@@ -175,35 +153,59 @@
 				<text><![CDATA[Concepts membres de la collection]]></text>
 			</staticText>
 		</band>
+		<band height="90">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$P{membersLg1} != null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="278" height="90" isRemoveLineWhenBlank="true" uuid="0add618b-315e-4032-b13d-6247dadd0bc7">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{membersLg1} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="2.0" lineColor="#234CA5"/>
+				</box>
+				<textElement textAlignment="Left" markup="html">
+					<font fontName="Arial"/>
+					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{membersLg1}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="" x="278" y="0" width="277" height="90" isRemoveLineWhenBlank="true" uuid="9f107aa9-f9cc-4662-bf53-c1bf49cd4165">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{membersLg2} != null]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="2.0" lineColor="#234CA5"/>
+				</box>
+				<textElement textAlignment="Left" markup="html">
+					<font fontName="Arial"/>
+					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{membersLg2}]]></textFieldExpression>
+			</textField>
+		</band>
 	</detail>
 	<pageFooter>
 		<band height="63" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
-				<reportElement x="260" y="27" width="20" height="9" uuid="93f93313-b6d3-42f5-a4f8-6d9c4a8bdace"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report">
-				<reportElement x="280" y="27" width="20" height="9" uuid="c6d35985-352f-4dba-a17f-2824fe0e780a"/>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="12"/>
-				</textElement>
-				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<image>
-				<reportElement x="490" y="0" width="71" height="63" uuid="b7ccfa2b-2ebe-4491-8d99-839655f99c5e"/>
-				<imageExpression><![CDATA["jasper/resources/insee.png"]]></imageExpression>
-			</image>
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
 			<staticText>
-				<reportElement x="0" y="0" width="130" height="62" forecolor="#234CA5" uuid="6c6a9723-db63-4891-8470-d49b6faec701"/>
+				<reportElement x="0" y="0" width="278" height="63" forecolor="#234CA5" uuid="6c6a9723-db63-4891-8470-d49b6faec701"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Arial" size="18" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Unité qualité]]></text>
 			</staticText>
+			<image hAlign="Right">
+				<reportElement positionType="Float" x="278" y="0" width="277" height="63" uuid="b7ccfa2b-2ebe-4491-8d99-839655f99c5e"/>
+				<imageExpression><![CDATA["jasper/resources/insee.png"]]></imageExpression>
+			</image>
 		</band>
 	</pageFooter>
 </jasperReport>
