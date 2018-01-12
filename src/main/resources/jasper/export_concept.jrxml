@@ -207,7 +207,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
@@ -222,7 +222,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
@@ -261,7 +261,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph lineSpacingSize="1.0" leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
@@ -277,7 +277,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
@@ -320,7 +320,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
@@ -336,7 +336,7 @@
 				<box>
 					<pen lineWidth="2.0" lineColor="#234CA5"/>
 				</box>
-				<textElement textAlignment="Justified" markup="html">
+				<textElement textAlignment="Left" markup="html">
 					<font fontName="Arial"/>
 					<paragraph leftIndent="10" rightIndent="10" spacingBefore="10" spacingAfter="10"/>
 				</textElement>
