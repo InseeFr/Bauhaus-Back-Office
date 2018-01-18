@@ -12,6 +12,7 @@ import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;
 
 public class Export {
 
@@ -102,7 +103,7 @@ public class Export {
 	}
 
 	private String extractMembers(JSONArray array, String attr) {
-		TreeSet<String> list = new TreeSet<String>();
+		TreeSet<String> list = new TreeSet<String>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			list.add(jsonO.getString(attr));
@@ -126,11 +127,11 @@ public class Export {
 	 * @return
 	 */
 	private String editLinks(JSONArray array, int language) {
-		TreeSet<String> listParents = new TreeSet<String>();
-		TreeSet<String> listEnfants = new TreeSet<String>();
-		TreeSet<String> listReferences = new TreeSet<String>();
-		TreeSet<String> listSucceed = new TreeSet<String>();
-		TreeSet<String> listReplaces = new TreeSet<String>();
+		TreeSet<String> listParents = new TreeSet<String>(new StringComparator());
+		TreeSet<String> listEnfants = new TreeSet<String>(new StringComparator());
+		TreeSet<String> listReferences = new TreeSet<String>(new StringComparator());
+		TreeSet<String> listSucceed = new TreeSet<String>(new StringComparator());
+		TreeSet<String> listReplaces = new TreeSet<String>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			String typeOfLink = jsonO.getString("typeOfLink");
