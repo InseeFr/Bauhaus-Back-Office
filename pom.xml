@@ -99,13 +99,8 @@
 			<artifactId>sesame-runtime</artifactId>
 			<version>${sesame.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-queryresultio-sparqljson</artifactId>
-			<version>${sesame.version}</version>
-		</dependency>
 
-		<!-- JSON -->
+
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
