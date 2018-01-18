@@ -12,6 +12,7 @@ import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;
 
 public class Export {
 
@@ -102,7 +103,7 @@ public class Export {
 	}
 
 	private String extractMembers(JSONArray array, String attr) {
-		TreeSet<String> list = new TreeSet<String>();
+		TreeSet<String> list = new TreeSet<String>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			list.add(jsonO.getString(attr));
@@ -110,6 +111,7 @@ public class Export {
 		if (list.isEmpty()) {
 			return "";
 		}
+
 		StringBuilder xhtml = new StringBuilder("<ul>");
 		for (String member : list) {
 			xhtml.append("<li>" + member + "</li>");
