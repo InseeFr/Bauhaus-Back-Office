@@ -106,7 +106,9 @@ public class Export {
 		TreeSet<String> list = new TreeSet<String>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
-			list.add(jsonO.getString(attr));
+			if (jsonO.has(attr)) {
+				list.add(jsonO.getString(attr));
+			}
 		}
 		if (list.isEmpty()) {
 			return "";
