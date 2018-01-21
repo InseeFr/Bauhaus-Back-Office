@@ -12,21 +12,6 @@ public class ConceptsQueries {
 				+ "LIMIT1";
 	}	
 	
-//	public static String conceptsQuery() {
-//		return "SELECT DISTINCT ?id ?label ?altLabel \n"
-//			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
-//			+ "?concept skos:notation ?id . \n"
-//			+ "?concept skos:prefLabel ?label . \n"
-//			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
-//			+ "{OPTIONAL{ \n"
-//				+ "SELECT ?id (group_concat(?alt;separator=' || ') as ?altLabel) WHERE { \n"
-//				+ "?concept skos:altLabel ?alt . \n"
-//				+ "FILTER (lang(?alt) = '" + Config.LG1 + "')  . \n"
-//				+ "}}} \n"
-//			+ "}} \n"
-//			+ "GROUP BY ?id ?label ?altLabel \n"
-//			+ "ORDER BY ?label ";	
-//	}
 	
 	public static String conceptsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
@@ -44,9 +29,12 @@ public class ConceptsQueries {
 	public static String conceptsSearchQuery() {
 		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
 			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
+			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 			+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
+			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
+			+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "')} \n"
 			+ "?concept dcterms:created ?created . \n"
 			// Not topConceptOf if has broader
 			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
@@ -67,6 +55,8 @@ public class ConceptsQueries {
 				+ "FILTER (?version < ?latestVersion)} . \n"
 			+ "FILTER (!bound (?latest))}"
 			+ "}} \n"
+			+ "GROUP BY ?id ?label ?created ?modified ?disseminationStatus \n"
+			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
 			+ "ORDER BY ?label";	
 	}
 		
