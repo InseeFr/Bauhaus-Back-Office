@@ -12,12 +12,32 @@ public class ConceptsQueries {
 				+ "LIMIT1";
 	}	
 	
+//	public static String conceptsQuery() {
+//		return "SELECT DISTINCT ?id ?label ?altLabel \n"
+//			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+//			+ "?concept skos:notation ?id . \n"
+//			+ "?concept skos:prefLabel ?label . \n"
+//			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
+//			+ "{OPTIONAL{ \n"
+//				+ "SELECT ?id (group_concat(?alt;separator=' || ') as ?altLabel) WHERE { \n"
+//				+ "?concept skos:altLabel ?alt . \n"
+//				+ "FILTER (lang(?alt) = '" + Config.LG1 + "')  . \n"
+//				+ "}}} \n"
+//			+ "}} \n"
+//			+ "GROUP BY ?id ?label ?altLabel \n"
+//			+ "ORDER BY ?label ";	
+//	}
+	
 	public static String conceptsQuery() {
-		return "SELECT DISTINCT ?id ?label \n"
+		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 			+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') }} \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
+			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
+			+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "')} \n"
+			+ "}} \n"
+			+ "GROUP BY ?id ?label \n"
 			+ "ORDER BY ?label ";	
 	}
 	
