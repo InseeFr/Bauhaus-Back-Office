@@ -2,6 +2,8 @@ package fr.insee.rmes.persistance.securityManager;
 
 public interface SecurityManagerContract {
 	
+	public Boolean getAuth(String body);
+	
 	public String getRoles();
 	
 	public String getAgents();

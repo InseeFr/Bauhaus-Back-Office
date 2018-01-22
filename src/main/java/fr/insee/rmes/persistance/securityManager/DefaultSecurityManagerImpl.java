@@ -6,6 +6,10 @@ public class DefaultSecurityManagerImpl implements SecurityManagerContract {
 	
 	final static Logger logger = Logger.getLogger(DefaultSecurityManagerImpl.class);
 	
+	public Boolean getAuth(String body) {
+		return true;
+	}
+	
 	public String getRoles() {
 		return "";
 	}

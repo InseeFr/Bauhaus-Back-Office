@@ -47,6 +47,13 @@ public class RmesSecurityManagerImpl implements SecurityManagerContract {
 	private static final String ROLE_PERSON_STAMP_XPATH = "ou";
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
 	private static final String ROLE_PERSON_LABEL_XPATH = "cn";
+	
+	public Boolean getAuth(String body) {
+		System.out.println(Config.PASSWORD);
+		System.out.println(body);
+		if (body.equals(Config.PASSWORD)) return true;
+		return false;
+	}
 
 	public String getRoles() {
 		JSONArray roles = new JSONArray();

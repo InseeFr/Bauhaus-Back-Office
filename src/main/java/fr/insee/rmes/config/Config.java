@@ -5,6 +5,8 @@ public class Config {
 	public static String LG1 = "";
 	public static String LG2 = "";
 	
+	public static String PASSWORD = "";
+	
 	public static String CONCEPTS_GRAPH = "";
 	public static String CONCEPTS_SCHEME = "";
 	public static String CONCEPTS_BASE_URI = "";

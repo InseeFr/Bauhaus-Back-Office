@@ -37,6 +37,14 @@ import fr.insee.rmes.persistance.stamps.StampsContract;
 @Path("/")
 public class PublicResources {
 	
+	@POST
+	@Path("/auth")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAuth(String body) {
+		SecurityManagerContract sm = new RmesSecurityManagerImpl();
+		return Response.status(HttpStatus.SC_OK).entity(sm.getAuth(body)).build();
+	}
+	
 	@GET
 	@Path("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
