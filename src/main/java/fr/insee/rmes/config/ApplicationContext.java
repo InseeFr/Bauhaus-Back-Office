@@ -22,6 +22,13 @@ public class ApplicationContext {
 	
 	@PostConstruct
 	public void setUp() {
+		
+		Config.APP_HOST = env.getProperty("fr.insee.rmes.gncs.concepts.appHost");
+		
+		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.gncs.concepts.defaultContributor");
+		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.gncs.concepts.defaultMailSender");
+		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.gncs.concepts.maxLengthScopeNote");
+		
 		Config.LG1 = env.getProperty("fr.insee.rmes.gncs.lg1");
 		Config.LG2 = env.getProperty("fr.insee.rmes.gncs.lg2");
 		

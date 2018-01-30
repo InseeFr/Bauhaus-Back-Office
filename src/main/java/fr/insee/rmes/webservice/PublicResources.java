@@ -11,10 +11,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
+import org.apache.log4j.Logger;
+import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.securityManager.RmesSecurityManagerImpl;
 import fr.insee.rmes.persistance.securityManager.SecurityManagerContract;
@@ -36,6 +39,25 @@ import fr.insee.rmes.persistance.stamps.StampsContract;
  */
 @Path("/")
 public class PublicResources {
+	
+	final static Logger logger = Logger.getLogger(PublicResources.class);
+	
+	@GET
+	@Path("/properties")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getProperties() {
+		JSONObject props = new JSONObject();
+		try {
+            props.put("appHost", Config.APP_HOST);
+            props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
+            props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
+            props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw e;
+        }
+		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
+	}
 	
 	@POST
 	@Path("/auth")
