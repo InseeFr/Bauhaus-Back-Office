@@ -48,9 +48,10 @@ public class RmesSecurityManagerImpl implements SecurityManagerContract {
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
 	private static final String ROLE_PERSON_LABEL_XPATH = "cn";
 	
-	public Boolean getAuth(String body) {
-		if (body.equals(Config.PASSWORD)) return true;
-		return false;
+	public String getAuth(String body) {
+		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) return "GESTIONNAIRE";
+		if (body.equals(Config.PASSWORD_PRODUCTEUR)) return "PRODUCTEUR";
+		return "NONE";
 	}
 
 	public String getRoles() {

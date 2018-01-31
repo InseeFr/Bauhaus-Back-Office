@@ -32,7 +32,8 @@ public class ApplicationContext {
 		Config.LG1 = env.getProperty("fr.insee.rmes.gncs.lg1");
 		Config.LG2 = env.getProperty("fr.insee.rmes.gncs.lg2");
 		
-		Config.PASSWORD = env.getProperty("fr.insee.rmes.gncs.password");
+		Config.PASSWORD_GESTIONNAIRE = env.getProperty("fr.insee.rmes.gncs.gestionnaire.password");
+		Config.PASSWORD_PRODUCTEUR = env.getProperty("fr.insee.rmes.gncs.producteur.password");
 		
 		Config.CONCEPTS_GRAPH = env.getProperty("fr.insee.rmes.gncs.concepts.graph");
 		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.gncs.concepts.scheme");

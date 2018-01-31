@@ -11,7 +11,8 @@ public class Config {
 	public static String LG1 = "";
 	public static String LG2 = "";
 	
-	public static String PASSWORD = "";
+	public static String PASSWORD_GESTIONNAIRE = "";
+	public static String PASSWORD_PRODUCTEUR = "";
 	
 	public static String CONCEPTS_GRAPH = "";
 	public static String CONCEPTS_SCHEME = "";
