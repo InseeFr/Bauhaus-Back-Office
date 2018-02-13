@@ -3,7 +3,6 @@ package fr.insee.rmes.persistance.service.sesame.publication;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.openrdf.model.Literal;
@@ -28,7 +27,6 @@ import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class Publication {
 
-	final static Logger logger = Logger.getLogger(Publication.class);
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	private static Resource tranformBaseURIToPublish(Resource resource) {

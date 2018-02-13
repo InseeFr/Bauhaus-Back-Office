@@ -1,10 +1,12 @@
 package fr.insee.rmes.persistance.mailSender;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 
 public class DefaultMailSenderImpl implements MailSenderContract {
 	
-	final static Logger logger = Logger.getLogger(DefaultMailSenderImpl.class);
+	final static Logger logger = LogManager.getLogger(DefaultMailSenderImpl.class);
 
 	@Override
 	public boolean sendMailConcept(String id, String body) {

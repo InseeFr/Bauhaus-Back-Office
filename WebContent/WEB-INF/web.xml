@@ -10,30 +10,30 @@
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 
-	<!-- PROD -->
+	<context-param>
+		<param-name>isLog4jAutoInitializationDisabled</param-name>
+		<param-value>true</param-value>
+	</context-param>
 
-<!-- 	<context-param> -->
-<!-- 		<param-name>log4jConfigLocation</param-name> -->
-<!-- 		<param-value>file:${catalina.base}/webapps/log4j.properties</param-value> -->
-<!-- 	</context-param> -->
-<!-- 	<listener> -->
-<!-- 		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class> -->
-<!-- 	</listener> -->
-
-<!-- 	<security-constraint> -->
-<!-- 		<web-resource-collection> -->
-<!-- 			<web-resource-name>gncs-core</web-resource-name> -->
-<!-- 			<url-pattern>/*</url-pattern> -->
-<!-- 		</web-resource-collection> -->
-<!-- 		<user-data-constraint> -->
-<!-- 			<transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
-<!-- 		</user-data-constraint> -->
-<!-- 	</security-constraint> -->
+	<!-- <security-constraint> -->
+	<!-- <web-resource-collection> -->
+	<!-- <web-resource-name>gncs-core</web-resource-name> -->
+	<!-- <url-pattern>/*</url-pattern> -->
+	<!-- </web-resource-collection> -->
+	<!-- <user-data-constraint> -->
+	<!-- <transport-guarantee>CONFIDENTIAL</transport-guarantee> -->
+	<!-- </user-data-constraint> -->
+	<!-- </security-constraint> -->
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>/WEB-INF/applicationContext*.xml</param-value>
 	</context-param>
+
+
+	<listener>
+		<listener-class>fr.insee.rmes.config.Log4j2ServletContextListener</listener-class>
+	</listener>
 
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

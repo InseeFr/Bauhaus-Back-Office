@@ -13,13 +13,14 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.insee.rmes.config.Config;
 
 public class Igesa {
 
-	final static Logger logger = Logger.getLogger(Igesa.class);
+	final static Logger logger = LogManager.getLogger(Igesa.class);
 
 	public static void post(String URL) {
 		logger.info("Igesa, post : " + URL);

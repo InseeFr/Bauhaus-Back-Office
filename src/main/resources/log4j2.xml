@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appenders>
+
+		<RollingFile name="RollingFile" fileName="logs/gncs.log"
+			filePattern="logs/gncs-%d{MM-dd-yyyy}-%i.log.gz"
+			ignoreExceptions="false">
+			<PatternLayout>
+				<Pattern>%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="1 MB" />
+			</Policies>
+		</RollingFile>
+
+	</appenders>
+
+	<loggers>
+		<root level="INFO">
+			<appender-ref ref="RollingFile" />
+		</root>
+	</loggers>
+</configuration>

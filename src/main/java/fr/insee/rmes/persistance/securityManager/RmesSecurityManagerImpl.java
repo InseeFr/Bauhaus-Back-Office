@@ -17,7 +17,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -31,7 +32,7 @@ import fr.insee.rmes.persistance.securityManager.rmes.JSONComparator;
 
 public class RmesSecurityManagerImpl implements SecurityManagerContract {
 
-	final static Logger logger = Logger.getLogger(RmesSecurityManagerImpl.class);
+	final static Logger logger = LogManager.getLogger(RmesSecurityManagerImpl.class);
 
 	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
 

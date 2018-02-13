@@ -11,7 +11,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +41,7 @@ import fr.insee.rmes.persistance.stamps.StampsContract;
 @Path("/")
 public class PublicResources {
 	
-	final static Logger logger = Logger.getLogger(PublicResources.class);
+	final static Logger logger = LogManager.getLogger(PublicResources.class);
 	
 	@GET
 	@Path("/properties")

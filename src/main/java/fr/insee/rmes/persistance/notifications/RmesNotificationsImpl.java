@@ -9,7 +9,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.insee.rmes.config.Config;
 
@@ -21,7 +22,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
     private static final long DELAY = 1;
     private static final long DUREE_VIE_MESSAGE = 300000;
 
-	final static Logger logger = Logger.getLogger(RmesNotificationsImpl.class);
+	final static Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
 	
 	public void notifyConceptCreation(String id, String URI) {
 		logger.info("Notification : concept creation, id : " + id);

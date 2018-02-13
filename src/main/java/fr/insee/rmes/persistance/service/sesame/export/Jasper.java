@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -39,7 +40,7 @@ import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
 
 public class Jasper {
 
-	final static Logger logger = Logger.getLogger(Jasper.class);
+	final static Logger logger = LogManager.getLogger(Jasper.class);
 
 	public InputStream exportConcept(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_concept.jrxml");

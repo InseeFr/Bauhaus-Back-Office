@@ -11,13 +11,14 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import fr.insee.rmes.config.Config;
 
 public class RmesStampsImpl implements StampsContract {
 	
-	final static Logger logger = Logger.getLogger(RmesStampsImpl.class);
+	final static Logger logger = LogManager.getLogger(RmesStampsImpl.class);
 	
 	public String getStamps() {
 		TreeSet<String> stamps = new TreeSet<String>();
