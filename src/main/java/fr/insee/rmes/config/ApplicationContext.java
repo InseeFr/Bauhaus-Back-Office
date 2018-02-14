@@ -25,6 +25,8 @@ public class ApplicationContext {
 		
 		Config.APP_HOST = env.getProperty("fr.insee.rmes.gncs.concepts.appHost");
 		
+		Config.REQUIRES_SSL = Boolean.valueOf(env.getProperty("fr.insee.rmes.gncs.force.ssl"));
+		
 		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.gncs.concepts.defaultContributor");
 		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.gncs.concepts.defaultMailSender");
 		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.gncs.concepts.maxLengthScopeNote");

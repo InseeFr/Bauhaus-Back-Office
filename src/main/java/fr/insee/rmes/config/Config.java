@@ -4,6 +4,8 @@ public class Config {
 	
 	public static String APP_HOST = "";
 	
+	public static Boolean REQUIRES_SSL = false;
+	
 	public static String DEFAULT_CONTRIBUTOR = "";
 	public static String DEFAULT_MAIL_SENDER = "";
 	public static String MAX_LENGTH_SCOPE_NOTE = "";
