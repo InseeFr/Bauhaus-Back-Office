@@ -52,6 +52,8 @@ public class ApplicationContext {
 	public void setUp() {
 
 		Config.APP_HOST = env.getProperty("fr.insee.rmes.gncs.concepts.appHost");
+		
+		Config.ENV = env.getProperty("fr.insee.rmes.gncs.env");
 
 		Config.REQUIRES_SSL = Boolean.valueOf(env.getProperty("fr.insee.rmes.gncs.force.ssl"));
 

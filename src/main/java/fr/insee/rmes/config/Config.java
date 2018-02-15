@@ -4,6 +4,8 @@ public class Config {
 	
 	public static String APP_HOST = "";
 	
+	public static String ENV = "";
+	
 	public static Boolean REQUIRES_SSL = false;
 	
 	public static String DEFAULT_CONTRIBUTOR = "";

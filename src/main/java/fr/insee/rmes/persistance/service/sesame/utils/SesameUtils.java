@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.utils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.openrdf.model.Literal;
@@ -66,20 +68,17 @@ public class SesameUtils {
 	}
 	
 	public static URI datableNoteIRI(String conceptId, DatableNote datableNote) {
-		// Prod format
-		// LocalDate date = LocalDate.now();
-		// String text = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-		// LocalDate parsedDate = LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE);
-		
-		// dev format
-		Date parsedDate = new Date();
-		
-		URI noteURI = SesameUtils.factory.createURI(
-				CONCEPTS_BASE_URI 
-				+ "/" + conceptId 
-				+ "/" + datableNote.getPath()
-				+ "/" + parsedDate 
-				+ "/" + datableNote.getLang());
+		String parsedDate = "";
+
+		if (Config.ENV.equals("prod")) {
+			LocalDate date = LocalDate.now();
+			String text = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+			parsedDate = LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE).toString();
+		} else {
+			parsedDate = new Date().toString();
+		}
+		URI noteURI = SesameUtils.factory.createURI(CONCEPTS_BASE_URI + "/" + conceptId + "/" + datableNote.getPath()
+				+ "/" + parsedDate + "/" + datableNote.getLang());
 		return noteURI;
 	}
 	
