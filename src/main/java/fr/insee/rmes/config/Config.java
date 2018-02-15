@@ -30,6 +30,8 @@ public class Config {
 	public static String REPOSITORY_ID_PUBLICATION = "";
 	public static String BASE_URI_PUBLICATION = "";
 	
+	public static String BASE_URI_METADATA_API = "";
+	
 	public static String SPOC_SERVICE_URL = "";
 	public static String SPOC_USER = "";
 	public static String SPOC_PASSWORD = "";
