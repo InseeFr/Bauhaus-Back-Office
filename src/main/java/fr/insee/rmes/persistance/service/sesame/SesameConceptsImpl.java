@@ -2,7 +2,6 @@ package fr.insee.rmes.persistance.service.sesame;
 
 import java.io.InputStream;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;

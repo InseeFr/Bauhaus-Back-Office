@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.persistance.service.sesame.operations.OperationsContract;
-import fr.insee.rmes.persistance.service.sesame.operations.SesameOperationsImpl;
 import fr.insee.rmes.persistance.service.sesame.operations.pojo.SerieForList;
 
 @Component
