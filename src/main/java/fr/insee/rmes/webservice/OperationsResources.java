@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.persistance.service.sesame.operations.OperationsContract;
@@ -22,17 +23,14 @@ public class OperationsResources {
 	
 	final static Logger logger = LogManager.getLogger(OperationsResources.class);
 	
-	// TODO operationsContract with Spring
-//	@Autowired 
-//	OperationsContract operationsContract;
+	@Autowired 
+	OperationsContract operationsContract;
 	
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSeries() throws Exception {
 		try {
-			// TODO operationsContract with Spring
-			OperationsContract operationsContract = new SesameOperationsImpl();
 			List<SerieForList> series = operationsContract.getSeries();
 			return Response.ok().entity(series).build();
 		} catch (Exception e) {
