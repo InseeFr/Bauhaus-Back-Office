@@ -181,8 +181,9 @@ public class RepositoryPublication {
 			conn.remove(concept, null, null);
 			conn.add(model);
 			conn.close();
+			logger.info("Publication of concept : " + concept);
 		} catch (OpenRDFException e) {
-			e.getMessage();
+			logger.error("Publication of concept : " + concept + " failed : " + e.getMessage());
 		}
 	}
 
@@ -193,8 +194,9 @@ public class RepositoryPublication {
 			conn.remove(collection, null, null);
 			conn.add(model);
 			conn.close();
+			logger.info("Publication of collection : " + collection);
 		} catch (OpenRDFException e) {
-			e.getMessage();
+			logger.error("Publication of collection : " + collection + " failed : " + e.getMessage());
 		}
 	}
 

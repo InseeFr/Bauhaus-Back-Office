@@ -99,10 +99,12 @@ public class Publication {
 			} catch (RepositoryException e) {
 				e.printStackTrace();
 			}
-
+			
 			RepositoryGestion.closeStatements(statements);
 			publishMemberLinks(concept, model, con);
-			RepositoryPublication.publishConcept(concept, model, noteToClear, topConceptOfToDelete);
+			
+			Resource conceptToPublish = tranformBaseURIToPublish(concept);
+			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
 			// if (creation)
 			// notification.notifyConceptCreation(conceptId,
 			// concept.toString());
@@ -210,7 +212,8 @@ public class Publication {
 			} finally {
 				RepositoryGestion.closeStatements(statements);
 			}
-			RepositoryPublication.publishCollection(collection, model);
+			Resource collectionToPublish = tranformBaseURIToPublish(collection);
+			RepositoryPublication.publishCollection(collectionToPublish, model);
 			// if (creation)
 			// notification.notifyCollectionCreation(collectionId,
 			// collection.toString());
