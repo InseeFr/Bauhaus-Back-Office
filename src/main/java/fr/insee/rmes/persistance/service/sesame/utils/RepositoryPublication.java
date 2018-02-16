@@ -184,6 +184,8 @@ public class RepositoryPublication {
 			logger.info("Publication of concept : " + concept);
 		} catch (OpenRDFException e) {
 			logger.error("Publication of concept : " + concept + " failed : " + e.getMessage());
+			logger.error("Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
+			logger.error("Message : " + e.getMessage());
 		}
 	}
 
@@ -196,7 +198,9 @@ public class RepositoryPublication {
 			conn.close();
 			logger.info("Publication of collection : " + collection);
 		} catch (OpenRDFException e) {
-			logger.error("Publication of collection : " + collection + " failed : " + e.getMessage());
+			logger.error("Publication of collection : " + collection + " failed");
+			logger.error("Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
+			logger.error("Message : " + e.getMessage());
 		}
 	}
 
