@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -24,6 +26,8 @@ import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class CollectionsUtils {
 	
+	final static Logger logger = LogManager.getLogger(CollectionsUtils.class);
+	
 	/**
 	 * Collections
 	 */
@@ -39,6 +43,7 @@ public class CollectionsUtils {
 			e.printStackTrace();
 		}
 		setRdfCollection(collection);
+		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
 	public static void setCollection(String id, String body) {
@@ -52,6 +57,7 @@ public class CollectionsUtils {
 			e.printStackTrace();
 		}
 		setRdfCollection(collection);
+		logger.info("Update collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
 	public static void collectionsValidation(String body) {
@@ -95,6 +101,7 @@ public class CollectionsUtils {
 			URI collectionURI = SesameUtils.collectionIRI(collectionsToValidate.getString(i).replaceAll(" ", "").toLowerCase());
 			collectionsToValidateList.add(collectionURI);
 			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validée"), SesameUtils.conceptGraph());
+			logger.info("Validate collection : " + collectionURI);
 		}
 		RepositoryGestion.objectsValidation(collectionsToValidateList, model);
 		Publication.publishCollection(collectionsToValidate);

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
@@ -26,6 +28,8 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class ConceptsUtils {
+	
+	final static Logger logger = LogManager.getLogger(ConceptsUtils.class);
 	
 	/**
 	 * Concepts
@@ -50,7 +54,7 @@ public class ConceptsUtils {
 			e.printStackTrace();
 		}
 		createRdfConcept(concept);
-		
+		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 		return concept.getId();
 	}
 	
@@ -66,11 +70,12 @@ public class ConceptsUtils {
 			e.printStackTrace();
 		}
 		createRdfConcept(concept);
+		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 	}
 	
 	public void conceptsValidation(String body) {
-		JSONArray collectionsToValidate = new JSONArray(body);
-		conceptsValidation(collectionsToValidate);
+		JSONArray conceptsToValidate = new JSONArray(body);
+		conceptsValidation(conceptsToValidate);
 	}
 	
 	/**
@@ -121,6 +126,7 @@ public class ConceptsUtils {
 			URI conceptURI = SesameUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validé"), SesameUtils.conceptGraph());
+			logger.info("Validate concept : " + conceptURI);
 		}
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
 		Publication.publishConcepts(conceptsToValidate);
