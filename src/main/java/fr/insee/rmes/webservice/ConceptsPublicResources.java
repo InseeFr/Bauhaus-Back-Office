@@ -33,7 +33,7 @@ public class ConceptsPublicResources {
 	ConceptsService conceptsService;
 	
 	@GET
-	@Path("/concepts")
+	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
@@ -41,7 +41,7 @@ public class ConceptsPublicResources {
 	}
 	
 	@GET
-	@Path("/concepts/search")
+	@Path("/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConceptsSearch() {
 		String jsonResultat = conceptsService.getConceptsSearch();
@@ -57,7 +57,7 @@ public class ConceptsPublicResources {
 	}
 	
 	@GET
-	@Path("/concepts/toValidate")
+	@Path("/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConceptsToValidate() {
 		String jsonResultat = conceptsService.getConceptsToValidate();
@@ -122,7 +122,7 @@ public class ConceptsPublicResources {
 	
 
 	@POST
-	@Path("/private/concept")
+	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setConcept(String body) {
 		String jsonResultat = conceptsService.setConcept(body);
@@ -130,14 +130,14 @@ public class ConceptsPublicResources {
 	}
 	
 	@PUT
-	@Path("/private/concept/{id}")
+	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setConcept(@PathParam("id") String id, String body) {
 		conceptsService.setConcept(id, body);
 	}
 	
 	@PUT
-	@Path("/private/concepts/validate")
+	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setConceptsValidation(String body) {
 		conceptsService.setConceptsValidation(body);
@@ -151,7 +151,7 @@ public class ConceptsPublicResources {
 	}
 	
 	@POST
-	@Path("/private/concept/send/{id}")
+	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	public boolean setConceptSend(@PathParam("id") String id, String body) {
@@ -159,21 +159,21 @@ public class ConceptsPublicResources {
 	}
 	
 	@POST
-	@Path("/private/collection")
+	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setCollection(String body) {
 		conceptsService.setCollection(body);
 	}
 	
 	@PUT
-	@Path("/private/collection/{id}")
+	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setCollection(@PathParam("id") String id, String body) {
 		conceptsService.setCollection(id, body);
 	}
 	
 	@PUT
-	@Path("/private/collections/validate")
+	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setCollectionsValidation(String body) {
 		conceptsService.setCollectionsValidation(body);
@@ -187,7 +187,7 @@ public class ConceptsPublicResources {
 	}
 	
 	@POST
-	@Path("/private/collection/send/{id}")
+	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	public boolean setCollectionSend(@PathParam("id") String id, String body) {
