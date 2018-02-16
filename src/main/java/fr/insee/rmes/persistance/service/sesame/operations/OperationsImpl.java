@@ -12,12 +12,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.service.sesame.operations.pojo.SerieForList;
+import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SerieForList;
 
 @Service
-public class SesameOperationsImpl implements OperationsContract {
+public class OperationsImpl implements OperationsService {
 
-	final static Logger logger = LogManager.getLogger(SesameOperationsImpl.class);
+	final static Logger logger = LogManager.getLogger(OperationsImpl.class);
 
 	@Autowired
 	RestTemplate restTemplate;

@@ -30,14 +30,14 @@ import fr.insee.archi.spoc.content.SendRequest.Recipients;
 import fr.insee.archi.spoc.content.ServiceConfiguration;
 import fr.insee.archi.spoc.content.Validate;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.service.sesame.export.Export;
 import fr.insee.rmes.persistance.service.sesame.export.Jasper;
+import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
 
 public class RmesMailSenderImpl implements MailSenderContract {
 		
 	public boolean sendMailConcept(String id, String body) {
 		Mail mail = prepareMail(body);
-		JSONObject json = new Export().getConceptData(id);
+		JSONObject json = new ConceptsExport().getConceptData(id);
 		Jasper jasper = new Jasper();
 		InputStream is = jasper.exportConcept(json, "Mail");
 		return sendMail(mail, is, json);
@@ -45,7 +45,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	
 	public boolean sendMailCollection(String id, String body) {
 		Mail mail = prepareMail(body);
-		JSONObject json = new Export().getCollectionData(id);
+		JSONObject json = new ConceptsExport().getCollectionData(id);
 		Jasper jasper = new Jasper();
 		InputStream is = jasper.exportCollection(json, "Mail");
 		return sendMail(mail, is, json);

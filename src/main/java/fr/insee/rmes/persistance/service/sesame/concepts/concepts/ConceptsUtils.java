@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.concepts;
+package fr.insee.rmes.persistance.service.sesame.concepts.concepts;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.publication.Publication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
@@ -129,7 +129,7 @@ public class ConceptsUtils {
 			logger.info("Validate concept : " + conceptURI);
 		}
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
-		Publication.publishConcepts(conceptsToValidate);
+		ConceptsPublication.publishConcepts(conceptsToValidate);
 	}
 
 }

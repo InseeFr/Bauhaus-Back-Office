@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.operations.pojo;
+package fr.insee.rmes.persistance.service.sesame.operations.series;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

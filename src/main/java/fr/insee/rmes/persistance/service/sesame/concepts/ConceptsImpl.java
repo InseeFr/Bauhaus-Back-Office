@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame;
+package fr.insee.rmes.persistance.service.sesame.concepts;
 
 import java.io.InputStream;
 
@@ -8,21 +8,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
 import fr.insee.rmes.persistance.mailSender.RmesMailSenderImpl;
-import fr.insee.rmes.persistance.service.ConceptsContract;
-import fr.insee.rmes.persistance.service.sesame.collections.CollectionsQueries;
-import fr.insee.rmes.persistance.service.sesame.collections.CollectionsUtils;
-import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsUtils;
-import fr.insee.rmes.persistance.service.sesame.export.Export;
+import fr.insee.rmes.persistance.service.ConceptsService;
+import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
+import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.persistance.service.sesame.export.Jasper;
+import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
-public class SesameConceptsImpl implements ConceptsContract {
+@Service
+public class ConceptsImpl implements ConceptsService {
 	
-	final static Logger logger = LogManager.getLogger(SesameConceptsImpl.class);
+	final static Logger logger = LogManager.getLogger(ConceptsImpl.class);
 	
 	@Override
 	public String getConcepts() {
@@ -126,7 +128,7 @@ public class SesameConceptsImpl implements ConceptsContract {
 	 * Export concept(s)
 	 */
 	public Response getConceptExport(String id, String acceptHeader) {
-		JSONObject concept = new Export().getConceptData(id);
+		JSONObject concept = new ConceptsExport().getConceptData(id);
 		Jasper jasper = new Jasper();
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
@@ -147,7 +149,7 @@ public class SesameConceptsImpl implements ConceptsContract {
 	 * Export collection(s)
 	 */
 	public Response getCollectionExport(String id, String acceptHeader) {
-		JSONObject collection = new Export().getCollectionData(id);
+		JSONObject collection = new ConceptsExport().getCollectionData(id);
 		Jasper jasper = new Jasper();
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);

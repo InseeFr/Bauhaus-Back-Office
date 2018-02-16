@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.publication;
+package fr.insee.rmes.persistance.service.sesame.concepts.publication;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +18,14 @@ import org.openrdf.repository.RepositoryResult;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.persistance.service.sesame.collections.CollectionsQueries;
-import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.ontologies.XKOS;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
-public class Publication {
+public class ConceptsPublication {
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 

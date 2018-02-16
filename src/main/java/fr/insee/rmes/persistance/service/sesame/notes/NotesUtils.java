@@ -10,7 +10,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 
-import fr.insee.rmes.persistance.service.sesame.concepts.Concept;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.Concept;
 import fr.insee.rmes.persistance.service.sesame.ontologies.EVOC;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PAV;

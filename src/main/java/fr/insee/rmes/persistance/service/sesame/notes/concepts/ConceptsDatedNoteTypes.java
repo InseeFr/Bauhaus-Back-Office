@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.notes;
+package fr.insee.rmes.persistance.service.sesame.notes.concepts;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.SKOS;

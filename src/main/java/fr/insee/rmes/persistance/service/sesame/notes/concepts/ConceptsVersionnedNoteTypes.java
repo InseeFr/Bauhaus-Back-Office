@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.notes;
+package fr.insee.rmes.persistance.service.sesame.notes.concepts;
 
 
 import java.util.HashMap;

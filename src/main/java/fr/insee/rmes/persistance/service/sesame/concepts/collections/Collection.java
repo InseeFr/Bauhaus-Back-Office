@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.collections;
+package fr.insee.rmes.persistance.service.sesame.concepts.collections;
 
 import java.time.LocalDateTime;
 import java.util.List;

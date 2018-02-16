@@ -8,7 +8,9 @@ import java.util.Set;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 
-import fr.insee.rmes.persistance.service.sesame.concepts.Concept;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.Concept;
+import fr.insee.rmes.persistance.service.sesame.notes.concepts.ConceptsDatedNoteTypes;
+import fr.insee.rmes.persistance.service.sesame.notes.concepts.ConceptsVersionnedNoteTypes;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class NoteManager {
