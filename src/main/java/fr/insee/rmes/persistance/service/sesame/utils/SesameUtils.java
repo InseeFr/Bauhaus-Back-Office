@@ -70,7 +70,7 @@ public class SesameUtils {
 	public static URI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = "";
 
-		if (Config.ENV.equals("prod")) {
+		if (Config.ENV.matches("prod|pre-prod")) {
 			LocalDate date = LocalDate.now();
 			String text = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
 			parsedDate = LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE).toString();
