@@ -16,12 +16,21 @@ public class NoAuthImpl implements SecurityManagerService {
 	
 	@Override
 	public String getAuthType() {
-		// TODO Auto-generated method stub
 		return AuthType.NO_AUTH.getAuth();
 	}
-
-	public String getAuth(String body) {
-		return Role.ADMIN.getRole();
+	
+	/**
+	 * NoAuthImpl 
+	 * @param body : empty
+	 * 
+	 * @return Admin role
+	 */
+	
+	public User postAuth(String body) {
+		User user = new User();
+		user.setStamp("XXXXXX");
+		user.setRole(Role.ADMIN);
+		return user;
 	}
 	
 }

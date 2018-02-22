@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.securityManager;
 
 import org.apache.logging.log4j.LogManager;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.conditions.FakeAuthCondition;
 import fr.insee.rmes.persistance.userRolesManager.Role;
+
 
 @Service
 @Conditional(value = FakeAuthCondition.class)
@@ -20,10 +22,19 @@ public class FakeAuthImpl implements SecurityManagerService {
 		return AuthType.FAKE_AUTH.getAuth();
 	}
 	
-	public String getAuth(String body) {
-		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) return Role.GESTIONNAIRE_CONCEPTS.getRole();
-		if (body.equals(Config.PASSWORD_PRODUCTEUR)) return Role.PROPRIETAIRE_CONCEPTS.getRole();
-		return "NONE";
+	/**
+	 * FakeAuthImpl 
+	 * @param body : password
+	 * 
+	 * @return Full functionality role or read only
+	 */
+	
+	public User postAuth(String body) {
+		User user = new User();
+		user.setStamp("XXXXXX");
+		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) user.setRole(Role.ADMIN);
+		else if (body.equals(Config.PASSWORD_PRODUCTEUR)) user.setRole(Role.GUEST); 
+		return user;
 	}
 
 }

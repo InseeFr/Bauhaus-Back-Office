@@ -4,6 +4,6 @@ public interface SecurityManagerService {
 	
 	public String getAuthType();
 	
-	public String getAuth(String body);
+	public User postAuth(String body);
 	
 }

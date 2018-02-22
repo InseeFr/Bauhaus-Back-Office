@@ -14,9 +14,19 @@ public class OpenIDConnectAuthImpl implements SecurityManagerService {
 	public String getAuthType() {
 		return AuthType.OPEN_ID_CONNECT_AUTH.getAuth();
 	}
+	
+	/**
+	 * OpenIDConnectAuthImpl 
+	 * 
+	 * TODO 
+	 */
 
-	public String getAuth(String body) {
-		return Role.ADMIN.getRole();
+	public User postAuth(String body) {
+		User user = new User();
+		user.setStamp("XXXXXX");
+		user.setRole(Role.ADMIN);
+		return user;
 	}
+	
 
 }

@@ -49,16 +49,9 @@ public class PublicResources {
 	
 	@Autowired 
 	UserRolesManagerService userRolesManagerService;
-	
+		
 	@GET
-	@Path("/auth/type")
-	@Produces(MediaType.TEXT_PLAIN)
-	public Response getAuthType() {
-		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.getAuthType()).build();
-	}
-	
-	@GET
-	@Path("/properties")
+	@Path("/init")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getProperties() {
 		JSONObject props = new JSONObject();
@@ -67,6 +60,7 @@ public class PublicResources {
             props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
             props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
             props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
+            props.put("authType", securityManagerService.getAuthType());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw e;
@@ -76,9 +70,10 @@ public class PublicResources {
 	
 	@POST
 	@Path("/auth")
-	@Produces(MediaType.TEXT_PLAIN)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAuth(String body) {
-		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.getAuth(body)).build();
+		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.postAuth(body)).build();
 	}
 	
 	@GET
