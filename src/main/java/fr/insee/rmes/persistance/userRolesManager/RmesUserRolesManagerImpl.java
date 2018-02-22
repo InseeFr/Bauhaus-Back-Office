@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.securityManager;
+package fr.insee.rmes.persistance.userRolesManager;
 
 import java.io.StringReader;
 import java.text.MessageFormat;
@@ -25,14 +25,16 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.securityManager.rmes.Igesa;
-import fr.insee.rmes.persistance.securityManager.rmes.JSONComparator;
+import fr.insee.rmes.persistance.userRolesManager.rmes.Igesa;
+import fr.insee.rmes.persistance.userRolesManager.rmes.JSONComparator;
 
-public class RmesSecurityManagerImpl implements SecurityManagerContract {
+@Service
+public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
-	final static Logger logger = LogManager.getLogger(RmesSecurityManagerImpl.class);
+	final static Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
 

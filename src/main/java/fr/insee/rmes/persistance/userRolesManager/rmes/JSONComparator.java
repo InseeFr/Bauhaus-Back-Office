@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.securityManager.rmes;
+package fr.insee.rmes.persistance.userRolesManager.rmes;
 
 import java.util.Comparator;
 

@@ -14,16 +14,17 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
-import fr.insee.rmes.persistance.securityManager.RmesSecurityManagerImpl;
-import fr.insee.rmes.persistance.securityManager.SecurityManagerContract;
+import fr.insee.rmes.persistance.securityManager.SecurityManagerService;
 import fr.insee.rmes.persistance.stamps.RmesStampsImpl;
 import fr.insee.rmes.persistance.stamps.StampsContract;
+import fr.insee.rmes.persistance.userRolesManager.UserRolesManagerService;
 
 /**
  * WebService class for resources of Concepts
@@ -42,6 +43,19 @@ import fr.insee.rmes.persistance.stamps.StampsContract;
 public class PublicResources {
 	
 	final static Logger logger = LogManager.getLogger(PublicResources.class);
+	
+	@Autowired 
+	SecurityManagerService securityManagerService;
+	
+	@Autowired 
+	UserRolesManagerService userRolesManagerService;
+	
+	@GET
+	@Path("/auth/type")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response getAuthType() {
+		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.getAuthType()).build();
+	}
 	
 	@GET
 	@Path("/properties")
@@ -64,8 +78,7 @@ public class PublicResources {
 	@Path("/auth")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getAuth(String body) {
-		SecurityManagerContract sm = new RmesSecurityManagerImpl();
-		return Response.status(HttpStatus.SC_OK).entity(sm.getAuth(body)).build();
+		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.getAuth(body)).build();
 	}
 	
 	@GET
@@ -95,31 +108,27 @@ public class PublicResources {
 	@Path("/roles")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getRoles() {
-		SecurityManagerContract sm = new RmesSecurityManagerImpl();
-		return Response.status(HttpStatus.SC_OK).entity(sm.getRoles()).build();
+		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getRoles()).build();
 	}
 	
 	@GET
 	@Path("/agents")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAgents() {
-		SecurityManagerContract sm = new RmesSecurityManagerImpl();
-		return Response.status(HttpStatus.SC_OK).entity(sm.getAgents()).build();
+		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getAgents()).build();
 	}
 	
 	@POST
 	@Path("/private/role/add")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setAddRole(String body) {
-		SecurityManagerContract sm = new RmesSecurityManagerImpl();
-		sm.setAddRole(body);
+		userRolesManagerService.setAddRole(body);
 	}
 	
 	@POST
 	@Path("/private/role/delete")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setDeleteRole(String body) {
-		SecurityManagerContract sm = new RmesSecurityManagerImpl();
-		sm.setDeleteRole(body);
+		userRolesManagerService.setDeleteRole(body);
 	}
 }

@@ -1,6 +1,6 @@
-package fr.insee.rmes.persistance.securityManager;
+package fr.insee.rmes.persistance.userRolesManager;
 
-public interface SecurityManagerContract {
+public interface UserRolesManagerService {
 	
 	public String getAuth(String body);
 	
