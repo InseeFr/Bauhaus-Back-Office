@@ -33,7 +33,7 @@ public class FakeAuthImpl implements SecurityManagerService {
 		User user = new User();
 		user.setStamp("XXXXXX");
 		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) user.setRole(Role.ADMIN);
-		else if (body.equals(Config.PASSWORD_PRODUCTEUR)) user.setRole(Role.GUEST); 
+		else if (body.equals(Config.PASSWORD_PRODUCTEUR)) user.setRole(Role.GUEST);
 		return user;
 	}
 

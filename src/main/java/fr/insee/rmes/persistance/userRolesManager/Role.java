@@ -3,9 +3,9 @@ package fr.insee.rmes.persistance.userRolesManager;
 public enum Role {
 
 	ADMIN("Administrateur_RMESGNCS"),
-	GESTIONNAIRE_CONCEPTS("Gestionnaire_ensemble_concepts_RMESGNCS"),
-	PROPRIETAIRE_COLLECTION("Proprietaire_collection_concepts_RMESGNCS"),
-	PROPRIETAIRE_CONCEPTS("Proprietaire_concept_RMESGNCS"),
+	CONCEPTS_CONTRIBUTOR("Gestionnaire_ensemble_concepts_RMESGNCS"),
+	COLLECTIONS_CREATOR("Proprietaire_collection_concepts_RMESGNCS"),
+	CONCEPTS_CREATOR("Proprietaire_concept_RMESGNCS"),
 	GUEST("GUEST");
 
 	private String role = "";
