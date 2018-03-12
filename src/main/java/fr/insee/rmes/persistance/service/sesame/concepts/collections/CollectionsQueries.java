@@ -33,11 +33,12 @@ public class CollectionsQueries {
 	}
 	
 	public static String collectionsToValidateQuery() {
-		return "SELECT DISTINCT ?id ?label \n"
+		return "SELECT DISTINCT ?id ?label ?creator \n"
 			+ "WHERE { \n"
 			+ "?collection rdf:type skos:Collection . \n"
 			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
 			+ "?collection dcterms:title ?label . \n"
+			+ "?collection dc:creator ?creator . \n"
 			+ "?collection insee:isValidated 'Provisoire' . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') } \n"
 			+ "ORDER BY ?label ";	
