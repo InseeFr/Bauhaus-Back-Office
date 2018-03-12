@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.0.final using JasperReports Library version 6.5.0  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="export_concept" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="fe741249-aff5-4c91-ab3c-723e3cb156eb">
-	<parameter name="prefLabelLg1" class="java.lang.String">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-	</parameter>
-	<parameter name="prefLabelLg2" class="java.lang.String">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-	</parameter>
+	<parameter name="prefLabelLg1" class="java.lang.String"/>
+	<parameter name="prefLabelLg2" class="java.lang.String"/>
 	<parameter name="descriptionLg1" class="java.lang.String"/>
 	<parameter name="descriptionLg2" class="java.lang.String"/>
 	<parameter name="membersLg1" class="java.lang.String"/>

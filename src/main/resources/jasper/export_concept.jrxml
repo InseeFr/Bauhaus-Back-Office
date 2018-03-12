@@ -15,6 +15,8 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<property name="net.sf.jasperreports.export.odt.flexible.row.height" value="true"/>
+	<property name="net.sf.jasperreports.export.ods.flexible.row.height" value="true"/>
 	<parameter name="prefLabelLg1" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -373,10 +375,8 @@
 			</textField>
 		</band>
 	</detail>
-	<pageFooter>
-		<band height="50" splitType="Immediate">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+	<lastPageFooter>
+		<band height="50">
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="25" isPrintWhenDetailOverflows="true" forecolor="#234CA5" uuid="6c6a9723-db63-4891-8470-d49b6faec701"/>
 				<textElement verticalAlignment="Middle">
@@ -385,9 +385,9 @@
 				<text><![CDATA[Unité qualité]]></text>
 			</staticText>
 			<image hAlign="Right">
-				<reportElement positionType="Float" x="0" y="25" width="555" height="25" uuid="5681a403-be19-40ac-a855-d553f50d6c94"/>
+				<reportElement positionType="Float" x="0" y="0" width="555" height="50" uuid="5681a403-be19-40ac-a855-d553f50d6c94"/>
 				<imageExpression><![CDATA["jasper/resources/insee.png"]]></imageExpression>
 			</image>
 		</band>
-	</pageFooter>
+	</lastPageFooter>
 </jasperReport>
