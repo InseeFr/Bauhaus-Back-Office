@@ -20,7 +20,7 @@ public class OpenIDConnectAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (env.equals("pre-prod") || env.equals("prod"))
+		if (/*env.equals("pre-prod") || env.equals("prod")*/env.equals("temp"))
 			return true;
 		return false;
 	}
