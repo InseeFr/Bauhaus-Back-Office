@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -15,13 +16,16 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.data.JsonDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
@@ -45,7 +49,7 @@ public class Jasper {
 	public InputStream exportConcept(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_concept.jrxml");
 		try {
-			return export(json, is, acceptHeader);
+			return exportSimpleJson(json, is, acceptHeader);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
@@ -56,7 +60,17 @@ public class Jasper {
 	public InputStream exportCollection(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_collection.jrxml");
 		try {
-			return export(json, is, acceptHeader);
+			return exportSimpleJson(json, is, acceptHeader);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public InputStream exportVariableBook(JSONObject json, String acceptHeader) {
+		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_varBook.jrxml");
+		try {
+			return exportCompleteJson(json, is, acceptHeader);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -71,8 +85,7 @@ public class Jasper {
 	 * @return 
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static InputStream export(JSONObject json, InputStream is, String acceptHeader) throws Exception {
+	private static InputStream exportSimpleJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Map<String, Object> jasperParams = null;
@@ -83,21 +96,41 @@ public class Jasper {
 			e.printStackTrace();
 		}
 
-		getJrProperties();// TODO on s'en sert vraiment de ça ???
+		getJrProperties();
+		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, null);
+		InputStream in = new ByteArrayInputStream(output.toByteArray());
+		return in;
+	}
 
+	private static InputStream exportCompleteJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
+		Map<String, Object> jasperParams = new HashMap<>();
+		jasperParams.put("PATH_JASPER",
+				"D:\\rco0ck\\Mes Documents\\eclipse_workspace\\Gncs-Back-Office\\src\\main\\resources\\jasper\\");
+		InputStream jsonInput = new ByteArrayInputStream(json.toString().getBytes());
+		JRDataSource datasource = new JsonDataSource(jsonInput);
+		getJrProperties();
+		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, datasource);
+		InputStream in = new ByteArrayInputStream(output.toByteArray());
+		return in;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static ByteArrayOutputStream exportReport(InputStream is, String acceptHeader,
+			Map<String, Object> jasperParams, JRDataSource dataSource) throws JRException {
+
+		if (dataSource == null) {
+			dataSource = new JREmptyDataSource();
+		}
 		JasperDesign jasperReportDesign = JRXmlLoader.load(is);
 		JasperReport jasperReport = JasperCompileManager.compileReport(jasperReportDesign);
-		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, jasperParams, new JREmptyDataSource());
+		JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, jasperParams, dataSource);
 
 		Exporter exporter = getExporter(acceptHeader, jasperPrint);
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		OutputStreamExporterOutput exporterOutput = new SimpleOutputStreamExporterOutput(output);
 		exporter.setExporterOutput(exporterOutput);
 		exporter.exportReport();
-
-		InputStream in = new ByteArrayInputStream(output.toByteArray());
-
-		return in;
+		return output;
 	}
 
 	/**
@@ -124,7 +157,7 @@ public class Jasper {
 				config = new SimpleXlsReportConfiguration();
 				break;
 			case "application/vnd.oasis.opendocument.text":// ODT
-			case "Mail":	
+			case "Mail":
 				exporter = new JROdtExporter();
 				config = new SimpleOdtReportConfiguration();
 				break;
@@ -140,9 +173,6 @@ public class Jasper {
 		return exporter;
 	}
 
-	/**
-	 * TODO est-ce utile ???
-	 */
 	private static void getJrProperties() {
 		String defaultPDFFont = "Arial";
 
@@ -152,76 +182,15 @@ public class Jasper {
 		jrPropertiesUtil.setProperty("net.sf.jasperreports.default.font.name", defaultPDFFont);
 	}
 
-	/*
-		private static InputStream exportOld(JSONObject json, InputStream is, String acceptHeader) throws Exception {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-			Map<String, Object> jasperParams = null;
-			try {
-				jasperParams = mapper.readValue(json.toString(), new TypeReference<Map<String, Object>>() {
-				});
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-	
-			getJrProperties();
-	
-			JasperDesign jasperReportDesign = JRXmlLoader.load(is);
-			JasperReport jasperReport = JasperCompileManager.compileReport(jasperReportDesign);
-			JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, jasperParams, new JREmptyDataSource());
-	
-			// Export IS
-			// Exporter<ExporterInput, PdfReportConfiguration,
-			// PdfExporterConfiguration, OutputStreamExporterOutput> exporter = new
-			// JRPdfExporter();
-			// exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-			// SimplePdfReportConfiguration pdfReportConfiguration = new
-			// SimplePdfReportConfiguration();
-			// exporter.setConfiguration(pdfReportConfiguration);
-	
-			Exporter exporter = getExporterOld(acceptHeader, jasperPrint);
-			exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-			SimpleReportExportConfiguration config = getReportOld(acceptHeader);
-			exporter.setConfiguration(config);
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			OutputStreamExporterOutput exporterOutput = new SimpleOutputStreamExporterOutput(output);
-			exporter.setExporterOutput(exporterOutput);
-			exporter.exportReport();
-			InputStream in = new ByteArrayInputStream(output.toByteArray());
-	
-			return in;
-		}
-	
-		@SuppressWarnings("rawtypes")
-		private static Exporter getExporterOld(String acceptHeader, JasperPrint jasperPrint) {
-			if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
-				System.out.println("ok");
-				return new JROdtExporter();
-			} else if (acceptHeader.equals("application/octet-stream"))
-				return new JRPdfExporter();
-			// default --> Odt
-			else
-				return new JROdtExporter();
-		}
-	
-		private static SimpleReportExportConfiguration getReportOld(String acceptHeader) {
-			if (acceptHeader.equals("application/vnd.oasis.opendocument.text"))
-				return new SimpleOdtReportConfiguration();
-			else if (acceptHeader.equals("application/octet-stream"))
-				return new SimplePdfReportConfiguration();
-			// default --> Odt
-			else
-				return new SimpleOdtReportConfiguration();
-		}
-	*/
 	public String getExtension(String acceptHeader) {
-		if (acceptHeader.equals("application/vnd.oasis.opendocument.text"))
+		if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
 			return ".odt";
-		else if (acceptHeader.equals("application/octet-stream"))
+		} else if (acceptHeader.equals("application/octet-stream")) {
 			return ".pdf";
-		// default --> Odt
-		else
+			// default --> Odt
+		} else {
 			return ".odt";
+		}
 	}
 
 }

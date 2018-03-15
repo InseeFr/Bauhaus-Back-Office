@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_A4_subr" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isFloatColumnFooter="true" uuid="3d5aa32f-44a2-4fcb-b7fe-dc21f9dc3f5f">
+	<queryString language="JSON">
+		<![CDATA[]]>
+	</queryString>
+	<field name="Label" class="java.lang.String">
+		<fieldDescription><![CDATA[Label.Content.content]]></fieldDescription>
+	</field>
+	<field name="ID" class="java.lang.String">
+		<fieldDescription><![CDATA[UserID.content]]></fieldDescription>
+	</field>
+	<detail>
+		<band height="31">
+			<textField>
+				<reportElement x="0" y="0" width="560" height="30" uuid="d6c5d88c-72d0-4634-b595-04e3cbf4e94b"/>
+				<textFieldExpression><![CDATA[$F{ID} + " - " +$F{Label}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
