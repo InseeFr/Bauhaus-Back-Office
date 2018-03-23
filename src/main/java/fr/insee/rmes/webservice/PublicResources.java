@@ -60,6 +60,8 @@ public class PublicResources {
             props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
             props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
             props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
+            props.put("lg1", Config.LG1);
+            props.put("lg2", Config.LG2);
             props.put("authType", securityManagerService.getAuthType());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
