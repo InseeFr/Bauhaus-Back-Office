@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.insee.rmes</groupId>
-	<artifactId>bauhaus-BO</artifactId>
+	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
 	<version>1.1.2</version>
 	<name>Bauhaus-Back-Office</name>
@@ -19,6 +19,10 @@
 		<url>http://www.insee.fr</url>
 	</organization>
 	<developers>
+		<developer>
+			<name>Alice Lambois</name>
+			<email>alice.lambois@insee.fr</email>
+		</developer>
 		<developer>
 			<name>Nicolas Laval</name>
 			<email>nicolas.laval@insee.fr</email>
