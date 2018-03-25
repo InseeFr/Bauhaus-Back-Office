@@ -20,7 +20,7 @@ public class BasicAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (env.equals("qf") || env.equals("pre-prod") || env.equals("prod"))
+		if (env.equals("qf"))
 			return true;
 		return false;
 	}
