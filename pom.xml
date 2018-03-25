@@ -2,12 +2,31 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.insee.rmes</groupId>
-	<artifactId>Gncs-Back-Office</artifactId>
+	<artifactId>bauhaus-BO</artifactId>
 	<packaging>war</packaging>
 	<version>1.1.2</version>
-	<name>gncs</name>
+	<name>Bauhaus-Back-Office</name>
+	<description>Back-office services for Bauhaus</description>
+	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licences/MIT</url>
+		</license>
+	</licenses>
+	<organization>
+		<name>INSEE</name>
+		<url>http://www.insee.fr</url>
+	</organization>
+	<developers>
+		<developer>
+			<name>Nicolas Laval</name>
+			<email>nicolas.laval@insee.fr</email>
+		</developer>
+	</developers>
 
 	<properties>
+		<final.war.name>bauhaus</final.war.name>
 		<jersey.version>2.19</jersey.version>
 		<jackson.version>2.8.7</jackson.version>
 		<sesame.version>2.7.16</sesame.version>

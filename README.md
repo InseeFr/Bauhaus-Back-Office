@@ -1,3 +1,5 @@
-# Gncs-Back-Office
+# Bauhaus-Back-Office
 
-Rest Endpoints and services Integration used by [Gncs](https://github.com/NicoLaval/Gncs)
+Rest Endpoints and services Integration used by [Bauhaus](https://github.com/InseeFr/Bauhaus)
+
+Upcoming documentation ...
