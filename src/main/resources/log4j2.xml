@@ -2,8 +2,8 @@
 <configuration>
 	<appenders>
 
-		<RollingFile name="RollingFile" fileName="D://logs/gncs.log"
-			filePattern="D://logs/gncs-%d{MM-dd-yyyy}-%i.log.gz"
+		<RollingFile name="RollingFile" fileName="D://logs/bauhaus.log"
+			filePattern="D://logs/bauhaus-%d{MM-dd-yyyy}-%i.log.gz"
 			ignoreExceptions="false">
 			<PatternLayout>
 				<Pattern>%d{yyyy-mm-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
