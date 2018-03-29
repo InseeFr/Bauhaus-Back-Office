@@ -40,7 +40,7 @@ public class Log4j2ServletContextListener implements ServletContextListener {
 
 	private void getEnvironmentProperties() throws IOException {
 		Properties props = this.getProperties();
-		String log4JExternalFile = props.getProperty("fr.insee.rmesgncs.log.configuration");
+		String log4JExternalFile = props.getProperty("fr.insee.rmes.bauhaus.log.configuration");
 		this.log4j2ConfigFile = "log4j2.xml";
 		File f = new File(log4JExternalFile);
 		if (f.exists() && !f.isDirectory()) {
@@ -52,14 +52,14 @@ public class Log4j2ServletContextListener implements ServletContextListener {
         Properties props = new Properties();
         props.load(getClass()
                 .getClassLoader()
-                .getResourceAsStream("gncs-dev.properties"));
-        File f = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "gncs-dev.properties"));
+                .getResourceAsStream("bauhaus-dev.properties"));
+        File f = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-dev.properties"));
         if(f.exists() && !f.isDirectory()) {
             FileReader r = new FileReader(f);
             props.load(r);
             r.close();
         }
-        File f2 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "gncs-qf.properties"));
+        File f2 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-qf.properties"));
         if(f2.exists() && !f2.isDirectory()) {
             FileReader r2 = new FileReader(f2);
             props.load(r2);
