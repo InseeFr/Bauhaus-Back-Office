@@ -29,14 +29,14 @@ public class NoAuthCondition implements Condition {
         Properties props = new Properties();
         props.load(getClass()
                 .getClassLoader()
-                .getResourceAsStream("gncs-dev.properties"));
-        File f = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "gncs-dev.properties"));
+                .getResourceAsStream("bauhaus-dev.properties"));
+        File f = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-dev.properties"));
         if(f.exists() && !f.isDirectory()) {
             FileReader r = new FileReader(f);
             props.load(r);
             r.close();
         }
-        File f2 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "gncs-qf.properties"));
+        File f2 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-qf.properties"));
         if(f2.exists() && !f2.isDirectory()) {
             FileReader r2 = new FileReader(f2);
             props.load(r2);
@@ -48,7 +48,7 @@ public class NoAuthCondition implements Condition {
             props.load(r3);
             r3.close();
         }
-        return props.getProperty("fr.insee.rmes.gncs.env");
+        return props.getProperty("fr.insee.rmes.bauhaus.env");
     }
 
 }

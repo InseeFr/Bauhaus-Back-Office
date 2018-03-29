@@ -24,8 +24,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@PropertySource(value = { "classpath:gncs-core.properties", "classpath:gncs-dev.properties",
-		"file:${catalina.base}/webapps/gncs-dev.properties", "file:${catalina.base}/webapps/gncs-qf.properties",
+@PropertySource(value = { "classpath:bauhaus-core.properties", "classpath:bauhaus-dev.properties",
+		"file:${catalina.base}/webapps/bauhaus-dev.properties", "file:${catalina.base}/webapps/bauhaus-qf.properties",
 		"file:${catalina.base}/webapps/production.properties", }, ignoreResourceNotFound = true)
 public class ApplicationContext {
 
@@ -51,51 +51,51 @@ public class ApplicationContext {
 	@PostConstruct
 	public void setUp() {
 
-		Config.APP_HOST = env.getProperty("fr.insee.rmes.gncs.concepts.appHost");
+		Config.APP_HOST = env.getProperty("fr.insee.rmes.bauhaus.concepts.appHost");
 		
-		Config.ENV = env.getProperty("fr.insee.rmes.gncs.env");
+		Config.ENV = env.getProperty("fr.insee.rmes.bauhaus.env");
 
-		Config.REQUIRES_SSL = Boolean.valueOf(env.getProperty("fr.insee.rmes.gncs.force.ssl"));
+		Config.REQUIRES_SSL = Boolean.valueOf(env.getProperty("fr.insee.rmes.bauhaus.force.ssl"));
 
-		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.gncs.concepts.defaultContributor");
-		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.gncs.concepts.defaultMailSender");
-		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.gncs.concepts.maxLengthScopeNote");
+		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultContributor");
+		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultMailSender");
+		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote");
 
-		Config.LG1 = env.getProperty("fr.insee.rmes.gncs.lg1");
-		Config.LG2 = env.getProperty("fr.insee.rmes.gncs.lg2");
+		Config.LG1 = env.getProperty("fr.insee.rmes.bauhaus.lg1");
+		Config.LG2 = env.getProperty("fr.insee.rmes.bauhaus.lg2");
 
-		Config.PASSWORD_GESTIONNAIRE = env.getProperty("fr.insee.rmes.gncs.gestionnaire.password");
-		Config.PASSWORD_PRODUCTEUR = env.getProperty("fr.insee.rmes.gncs.producteur.password");
+		Config.PASSWORD_GESTIONNAIRE = env.getProperty("fr.insee.rmes.bauhaus.gestionnaire.password");
+		Config.PASSWORD_PRODUCTEUR = env.getProperty("fr.insee.rmes.bauhaus.producteur.password");
 
-		Config.CONCEPTS_GRAPH = env.getProperty("fr.insee.rmes.gncs.concepts.graph");
-		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.gncs.concepts.scheme");
-		Config.CONCEPTS_BASE_URI = env.getProperty("fr.insee.rmes.gncs.concepts.baseURI");
-		Config.COLLECTIONS_BASE_URI = env.getProperty("fr.insee.rmes.gncs.collections.baseURI");
+		Config.CONCEPTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.concepts.graph");
+		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.bauhaus.concepts.scheme");
+		Config.CONCEPTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.concepts.baseURI");
+		Config.COLLECTIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.collections.baseURI");
 
-		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.gncs.sesame.gestion.sesameServer");
-		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.gncs.sesame.gestion.repository");
-		Config.BASE_URI_GESTION = env.getProperty("fr.insee.rmes.gncs.sesame.gestion.baseURI");
+		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
+		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.repository");
+		Config.BASE_URI_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.baseURI");
 
-		Config.SESAME_SERVER_PUBLICATION = env.getProperty("fr.insee.rmes.gncs.sesame.publication.sesameServer");
-		Config.REPOSITORY_ID_PUBLICATION = env.getProperty("fr.insee.rmes.gncs.sesame.publication.repository");
-		Config.BASE_URI_PUBLICATION = env.getProperty("fr.insee.rmes.gncs.sesame.publication.baseURI");
+		Config.SESAME_SERVER_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.sesameServer");
+		Config.REPOSITORY_ID_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.repository");
+		Config.BASE_URI_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.baseURI");
 
-		Config.BASE_URI_METADATA_API = env.getProperty("fr.insee.rmes.gncs.metadata.api.baseURI");
+		Config.BASE_URI_METADATA_API = env.getProperty("fr.insee.rmes.bauhaus.metadata.api.baseURI");
 
-		Config.SPOC_SERVICE_URL = env.getProperty("fr.insee.rmes.gncs.spoc.url");
-		Config.SPOC_USER = env.getProperty("fr.insee.rmes.gncs.spoc.user");
-		Config.SPOC_PASSWORD = env.getProperty("fr.insee.rmes.gncs.spoc.password");
+		Config.SPOC_SERVICE_URL = env.getProperty("fr.insee.rmes.bauhaus.spoc.url");
+		Config.SPOC_USER = env.getProperty("fr.insee.rmes.bauhaus.spoc.user");
+		Config.SPOC_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.spoc.password");
 
-		Config.BROKER_URL = env.getProperty("fr.insee.rmes.gncs.broker.url");
-		Config.BROKER_USER = env.getProperty("fr.insee.rmes.gncs.broker.user");
-		Config.BROKER_PASSWORD = env.getProperty("fr.insee.rmes.gncs.broker.password");
+		Config.BROKER_URL = env.getProperty("fr.insee.rmes.bauhaus.broker.url");
+		Config.BROKER_USER = env.getProperty("fr.insee.rmes.bauhaus.broker.user");
+		Config.BROKER_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.broker.password");
 
-		Config.LDAP_URL = env.getProperty("fr.insee.rmes.gncs.ldap.url");
+		Config.LDAP_URL = env.getProperty("fr.insee.rmes.bauhaus.ldap.url");
 
-		Config.IGESA_URL = env.getProperty("fr.insee.rmes.gncs.igesa.url");
-		Config.IGESA_APP_ID = env.getProperty("fr.insee.rmes.gncs.igesa.id");
-		Config.IGESA_USER = env.getProperty("fr.insee.rmes.gncs.igesa.user");
-		Config.IGESA_PASSWORD = env.getProperty("fr.insee.rmes.gncs.igesa.password");
+		Config.IGESA_URL = env.getProperty("fr.insee.rmes.bauhaus.igesa.url");
+		Config.IGESA_APP_ID = env.getProperty("fr.insee.rmes.bauhaus.igesa.id");
+		Config.IGESA_USER = env.getProperty("fr.insee.rmes.bauhaus.igesa.user");
+		Config.IGESA_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.igesa.password");
 
 	}
 
