@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="subr_varBook_groupDescription" pageWidth="520" pageHeight="842" columnWidth="500" leftMargin="20" rightMargin="0" topMargin="0" bottomMargin="10" uuid="3cc6e17c-b97e-49f1-835c-b59770cc3320">
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<queryString language="JSON">
+		<![CDATA[]]>
+	</queryString>
+	<field name="Label" class="java.lang.String">
+		<fieldDescription><![CDATA[Category.r:Label.r:Content.content]]></fieldDescription>
+	</field>
+	<field name="Code" class="java.lang.String">
+		<fieldDescription><![CDATA[r:UserID.content]]></fieldDescription>
+	</field>
+	<detail>
+		<band height="20">
+			<textField>
+				<reportElement x="0" y="0" width="500" height="20" uuid="d6c5d88c-72d0-4634-b595-04e3cbf4e94b"/>
+				<textElement markup="html"/>
+				<textFieldExpression><![CDATA["CODE " + $F{Code} + " - " +$F{Label}.replaceAll( "&apos;", "'" )]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
