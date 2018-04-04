@@ -216,18 +216,6 @@
 			<version>${jackson.version}</version>
 		</dependency>
 
-		<!-- SPOC to sending insee mail -->
-		<dependency>
-			<groupId>fr.insee.archi</groupId>
-			<artifactId>spoc-core</artifactId>
-			<version>0.3</version>
-			<exclusions>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.core</groupId>
 			<artifactId>jersey-client</artifactId>
