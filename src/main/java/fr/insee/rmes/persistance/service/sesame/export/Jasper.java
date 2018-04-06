@@ -51,8 +51,7 @@ public class Jasper {
 		try {
 			return exportSimpleJson(json, is, acceptHeader);
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -62,7 +61,7 @@ public class Jasper {
 		try {
 			return exportSimpleJson(json, is, acceptHeader);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -72,7 +71,7 @@ public class Jasper {
 		try {
 			return exportCompleteJson(json, is, acceptHeader);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
@@ -114,7 +113,7 @@ public class Jasper {
 		return in;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static ByteArrayOutputStream exportReport(InputStream is, String acceptHeader,
 			Map<String, Object> jasperParams, JRDataSource dataSource) throws JRException {
 
