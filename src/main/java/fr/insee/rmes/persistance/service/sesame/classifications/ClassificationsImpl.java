@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import fr.insee.rmes.persistance.service.sesame.classifications.families.FamiliesQueries;
+import fr.insee.rmes.persistance.service.sesame.classifications.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
 @Service
@@ -17,6 +18,12 @@ public class ClassificationsImpl implements ClassificationsService {
 	public String getFamilies() {
 		logger.info("Starting to get classification families");
 		return RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+	}
+	
+	@Override
+	public String getSeries() {
+		logger.info("Starting to get classifications series");
+		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
 	}
 	
 }
