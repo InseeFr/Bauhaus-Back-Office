@@ -22,14 +22,13 @@ import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.archi.spoc.content.MessageTemplate;
-import fr.insee.archi.spoc.content.NameValuePairType;
-import fr.insee.archi.spoc.content.Recipient;
-import fr.insee.archi.spoc.content.SendRequest;
-import fr.insee.archi.spoc.content.SendRequest.Recipients;
-import fr.insee.archi.spoc.content.ServiceConfiguration;
-import fr.insee.archi.spoc.content.Validate;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.mailSender.rmes.MessageTemplate;
+import fr.insee.rmes.persistance.mailSender.rmes.NameValuePairType;
+import fr.insee.rmes.persistance.mailSender.rmes.Recipient;
+import fr.insee.rmes.persistance.mailSender.rmes.SendRequest;
+import fr.insee.rmes.persistance.mailSender.rmes.SendRequest.Recipients;
+import fr.insee.rmes.persistance.mailSender.rmes.ServiceConfiguration;
 import fr.insee.rmes.persistance.service.sesame.export.Jasper;
 import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
 
@@ -74,9 +73,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		// création des destinataires
 		Recipient destinataire1 = new Recipient();
 		destinataire1.setAddress(mail.getRecipient());
-		destinataire1.setAttachments(attachments);
+		destinataire1.getAttachments().add(fileName);
 		Recipients destinataires = new Recipients();
-		destinataires.getRecipients().add(destinataire1);
+		destinataires.getRecipient().add(destinataire1);
 
 		// préparation de la requête à envoyer
 		SendRequest request = new SendRequest();
@@ -85,7 +84,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 		// Contenu html
 		NameValuePairType nameValuePairTypeSmtpFrom = new NameValuePairType();
-		nameValuePairTypeSmtpFrom.setName(Validate.SMTPFROM_PROPERTY);
+		nameValuePairTypeSmtpFrom.setName("mail.smtp.from");
 		nameValuePairTypeSmtpFrom.setValue(mail.getSender());
 		ServiceConfiguration config = new ServiceConfiguration();
 		config.getSMTPProperties().add(nameValuePairTypeSmtpFrom);
