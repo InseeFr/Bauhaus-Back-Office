@@ -9,14 +9,14 @@
 		<fieldDescription><![CDATA[Category.r:Label.r:Content.content]]></fieldDescription>
 	</field>
 	<field name="Code" class="java.lang.String">
-		<fieldDescription><![CDATA[r:UserID.content]]></fieldDescription>
+		<fieldDescription><![CDATA[r:Value]]></fieldDescription>
 	</field>
 	<detail>
 		<band height="20">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="0" width="500" height="20" uuid="d6c5d88c-72d0-4634-b595-04e3cbf4e94b"/>
 				<textElement markup="html"/>
-				<textFieldExpression><![CDATA["CODE " + $F{Code} + " - " +$F{Label}.replaceAll( "&apos;", "'" )]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Code " + $F{Code} + " - " +$F{Label}.replaceAll( "&apos;", "'" )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
