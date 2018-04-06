@@ -6,4 +6,6 @@ public interface ClassificationsService {
 	
 	public String getSeries() throws Exception;
 	
+	public String getClassifications() throws Exception;
+
 }

@@ -39,5 +39,12 @@ public class ClassificationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassifications() throws Exception {
+		String jsonResultat = classificationsService.getClassifications();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }
