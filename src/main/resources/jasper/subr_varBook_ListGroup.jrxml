@@ -10,6 +10,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="PATH_JASPER" class="java.lang.String"/>
 	<queryString language="JSON">
 		<![CDATA[]]>
 	</queryString>
@@ -17,15 +18,28 @@
 		<fieldDescription><![CDATA[r:Label.r:Content.content]]></fieldDescription>
 	</field>
 	<field name="ID" class="java.lang.String">
-		<fieldDescription><![CDATA[r:UserID.content]]></fieldDescription>
+		<fieldDescription><![CDATA[RepresentedVariableGroupName.r:String.content]]></fieldDescription>
+	</field>
+	<field name="RepresentedVariableGroup" class="java.lang.String">
+		<fieldDescription><![CDATA[RepresentedVariableGroup]]></fieldDescription>
 	</field>
 	<detail>
 		<band height="20">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="0" width="530" height="20" uuid="d6c5d88c-72d0-4634-b595-04e3cbf4e94b"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{ID} + " - " +$F{Label}]]></textFieldExpression>
 			</textField>
+		</band>
+		<band height="20">
+			<subreport>
+				<reportElement x="20" y="0" width="510" height="20" isRemoveLineWhenBlank="true" uuid="12c07a29-e46d-4d18-a316-6197fe553f10"/>
+				<subreportParameter name="PATH_JASPER">
+					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("RepresentedVariableGroup")]]></dataSourceExpression>
+				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_ListGroup.jrxml")]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 </jasperReport>

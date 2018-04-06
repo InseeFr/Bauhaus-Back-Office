@@ -20,7 +20,7 @@
 		<fieldDescription><![CDATA[r:ConceptReference.r:Content.content]]></fieldDescription>
 	</field>
 	<field name="Population" class="java.lang.String">
-		<fieldDescription><![CDATA[r:UniverseReference.r:Content.content]]></fieldDescription>
+		<fieldDescription><![CDATA[Universe.r:Label.r:Content.content]]></fieldDescription>
 	</field>
 	<field name="TypeText" class="java.lang.Boolean">
 		<fieldDescription><![CDATA[r:TextRepresentation]]></fieldDescription>
@@ -62,7 +62,7 @@
 		<fieldDescription><![CDATA[r:CodeRepresentation.CodeList.CodeListName.r:String.content]]></fieldDescription>
 	</field>
 	<field name="DescriptionListeCode" class="java.lang.String">
-		<fieldDescription><![CDATA[r:CodeRepresentation.CodeList.r:UserID.content]]></fieldDescription>
+		<fieldDescription><![CDATA[r:CodeRepresentation.CodeList.CodeListName.r:String.content]]></fieldDescription>
 	</field>
 	<variable name="Type" class="java.lang.String">
 		<variableExpression><![CDATA[($F{TypeText}!=null)?"Texte": (($F{TypeNumeric} !=null)?"Numérique":($F{TypeDate} !=null)?"Date":($F{TypeListCode} !=null)?"Liste de codes":"Inconnu")]]></variableExpression>
@@ -83,7 +83,7 @@
 				<textFieldExpression><![CDATA["Variable "+ $F{Nom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="100" y="53" width="430" height="20" uuid="e6380802-6ddf-49a1-95a2-525ab054218c"/>
+				<reportElement x="100" y="53" width="430" height="20" isRemoveLineWhenBlank="true" uuid="e6380802-6ddf-49a1-95a2-525ab054218c"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{Description}]]></textFieldExpression>
 			</textField>
@@ -110,7 +110,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="0" y="0" width="100" height="20" uuid="fdaf75a0-eac0-4fde-8df0-998a98a4706e"/>
-				<text><![CDATA[ConceptAssocie]]></text>
+				<text><![CDATA[Concept associé]]></text>
 			</staticText>
 		</band>
 		<band height="20">
@@ -134,7 +134,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="0" y="0" width="100" height="20" uuid="84e7fe4e-78f3-4e74-a808-b84d650c5261"/>
-				<text><![CDATA[Type de représentation]]></text>
+				<text><![CDATA[Type]]></text>
 			</staticText>
 		</band>
 		<band height="80">
@@ -150,7 +150,7 @@
 				<reportElement x="10" y="0" width="100" height="20" isRemoveLineWhenBlank="true" uuid="79b968f0-6357-4296-80a1-9d7d7402e5ee">
 					<printWhenExpression><![CDATA[$F{LongueurMin}!= null]]></printWhenExpression>
 				</reportElement>
-				<text><![CDATA[LongueurMin]]></text>
+				<text><![CDATA[Longueur minimale]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="110" y="20" width="420" height="20" isRemoveLineWhenBlank="true" uuid="20f4f54d-3d19-4844-a0c2-20ceb5cea4a9">
@@ -163,7 +163,7 @@
 				<reportElement x="10" y="20" width="100" height="20" isRemoveLineWhenBlank="true" uuid="e9960e1b-80d8-4e88-8144-c6ac2e52929f">
 					<printWhenExpression><![CDATA[$F{LongueurMax}!= null]]></printWhenExpression>
 				</reportElement>
-				<text><![CDATA[LongueurMax]]></text>
+				<text><![CDATA[Longueur maximale]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="110" y="40" width="420" height="20" isRemoveLineWhenBlank="true" uuid="da27b71b-e4c9-45bd-aba9-dc0d3e327ea7">
@@ -176,7 +176,7 @@
 				<reportElement x="10" y="40" width="100" height="20" isRemoveLineWhenBlank="true" uuid="fc450623-4e76-4ec3-a2ef-acc0303e37f2">
 					<printWhenExpression><![CDATA[$F{ExprReguliere}!=null]]></printWhenExpression>
 				</reportElement>
-				<text><![CDATA[ExprReguliere]]></text>
+				<text><![CDATA[Expression régulière]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="110" y="60" width="420" height="20" isRemoveLineWhenBlank="true" uuid="6b131737-8db2-40d5-bb53-74eaf268447d">
@@ -189,7 +189,7 @@
 				<reportElement x="10" y="60" width="100" height="20" isRemoveLineWhenBlank="true" uuid="cfff1f37-66e9-4503-b1d5-9351bfd21258">
 					<printWhenExpression><![CDATA[$F{ValeurManquanteText}!=null]]></printWhenExpression>
 				</reportElement>
-				<text><![CDATA[ValeurManquante]]></text>
+				<text><![CDATA[Valeur manquante]]></text>
 			</staticText>
 		</band>
 		<band height="100">
@@ -244,7 +244,7 @@
 				<reportElement x="10" y="60" width="100" height="20" isRemoveLineWhenBlank="true" uuid="5afa3b2b-3e7c-4469-ad83-bae9bc309603">
 					<printWhenExpression><![CDATA[$F{Echelle}!=null]]></printWhenExpression>
 				</reportElement>
-				<text><![CDATA[Echelle]]></text>
+				<text><![CDATA[Échelle]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="110" y="80" width="420" height="20" uuid="90c2be71-c655-4eb4-8540-ba802f744cc3"/>
@@ -253,7 +253,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="10" y="80" width="100" height="20" uuid="542b3b36-c6fb-44af-88ae-525fd3c33950"/>
-				<text><![CDATA[ValeurManquante]]></text>
+				<text><![CDATA[Valeur manquante]]></text>
 			</staticText>
 		</band>
 		<band height="40">
@@ -273,7 +273,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="10" y="20" width="100" height="20" uuid="08292676-b34f-4c17-94a6-49e49705ea9b"/>
-				<text><![CDATA[ValeurManquante]]></text>
+				<text><![CDATA[Valeur manquante]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="110" y="20" width="420" height="20" uuid="9a48f58d-b803-406b-a5d1-69aff0490ef6"/>
@@ -285,6 +285,9 @@
 			<printWhenExpression><![CDATA[$F{TypeListCode}!=null]]></printWhenExpression>
 			<subreport>
 				<reportElement x="10" y="40" width="521" height="20" uuid="1e0ea08e-786e-4b09-b62e-c0aa8092082e"/>
+				<subreportParameter name="PATH_JASPER">
+					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("r:CodeRepresentation.CodeList.Code")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_CodeList.jrxml")]]></subreportExpression>
 			</subreport>
@@ -295,7 +298,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="10" y="0" width="100" height="20" uuid="5f21c727-12d7-4576-9b6e-bc0005435d66"/>
-				<text><![CDATA[ListeCode]]></text>
+				<text><![CDATA[Liste de code]]></text>
 			</staticText>
 			<textField>
 				<reportElement key="" x="110" y="20" width="420" height="20" uuid="90578202-9c1f-4b35-a6c0-f9115fa8a761"/>
@@ -304,7 +307,7 @@
 			</textField>
 			<staticText>
 				<reportElement x="10" y="20" width="100" height="20" uuid="f80b14c1-b2f4-4fcc-84fa-2549931b8ff2"/>
-				<text><![CDATA[DescriptionListeCode]]></text>
+				<text><![CDATA[Description]]></text>
 			</staticText>
 		</band>
 	</detail>

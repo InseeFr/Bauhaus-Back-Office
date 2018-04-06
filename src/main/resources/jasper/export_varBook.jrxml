@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_A4" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7e25796e-e817-498a-8b8a-c1c931c5638f">
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<subDataset name="Dataset1" uuid="cb2d1561-6aea-426c-b1c9-40362ef57b67">
 		<queryString>
 			<![CDATA[DDIInstance.StudyUnit.RepresentedVariableGroup]]>
@@ -20,21 +21,21 @@
 	<title>
 		<band height="84" splitType="Stretch">
 			<textField>
-				<reportElement x="0" y="30" width="555" height="30" uuid="19b04d73-6738-4149-a3c3-c0ea1e3cfec5"/>
+				<reportElement x="0" y="25" width="555" height="30" uuid="19b04d73-6738-4149-a3c3-c0ea1e3cfec5"/>
 				<textElement textAlignment="Center" markup="html">
 					<font size="19" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{StudyUnitTitle}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="0" width="555" height="30" uuid="f2c9f638-0b05-4540-b45e-ed5dc7050810"/>
+				<reportElement x="0" y="0" width="555" height="25" uuid="f2c9f638-0b05-4540-b45e-ed5dc7050810"/>
 				<textElement textAlignment="Center" markup="html">
 					<font size="14"/>
 				</textElement>
 				<text><![CDATA[Dictionnaire des variables de l'opération :]]></text>
 			</staticText>
 			<textField pattern="MMMMM dd, yyyy">
-				<reportElement x="20" y="60" width="535" height="19" uuid="49b359ea-71b8-43f0-bcad-6f9aeaa7fc5a"/>
+				<reportElement x="100" y="55" width="455" height="15" uuid="49b359ea-71b8-43f0-bcad-6f9aeaa7fc5a"/>
 				<textElement textAlignment="Right" markup="html"/>
 				<textFieldExpression><![CDATA[new SimpleDateFormat("dd MMMM yyyy").format(new java.util.Date())]]></textFieldExpression>
 			</textField>
@@ -51,6 +52,9 @@
 			</staticText>
 			<subreport>
 				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f10"/>
+				<subreportParameter name="PATH_JASPER">
+					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
+				</subreportParameter>
 				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_ListGroup.jrxml")]]></subreportExpression>
 			</subreport>
@@ -82,6 +86,14 @@
 			</staticText>
 			<subreport>
 				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f12"/>
+				<subreportParameter name="PATH_JASPER">
+					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup.RepresentedVariableGroup.RepresentedVariable")]]></dataSourceExpression>
+				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_varDescription.jrxml")]]></subreportExpression>
+			</subreport>
+			<subreport>
+				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f13"/>
 				<subreportParameter name="PATH_JASPER">
 					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
 				</subreportParameter>
