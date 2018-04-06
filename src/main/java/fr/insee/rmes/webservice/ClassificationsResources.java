@@ -31,6 +31,23 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getFamilies();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/family/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getFamily(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getFamily(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/family/{id}/members")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getFamilyMembers(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getFamilyMembers(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
