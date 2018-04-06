@@ -3,7 +3,9 @@ package fr.insee.rmes.webservice;
 import java.util.List;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -19,12 +21,12 @@ import fr.insee.rmes.persistance.service.sesame.operations.series.SerieForList;
 @Component
 @Path("/operations")
 public class OperationsResources {
-	
+
 	final static Logger logger = LogManager.getLogger(OperationsResources.class);
-	
-	@Autowired 
+
+	@Autowired
 	OperationsService operationsService;
-	
+
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -36,6 +38,18 @@ public class OperationsResources {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
+	}
+
+	@GET
+	@Path("/operation/{id}/variableBook")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	public Response getVarBookExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
+		try {
+			return operationsService.getVarBookExport(id, acceptHeader);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
+		return null;
 	}
 
 }
