@@ -12,5 +12,16 @@ public class QueryUtils {
 			+ "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
 			+ "PREFIX pav:<http://purl.org/pav/> \n"
 			+ "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#> \n\n" ;
+	
+	/**
+	 * Hack to fix Sparql groupconcat which returns an empty object in array
+	 * instead of empty array
+	 * @param res
+	 * @return
+	 */
+	public static String correctEmptyGroupConcat(String res) {
+		if(res.equals("[{\"altLabel\":\"\"}]")) return "[]";
+		return res;
+	}
 
 }

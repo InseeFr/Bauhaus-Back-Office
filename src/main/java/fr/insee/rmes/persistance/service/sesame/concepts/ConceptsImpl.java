@@ -19,6 +19,7 @@ import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQuerie
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.persistance.service.sesame.export.Jasper;
 import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
+import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
 @Service
@@ -29,7 +30,8 @@ public class ConceptsImpl implements ConceptsService {
 	@Override
 	public String getConcepts() {
 		logger.info("Starting to get concepts list");
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
+		String resQuery = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 	
 	@Override
