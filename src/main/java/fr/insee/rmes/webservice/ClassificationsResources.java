@@ -57,6 +57,22 @@ public class ClassificationsResources {
 	}
 	
 	@GET
+	@Path("/series/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getOneSeries(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getOneSeries(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/series/{id}/members")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getSeriesMembers(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getSeriesMembers(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassifications() throws Exception {

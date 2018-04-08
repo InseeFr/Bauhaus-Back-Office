@@ -40,6 +40,18 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 	
 	@Override
+	public String getOneSeries(String id) {
+		logger.info("Starting to get a classification series");
+		return RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id)).toString();
+	}
+	
+	@Override
+	public String getSeriesMembers(String id) {
+		logger.info("Starting to get members of a classification series");
+		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesMembersQuery(id)).toString();
+	}
+	
+	@Override
 	public String getClassifications() {
 		logger.info("Starting to get classifications");
 		return RepositoryGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery()).toString();

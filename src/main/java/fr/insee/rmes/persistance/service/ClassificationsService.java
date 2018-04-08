@@ -10,6 +10,10 @@ public interface ClassificationsService {
 
 	public String getSeries() throws Exception;
 	
+	public String getOneSeries(String id) throws Exception;
+	
+	public String getSeriesMembers(String id) throws Exception;
+	
 	public String getClassifications() throws Exception;
 
 }
