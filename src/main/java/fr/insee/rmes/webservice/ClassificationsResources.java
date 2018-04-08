@@ -79,5 +79,21 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getClassifications();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/classification/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassification(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getClassification(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/classification/{id}/levels")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationLevels(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getClassificationLevels(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }

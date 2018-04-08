@@ -11,6 +11,7 @@ public class QueryUtils {
 			+ "PREFIX insee:<http://rdf.insee.fr/def/base#> \n"
 			+ "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
 			+ "PREFIX pav:<http://purl.org/pav/> \n"
+			+ "PREFIX foaf:<http://xmlns.com/foaf/0.1/> \n"
 			+ "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#> \n\n" ;
 	
 	/**
