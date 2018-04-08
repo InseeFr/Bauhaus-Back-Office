@@ -72,7 +72,7 @@ public class SeriesQueries {
 			+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/" + id + "')) . \n"
 			+ "BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id) \n"
 			+ "} \n"
-			+ "ORDER BY ?label ";	
+			+ "ORDER BY ?labelLg1 ";	
 	}
 	
 }
