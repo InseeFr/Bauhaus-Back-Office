@@ -25,15 +25,17 @@ public class FamiliesQueries {
 	}
 	
 	public static String familyMembersQuery(String id) {
-		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { GRAPH<http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
+		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 \n"
+			+ "WHERE { \n"
 			+ "?series xkos:belongsTo ?family . \n"
-			+ "?series skos:prefLabel ?label . \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
+			+ "?series skos:prefLabel ?labelLg1 . \n"
+			+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
+			+ "OPTIONAL {?series skos:prefLabel ?labelLg2 . \n"
+			+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') } \n"
 			+ "FILTER(REGEX(STR(?family),'/familleDeNomenclatures/" + id + "')) . \n"
-			+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) } \n"
+			+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) \n"
 			+ "} \n"
-			+ "ORDER BY ?label ";	
+			+ "ORDER BY ?labelLg1 ";	
 	}
 	
 }
