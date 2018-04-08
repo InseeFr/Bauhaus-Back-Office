@@ -17,7 +17,7 @@ public class SeriesQueries {
 	
 	public static String oneSeriesQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 \n"
-				+ "?scopeNoteLg1 ?scopeNoteLg2 ?subject ?publisher ?covers ?familyLg1 ?familyLg2 \n"
+				+ "?scopeNoteLg1 ?scopeNoteLg2 ?subject ?publisher ?covers ?familyLg1 ?familyLg2 ?idFamily \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
 				+ "?series skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/" + id + "')) . \n"
@@ -52,7 +52,8 @@ public class SeriesQueries {
 				+ "} . \n"
 				+ "OPTIONAL {?series xkos:belongsTo ?familyURI . \n"
 				+ "?familyURI skos:prefLabel ?familyLg1 . \n"
-				+ "FILTER (lang(?familyLg1) = '" + Config.LG1 + "') }  . \n"
+				+ "FILTER (lang(?familyLg1) = '" + Config.LG1 + "')  . \n"
+				+ "BIND(STRAFTER(STR(?familyURI),'/codes/familleDeNomenclatures/') AS ?idFamily) } . \n"
 				+ "OPTIONAL {?series xkos:belongsTo ?familyURI . \n"
 				+ "?familyURI skos:prefLabel ?familyLg2 . \n"
 				+ "FILTER (lang(?familyLg2) = '" + Config.LG2 + "') }  . \n"
