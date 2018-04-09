@@ -18,7 +18,7 @@ public class ClassificationsQueries {
 	
 	public static String classificationQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?seriesLg1 ?seriesLg2 ?idSeries \n"
-			+ "?afterLg1 ?afterLg2 ?isAfter ?beforeLg1 ?beforeLg2 ?idBefore ?variantLg1 ?variantLg2 ?idVariant \n"
+			+ "?afterLg1 ?afterLg2 ?idAfter ?beforeLg1 ?beforeLg2 ?idBefore ?variantLg1 ?variantLg2 ?idVariant \n"
 			+ "?issued ?valid ?lastRefreshedOn ?additionalMaterial ?rights ?creator ?contributor \n"
 			+ "?disseminationStatus ?legalMaterial ?homepage \n"
 			+ "?scopeNoteLg1 ?scopeNoteLg2 ?changeNoteLg1 ?changeNoteLg2 ?descriptionLg1 ?descriptionLg2 \n"
