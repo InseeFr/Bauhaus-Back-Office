@@ -24,7 +24,7 @@ public class ClassificationsQueries {
 			+ "?scopeNoteLg1 ?scopeNoteLg2 ?changeNoteLg1 ?changeNoteLg2 ?descriptionLg1 ?descriptionLg2 \n"
 			+ "WHERE { \n"
 			+ "?classification rdf:type skos:ConceptScheme . \n"
-			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "')) . \n"
+			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
 			// PrefLabel
 			+ "BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id) \n"
 			+ "?classification skos:prefLabel ?prefLabelLg1 . \n"
@@ -119,7 +119,7 @@ public class ClassificationsQueries {
 		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?depth \n"
 				+ "WHERE { \n"
 				+ "?classification rdf:type skos:ConceptScheme . \n"
-				+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "')) . \n"
+				+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
 				+ "?classification xkos:levels/rdf:rest*/rdf:first ?levelURI . \n"
 				+ "BIND(STRAFTER(STR(?levelURI),'/" + id + "/') AS ?id) \n"
 				+ "?levelURI skos:prefLabel ?labelLg1 . \n"
