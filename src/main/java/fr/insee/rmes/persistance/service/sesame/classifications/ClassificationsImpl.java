@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import fr.insee.rmes.persistance.service.sesame.classifications.classifications.ClassificationsQueries;
+import fr.insee.rmes.persistance.service.sesame.classifications.classifications.LevelsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -66,7 +67,19 @@ public class ClassificationsImpl implements ClassificationsService {
 	@Override
 	public String getClassificationLevels(String id) {
 		logger.info("Starting to get levels of a classification scheme");
-		return RepositoryGestion.getResponseAsArray(ClassificationsQueries.classificationLevelsQuery(id)).toString();
+		return RepositoryGestion.getResponseAsArray(LevelsQueries.levelsQuery(id)).toString();
+	}
+	
+	@Override
+	public String getClassificationLevel(String classificationId, String levelId) {
+		logger.info("Starting to get a classification level");
+		return RepositoryGestion.getResponseAsObject(LevelsQueries.levelQuery(classificationId, levelId)).toString();
+	}
+	
+	@Override
+	public String getClassificationLevelMembers(String classificationId, String levelId) {
+		logger.info("Starting to get classification level members");
+		return RepositoryGestion.getResponseAsArray(LevelsQueries.levelMembersQuery(classificationId, levelId)).toString();
 	}
 
 }

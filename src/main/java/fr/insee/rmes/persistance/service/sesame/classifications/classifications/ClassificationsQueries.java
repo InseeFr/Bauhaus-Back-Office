@@ -115,20 +115,4 @@ public class ClassificationsQueries {
 			+ "} \n";
 	}
 	
-	public static String classificationLevelsQuery(String id) {
-		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?depth \n"
-				+ "WHERE { \n"
-				+ "?classification rdf:type skos:ConceptScheme . \n"
-				+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
-				+ "?classification xkos:levels/rdf:rest*/rdf:first ?levelURI . \n"
-				+ "BIND(STRAFTER(STR(?levelURI),'/" + id + "/') AS ?id) \n"
-				+ "?levelURI skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
-				+ "OPTIONAL {?levelURI skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') } \n"
-				+ "?levelURI xkos:depth ?depth . \n"
-				+ "} \n"
-				+ "ORDER BY ?depth ";	
-	}
-	
 }

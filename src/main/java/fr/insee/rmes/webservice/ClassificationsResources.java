@@ -95,5 +95,21 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getClassificationLevels(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/classification/{id}/level/{depth}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationLevel(@PathParam("id") String id, @PathParam("depth") String depth) throws Exception {
+		String jsonResultat = classificationsService.getClassificationLevel(id, depth);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/classification/{classificationId}/level/{levelId}/members")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationLevelMembers(@PathParam("classificationId") String classificationId, @PathParam("levelId") String levelId) throws Exception {
+		String jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }

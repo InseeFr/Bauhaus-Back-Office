@@ -19,5 +19,9 @@ public interface ClassificationsService {
 	public String getClassification(String id) throws Exception;
 	
 	public String getClassificationLevels(String id) throws Exception;
+	
+	public String getClassificationLevel(String classificationid, String levelId) throws Exception;
+	
+	public String getClassificationLevelMembers(String classificationid, String levelId) throws Exception;
 
 }
