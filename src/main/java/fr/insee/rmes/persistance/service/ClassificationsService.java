@@ -23,5 +23,10 @@ public interface ClassificationsService {
 	public String getClassificationLevel(String classificationid, String levelId) throws Exception;
 	
 	public String getClassificationLevelMembers(String classificationid, String levelId) throws Exception;
+	
+	public String getClassificationItem(String classificationid, String itemId) throws Exception;
+	
+	public String getClassificationItemNotes(String classificationid, String itemId, int conceptVersion) throws Exception;
 
+	public String getClassificationItemNarrowers(String classificationid, String itemId) throws Exception;
 }

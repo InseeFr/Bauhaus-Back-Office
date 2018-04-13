@@ -2,12 +2,15 @@ package fr.insee.rmes.persistance.service.sesame.classifications;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import fr.insee.rmes.persistance.service.sesame.classifications.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.classifications.LevelsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.families.FamiliesQueries;
+import fr.insee.rmes.persistance.service.sesame.classifications.items.ItemsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
@@ -80,6 +83,27 @@ public class ClassificationsImpl implements ClassificationsService {
 	public String getClassificationLevelMembers(String classificationId, String levelId) {
 		logger.info("Starting to get classification level members");
 		return RepositoryGestion.getResponseAsArray(LevelsQueries.levelMembersQuery(classificationId, levelId)).toString();
+	}
+	
+	@Override
+	public String getClassificationItem(String classificationId, String itemId) {
+		logger.info("Starting to get classification item");
+		JSONObject item = RepositoryGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
+		JSONArray altLabels = RepositoryGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
+		if(altLabels.length() != 0) item.put("altLabels", altLabels);
+		return item.toString();
+	}
+	
+	@Override
+	public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion) {
+		logger.info("Starting to get classification item notes");
+		return RepositoryGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion)).toString();
+	}
+	
+	@Override
+	public String getClassificationItemNarrowers(String classificationId, String itemId) {
+		logger.info("Starting to get classification item members");
+		return RepositoryGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
 	}
 
 }

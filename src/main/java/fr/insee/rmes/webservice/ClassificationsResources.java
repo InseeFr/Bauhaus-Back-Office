@@ -111,5 +111,30 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/classification/{classificationId}/item/{itemId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationItem(@PathParam("classificationId") String classificationId, @PathParam("itemId") String itemId) throws Exception {
+		String jsonResultat = classificationsService.getClassificationItem(classificationId, itemId);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/classification/{classificationId}/item/{itemId}/notes/{conceptVersion}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationItemNotes(@PathParam("classificationId") String classificationId,
+			@PathParam("itemId") String itemId, @PathParam("conceptVersion") int conceptVersion) throws Exception {
+		String jsonResultat = classificationsService.getClassificationItemNotes(classificationId, itemId, conceptVersion);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/classification/{classificationId}/item/{itemId}/narrowers")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationItemNarrowers(@PathParam("classificationId") String classificationId, @PathParam("itemId") String itemId) throws Exception {
+		String jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }

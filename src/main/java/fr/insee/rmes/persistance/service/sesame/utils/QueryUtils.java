@@ -7,6 +7,7 @@ public class QueryUtils {
 			+ "PREFIX xkos:<http://rdf-vocabulary.ddialliance.org/xkos#> \n"
 			+ "PREFIX evoc:<http://eurovoc.europa.eu/schema#> \n"
 			+ "PREFIX skos:<http://www.w3.org/2004/02/skos/core#> \n"
+			+ "PREFIX skosxl:<http://www.w3.org/2008/05/skos-xl#> \n"
 			+ "PREFIX dc:<http://purl.org/dc/elements/1.1/> \n"
 			+ "PREFIX insee:<http://rdf.insee.fr/def/base#> \n"
 			+ "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
