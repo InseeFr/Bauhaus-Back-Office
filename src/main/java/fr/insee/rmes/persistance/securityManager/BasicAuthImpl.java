@@ -24,7 +24,7 @@ public class BasicAuthImpl implements SecurityManagerService {
 
 	public User postAuth(String body) {
 		JSONObject bodyJson = new JSONObject(body);
-		User user = new User(bodyJson.getString("role"), bodyJson.getString("stamp"));
+		User user = new User(bodyJson.getJSONArray("roles"), bodyJson.getString("stamp"));
 		return user;
 	}
 

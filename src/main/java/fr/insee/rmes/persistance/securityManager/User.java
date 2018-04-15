@@ -1,26 +1,28 @@
 package fr.insee.rmes.persistance.securityManager;
 
+import org.json.JSONArray;
+
 import fr.insee.rmes.persistance.userRolesManager.Role;
 
 public class User {
 	
-	Role role;
+	JSONArray roles;
 	String stamp = "";
 	
 	public User() {
 		super();
 	}
 	
-	public User(String role, String stamp) {
-		this.role = Role.findRole(role);
+	public User(JSONArray roles, String stamp) {
+		this.roles = Role.findRole(roles);
 		this.stamp = stamp;
 	}
 	
-	public Role getRole() {
-		return role;
+	public JSONArray getRoles() {
+		return roles;
 	}
-	public void setRole(Role role) {
-		this.role = role;
+	public void setRoles(JSONArray roles) {
+		this.roles = roles;
 	}
 	public String getStamp() {
 		return stamp;
