@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.userRolesManager;
 
+import org.json.JSONArray;
+
 public enum Role {
 
 	ADMIN("Administrateur_RMESGNCS"),
@@ -18,13 +20,16 @@ public enum Role {
 		return this.role;
 	}
 	
-	public static Role findRole(String name){
-	    for(Role r : values()){
-	        if( r.getRole().equals(name)){
-	            return r;
-	        }
-	    }
-	    return null;
+	public static JSONArray findRole(JSONArray names){
+		JSONArray roles = new JSONArray();
+		names.forEach(name -> {
+			for(Role r : values()){
+		        if( r.getRole().equals(name)){
+		           roles.put(r);
+		        }
+		    }
+		});
+	    return roles;
 	}
 
 }

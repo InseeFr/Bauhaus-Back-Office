@@ -1,7 +1,10 @@
 package fr.insee.rmes.persistance.securityManager;
 
+import java.util.Arrays;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
@@ -27,10 +30,7 @@ public class NoAuthImpl implements SecurityManagerService {
 	 */
 	
 	public User postAuth(String body) {
-		User user = new User();
-		user.setStamp("XXXXXX");
-		user.setRole(Role.ADMIN);
-		return user;
+		return new User(new JSONArray(Arrays.asList(Role.ADMIN.getRole())), "XXXXXX");
 	}
 	
 }
