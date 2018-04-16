@@ -115,4 +115,18 @@ public class ClassificationsQueries {
 			+ "} \n";
 	}
 	
+	public static String classificationTreeQuery(String id) {
+		return "SELECT ?id ?title ?parent \n"
+			+ "WHERE { \n"
+			+ "?classification rdf:type skos:ConceptScheme . \n"
+			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
+			+ "?item skos:inScheme ?classification . \n"
+			+ "?item skos:prefLabel ?title . \n"
+			+ "FILTER (lang(?title) = '" + Config.LG1 + "') \n"
+			+ "?item skos:notation ?id . \n"
+			+ "OPTIONAL{?item skos:broader ?broader . \n"
+			+ "?broader skos:notation ?parent} \n"
+			+ "} \n";
+	}
+	
 }

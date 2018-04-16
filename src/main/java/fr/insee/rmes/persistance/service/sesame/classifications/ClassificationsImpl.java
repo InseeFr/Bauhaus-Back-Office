@@ -68,6 +68,12 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 	
 	@Override
+	public String getClassificationTree(String id) {
+		logger.info("Starting to get a classification scheme");
+		return RepositoryGestion.getResponseAsArray(ClassificationsQueries.classificationTreeQuery(id)).toString();
+	}
+	
+	@Override
 	public String getClassificationLevels(String id) {
 		logger.info("Starting to get levels of a classification scheme");
 		return RepositoryGestion.getResponseAsArray(LevelsQueries.levelsQuery(id)).toString();

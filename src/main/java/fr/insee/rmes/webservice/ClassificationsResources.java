@@ -89,6 +89,14 @@ public class ClassificationsResources {
 	}
 	
 	@GET
+	@Path("/classification/{id}/tree")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationTree(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getClassificationTree(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
 	@Path("/classification/{id}/levels")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassificationLevels(@PathParam("id") String id) throws Exception {
