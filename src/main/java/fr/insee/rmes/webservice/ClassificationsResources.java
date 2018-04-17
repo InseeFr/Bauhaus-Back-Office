@@ -144,5 +144,13 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/correspondences")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCorrespondences() throws Exception {
+		String jsonResultat = classificationsService.getCorrespondences();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }
