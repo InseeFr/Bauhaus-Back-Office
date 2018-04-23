@@ -18,6 +18,8 @@ public interface ClassificationsService {
 	
 	public String getClassification(String id) throws Exception;
 	
+	public String getClassificationItems(String id) throws Exception;
+	
 	public String getClassificationLevels(String id) throws Exception;
 	
 	public String getClassificationLevel(String classificationid, String levelId) throws Exception;
@@ -29,4 +31,6 @@ public interface ClassificationsService {
 	public String getClassificationItemNotes(String classificationid, String itemId, int conceptVersion) throws Exception;
 
 	public String getClassificationItemNarrowers(String classificationid, String itemId) throws Exception;
+	
+	public String getCorrespondences() throws Exception;
 }

@@ -115,4 +115,20 @@ public class ClassificationsQueries {
 			+ "} \n";
 	}
 	
+	public static String classificationItemsQuery(String id) {
+		return "SELECT ?id ?labelLg1 ?labelLg2 ?parent \n"
+			+ "WHERE { \n"
+			+ "?classification rdf:type skos:ConceptScheme . \n"
+			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
+			+ "?item skos:inScheme ?classification . \n"
+			+ "?item skos:prefLabel ?labelLg1 . \n"
+			+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
+			+ "OPTIONAL{?item skos:prefLabel ?labelLg2 . \n"
+			+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') } \n"
+			+ "?item skos:notation ?id . \n"
+			+ "OPTIONAL{?item skos:broader ?broader . \n"
+			+ "?broader skos:notation ?parent} \n"
+			+ "} \n";
+	}
+	
 }

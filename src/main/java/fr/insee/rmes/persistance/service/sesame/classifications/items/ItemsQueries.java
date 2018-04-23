@@ -113,12 +113,12 @@ public class ItemsQueries {
 				+ "?exclusionLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// Note changement Lg1
-				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg1 . \n"
+				+ "OPTIONAL {?item skos:changeNote ?noteChangeLg1 . \n"
 				+ "?noteChangeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
 				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
 				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
 				// Note changement Lg2
-				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg2 . \n"
+				+ "OPTIONAL {?item skos:changeNote ?noteChangeLg2 . \n"
 				+ "?noteChangeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
 				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
 				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"

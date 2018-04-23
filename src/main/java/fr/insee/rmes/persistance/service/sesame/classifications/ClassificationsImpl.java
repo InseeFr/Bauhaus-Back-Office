@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import fr.insee.rmes.persistance.service.sesame.classifications.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.classifications.LevelsQueries;
+import fr.insee.rmes.persistance.service.sesame.classifications.correspondences.CorrespondencesQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.items.ItemsQueries;
 import fr.insee.rmes.persistance.service.sesame.classifications.series.SeriesQueries;
@@ -68,6 +69,12 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 	
 	@Override
+	public String getClassificationItems(String id) {
+		logger.info("Starting to get a classification scheme");
+		return RepositoryGestion.getResponseAsArray(ClassificationsQueries.classificationItemsQuery(id)).toString();
+	}
+	
+	@Override
 	public String getClassificationLevels(String id) {
 		logger.info("Starting to get levels of a classification scheme");
 		return RepositoryGestion.getResponseAsArray(LevelsQueries.levelsQuery(id)).toString();
@@ -104,6 +111,12 @@ public class ClassificationsImpl implements ClassificationsService {
 	public String getClassificationItemNarrowers(String classificationId, String itemId) {
 		logger.info("Starting to get classification item members");
 		return RepositoryGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
+	}
+	
+	@Override
+	public String getCorrespondences() {
+		logger.info("Starting to get classifications");
+		return RepositoryGestion.getResponseAsArray(CorrespondencesQueries.correspondencesQuery()).toString();
 	}
 
 }

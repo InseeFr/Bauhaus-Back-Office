@@ -89,6 +89,14 @@ public class ClassificationsResources {
 	}
 	
 	@GET
+	@Path("/classification/{id}/items")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getClassificationItems(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getClassificationItems(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
 	@Path("/classification/{id}/levels")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassificationLevels(@PathParam("id") String id) throws Exception {
@@ -134,6 +142,14 @@ public class ClassificationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassificationItemNarrowers(@PathParam("classificationId") String classificationId, @PathParam("itemId") String itemId) throws Exception {
 		String jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/correspondences")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCorrespondences() throws Exception {
+		String jsonResultat = classificationsService.getCorrespondences();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
