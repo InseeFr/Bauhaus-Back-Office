@@ -48,7 +48,7 @@ public class ItemsQueries {
 	public static String itemNotesQuery(String classificationId, String itemId, int conceptVersion) {
 		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 ?coreContentNoteLg1 ?coreContentNoteLg2 "
 				+ "?additionalContentNoteLg1 ?additionalContentNoteLg2 ?exclusionNoteLg1 ?exclusionNoteLg2 \n"
-				+ "?changeNoteLg1 ?changeNoteLg2 \n"
+				+ "?changeNoteLg1 ?changeNoteLg2 ?changeNoteDate \n"
 				+ "WHERE { \n" 
 				+ "?item skos:notation '" + itemId + "' . \n" 
 				+ "FILTER(REGEX(STR(?item),'/codes/" + classificationId + "/')) \n"
@@ -114,6 +114,7 @@ public class ItemsQueries {
 				+ "} . \n"
 				// Note changement Lg1
 				+ "OPTIONAL {?item skos:changeNote ?noteChangeLg1 . \n"
+				+ "?noteChangeLg1 dcterms:issued ?changeNoteDate . \n"
 				+ "?noteChangeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
 				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
 				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
