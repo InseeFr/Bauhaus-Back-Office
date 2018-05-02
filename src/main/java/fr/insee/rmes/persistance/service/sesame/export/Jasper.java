@@ -25,7 +25,7 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.JasperReportsContext;
-import net.sf.jasperreports.engine.data.JsonDataSource;
+import net.sf.jasperreports.engine.data.JRXmlDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
@@ -49,7 +49,7 @@ public class Jasper {
 	public InputStream exportConcept(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_concept.jrxml");
 		try {
-			return exportSimpleJson(json, is, acceptHeader);
+			return exportJson(json, is, acceptHeader);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -59,17 +59,17 @@ public class Jasper {
 	public InputStream exportCollection(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_collection.jrxml");
 		try {
-			return exportSimpleJson(json, is, acceptHeader);
+			return exportJson(json, is, acceptHeader);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
 		return null;
 	}
 
-	public InputStream exportVariableBook(JSONObject json, String acceptHeader) {
+	public InputStream exportVariableBook(String xml, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_varBook.jrxml");
 		try {
-			return exportCompleteJson(json, is, acceptHeader);
+			return exportXml(xml, is, acceptHeader);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
@@ -84,7 +84,7 @@ public class Jasper {
 	 * @return 
 	 * @throws Exception
 	 */
-	private static InputStream exportSimpleJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
+	private static InputStream exportJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Map<String, Object> jasperParams = null;
@@ -101,12 +101,11 @@ public class Jasper {
 		return in;
 	}
 
-	private static InputStream exportCompleteJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
+	private static InputStream exportXml(String xml, InputStream is, String acceptHeader) throws Exception {
 		Map<String, Object> jasperParams = new HashMap<>();
-		jasperParams.put("PATH_JASPER",
-				"D:\\rco0ck\\Mes Documents\\eclipse_workspace\\Gncs-Back-Office\\src\\main\\resources\\jasper\\");
-		InputStream jsonInput = new ByteArrayInputStream(json.toString().getBytes());
-		JRDataSource datasource = new JsonDataSource(jsonInput);
+		jasperParams.put("PATH_JASPER", String.format("%s/webapps/%s", System.getProperty("catalina.base"), "jasper"));
+		InputStream xmlInput = new ByteArrayInputStream(xml.toString().getBytes());
+		JRDataSource datasource = new JRXmlDataSource(xmlInput, "/*[local-name()='DDIInstance']", true);
 		getJrProperties();
 		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, datasource);
 		InputStream in = new ByteArrayInputStream(output.toByteArray());

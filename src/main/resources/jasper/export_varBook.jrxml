@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Blank_A4" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7e25796e-e817-498a-8b8a-c1c931c5638f">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="mainVarBook" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="7e25796e-e817-498a-8b8a-c1c931c5638f">
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
-	<subDataset name="Dataset1" uuid="cb2d1561-6aea-426c-b1c9-40362ef57b67">
-		<queryString>
-			<![CDATA[DDIInstance.StudyUnit.RepresentedVariableGroup]]>
-		</queryString>
-	</subDataset>
 	<parameter name="PATH_JASPER" class="java.lang.String"/>
-	<queryString language="json">
-		<![CDATA[]]>
-	</queryString>
-	<field name="StudyUnitTitle" class="java.lang.String">
-		<property name="net.sf.jasperreports.json.field.expression" value="DDIInstance.StudyUnit.r:Citation.r:Title.r:String(xml:lang==fr-FR)[0].content"/>
-		<fieldDescription><![CDATA[DDIInstance.StudyUnit.r:Citation.r:Title.r:String(xml:lang==fr-FR)[0].content]]></fieldDescription>
-	</field>
-	<field name="LabelGroup" class="java.lang.String">
-		<fieldDescription><![CDATA[DDIInstance.StudyUnit.RepresentedVariableGroup.Label.Content.content]]></fieldDescription>
+	<field name="SingleTitle" class="java.lang.String">
+		<fieldDescription><![CDATA[/*[local-name()='DDIInstance']/*[local-name()='StudyUnit']/*[local-name()='Citation']/*[local-name()='Title']/*[local-name()='String'][@xml:lang='fr-FR']/text()]]></fieldDescription>
 	</field>
 	<title>
 		<band height="84" splitType="Stretch">
@@ -25,7 +13,7 @@
 				<textElement textAlignment="Center" markup="html">
 					<font size="19" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{StudyUnitTitle}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{SingleTitle}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="25" uuid="f2c9f638-0b05-4540-b45e-ed5dc7050810"/>
@@ -42,7 +30,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="51">
+		<band height="50">
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="30" uuid="6974b116-244c-443c-b9c1-c8e7b17dd236"/>
 				<textElement markup="html">
@@ -51,18 +39,18 @@
 				<text><![CDATA[Liste des groupes et sous-groupes de variables]]></text>
 			</staticText>
 			<subreport>
-				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f10"/>
+				<reportElement isPrintRepeatedValues="false" x="0" y="30" width="550" height="20" isPrintWhenDetailOverflows="true" uuid="12c07a29-e46d-4d18-a316-6197fe553f10"/>
 				<subreportParameter name="PATH_JASPER">
 					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JRXmlDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("//*[local-name()='StudyUnit']/*[local-name()='RepresentedVariableGroup']")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_ListGroup.jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
 		<band height="50">
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="30" uuid="79a6828f-9722-4b1f-942d-b1415645d97c"/>
-				<textElement>
+				<textElement markup="html">
 					<font size="16" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Description des groupes et sous-groupes de variables]]></text>
@@ -72,11 +60,11 @@
 				<subreportParameter name="PATH_JASPER">
 					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JRXmlDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("//*[local-name()='StudyUnit']/*[local-name()='RepresentedVariableGroup']")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_groupDescription.jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="51">
+		<band height="50">
 			<staticText>
 				<reportElement x="0" y="0" width="555" height="30" uuid="6974b116-244c-443c-b9c1-c8e7b17dd237"/>
 				<textElement>
@@ -85,19 +73,11 @@
 				<text><![CDATA[Liste et description des variables]]></text>
 			</staticText>
 			<subreport>
-				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f12"/>
+				<reportElement x="0" y="30" width="550" height="20" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" uuid="12c07a29-e46d-4d18-a316-6197fe553f12"/>
 				<subreportParameter name="PATH_JASPER">
 					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup.RepresentedVariableGroup.RepresentedVariable")]]></dataSourceExpression>
-				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_varDescription.jrxml")]]></subreportExpression>
-			</subreport>
-			<subreport>
-				<reportElement x="0" y="30" width="550" height="20" uuid="12c07a29-e46d-4d18-a316-6197fe553f13"/>
-				<subreportParameter name="PATH_JASPER">
-					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
-				</subreportParameter>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("DDIInstance.StudyUnit.RepresentedVariableGroup.RepresentedVariable")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JRXmlDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("//*[local-name()='rootListVar']/*[local-name()='RepresentedVariable']")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_varDescription.jrxml")]]></subreportExpression>
 			</subreport>
 		</band>
