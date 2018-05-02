@@ -1,71 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="subr_varBook_groupDescription" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="20" rightMargin="0" topMargin="0" bottomMargin="10" uuid="3cc6e17c-b97e-49f1-835c-b59770cc3320">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="varDescription" pageWidth="595" pageHeight="842" columnWidth="575" leftMargin="20" rightMargin="0" topMargin="0" bottomMargin="10" uuid="3cc6e17c-b97e-49f1-835c-b59770cc3320">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<parameter name="PATH_JASPER" class="java.lang.String"/>
-	<queryString>
+	<queryString language="XPath">
 		<![CDATA[]]>
 	</queryString>
 	<field name="Label" class="java.lang.String">
-		<fieldDescription><![CDATA[r:Label.r:Content.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='Label']/*[local-name()='Content']/text()]]></fieldDescription>
 	</field>
 	<field name="Description" class="java.lang.String">
-		<fieldDescription><![CDATA[r:Description.r:Content.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='Description']/*[local-name()='Content']/text()]]></fieldDescription>
 	</field>
 	<field name="Nom" class="java.lang.String">
-		<fieldDescription><![CDATA[RepresentedVariableName.r:String.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='RepresentedVariableName']/*[local-name()='String']/text()]]></fieldDescription>
 	</field>
 	<field name="ConceptAssocie" class="java.lang.String">
-		<fieldDescription><![CDATA[r:ConceptReference.r:Content.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='ConceptReference']/*[local-name()='Content']/text()]]></fieldDescription>
 	</field>
 	<field name="Population" class="java.lang.String">
-		<fieldDescription><![CDATA[Universe.r:Label.r:Content.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='Universe']/*[local-name()='Label']/*[local-name()='Content']/text()]]></fieldDescription>
 	</field>
 	<field name="TypeText" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:TextRepresentation]]></fieldDescription>
+		<fieldDescription><![CDATA[boolean(./*[local-name()='TextRepresentation'])]]></fieldDescription>
 	</field>
 	<field name="LongueurMin" class="java.lang.Integer">
-		<fieldDescription><![CDATA[r:TextRepresentation.minLength]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='TextRepresentation']/*[local-name()='minLength']/text()]]></fieldDescription>
 	</field>
 	<field name="LongueurMax" class="java.lang.Integer">
-		<fieldDescription><![CDATA[r:TextRepresentation.maxLength]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='TextRepresentation']/*[local-name()='maxLength']/text()]]></fieldDescription>
 	</field>
 	<field name="ExprReguliere" class="java.lang.String">
-		<fieldDescription><![CDATA[r:TextRepresentation.regExp]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='TextRepresentation']/@regExp]]></fieldDescription>
 	</field>
 	<field name="ValeurManquanteText" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:TextRepresentation.blankIsMissingValue]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='TextRepresentation']/*[local-name()='blankIsMissingValue']/text()]]></fieldDescription>
 	</field>
 	<field name="TypeNumeric" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:NumericRepresentation]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='NumericRepresentation']/text()]]></fieldDescription>
 	</field>
 	<field name="Type" class="java.lang.String"/>
-	<field name="Min" class="java.lang.String"/>
-	<field name="Max" class="java.lang.String"/>
+	<field name="Min" class="java.lang.String">
+		<fieldDescription><![CDATA[./*[local-name()='NumericRepresentation']/*[local-name()='NumberRange']/*[local-name()='Low']/text()]]></fieldDescription>
+	</field>
+	<field name="Max" class="java.lang.String">
+		<fieldDescription><![CDATA[./*[local-name()='NumericRepresentation']/*[local-name()='NumberRange']/*[local-name()='High']/text()]]></fieldDescription>
+	</field>
 	<field name="Echelle" class="java.lang.Integer">
-		<fieldDescription><![CDATA[r:NumericRepresentation.scale]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='NumericRepresentation']/@scale]]></fieldDescription>
 	</field>
 	<field name="ValeurManquanteNumeric" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:NumericRepresentation.blankIsMissingValue]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='NumericRepresentation']/@blankIsMissingValue]]></fieldDescription>
 	</field>
 	<field name="TypeDate" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:DateTypeRepresentation]]></fieldDescription>
+		<fieldDescription><![CDATA[boolean(./*[local-name()='DateTypeRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeDateTime" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='DateTimeRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeTime" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='TimeRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeYearMonth" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='YearMonthRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeYear" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='YearRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeMonthDay" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='MonthDayRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeDay" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='DayRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeMonth" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='MonthRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeDuration" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='DurationRepresentation'])]]></fieldDescription>
+	</field>
+	<field name="TypeTimespan" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[boolean(./*[local-name()='TimespanRepresentation'])]]></fieldDescription>
 	</field>
 	<field name="ValeurManquanteDate" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:DateTypeRepresentation.blankIsMissingValue]]></fieldDescription>
+		<fieldDescription><![CDATA[.]]></fieldDescription>
 	</field>
 	<field name="TypeListCode" class="java.lang.Boolean">
-		<fieldDescription><![CDATA[r:CodeRepresentation]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='CodeRepresentation']/text()]]></fieldDescription>
 	</field>
 	<field name="ListeCode" class="java.lang.String">
-		<fieldDescription><![CDATA[r:CodeRepresentation.CodeList.CodeListName.r:String.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='CodeRepresentation']/*[local-name()='CodeList']/*[local-name()='CodeListName']/*[local-name()='String']/text()]]></fieldDescription>
 	</field>
 	<field name="DescriptionListeCode" class="java.lang.String">
-		<fieldDescription><![CDATA[r:CodeRepresentation.CodeList.CodeListName.r:String.content]]></fieldDescription>
+		<fieldDescription><![CDATA[./*[local-name()='CodeRepresentation']/*[local-name()='CodeList']/*[local-name()='CodeListName']/*[local-name()='String']/text()]]></fieldDescription>
 	</field>
 	<variable name="Type" class="java.lang.String">
-		<variableExpression><![CDATA[($F{TypeText}!=null)?"Texte": (($F{TypeNumeric} !=null)?"Numérique":($F{TypeDate} !=null)?"Date":($F{TypeListCode} !=null)?"Liste de codes":"Inconnu")]]></variableExpression>
+		<variableExpression><![CDATA[($F{TypeText}!=null&&$F{TypeText})?"Texte": (($F{TypeNumeric}!=null)?"Numérique": ($F{TypeDate}!=null&&$F{TypeDate})?"Date": ($F{TypeDateTime}!=null&&$F{TypeDateTime})?"Date Heure": ($F{TypeTime}!=null&&$F{TypeTime})?"Heure": ($F{TypeYearMonth}!=null&&$F{TypeYearMonth})?"Mois Année": ($F{TypeYear}!=null&&$F{TypeYear})?"Année": ($F{TypeMonthDay}!=null&&$F{TypeMonthDay})?"Jour Mois": ($F{TypeDay}!=null&&$F{TypeDay})?"Jour": ($F{TypeMonth}!=null&&$F{TypeMonth})?"Mois": ($F{TypeDuration}!=null&&$F{TypeDuration})?"Durée": ($F{TypeTimespan}!=null&&$F{TypeTimespan})?"Période": ($F{TypeListCode}!=null)?"Liste de codes": "Inconnu")]]></variableExpression>
 	</variable>
 	<detail>
 		<band height="73">
@@ -81,63 +113,64 @@
 					<font size="14" isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Variable "+ $F{Nom}]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[$F{Nom}]]></anchorNameExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="100" y="53" width="430" height="20" isRemoveLineWhenBlank="true" uuid="e6380802-6ddf-49a1-95a2-525ab054218c"/>
+				<reportElement x="110" y="53" width="430" height="20" isRemoveLineWhenBlank="true" uuid="e6380802-6ddf-49a1-95a2-525ab054218c"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{Description}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="53" width="100" height="20" uuid="59402709-9d37-4c8e-8067-fbedaf7e1b7d"/>
+				<reportElement x="0" y="53" width="110" height="20" uuid="59402709-9d37-4c8e-8067-fbedaf7e1b7d"/>
 				<text><![CDATA[Description]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="100" y="33" width="430" height="20" uuid="0dfcb0b0-ef54-4195-a5b7-e6736c0e69b9"/>
+				<reportElement x="110" y="33" width="430" height="20" uuid="0dfcb0b0-ef54-4195-a5b7-e6736c0e69b9"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{Label}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="33" width="100" height="20" uuid="a31ab5d4-aefd-444b-ad90-2bc8fcae43b7"/>
+				<reportElement x="0" y="33" width="110" height="20" uuid="a31ab5d4-aefd-444b-ad90-2bc8fcae43b7"/>
 				<text><![CDATA[Libellé]]></text>
 			</staticText>
 		</band>
 		<band height="20">
 			<printWhenExpression><![CDATA[$F{ConceptAssocie} != null]]></printWhenExpression>
 			<textField>
-				<reportElement x="100" y="0" width="430" height="20" uuid="6b3f1f8f-7b0e-4f9c-b881-5a18241a06f0"/>
+				<reportElement x="110" y="0" width="430" height="20" uuid="6b3f1f8f-7b0e-4f9c-b881-5a18241a06f0"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{ConceptAssocie}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="0" width="100" height="20" uuid="fdaf75a0-eac0-4fde-8df0-998a98a4706e"/>
+				<reportElement x="0" y="0" width="110" height="20" uuid="fdaf75a0-eac0-4fde-8df0-998a98a4706e"/>
 				<text><![CDATA[Concept associé]]></text>
 			</staticText>
 		</band>
 		<band height="20">
 			<printWhenExpression><![CDATA[$F{Population} != null]]></printWhenExpression>
 			<textField>
-				<reportElement x="100" y="0" width="430" height="20" uuid="5daa2e13-5c94-43e2-9481-f23f1405083a"/>
+				<reportElement x="110" y="0" width="430" height="20" uuid="5daa2e13-5c94-43e2-9481-f23f1405083a"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{Population}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="0" width="100" height="20" uuid="4662db86-c2c5-4a39-9221-58c91345f307"/>
+				<reportElement x="0" y="0" width="110" height="20" uuid="4662db86-c2c5-4a39-9221-58c91345f307"/>
 				<text><![CDATA[Population]]></text>
 			</staticText>
 		</band>
 		<band height="20">
 			<printWhenExpression><![CDATA[$V{Type} != null]]></printWhenExpression>
 			<textField>
-				<reportElement x="100" y="0" width="430" height="20" uuid="452eaf3c-a918-43a9-b6e4-20611f9a5d44"/>
+				<reportElement x="110" y="0" width="420" height="20" uuid="452eaf3c-a918-43a9-b6e4-20611f9a5d44"/>
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$V{Type}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="0" y="0" width="100" height="20" uuid="84e7fe4e-78f3-4e74-a808-b84d650c5261"/>
-				<text><![CDATA[Type]]></text>
+				<reportElement x="0" y="0" width="110" height="20" uuid="84e7fe4e-78f3-4e74-a808-b84d650c5261"/>
+				<text><![CDATA[Type de représentation]]></text>
 			</staticText>
 		</band>
-		<band height="80">
+		<band height="60">
 			<printWhenExpression><![CDATA[$F{TypeText}!=null]]></printWhenExpression>
 			<textField>
 				<reportElement x="110" y="0" width="420" height="20" isRemoveLineWhenBlank="true" uuid="d55583fb-5ae1-481b-9185-709031bc6c29">
@@ -178,21 +211,8 @@
 				</reportElement>
 				<text><![CDATA[Expression régulière]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="110" y="60" width="420" height="20" isRemoveLineWhenBlank="true" uuid="6b131737-8db2-40d5-bb53-74eaf268447d">
-					<printWhenExpression><![CDATA[$F{ValeurManquanteText}!=null]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$F{ValeurManquanteText}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="10" y="60" width="100" height="20" isRemoveLineWhenBlank="true" uuid="cfff1f37-66e9-4503-b1d5-9351bfd21258">
-					<printWhenExpression><![CDATA[$F{ValeurManquanteText}!=null]]></printWhenExpression>
-				</reportElement>
-				<text><![CDATA[Valeur manquante]]></text>
-			</staticText>
 		</band>
-		<band height="100">
+		<band height="80">
 			<printWhenExpression><![CDATA[$F{TypeNumeric}!=null]]></printWhenExpression>
 			<textField>
 				<reportElement x="110" y="0" width="420" height="20" isRemoveLineWhenBlank="true" uuid="6f5bb292-c737-4d50-b7cc-aefb3839c638">
@@ -246,17 +266,8 @@
 				</reportElement>
 				<text><![CDATA[Échelle]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="110" y="80" width="420" height="20" uuid="90c2be71-c655-4eb4-8540-ba802f744cc3"/>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$F{ValeurManquanteNumeric}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="10" y="80" width="100" height="20" uuid="542b3b36-c6fb-44af-88ae-525fd3c33950"/>
-				<text><![CDATA[Valeur manquante]]></text>
-			</staticText>
 		</band>
-		<band height="40">
+		<band height="20">
 			<printWhenExpression><![CDATA[$F{TypeDate}!=null]]></printWhenExpression>
 			<staticText>
 				<reportElement x="10" y="0" width="100" height="20" isRemoveLineWhenBlank="true" uuid="ceaba8e3-4249-4dde-bbf2-5d7fb2b9658a">
@@ -271,26 +282,9 @@
 				<textElement markup="html"/>
 				<textFieldExpression><![CDATA[$F{Type}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="10" y="20" width="100" height="20" uuid="08292676-b34f-4c17-94a6-49e49705ea9b"/>
-				<text><![CDATA[Valeur manquante]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="110" y="20" width="420" height="20" uuid="9a48f58d-b803-406b-a5d1-69aff0490ef6"/>
-				<textElement markup="html"/>
-				<textFieldExpression><![CDATA[$F{ValeurManquanteDate}]]></textFieldExpression>
-			</textField>
 		</band>
-		<band height="60">
-			<printWhenExpression><![CDATA[$F{TypeListCode}!=null]]></printWhenExpression>
-			<subreport>
-				<reportElement x="10" y="40" width="521" height="20" uuid="1e0ea08e-786e-4b09-b62e-c0aa8092082e"/>
-				<subreportParameter name="PATH_JASPER">
-					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
-				</subreportParameter>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("r:CodeRepresentation.CodeList.Code")]]></dataSourceExpression>
-				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_CodeList.jrxml")]]></subreportExpression>
-			</subreport>
+		<band height="20">
+			<printWhenExpression><![CDATA[$F{TypeListCode}!=null&&$F{ListeCode}!=null]]></printWhenExpression>
 			<textField>
 				<reportElement x="110" y="0" width="420" height="20" uuid="1325d9e9-4fe9-43d7-8931-e2b76e1a8544"/>
 				<textElement markup="html"/>
@@ -298,17 +292,30 @@
 			</textField>
 			<staticText>
 				<reportElement x="10" y="0" width="100" height="20" uuid="5f21c727-12d7-4576-9b6e-bc0005435d66"/>
-				<text><![CDATA[Liste de code]]></text>
+				<text><![CDATA[Liste de codes]]></text>
 			</staticText>
+		</band>
+		<band height="20">
+			<printWhenExpression><![CDATA[$F{TypeListCode}!=null&&$F{DescriptionListeCode}!=null]]></printWhenExpression>
 			<textField>
-				<reportElement key="" x="110" y="20" width="420" height="20" uuid="90578202-9c1f-4b35-a6c0-f9115fa8a761"/>
-				<textElement markup="html"/>
+				<reportElement x="150" y="0" width="380" height="20" isRemoveLineWhenBlank="true" uuid="987dc080-0396-4adb-b5ef-d0ebd697d2a1"/>
 				<textFieldExpression><![CDATA[$F{DescriptionListeCode}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="10" y="20" width="100" height="20" uuid="f80b14c1-b2f4-4fcc-84fa-2549931b8ff2"/>
-				<text><![CDATA[Description]]></text>
+				<reportElement x="10" y="0" width="140" height="20" uuid="1e1ff033-0ff0-4b67-b0f0-c985250ef50e"/>
+				<text><![CDATA[Description de la liste de codes]]></text>
 			</staticText>
+		</band>
+		<band height="20">
+			<printWhenExpression><![CDATA[$F{TypeListCode}!=null]]></printWhenExpression>
+			<subreport>
+				<reportElement x="10" y="0" width="521" height="20" isPrintWhenDetailOverflows="true" uuid="1e0ea08e-786e-4b09-b62e-c0aa8092082e"/>
+				<subreportParameter name="PATH_JASPER">
+					<subreportParameterExpression><![CDATA[$P{PATH_JASPER}]]></subreportParameterExpression>
+				</subreportParameter>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JRXmlDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("//*[local-name()='CodeRepresentation']/*[local-name()='CodeList']/*[local-name()='Code']")]]></dataSourceExpression>
+				<subreportExpression><![CDATA[net.sf.jasperreports.engine.JasperCompileManager.compileReport($P{PATH_JASPER}+"subr_varBook_CodeList.jrxml")]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 </jasperReport>
