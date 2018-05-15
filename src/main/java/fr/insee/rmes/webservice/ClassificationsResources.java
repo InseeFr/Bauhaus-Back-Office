@@ -152,5 +152,13 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getCorrespondences();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/correspondence/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCorrespondence(@PathParam("id") String id) throws Exception {
+		String jsonResultat = classificationsService.getCorrespondence(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }

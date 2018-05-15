@@ -33,4 +33,6 @@ public interface ClassificationsService {
 	public String getClassificationItemNarrowers(String classificationid, String itemId) throws Exception;
 	
 	public String getCorrespondences() throws Exception;
+	
+	public String getCorrespondence(String id) throws Exception;
 }
