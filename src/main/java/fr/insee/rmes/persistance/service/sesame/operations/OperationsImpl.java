@@ -29,8 +29,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
-import fr.insee.rmes.persistance.service.sesame.export.Jasper;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SerieForList;
 import fr.insee.rmes.utils.XMLUtils;
 

@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.export;
+package fr.insee.rmes.persistance.export;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -77,10 +77,10 @@ public class Jasper {
 	}
 
 	/**
-	 * Méthode générique d'export
-	 * @param json : données à exporter
-	 * @param is : structure du fichier attendu
-	 * @param acceptHeader : type de fichier attendu
+	 * Generic export method from json data
+	 * @param json data to export
+	 * @param is jasper template
+	 * @param acceptHeader mimeType
 	 * @return 
 	 * @throws Exception
 	 */
@@ -101,6 +101,14 @@ public class Jasper {
 		return in;
 	}
 
+	/**
+	 * Generic export method from xml data
+	 * @param xml data to export
+	 * @param is jasper template
+	 * @param acceptHeader mimeType
+	 * @return 
+	 * @throws Exception
+	 */
 	private static InputStream exportXml(String xml, InputStream is, String acceptHeader) throws Exception {
 		Map<String, Object> jasperParams = new HashMap<>();
 		jasperParams.put("PATH_JASPER", String.format("%s/webapps/%s", System.getProperty("catalina.base"), "jasper"));
@@ -132,7 +140,7 @@ public class Jasper {
 	}
 
 	/**
-	 * Construction de l'exporter en fonction du type de sortie attendu
+	 * Build jasper exporter
 	 * @param acceptHeader mimeType
 	 * @param jasperPrint
 	 * @return
