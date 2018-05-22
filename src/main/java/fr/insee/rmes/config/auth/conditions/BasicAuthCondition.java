@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class NoAuthCondition implements Condition {
+public class BasicAuthCondition implements Condition {
 
 	private String env;
 
@@ -20,7 +20,7 @@ public class NoAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (!env.matches("dev|qf|pre-prod|prod"))
+		if (env.equals("qf"))
 			return true;
 		return false;
 	}
