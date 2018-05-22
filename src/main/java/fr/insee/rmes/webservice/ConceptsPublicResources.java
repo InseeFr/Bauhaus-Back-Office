@@ -33,7 +33,6 @@ public class ConceptsPublicResources {
 	ConceptsService conceptsService;
 	
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
