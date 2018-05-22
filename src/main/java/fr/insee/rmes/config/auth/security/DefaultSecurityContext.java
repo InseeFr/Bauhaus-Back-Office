@@ -1,11 +1,13 @@
-package fr.insee.rmes.config;
+package fr.insee.rmes.config.auth.security;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 @EnableWebSecurity
-public class SecurityContext extends WebSecurityConfigurerAdapter {
+import fr.insee.rmes.config.Config;
+
+public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {

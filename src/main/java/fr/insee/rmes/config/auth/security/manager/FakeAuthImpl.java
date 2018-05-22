@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.securityManager;
+package fr.insee.rmes.config.auth.security.manager;
 
 import java.util.Arrays;
 
