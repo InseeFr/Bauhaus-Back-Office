@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.persistance.service.ConceptsService;
@@ -82,6 +83,7 @@ public class ConceptsPublicResources {
 	
 	@GET
 	@Path("/collections")
+	@Secured("ROLE_Administrateur_RMESGNCS")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCollections() {
 		String jsonResultat = conceptsService.getCollections();
