@@ -20,7 +20,7 @@ public class FakeAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (env.equals("dev"))
+		if (env.equals("qf"))
 			return true;
 		return false;
 	}
