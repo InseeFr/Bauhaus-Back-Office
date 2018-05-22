@@ -6,7 +6,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import fr.insee.rmes.config.auth.conditions.BasicAuthCondition;
-import fr.insee.rmes.config.auth.conditions.FakeAuthCondition;
 import fr.insee.rmes.config.auth.conditions.NoAuthCondition;
 import fr.insee.rmes.config.auth.conditions.OpenIDConnectAuthCondition;
 import fr.insee.rmes.config.auth.security.keycloak.KeycloakSecurityContext;
@@ -22,7 +21,7 @@ public class SecurityContextConfiguration {
 		return new KeycloakSecurityContext();
 	}
 	
-	@Conditional(value = {BasicAuthCondition.class, FakeAuthCondition.class, NoAuthCondition.class})
+	@Conditional(value = {BasicAuthCondition.class, NoAuthCondition.class})
 	public DefaultSecurityContext getSecurityContext() {
 		return new DefaultSecurityContext();
 	}
