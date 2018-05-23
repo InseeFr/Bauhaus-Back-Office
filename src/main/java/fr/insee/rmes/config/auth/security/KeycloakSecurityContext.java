@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.auth.security.keycloak;
+package fr.insee.rmes.config.auth.security;
 
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
@@ -9,18 +9,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.conditions.OpenIDConnectAuthCondition;
+import fr.insee.rmes.config.auth.security.keycloak.KeycloakUserDetailsAuthenticationProvider;
+import fr.insee.rmes.config.auth.security.keycloak.RmesKeycloakConfigResolver;
 
 @Configuration
+@Conditional(value = OpenIDConnectAuthCondition.class)
 @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
+@EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true)
 public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapter {
 	
