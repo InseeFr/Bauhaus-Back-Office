@@ -1,14 +1,13 @@
-package fr.insee.rmes.persistance.userRolesManager;
+package fr.insee.rmes.config.roles;
 
 import org.json.JSONArray;
 
 public enum Role {
 
-	ADMIN("Administrateur_RMESGNCS"),
-	CONCEPTS_CONTRIBUTOR("Gestionnaire_ensemble_concepts_RMESGNCS"),
-	COLLECTIONS_CREATOR("Proprietaire_collection_concepts_RMESGNCS"),
-	CONCEPTS_CREATOR("Proprietaire_concept_RMESGNCS"),
-	GUEST("GUEST");
+	ADMIN(Constants.ADMIN),
+	CONCEPTS_CONTRIBUTOR(Constants.CONCEPTS_CONTRIBUTOR),
+	COLLECTIONS_CREATOR(Constants.COLLECTIONS_CREATOR),
+	CONCEPTS_CREATOR(Constants.CONCEPTS_CREATOR);
 
 	private String role = "";
 

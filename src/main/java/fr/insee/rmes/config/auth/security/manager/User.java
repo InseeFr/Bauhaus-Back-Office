@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.json.JSONArray;
 import org.springframework.security.core.GrantedAuthority;
 
-import fr.insee.rmes.persistance.userRolesManager.Role;
+import fr.insee.rmes.config.roles.Role;
 
 public class User {
 	
