@@ -27,7 +27,7 @@ import fr.insee.rmes.persistance.service.ConceptsService;
  */
 @Component
 @Path("/concepts")
-public class ConceptsPublicResources {
+public class ConceptsResources {
 	
 	@Autowired 
 	ConceptsService conceptsService;
