@@ -73,7 +73,6 @@ public class ClassificationsResources {
 	}
 	
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getClassifications() throws Exception {
 		String jsonResultat = classificationsService.getClassifications();
