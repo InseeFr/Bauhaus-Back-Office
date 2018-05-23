@@ -2,7 +2,6 @@ package fr.insee.rmes.config.auth.security;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import fr.insee.rmes.config.auth.conditions.BasicAuthCondition;
@@ -12,7 +11,6 @@ import fr.insee.rmes.config.auth.security.keycloak.KeycloakSecurityContext;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true)
 public class SecurityContextConfiguration {
 	
 	
