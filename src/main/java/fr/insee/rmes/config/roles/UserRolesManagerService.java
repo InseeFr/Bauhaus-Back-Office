@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.userRolesManager;
+package fr.insee.rmes.config.roles;
 
 public interface UserRolesManagerService {
 	

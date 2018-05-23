@@ -20,11 +20,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.manager.SecurityManagerService;
+import fr.insee.rmes.config.roles.UserRolesManagerService;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
-import fr.insee.rmes.persistance.securityManager.SecurityManagerService;
 import fr.insee.rmes.persistance.stamps.RmesStampsImpl;
 import fr.insee.rmes.persistance.stamps.StampsContract;
-import fr.insee.rmes.persistance.userRolesManager.UserRolesManagerService;
 
 /**
  * WebService class for resources of Concepts
@@ -41,35 +41,35 @@ import fr.insee.rmes.persistance.userRolesManager.UserRolesManagerService;
  */
 @Path("/")
 public class PublicResources {
-	
+
 	final static Logger logger = LogManager.getLogger(PublicResources.class);
-	
-	@Autowired 
+
+	@Autowired
 	SecurityManagerService securityManagerService;
-	
-	@Autowired 
+
+	@Autowired
 	UserRolesManagerService userRolesManagerService;
-		
+
 	@GET
 	@Path("/init")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getProperties() {
 		JSONObject props = new JSONObject();
 		try {
-            props.put("appHost", Config.APP_HOST);
-            props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
-            props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
-            props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
-            props.put("lg1", Config.LG1);
-            props.put("lg2", Config.LG2);
-            props.put("authType", securityManagerService.getAuthType());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw e;
-        }
+			props.put("appHost", Config.APP_HOST);
+			props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
+			props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
+			props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
+			props.put("lg1", Config.LG1);
+			props.put("lg2", Config.LG2);
+			props.put("authType", securityManagerService.getAuthType());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
 	}
-	
+
 	@POST
 	@Path("/auth")
 	@Consumes(MediaType.TEXT_PLAIN)
@@ -77,7 +77,7 @@ public class PublicResources {
 	public Response getAuth(String body) {
 		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.postAuth(body)).build();
 	}
-	
+
 	@GET
 	@Path("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ public class PublicResources {
 		StampsContract stampsContract = new RmesStampsImpl();
 		return Response.status(HttpStatus.SC_OK).entity(stampsContract.getStamps()).build();
 	}
-	
+
 	@GET
 	@Path("/disseminationStatus")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -100,28 +100,28 @@ public class PublicResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(dsList.toString()).build();
 	}
-	
+
 	@GET
 	@Path("/roles")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getRoles() {
 		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getRoles()).build();
 	}
-	
+
 	@GET
 	@Path("/agents")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getAgents() {
 		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getAgents()).build();
 	}
-	
+
 	@POST
 	@Path("/private/role/add")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void setAddRole(String body) {
 		userRolesManagerService.setAddRole(body);
 	}
-	
+
 	@POST
 	@Path("/private/role/delete")
 	@Consumes(MediaType.APPLICATION_JSON)

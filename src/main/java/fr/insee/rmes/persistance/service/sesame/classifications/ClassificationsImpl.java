@@ -115,8 +115,13 @@ public class ClassificationsImpl implements ClassificationsService {
 	
 	@Override
 	public String getCorrespondences() {
-		logger.info("Starting to get classifications");
+		logger.info("Starting to get correspondences");
 		return RepositoryGestion.getResponseAsArray(CorrespondencesQueries.correspondencesQuery()).toString();
 	}
 
+	@Override
+	public String getCorrespondence(String id) {
+		logger.info("Starting to get a correspondence scheme");
+		return RepositoryGestion.getResponseAsObject(CorrespondencesQueries.correspondenceQuery(id)).toString();
+	}
 }

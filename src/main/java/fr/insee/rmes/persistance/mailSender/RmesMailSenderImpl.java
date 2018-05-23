@@ -23,13 +23,13 @@ import org.json.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.rmes.MessageTemplate;
 import fr.insee.rmes.persistance.mailSender.rmes.NameValuePairType;
 import fr.insee.rmes.persistance.mailSender.rmes.Recipient;
 import fr.insee.rmes.persistance.mailSender.rmes.SendRequest;
 import fr.insee.rmes.persistance.mailSender.rmes.SendRequest.Recipients;
 import fr.insee.rmes.persistance.mailSender.rmes.ServiceConfiguration;
-import fr.insee.rmes.persistance.service.sesame.export.Jasper;
 import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
 
 public class RmesMailSenderImpl implements MailSenderContract {

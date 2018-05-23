@@ -1,0 +1,11 @@
+{
+  "realm": "agents-insee-interne",
+  "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtYyTD5Q5iBjWhHVvubSwER3x+GAlZPmE1dqGqPz+FmStf5Kite3Qi5GlqYxCCddQG9J5oCEGP5ym+3NOHVZdhWXX+n9e2TqyjKXX8FnkKouMr3cSoXKA4Q8KAlbvRZoMMesyMELWI34+X+4WUGuAfkr7ZpMml9eAiWCTN6t4MjAgby3Xt6uy/UWoaOIBa3uIlS7uALKJ/VrjYtfoBz7SZzPPO9JAIG9YCPLONHiA02/3gKo2tNzPr0mnHQSn72/sEl0T4ESHdV6qxhrOEOvZ3J1ugOzyF6s4VpTM05YWH999RlcyPuVUU1brkQpB+sGMb+rnXl9VCDqz/AJ7EME2NQIDAQAB",
+  "bearer-only": true,
+  "auth-server-url": "https://auth.insee.test/auth",
+  "ssl-required": "none",
+  "resource": "localhost-api",
+  "credentials": {
+    "secret": "51c69a0a-6bb7-44c2-b84b-ec914c6107f4"
+  }
+}

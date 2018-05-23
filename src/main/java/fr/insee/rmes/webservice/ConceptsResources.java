@@ -27,13 +27,12 @@ import fr.insee.rmes.persistance.service.ConceptsService;
  */
 @Component
 @Path("/concepts")
-public class ConceptsPublicResources {
+public class ConceptsResources {
 	
 	@Autowired 
 	ConceptsService conceptsService;
 	
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();

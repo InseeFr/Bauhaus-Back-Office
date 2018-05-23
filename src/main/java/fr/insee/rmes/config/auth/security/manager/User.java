@@ -1,13 +1,17 @@
-package fr.insee.rmes.persistance.securityManager;
+package fr.insee.rmes.config.auth.security.manager;
+
+import java.util.Collection;
 
 import org.json.JSONArray;
+import org.springframework.security.core.GrantedAuthority;
 
-import fr.insee.rmes.persistance.userRolesManager.Role;
+import fr.insee.rmes.config.roles.Role;
 
 public class User {
 	
 	JSONArray roles;
 	String stamp = "";
+	Collection<? extends GrantedAuthority> authorities;
 	
 	public User() {
 		super();
@@ -30,5 +34,11 @@ public class User {
 	public void setStamp(String stamp) {
 		this.stamp = stamp;
 	}
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
 	
 }

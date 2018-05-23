@@ -10,6 +10,7 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
 import fr.insee.rmes.persistance.mailSender.RmesMailSenderImpl;
 import fr.insee.rmes.persistance.service.ConceptsService;
@@ -17,7 +18,6 @@ import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collections
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.persistance.service.sesame.export.Jasper;
 import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;

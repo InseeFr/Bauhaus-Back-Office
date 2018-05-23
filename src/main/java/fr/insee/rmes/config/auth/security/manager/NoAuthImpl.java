@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.securityManager;
+package fr.insee.rmes.config.auth.security.manager;
 
 import java.util.Arrays;
 
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.auth.conditions.NoAuthCondition;
-import fr.insee.rmes.persistance.userRolesManager.Role;
+import fr.insee.rmes.config.roles.Role;
 
 @Service
 @Conditional(value = NoAuthCondition.class)

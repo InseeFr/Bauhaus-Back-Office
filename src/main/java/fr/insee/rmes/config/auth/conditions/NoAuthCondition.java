@@ -20,7 +20,7 @@ public class NoAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (!env.matches("dev|qf|pre-prod|prod"))
+		if (!env.matches("qf|pre-prod|prod"))
 			return true;
 		return false;
 	}
