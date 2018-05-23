@@ -73,20 +73,6 @@ public class PublicResources {
 		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
 	}
 
-	@GET
-	@Path("/keycloak")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getKeycloack() {
-		String keycloack = "";
-		try {
-			keycloack = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("keycloak-front/keycloak-local.json"),
-					StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return Response.status(HttpStatus.SC_OK).entity(keycloack).build();
-	}
-
 	@POST
 	@Path("/auth")
 	@Consumes(MediaType.TEXT_PLAIN)
