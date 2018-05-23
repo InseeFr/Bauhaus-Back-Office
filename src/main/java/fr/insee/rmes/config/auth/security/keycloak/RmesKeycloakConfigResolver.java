@@ -12,27 +12,27 @@ public class RmesKeycloakConfigResolver implements KeycloakConfigResolver {
 
 	@Override
 	public KeycloakDeployment resolve(OIDCHttpFacade.Request request) {
-		InputStream is = getClass().getClassLoader().getResourceAsStream("keycloak-back/keycloak-local.json");
+		InputStream is = getClass().getClassLoader().getResourceAsStream("keycloak-back-local.json");
 		
-		String url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back/bauhaus-dev.properties");
+		String url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back-dev.properties");
 		File f = new File(url);
 		if(f.exists() && !f.isDirectory()) { 
 			is = getClass().getClassLoader().getResourceAsStream(url);
 		}
 		
-		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back/bauhaus-qf.properties");
+		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back-qf.properties");
 		File f1 = new File(url);
 		if(f1.exists() && !f1.isDirectory()) { 
 			is = getClass().getClassLoader().getResourceAsStream(url);
 		}
 		
-		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back/bauhaus-pre-prod.properties");
+		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back-pre-prod.properties");
 		File f2 = new File(url);
 		if(f2.exists() && !f2.isDirectory()) { 
 			is = getClass().getClassLoader().getResourceAsStream(url);
 		}
 		
-		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back/bauhaus-prod.properties");
+		url = String.format("%s/webapps/%s", System.getProperty("catalina.base"), "keycloak-back-prod.properties");
 		File f3 = new File(url);
 		if(f3.exists() && !f3.isDirectory()) { 
 			is = getClass().getClassLoader().getResourceAsStream(url);
