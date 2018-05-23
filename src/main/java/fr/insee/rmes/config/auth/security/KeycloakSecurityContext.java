@@ -40,7 +40,7 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
 		if (Config.REQUIRES_SSL) http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		http.sessionManagement().disable();
 		http.authorizeRequests()
-			.antMatchers("/api/init", "/api/keycloak").permitAll()
+			.antMatchers("/api/init").permitAll()
 			.anyRequest().authenticated();
 	}
 
