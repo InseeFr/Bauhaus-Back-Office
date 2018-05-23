@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.auth.security.keycloak;
 
+import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
@@ -19,6 +21,7 @@ import fr.insee.rmes.config.Config;
 
 @Configuration
 @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
+@EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true)
 public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapter {
 	
 	private static final Logger log = LoggerFactory.getLogger(KeycloakSecurityContext.class);
@@ -51,6 +54,12 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
         log.info("adding keycloak authentication provider");
         return new KeycloakUserDetailsAuthenticationProvider();
     }
+	
+    @Bean
+	public KeycloakConfigResolver keycloakConfigResolver() {
+		log.info("adding RMeS keycloak config resolver");
+        return new RmesKeycloakConfigResolver();
+	}
 
 	/**
 	 * Defines the session authentication strategy.

@@ -79,7 +79,7 @@ public class PublicResources {
 	public Response getKeycloack() {
 		String keycloack = "";
 		try {
-			keycloack = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("keycloak-front.json"),
+			keycloack = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("keycloak-front/keycloak-local.json"),
 					StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			e.printStackTrace();
