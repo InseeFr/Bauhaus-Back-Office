@@ -25,10 +25,10 @@ import fr.insee.rmes.config.auth.security.keycloak.KeycloakUserDetailsAuthentica
 import fr.insee.rmes.config.auth.security.keycloak.RmesKeycloakConfigResolver;
 
 @Configuration
-@Conditional(value = OpenIDConnectAuthCondition.class)
-@ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true)
+@EnableGlobalMethodSecurity(securedEnabled=true)
+@ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
+@Conditional(value = OpenIDConnectAuthCondition.class)
 public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapter {
 	
 	private static final Logger log = LoggerFactory.getLogger(KeycloakSecurityContext.class);
@@ -55,6 +55,9 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
 		auth.authenticationProvider(keycloakAuthenticationProvider);
 	}
 	
+	/**
+	 * Defines the keycloak authentication provider
+	 */
 	@Override
     @Bean
     public KeycloakUserDetailsAuthenticationProvider keycloakAuthenticationProvider() {
@@ -62,6 +65,9 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
         return new KeycloakUserDetailsAuthenticationProvider();
     }
 	
+	/**
+	 * Defines the keycloak configuration
+	 */
     @Bean
 	public KeycloakConfigResolver keycloakConfigResolver() {
 		log.info("adding RMeS keycloak config resolver");
