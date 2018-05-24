@@ -13,8 +13,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.roles.Constants;
 import fr.insee.rmes.persistance.service.ConceptsService;
 
 
@@ -119,7 +121,7 @@ public class ConceptsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
-
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR})
 	@POST
 	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -128,6 +130,7 @@ public class ConceptsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR})
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -135,6 +138,8 @@ public class ConceptsResources {
 		conceptsService.setConcept(id, body);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR})
+	// TODO Filter by stamp
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -149,6 +154,8 @@ public class ConceptsResources {
 		return conceptsService.getConceptExport(id, acceptHeader);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPTS_CREATOR})
+	// TODO Filter by stamp
 	@POST
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -157,6 +164,7 @@ public class ConceptsResources {
 		return conceptsService.setConceptSend(id, body);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR})
 	@POST
 	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -164,6 +172,8 @@ public class ConceptsResources {
 		conceptsService.setCollection(body);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR})
+	// TODO Filter by stamp
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -171,6 +181,8 @@ public class ConceptsResources {
 		conceptsService.setCollection(id, body);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_COLLECTIONS_CREATOR})
+	// TODO Filter by stamp
 	@PUT
 	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -185,6 +197,8 @@ public class ConceptsResources {
 		return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 	
+	@Secured({Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR})
+	// TODO Filter by stamp
 	@POST
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
