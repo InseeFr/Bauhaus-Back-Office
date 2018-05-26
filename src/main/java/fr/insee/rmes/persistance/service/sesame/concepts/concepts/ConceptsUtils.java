@@ -15,11 +15,15 @@ import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.persistance.service.StampsRestrictionsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
@@ -27,9 +31,13 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
+@Component
 public class ConceptsUtils {
 	
 	final static Logger logger = LogManager.getLogger(ConceptsUtils.class);
+	
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
 	
 	/**
 	 * Concepts
@@ -73,7 +81,7 @@ public class ConceptsUtils {
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 	}
 	
-	public void conceptsValidation(String body) {
+	public void conceptsValidation(String body) throws Exception {
 		JSONArray conceptsToValidate = new JSONArray(body);
 		conceptsValidation(conceptsToValidate);
 	}
@@ -119,7 +127,7 @@ public class ConceptsUtils {
 		RepositoryGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
 	
-	public void conceptsValidation(JSONArray conceptsToValidate) {
+	public void conceptsValidation(JSONArray conceptsToValidate) throws Exception {
 		Model model = new LinkedHashModel();
 		List<URI> conceptsToValidateList = new ArrayList<URI>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
@@ -128,6 +136,8 @@ public class ConceptsUtils {
 			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validé"), SesameUtils.conceptGraph());
 			logger.info("Validate concept : " + conceptURI);
 		}
+		if (!stampsRestrictionsService.isConceptsOwner(conceptsToValidateList))
+			throw new RmesUnauthorizedException();
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
 		ConceptsPublication.publishConcepts(conceptsToValidate);
 	}

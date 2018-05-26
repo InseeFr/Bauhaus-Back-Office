@@ -10,8 +10,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
@@ -30,6 +33,8 @@ import fr.insee.rmes.persistance.service.ConceptsService;
 @Component
 @Path("/concepts")
 public class ConceptsResources {
+	
+	final static Logger logger = LogManager.getLogger(ConceptsResources.class);
 	
 	@Autowired 
 	ConceptsService conceptsService;
@@ -143,8 +148,16 @@ public class ConceptsResources {
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void setConceptsValidation(String body) {
-		conceptsService.setConceptsValidation(body);
+	public Response setConceptsValidation(String body) 
+	throws Exception {
+		try {
+			conceptsService.setConceptsValidation(body);
+			logger.info("Validated concepts : " + body);
+			return Response.status(Status.NO_CONTENT).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 	
 	@GET

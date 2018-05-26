@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.export.Jasper;
@@ -26,6 +27,9 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 public class ConceptsImpl implements ConceptsService {
 	
 	final static Logger logger = LogManager.getLogger(ConceptsImpl.class);
+	
+	@Autowired 
+	ConceptsUtils conceptsUtils;
 	
 	@Override
 	public String getConcepts() {
@@ -122,8 +126,8 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Validate concept(s)
 	 */
-	public void setConceptsValidation(String body) {
-		new ConceptsUtils().conceptsValidation(body);
+	public void setConceptsValidation(String body) throws Exception {
+		conceptsUtils.conceptsValidation(body);
 	}
 	
 	/**
