@@ -130,8 +130,8 @@ public class ConceptsResources {
 	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response setConcept(String body) {
-		String jsonResultat = conceptsService.setConcept(body);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		String id = conceptsService.setConcept(body);
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
