@@ -35,7 +35,7 @@ public interface ConceptsService {
 	
 	public String setConcept(String body);	
 
-	public void setConcept(String id, String body);
+	public void setConcept(String id, String body) throws Exception;
 	
 	public void setConceptsValidation(String body) throws Exception;
 	

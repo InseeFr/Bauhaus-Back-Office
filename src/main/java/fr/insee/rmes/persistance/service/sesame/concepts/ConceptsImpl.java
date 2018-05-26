@@ -113,7 +113,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * Modify concept
 	 */
 	@Override
-	public void setConcept(String id, String body) {
+	public void setConcept(String id, String body) throws Exception {
 		conceptsUtils.setConcept(id, body);
 	}
 		

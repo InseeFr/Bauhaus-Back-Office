@@ -138,8 +138,15 @@ public class ConceptsResources {
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void setConcept(@PathParam("id") String id, String body) {
-		conceptsService.setConcept(id, body);
+	public Response setConcept(@PathParam("id") String id, String body) throws Exception {
+		try {
+			conceptsService.setConcept(id, body);
+			logger.info("Update concept : " + id);
+			return Response.status(Status.NO_CONTENT).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
