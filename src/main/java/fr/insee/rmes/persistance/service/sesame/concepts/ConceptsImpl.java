@@ -19,7 +19,7 @@ import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collections
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
+import fr.insee.rmes.persistance.service.sesame.export.ConceptsExport;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
@@ -33,6 +33,12 @@ public class ConceptsImpl implements ConceptsService {
 	
 	@Autowired 
 	CollectionsUtils collectionsUtils;
+	
+	@Autowired 
+	ConceptsExport conceptsExport;
+	
+	@Autowired
+	Jasper jasper;
 	
 	@Override
 	public String getConcepts() {
@@ -99,7 +105,7 @@ public class ConceptsImpl implements ConceptsService {
 	 */
 	@Override
 	public String setConcept(String body) {
-		return new ConceptsUtils().setConcept(body);
+		return conceptsUtils.setConcept(body);
 	}
 	
 	
@@ -108,7 +114,7 @@ public class ConceptsImpl implements ConceptsService {
 	 */
 	@Override
 	public void setConcept(String id, String body) {
-		new ConceptsUtils().setConcept(id, body);
+		conceptsUtils.setConcept(id, body);
 	}
 		
 
@@ -116,14 +122,14 @@ public class ConceptsImpl implements ConceptsService {
 	 * Create new collection
 	 */
 	public void setCollection(String body) {
-		CollectionsUtils.setCollection(body);
+		collectionsUtils.setCollection(body);
 	}
 //	
 	/**
 	 * Modify collection
 	 */
 	public void setCollection(String id, String body) {
-		CollectionsUtils.setCollection(id, body);
+		collectionsUtils.setCollection(id, body);
 	}
 	
 	/**
@@ -137,8 +143,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * Export concept(s)
 	 */
 	public Response getConceptExport(String id, String acceptHeader) {
-		JSONObject concept = new ConceptsExport().getConceptData(id);
-		Jasper jasper = new Jasper();
+		JSONObject concept = conceptsExport.getConceptData(id);
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
@@ -158,8 +163,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * Export collection(s)
 	 */
 	public Response getCollectionExport(String id, String acceptHeader) {
-		JSONObject collection = new ConceptsExport().getCollectionData(id);
-		Jasper jasper = new Jasper();
+		JSONObject collection = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();

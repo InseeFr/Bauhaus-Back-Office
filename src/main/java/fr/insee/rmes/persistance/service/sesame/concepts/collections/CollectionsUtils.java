@@ -41,7 +41,7 @@ public class CollectionsUtils {
 	 * Collections
 	 */
 	
-	public static void setCollection(String body) {
+	public void setCollection(String body) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -55,7 +55,7 @@ public class CollectionsUtils {
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public static void setCollection(String id, String body) {
+	public void setCollection(String id, String body) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
