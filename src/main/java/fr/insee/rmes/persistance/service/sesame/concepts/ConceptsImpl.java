@@ -31,6 +31,9 @@ public class ConceptsImpl implements ConceptsService {
 	@Autowired 
 	ConceptsUtils conceptsUtils;
 	
+	@Autowired 
+	CollectionsUtils collectionsUtils;
+	
 	@Override
 	public String getConcepts() {
 		logger.info("Starting to get concepts list");
@@ -147,8 +150,8 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Validate collection(s)
 	 */
-	public void setCollectionsValidation(String body) {
-		CollectionsUtils.collectionsValidation(body);
+	public void setCollectionsValidation(String body) throws Exception {
+		collectionsUtils.collectionsValidation(body);
 	}
 	
 	/**

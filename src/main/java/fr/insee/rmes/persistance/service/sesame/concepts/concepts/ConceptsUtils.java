@@ -136,7 +136,7 @@ public class ConceptsUtils {
 			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validé"), SesameUtils.conceptGraph());
 			logger.info("Validate concept : " + conceptURI);
 		}
-		if (!stampsRestrictionsService.isConceptsOwner(conceptsToValidateList))
+		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList))
 			throw new RmesUnauthorizedException();
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
 		ConceptsPublication.publishConcepts(conceptsToValidate);

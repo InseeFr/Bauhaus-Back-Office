@@ -47,7 +47,7 @@ public interface ConceptsService {
 	
 	public void setCollection(String id, String body);
 	
-	public void setCollectionsValidation(String body);
+	public void setCollectionsValidation(String body) throws Exception;
 	
 	public Response getCollectionExport(String id, String acceptHeader);
 	

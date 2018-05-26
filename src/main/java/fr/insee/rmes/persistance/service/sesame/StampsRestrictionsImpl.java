@@ -19,13 +19,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
-	public Boolean isConceptOwner(String conceptURI) throws Exception {
-		// TODO Auto-generated method stub
-		return true;
-	}
-
-	@Override
-	public Boolean isConceptsOwner(List<URI> conceptsURI) throws Exception {
+	public Boolean isConceptsOrCollectionsOwner(List<URI> conceptsURI) throws Exception {
 		if (!Config.ENV.equals("pre-prod") && !Config.ENV.equals("prod")) return true;
 		User user = getUser();
 		if (isAdmin(user)) return true;
