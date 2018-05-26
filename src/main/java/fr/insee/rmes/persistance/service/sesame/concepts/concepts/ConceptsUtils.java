@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.service.StampsRestrictionsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;

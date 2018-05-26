@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service;
+package fr.insee.rmes.config.auth.security.restrictions;
 
 import java.util.List;
 
