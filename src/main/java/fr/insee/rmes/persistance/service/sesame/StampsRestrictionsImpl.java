@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service.sesame;
 import java.util.List;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openrdf.model.URI;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,16 +18,28 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
 @Service
 public class StampsRestrictionsImpl implements StampsRestrictionsService {
-
+	
 	@Override
-	public Boolean isConceptsOrCollectionsOwner(List<URI> conceptsURI) throws Exception {
+	public Boolean isConceptOrCollectionOwner(URI URI) throws Exception {
+		if (!Config.ENV.equals("pre-prod") && !Config.ENV.equals("prod")) return true;
+		User user = getUser();
+		if (isAdmin(user)) return true;
+		String URIAsString = "<" + URI.toString() + ">";
+		JSONObject owner = RepositoryGestion.getResponseAsObject(ConceptsQueries.getOwner(URIAsString));
+		Boolean isConceptOwner = true;
+		if (!owner.getString("owner").equals(user.getStamp())) isConceptOwner = false;
+		return isConceptOwner;
+	}
+	
+	@Override
+	public Boolean isConceptsOrCollectionsOwner(List<URI> URIs) throws Exception {
 		if (!Config.ENV.equals("pre-prod") && !Config.ENV.equals("prod")) return true;
 		User user = getUser();
 		if (isAdmin(user)) return true;
 		StringBuilder sb = new StringBuilder();
-		conceptsURI.forEach(u -> sb.append("<" + u.toString() + "> "));
-		String URIs = sb.toString();
-		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(URIs));
+		URIs.forEach(u -> sb.append("<" + u.toString() + "> "));
+		String URAsString = sb.toString();
+		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(URAsString));
 		Boolean isConceptsOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
 			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp()))
