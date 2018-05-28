@@ -216,5 +216,12 @@ public class ConceptsQueries {
 				+ "?concept skos:broader ?broader \n"
 				+ "}";			
 	}
+	
+	public static String getOwner(String URIs) {
+		return "SELECT ?owner { \n"
+				+ "?concept dc:creator ?owner . \n" 
+				+ "VALUES ?concept { " + URIs + " } \n"
+				+ "}";
+	}
 
 }

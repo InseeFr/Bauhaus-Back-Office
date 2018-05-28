@@ -40,6 +40,9 @@ import fr.insee.rmes.utils.XMLUtils;
 public class OperationsImpl implements OperationsService {
 
 	final static Logger logger = LogManager.getLogger(OperationsImpl.class);
+	
+	@Autowired
+	Jasper jasper;
 
 	@Autowired
 	RestTemplate restTemplate;
@@ -77,8 +80,6 @@ public class OperationsImpl implements OperationsService {
 		String xml = getDataForVarBook(id);
 		Document xmlDocForJasper = addSortedVariableList(xml);
 		String xmlForJasper = XMLUtils.toString(xmlDocForJasper);
-
-		Jasper jasper = new Jasper();
 		InputStream is = jasper.exportVariableBook(xmlForJasper, acceptHeader);
 		String fileName = "Dico" + id + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
