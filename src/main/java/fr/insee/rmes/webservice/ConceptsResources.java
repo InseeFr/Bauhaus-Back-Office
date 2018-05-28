@@ -167,13 +167,19 @@ public class ConceptsResources {
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPTS_CREATOR })
-	// TODO Filter by stamp
 	@POST
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public boolean setConceptSend(@PathParam("id") String id, String body) {
-		return conceptsService.setConceptSend(id, body);
+	public Response setConceptSend(@PathParam("id") String id, String body) throws Exception {
+		try {
+			Boolean isSent = conceptsService.setConceptSend(id, body);
+			logger.info("Send concept : " + id);
+			return Response.status(Status.OK).entity(isSent).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
@@ -222,12 +228,18 @@ public class ConceptsResources {
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
-	// TODO Filter by stamp
 	@POST
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public boolean setCollectionSend(@PathParam("id") String id, String body) {
-		return conceptsService.setCollectionSend(id, body);
+	public Response setCollectionSend(@PathParam("id") String id, String body) throws Exception {
+		try {
+			Boolean isSent = conceptsService.setCollectionSend(id, body);
+			logger.info("Send concept : " + id);
+			return Response.status(Status.OK).entity(isSent).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 }

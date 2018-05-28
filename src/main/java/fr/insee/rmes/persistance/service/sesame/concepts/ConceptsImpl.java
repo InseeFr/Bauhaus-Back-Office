@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
-import fr.insee.rmes.persistance.mailSender.RmesMailSenderImpl;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
@@ -39,6 +38,9 @@ public class ConceptsImpl implements ConceptsService {
 	
 	@Autowired
 	Jasper jasper;
+	
+	@Autowired
+	MailSenderContract mailSender;
 	
 	@Override
 	public String getConcepts() {
@@ -175,18 +177,14 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Send concept
 	 */
-	public boolean setConceptSend(String id, String body) {
-		// TODO Externalize Impl choice
-		MailSenderContract mailSender = new RmesMailSenderImpl();
+	public boolean setConceptSend(String id, String body) throws Exception {
 		return mailSender.sendMailConcept(id, body);
 	}
 	
 	/**
 	 * Send collection
 	 */
-	public boolean setCollectionSend(String id, String body) {
-		// TODO Externalize Impl choice
-		MailSenderContract mailSender = new RmesMailSenderImpl();
+	public boolean setCollectionSend(String id, String body) throws Exception {
 		return mailSender.sendMailCollection(id, body);
 	}
 

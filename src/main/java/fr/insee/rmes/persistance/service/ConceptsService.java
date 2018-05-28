@@ -41,7 +41,7 @@ public interface ConceptsService {
 	
 	public Response getConceptExport(String id, String acceptHeader);
 	
-	public boolean setConceptSend(String id, String body);
+	public boolean setConceptSend(String id, String body) throws Exception;
 	
 	public void setCollection(String body);
 	
@@ -51,5 +51,5 @@ public interface ConceptsService {
 	
 	public Response getCollectionExport(String id, String acceptHeader);
 	
-	public boolean setCollectionSend(String id, String body);
+	public boolean setCollectionSend(String id, String body) throws Exception;
 }
