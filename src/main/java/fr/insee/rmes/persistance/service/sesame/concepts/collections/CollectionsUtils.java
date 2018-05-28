@@ -14,26 +14,34 @@ import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collection;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
+@Component
 public class CollectionsUtils {
 	
 	final static Logger logger = LogManager.getLogger(CollectionsUtils.class);
+	
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
 	
 	/**
 	 * Collections
 	 */
 	
-	public static void setCollection(String body) {
+	public void setCollection(String body) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -47,8 +55,11 @@ public class CollectionsUtils {
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public static void setCollection(String id, String body) {
+	public void setCollection(String id, String body) throws Exception {
+		URI collectionURI = SesameUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
+		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
+			throw new RmesUnauthorizedException();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Collection collection = new Collection(id);
@@ -61,7 +72,7 @@ public class CollectionsUtils {
 		logger.info("Update collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public static void collectionsValidation(String body) {
+	public void collectionsValidation(String body) throws Exception {
 		JSONArray collectionsToValidate = new JSONArray(body);
 		collectionsValidation(collectionsToValidate);
 	}
@@ -95,7 +106,7 @@ public class CollectionsUtils {
 		RepositoryGestion.loadCollection(collectionURI, model);
 	}
 	
-	public static void collectionsValidation(JSONArray collectionsToValidate) {
+	public void collectionsValidation(JSONArray collectionsToValidate) throws Exception {
 		Model model = new LinkedHashModel();
 		List<URI> collectionsToValidateList = new ArrayList<URI>();
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
@@ -104,6 +115,8 @@ public class CollectionsUtils {
 			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validée"), SesameUtils.conceptGraph());
 			logger.info("Validate collection : " + collectionURI);
 		}
+		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList))
+			throw new RmesUnauthorizedException();
 		RepositoryGestion.objectsValidation(collectionsToValidateList, model);
 		ConceptsPublication.publishCollection(collectionsToValidate);
 	}

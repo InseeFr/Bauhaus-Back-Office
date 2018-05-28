@@ -37,19 +37,19 @@ public interface ConceptsService {
 
 	public void setConcept(String id, String body);
 	
-	public void setConceptsValidation(String body);
+	public void setConceptsValidation(String body) throws Exception;
 	
 	public Response getConceptExport(String id, String acceptHeader);
 	
-	public boolean setConceptSend(String id, String body);
+	public boolean setConceptSend(String id, String body) throws Exception;
 	
 	public void setCollection(String body);
 	
-	public void setCollection(String id, String body);
+	public void setCollection(String id, String body) throws Exception;
 	
-	public void setCollectionsValidation(String body);
+	public void setCollectionsValidation(String body) throws Exception;
 	
 	public Response getCollectionExport(String id, String acceptHeader);
 	
-	public boolean setCollectionSend(String id, String body);
+	public boolean setCollectionSend(String id, String body) throws Exception;
 }

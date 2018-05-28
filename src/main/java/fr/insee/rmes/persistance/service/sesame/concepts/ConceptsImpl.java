@@ -8,17 +8,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
-import fr.insee.rmes.persistance.mailSender.RmesMailSenderImpl;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.persistance.service.sesame.export.concepts.ConceptsExport;
+import fr.insee.rmes.persistance.service.sesame.export.ConceptsExport;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
@@ -26,6 +26,21 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 public class ConceptsImpl implements ConceptsService {
 	
 	final static Logger logger = LogManager.getLogger(ConceptsImpl.class);
+	
+	@Autowired 
+	ConceptsUtils conceptsUtils;
+	
+	@Autowired 
+	CollectionsUtils collectionsUtils;
+	
+	@Autowired 
+	ConceptsExport conceptsExport;
+	
+	@Autowired
+	Jasper jasper;
+	
+	@Autowired
+	MailSenderContract mailSender;
 	
 	@Override
 	public String getConcepts() {
@@ -92,7 +107,7 @@ public class ConceptsImpl implements ConceptsService {
 	 */
 	@Override
 	public String setConcept(String body) {
-		return new ConceptsUtils().setConcept(body);
+		return conceptsUtils.setConcept(body);
 	}
 	
 	
@@ -101,7 +116,7 @@ public class ConceptsImpl implements ConceptsService {
 	 */
 	@Override
 	public void setConcept(String id, String body) {
-		new ConceptsUtils().setConcept(id, body);
+		conceptsUtils.setConcept(id, body);
 	}
 		
 
@@ -109,29 +124,28 @@ public class ConceptsImpl implements ConceptsService {
 	 * Create new collection
 	 */
 	public void setCollection(String body) {
-		CollectionsUtils.setCollection(body);
+		collectionsUtils.setCollection(body);
 	}
 //	
 	/**
 	 * Modify collection
 	 */
-	public void setCollection(String id, String body) {
-		CollectionsUtils.setCollection(id, body);
+	public void setCollection(String id, String body) throws Exception {
+		collectionsUtils.setCollection(id, body);
 	}
 	
 	/**
 	 * Validate concept(s)
 	 */
-	public void setConceptsValidation(String body) {
-		new ConceptsUtils().conceptsValidation(body);
+	public void setConceptsValidation(String body) throws Exception {
+		conceptsUtils.conceptsValidation(body);
 	}
 	
 	/**
 	 * Export concept(s)
 	 */
 	public Response getConceptExport(String id, String acceptHeader) {
-		JSONObject concept = new ConceptsExport().getConceptData(id);
-		Jasper jasper = new Jasper();
+		JSONObject concept = conceptsExport.getConceptData(id);
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
@@ -143,16 +157,15 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Validate collection(s)
 	 */
-	public void setCollectionsValidation(String body) {
-		CollectionsUtils.collectionsValidation(body);
+	public void setCollectionsValidation(String body) throws Exception {
+		collectionsUtils.collectionsValidation(body);
 	}
 	
 	/**
 	 * Export collection(s)
 	 */
 	public Response getCollectionExport(String id, String acceptHeader) {
-		JSONObject collection = new ConceptsExport().getCollectionData(id);
-		Jasper jasper = new Jasper();
+		JSONObject collection = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
@@ -164,18 +177,14 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Send concept
 	 */
-	public boolean setConceptSend(String id, String body) {
-		// TODO Externalize Impl choice
-		MailSenderContract mailSender = new RmesMailSenderImpl();
+	public boolean setConceptSend(String id, String body) throws Exception {
 		return mailSender.sendMailConcept(id, body);
 	}
 	
 	/**
 	 * Send collection
 	 */
-	public boolean setCollectionSend(String id, String body) {
-		// TODO Externalize Impl choice
-		MailSenderContract mailSender = new RmesMailSenderImpl();
+	public boolean setCollectionSend(String id, String body) throws Exception {
 		return mailSender.sendMailCollection(id, body);
 	}
 
