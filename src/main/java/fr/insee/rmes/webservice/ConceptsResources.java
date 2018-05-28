@@ -151,7 +151,6 @@ public class ConceptsResources {
 	public Response setConceptsValidation(String body) throws Exception {
 		try {
 			conceptsService.setConceptsValidation(body);
-			logger.info("Validated concepts : " + body);
 			return Response.status(Status.NO_CONTENT).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -186,8 +185,9 @@ public class ConceptsResources {
 	@POST
 	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void setCollection(String body) {
+	public Response setCollection(String body) {
 		conceptsService.setCollection(body);
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
