@@ -109,9 +109,12 @@ public class Jasper {
 	 * @return 
 	 * @throws Exception
 	 */
-	private static InputStream exportXml(String xml, InputStream is, String acceptHeader) throws Exception {
+	private InputStream exportXml(String xml, InputStream is, String acceptHeader) throws Exception {
 		Map<String, Object> jasperParams = new HashMap<>();
-		jasperParams.put("PATH_JASPER", String.format("%s/webapps/%s", System.getProperty("catalina.base"), "jasper"));
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		String pathJasper = classLoader.getResource("jasper/export_varBook.jrxml").getPath()
+				.replace("export_varBook.jrxml", "").substring(1).replace("%20", " ");
+		jasperParams.put("PATH_JASPER", pathJasper);
 		InputStream xmlInput = new ByteArrayInputStream(xml.toString().getBytes());
 		JRDataSource datasource = new JRXmlDataSource(xmlInput, "/*[local-name()='DDIInstance']", true);
 		getJrProperties();

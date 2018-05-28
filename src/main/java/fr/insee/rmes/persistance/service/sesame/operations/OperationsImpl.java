@@ -1,8 +1,9 @@
 package fr.insee.rmes.persistance.service.sesame.operations;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +21,19 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SerieForList;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Service
@@ -43,18 +45,28 @@ public class OperationsImpl implements OperationsService {
 	RestTemplate restTemplate;
 
 	@Override
-	public List<SerieForList> getSeries() throws Exception {
+	public List<SimpleObjectForList> getSeries() throws Exception {
 		String url = String.format("%s/api/search/series", Config.BASE_URI_METADATA_API);
-		ResponseEntity<SerieForList[]> seriesRes = restTemplate.exchange(url, HttpMethod.GET, null,
-				SerieForList[].class);
+		ResponseEntity<SimpleObjectForList[]> seriesRes = restTemplate.exchange(url, HttpMethod.GET, null,
+				SimpleObjectForList[].class);
 		logger.info("GET Series");
 		return Arrays.asList(seriesRes.getBody());
+	}
+
+	@Override
+	public List<SimpleObjectForList> getOperations() throws Exception {
+		String url = String.format("%s/api/search/operations", Config.BASE_URI_METADATA_API);
+		ResponseEntity<SimpleObjectForList[]> res = restTemplate.exchange(url, HttpMethod.GET, null,
+				SimpleObjectForList[].class);
+		logger.info("GET Operations");
+		return Arrays.asList(res.getBody());
 	}
 
 	@Override
 	public String getDataForVarBook(String operationId) throws Exception {
 		String url = String.format("%s/api/meta-data/operation/%s/variableBook", Config.BASE_URI_METADATA_API,
 				operationId);
+		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
 		ResponseEntity<String> seriesRes = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 		logger.info("GET data for variable book");
 		return seriesRes.getBody();
@@ -89,7 +101,7 @@ public class OperationsImpl implements OperationsService {
 			throws ParserConfigurationException, SAXException, IOException {
 
 		// transform inputXml into Document
-		InputStream inputXml = new ByteArrayInputStream(xml.getBytes());
+		InputSource inputXml = new InputSource(new StringReader(xml));
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setValidating(false);
 		DocumentBuilder db = dbf.newDocumentBuilder();

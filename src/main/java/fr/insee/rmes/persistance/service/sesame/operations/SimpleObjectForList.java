@@ -1,8 +1,8 @@
-package fr.insee.rmes.persistance.service.sesame.operations.series;
+package fr.insee.rmes.persistance.service.sesame.operations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SerieForList {
+public class SimpleObjectForList {
 	
 	@JsonProperty("id")
 	public String id;
