@@ -138,15 +138,10 @@ public class ConceptsResources {
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setConcept(@PathParam("id") String id, String body) throws Exception {
-		try {
-			conceptsService.setConcept(id, body);
-			logger.info("Update concept : " + id);
-			return Response.status(Status.NO_CONTENT).build();
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
+	public Response setConcept(@PathParam("id") String id, String body) {
+		conceptsService.setConcept(id, body);
+		logger.info("Update concept : " + id);
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
@@ -190,12 +185,18 @@ public class ConceptsResources {
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
-	// TODO Filter by stamp
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void setCollection(@PathParam("id") String id, String body) {
-		conceptsService.setCollection(id, body);
+	public Response setCollection(@PathParam("id") String id, String body) throws Exception {
+		try {
+			conceptsService.setCollection(id, body);
+			logger.info("Update collection : " + id);
+			return Response.status(Status.NO_CONTENT).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_COLLECTIONS_CREATOR })

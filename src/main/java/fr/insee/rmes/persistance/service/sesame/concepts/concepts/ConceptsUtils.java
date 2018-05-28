@@ -66,10 +66,7 @@ public class ConceptsUtils {
 		return concept.getId();
 	}
 	
-	public void setConcept(String id, String body) throws Exception {
-		URI conceptURI = SesameUtils.conceptIRI(id);
-		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI))
-			throw new RmesUnauthorizedException();
+	public void setConcept(String id, String body) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

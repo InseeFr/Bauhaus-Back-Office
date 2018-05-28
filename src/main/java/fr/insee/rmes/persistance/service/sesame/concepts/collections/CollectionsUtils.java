@@ -55,8 +55,11 @@ public class CollectionsUtils {
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public void setCollection(String id, String body) {
+	public void setCollection(String id, String body) throws Exception {
+		URI collectionURI = SesameUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
+		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
+			throw new RmesUnauthorizedException();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Collection collection = new Collection(id);

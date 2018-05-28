@@ -113,7 +113,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * Modify concept
 	 */
 	@Override
-	public void setConcept(String id, String body) throws Exception {
+	public void setConcept(String id, String body) {
 		conceptsUtils.setConcept(id, body);
 	}
 		
@@ -128,7 +128,7 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Modify collection
 	 */
-	public void setCollection(String id, String body) {
+	public void setCollection(String id, String body) throws Exception {
 		collectionsUtils.setCollection(id, body);
 	}
 	
