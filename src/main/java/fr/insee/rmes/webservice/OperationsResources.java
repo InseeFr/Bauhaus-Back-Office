@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.persistance.service.OperationsService;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SerieForList;
+import fr.insee.rmes.persistance.service.sesame.operations.SimpleObjectForList;
 
 @Component
 @Path("/operations")
@@ -32,8 +32,21 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSeries() throws Exception {
 		try {
-			List<SerieForList> series = operationsService.getSeries();
+			List<SimpleObjectForList> series = operationsService.getSeries();
 			return Response.ok().entity(series).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
+	}
+
+	@GET
+	@Path("/operations")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getOperations() throws Exception {
+		try {
+			List<SimpleObjectForList> operations = operationsService.getOperations();
+			return Response.ok().entity(operations).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw e;
@@ -43,13 +56,15 @@ public class OperationsResources {
 	@GET
 	@Path("/operation/{id}/variableBook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	public Response getVarBookExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getVarBookExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader)
+			throws Exception {
 		try {
 			return operationsService.getVarBookExport(id, acceptHeader);
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			throw e;
 		}
-		return null;
+		// return null;
 	}
 
 }
