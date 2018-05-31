@@ -35,4 +35,6 @@ public interface ClassificationsService {
 	public String getCorrespondences() throws Exception;
 	
 	public String getCorrespondence(String id) throws Exception;
+	
+	public String getCorrespondenceAssociations(String id) throws Exception;
 }
