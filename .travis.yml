@@ -5,5 +5,5 @@ jdk:
 install:
 - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
-after_deploy:
+script:
 - bash scripts/gitbook.sh
