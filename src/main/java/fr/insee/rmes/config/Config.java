@@ -49,4 +49,6 @@ public class Config {
 	public static String IGESA_USER = "";
 	public static String IGESA_PASSWORD = "";
 
+	public static String SWAGGER_HOST = "";
+	public static String SWAGGER_BASEPATH = "";
 }
