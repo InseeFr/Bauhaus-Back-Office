@@ -19,10 +19,10 @@ public class SwaggerConfig extends HttpServlet {
 		try {
 			super.init(config);
 			BeanConfig beanConfig = new BeanConfig();
-			beanConfig.setTitle("API Bauhaus RMéS");
-			beanConfig.setVersion("0.2");
-			beanConfig.setDescription("API specification for Insee metadata manager app");
-			beanConfig.setSchemes(new String[] { "http", "https" });
+			beanConfig.setTitle("Bauhaus API");
+			beanConfig.setVersion("1.1.2");
+			beanConfig.setDescription("Rest Endpoints and services Integration used by Bauhaus");
+			beanConfig.setSchemes(new String[] { Config.REQUIRES_SSL ? "https" : "http" });
 			beanConfig.setBasePath("/" + Config.SWAGGER_BASEPATH);
 			beanConfig.setHost(Config.SWAGGER_HOST);
 			beanConfig.setResourcePackage("fr.insee.rmes.webservice");
