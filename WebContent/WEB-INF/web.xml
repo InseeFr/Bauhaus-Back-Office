@@ -42,7 +42,7 @@
 		</init-param>
 		<init-param>
 			<param-name>cors.allowed.headers</param-name>
-			<param-value>Authorization,Access-Control-Allow-Origin,Content-Type,X-Requested-With,accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers</param-value>
+			<param-value>Authorization,Access-Control-Allow-Origin,Content-Type,X-Requested-With,accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers, api_key</param-value>
 		</init-param>
 		<init-param>
 			<param-name>cors.exposed.headers</param-name>
@@ -54,19 +54,32 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
+
+	<!-- JERSEY -->
 	<servlet>
 		<servlet-name>public</servlet-name>
 		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>fr.insee.rmes.webservice</param-value>
+			<param-value>fr.insee.rmes.webservice,io.swagger.jaxrs.listing</param-value>
 		</init-param>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>public</servlet-name>
 		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
-	
+
+
+	<!-- SWAGGER ANNOTATIONS -->
+	<servlet>
+		<servlet-name>SwaggerBootstrap</servlet-name>
+		<servlet-class>fr.insee.rmes.config.SwaggerConfig</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+
+
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>

@@ -21,6 +21,10 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.roles.Constants;
 import fr.insee.rmes.persistance.service.ConceptsService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * WebService class for resources of Concepts
@@ -31,6 +35,12 @@ import fr.insee.rmes.persistance.service.ConceptsService;
  */
 @Component
 @Path("/concepts")
+@Api(value = "Concept API", tags = { "Concepts and collections" })
+@ApiResponses(value = { @ApiResponse(code = 400, message = "La syntaxe de la requête est incorrecte"),
+		@ApiResponse(code = 401, message = "Une authentification est nécessaire pour accéder à la ressource"),
+		@ApiResponse(code = 404, message = "Ressource non trouvée"),
+		@ApiResponse(code = 406, message = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
+		@ApiResponse(code = 500, message = "Erreur interne du serveur") })
 public class ConceptsResources {
 
 	final static Logger logger = LogManager.getLogger(ConceptsResources.class);
@@ -40,6 +50,10 @@ public class ConceptsResources {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConcepts", value = "List of concepts") // ,
+																		// response
+																		// =
+																		// String.class)
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();

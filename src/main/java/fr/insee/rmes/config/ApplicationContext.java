@@ -97,6 +97,9 @@ public class ApplicationContext {
 		Config.IGESA_USER = env.getProperty("fr.insee.rmes.bauhaus.igesa.user");
 		Config.IGESA_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.igesa.password");
 
+		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");
+		Config.SWAGGER_BASEPATH = env.getProperty("fr.insee.rmes.bauhaus.api.basepath");
+
 	}
 
 }
