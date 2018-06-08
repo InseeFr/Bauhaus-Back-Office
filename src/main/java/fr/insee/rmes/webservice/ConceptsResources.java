@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.auth.security.manager.User;
 import fr.insee.rmes.config.roles.Constants;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import io.swagger.annotations.Api;
@@ -35,12 +36,16 @@ import io.swagger.annotations.ApiResponses;
  */
 @Component
 @Path("/concepts")
-@Api(value = "Concept API", tags = { "Concepts and collections" })
-@ApiResponses(value = { @ApiResponse(code = 400, message = "La syntaxe de la requête est incorrecte"),
-		@ApiResponse(code = 401, message = "Une authentification est nécessaire pour accéder à la ressource"),
-		@ApiResponse(code = 404, message = "Ressource non trouvée"),
-		@ApiResponse(code = 406, message = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
-		@ApiResponse(code = 500, message = "Erreur interne du serveur") })
+@Api(value = "Concept API", tags = { "Concepts" })
+@ApiResponses(value = { 
+		@ApiResponse(code = 200, message = "Success"),
+		@ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(code = 400, message = "Bad Request"),
+		@ApiResponse(code = 401, message = "Unauthorized"),
+		@ApiResponse(code = 403, message = "Forbidden"),
+		@ApiResponse(code = 404, message = "Not found"),
+		@ApiResponse(code = 406, message = "Not Acceptable"),
+		@ApiResponse(code = 500, message = "Internal server error") })
 public class ConceptsResources {
 
 	final static Logger logger = LogManager.getLogger(ConceptsResources.class);
@@ -50,10 +55,7 @@ public class ConceptsResources {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConcepts", value = "List of concepts") // ,
-																		// response
-																		// =
-																		// String.class)
+	@ApiOperation(nickname = "getConcepts", value = "List of concepts", response = User.class , responseContainer = "List")																 
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
