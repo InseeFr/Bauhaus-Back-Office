@@ -74,7 +74,7 @@
 	<!-- SWAGGER ANNOTATIONS -->
 	<servlet>
 		<servlet-name>SwaggerBootstrap</servlet-name>
-		<servlet-class>fr.insee.rmes.config.SwaggerConfig</servlet-class>
+		<servlet-class>fr.insee.rmes.config.swagger.SwaggerConfig</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 

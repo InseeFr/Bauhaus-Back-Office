@@ -1,4 +1,4 @@
-package fr.insee.rmes.config;
+package fr.insee.rmes.config.swagger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import fr.insee.rmes.config.Config;
 import io.swagger.jaxrs.config.BeanConfig;
 
 @SuppressWarnings("serial")
