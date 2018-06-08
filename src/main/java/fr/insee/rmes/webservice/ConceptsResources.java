@@ -20,7 +20,11 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.roles.Constants;
+import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.concepts.CollectionById;
+import fr.insee.rmes.config.swagger.model.concepts.CollectionMembers;
+import fr.insee.rmes.config.swagger.model.concepts.CollectionsToValidate;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptById;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptLinks;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
@@ -114,6 +118,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getCollections", value = "List of collections", response = IdLabel.class , responseContainer = "List")
 	public Response getCollections() {
 		String jsonResultat = conceptsService.getCollections();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -122,6 +127,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections/dashboard")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getCollectionsDashboard", value = "Rich list of collections", response = IdLabel.class , responseContainer = "List")
 	public Response getCollectionsDashboard() {
 		String jsonResultat = conceptsService.getCollectionsDashboard();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -130,6 +136,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getCollectionsToValidate", value = "List of collections to validate", response = CollectionsToValidate.class , responseContainer = "List")
 	public Response getCollectionsToValidate() {
 		String jsonResultat = conceptsService.getCollectionsToValidate();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -138,6 +145,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collection/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getCollectionByID", value = "Collection", response = CollectionById.class)
 	public Response getCollectionByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getCollectionByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -145,6 +153,7 @@ public class ConceptsResources {
 
 	@GET
 	@Path("/collection/{id}/members")
+	@ApiOperation(nickname = "getCollectionMembersByID", value = "List of collection member concepts", response = CollectionMembers.class , responseContainer = "List")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCollectionMembersByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getCollectionMembersByID(id);
