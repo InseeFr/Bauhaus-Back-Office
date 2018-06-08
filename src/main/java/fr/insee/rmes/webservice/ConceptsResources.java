@@ -19,8 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.auth.security.manager.User;
 import fr.insee.rmes.config.roles.Constants;
+import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.concepts.ConceptById;
+import fr.insee.rmes.config.swagger.model.concepts.ConceptLinks;
+import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
+import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
+import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,7 +60,7 @@ public class ConceptsResources {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConcepts", value = "List of concepts", response = User.class , responseContainer = "List")																 
+	@ApiOperation(nickname = "getConcepts", value = "List of concepts", response = IdLabelAltLabel.class , responseContainer = "List")																 
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -64,6 +69,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConceptsSearch", value = "Rich list of concepts", response = ConceptsSearch.class , responseContainer = "List")																 
 	public Response getConceptsSearch() {
 		String jsonResultat = conceptsService.getConceptsSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -72,6 +78,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConceptByID", value = "Concept", response = ConceptById.class)																 
 	public Response getConceptByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getConceptByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -80,6 +87,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConceptsToValidate", value = "List of concepts to validate", response = ConceptsToValidate.class , responseContainer = "List")
 	public Response getConceptsToValidate() {
 		String jsonResultat = conceptsService.getConceptsToValidate();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -88,6 +96,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}/links")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConceptLinksByID", value = "List of linked concepts", response = ConceptLinks.class , responseContainer = "List")
 	public Response getConceptLinksByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getConceptLinksByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -96,6 +105,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}/notes/{conceptVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getConceptNotesByID", value = "List of linked concepts", response = ConceptNotes.class)
 	public Response getConceptNotesByID(@PathParam("id") String id, @PathParam("conceptVersion") int conceptVersion) {
 		String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
