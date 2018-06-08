@@ -105,7 +105,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}/notes/{conceptVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptNotesByID", value = "List of linked concepts", response = ConceptNotes.class)
+	@ApiOperation(nickname = "getConceptNotesByID", value = "Last notes of the concept", response = ConceptNotes.class)
 	public Response getConceptNotesByID(@PathParam("id") String id, @PathParam("conceptVersion") int conceptVersion) {
 		String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
