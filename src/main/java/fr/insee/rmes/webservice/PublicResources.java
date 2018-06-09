@@ -33,6 +33,7 @@ import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.stamps.StampsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -147,7 +148,8 @@ public class PublicResources {
 	@POST
 	@Path("/private/role/add")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setAddRole(String body) {
+	@ApiOperation(nickname = "setAddRole", value = "Add roles")
+	public Response setAddRole(@ApiParam(value = "Roles and users to add", required = true) String body) {
 		userRolesManagerService.setAddRole(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -155,7 +157,8 @@ public class PublicResources {
 	@POST
 	@Path("/private/role/delete")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setDeleteRole(String body) {
+	@ApiOperation(nickname = "setDeleteRole", value = "Delete role")
+	public Response setDeleteRole(@ApiParam(value = "Role and user to delete", required = true) String body) {
 		userRolesManagerService.setDeleteRole(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
