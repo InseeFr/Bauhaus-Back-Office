@@ -33,6 +33,7 @@ import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -164,7 +165,8 @@ public class ConceptsResources {
 	@POST
 	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setConcept(String body) {
+	@ApiOperation(nickname = "setConcept", value = "Create concept")
+	public Response setConcept(@ApiParam(value = "Concept", required = true) String body) {
 		String id = conceptsService.setConcept(body);
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -173,7 +175,10 @@ public class ConceptsResources {
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setConcept(@PathParam("id") String id, String body) {
+	@ApiOperation(nickname = "setConceptById", value = "Update concept")
+	public Response setConcept(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
+			@ApiParam(value = "Concept", required = true) String body) {
 		conceptsService.setConcept(id, body);
 		logger.info("Update concept : " + id);
 		return Response.status(Status.NO_CONTENT).build();
@@ -183,7 +188,9 @@ public class ConceptsResources {
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setConceptsValidation(String body) throws Exception {
+	@ApiOperation(nickname = "setConceptsValidation", value = "Concepts validation")
+	public Response setConceptsValidation(
+			@ApiParam(value = "Concept id array to validate", required = true) String body) throws Exception {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return Response.status(Status.NO_CONTENT).build();
@@ -196,6 +203,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@ApiOperation(nickname = "getConceptExport", value = "Blob of concept")
 	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		return conceptsService.getConceptExport(id, acceptHeader);
 	}
@@ -205,7 +213,10 @@ public class ConceptsResources {
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response setConceptSend(@PathParam("id") String id, String body) throws Exception {
+	@ApiOperation(nickname = "setConceptSend", value = "Send concept", response = Boolean.class)
+	public Response setConceptSend(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
+			@ApiParam(value = "Mail informations", required = true) String body) throws Exception {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : " + id);
@@ -220,7 +231,8 @@ public class ConceptsResources {
 	@POST
 	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setCollection(String body) {
+	@ApiOperation(nickname = "setCollection", value = "Create collection")
+	public Response setCollection(@ApiParam(value = "Collection", required = true) String body) {
 		conceptsService.setCollection(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -229,7 +241,10 @@ public class ConceptsResources {
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setCollection(@PathParam("id") String id, String body) throws Exception {
+	@ApiOperation(nickname = "setCollectionById", value = "Update collection")
+	public Response setCollection(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
+			@ApiParam(value = "Collection", required = true) String body) throws Exception {
 		try {
 			conceptsService.setCollection(id, body);
 			logger.info("Update collection : " + id);
@@ -244,7 +259,9 @@ public class ConceptsResources {
 	@PUT
 	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response setCollectionsValidation(String body) throws Exception {
+	@ApiOperation(nickname = "setCollectionsValidation", value = "Collections validation")
+	public Response setCollectionsValidation(
+			@ApiParam(value = "Collection id array to validate", required = true) String body) throws Exception {
 		try {
 			conceptsService.setCollectionsValidation(body);
 			logger.info("Validated concepts : " + body);
@@ -258,6 +275,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collection/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@ApiOperation(nickname = "getCollectionExport", value = "Blob of collection")
 	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		return conceptsService.getCollectionExport(id, acceptHeader);
 	}
@@ -267,7 +285,10 @@ public class ConceptsResources {
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response setCollectionSend(@PathParam("id") String id, String body) throws Exception {
+	@ApiOperation(nickname = "setCollectionSend", value = "Send collection", response = Boolean.class)
+	public Response setCollectionSend(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
+			@ApiParam(value = "Mail informations", required = true) String body) throws Exception {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
 			logger.info("Send concept : " + id);
@@ -277,4 +298,5 @@ public class ConceptsResources {
 			throw e;
 		}
 	}
+
 }
