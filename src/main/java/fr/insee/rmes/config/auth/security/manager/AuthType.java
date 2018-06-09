@@ -3,7 +3,6 @@ package fr.insee.rmes.config.auth.security.manager;
 public enum AuthType {
 	
 	NO_AUTH("NoAuthImpl"),
-	FAKE_AUTH("FakeAuthImpl"),
 	BASIC_AUTH("BasicAuthImpl"),
 	OPEN_ID_CONNECT_AUTH("OpenIDConnectAuth");
 
