@@ -13,10 +13,33 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.persistance.service.ClassificationsService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+/**
+ * WebService class for resources of Classifications
+ * 
+ * 
+ * @author N. Laval
+ *
+ */
 
 @Component
 @Path("/classifications")
+@Api(value = "Classification API", tags = { "Classifications" })
+@ApiResponses(value = { 
+		@ApiResponse(code = 200, message = "Success"),
+		@ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(code = 400, message = "Bad Request"),
+		@ApiResponse(code = 401, message = "Unauthorized"),
+		@ApiResponse(code = 403, message = "Forbidden"),
+		@ApiResponse(code = 404, message = "Not found"),
+		@ApiResponse(code = 406, message = "Not Acceptable"),
+		@ApiResponse(code = 500, message = "Internal server error") })
 public class ClassificationsResources {
 
 	final static Logger logger = LogManager.getLogger(ClassificationsResources.class);
@@ -27,6 +50,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/families")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getClassificationFamilies", value = "List of classification families", response = IdLabel.class , responseContainer = "List")
 	public Response getFamilies() throws Exception {
 		String jsonResultat = classificationsService.getFamilies();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -51,6 +75,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getClassificationSeries", value = "List of classification series", response = IdLabel.class , responseContainer = "List")
 	public Response getSeries() throws Exception {
 		String jsonResultat = classificationsService.getSeries();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -74,6 +99,7 @@ public class ClassificationsResources {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getClassifications", value = "List of classifications", response = IdLabel.class , responseContainer = "List")
 	public Response getClassifications() throws Exception {
 		String jsonResultat = classificationsService.getClassifications();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
