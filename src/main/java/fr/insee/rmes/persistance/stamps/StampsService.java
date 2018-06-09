@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.stamps;
 
-public interface StampsContract {
+public interface StampsService {
 	
 	public String getStamps();
 

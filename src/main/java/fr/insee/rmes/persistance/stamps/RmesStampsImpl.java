@@ -13,13 +13,16 @@ import javax.naming.directory.SearchResult;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
 
-public class RmesStampsImpl implements StampsContract {
+@Service
+public class RmesStampsImpl implements StampsService {
 	
 	final static Logger logger = LogManager.getLogger(RmesStampsImpl.class);
-	
+
+	@Override
 	public String getStamps() {
 		TreeSet<String> stamps = new TreeSet<String>();
 		logger.info("Connection to LDAP : " + Config.LDAP_URL);

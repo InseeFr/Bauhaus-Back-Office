@@ -23,8 +23,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.manager.SecurityManagerService;
 import fr.insee.rmes.config.roles.UserRolesManagerService;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
-import fr.insee.rmes.persistance.stamps.RmesStampsImpl;
-import fr.insee.rmes.persistance.stamps.StampsContract;
+import fr.insee.rmes.persistance.stamps.StampsService;
 
 /**
  * WebService class for resources of Concepts
@@ -49,6 +48,9 @@ public class PublicResources {
 
 	@Autowired
 	UserRolesManagerService userRolesManagerService;
+	
+	@Autowired
+	StampsService stampsService;
 
 	@GET
 	@Path("/init")
@@ -82,8 +84,7 @@ public class PublicResources {
 	@Path("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStamps() {
-		StampsContract stampsContract = new RmesStampsImpl();
-		return Response.status(HttpStatus.SC_OK).entity(stampsContract.getStamps()).build();
+		return Response.status(HttpStatus.SC_OK).entity(stampsService.getStamps()).build();
 	}
 
 	@GET
