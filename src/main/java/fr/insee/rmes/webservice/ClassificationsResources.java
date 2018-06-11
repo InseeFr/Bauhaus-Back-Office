@@ -135,10 +135,10 @@ public class ClassificationsResources {
 	}
 	
 	@GET
-	@Path("/classification/{id}/level/{depth}")
+	@Path("/classification/{id}/level/{levelId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevel(@PathParam("id") String id, @PathParam("depth") String depth) throws Exception {
-		String jsonResultat = classificationsService.getClassificationLevel(id, depth);
+	public Response getClassificationLevel(@PathParam("id") String id, @PathParam("levelId") String levelId) throws Exception {
+		String jsonResultat = classificationsService.getClassificationLevel(id, levelId);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
