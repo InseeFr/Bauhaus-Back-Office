@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.swagger.model.IdLabel;
+import fr.insee.rmes.config.swagger.model.classifications.Family;
+import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -50,7 +52,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/families")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassificationFamilies", value = "List of classification families", response = IdLabel.class , responseContainer = "List")
+	@ApiOperation(nickname = "getClassificationFamilies", value = "List of classification families", response = IdLabel.class, responseContainer = "List")
 	public Response getFamilies() throws Exception {
 		String jsonResultat = classificationsService.getFamilies();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -59,6 +61,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getFamily", value = "Classification family", response = Family.class)
 	public Response getFamily(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getFamily(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -67,6 +70,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/family/{id}/members")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getFamilyMembers", value = "Members of family", response = Members.class , responseContainer = "List")
 	public Response getFamilyMembers(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getFamilyMembers(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -75,7 +79,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassificationSeries", value = "List of classification series", response = IdLabel.class , responseContainer = "List")
+	@ApiOperation(nickname = "getClassificationSeries", value = "List of classification series", response = IdLabel.class, responseContainer = "List")
 	public Response getSeries() throws Exception {
 		String jsonResultat = classificationsService.getSeries();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -92,6 +96,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series/{id}/members")
 	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getSeriesMembers", value = "Members of series", response = Members.class , responseContainer = "List")
 	public Response getSeriesMembers(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getSeriesMembers(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -99,7 +104,7 @@ public class ClassificationsResources {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassifications", value = "List of classifications", response = IdLabel.class , responseContainer = "List")
+	@ApiOperation(nickname = "getClassifications", value = "List of classifications", response = IdLabel.class, responseContainer = "List")
 	public Response getClassifications() throws Exception {
 		String jsonResultat = classificationsService.getClassifications();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
