@@ -34,6 +34,8 @@ import org.xml.sax.SAXException;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Service
@@ -48,12 +50,9 @@ public class OperationsImpl implements OperationsService {
 	RestTemplate restTemplate;
 
 	@Override
-	public List<SimpleObjectForList> getSeries() throws Exception {
-		String url = String.format("%s/api/search/series", Config.BASE_URI_METADATA_API);
-		ResponseEntity<SimpleObjectForList[]> seriesRes = restTemplate.exchange(url, HttpMethod.GET, null,
-				SimpleObjectForList[].class);
-		logger.info("GET Series");
-		return Arrays.asList(seriesRes.getBody());
+	public String getSeries() throws Exception {
+		logger.info("Starting to get operation series list");
+		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
 	}
 
 	@Override

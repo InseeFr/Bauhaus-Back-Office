@@ -8,7 +8,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.SimpleObjectForList;
 
 public interface OperationsService {
 
-	List<SimpleObjectForList> getSeries() throws Exception;
+	String getSeries() throws Exception;
 
 	String getDataForVarBook(String idOperation) throws Exception;
 

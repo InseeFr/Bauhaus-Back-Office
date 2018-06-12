@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +32,8 @@ public class OperationsResources {
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getSeries() throws Exception {
-		try {
-			List<SimpleObjectForList> series = operationsService.getSeries();
-			return Response.ok().entity(series).build();
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
+		String jsonResultat = operationsService.getSeries();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
 	@GET
