@@ -35,6 +35,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.utils.XMLUtils;
 
@@ -52,7 +53,8 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getSeries() throws Exception {
 		logger.info("Starting to get operation series list");
-		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
