@@ -113,10 +113,10 @@ public class RepositoryGestion {
 	 * @return String
 	 */
 	public static JSONObject getResponseAsObject(String query) {
-		JSONObject res = new JSONObject(getResponse(query));
-		JSONArray resArray = sparqlJSONToResultArrayValues(res);
-		if (resArray.length() == 0)
+		JSONArray resArray = getResponseAsArray(query);
+		if (resArray.length() == 0) {
 			return new JSONObject();
+		}
 		return (JSONObject) resArray.get(0);
 	}
 
@@ -133,8 +133,9 @@ public class RepositoryGestion {
 
 	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
 		JSONArray arrayRes = new JSONArray();
-		if (jsonSparql.get("results") == null)
+		if (jsonSparql.get("results") == null) {
 			return null;
+		}
 
 		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings")).length();
 
@@ -151,8 +152,9 @@ public class RepositoryGestion {
 	}
 
 	public static JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
-		if (jsonSparql.get("results") == null)
+		if (jsonSparql.get("results") == null) {
 			return null;
+		}
 
 		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings"))
 				.get(0);
@@ -227,10 +229,9 @@ public class RepositoryGestion {
 		}
 	}
 
-
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) {
 		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
-		
+
 		typeOfLink.forEach(predicat -> {
 			RepositoryResult<Statement> statements = null;
 			try {
