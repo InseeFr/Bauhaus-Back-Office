@@ -18,9 +18,9 @@ import fr.insee.rmes.persistance.mailSender.MailSenderContract;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.persistance.service.sesame.export.ConceptsExport;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.utils.JSONUtils;
@@ -37,7 +37,7 @@ public class ConceptsImpl implements ConceptsService {
 	CollectionsUtils collectionsUtils;
 	
 	@Autowired 
-	ConceptsExport conceptsExport;
+	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
 	Jasper jasper;

@@ -34,7 +34,7 @@ import fr.insee.rmes.persistance.mailSender.rmes.NameValuePairType;
 import fr.insee.rmes.persistance.mailSender.rmes.Recipient;
 import fr.insee.rmes.persistance.mailSender.rmes.SendRequest;
 import fr.insee.rmes.persistance.mailSender.rmes.SendRequest.Recipients;
-import fr.insee.rmes.persistance.service.sesame.export.ConceptsExport;
+import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.mailSender.rmes.ServiceConfiguration;
 
@@ -42,7 +42,7 @@ import fr.insee.rmes.persistance.mailSender.rmes.ServiceConfiguration;
 public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Autowired
-	ConceptsExport conceptsExport;
+	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
 	Jasper jasper;
