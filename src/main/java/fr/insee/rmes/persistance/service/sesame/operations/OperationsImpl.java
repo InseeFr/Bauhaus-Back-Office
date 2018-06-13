@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -34,6 +32,7 @@ import org.xml.sax.SAXException;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -43,7 +42,7 @@ import fr.insee.rmes.utils.XMLUtils;
 public class OperationsImpl implements OperationsService {
 
 	final static Logger logger = LogManager.getLogger(OperationsImpl.class);
-	
+
 	@Autowired
 	Jasper jasper;
 
@@ -58,16 +57,13 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
-	public List<SimpleObjectForList> getOperations() throws Exception {
-		String url = String.format("%s/api/search/operations", Config.BASE_URI_METADATA_API);
-		ResponseEntity<SimpleObjectForList[]> res = restTemplate.exchange(url, HttpMethod.GET, null,
-				SimpleObjectForList[].class);
-		logger.info("GET Operations");
-		return Arrays.asList(res.getBody());
+	public String getOperations() throws Exception {
+		logger.info("Starting to get operations list");
+		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
-	@Override
-	public String getDataForVarBook(String operationId) throws Exception {
+	private String getDataForVarBook(String operationId) throws Exception {
 		String url = String.format("%s/api/meta-data/operation/%s/variableBook", Config.BASE_URI_METADATA_API,
 				operationId);
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
