@@ -105,12 +105,12 @@ public class ConceptsUtils {
 		model.add(conceptURI, DCTERMS.CREATED, SesameUtils.setLiteralDateTime(concept.getCreated()), SesameUtils.conceptGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.LG2, model);
-		String arr = concept.getAltLabelLg1();
-		String[] a = arr.split(" \\|\\| ");
-		for (String altLabelLg1 : a) {
+		List<String> altLabelsLg1 = concept.getAltLabelLg1();
+		List<String> altLabelsLg2 = concept.getAltLabelLg2();
+		for (String altLabelLg1 : altLabelsLg1) {
 			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model);
 		}
-		for (String altLabelLg2 : concept.getAltLabelLg2().split(" \\|\\| ")) {
+		for (String altLabelLg2 : altLabelsLg2) {
 			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model);
 		}		
 		SesameUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model);

@@ -12,8 +12,8 @@ public class Concept {
 	private String id;
 	private String prefLabelLg1;
 	private String prefLabelLg2;
-	private String altLabelLg1;
-	private String altLabelLg2;
+	private List<String> altLabelLg1;
+	private List<String> altLabelLg2;
 	private String creator;
 	private String contributor;
 	private String disseminationStatus;
@@ -73,11 +73,11 @@ public class Concept {
 		return prefLabelLg2;
 	}
 
-	public String getAltLabelLg1() {
+	public List<String> getAltLabelLg1() {
 		return altLabelLg1;
 	}
 
-	public String getAltLabelLg2() {
+	public List<String> getAltLabelLg2() {
 		return altLabelLg2;
 	}
 
