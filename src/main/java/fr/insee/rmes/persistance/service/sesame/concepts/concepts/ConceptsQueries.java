@@ -75,7 +75,7 @@ public class ConceptsQueries {
 		
 	public static String conceptQuery(String id) { 
 
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?creator ?contributor ?disseminationStatus "
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
 				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
@@ -94,21 +94,19 @@ public class ConceptsQueries {
 				+ "OPTIONAL {?concept dcterms:modified ?modified} . \n"
 				+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
 				+ "?concept insee:isValidated ?isValidated . \n"
-				+ "{OPTIONAL{ \n"
-				+ "SELECT (group_concat(?altLg1;separator=' || ') as ?altLabelLg1) WHERE { \n"
-				+ "?concept skos:altLabel ?altLg1 . \n"
-				+ "FILTER (lang(?altLg1) = '" + Config.LG1 + "')  . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "}}} \n"
-				+ "{OPTIONAL{ \n"
-				+ "SELECT (group_concat(?altLg2;separator=' || ') as ?altLabelLg2) WHERE { \n"
-				+ "?concept skos:altLabel ?altLg2 . \n"
-				+ "FILTER (lang(?altLg2) = '" + Config.LG2 + "')  . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "}}} \n"
 				+ "}} \n"
 				+ "ORDER BY DESC(?conceptVersion) \n"
 				+ "LIMIT 1";
+	}
+	
+	public static String altLabel(String id, String lang) {
+		return "SELECT ?altLabel \n"
+				+ "WHERE { \n"
+				+ "?concept skos:altLabel ?altLabel \n"
+				+ "FILTER (lang(?altLabel) = '" + lang + "') . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				+ "}";
+		
 	}
 	
 	public static String conceptNotesQuery(String id, int conceptVersion) { 
