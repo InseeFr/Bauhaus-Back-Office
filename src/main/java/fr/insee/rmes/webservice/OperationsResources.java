@@ -14,6 +14,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.persistance.service.OperationsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,12 +24,12 @@ import io.swagger.annotations.ApiResponses;
 
 @Component
 @Path("/operations")
-@Api(value = "Operations API", tags = { "Opérations" })
-@ApiResponses(value = { @ApiResponse(code = 400, message = "La syntaxe de la requête est incorrecte"),
-		@ApiResponse(code = 401, message = "Une authentification est nécessaire pour accéder à la ressource"),
-		@ApiResponse(code = 404, message = "Ressource non trouvée"),
-		@ApiResponse(code = 406, message = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
-		@ApiResponse(code = 500, message = "Erreur interne du serveur") })
+@Api(value = "Operations API", tags = { "Operations" })
+@ApiResponses(value = { @ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 204, message = "No Content"),
+		@ApiResponse(code = 400, message = "Bad Request"), @ApiResponse(code = 401, message = "Unauthorized"),
+		@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not found"),
+		@ApiResponse(code = 406, message = "Not Acceptable"),
+		@ApiResponse(code = 500, message = "Internal server error") })
 public class OperationsResources {
 
 	final static Logger logger = LogManager.getLogger(OperationsResources.class);
@@ -38,24 +40,31 @@ public class OperationsResources {
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeries", value = "List of series")
+	@ApiOperation(nickname = "getSeries", value = "List of series", response = IdLabelAltLabel.class,
+	responseContainer = "List")
 	public Response getSeries() throws Exception {
 		String jsonResultat = operationsService.getSeries();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
 	@GET
+	@Path("/series/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getSeriesByID", value = "Series", response = SeriesById.class)
+	public Response getSeriesByID(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getSeriesByID(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getOperations", value = "List of operations")
+	@ApiOperation(nickname = "getOperations", value = "List of operations", response = IdLabelAltLabel.class,
+	responseContainer = "List")
 	public Response getOperations() throws Exception {
-		try {
-			String operations = operationsService.getOperations();
-			return Response.ok().entity(operations).build();
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
+		String jsonResultat = operationsService.getOperations();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+
 	}
 
 	@GET
@@ -70,7 +79,6 @@ public class OperationsResources {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
-		// return null;
 	}
 
 }
