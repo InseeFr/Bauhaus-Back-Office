@@ -53,7 +53,7 @@ public class RepositoryGestion {
 		} catch (OpenRDFException e) {
 			logger.error("Connection au repository impossible : " + repository.getDataDir());
 			logger.error(e.getMessage());
-			e.printStackTrace();
+			e.getMessage();
 		}
 		return con;
 	}
@@ -98,10 +98,14 @@ public class RepositoryGestion {
 	 * Method which aims to produce response from a sparql query
 	 * 
 	 * @param query
-	 * @return String
+	 * @return JSONArray
 	 */
 	public static JSONArray getResponseAsArray(String query) {
-		JSONObject res = new JSONObject(getResponse(query));
+		String response = getResponse(query);
+		if (response.equals("")){
+			return null;
+		}
+		JSONObject res = new JSONObject(response);
 		JSONArray resArray = sparqlJSONToResultArrayValues(res);
 		return resArray;
 	}
@@ -110,11 +114,11 @@ public class RepositoryGestion {
 	 * Method which aims to produce response from a sparql query
 	 * 
 	 * @param query
-	 * @return String
+	 * @return JSONObject
 	 */
 	public static JSONObject getResponseAsObject(String query) {
 		JSONArray resArray = getResponseAsArray(query);
-		if (resArray.length() == 0) {
+		if (resArray==null || resArray.length() == 0) {
 			return new JSONObject();
 		}
 		return (JSONObject) resArray.get(0);
@@ -170,7 +174,8 @@ public class RepositoryGestion {
 		try {
 			statements = con.getStatements(subject, null, null, false);
 		} catch (RepositoryException e) {
-			e.printStackTrace();
+			logger.error("Failure get statements : " + subject);
+			logger.error(e.getMessage());
 		}
 		return statements;
 	}
@@ -179,7 +184,8 @@ public class RepositoryGestion {
 		try {
 			statements.close();
 		} catch (RepositoryException e) {
-			e.printStackTrace();
+			logger.error("Failure close statements : ");
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -201,7 +207,8 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			e.getMessage();
+			logger.error("Failure load concept : " + concept);
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -212,7 +219,8 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			e.getMessage();
+			logger.error("Failure load collection : " + collection);
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -225,7 +233,8 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			e.getMessage();
+			logger.error("Failure validation : " + itemToValidateList);
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -237,12 +246,14 @@ public class RepositoryGestion {
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {
-				e.printStackTrace();
+				logger.error("Failure clearConceptLinks : " + concept);
+				logger.error(e.getMessage());
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				e.printStackTrace();
+				logger.error("Failure clearConceptLinks close statement : ");
+				logger.error(e.getMessage());
 			}
 		});
 	}
