@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.export;
+package fr.insee.rmes.persistance.service.sesame.concepts.concepts;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,12 +11,11 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
-import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;
 
 @Component
-public class ConceptsExport {
+public class ConceptsExportBuilder {
 
 	public JSONObject getConceptData(String id) {
 		JSONObject data = new JSONObject();
