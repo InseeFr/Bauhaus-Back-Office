@@ -12,4 +12,8 @@ public interface OperationsService {
 
 	String getSeriesByID(String id);
 
+	String getSeriesLinksByID(String id);
+
+	String getSeriesNotesByID(String id);
+
 }

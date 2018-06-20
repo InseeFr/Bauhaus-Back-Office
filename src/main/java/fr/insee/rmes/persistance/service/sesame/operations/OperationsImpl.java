@@ -63,6 +63,7 @@ public class OperationsImpl implements OperationsService {
 	public String getSeriesByID(String id) {
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		addSeriesAltLabel(id, series);
+		addSeriesOperations(id, series);
 		return series.toString();
 	}
 
@@ -75,6 +76,24 @@ public class OperationsImpl implements OperationsService {
 		if (altLabelLg2.length() != 0) {
 			series.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
 		}
+	}
+
+	private void addSeriesOperations(String idSeries, JSONObject series) {
+		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
+		if (operations.length() != 0) {
+			series.put("operations", operations);
+		}
+	}
+
+
+	@Override
+	public String getSeriesLinksByID(String id) {
+		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id)).toString();
+	}
+
+	@Override
+	public String getSeriesNotesByID(String id) {
+		return RepositoryGestion.getResponseAsObject(SeriesQueries.seriesNotesQuery(id)).toString();
 	}
 
 	@Override
