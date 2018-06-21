@@ -16,6 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +38,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.operations.Operations
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Service
@@ -54,6 +57,43 @@ public class OperationsImpl implements OperationsService {
 		logger.info("Starting to get operation series list");
 		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getSeriesByID(String id) {
+		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
+		addSeriesAltLabel(id, series);
+		addSeriesOperations(id, series);
+		return series.toString();
+	}
+
+	private void addSeriesAltLabel(String idSeries, JSONObject series) {
+		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG1));
+		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG2));
+		if (altLabelLg1.length() != 0) {
+			series.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
+		}
+		if (altLabelLg2.length() != 0) {
+			series.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		}
+	}
+
+	private void addSeriesOperations(String idSeries, JSONObject series) {
+		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
+		if (operations.length() != 0) {
+			series.put("operations", operations);
+		}
+	}
+
+
+	@Override
+	public String getSeriesLinksByID(String id) {
+		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id)).toString();
+	}
+
+	@Override
+	public String getSeriesNotesByID(String id) {
+		return RepositoryGestion.getResponseAsObject(SeriesQueries.seriesNotesQuery(id)).toString();
 	}
 
 	@Override

@@ -10,4 +10,10 @@ public interface OperationsService {
 
 	String getOperations() throws Exception;
 
+	String getSeriesByID(String id);
+
+	String getSeriesLinksByID(String id);
+
+	String getSeriesNotesByID(String id);
+
 }
