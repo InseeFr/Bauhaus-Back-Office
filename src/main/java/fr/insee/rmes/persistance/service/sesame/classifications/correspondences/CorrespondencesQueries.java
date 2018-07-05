@@ -20,8 +20,8 @@ public class CorrespondencesQueries {
 		String firstId = classificationsIds[0];
 		String secondId = classificationsIds[1];
 		return "SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 \n"
-				+ "?firstClassLabelLg1 ?firstClassLabelLg2 ?idFirstClass \n"
-				+ "?secondClassLabelLg1 ?secondClassLabelLg2 ?idSecondClass \n"
+				+ "?idFirstClass ?firstClassLabelLg1 ?firstClassLabelLg2 ?firstAltLabelLg1 ?firstAltLabelLg2 \n"
+				+ "?idSecondClass ?secondClassLabelLg1 ?secondClassLabelLg2 ?secondAltLabelLg1 ?secondAltLabelLg2 \n"
 				+ "WHERE { \n"
 				+ "?correspondence rdf:type xkos:Correspondence . \n"
 				+ "FILTER(REGEX(STR(?correspondence),'/codes/" + id + "')) . \n"
@@ -42,6 +42,10 @@ public class CorrespondencesQueries {
 				+ "FILTER (lang(?firstClassLabelLg1) = '" + Config.LG1 + "')  . \n"
 				+ "OPTIONAL {?firstClassURI skos:prefLabel ?firstClassLabelLg2 . \n"
 				+ "FILTER (lang(?firstClassLabelLg2) = '" + Config.LG2 + "') }  . \n"
+				+ "OPTIONAL {?firstClassURI skos:altLabel ?firstAltLabelLg1 . \n"
+				+ "FILTER (lang(?firstAltLabelLg1) = '" + Config.LG1 + "') } . \n"
+				+ "OPTIONAL {?firstClassURI skos:altLabel ?firstAltLabelLg2 . \n"
+				+ "FILTER (lang(?firstAltLabelLg2) = '" + Config.LG2 + "') } . \n"
 				// Second classification
 				+ "?correspondence xkos:compares ?secondClassURI . \n"
 				+ "FILTER(REGEX(STR(?secondClassURI),'/codes/" + secondId + "/')) . \n"
@@ -50,7 +54,12 @@ public class CorrespondencesQueries {
 				+ "FILTER (lang(?secondClassLabelLg1) = '" + Config.LG1 + "')  . \n"
 				+ "OPTIONAL {?secondClassURI skos:prefLabel ?secondClassLabelLg2 . \n"
 				+ "FILTER (lang(?secondClassLabelLg2) = '" + Config.LG2 + "') }  . \n"
-				+ "}";
+				+ "OPTIONAL {?secondClassURI skos:altLabel ?secondAltLabelLg1 . \n"
+				+ "FILTER (lang(?secondAltLabelLg1) = '" + Config.LG1 + "') } . \n"
+				+ "OPTIONAL {?secondClassURI skos:altLabel ?secondAltLabelLg2 . \n"
+				+ "FILTER (lang(?secondAltLabelLg2) = '" + Config.LG2 + "') } . \n"
+				+ "}"
+				+ "LIMIT 1";
 	}
 	
 	public static String correspondenceAssociationsQuery(String correspondenceId) {
