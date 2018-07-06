@@ -198,5 +198,14 @@ public class ClassificationsResources {
 		String jsonResultat = classificationsService.getCorrespondenceAssociations(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/correspondence/{correspondenceId}/association/{associationId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCorrespondenceItem(@PathParam("correspondenceId") String correspondenceId,
+			@PathParam("associationId") String associationId) throws Exception {
+		String jsonResultat = classificationsService.getCorrespondenceAssociation(correspondenceId, associationId);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }

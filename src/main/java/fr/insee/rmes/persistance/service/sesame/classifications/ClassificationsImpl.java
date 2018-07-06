@@ -130,4 +130,10 @@ public class ClassificationsImpl implements ClassificationsService {
 		logger.info("Starting to get correspondence associations : " + id);
 		return RepositoryGestion.getResponseAsArray(CorrespondencesQueries.correspondenceAssociationsQuery(id)).toString();
 	}
+	
+	@Override
+	public String getCorrespondenceAssociation(String correspondenceId, String associationId) {
+		logger.info("Starting to get correspondence association : " + correspondenceId + " - " + associationId);
+		return RepositoryGestion.getResponseAsObject(CorrespondencesQueries.correspondenceAssociationQuery(correspondenceId, associationId)).toString();
+	}
 }

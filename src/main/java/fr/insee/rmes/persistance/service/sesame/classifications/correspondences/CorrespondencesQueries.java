@@ -83,5 +83,71 @@ public class CorrespondencesQueries {
 				+ "FILTER (lang(?targetLabelLg2) = '" + Config.LG2 + "') }  . \n"
 				+ "}";
 	}
+	
+	public static String correspondenceAssociationQuery(String correspondenceId, String associationId) {
+		String[] classificationsIds = correspondenceId.split("-");
+		String sourceClassId = classificationsIds[0];
+		String targetClassId = classificationsIds[1];
+		String[] itemsIds = associationId.split("-");
+		String sourceItemId = itemsIds[0];
+		String targetItemId = itemsIds[1];
+		return "SELECT ?correspondenceId ?associationId ?labelLg1 ?labelLg2 ?scopeNoteLg1 ?scopeNoteLg2 \n"
+				+ "?sourceClassId ?sourceClassAltLabelLg1 ?sourceClassAltLabelLg2 \n"
+				+ "?targetClassId ?targetClassAltLabelLg1 ?targetClassAltLabelLg2 \n"
+				+ "?sourceItemId ?sourceItemLabelLg1 ?sourceItemLabelLg2 \n"
+				+ "?targetItemId ?targetItemLabelLg1 ?targetItemLabelLg2 \n"
+				+ "WHERE { \n"
+				// correspondence
+				+ "?correspondence rdf:type xkos:Correspondence . \n"
+				+ "FILTER(STRENDS(STR(?correspondence),'/codes/" + correspondenceId + "')) . \n"
+				+ "BIND(STRAFTER(STR(?correspondence),'/codes/') AS ?correspondenceId) \n"
+				+ "?correspondence skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
+				+ "OPTIONAL {?correspondence skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') } . \n"
+				// association
+				+ "?association rdf:type xkos:ConceptAssociation . \n"
+				+ "BIND('" + associationId + "' as ?associationId) . \n"
+				+ "FILTER(STRENDS(STR(?association),'/codes/" + correspondenceId + "/association/" + associationId + "')) . \n"
+				+ "OPTIONAL {?association skos:scopeNote ?scopeLg1 . \n"
+				+ "?scopeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 . \n"
+				+ "} . \n"
+				+ "OPTIONAL {?association skos:scopeNote ?scopeLg2 . \n"
+				+ "?scopeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 . \n"
+				+ "} . \n"
+				// classifications
+				+ "?sourceClassURI rdf:type skos:ConceptScheme . \n"
+				+ "FILTER(REGEX(STR(?sourceClassURI),'/codes/" + sourceClassId + "/')) . \n"
+				+ "BIND('" + sourceClassId + "' as ?sourceClassId) . \n"
+				+ "OPTIONAL {?sourceClassURI skos:altLabel ?sourceClassAltLabelLg1 . \n"
+				+ "FILTER (lang(?sourceClassAltLabelLg1) = '" + Config.LG1 + "') } . \n"
+				+ "OPTIONAL {?sourceClassURI skos:altLabel ?sourceClassAltLabelLg2 . \n"
+				+ "FILTER (lang(?sourceClassAltLabelLg2) = '" + Config.LG2 + "') } . \n"
+				+ "?targetClassURI rdf:type skos:ConceptScheme . \n"
+				+ "FILTER(REGEX(STR(?targetClassURI),'/codes/" + targetClassId + "/')) . \n"
+				+ "BIND('" + targetClassId + "' as ?targetClassId) . \n"
+				+ "OPTIONAL {?targetClassURI skos:altLabel ?targetClassAltLabelLg1 . \n"
+				+ "FILTER (lang(?targetClassAltLabelLg1) = '" + Config.LG1 + "') } . \n"
+				+ "OPTIONAL {?targetClassURI skos:altLabel ?targetClassAltLabelLg2 . \n"
+				+ "FILTER (lang(?targetClassAltLabelLg2) = '" + Config.LG2 + "') } . \n"
+				// items
+				+ "?association xkos:sourceConcept ?sourceItemURI . \n"
+				+ "BIND('" + sourceItemId + "' as ?sourceItemId) . \n"
+				+ "?sourceItemURI skos:prefLabel ?sourceItemLabelLg1 .\n"
+				+ "FILTER (lang(?sourceItemLabelLg1) = '" + Config.LG1 + "') \n"
+				+ "OPTIONAL {?sourceItemURI skos:prefLabel ?sourceItemLabelLg2 . \n"
+				+ "FILTER (lang(?sourceItemLabelLg2) = '" + Config.LG2 + "')} \n"
+				+ "?association xkos:targetConcept ?targetItemURI . \n"
+				+ "BIND('" + targetItemId + "' as ?targetItemId) . \n"
+				+ "?targetItemURI skos:prefLabel ?targetItemLabelLg1 .\n"
+				+ "FILTER (lang(?targetItemLabelLg1) = '" + Config.LG1 + "') \n"
+				+ "OPTIONAL {?targetItemURI skos:prefLabel ?targetItemLabelLg2 . \n"
+				+ "FILTER (lang(?targetItemLabelLg2) = '" + Config.LG2 + "')} \n"
+				+ "}"
+				+ "LIMIT 1";
+	}
+	
 
 }
