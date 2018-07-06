@@ -24,7 +24,7 @@ public class CorrespondencesQueries {
 				+ "?idSecondClass ?secondClassLabelLg1 ?secondClassLabelLg2 ?secondAltLabelLg1 ?secondAltLabelLg2 \n"
 				+ "WHERE { \n"
 				+ "?correspondence rdf:type xkos:Correspondence . \n"
-				+ "FILTER(REGEX(STR(?correspondence),'/codes/" + id + "')) . \n"
+				+ "FILTER(STRENDS(STR(?correspondence),'/codes/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?correspondence),'/codes/') AS ?id) \n"
 				+ "?correspondence skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
