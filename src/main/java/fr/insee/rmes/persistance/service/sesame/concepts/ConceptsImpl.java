@@ -7,12 +7,10 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
 import fr.insee.rmes.persistance.service.ConceptsService;
@@ -23,7 +21,6 @@ import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQuerie
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.utils.JSONUtils;
 
 @Service
 public class ConceptsImpl implements ConceptsService {
@@ -65,11 +62,7 @@ public class ConceptsImpl implements ConceptsService {
 	}
 	@Override
 	public String getConceptByID(String id) {
-		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
-		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
-		if(altLabelLg1.length() != 0) concept.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
-		if(altLabelLg2.length() != 0) concept.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		JSONObject concept = conceptsUtils.getConceptById(id);
 		return concept.toString();
 	}
 	

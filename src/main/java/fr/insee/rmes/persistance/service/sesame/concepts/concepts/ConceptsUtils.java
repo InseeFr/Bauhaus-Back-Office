@@ -30,6 +30,7 @@ import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class ConceptsUtils {
@@ -48,6 +49,15 @@ public class ConceptsUtils {
 		String id = json.getString("notation");
 		int ID = Integer.parseInt(id.substring(1))+1;
 		return "c" + ID;
+	}
+	
+	public JSONObject getConceptById(String id) {
+		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
+		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
+		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
+		if(altLabelLg1.length() != 0) concept.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
+		if(altLabelLg2.length() != 0) concept.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		return concept;
 	}
 	
 	public String setConcept(String body) {

@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
@@ -13,19 +14,23 @@ import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class ConceptsExportBuilder {
+	
+	@Autowired 
+	ConceptsUtils conceptsUtils;
 
 	public JSONObject getConceptData(String id) {
 		JSONObject data = new JSONObject();
-		JSONObject general = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		if (general.getString("altLabelLg1").equals("")) {
-			general.remove("altLabelLg1");
-		}
-		if (general.getString("altLabelLg2").equals("")) {
-			general.remove("altLabelLg2");
-		}
+		JSONObject general = conceptsUtils.getConceptById(id);
+		if (general.has("altLabelLg1")) {
+			general.put("altLabelLg1", JSONUtils.jsonArrayOfStringToString(general.getJSONArray("altLabelLg1")));
+		} else general.remove("altLabelLg1");
+		if (general.has("altLabelLg2")) {
+			general.put("altLabelLg2", JSONUtils.jsonArrayOfStringToString(general.getJSONArray("altLabelLg2")));
+		} else general.remove("altLabelLg2");
 		data.put("prefLabelLg1", general.getString("prefLabelLg1"));
 		if (general.has("prefLabelLg2")) {
 			data.put("prefLabelLg2", general.getString("prefLabelLg2"));
