@@ -32,7 +32,7 @@ public class Concept {
 	public Concept() {
 		this.id = new ConceptsUtils().createID();
 		this.created = LocalDateTime.now().toString();
-		this.isValidated = "Provisoire";
+		this.isValidated = "false";
 		this.creation = true;
 		this.versioning = false;
 	}
@@ -40,7 +40,7 @@ public class Concept {
 	public Concept(String id) {
 		this.id = id;
 		this.modified = LocalDateTime.now().toString();
-		this.isValidated = "Provisoire";
+		this.isValidated = "false";
 		this.creation = false;
 	}
 	

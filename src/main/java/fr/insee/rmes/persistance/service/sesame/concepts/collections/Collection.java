@@ -19,13 +19,13 @@ public class Collection {
 	
 	public Collection() {
 		this.created = LocalDateTime.now().toString();
-		this.isValidated = "Provisoire";
+		this.isValidated = "false";
 	}
 	
 	public Collection(String id) {
 		this.id = id;
 		this.modified = LocalDateTime.now().toString();
-		this.isValidated = "Provisoire";
+		this.isValidated = "false";
 	}
 	
 	public String getCreated() {
@@ -65,7 +65,7 @@ public class Collection {
 		return members;
 	}
 
-	public String getIsValidated() {
-		return isValidated;
+	public Boolean getIsValidated() {
+		return Boolean.valueOf(isValidated);
 	}
 }

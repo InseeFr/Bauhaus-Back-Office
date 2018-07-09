@@ -35,7 +35,7 @@ public class ConceptsExportBuilder {
 		if (general.has("prefLabelLg2")) {
 			data.put("prefLabelLg2", general.getString("prefLabelLg2"));
 		}
-		data.put("general", editGeneral(general));
+		data.put("general", editGeneral(general, "concepts"));
 		JSONArray links = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
 		data.put("linksLg1", editLinks(links, 1));
 		data.put("linksLg2", editLinks(links, 2));
@@ -52,7 +52,7 @@ public class ConceptsExportBuilder {
 		if (json.has("prefLabelLg2")) {
 			data.put("prefLabelLg2", json.getString("prefLabelLg2"));
 		}
-		data.put("general", editGeneral(json));
+		data.put("general", editGeneral(json, "collections"));
 		if (json.has("descriptionLg1")) {
 			data.put("descriptionLg1", json.getString("descriptionLg1") + "<p></p>");
 		}
@@ -68,7 +68,7 @@ public class ConceptsExportBuilder {
 		return data;
 	}
 
-	private String editGeneral(JSONObject json) {
+	private String editGeneral(JSONObject json, String context) {
 		StringBuilder xhtml = new StringBuilder("<ul>");
 		if (json.has("altLabelLg1")) {
 			xhtml.append("<li>Libellé alternatif (" + Config.LG1 + ") : " + json.getString("altLabelLg1") + "</li>");
@@ -98,7 +98,7 @@ public class ConceptsExportBuilder {
 			xhtml.append("<li>Timbre gestionnaire : " + json.getString("contributor") + "</li>");
 		}
 		if (json.has("isValidated")) {
-			xhtml.append("<li>Statut de validation : " + json.getString("isValidated") + "</li>");
+			xhtml.append("<li>Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) + "</li>");
 		}
 		if (json.has("conceptVersion")) {
 			xhtml.append("<li>Version : " + json.getString("conceptVersion") + "</li>");
@@ -218,6 +218,14 @@ public class ConceptsExportBuilder {
 	private String toDate(String dateTime) {
 		String dateString = dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
 		return dateString;
+	}
+	
+	private String toValidationStatus(String boolStatus, String context) {
+		if (boolStatus.equals("true")) {
+			if (context.equals("concepts")) return "Validé";
+			else return "Validée";
+		}
+		else return "Provisoire";
 	}
 
 }

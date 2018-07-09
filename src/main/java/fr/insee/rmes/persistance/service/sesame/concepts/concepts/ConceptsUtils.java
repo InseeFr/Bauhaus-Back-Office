@@ -105,7 +105,7 @@ public class ConceptsUtils {
 		/*Const*/
 		model.add(conceptURI, RDF.TYPE, SKOS.CONCEPT, SesameUtils.conceptGraph());
 		model.add(conceptURI, SKOS.IN_SCHEME, SesameUtils.conceptScheme(), SesameUtils.conceptGraph());
-		model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Provisoire"), SesameUtils.conceptGraph());
+		model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(false), SesameUtils.conceptGraph());
 		/*Required*/
 		model.add(conceptURI, SKOS.NOTATION, SesameUtils.setLiteralString(concept.getId()), SesameUtils.conceptGraph());
 		model.add(conceptURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(concept.getPrefLabelLg1(), Config.LG1), SesameUtils.conceptGraph());
@@ -142,7 +142,7 @@ public class ConceptsUtils {
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
 			URI conceptURI = SesameUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);
-			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validé"), SesameUtils.conceptGraph());
+			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
 			logger.info("Validate concept : " + conceptURI);
 		}
 		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList))

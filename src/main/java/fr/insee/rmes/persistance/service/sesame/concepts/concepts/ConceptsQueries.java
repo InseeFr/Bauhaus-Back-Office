@@ -67,7 +67,7 @@ public class ConceptsQueries {
 			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "?concept dc:creator ?creator . \n"
-			+ "?concept insee:isValidated 'Provisoire' . \n"
+			+ "?concept insee:isValidated 'false'^^xsd:boolean . \n"
 			+ "OPTIONAL {?concept dcterms:valid ?valid .} \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') } \n"
 			+ "ORDER BY ?label";	

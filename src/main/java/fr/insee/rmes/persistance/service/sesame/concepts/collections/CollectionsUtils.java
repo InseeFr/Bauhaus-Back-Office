@@ -86,7 +86,7 @@ public class CollectionsUtils {
 		URI collectionURI = SesameUtils.collectionIRI(collection.getId().replaceAll(" ", "-").toLowerCase());
 		/*Required*/
 		model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, SesameUtils.conceptGraph());	
-		model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString(collection.getIsValidated()), SesameUtils.conceptGraph());
+		model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(collection.getIsValidated()), SesameUtils.conceptGraph());
 		model.add(collectionURI, DCTERMS.TITLE, SesameUtils.setLiteralString(collection.getPrefLabelLg1(), Config.LG1), SesameUtils.conceptGraph());
 		model.add(collectionURI, DCTERMS.CREATED, SesameUtils.setLiteralDateTime(collection.getCreated()), SesameUtils.conceptGraph());	
 		model.add(collectionURI, DC.CONTRIBUTOR, SesameUtils.setLiteralString(collection.getContributor()), SesameUtils.conceptGraph());
@@ -112,7 +112,7 @@ public class CollectionsUtils {
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
 			URI collectionURI = SesameUtils.collectionIRI(collectionsToValidate.getString(i).replaceAll(" ", "").toLowerCase());
 			collectionsToValidateList.add(collectionURI);
-			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralString("Validée"), SesameUtils.conceptGraph());
+			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
 			logger.info("Validate collection : " + collectionURI);
 		}
 		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList))

@@ -92,6 +92,11 @@ public class SesameUtils {
 		return literalString;
 	}
 	
+	public static Literal setLiteralBoolean(Boolean bool) {
+		Literal literalBoolean = factory.createLiteral(bool);
+		return literalBoolean;
+	}
+	
 	public static Literal setLiteralInt(String number) {
 		Literal literalInt = factory.createLiteral(number, XMLSchema.INT);
 		return literalInt;
