@@ -34,6 +34,8 @@ import org.xml.sax.SAXException;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
@@ -51,6 +53,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	RestTemplate restTemplate;
+
+	@Autowired
+	FamiliesUtils familiesUtils;
 
 	@Override
 	public String getSeries() throws Exception {
@@ -172,6 +177,22 @@ public class OperationsImpl implements OperationsService {
 		Node nameNodeString = XMLUtils.getChild(nameNode, "r:String");
 		String name = nameNodeString.getFirstChild().getNodeValue();
 		return name;
+
+	/***************************************************************************************************
+	 * FAMILIES
+	 *****************************************************************************************************/
+
+	@Override
+	public String getFamilies() {
+		logger.info("Starting to get families list");
+		String resQuery = RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getFamilyByID(String id) {
+		JSONObject family = familiesUtils.getFamilyById(id);
+		return family.toString();
 	}
 
 }
