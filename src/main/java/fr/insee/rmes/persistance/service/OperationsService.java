@@ -14,7 +14,6 @@ public interface OperationsService {
 	String getFamilyByID(String id);
 
 
-	String getOperations() throws Exception;
 
 	String getSeriesByID(String id);
 
@@ -29,5 +28,12 @@ public interface OperationsService {
 	 */
 
 	Response getVarBookExport(String id, String acceptHeader) throws Exception;
+
+	String getOperations() throws Exception;
+
+	String getOperationByID(String id);
+
+
+
 
 }

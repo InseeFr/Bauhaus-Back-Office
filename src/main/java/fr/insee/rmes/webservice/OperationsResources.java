@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.FamilyById;
+import fr.insee.rmes.config.swagger.model.operations.OperationById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesLinks;
 import fr.insee.rmes.config.swagger.model.operations.SeriesNotes;
@@ -104,10 +105,9 @@ public class OperationsResources {
 
 
 
-
-	/**
+	/***************************************************************************************************
 	 * OPERATIONS
-	 * **/
+	 ******************************************************************************************************/
 	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -118,6 +118,16 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
 	}
+
+	@GET
+	@Path("/operation/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = OperationById.class)
+	public Response getOperationByID(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getOperationByID(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
 
 	@GET
 	@Path("/operation/{id}/variableBook")

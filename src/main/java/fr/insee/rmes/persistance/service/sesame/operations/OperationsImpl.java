@@ -16,6 +16,7 @@ import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
@@ -31,6 +32,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	VarBookExportBuilder varBookExport;
+
+	@Autowired
+	OperationsUtils operationsUtils;
 
 	@Autowired
 	FamiliesUtils familiesUtils;
@@ -79,6 +83,12 @@ public class OperationsImpl implements OperationsService {
 		return RepositoryGestion.getResponseAsObject(SeriesQueries.seriesNotesQuery(id)).toString();
 	}
 
+
+	/***************************************************************************************************
+	 * OPERATIONS
+	 *****************************************************************************************************/
+
+
 	@Override
 	public String getOperations() throws Exception {
 		logger.info("Starting to get operations list");
@@ -95,6 +105,10 @@ public class OperationsImpl implements OperationsService {
 		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
 	}
 
+	@Override
+	public String getOperationByID(String id) {
+		JSONObject operation = operationsUtils.getOperationById(id);
+		return operation.toString();
 	}
 
 
