@@ -19,6 +19,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.operations.Operations
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
@@ -34,10 +35,18 @@ public class OperationsImpl implements OperationsService {
 	VarBookExportBuilder varBookExport;
 
 	@Autowired
+	SeriesUtils seriesUtils;
+
+	@Autowired
 	OperationsUtils operationsUtils;
 
 	@Autowired
 	FamiliesUtils familiesUtils;
+
+	/***************************************************************************************************
+	 * SERIES
+	 *****************************************************************************************************/
+
 
 	@Override
 	public String getSeries() throws Exception {
@@ -48,30 +57,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Override
 	public String getSeriesByID(String id) {
-		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
-		addSeriesAltLabel(id, series);
-		addSeriesOperations(id, series);
+		JSONObject series = seriesUtils.getSeriesById(id);
 		return series.toString();
 	}
-
-	private void addSeriesAltLabel(String idSeries, JSONObject series) {
-		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG1));
-		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG2));
-		if (altLabelLg1.length() != 0) {
-			series.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
-		}
-		if (altLabelLg2.length() != 0) {
-			series.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
-		}
-	}
-
-	private void addSeriesOperations(String idSeries, JSONObject series) {
-		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
-		if (operations.length() != 0) {
-			series.put("operations", operations);
-		}
-	}
-
 
 	@Override
 	public String getSeriesLinksByID(String id) {
@@ -128,5 +116,8 @@ public class OperationsImpl implements OperationsService {
 		JSONObject family = familiesUtils.getFamilyById(id);
 		return family.toString();
 	}
+
+
+
 
 }

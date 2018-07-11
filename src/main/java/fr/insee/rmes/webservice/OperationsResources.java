@@ -64,8 +64,9 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	/***************************************************************************************************
 	 * SERIES
-	 * **/
+	 ******************************************************************************************************/
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)

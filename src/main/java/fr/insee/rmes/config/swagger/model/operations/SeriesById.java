@@ -19,6 +19,9 @@ public class SeriesById {
 	@ApiModelProperty(value = "Alternative label lg1")
 	public String altLabelLg1;
 
+	@ApiModelProperty(value = "Alternative label lg2")
+	public String altLabelLg2;
+
 	@ApiModelProperty(value = "Abstract Lg1")
 	public String abstractLg1;
 
@@ -31,16 +34,20 @@ public class SeriesById {
 	public String motherFamily;
 
 
-	@ApiModelProperty(value = "Label family lg2")
+	@ApiModelProperty(value = "Label family lg1")
 	public String motherFamilyLabelLg1;
 
 
 	@ApiModelProperty(value = "Label family lg2")
 	public String motherFamilyLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label lg2")
-	public String altLabelLg2;
+
 	@ApiModelProperty(value = "Operations")
 	public List<IdLabelTwoLangs> operations;
+
+	//TODO type (enum ?)
+	//TODO accrualPeriodicity (enum ?)
+
+	//TODO add replaces, related to
 
 }

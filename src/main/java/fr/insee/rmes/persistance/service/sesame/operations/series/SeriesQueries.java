@@ -19,7 +19,7 @@ public class SeriesQueries {
 	}
 
 	public static String oneSeriesQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?type ?accrualPeriodicity ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
@@ -33,6 +33,9 @@ public class SeriesQueries {
 				+ "FILTER (lang(?abstractLg1) = '" + Config.LG1 + "') } . \n" 
 				+ "OPTIONAL {?series dcterms:abstract ?abstractLg2 . \n"
 				+ "FILTER (lang(?abstractLg2) = '" + Config.LG2 + "') } . \n" 
+
+				+ "OPTIONAL {?series dcterms:type ?type} . \n"
+				+ "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity} \n"
 
 				+ "?motherFamily dcterms:hasPart ?series . \n"
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
@@ -105,7 +108,7 @@ public class SeriesQueries {
 				+ "?series dcterms:hasPart ?id . \n"
 				+ "?id skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-				+ "?series skos:prefLabel ?labelLg2 . \n"
+				+ "?id skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
@@ -118,9 +121,6 @@ public class SeriesQueries {
 
 	//TODO
 
-	/*  OPTIONAL {<http://id.insee.fr/operations/serie/s1022> dcterms:type ?type} .
-    OPTIONAL {<http://id.insee.fr/operations/serie/s1022> dcterms:accrualPeriodicity ?periodicity}
-	 */
 
 	/*
 	 *   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>

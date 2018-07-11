@@ -4,7 +4,6 @@ import javax.ws.rs.core.Response;
 
 public interface OperationsService {
 
-	String getSeries() throws Exception;
 	/**
 	 * FAMILIES
 	 */
@@ -14,6 +13,12 @@ public interface OperationsService {
 	String getFamilyByID(String id);
 
 
+
+	/**
+	 * SERIES
+	 */
+
+	String getSeries() throws Exception;
 
 	String getSeriesByID(String id);
 
