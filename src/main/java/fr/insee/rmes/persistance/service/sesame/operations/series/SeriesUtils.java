@@ -6,7 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.utils.JSONUtils;
 
@@ -25,13 +24,9 @@ public class SeriesUtils {
 	}
 
 	private void addSeriesAltLabel(String idSeries, JSONObject series) {
-		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG1));
-		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries, Config.LG2));
-		if (altLabelLg1.length() != 0) {
-			series.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
-		}
-		if (altLabelLg2.length() != 0) {
-			series.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		JSONArray altLabel = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries));
+		if (altLabel.length() != 0) {
+			series.put("altLabel", JSONUtils.extractFieldToArray(altLabel, "altLabel"));
 		}
 	}
 
