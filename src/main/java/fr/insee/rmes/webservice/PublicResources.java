@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.manager.SecurityManagerService;
 import fr.insee.rmes.config.auth.security.manager.User;
+import fr.insee.rmes.config.roles.Constants;
 import fr.insee.rmes.config.roles.UserRolesManagerService;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
@@ -145,6 +147,7 @@ public class PublicResources {
 		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getAgents()).build();
 	}
 
+	@Secured({ Constants.SPRING_ADMIN })
 	@POST
 	@Path("/private/role/add")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -154,6 +157,7 @@ public class PublicResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+	@Secured({ Constants.SPRING_ADMIN })
 	@POST
 	@Path("/private/role/delete")
 	@Consumes(MediaType.APPLICATION_JSON)
