@@ -18,8 +18,8 @@ public class SeriesQueries {
 	}
 
 	public static String oneSeriesQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?type ?accrualPeriodicity ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?typeCode ?typeList ?accrualPeriodicityCode ?accrualPeriodicityList ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
+				+ "WHERE {  \n"
 				+ "?series skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" 
@@ -33,8 +33,17 @@ public class SeriesQueries {
 				+ "OPTIONAL {?series dcterms:abstract ?abstractLg2 . \n"
 				+ "FILTER (lang(?abstractLg2) = '" + Config.LG2 + "') } . \n" 
 
-				+ "OPTIONAL {?series dcterms:type ?type} . \n"
-				+ "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity} \n"
+				+ "OPTIONAL {?series dcterms:type ?type . \n"
+				+ "?type skos:notation ?typeCode . \n"
+				+ "?type skos:inScheme ?typeCodeList . \n"
+				+ "?typeCodeList skos:notation ?typeList . \n"
+				+ "}   \n"
+
+				+ "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
+				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
+				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
+				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
+				+ "}   \n"
 
 				+ "?motherFamily dcterms:hasPart ?series . \n"
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
@@ -42,7 +51,7 @@ public class SeriesQueries {
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg2 . \n"
 				+ "FILTER (lang(?motherFamilyLabelLg2) = '" + Config.LG2 + "') . \n"
 
-				+ "}} \n"
+				+ "} \n"
 				+ "LIMIT 1";
 	}
 
@@ -117,7 +126,7 @@ public class SeriesQueries {
 
 
 
-	//TODO
+	//TODO organizations
 
 
 	/*

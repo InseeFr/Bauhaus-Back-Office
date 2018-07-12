@@ -42,9 +42,16 @@ public class SeriesById {
 	@ApiModelProperty(value = "Operations")
 	public List<IdLabelTwoLangs> operations;
 
-	//TODO type (enum ?)
-	//TODO accrualPeriodicity (enum ?)
+	@ApiModelProperty(value = "Type's notation")
+	public String typeCode;
 
-	//TODO add replaces, related to
+	@ApiModelProperty(value = "Type list's notation")
+	public String typeList;
+
+	@ApiModelProperty(value = "Frequency's notation")
+	public String accrualPeriodicityCode;
+
+	@ApiModelProperty(value = "Frequencies list's notation")
+	public String accrualPeriodicityList;
 
 }
