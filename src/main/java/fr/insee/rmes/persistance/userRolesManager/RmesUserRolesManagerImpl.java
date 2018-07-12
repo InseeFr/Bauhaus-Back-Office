@@ -141,9 +141,12 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	}
 
 	public void setDeleteRole(String body) {
-		JSONObject agent = new JSONObject(body);
-		String URL = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, agent.getString("id"), agent.getString("role"));
-		Igesa.post(URL);
+		JSONArray agents = new JSONArray(body);
+		agents.forEach(item -> {
+			JSONObject agent = (JSONObject) item;
+			String URL = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, agent.getString("id"), agent.getString("role"));
+			Igesa.post(URL);
+		});
 	}
 
 }
