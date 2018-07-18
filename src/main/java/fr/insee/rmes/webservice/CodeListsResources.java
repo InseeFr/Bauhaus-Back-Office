@@ -38,7 +38,7 @@ public class CodeListsResources {
 
 
 	@GET
-	@Path("/codelist/{notation}")
+	@Path("/{notation}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "getCodeListByNotation", value = "List of codes", response = CodeList.class)
 	public Response getCodeListByNotation(@PathParam("notation") String notation) {
@@ -47,7 +47,7 @@ public class CodeListsResources {
 	}
 
 	@GET
-	@Path("/codelist/{notation}/code/{code}")
+	@Path("/{notation}/code/{code}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "getCodeByNotation", value = "Code, labels and code list's notation", response = CodeLabelList.class)
 	public Response getCodeByNotation(@PathParam("notation") String notation, @PathParam("code") String code) {
