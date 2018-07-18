@@ -86,7 +86,9 @@ public class XKOS {
 	 */
 	public static final URI EXCLUSION_NOTE;
 
-	
+	/**
+	 * The xkos:organisedBy property.
+	 */
 	public static final URI ORGANISED_BY ;
 
 	/**
@@ -102,17 +104,17 @@ public class XKOS {
 	public static final URI MADE_OF ;
 	
 	/**
-	 * The xkos:madeOf property.
+	 * The xkos:sourceConcept property.
 	 */
 	public static final URI SOURCE_CONCEPT ;
 	
 	/**
-	 * The xkos:madeOf property.
+	 * The xkos:targetConcept property.
 	 */
 	public static final URI TARGET_CONCEPT ;
 	
 	/**
-	 * The xkos:madeOf property.
+	 * The xkos:compares property.
 	 */
 	public static final URI COMPARES ;
 	
