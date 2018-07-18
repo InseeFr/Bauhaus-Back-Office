@@ -54,4 +54,10 @@ public class SeriesById {
 	@ApiModelProperty(value = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
+	@ApiModelProperty(value = "Identifier of creator")
+	public String creator;
+
+	@ApiModelProperty(value = "Identifier of contributor")
+	public String contributor;
+
 }

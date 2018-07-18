@@ -18,7 +18,10 @@ public class SeriesQueries {
 	}
 
 	public static String oneSeriesQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?typeCode ?typeList ?accrualPeriodicityCode ?accrualPeriodicityList ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 "
+				+ "?typeCode ?typeList ?accrualPeriodicityCode ?accrualPeriodicityList "
+				+ "?creator ?contributor "
+				+ "?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
 				+ "WHERE {  \n"
 				+ "?series skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
@@ -44,6 +47,13 @@ public class SeriesQueries {
 				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
 				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
 				+ "}   \n"
+
+			+ "OPTIONAL {?series dcterms:creator ?uriCreator . \n"
+			+ "?uriCreator dcterms:identifier  ?creator . \n"
+			+ "}   \n"
+			+ "OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
+			+ "?uriContributor dcterms:identifier  ?contributor . \n"
+			+ "}   \n"
 
 				+ "?motherFamily dcterms:hasPart ?series . \n"
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
@@ -124,29 +134,5 @@ public class SeriesQueries {
 				;
 	}
 
-
-
-	//TODO organizations
-
-
-	/*
-	 *   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  PREFIX dcterms: <http://purl.org/dc/terms/>
-  SELECT ?organization ?label ?typeOfLink
-  FROM <http://rdf.insee.fr/graphes/operations>
-  FROM <http://rdf.insee.fr/graphes/organisations>
-  WHERE {
-    {<http://id.insee.fr/operations/serie/s1022> dcterms:creator ?organization .
-    ?organization skos:prefLabel ?label .
-    FILTER (lang(?label) = 'fr')
-    BIND('creator' AS ?typeOfLink)}
-    UNION
-    {<http://id.insee.fr/operations/serie/s1022> dcterms:contributor ?organization .
-    ?organization skos:prefLabel ?label .
-    FILTER (lang(?label) = 'fr')
-    BIND('contributor' AS ?typeOfLink)}
-  }
-  ORDER BY ?organization
-	 */
 
 }
