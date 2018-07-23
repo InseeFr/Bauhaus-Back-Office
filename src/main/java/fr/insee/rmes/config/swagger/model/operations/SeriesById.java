@@ -16,8 +16,8 @@ public class SeriesById {
 	@ApiModelProperty(value = "Label lg2")
 	public String prefLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label lg1")
-	public String altLabelLg1;
+	@ApiModelProperty(value = "Alternative label")
+	public String altLabel;
 
 	@ApiModelProperty(value = "Abstract Lg1")
 	public String abstractLg1;
@@ -31,16 +31,33 @@ public class SeriesById {
 	public String motherFamily;
 
 
-	@ApiModelProperty(value = "Label family lg2")
+	@ApiModelProperty(value = "Label family lg1")
 	public String motherFamilyLabelLg1;
 
 
 	@ApiModelProperty(value = "Label family lg2")
 	public String motherFamilyLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label lg2")
-	public String altLabelLg2;
+
 	@ApiModelProperty(value = "Operations")
 	public List<IdLabelTwoLangs> operations;
+
+	@ApiModelProperty(value = "Type's notation")
+	public String typeCode;
+
+	@ApiModelProperty(value = "Type list's notation")
+	public String typeList;
+
+	@ApiModelProperty(value = "Frequency's notation")
+	public String accrualPeriodicityCode;
+
+	@ApiModelProperty(value = "Frequencies list's notation")
+	public String accrualPeriodicityList;
+
+	@ApiModelProperty(value = "Identifier of creator")
+	public String creator;
+
+	@ApiModelProperty(value = "Identifier of contributor")
+	public String contributor;
 
 }

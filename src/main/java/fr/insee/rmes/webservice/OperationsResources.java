@@ -14,7 +14,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.operations.FamilyById;
+import fr.insee.rmes.config.swagger.model.operations.OperationById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesLinks;
 import fr.insee.rmes.config.swagger.model.operations.SeriesNotes;
@@ -39,9 +42,31 @@ public class OperationsResources {
 	@Autowired
 	OperationsService operationsService;
 
-	/**
+	/***************************************************************************************************
+	 * FAMILY
+	 ******************************************************************************************************/
+	@GET
+	@Path("/families")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getFamilies", value = "List of families", response = IdLabel.class,
+	responseContainer = "List")
+	public Response getFamilies() throws Exception {
+		String jsonResultat = operationsService.getFamilies();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/family/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getFamilyByID", value = "Family", response = FamilyById.class)
+	public Response getFamilyByID(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getFamilyByID(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	/***************************************************************************************************
 	 * SERIES
-	 * **/
+	 ******************************************************************************************************/
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -81,10 +106,9 @@ public class OperationsResources {
 
 
 
-
-	/**
+	/***************************************************************************************************
 	 * OPERATIONS
-	 * **/
+	 ******************************************************************************************************/
 	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -95,6 +119,16 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
 	}
+
+	@GET
+	@Path("/operation/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = OperationById.class)
+	public Response getOperationByID(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getOperationByID(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
 
 	@GET
 	@Path("/operation/{id}/variableBook")

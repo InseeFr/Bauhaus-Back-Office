@@ -5,22 +5,24 @@ import fr.insee.rmes.config.Config;
 public class SeriesQueries {
 
 	public static String seriesQuery() {
-		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
+		return "SELECT DISTINCT ?id ?label (group_concat(?altLab;separator=' || ') as ?altLabel) \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
-				+ "OPTIONAL{?series skos:altLabel ?altLabelLg1 . \n" 
-				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1	+ "')} \n" 
+				+ "OPTIONAL{?series skos:altLabel ?altLab . } \n" 
 				+ "}} \n" 
 				+ "GROUP BY ?id ?label \n"
 				+ "ORDER BY ?label ";
 	}
 
 	public static String oneSeriesQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 "
+				+ "?typeCode ?typeList ?accrualPeriodicityCode ?accrualPeriodicityList "
+				+ "?creator ?contributor "
+				+ "?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
+				+ "WHERE {  \n"
 				+ "?series skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" 
@@ -34,21 +36,39 @@ public class SeriesQueries {
 				+ "OPTIONAL {?series dcterms:abstract ?abstractLg2 . \n"
 				+ "FILTER (lang(?abstractLg2) = '" + Config.LG2 + "') } . \n" 
 
+				+ "OPTIONAL {?series dcterms:type ?type . \n"
+				+ "?type skos:notation ?typeCode . \n"
+				+ "?type skos:inScheme ?typeCodeList . \n"
+				+ "?typeCodeList skos:notation ?typeList . \n"
+				+ "}   \n"
+
+				+ "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
+				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
+				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
+				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
+				+ "}   \n"
+
+			+ "OPTIONAL {?series dcterms:creator ?uriCreator . \n"
+			+ "?uriCreator dcterms:identifier  ?creator . \n"
+			+ "}   \n"
+			+ "OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
+			+ "?uriContributor dcterms:identifier  ?contributor . \n"
+			+ "}   \n"
+
 				+ "?motherFamily dcterms:hasPart ?series . \n"
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
 				+ "FILTER (lang(?motherFamilyLabelLg1) = '" + Config.LG1 + "') . \n"
 				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg2 . \n"
 				+ "FILTER (lang(?motherFamilyLabelLg2) = '" + Config.LG2 + "') . \n"
 
-				+ "}} \n"
+				+ "} \n"
 				+ "LIMIT 1";
 	}
 
 
-	public static String altLabel(String id, String lang) {
+	public static String altLabel(String id) {
 		return "SELECT ?altLabel \n" + "WHERE { \n" 
 				+ "?series skos:altLabel ?altLabel \n"
-				+ "FILTER (lang(?altLabel) = '" + lang + "') . \n" 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id + "')) . \n"
 				+ "}";
 	}
@@ -105,7 +125,7 @@ public class SeriesQueries {
 				+ "?series dcterms:hasPart ?id . \n"
 				+ "?id skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-				+ "?series skos:prefLabel ?labelLg2 . \n"
+				+ "?id skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 
 				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
@@ -114,32 +134,5 @@ public class SeriesQueries {
 				;
 	}
 
-
-
-	//TODO
-
-	/*  OPTIONAL {<http://id.insee.fr/operations/serie/s1022> dcterms:type ?type} .
-    OPTIONAL {<http://id.insee.fr/operations/serie/s1022> dcterms:accrualPeriodicity ?periodicity}
-	 */
-
-	/*
-	 *   PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  PREFIX dcterms: <http://purl.org/dc/terms/>
-  SELECT ?organization ?label ?typeOfLink
-  FROM <http://rdf.insee.fr/graphes/operations>
-  FROM <http://rdf.insee.fr/graphes/organisations>
-  WHERE {
-    {<http://id.insee.fr/operations/serie/s1022> dcterms:creator ?organization .
-    ?organization skos:prefLabel ?label .
-    FILTER (lang(?label) = 'fr')
-    BIND('creator' AS ?typeOfLink)}
-    UNION
-    {<http://id.insee.fr/operations/serie/s1022> dcterms:contributor ?organization .
-    ?organization skos:prefLabel ?label .
-    FILTER (lang(?label) = 'fr')
-    BIND('contributor' AS ?typeOfLink)}
-  }
-  ORDER BY ?organization
-	 */
 
 }
