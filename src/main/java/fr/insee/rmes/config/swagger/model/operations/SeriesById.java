@@ -60,6 +60,13 @@ public class SeriesById {
 	@ApiModelProperty(value = "Identifier of creator")
 	public String creator;
 
+	@ApiModelProperty(value = "Identifier of stake holder")
+	public String stakeHolder;
+
+	@ApiModelProperty(value = "Identifier of data collector")
+	public String dataCollector;
+
+
 	@ApiModelProperty(value = "Identifier of contributor")
 	public String contributor;
 
