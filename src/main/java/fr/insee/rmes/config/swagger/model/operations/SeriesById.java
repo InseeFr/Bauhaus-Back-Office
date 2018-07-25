@@ -16,8 +16,11 @@ public class SeriesById {
 	@ApiModelProperty(value = "Label lg2")
 	public String prefLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label")
-	public String altLabel;
+	@ApiModelProperty(value = "Alternative label Lg1")
+	public String altLabelLg1;
+
+	@ApiModelProperty(value = "Alternative label Lg2")
+	public String altLabelLg2;
 
 	@ApiModelProperty(value = "Abstract Lg1")
 	public String abstractLg1;

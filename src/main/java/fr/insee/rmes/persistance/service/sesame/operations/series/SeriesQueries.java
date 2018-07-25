@@ -5,15 +5,16 @@ import fr.insee.rmes.config.Config;
 public class SeriesQueries {
 
 	public static String seriesQuery() {
-		return "SELECT DISTINCT ?id ?label (group_concat(?altLab;separator=' || ') as ?altLabel) \n"
+		return "SELECT DISTINCT ?id ?label ?altLabel \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
-				+ "OPTIONAL{?series skos:altLabel ?altLab . } \n" 
+				+ "OPTIONAL{?series skos:altLabel ?altLabel . "
+				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
 				+ "}} \n" 
-				+ "GROUP BY ?id ?label \n"
+				+ "GROUP BY ?id ?label ?altLabel \n"
 				+ "ORDER BY ?label ";
 	}
 
@@ -65,13 +66,6 @@ public class SeriesQueries {
 				+ "LIMIT 1";
 	}
 
-
-	public static String altLabel(String id) {
-		return "SELECT ?altLabel \n" + "WHERE { \n" 
-				+ "?series skos:altLabel ?altLabel \n"
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id + "')) . \n"
-				+ "}";
-	}
 
 	}
 
