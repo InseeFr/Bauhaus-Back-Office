@@ -24,8 +24,6 @@ public interface OperationsService {
 
 	String getSeriesLinksByID(String id);
 
-	String getSeriesNotesByID(String id);
-
 
 
 	/**

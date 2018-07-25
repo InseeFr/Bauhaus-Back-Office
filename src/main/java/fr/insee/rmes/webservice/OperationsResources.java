@@ -20,7 +20,6 @@ import fr.insee.rmes.config.swagger.model.operations.FamilyById;
 import fr.insee.rmes.config.swagger.model.operations.OperationById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesLinks;
-import fr.insee.rmes.config.swagger.model.operations.SeriesNotes;
 import fr.insee.rmes.persistance.service.OperationsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -94,16 +93,6 @@ public class OperationsResources {
 		String jsonResultat = operationsService.getSeriesLinksByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-
-	@GET
-	@Path("/series/{id}/notes")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesNotesByID", value = "Notes of the series", response = SeriesNotes.class)
-	public Response getSeriesNotesByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getSeriesNotesByID(id);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
-
 
 
 	/***************************************************************************************************

@@ -73,22 +73,6 @@ public class SeriesQueries {
 				+ "}";
 	}
 
-	public static String seriesNotesQuery(String idSeries) { 
-		return 
-				"SELECT ?historyNoteLg1 ?historyNoteLg2  \n"
-				+ "WHERE { \n" 
-				//historyNote Lg1
-				+ "OPTIONAL {?series skos:historyNote ?hNLg1 . \n"
-				+ "?historyNoteLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
-				+ "?hNLg1 evoc:noteLiteral ?historyNoteLg1 . \n"	
-				+ "} .  \n"
-				//historyNote Lg2
-				+ "OPTIONAL {?series skos:historyNote ?hNLg2 . \n"
-				+ "?historyNoteLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
-				+ "?hNLg1 evoc:noteLiteral ?historyNoteLg2 . \n"	
-				+ "} .  \n"
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
-				+"} \n";
 	}
 
 	public static String seriesLinks(String id) {
