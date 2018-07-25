@@ -29,8 +29,8 @@ public class FamilyById {
 	@ApiModelProperty(value = "Abstract lg2")
 	public String abstractLg2;
 
-	//TODO topic (enum ?)
-
+	@ApiModelProperty(value = "Subjects, Topics")
+	public List<IdLabelTwoLangs> subjects;
 
 	@ApiModelProperty(value = "Operations")
 	public List<IdLabelTwoLangs> operations;

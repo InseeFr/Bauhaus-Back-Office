@@ -13,6 +13,7 @@ public class FamiliesUtils {
 	public JSONObject getFamilyById(String id){
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
 		addSeries(id, family);
+		addSubjects(id, family);
 		return family;
 	}
 
@@ -21,6 +22,13 @@ public class FamiliesUtils {
 		JSONArray series = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSeries(idFamily));
 		if (series.length() != 0) {
 			family.put("series", series);
+		}
+	}
+
+	private void addSubjects(String idFamily, JSONObject family) {
+		JSONArray subjects = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSubjects(idFamily));
+		if (subjects.length() != 0) {
+			family.put("subjects", subjects);
 		}
 	}
 }
