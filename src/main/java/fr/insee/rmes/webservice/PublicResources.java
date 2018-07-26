@@ -23,10 +23,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.manager.SecurityManagerService;
-import fr.insee.rmes.config.auth.security.manager.User;
-import fr.insee.rmes.config.roles.Constants;
-import fr.insee.rmes.config.roles.UserRolesManagerService;
+import fr.insee.rmes.config.auth.AuthType;
+import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
@@ -69,9 +68,6 @@ public class PublicResources {
 	final static Logger logger = LogManager.getLogger(PublicResources.class);
 
 	@Autowired
-	SecurityManagerService securityManagerService;
-
-	@Autowired
 	UserRolesManagerService userRolesManagerService;
 	
 	@Autowired
@@ -90,21 +86,12 @@ public class PublicResources {
 			props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
 			props.put("lg1", Config.LG1);
 			props.put("lg2", Config.LG2);
-			props.put("authType", securityManagerService.getAuthType());
+			props.put("authType", AuthType.getAuthType());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
 		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
-	}
-
-	@POST
-	@Path("/auth")
-	@Consumes(MediaType.TEXT_PLAIN)
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "postAuth", value = "Returns user informations", response = User.class)
-	public Response postAuth(String body) {
-		return Response.status(HttpStatus.SC_OK).entity(securityManagerService.postAuth(body)).build();
 	}
 
 	@GET

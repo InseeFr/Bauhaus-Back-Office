@@ -8,7 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.conditions.NoOpenIDConnectAuthCondition;
+import fr.insee.rmes.config.auth.security.conditions.NoOpenIDConnectAuthCondition;
 
 @Configuration
 @EnableWebSecurity

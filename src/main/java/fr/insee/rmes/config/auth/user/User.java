@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.auth.security.manager;
+package fr.insee.rmes.config.auth.user;
 
 import java.util.Collection;
 

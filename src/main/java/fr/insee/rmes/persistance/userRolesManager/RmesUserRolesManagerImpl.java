@@ -28,7 +28,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.roles.UserRolesManagerService;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.persistance.userRolesManager.rmes.Igesa;
 import fr.insee.rmes.persistance.userRolesManager.rmes.JSONComparator;
 

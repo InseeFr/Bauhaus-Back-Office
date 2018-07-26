@@ -7,7 +7,7 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
 
-import fr.insee.rmes.config.auth.security.manager.User;
+import fr.insee.rmes.config.auth.user.User;
 
 public class KeycloakUserDetailsAuthenticationToken extends KeycloakAuthenticationToken {
 
