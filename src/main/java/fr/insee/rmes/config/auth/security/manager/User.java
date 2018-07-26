@@ -5,8 +5,6 @@ import java.util.Collection;
 import org.json.JSONArray;
 import org.springframework.security.core.GrantedAuthority;
 
-import fr.insee.rmes.config.roles.Role;
-
 public class User {
 	
 	JSONArray roles;
@@ -18,7 +16,7 @@ public class User {
 	}
 	
 	public User(JSONArray roles, String stamp) {
-		this.roles = Role.findRole(roles);
+		this.roles = roles;
 		this.stamp = stamp;
 	}
 	

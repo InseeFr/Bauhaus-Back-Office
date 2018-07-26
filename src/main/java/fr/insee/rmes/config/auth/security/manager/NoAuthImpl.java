@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.auth.conditions.NoAuthCondition;
-import fr.insee.rmes.config.roles.Role;
+import fr.insee.rmes.config.roles.Constants;
 
 @Service
 @Conditional(value = NoAuthCondition.class)
@@ -30,7 +30,7 @@ public class NoAuthImpl implements SecurityManagerService {
 	 */
 	
 	public User postAuth(String body) {
-		return new User(new JSONArray(Arrays.asList(Role.ADMIN.getRole())), "XXXXXX");
+		return new User(new JSONArray(Arrays.asList(Constants.ADMIN)), "XXXXXX");
 	}
 	
 }
