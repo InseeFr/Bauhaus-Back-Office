@@ -10,9 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.manager.User;
+import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import fr.insee.rmes.config.roles.Constants;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 

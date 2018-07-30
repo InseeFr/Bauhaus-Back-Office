@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.roles;
+package fr.insee.rmes.config.auth.roles;
 
 public class Constants {
 

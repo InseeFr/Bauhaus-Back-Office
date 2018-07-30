@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.auth.conditions;
+package fr.insee.rmes.config.auth.security.conditions;
 
 import java.io.File;
 import java.io.FileReader;
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class NoAuthCondition implements Condition {
+public class OpenIDConnectAuthCondition implements Condition {
 
 	private String env;
 
@@ -20,7 +20,7 @@ public class NoAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (!env.matches("qf|pre-prod|prod"))
+		if (env.equals("pre-prod") || env.equals("prod"))
 			return true;
 		return false;
 	}
