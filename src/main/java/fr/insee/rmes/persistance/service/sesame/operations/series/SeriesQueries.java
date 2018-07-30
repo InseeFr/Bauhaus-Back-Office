@@ -4,91 +4,38 @@ import fr.insee.rmes.config.Config;
 
 public class SeriesQueries {
 
+	private static StringBuilder variables;
+	private static StringBuilder whereClause;
+
 	public static String seriesQuery() {
-		return "SELECT DISTINCT ?id ?label (group_concat(?altLab;separator=' || ') as ?altLabel) \n"
+		return "SELECT DISTINCT ?id ?label ?altLabel \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
-				+ "OPTIONAL{?series skos:altLabel ?altLab . } \n" 
+				+ "OPTIONAL{?series skos:altLabel ?altLabel . "
+				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
 				+ "}} \n" 
-				+ "GROUP BY ?id ?label \n"
+				+ "GROUP BY ?id ?label ?altLabel \n"
 				+ "ORDER BY ?label ";
 	}
 
+
 	public static String oneSeriesQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 "
-				+ "?typeCode ?typeList ?accrualPeriodicityCode ?accrualPeriodicityList "
-				+ "?creator ?contributor "
-				+ "?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2\n"
-				+ "WHERE {  \n"
-				+ "?series skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" 
+		variables=null;
+		whereClause=null;
+		getSimpleAttr(id);
+		getCodesLists();
+		getOrganizations();
+		getMotherFamily();
 
-				+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
-				+ "OPTIONAL {?series skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n" 
-
-				+ "OPTIONAL {?series dcterms:abstract ?abstractLg1 . \n"
-				+ "FILTER (lang(?abstractLg1) = '" + Config.LG1 + "') } . \n" 
-				+ "OPTIONAL {?series dcterms:abstract ?abstractLg2 . \n"
-				+ "FILTER (lang(?abstractLg2) = '" + Config.LG2 + "') } . \n" 
-
-				+ "OPTIONAL {?series dcterms:type ?type . \n"
-				+ "?type skos:notation ?typeCode . \n"
-				+ "?type skos:inScheme ?typeCodeList . \n"
-				+ "?typeCodeList skos:notation ?typeList . \n"
-				+ "}   \n"
-
-				+ "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
-				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
-				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
-				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
-				+ "}   \n"
-
-			+ "OPTIONAL {?series dcterms:creator ?uriCreator . \n"
-			+ "?uriCreator dcterms:identifier  ?creator . \n"
-			+ "}   \n"
-			+ "OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
-			+ "?uriContributor dcterms:identifier  ?contributor . \n"
-			+ "}   \n"
-
-				+ "?motherFamily dcterms:hasPart ?series . \n"
-				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
-				+ "FILTER (lang(?motherFamilyLabelLg1) = '" + Config.LG1 + "') . \n"
-				+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg2 . \n"
-				+ "FILTER (lang(?motherFamilyLabelLg2) = '" + Config.LG2 + "') . \n"
-
-				+ "} \n"
-				+ "LIMIT 1";
-	}
-
-
-	public static String altLabel(String id) {
-		return "SELECT ?altLabel \n" + "WHERE { \n" 
-				+ "?series skos:altLabel ?altLabel \n"
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id + "')) . \n"
-				+ "}";
-	}
-
-	public static String seriesNotesQuery(String idSeries) { 
-		return 
-				"SELECT ?historyNoteLg1 ?historyNoteLg2  \n"
-				+ "WHERE { \n" 
-				//historyNote Lg1
-				+ "OPTIONAL {?series skos:historyNote ?hNLg1 . \n"
-				+ "?historyNoteLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
-				+ "?hNLg1 evoc:noteLiteral ?historyNoteLg1 . \n"	
-				+ "} .  \n"
-				//historyNote Lg2
-				+ "OPTIONAL {?series skos:historyNote ?hNLg2 . \n"
-				+ "?historyNoteLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
-				+ "?hNLg1 evoc:noteLiteral ?historyNoteLg2 . \n"	
-				+ "} .  \n"
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
-				+"} \n";
+		return "SELECT "
+		+ variables.toString()
+		+ " WHERE {  \n"
+		+ whereClause.toString()
+		+ "} \n"
+		+ "LIMIT 1";
 	}
 
 	public static String seriesLinks(String id) {
@@ -133,6 +80,104 @@ public class SeriesQueries {
 				+ " ORDER BY ?id"
 				;
 	}
+
+
+
+
+
+	private static void getSimpleAttr(String id) {
+		addVariableToList(" ?id ");
+
+		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
+		addOptionalClause("skos:prefLabel", "?prefLabel");
+
+		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
+		addOptionalClause("skos:altLabel", "?altLabel");
+
+		addVariableToList(" ?abstractLg1 ?abstractLg2 ");
+		addOptionalClause("dcterms:abstract", "?abstract");
+
+		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
+		addOptionalClause("skos:historyNote", "?historyNote");
+
+		addClauseToWhereClause(" FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
+				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" );
+
+	}
+
+	private static void addOptionalClause(String predicate, String variableName){
+		addClauseToWhereClause( "OPTIONAL{?series "+predicate+" "+variableName + "Lg1 \n");
+		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg1) = '" + Config.LG1 + "') } \n ");
+		addClauseToWhereClause( "OPTIONAL{?series "+predicate+" "+variableName + "Lg2 \n");
+		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + Config.LG2 + "') } \n ");
+	}
+
+	private static void getCodesLists() {
+		addVariableToList(" ?typeCode ?typeList ");
+		addClauseToWhereClause( "OPTIONAL {?series dcterms:type ?type . \n"
+				+ "?type skos:notation ?typeCode . \n"
+				+ "?type skos:inScheme ?typeCodeList . \n"
+				+ "?typeCodeList skos:notation ?typeList . \n"
+				+ "}   \n" );
+
+		addVariableToList(" ?accrualPeriodicityCode ?accrualPeriodicityList ");
+		addClauseToWhereClause( "OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
+				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
+				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
+				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
+				+ "}   \n" );
+	}
+
+	private static void getOrganizations() {
+		addVariableToList(" ?creator ");
+		addClauseToWhereClause(
+				"OPTIONAL {?series dcterms:creator ?uriCreator . \n"
+						+ "?uriCreator dcterms:identifier  ?creator . \n"
+						+ "}   \n");
+		addVariableToList(" ?contributor  ");
+		addClauseToWhereClause(  
+				"OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
+						+ "?uriContributor dcterms:identifier  ?contributor . \n"
+						+ "}   \n");
+		addVariableToList(" ?stakeHolder  ");
+		addClauseToWhereClause(  
+				"OPTIONAL {?series insee:stakeHolder ?uriStakeHolder . \n"
+						+ "?uriStakeHolder dcterms:identifier  ?stakeHolder . \n"
+						+ "}   \n");
+		addVariableToList(" ?dataCollector  ");
+		addClauseToWhereClause(  
+				"OPTIONAL {?series insee:dataCollector ?uriDataCollector . \n"
+						+ "?uriDataCollector dcterms:identifier  ?dataCollector . \n"
+						+ "}   \n");
+	}
+
+	private static void getMotherFamily() {
+		addVariableToList(" ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2 \n ");
+		addClauseToWhereClause(	
+				"?motherFamily dcterms:hasPart ?series . \n"
+						+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
+						+ "FILTER (lang(?motherFamilyLabelLg1) = '" + Config.LG1 + "') . \n"
+						+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg2 . \n"
+						+ "FILTER (lang(?motherFamilyLabelLg2) = '" + Config.LG2 + "') . \n");
+	}
+
+
+	private static void addVariableToList(String variable) {
+		if (variables == null){
+			variables = new StringBuilder();
+		}
+		variables.append(variable);
+	}
+
+	private static void addClauseToWhereClause(String clause) {
+		if (whereClause == null){
+			whereClause = new StringBuilder();
+		}
+		whereClause.append(clause);
+	}
+
+
+
 
 
 }

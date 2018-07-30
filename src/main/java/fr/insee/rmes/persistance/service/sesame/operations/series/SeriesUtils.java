@@ -7,7 +7,6 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class SeriesUtils {
@@ -18,17 +17,10 @@ public class SeriesUtils {
 
 	public JSONObject getSeriesById(String id){
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
-		addSeriesAltLabel(id, series);
 		addSeriesOperations(id, series);
 		return series;
 	}
 
-	private void addSeriesAltLabel(String idSeries, JSONObject series) {
-		JSONArray altLabel = RepositoryGestion.getResponseAsArray(SeriesQueries.altLabel(idSeries));
-		if (altLabel.length() != 0) {
-			series.put("altLabel", JSONUtils.extractFieldToArray(altLabel, "altLabel"));
-		}
-	}
 
 	private void addSeriesOperations(String idSeries, JSONObject series) {
 		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));

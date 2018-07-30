@@ -13,9 +13,11 @@ public class OperationById {
 	@ApiModelProperty(value = "Label lg2")
 	public String prefLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label")
-	public String altLabel;
+	@ApiModelProperty(value = "Alternative label lg1")
+	public String altLabelLg1;
 
+	@ApiModelProperty(value = "Alternative label lg2")
+	public String altLabelLg2;
 
 	@ApiModelProperty(value = "Uri of Series")
 	public String motherSeries;

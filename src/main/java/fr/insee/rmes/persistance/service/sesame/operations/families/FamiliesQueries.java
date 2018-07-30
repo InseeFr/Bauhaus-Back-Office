@@ -53,4 +53,22 @@ public class FamiliesQueries {
 				;
 	}
 
+	public static String getSubjects(String idFamily) {
+		return "SELECT (?subjectUri as ?id) ?labelLg1 ?labelLg2 \n"
+				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+				+ "WHERE { \n" 
+
+				+ "?family dcterms:subject ?subjectUri . \n"
+				+ "?subjectUri skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "?subjectUri skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+
+				+ "FILTER(REGEX(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
+				+ "}"
+				+ " ORDER BY ?subjectUri"
+				;
+	}
+
+
 }

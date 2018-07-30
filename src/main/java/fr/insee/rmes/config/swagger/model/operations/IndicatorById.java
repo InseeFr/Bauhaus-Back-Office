@@ -2,10 +2,9 @@ package fr.insee.rmes.config.swagger.model.operations;
 
 import java.util.List;
 
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import io.swagger.annotations.ApiModelProperty;
 
-public class SeriesById {
+public class IndicatorById {
 
 	@ApiModelProperty(value = "Id", required = true)
 	public String id;
@@ -29,28 +28,7 @@ public class SeriesById {
 	@ApiModelProperty(value = "Abstract lg2")
 	public String abstractLg2;
 
-
-	@ApiModelProperty(value = "Uri of family")
-	public String motherFamily;
-
-
-	@ApiModelProperty(value = "Label family lg1")
-	public String motherFamilyLabelLg1;
-
-
-	@ApiModelProperty(value = "Label family lg2")
-	public String motherFamilyLabelLg2;
-
-
-	@ApiModelProperty(value = "Operations")
-	public List<IdLabelTwoLangs> operations;
-
-	@ApiModelProperty(value = "Type's notation")
-	public String typeCode;
-
-	@ApiModelProperty(value = "Type list's notation")
-	public String typeList;
-
+	//TODO check
 	@ApiModelProperty(value = "Frequency's notation")
 	public String accrualPeriodicityCode;
 
@@ -63,11 +41,8 @@ public class SeriesById {
 	@ApiModelProperty(value = "Identifier of stake holder")
 	public String stakeHolder;
 
-	@ApiModelProperty(value = "Identifier of data collector")
-	public String dataCollector;
+	@ApiModelProperty(value = "Linked objects")
+	public List<Links> links;
 
-
-	@ApiModelProperty(value = "Identifier of contributor")
-	public String contributor;
 
 }

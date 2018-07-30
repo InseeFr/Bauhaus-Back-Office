@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.FamilyById;
+import fr.insee.rmes.config.swagger.model.operations.IndicatorById;
+import fr.insee.rmes.config.swagger.model.operations.Links;
 import fr.insee.rmes.config.swagger.model.operations.OperationById;
 import fr.insee.rmes.config.swagger.model.operations.SeriesById;
-import fr.insee.rmes.config.swagger.model.operations.SeriesLinks;
-import fr.insee.rmes.config.swagger.model.operations.SeriesNotes;
 import fr.insee.rmes.persistance.service.OperationsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -89,21 +89,11 @@ public class OperationsResources {
 	@GET
 	@Path("/series/{id}/links")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesLinksByID", value = "List of linked resources", response = SeriesLinks.class)
+	@ApiOperation(nickname = "getSeriesLinksByID", value = "List of linked resources", response = Links.class)
 	public Response getSeriesLinksByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getSeriesLinksByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-
-	@GET
-	@Path("/series/{id}/notes")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesNotesByID", value = "Notes of the series", response = SeriesNotes.class)
-	public Response getSeriesNotesByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getSeriesNotesByID(id);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
-
 
 
 	/***************************************************************************************************
@@ -143,5 +133,31 @@ public class OperationsResources {
 			throw e;
 		}
 	}
+
+	/***************************************************************************************************
+	 * INDICATORS
+	 ******************************************************************************************************/
+	@GET
+	@Path("/indicators")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getIndicators", value = "List of indicators", response = IdLabelAltLabel.class,
+	responseContainer = "List")
+	public Response getIndicators() throws Exception {
+		String jsonResultat = operationsService.getIndicators();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+
+	}
+
+	@GET
+	@Path("/indicator/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getIndicatorByID", value = "Indicator", response = IndicatorById.class)
+	public Response getIndicatorByID(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getIndicatorByID(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+
+
 
 }

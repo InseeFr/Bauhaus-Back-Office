@@ -24,8 +24,6 @@ public interface OperationsService {
 
 	String getSeriesLinksByID(String id);
 
-	String getSeriesNotesByID(String id);
-
 
 
 	/**
@@ -37,6 +35,10 @@ public interface OperationsService {
 	String getOperations() throws Exception;
 
 	String getOperationByID(String id);
+
+	String getIndicators();
+
+	String getIndicatorByID(String id);
 
 
 
