@@ -36,6 +36,10 @@ public interface OperationsService {
 
 	String getOperationByID(String id);
 
+	String getIndicators();
+
+	String getIndicatorByID(String id);
+
 
 
 

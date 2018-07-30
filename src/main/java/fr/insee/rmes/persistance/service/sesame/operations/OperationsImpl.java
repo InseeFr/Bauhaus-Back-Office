@@ -15,6 +15,8 @@ import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExportBuilder;
@@ -42,6 +44,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	FamiliesUtils familiesUtils;
+
+	@Autowired
+	IndicatorsUtils indicatorsUtils;
 
 	/***************************************************************************************************
 	 * SERIES
@@ -111,6 +116,25 @@ public class OperationsImpl implements OperationsService {
 	public String getFamilyByID(String id) {
 		JSONObject family = familiesUtils.getFamilyById(id);
 		return family.toString();
+	}
+
+
+	/***************************************************************************************************
+	 * INDICATORS
+	 *****************************************************************************************************/
+
+
+	@Override
+	public String getIndicators() {
+		logger.info("Starting to get indicators list");
+		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getIndicatorByID(String id) {
+		JSONObject indic = indicatorsUtils.getIndicatorById(id);
+		return indic.toString();
 	}
 
 

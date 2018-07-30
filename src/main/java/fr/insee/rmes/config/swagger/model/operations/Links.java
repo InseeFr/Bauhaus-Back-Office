@@ -2,7 +2,7 @@ package fr.insee.rmes.config.swagger.model.operations;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class SeriesLinks {
+public class Links {
 
 	@ApiModelProperty(value = "Resource linked", required = true)
 	public String uriLinked;
