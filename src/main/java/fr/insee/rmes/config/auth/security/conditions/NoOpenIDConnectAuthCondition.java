@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.auth.conditions;
+package fr.insee.rmes.config.auth.security.conditions;
 
 import java.io.File;
 import java.io.FileReader;

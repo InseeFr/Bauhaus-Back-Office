@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.session.NullAuthenticated
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.conditions.OpenIDConnectAuthCondition;
+import fr.insee.rmes.config.auth.security.conditions.OpenIDConnectAuthCondition;
 import fr.insee.rmes.config.auth.security.keycloak.KeycloakUserDetailsAuthenticationProvider;
 import fr.insee.rmes.config.auth.security.keycloak.RmesKeycloakConfigResolver;
 
@@ -41,6 +41,8 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
 		http.sessionManagement().disable();
 		http.authorizeRequests()
 			.antMatchers("/api/init").permitAll()
+			.antMatchers("/swagger-ui/*").permitAll()
+			.antMatchers("/api/swagger.json").permitAll()
 			.anyRequest().authenticated();
 	}
 

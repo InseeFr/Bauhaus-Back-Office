@@ -13,7 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import fr.insee.rmes.config.auth.security.manager.User;
+import fr.insee.rmes.config.auth.user.User;
 
 public class KeycloakUserDetailsAuthenticationProvider extends KeycloakAuthenticationProvider {
 

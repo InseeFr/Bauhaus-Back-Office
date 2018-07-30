@@ -145,7 +145,7 @@ public class CorrespondencesQueries {
 				+ "FILTER (lang(?targetItemLabelLg1) = '" + Config.LG1 + "') \n"
 				+ "OPTIONAL {?targetItemURI skos:prefLabel ?targetItemLabelLg2 . \n"
 				+ "FILTER (lang(?targetItemLabelLg2) = '" + Config.LG2 + "')} \n"
-				+ "}"
+				+ "} \n"
 				+ "LIMIT 1";
 	}
 	
