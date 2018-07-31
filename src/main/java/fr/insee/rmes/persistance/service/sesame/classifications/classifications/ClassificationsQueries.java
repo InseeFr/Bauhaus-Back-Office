@@ -130,7 +130,10 @@ public class ClassificationsQueries {
 			+ "?item skos:notation ?id . \n"
 			+ "OPTIONAL{?item skos:broader ?broader . \n"
 			+ "?broader skos:notation ?parent} \n"
-			+ "} \n";
+			+ "?level skos:member ?item . \n"
+			+ "?level xkos:depth ?depth \n"
+			+ "} \n"
+			+ "ORDER BY ?depth ?id ";
 	}
 	
 }

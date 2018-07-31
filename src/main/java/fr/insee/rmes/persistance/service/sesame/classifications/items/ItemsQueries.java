@@ -142,7 +142,8 @@ public class ItemsQueries {
 				+ "?narrower skos:notation ?id . \n"
 				+ "OPTIONAL {?narrower skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} \n"
-				+ "}";	
+				+ "}"
+				+ "ORDER BY ?id ";
 	}
 
 }
