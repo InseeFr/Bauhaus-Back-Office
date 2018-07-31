@@ -19,10 +19,10 @@ public class OperationsQueries {
 	}
 
 	public static String operationQuery(String id){
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?motherSeries ?motherSeriesLabelLg1 ?motherSeriesLabelLg2 \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(REGEX(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
+				+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?operation),'/operation/') AS ?id) . \n" 
 
 		+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
@@ -35,11 +35,22 @@ public class OperationsQueries {
 			+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "') } . \n" 
 
 
-		+ "?motherSeries dcterms:hasPart ?operation . \n"
-		+ "?motherSeries skos:prefLabel ?motherSeriesLabelLg1 . \n"
-		+ "FILTER (lang(?motherSeriesLabelLg1) = '" + Config.LG1 + "') . \n"
-		+ "?motherSeries skos:prefLabel ?motherSeriesLabelLg2 . \n"
-		+ "FILTER (lang(?motherSeriesLabelLg2) = '" + Config.LG2 + "') . \n"
+		+ "}} \n"
+		+ "LIMIT 1";
+	}
+	
+	public static String seriesQuery(String idOperation) {
+		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+		+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + idOperation+ "')) . \n" 
+
+		+ "?seriesUri dcterms:hasPart ?operation . \n"
+		+ "?seriesUri skos:prefLabel ?labelLg1 . \n"
+		+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+		+ "?seriesUri skos:prefLabel ?labelLg2 . \n"
+		+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+		+ "BIND(STRAFTER(STR(?seriesUri),'/serie/') AS ?id) . \n" 
+
 
 		+ "}} \n"
 		+ "LIMIT 1";

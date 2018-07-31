@@ -18,6 +18,7 @@ public class SeriesUtils {
 	public JSONObject getSeriesById(String id){
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		addSeriesOperations(id, series);
+		addSeriesFamily(id,series);
 		return series;
 	}
 
@@ -27,6 +28,11 @@ public class SeriesUtils {
 		if (operations.length() != 0) {
 			series.put("operations", operations);
 		}
+	}
+	
+	private void addSeriesFamily(String idSeries, JSONObject series) {
+		JSONObject family = RepositoryGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
+		series.put("family", family);
 	}
 
 

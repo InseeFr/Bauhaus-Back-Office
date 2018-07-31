@@ -28,7 +28,6 @@ public class SeriesQueries {
 		getSimpleAttr(id);
 		getCodesLists();
 		getOrganizations();
-		getMotherFamily();
 
 		return "SELECT "
 		+ variables.toString()
@@ -56,7 +55,7 @@ public class SeriesQueries {
 				+ "OPTIONAL {?uriLinked skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
 
-			+ "FILTER(REGEX(STR(?series),'/operations/serie/" + id + "')) . \n"
+			+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + id + "')) . \n"
 
 
 				+ "} \n"
@@ -75,7 +74,7 @@ public class SeriesQueries {
 				+ "?id skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 
-				+ "FILTER(REGEX(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
 				+ "}"
 				+ " ORDER BY ?id"
 				;
@@ -100,7 +99,7 @@ public class SeriesQueries {
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
 
-		addClauseToWhereClause(" FILTER(REGEX(STR(?series),'/operations/serie/" + id+ "')) . \n" 
+		addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" );
 
 	}
@@ -151,14 +150,23 @@ public class SeriesQueries {
 						+ "}   \n");
 	}
 
-	private static void getMotherFamily() {
-		addVariableToList(" ?motherFamily ?motherFamilyLabelLg1 ?motherFamilyLabelLg2 \n ");
-		addClauseToWhereClause(	
-				"?motherFamily dcterms:hasPart ?series . \n"
-						+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg1 . \n"
-						+ "FILTER (lang(?motherFamilyLabelLg1) = '" + Config.LG1 + "') . \n"
-						+ "?motherFamily skos:prefLabel ?motherFamilyLabelLg2 . \n"
-						+ "FILTER (lang(?motherFamilyLabelLg2) = '" + Config.LG2 + "') . \n");
+	public static String getFamily(String idSeries) {
+	
+		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
+		+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+		+ "WHERE { \n" 
+
+		+ "?family dcterms:hasPart ?series . \n"
+		+ "?family skos:prefLabel ?labelLg1 . \n"
+		+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+		+ "?family skos:prefLabel ?labelLg2 . \n"
+		+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+		+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
+
+		+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+		+ "}"
+		
+		;
 	}
 
 

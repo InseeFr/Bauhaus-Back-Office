@@ -32,7 +32,7 @@ public class FamilyById {
 	@ApiModelProperty(value = "Subjects, Topics")
 	public List<IdLabelTwoLangs> subjects;
 
-	@ApiModelProperty(value = "Operations")
-	public List<IdLabelTwoLangs> operations;
+	@ApiModelProperty(value = "Series")
+	public List<IdLabelTwoLangs> series;
 
 }
