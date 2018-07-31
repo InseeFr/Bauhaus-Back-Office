@@ -5,4 +5,6 @@ public interface OrganizationsService {
 
 	String getOrganization(String organizationUri);
 
+	String getOrganizations();
+
 }
