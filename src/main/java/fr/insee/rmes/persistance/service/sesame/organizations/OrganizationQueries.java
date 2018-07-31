@@ -33,8 +33,22 @@ public class OrganizationQueries {
 				+ "}} \n" ;
 	}
 
+	public static String organizationsQuery() {
+		return "SELECT DISTINCT ?id ?label ?altLabel \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/organisations> { \n"
+				//id
+				+ "?organization dcterms:identifier ?id . \n"
 
+				//labels
+				+ "OPTIONAL { ?organization skos:prefLabel ?label . \n"
+				+ "FILTER (lang(?label) = '" + Config.LG1 + "')} \n"
+				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
+				+ "}} \n" 
+				+ "GROUP BY ?id ?label ?altLabel \n"
+				+ "ORDER BY ?label ";
+	}
+	
 
 
 }

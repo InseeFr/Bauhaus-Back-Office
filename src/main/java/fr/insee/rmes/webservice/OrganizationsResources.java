@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.organizations.Organization;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import io.swagger.annotations.Api;
@@ -21,7 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Component
-@Path("/organization")
+@Path("/organizations")
 @Api(value = "Organization API", tags = { "Organization" })
 @ApiResponses(value = { @ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 204, message = "No Content"),
 		@ApiResponse(code = 400, message = "Bad Request"), @ApiResponse(code = 401, message = "Unauthorized"),
@@ -37,7 +38,7 @@ public class OrganizationsResources {
 
 
 	@GET
-	@Path("/{identifier}")
+	@Path("/organization/{identifier}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "getOrganizationByIdentifier", value = "Organization" , response = Organization.class)
 	public Response getOrganizationByIdentifier(@PathParam("identifier") String identifier) {
@@ -45,5 +46,13 @@ public class OrganizationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "getOrganizations", value = "List of organizations" , response = IdLabel.class, 	responseContainer = "List")
+	public Response getOrganizations() {
+		String jsonResultat = organizationsService.getOrganizations();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }
