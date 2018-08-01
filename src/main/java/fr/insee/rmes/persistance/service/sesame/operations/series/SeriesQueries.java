@@ -43,10 +43,10 @@ public class SeriesQueries {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
 				+ "?series <"+linkPredicate+"> ?uriLinked . \n"
-				+ "?uriLinked skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
-				+ "OPTIONAL {?uriLinked skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
+				+ "?uriLinked skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
 				+ "?uriLinked rdf:type ?typeOfObject . \n"
 				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 
@@ -75,6 +75,24 @@ public class SeriesQueries {
 				;
 	}
 
+	public static String getGeneratedWith(String idSeries) {
+		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
+				+ "WHERE { \n" 
+
+				+ "?uri prov:wasGeneratedBy ?series . \n"
+				+ "?uri skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "?uri skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+				+ "?uri rdf:type ?typeOfObject . \n"
+				
+				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
+
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+				+ "}"
+				+ " ORDER BY ?id"
+				;
+	}
 
 
 

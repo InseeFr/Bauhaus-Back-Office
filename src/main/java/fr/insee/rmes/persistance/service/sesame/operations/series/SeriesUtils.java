@@ -24,6 +24,7 @@ public class SeriesUtils {
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
 		addSeriesLinks(id, series);
+		addGeneratedWith(id, series);
 		return series;
 	}
 
@@ -32,6 +33,14 @@ public class SeriesUtils {
 		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
 		if (operations.length() != 0) {
 			series.put("operations", operations);
+		}
+	}
+	
+	private void addGeneratedWith(String idSeries, JSONObject series) {
+		JSONArray generated = RepositoryGestion.getResponseAsArray(SeriesQueries.getGeneratedWith(idSeries));
+		if (generated.length() != 0) {
+			generated = QueryUtils.transformRdfTypeInString(generated);
+			series.put("generate", generated);
 		}
 	}
 	
