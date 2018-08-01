@@ -66,11 +66,6 @@ public class OperationsImpl implements OperationsService {
 		return series.toString();
 	}
 
-	@Override
-	public String getSeriesLinksByID(String id) {
-		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id)).toString();
-	}
-
 
 
 	/***************************************************************************************************

@@ -86,15 +86,6 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/series/{id}/links")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesLinksByID", value = "List of linked resources", response = Links.class)
-	public Response getSeriesLinksByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getSeriesLinksByID(id);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
-
 
 	/***************************************************************************************************
 	 * OPERATIONS
