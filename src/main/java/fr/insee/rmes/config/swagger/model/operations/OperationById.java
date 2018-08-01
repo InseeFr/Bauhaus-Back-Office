@@ -1,5 +1,6 @@
 package fr.insee.rmes.config.swagger.model.operations;
 
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import io.swagger.annotations.ApiModelProperty;
 
 public class OperationById {
@@ -19,16 +20,9 @@ public class OperationById {
 	@ApiModelProperty(value = "Alternative label lg2")
 	public String altLabelLg2;
 
-	@ApiModelProperty(value = "Uri of Series")
-	public String motherSeries;
+	@ApiModelProperty(value = "Series")
+	public IdLabelTwoLangs series;
 
-
-	@ApiModelProperty(value = "Label series lg1")
-	public String motherSeriesLabelLg1;
-
-
-	@ApiModelProperty(value = "Label series lg2")
-	public String motherSeriesLabelLg2;
 
 
 

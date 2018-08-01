@@ -20,7 +20,7 @@ public class FamiliesQueries {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(REGEX(STR(?family),'/operations/famille/" + id+ "')) . \n" 
+				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
 
 				+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
@@ -41,13 +41,15 @@ public class FamiliesQueries {
 				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
 				+ "WHERE { \n" 
 
-				+ "?family dcterms:hasPart ?id . \n"
-				+ "?id skos:prefLabel ?labelLg1 . \n"
+				+ "?family dcterms:hasPart ?uri . \n"
+				+ "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-				+ "?id skos:prefLabel ?labelLg2 . \n"
+				+ "?uri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+				+ "BIND(STRAFTER(STR(?uri),'/operations/serie/') AS ?id) . \n"
 
-				+ "FILTER(REGEX(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
+
+				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
 				+ "}"
 				+ " ORDER BY ?id"
 				;
@@ -64,7 +66,7 @@ public class FamiliesQueries {
 				+ "?subjectUri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 
-				+ "FILTER(REGEX(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
+				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
 				+ "}"
 				+ " ORDER BY ?subjectUri"
 				;

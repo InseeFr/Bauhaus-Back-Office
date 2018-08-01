@@ -59,7 +59,7 @@ public class IndicatorsQueries {
 				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
 
-			+ "FILTER(REGEX(STR(?indic),'/produits/indicateur/" + id + "')) . \n"
+			+ "FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id + "')) . \n"
 
 
 				+ "} \n"
@@ -81,7 +81,7 @@ public class IndicatorsQueries {
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
 
-		addClauseToWhereClause(" FILTER(REGEX(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
+		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?indic),'/indicateur/') AS ?id) . \n" );
 
 	}
@@ -93,7 +93,7 @@ public class IndicatorsQueries {
 		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + Config.LG2 + "') } \n ");
 	}
 
-	private static void getCodesLists() {//TODO
+	private static void getCodesLists() {
 		addVariableToList(" ?accrualPeriodicityCode ?accrualPeriodicityList ");
 		addClauseToWhereClause( "OPTIONAL {?indic dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
 				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"

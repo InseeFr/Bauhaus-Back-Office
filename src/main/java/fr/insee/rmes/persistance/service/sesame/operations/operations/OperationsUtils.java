@@ -9,9 +9,15 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 public class OperationsUtils {
 
 	public JSONObject getOperationById(String id) {
-		return RepositoryGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
+		JSONObject operation = RepositoryGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
+		getOperationSeries(id, operation);
+		return operation;
 	}
 
+	private void getOperationSeries(String id, JSONObject operation) {
+		JSONObject series = RepositoryGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
+		operation.put("series", series);
+	}
 
 
 }

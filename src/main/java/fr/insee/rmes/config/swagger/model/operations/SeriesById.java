@@ -30,17 +30,8 @@ public class SeriesById {
 	public String abstractLg2;
 
 
-	@ApiModelProperty(value = "Uri of family")
-	public String motherFamily;
-
-
-	@ApiModelProperty(value = "Label family lg1")
-	public String motherFamilyLabelLg1;
-
-
-	@ApiModelProperty(value = "Label family lg2")
-	public String motherFamilyLabelLg2;
-
+	@ApiModelProperty(value = "Family")
+	public IdLabelTwoLangs family;
 
 	@ApiModelProperty(value = "Operations")
 	public List<IdLabelTwoLangs> operations;
