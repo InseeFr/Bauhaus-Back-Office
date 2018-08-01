@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiResponses;
 
 @Component
 @Path("/organizations")
-@Api(value = "Organization API", tags = { "Organization" })
+@Api(value = "Organization API", tags = { "Organizations" })
 @ApiResponses(value = { @ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 204, message = "No Content"),
 		@ApiResponse(code = 400, message = "Bad Request"), @ApiResponse(code = 401, message = "Unauthorized"),
 		@ApiResponse(code = 403, message = "Forbidden"), @ApiResponse(code = 404, message = "Not found"),
