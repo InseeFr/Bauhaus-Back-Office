@@ -4,16 +4,16 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class Links {
 
-	@ApiModelProperty(value = "Resource linked", required = true)
-	public String uriLinked;
-
-	@ApiModelProperty(value = "Type of link", required = true)
-	public String typeOfLink;
+	@ApiModelProperty(value = "Id of the resource linked", required = true)
+	public String id;
+	
+	@ApiModelProperty(value = "Type of object", required = true)
+	public String type;
 
 	@ApiModelProperty(value = "Label lg1", required = true)
-	public String prefLabelLg1;
+	public String labelLg1;
 
 	@ApiModelProperty(value = "Label lg2")
-	public String prefLabelLg2;
+	public String labelLg2;
 
 }

@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.operations.series;
 
+import org.openrdf.model.URI;
+
 import fr.insee.rmes.config.Config;
 
 public class SeriesQueries {
@@ -37,30 +39,23 @@ public class SeriesQueries {
 		+ "LIMIT 1";
 	}
 
-	public static String seriesLinks(String id) {
-		return "SELECT ?uriLinked ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 \n"
+	public static String seriesLinks(String idSeries, URI linkPredicate) {
+		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
-
-				+ "{?series dcterms:replaces ?uriLinked . \n"
-				+ "BIND('replaces' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?series dcterms:isReplacedBy ?uriLinked . \n"
-				+ "BIND('isReplacedBy' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?series rdfs:seeAlso ?uriLinked . \n"
-				+ "BIND('seeAlso' AS ?typeOfLink)} \n"
-
+				+ "?series <"+linkPredicate+"> ?uriLinked . \n"
 				+ "?uriLinked skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
 				+ "OPTIONAL {?uriLinked skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
+				+ "?uriLinked rdf:type ?typeOfObject . \n"
+				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 
-			+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + id + "')) . \n"
-
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
 
 				+ "} \n"
-				+ "ORDER BY ?typeOfLink";
+				+ "ORDER BY ?labelLg1";
 	}
+
 
 
 	public static String getOperations(String idSeries) {

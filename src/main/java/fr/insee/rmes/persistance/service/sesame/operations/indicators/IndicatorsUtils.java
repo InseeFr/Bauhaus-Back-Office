@@ -4,8 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.DCTERMS;
+import org.openrdf.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
+import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 
 @Component
@@ -23,11 +28,20 @@ public class IndicatorsUtils {
 
 
 	private void addLinks(String idIndic, JSONObject indicator) {
-		JSONArray links = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(idIndic));
+		addOneTypeOfLink(idIndic,indicator,DCTERMS.REPLACES);
+		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
+		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
+		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
+	}
+	
+	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) {
+		JSONArray links = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
 		if (links.length() != 0) {
-			indicator.put("links", links);
+			links = QueryUtils.transformRdfTypeInString(links);
+			object.put(predicate.getLocalName(), links);
 		}
 	}
+	
 
 
 }
