@@ -15,7 +15,7 @@ public enum ObjectType {
 	FAMILY("family", INSEE.FAMILY, Config.FAMILIES_BASE_URI),
 	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
-	INDICATOR("indicator", INSEE.INDICATOR, ""),
+	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
 	UNDEFINED("undefined",null, "");
 	
 	
