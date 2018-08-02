@@ -77,6 +77,7 @@ public class ApplicationContext {
 		Config.SERIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.series.baseURI");
 		Config.FAMILIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.families.baseURI");
 		
+		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");
 		Config.INDICATORS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.indicators.baseURI");
 
 

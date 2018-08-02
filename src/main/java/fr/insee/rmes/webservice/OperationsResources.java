@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.config.swagger.model.operations.IndicatorById;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
+import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
 import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import io.swagger.annotations.Api;
@@ -182,12 +182,23 @@ public class OperationsResources {
 	@GET
 	@Path("/indicator/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getIndicatorByID", value = "Indicator", response = IndicatorById.class)
+	@ApiOperation(nickname = "getIndicatorByID", value = "Indicator", response = Indicator.class)
 	public Response getIndicatorByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getIndicatorByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/indicator/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setIndicatorById", value = "Update indicator")
+	public Response setIndicatorById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Indicator", required = true) String body) {
+		operationsService.setIndicator(id, body);
+		return Response.status(Status.NO_CONTENT).build();
+	}
 
 
 

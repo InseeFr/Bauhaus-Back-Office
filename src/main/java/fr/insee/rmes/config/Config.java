@@ -28,6 +28,7 @@ public class Config {
 	public static String SERIES_BASE_URI = "";
 	public static String FAMILIES_BASE_URI = "";
 	
+	public static String PRODUCTS_GRAPH = "";
 	public static String INDICATORS_BASE_URI = "";
 
 	public static String SESAME_SERVER_GESTION = "";

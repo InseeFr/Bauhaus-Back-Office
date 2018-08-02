@@ -182,7 +182,7 @@ public class SeriesUtils {
 		
 		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
 		
-		RepositoryGestion.loadSeries(seriesURI, model);
+		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 
 }

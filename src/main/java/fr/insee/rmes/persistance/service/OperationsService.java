@@ -48,6 +48,8 @@ public interface OperationsService {
 
 	String getIndicatorByID(String id);
 
+	void setIndicator(String id, String body);
+
 
 
 
