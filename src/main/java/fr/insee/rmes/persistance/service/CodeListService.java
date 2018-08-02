@@ -7,4 +7,6 @@ public interface CodeListService {
 
 	String getCode(String notation, String id);
 
+	String getCodeUri(String notationCodeList, String notationCode);
+
 }
