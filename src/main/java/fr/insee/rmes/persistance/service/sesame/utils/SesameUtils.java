@@ -133,29 +133,30 @@ public class SesameUtils {
 	 * Utils to create triples if data exist
 	 */
 	
-	public static void addTripleString(URI objectURI, URI predicat, String value, Model model) {
+	public static void addTripleString(URI objectURI, URI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralString(value), SesameUtils.conceptGraph());
+			model.add(objectURI, predicat, SesameUtils.setLiteralString(value), graph);
 		}
 	}
-	public static void addTripleString(URI objectURI, URI predicat, String value, String lang, Model model) {
+	public static void addTripleString(URI objectURI, URI predicat, String value, String lang, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralString(value, lang), SesameUtils.conceptGraph());
+			model.add(objectURI, predicat, SesameUtils.setLiteralString(value, lang), graph);
 		}
 	}
-	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model) {
+	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralDateTime(value), SesameUtils.conceptGraph());
+			model.add(objectURI, predicat, SesameUtils.setLiteralDateTime(value), graph);
 		}
 	}
-	public static void addTripleInt(URI objectURI, URI predicat, String value, Model model) {
+	public static void addTripleInt(URI objectURI, URI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralInt(value), SesameUtils.conceptGraph());
+			model.add(objectURI, predicat, SesameUtils.setLiteralInt(value), graph);
 		}
 	}
-	public static void addTripleLiteralXML(URI objectURI, URI predicat, String value, Model model) {
+	
+	public static void addTripleLiteralXML(URI objectURI, URI predicat, String value, Model model,Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralXML(value), SesameUtils.conceptGraph());
+			model.add(objectURI, predicat, SesameUtils.setLiteralXML(value), graph);
 		}
 	}
 

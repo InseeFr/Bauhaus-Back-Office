@@ -68,10 +68,6 @@ public class FamiliesUtils {
 	}
 	
 	
-	/**
-	 * Concepts to sesame
-	 */
-		
 	public void createRdfFamily(Family family) {
 		Model model = new LinkedHashModel();
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
@@ -80,9 +76,9 @@ public class FamiliesUtils {
 		/*Required*/
 		model.add(familyURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(family.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
 		/*Optional*/
-		SesameUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model);
-		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model);
-		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model);
+		SesameUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
