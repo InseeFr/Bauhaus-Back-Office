@@ -14,6 +14,7 @@ import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -224,6 +225,18 @@ public class RepositoryGestion {
 		}
 	}
 
+	public static void loadFamily(URI family, Model model) {
+		try {
+			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
+			conn.remove(family, null, null);
+			conn.add(model);
+			conn.close();
+		} catch (OpenRDFException e) {
+			logger.error("Failure load family : " + family);
+			logger.error(e.getMessage());
+		}
+	}
+	
 	public static void objectsValidation(List<URI> itemToValidateList, Model model) {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
@@ -255,6 +268,43 @@ public class RepositoryGestion {
 				logger.error("Failure clearConceptLinks close statement : ");
 				logger.error(e.getMessage());
 			}
+		});
+	}
+	
+	public static void keepHierarchicalOperationLinks(Resource object, Model model) {
+		List<URI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
+		RepositoryConnection conn = null;
+		try {
+			conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
+		} catch (Exception e) {
+			logger.error("Failure keepHierarchicalOperationLinks : " + object);
+			logger.error(e.getMessage());
+		}
+		
+	}
+
+	private static void getHierarchicalOperationLinksModel(Resource object, Model model, List<URI> typeOfLink,RepositoryConnection conn) {
+		typeOfLink.forEach(predicat -> {
+			RepositoryResult<Statement> statements;
+				try {
+					statements = conn.getStatements(null, predicat, object, false);
+					while (statements.hasNext()) {
+						Statement st = statements.next();
+						model.add(st.getSubject(), st.getPredicate(),st.getObject(), st.getContext());
+					}
+					conn.remove(statements);
+					
+					statements = conn.getStatements(object, predicat, null, false);
+					while (statements.hasNext()) {
+						Statement st = statements.next();
+						model.add(st.getSubject(), st.getPredicate(),st.getObject(), st.getContext());
+					}
+					conn.remove(statements);
+				} catch (RepositoryException e) {
+					logger.error("Failure getHierarchicalOperationLinksModel : " + object);
+					logger.error(e.getMessage());
+				}			
 		});
 	}
 

@@ -4,22 +4,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.SKOS;
 
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 
 public enum ObjectType {
-	FAMILY("family", INSEE.FAMILY),
-	SERIES("series", INSEE.SERIES),
-	OPERATION("operation", INSEE.OPERATION),
-	INDICATOR("indicator", INSEE.INDICATOR),
-	UNDEFINED("undefined",null);
+	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
+	COLLECTION("collection", SKOS.COLLECTION,  Config.COLLECTIONS_BASE_URI),
+	FAMILY("family", INSEE.FAMILY, Config.FAMILIES_BASE_URI),
+	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
+	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
+	INDICATOR("indicator", INSEE.INDICATOR, ""),
+	UNDEFINED("undefined",null, "");
+	
+	
+
 	
 	private String label;
 	private URI uri;
+	private String baseUri;
 
-	ObjectType(String label, URI uri){
+	ObjectType(String label, URI uri, String baseUri){
 		this.label=label;
 		this.uri=uri;
+		this.baseUri=baseUri;
 	}
 
 	public URI getUri() {
@@ -28,6 +37,10 @@ public enum ObjectType {
 	
 	public String getLabel() {
 		return this.label;
+	}
+	
+	public String getBaseUri() {
+		return Config.BASE_URI_GESTION + this.baseUri;
 	}
 	
 	

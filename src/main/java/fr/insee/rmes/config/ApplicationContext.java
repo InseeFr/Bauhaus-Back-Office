@@ -71,6 +71,11 @@ public class ApplicationContext {
 		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.bauhaus.concepts.scheme");
 		Config.CONCEPTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.concepts.baseURI");
 		Config.COLLECTIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.collections.baseURI");
+		
+		Config.OPERATIONS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.operations.graph");
+		Config.OPERATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.baseURI");
+		Config.SERIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.series.baseURI");
+		Config.FAMILIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.families.baseURI");
 
 		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
 		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.repository");

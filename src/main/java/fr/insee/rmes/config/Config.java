@@ -23,6 +23,10 @@ public class Config {
 	public static String CONCEPTS_BASE_URI = "";
 	public static String COLLECTIONS_BASE_URI = "";
 	
+	public static String OPERATIONS_GRAPH = "";
+	public static String OPERATIONS_BASE_URI = "";
+	public static String SERIES_BASE_URI = "";
+	public static String FAMILIES_BASE_URI = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";

@@ -11,6 +11,8 @@ public interface OperationsService {
 	String getFamilies();
 
 	String getFamilyByID(String id);
+	
+	void setFamily(String id, String body);
 
 
 
@@ -34,10 +36,16 @@ public interface OperationsService {
 	String getOperations() throws Exception;
 
 	String getOperationByID(String id);
+	
+	
+	/**
+	 * INDICATORS
+	 */
 
 	String getIndicators();
 
 	String getIndicatorByID(String id);
+
 
 
 

@@ -22,11 +22,14 @@ public class SesameUtils {
 	static ValueFactory factory = ValueFactoryImpl.getInstance();
 
 	private final static String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
-	private final static String CONCEPTS_BASE_URI = Config.BASE_URI_GESTION + Config.CONCEPTS_BASE_URI;
-	private final static String COLLECTIONS_BASE_URI = Config.BASE_URI_GESTION + Config.COLLECTIONS_BASE_URI;
 	
 	public static Resource conceptGraph(){
 		Resource conceptGraph = factory.createURI(Config.CONCEPTS_GRAPH);
+		return conceptGraph;
+	}
+	
+	public static Resource operationsGraph(){
+		Resource conceptGraph = factory.createURI(Config.OPERATIONS_GRAPH);
 		return conceptGraph;
 	}
 	
@@ -35,20 +38,24 @@ public class SesameUtils {
 		return conceptScheme;
 	}
 	
-	public static URI conceptIRI(String id) {
-		URI conceptURI = factory.createURI(CONCEPTS_BASE_URI + "/" + id);
-		return conceptURI;
+	public static URI objectIRI(ObjectType objType, String id) {
+		URI uri = factory.createURI(objType.getBaseUri() + "/" + id);
+		return uri;
 	}
 	
+	public static URI conceptIRI(String id) {
+		return objectIRI(ObjectType.CONCEPT, id);
+	}
 	
 	public static URI collectionIRI(String id) {
-		URI conceptURI = factory.createURI(COLLECTIONS_BASE_URI + "/" + id);
-		return conceptURI;
+		return objectIRI(ObjectType.COLLECTION, id);
 	}
+	
+	
 	
 	public static URI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		URI noteURI = SesameUtils.factory.createURI(
-				CONCEPTS_BASE_URI 
+				ObjectType.CONCEPT.getBaseUri() 
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -59,7 +66,7 @@ public class SesameUtils {
 	public static URI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		URI noteURI = SesameUtils.factory.createURI(
-				CONCEPTS_BASE_URI 
+				ObjectType.CONCEPT.getBaseUri()
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
@@ -77,7 +84,7 @@ public class SesameUtils {
 		} else {
 			parsedDate = new Date().toString();
 		}
-		URI noteURI = SesameUtils.factory.createURI(CONCEPTS_BASE_URI + "/" + conceptId + "/" + datableNote.getPath()
+		URI noteURI = SesameUtils.factory.createURI(ObjectType.CONCEPT.getBaseUri() + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 		return noteURI;
 	}

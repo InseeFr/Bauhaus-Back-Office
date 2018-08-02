@@ -1,19 +1,24 @@
 package fr.insee.rmes.webservice;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.FamilyById;
@@ -24,6 +29,7 @@ import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.persistance.service.OperationsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -62,6 +68,18 @@ public class OperationsResources {
 	public Response getFamilyByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/family/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setFamilyById", value = "Update family")
+	public Response setFamilyById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Family", required = true) String body) {
+		operationsService.setFamily(id, body);
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	/***************************************************************************************************

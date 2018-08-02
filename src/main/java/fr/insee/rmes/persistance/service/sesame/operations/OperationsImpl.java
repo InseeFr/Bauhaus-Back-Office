@@ -113,6 +113,11 @@ public class OperationsImpl implements OperationsService {
 		return family.toString();
 	}
 
+	@Override
+	public void setFamily(String id, String body) {
+		familiesUtils.setFamily(id,body);
+	}
+
 
 	/***************************************************************************************************
 	 * INDICATORS
