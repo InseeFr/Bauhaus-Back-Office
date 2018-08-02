@@ -226,15 +226,15 @@ public class RepositoryGestion {
 	}
 
 	
-	public static void loadSeries(URI series, Model model) {
+	public static void loadObjectWithReplaceLinks(URI object, Model model) {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
-			clearSeriesLinks(series, conn);
-			conn.remove(series, null, null);
+			clearReplaceLinks(object, conn);
+			conn.remove(object, null, null);
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error("Failure load series : " + series);
+			logger.error("Failure load object : " + object);
 			logger.error(e.getMessage());
 		}
 	}
@@ -273,21 +273,21 @@ public class RepositoryGestion {
 		});
 	}
 	
-	public static void clearSeriesLinks(Resource series, RepositoryConnection conn) {
+	public static void clearReplaceLinks(Resource object, RepositoryConnection conn) {
 		List<URI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
 
 		typeOfLink.forEach(predicat -> {
 			RepositoryResult<Statement> statements = null;
 			try {
-				statements = conn.getStatements(null, predicat, series, false);
+				statements = conn.getStatements(null, predicat, object, false);
 			} catch (RepositoryException e) {
-				logger.error("Failure clearSeriesLinks : " + series);
+				logger.error("Failure clearReplaceLinks : " + object);
 				logger.error(e.getMessage());
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				logger.error("Failure clearSeriesLinks close statement : ");
+				logger.error("Failure clearReplaceLinks close statement : ");
 				logger.error(e.getMessage());
 			}
 		});

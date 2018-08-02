@@ -33,6 +33,11 @@ public class SesameUtils {
 		return conceptGraph;
 	}
 	
+	public static Resource productsGraph(){
+		Resource conceptGraph = factory.createURI(Config.PRODUCTS_GRAPH);
+		return conceptGraph;
+	}
+	
 	public static Resource conceptScheme(){
 		Resource conceptScheme = factory.createURI(CONCEPTS_SCHEME);
 		return conceptScheme;

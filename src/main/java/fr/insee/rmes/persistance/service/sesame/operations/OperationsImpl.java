@@ -144,7 +144,10 @@ public class OperationsImpl implements OperationsService {
 		return indic.toString();
 	}
 
-
+	@Override
+	public void setIndicator(String id, String body) {
+		indicatorsUtils.setIndicator(id,body);
+	}
 
 
 }
