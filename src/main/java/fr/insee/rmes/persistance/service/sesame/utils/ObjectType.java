@@ -21,12 +21,12 @@ public enum ObjectType {
 	
 
 	
-	private String label;
+	private String labelType;
 	private URI uri;
 	private String baseUri;
 
 	ObjectType(String label, URI uri, String baseUri){
-		this.label=label;
+		this.labelType=label;
 		this.uri=uri;
 		this.baseUri=baseUri;
 	}
@@ -35,8 +35,8 @@ public enum ObjectType {
 		return this.uri;
 	}
 	
-	public String getLabel() {
-		return this.label;
+	public String getLabelType() {
+		return this.labelType;
 	}
 	
 	public String getBaseUri() {
@@ -50,7 +50,7 @@ public enum ObjectType {
 	static {
 		// Populate out lookup when enum is created
 		for (ObjectType e : ObjectType.values()) {
-			lookupLabel.put(e.getLabel(), e);
+			lookupLabel.put(e.getLabelType(), e);
 			lookupUri.put(e.getUri(), e);
 		}
 	}
@@ -69,13 +69,22 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static URI getUri(String label) {
-		return getEnum(label).uri;
+	public static URI getUri(String labelType) {
+		return getEnum(labelType).uri;
+	}
+	
+	/**
+	 * Get URI by label
+	 * @param label
+	 * @return
+	 */
+	public static String getBaseUri(String labelType) {
+		return getEnum(labelType).baseUri;
 	}
 
 	/**
 	 * Get Enum type by URI
-	 * @param label
+	 * @param labelType
 	 * @return
 	 */
 	public static ObjectType getEnum(URI uri) {
@@ -84,12 +93,22 @@ public enum ObjectType {
 	
 	/**
 	 * Get label by URI
+	 * @param labelType
+	 * @return
+	 */
+	public static String getLabelType(URI uri) {
+		return getEnum(uri).labelType;
+	}
+
+	
+	/**
+	 * Get label by URI
 	 * @param label
 	 * @return
 	 */
-	public static String getLabel(URI uri) {
-		return getEnum(uri).label;
+	public static String getCompleteUriGestion(String labelType, String id) {
+		String baseUri = getBaseUri(labelType);
+		return Config.BASE_URI_GESTION + baseUri + "/" + id;
 	}
-
 }
 

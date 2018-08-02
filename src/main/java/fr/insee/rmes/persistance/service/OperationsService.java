@@ -24,7 +24,7 @@ public interface OperationsService {
 
 	String getSeriesByID(String id);
 
-
+	void setSeries(String id, String body);
 
 
 	/**
@@ -45,6 +45,7 @@ public interface OperationsService {
 	String getIndicators();
 
 	String getIndicatorByID(String id);
+
 
 
 

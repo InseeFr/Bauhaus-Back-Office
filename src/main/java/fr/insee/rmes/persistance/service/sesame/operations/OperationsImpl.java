@@ -66,7 +66,10 @@ public class OperationsImpl implements OperationsService {
 		return series.toString();
 	}
 
-
+	@Override
+	public void setSeries(String id, String body) {
+		seriesUtils.setSeries(id,body);
+	}
 
 	/***************************************************************************************************
 	 * OPERATIONS

@@ -237,6 +237,19 @@ public class RepositoryGestion {
 		}
 	}
 	
+	public static void loadSeries(URI series, Model model) {
+		try {
+			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
+			clearSeriesLinks(series, conn);
+			conn.remove(series, null, null);
+			conn.add(model);
+			conn.close();
+		} catch (OpenRDFException e) {
+			logger.error("Failure load series : " + series);
+			logger.error(e.getMessage());
+		}
+	}
+	
 	public static void objectsValidation(List<URI> itemToValidateList, Model model) {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
@@ -266,6 +279,26 @@ public class RepositoryGestion {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
 				logger.error("Failure clearConceptLinks close statement : ");
+				logger.error(e.getMessage());
+			}
+		});
+	}
+	
+	public static void clearSeriesLinks(Resource series, RepositoryConnection conn) {
+		List<URI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
+
+		typeOfLink.forEach(predicat -> {
+			RepositoryResult<Statement> statements = null;
+			try {
+				statements = conn.getStatements(null, predicat, series, false);
+			} catch (RepositoryException e) {
+				logger.error("Failure clearSeriesLinks : " + series);
+				logger.error(e.getMessage());
+			}
+			try {
+				conn.remove(statements);
+			} catch (RepositoryException e) {
+				logger.error("Failure clearSeriesLinks close statement : ");
 				logger.error(e.getMessage());
 			}
 		});

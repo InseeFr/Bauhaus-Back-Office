@@ -38,7 +38,7 @@ public class QueryUtils {
         for (int i = 0; i < jArray.length(); i++) {
             JSONObject jsonObject = jArray.getJSONObject(i);
             String typeOfObject = jsonObject.getString("typeOfObject");
-            String type = ObjectType.getLabel(ValueFactoryImpl.getInstance().createURI(typeOfObject));
+            String type = ObjectType.getLabelType(ValueFactoryImpl.getInstance().createURI(typeOfObject));
             jsonObject.put("type", type);
             jsonObject.remove("typeOfObject");
         }

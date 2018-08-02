@@ -159,5 +159,16 @@ public class SesameUtils {
 			model.add(objectURI, predicat, SesameUtils.setLiteralXML(value), graph);
 		}
 	}
+	public static void addTripleUri(URI objectURI, URI predicat, URI value, Model model,Resource graph) {
+		if (value != null) {
+			model.add(objectURI, predicat, value, graph);
+		}
+	}
+	
+	public static void addTripleUri(URI objectURI, URI predicat, String value, Model model,Resource graph) {
+		if (value != null&& !value.isEmpty()) {
+			model.add(objectURI, predicat, toURI(value), graph);
+		}
+	}
 
 }

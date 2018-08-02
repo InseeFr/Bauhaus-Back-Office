@@ -103,6 +103,17 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/series/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setSeriesById", value = "Update series")
+	public Response setSeriesById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Series", required = true) String body) {
+		operationsService.setSeries(id, body);
+		return Response.status(Status.NO_CONTENT).build();
+	}
 
 	/***************************************************************************************************
 	 * OPERATIONS
