@@ -7,4 +7,6 @@ public interface OrganizationsService {
 
 	String getOrganizations();
 
+	String getOrganizationUriById(String organizationIdentifier);
+
 }
