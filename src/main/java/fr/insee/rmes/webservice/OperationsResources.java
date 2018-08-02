@@ -21,12 +21,11 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.config.swagger.model.operations.FamilyById;
 import fr.insee.rmes.config.swagger.model.operations.IndicatorById;
-import fr.insee.rmes.config.swagger.model.operations.Links;
 import fr.insee.rmes.config.swagger.model.operations.OperationById;
-import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
+import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -64,7 +63,7 @@ public class OperationsResources {
 	@GET
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getFamilyByID", value = "Family", response = FamilyById.class)
+	@ApiOperation(nickname = "getFamilyByID", value = "Family", response = Family.class)
 	public Response getFamilyByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -98,7 +97,7 @@ public class OperationsResources {
 	@GET
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesByID", value = "Series", response = SeriesById.class)
+	@ApiOperation(nickname = "getSeriesByID", value = "Series", response = Series.class)
 	public Response getSeriesByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getSeriesByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();

@@ -2,6 +2,7 @@ package fr.insee.rmes.config.swagger.model.operations;
 
 import java.util.List;
 
+import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import io.swagger.annotations.ApiModelProperty;
 
 public class IndicatorById {
@@ -42,7 +43,7 @@ public class IndicatorById {
 	public String stakeHolder;
 
 	@ApiModelProperty(value = "Linked objects")
-	public List<Links> links;
+	public List<OperationsLink> links;
 
 
 }
