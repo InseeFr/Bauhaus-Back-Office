@@ -29,7 +29,7 @@ public class SeriesQueries {
 		whereClause=null;
 		getSimpleAttr(id);
 		getCodesLists();
-		getOrganizations();
+		getSingleOrganizations();
 
 		return "SELECT "
 		+ variables.toString()
@@ -142,7 +142,7 @@ public class SeriesQueries {
 				+ "}   \n" );
 	}
 
-	private static void getOrganizations() {
+	private static void getSingleOrganizations() {
 		addVariableToList(" ?creator ");
 		addClauseToWhereClause(
 				"OPTIONAL {?series dcterms:creator ?uriCreator . \n"
@@ -153,17 +153,19 @@ public class SeriesQueries {
 				"OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
 						+ "?uriContributor dcterms:identifier  ?contributor . \n"
 						+ "}   \n");
-		addVariableToList(" ?stakeHolder  ");
-		addClauseToWhereClause(  
-				"OPTIONAL {?series insee:stakeHolder ?uriStakeHolder . \n"
-						+ "?uriStakeHolder dcterms:identifier  ?stakeHolder . \n"
-						+ "}   \n");
-		addVariableToList(" ?dataCollector  ");
-		addClauseToWhereClause(  
-				"OPTIONAL {?series insee:dataCollector ?uriDataCollector . \n"
-						+ "?uriDataCollector dcterms:identifier  ?dataCollector . \n"
-						+ "}   \n");
 	}
+	
+	public static String getMultipleOrganizations(String idSeries, URI linkPredicate) {
+		return "SELECT ?id \n"
+				+ "WHERE { \n" 
+				+"?series <"+linkPredicate+"> ?uri . \n"
+				+ "?uri dcterms:identifier  ?id . \n"
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+
+				+ "} \n"
+				+ "ORDER BY ?id";
+	}
+
 
 	public static String getFamily(String idSeries) {
 	

@@ -53,6 +53,8 @@ public class SeriesUtils {
 		addOneTypeOfLink(idSeries,series,DCTERMS.REPLACES);
 		addOneTypeOfLink(idSeries,series,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idSeries,series,RDFS.SEEALSO);
+		addOneOrganizationLink(idSeries,series, INSEE.STAKEHOLDER);
+		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
 	}
 	
 	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) {
@@ -60,6 +62,13 @@ public class SeriesUtils {
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
+		}
+	}
+	
+	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) {
+		JSONArray organizations = RepositoryGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
+		if (organizations.length() != 0) {
+			object.put(predicate.getLocalName(), organizations);
 		}
 	}
 	
