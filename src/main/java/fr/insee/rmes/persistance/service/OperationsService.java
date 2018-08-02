@@ -36,6 +36,8 @@ public interface OperationsService {
 	String getOperations() throws Exception;
 
 	String getOperationByID(String id);
+
+	void setOperation(String id, String body);
 	
 	
 	/**
@@ -45,6 +47,7 @@ public interface OperationsService {
 	String getIndicators();
 
 	String getIndicatorByID(String id);
+
 
 
 

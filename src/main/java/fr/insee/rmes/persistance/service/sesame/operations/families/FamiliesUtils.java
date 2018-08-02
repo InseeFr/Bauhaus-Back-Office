@@ -82,7 +82,7 @@ public class FamiliesUtils {
 
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
-		RepositoryGestion.loadFamily(familyURI, model);
+		RepositoryGestion.loadSimpleObject(familyURI, model);
 	}
 	
 }

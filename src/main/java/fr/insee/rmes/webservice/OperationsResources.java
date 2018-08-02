@@ -22,9 +22,9 @@ import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.IndicatorById;
-import fr.insee.rmes.config.swagger.model.operations.OperationById;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
+import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
 import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -132,7 +132,7 @@ public class OperationsResources {
 	@GET
 	@Path("/operation/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = OperationById.class)
+	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = Operation.class)
 	public Response getOperationByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getOperationByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -151,6 +151,18 @@ public class OperationsResources {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
+	}
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/operation/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setOperationById", value = "Update operation")
+	public Response setOperationById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Operation", required = true) String body) {
+		operationsService.setOperation(id, body);
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	/***************************************************************************************************

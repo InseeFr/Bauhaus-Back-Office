@@ -103,7 +103,7 @@ public class CollectionsUtils {
 		    model.add(collectionURI, SKOS.MEMBER, memberIRI, SesameUtils.conceptGraph());
 		});
 		
-		RepositoryGestion.loadCollection(collectionURI, model);
+		RepositoryGestion.loadSimpleObject(collectionURI, model);
 	}
 	
 	public void collectionsValidation(JSONArray collectionsToValidate) throws Exception {

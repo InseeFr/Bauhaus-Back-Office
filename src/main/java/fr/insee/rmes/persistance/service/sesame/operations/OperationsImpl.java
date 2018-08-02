@@ -98,6 +98,10 @@ public class OperationsImpl implements OperationsService {
 		return operation.toString();
 	}
 
+	@Override
+	public void setOperation(String id, String body) {
+		operationsUtils.setOperation(id,body);
+	}
 
 	/***************************************************************************************************
 	 * FAMILIES

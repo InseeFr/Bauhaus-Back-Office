@@ -213,29 +213,18 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void loadCollection(URI collection, Model model) {
+	public static void loadSimpleObject(URI object, Model model) {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
-			conn.remove(collection, null, null);
+			conn.remove(object, null, null);
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error("Failure load collection : " + collection);
+			logger.error("Failure load : " + object);
 			logger.error(e.getMessage());
 		}
 	}
 
-	public static void loadFamily(URI family, Model model) {
-		try {
-			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
-			conn.remove(family, null, null);
-			conn.add(model);
-			conn.close();
-		} catch (OpenRDFException e) {
-			logger.error("Failure load family : " + family);
-			logger.error(e.getMessage());
-		}
-	}
 	
 	public static void loadSeries(URI series, Model model) {
 		try {
