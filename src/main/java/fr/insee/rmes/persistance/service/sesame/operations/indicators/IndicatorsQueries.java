@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 
+import org.openrdf.model.URI;
+
 import fr.insee.rmes.config.Config;
 
 public class IndicatorsQueries {
@@ -38,36 +40,27 @@ public class IndicatorsQueries {
 		+ "LIMIT 1";
 	}
 
-	public static String indicatorLinks(String id) {
-		return "SELECT ?uriLinked ?typeOfLink ?labelLg1 ?labelLg2 \n"
+	public static String indicatorLinks(String id, URI linkPredicate) {
+		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
-
-				+ "{?indic dcterms:replaces ?uriLinked . \n"
-				+ "BIND('replaces' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?indic dcterms:isReplacedBy ?uriLinked . \n"
-				+ "BIND('isReplacedBy' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?indic rdfs:seeAlso ?uriLinked . \n"
-				+ "BIND('seeAlso' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?indic prov:wasGeneratedBy ?uriLinked . \n"
-				+ "BIND('wasGeneratedBy' AS ?typeOfLink)} \n"
-
+				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
 				+ "?uriLinked skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
 				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
-
-			+ "FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id + "')) . \n"
-
+				+ "?uriLinked rdf:type ?typeOfObject . \n"
+				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
+				
+				+ "FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id + "')) . \n"
 
 				+ "} \n"
-				+ "ORDER BY ?typeOfLink";
+				+ "ORDER BY ?labelLg1";
 	}
 
 	private static void getSimpleAttr(String id) {
 		addVariableToList(" ?id ");
+		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
+				+ "BIND(STRAFTER(STR(?indic),'/indicateur/') AS ?id) . \n" );
 
 		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
 		addOptionalClause("skos:prefLabel", "?prefLabel");
@@ -81,8 +74,7 @@ public class IndicatorsQueries {
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
 
-		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?indic),'/indicateur/') AS ?id) . \n" );
+
 
 	}
 

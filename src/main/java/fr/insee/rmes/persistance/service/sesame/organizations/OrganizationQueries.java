@@ -49,6 +49,14 @@ public class OrganizationQueries {
 				+ "ORDER BY ?label ";
 	}
 	
+	public static String getUriById(String identifier) {
+		return "SELECT  ?uri \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/organisations> { \n"
+				+ "?uri dcterms:identifier '"+ identifier +"' . \n"
+
+				+ "}} \n" ;
+	}
+	
 
 
 }

@@ -11,6 +11,8 @@ public interface OperationsService {
 	String getFamilies();
 
 	String getFamilyByID(String id);
+	
+	void setFamily(String id, String body);
 
 
 
@@ -22,8 +24,7 @@ public interface OperationsService {
 
 	String getSeriesByID(String id);
 
-	String getSeriesLinksByID(String id);
-
+	void setSeries(String id, String body);
 
 
 	/**
@@ -36,9 +37,21 @@ public interface OperationsService {
 
 	String getOperationByID(String id);
 
+	void setOperation(String id, String body);
+	
+	
+	/**
+	 * INDICATORS
+	 */
+
 	String getIndicators();
 
 	String getIndicatorByID(String id);
+
+	void setIndicator(String id, String body);
+
+
+
 
 
 

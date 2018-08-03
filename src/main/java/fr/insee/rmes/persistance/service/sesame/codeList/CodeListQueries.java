@@ -43,5 +43,15 @@ public class CodeListQueries {
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 				+ " }}";
 	}
+	
+	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
+		return "SELECT  ?uri  \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "?codeList rdf:type skos:ConceptScheme . \n"
+				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
+				+ "?uri skos:inScheme ?codeList . \n"
+				+ "?uri skos:notation '"+notationCode +"' . \n"
+				+ " }}";
+	}
 
 }

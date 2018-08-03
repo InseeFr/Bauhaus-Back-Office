@@ -67,11 +67,9 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
-	public String getSeriesLinksByID(String id) {
-		return RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id)).toString();
+	public void setSeries(String id, String body) {
+		seriesUtils.setSeries(id,body);
 	}
-
-
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -100,6 +98,10 @@ public class OperationsImpl implements OperationsService {
 		return operation.toString();
 	}
 
+	@Override
+	public void setOperation(String id, String body) {
+		operationsUtils.setOperation(id,body);
+	}
 
 	/***************************************************************************************************
 	 * FAMILIES
@@ -116,6 +118,11 @@ public class OperationsImpl implements OperationsService {
 	public String getFamilyByID(String id) {
 		JSONObject family = familiesUtils.getFamilyById(id);
 		return family.toString();
+	}
+
+	@Override
+	public void setFamily(String id, String body) {
+		familiesUtils.setFamily(id,body);
 	}
 
 
@@ -137,7 +144,10 @@ public class OperationsImpl implements OperationsService {
 		return indic.toString();
 	}
 
-
+	@Override
+	public void setIndicator(String id, String body) {
+		indicatorsUtils.setIndicator(id,body);
+	}
 
 
 }

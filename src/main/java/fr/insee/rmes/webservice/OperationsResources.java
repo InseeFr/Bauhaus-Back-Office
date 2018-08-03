@@ -1,29 +1,34 @@
 package fr.insee.rmes.webservice;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.config.swagger.model.operations.FamilyById;
-import fr.insee.rmes.config.swagger.model.operations.IndicatorById;
-import fr.insee.rmes.config.swagger.model.operations.Links;
-import fr.insee.rmes.config.swagger.model.operations.OperationById;
-import fr.insee.rmes.config.swagger.model.operations.SeriesById;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
+import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
+import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
+import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -58,10 +63,22 @@ public class OperationsResources {
 	@GET
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getFamilyByID", value = "Family", response = FamilyById.class)
+	@ApiOperation(nickname = "getFamilyByID", value = "Family", response = Family.class)
 	public Response getFamilyByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/family/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setFamilyById", value = "Update family")
+	public Response setFamilyById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Family", required = true) String body) {
+		operationsService.setFamily(id, body);
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	/***************************************************************************************************
@@ -80,21 +97,23 @@ public class OperationsResources {
 	@GET
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesByID", value = "Series", response = SeriesById.class)
+	@ApiOperation(nickname = "getSeriesByID", value = "Series", response = Series.class)
 	public Response getSeriesByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getSeriesByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/series/{id}/links")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesLinksByID", value = "List of linked resources", response = Links.class)
-	public Response getSeriesLinksByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getSeriesLinksByID(id);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/series/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setSeriesById", value = "Update series")
+	public Response setSeriesById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Series", required = true) String body) {
+		operationsService.setSeries(id, body);
+		return Response.status(Status.NO_CONTENT).build();
 	}
-
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -113,7 +132,7 @@ public class OperationsResources {
 	@GET
 	@Path("/operation/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = OperationById.class)
+	@ApiOperation(nickname = "getOperationByID", value = "Operation", response = Operation.class)
 	public Response getOperationByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getOperationByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -133,6 +152,18 @@ public class OperationsResources {
 			throw e;
 		}
 	}
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/operation/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setOperationById", value = "Update operation")
+	public Response setOperationById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Operation", required = true) String body) {
+		operationsService.setOperation(id, body);
+		return Response.status(Status.NO_CONTENT).build();
+	}
 
 	/***************************************************************************************************
 	 * INDICATORS
@@ -151,12 +182,23 @@ public class OperationsResources {
 	@GET
 	@Path("/indicator/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getIndicatorByID", value = "Indicator", response = IndicatorById.class)
+	@ApiOperation(nickname = "getIndicatorByID", value = "Indicator", response = Indicator.class)
 	public Response getIndicatorByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getIndicatorByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/indicator/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setIndicatorById", value = "Update indicator")
+	public Response setIndicatorById(
+			@ApiParam(value = "Id", required = true) @PathParam("id") String id, 
+			@ApiParam(value = "Indicator", required = true) String body) {
+		operationsService.setIndicator(id, body);
+		return Response.status(Status.NO_CONTENT).build();
+	}
 
 
 

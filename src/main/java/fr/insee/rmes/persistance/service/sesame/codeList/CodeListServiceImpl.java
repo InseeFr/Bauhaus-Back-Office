@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.codeList;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -34,6 +35,13 @@ public class CodeListServiceImpl implements CodeListService {
 		code.put("code", notationCode);
 		code.put("notationCodeList", notationCodeList);
 		return QueryUtils.correctEmptyGroupConcat(code.toString());
+	}
+
+	@Override
+	public String getCodeUri(String notationCodeList, String notationCode) {
+		if (StringUtils.isEmpty(notationCodeList) ||StringUtils.isEmpty(notationCode)) {return null;}
+		JSONObject code = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeUriByNotation(notationCodeList,notationCode));
+		return QueryUtils.correctEmptyGroupConcat(code.getString("uri"));
 	}
 
 

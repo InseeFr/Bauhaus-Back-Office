@@ -1,11 +1,11 @@
-package fr.insee.rmes.config.swagger.model.operations;
+package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import java.util.List;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import io.swagger.annotations.ApiModelProperty;
 
-public class FamilyById {
+public class Family {
 
 	@ApiModelProperty(value = "Id", required = true)
 	public String id;
@@ -16,11 +16,6 @@ public class FamilyById {
 	@ApiModelProperty(value = "Label lg2")
 	public String prefLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label lg1")
-	public String altLabelLg1;
-
-	@ApiModelProperty(value = "Alternative label lg2")
-	public String altLabelLg2;
 
 	@ApiModelProperty(value = "Abstract lg1, description")
 	public String abstractLg1;
@@ -34,5 +29,34 @@ public class FamilyById {
 
 	@ApiModelProperty(value = "Series")
 	public List<IdLabelTwoLangs> series;
+	
+	
+	public Family(String id) {
+		this.id=id;
+	}
 
+
+	public String getPrefLabelLg1() {
+		return prefLabelLg1;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getPrefLabelLg2() {
+		return prefLabelLg2;
+	}
+
+	public String getAbstractLg1() {
+		return abstractLg1;
+	}
+
+	public String getAbstractLg2() {
+		return abstractLg2;
+	}
+
+
+
+	
 }

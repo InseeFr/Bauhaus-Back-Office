@@ -26,6 +26,15 @@ public class INSEE {
 	public static final URI SIMILARITY_NOTE;
 	public static final URI DIFFERENCE_NOTE;
 	
+	public static final URI FAMILY;
+	public static final URI OPERATION;
+	public static final URI SERIES;
+	public static final URI INDICATOR;
+	
+	public static final URI STAKEHOLDER;
+	public static final URI DATA_COLLECTOR;
+	
+	
 	/*TEST REACT*/
 	public static final URI CONCEPT_VERSION;
 	public static final URI IS_VALIDATED;
@@ -44,6 +53,14 @@ public class INSEE {
 		
 		CONCEPT_VERSION = f.createURI(NAMESPACE, "conceptVersion");
 		IS_VALIDATED = f.createURI(NAMESPACE, "isValidated");
+		
+		FAMILY = f.createURI(NAMESPACE,"StatisticalOperationFamily");
+		OPERATION = f.createURI(NAMESPACE,"StatisticalOperation");
+		SERIES = f.createURI(NAMESPACE,"StatisticalOperationSeries");
+		INDICATOR = f.createURI(NAMESPACE,"StatisticalIndicator");
+
+		STAKEHOLDER = f.createURI(NAMESPACE,"stakeHolder");
+		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");
 	}
 	
 

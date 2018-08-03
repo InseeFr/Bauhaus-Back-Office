@@ -114,18 +114,18 @@ public class ConceptsUtils {
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, SesameUtils.toURI(concept.getDisseminationStatus()), SesameUtils.conceptGraph());
 		model.add(conceptURI, DCTERMS.CREATED, SesameUtils.setLiteralDateTime(concept.getCreated()), SesameUtils.conceptGraph());
 		/*Optional*/
-		SesameUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.LG2, model);
+		SesameUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.LG2, model, SesameUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();
 		List<String> altLabelsLg2 = concept.getAltLabelLg2();
 		for (String altLabelLg1 : altLabelsLg1) {
-			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model);
+			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model, SesameUtils.conceptGraph());
 		}
 		for (String altLabelLg2 : altLabelsLg2) {
-			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model);
+			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model, SesameUtils.conceptGraph());
 		}		
-		SesameUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model);
-		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model);
-		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model);
+		SesameUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, SesameUtils.conceptGraph());
+		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model, SesameUtils.conceptGraph());
+		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, SesameUtils.conceptGraph());
 		
 		// Add notes to model, delete some notes and updates some other notes
 		List<List<URI>> notesToDeleteAndUpdate = new NoteManager().setNotes(concept, model);
