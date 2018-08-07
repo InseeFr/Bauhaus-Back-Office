@@ -40,7 +40,7 @@ xkos [http://rdf-vocabulary.ddialliance.org/xkos\#](http://rdf-vocabulary.ddiall
 | Proprietaire | dc:creator |  | Propriétaire \(au sein de l'organisme\) ; entité responsable de la création de la ressource |
 | Titre | dcterms:title |  |  |
 | StatutValidation | insee:isValidated | « Provisoire » ou « Validé » |  |
-| ComposeDe | skos:member | Concept | ensemble des concepts contenus dans la collection |
+| ComposeDe | skos:member | [Concept](concepts.md#Concept) | ensemble des concepts contenus dans la collection |
 
 ### Concept Scheme
 
@@ -56,25 +56,25 @@ xkos [http://rdf-vocabulary.ddialliance.org/xkos\#](http://rdf-vocabulary.ddiall
 
 | Proprieté | Relation sémantique | Objet | Description |
 | :--- | :--- | :--- | :--- |
-| Scheme | skos:inScheme | ConceptScheme |  |
+| Scheme | skos:inScheme | [ConceptScheme](concepts.md#concept-scheme) |  |
 |  | skos:topConceptOf |  | Caractérise les concepts de premier niveau dans le concept scheme |
 | A pour parent | skos:broader | Concept | Lien ascendant\(hiérarchique\) avec UN concept |
 | A pour enfant | skos:narrower | Concept | Lien descendant\(hiérarchique\) avec un ou plusieurs \(autres\) concepts |
 | Reference | dcterms:references | Concept | Lien entre un concept et les concepts cités dans la définition |
 | Lié à | skos:related | Concept | Lien avec un ou plusieurs autre\(s\) concepts, autre que ceux déjà définis |
-| Remplace | dcterms:replaces | Concept | Lien avec le\(s\) concept\(s\) qui a été supplanté par le concept courant |
+| Remplace | dcterms:replaces  | Concept | Lien avec le\(s\) concept\(s\) qui a été supplanté par le concept courant |
 | Type | rdf:type | skos:Concept |  |
 | Identifiant | skos:notation | Suit la regex « c\[1-9\]{1}\[0-9\]{3} » Exemple : c1453 | Identifiant du concept |
 | DateCreation | dcterms:created | date | Date de création du concept |
 | DateFinValidite | dcterms:valid | date | Date de fin de validité du concept. Un concept qui n'est plus valide a une date de fin de validité renseignée, mais doit être conservé dans le référentiel et rester accessible à partir des liens posés sur les produits et publications y faisant référence. |
 | DateVersion | dcterms:modified | date | Date de version : i.e dernière modification du concept \(cf version\) |
-| Definition | skos:definition | ExplanatoryNote \(cf. classe Note\) | Définition longue du concept |
-| DefinitionCourte | skos:scopeNote | ExplanatoryNote \(cf. classe Note\) | Définition courte du concept |
+| Definition | skos:definition | [Note](concepts.md#note) | Définition longue du concept |
+| DefinitionCourte | skos:scopeNote | [Note](concepts.md#note) | Définition courte du concept |
 | DocumentLie | insee:additionnalMaterial | URL du document lié |  |
 | Etat | insee:isValidated | Trois modalités possibles :  - Provisoire - Validé - Publié | Attribut de gestion utilisé lors du processus de validation \(non exporté en diffusion\) |
 | Gestionnaire | dc:contributor |  | Entité responsable des contributions sur la ressource. |
-| NoteChangement | skos:changeNote | ExplanatoryNote \(cf. classe Note\) | Remarques internes sur le concept |
-| NotePubliable | skos:editorialNote | ExplanatoryNote \(cf. classe Note\) | Remarques publiques sur le concept |
+| NoteChangement | skos:changeNote | [Note](concepts.md#note) | Remarques internes sur le concept |
+| NotePubliable | skos:editorialNote | [Note](concepts.md#note) | Remarques publiques sur le concept |
 | NumeroVersion | pav:version | Version du concept. Format : 1, 2, etc. | Une nouvelle version du concept correspond à une modification de la rédaction  de la définition, des synonymes ou des notes \(et PJ\) Remarque :  en cas de modification « majeure » d'un concept, un nouveau concept \(qui remplace l'ancien\) sera  créé. \(voir dcterms:replaces\) |
 | Proprietaire | dc:creator |  | Propriétaire \(au sein de l'organisme\) ; entité responsable de la création de la ressource. |
 | StatutDiffusion | insee:disseminationStatus | Privé PublicSpecifique PublicGenerique |  |
