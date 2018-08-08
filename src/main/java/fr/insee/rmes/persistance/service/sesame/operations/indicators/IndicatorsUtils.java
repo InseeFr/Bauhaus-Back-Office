@@ -45,6 +45,7 @@ public class IndicatorsUtils {
 
 	public JSONObject getIndicatorById(String id){
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
+		indicator.put("id", id);
 		addLinks(id, indicator);
 		return indicator;
 	}

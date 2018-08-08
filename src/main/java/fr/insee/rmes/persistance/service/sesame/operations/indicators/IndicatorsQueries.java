@@ -58,12 +58,15 @@ public class IndicatorsQueries {
 	}
 
 	private static void getSimpleAttr(String id) {
-		addVariableToList(" ?id ");
-		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?indic),'/indicateur/') AS ?id) . \n" );
+		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" );
 
 		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
-		addOptionalClause("skos:prefLabel", "?prefLabel");
+		addClauseToWhereClause( "?indic skos:prefLabel ?prefLabelLg1 \n");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n ");
+		addClauseToWhereClause( "OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \n");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
+		
+
 
 		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
 		addOptionalClause("skos:altLabel", "?altLabel");

@@ -99,13 +99,15 @@ public class SeriesQueries {
 
 
 	private static void getSimpleAttr(String id) {
-		addVariableToList(" ?id ");
-		addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?series),'/serie/') AS ?id) . \n" );
+		
+		addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );
 		
 		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
-		addOptionalClause("skos:prefLabel", "?prefLabel");
-
+		addClauseToWhereClause( "?series skos:prefLabel ?prefLabelLg1 \n");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "')  \n ");
+		addClauseToWhereClause( "OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
+		
 		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
 		addOptionalClause("skos:altLabel", "?altLabel");
 

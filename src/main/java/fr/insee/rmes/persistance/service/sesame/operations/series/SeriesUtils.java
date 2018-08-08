@@ -45,6 +45,7 @@ public class SeriesUtils {
 /*READ*/
 	public JSONObject getSeriesById(String id){
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
+		series.put("id", id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
 		addSeriesLinks(id, series);
