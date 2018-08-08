@@ -47,7 +47,6 @@ public class OrganizationsResources {
 	}
 
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "getOrganizations", value = "List of organizations" , response = IdLabel.class, 	responseContainer = "List")
 	public Response getOrganizations() {
