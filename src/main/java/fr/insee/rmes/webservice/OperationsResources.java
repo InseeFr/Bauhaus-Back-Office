@@ -3,7 +3,7 @@ package fr.insee.rmes.webservice;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -70,7 +70,7 @@ public class OperationsResources {
 	}
 	
 	@Secured({ Constants.SPRING_ADMIN })
-	@POST
+	@PUT
 	@Path("/family/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "setFamilyById", value = "Update family")
@@ -104,7 +104,7 @@ public class OperationsResources {
 	}
 
 	@Secured({ Constants.SPRING_ADMIN })
-	@POST
+	@PUT
 	@Path("/series/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "setSeriesById", value = "Update series")
@@ -154,7 +154,7 @@ public class OperationsResources {
 	}
 	
 	@Secured({ Constants.SPRING_ADMIN })
-	@POST
+	@PUT
 	@Path("/operation/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "setOperationById", value = "Update operation")
@@ -189,7 +189,7 @@ public class OperationsResources {
 	}
 
 	@Secured({ Constants.SPRING_ADMIN })
-	@POST
+	@PUT
 	@Path("/indicator/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@ApiOperation(nickname = "setIndicatorById", value = "Update indicator")
