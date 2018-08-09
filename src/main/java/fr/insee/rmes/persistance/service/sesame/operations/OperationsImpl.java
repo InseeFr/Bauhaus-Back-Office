@@ -149,5 +149,13 @@ public class OperationsImpl implements OperationsService {
 		indicatorsUtils.setIndicator(id,body);
 	}
 
+	/**
+	 * Create indicator
+	 */
+	@Override
+	public String setIndicator(String body) {
+		return indicatorsUtils.setIndicator(body);
+	}
+
 
 }

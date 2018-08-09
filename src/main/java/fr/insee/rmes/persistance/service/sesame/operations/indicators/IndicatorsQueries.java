@@ -124,6 +124,17 @@ public class IndicatorsQueries {
 		}
 		whereClause.append(clause);
 	}
+	
+	public static String lastID() {
+		return "SELECT ?id \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
+				+ "?uri ?b ?c .\n "
+				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
+				+ "FILTER regex(STR(?uri),'/produits/indicateur/') . \n"
+				+ "}} \n"
+				+ "ORDER BY DESC(?id) \n"
+				+ "LIMIT 1";
+	}	
 
 
 
