@@ -65,6 +65,10 @@ public class Indicator {
 	public Indicator(String id) {
 		this.id=id;
 	}
+	
+	public Indicator() {
+		this.id= new IndicatorsUtils().createID();
+	}
 
 
 	public String getId() {

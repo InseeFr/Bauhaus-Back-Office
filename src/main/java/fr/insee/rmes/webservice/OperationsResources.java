@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -199,6 +200,18 @@ public class OperationsResources {
 		operationsService.setIndicator(id, body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/indicator")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@ApiOperation(nickname = "setIndicator", value = "Create indicator", response=String.class, produces=MediaType.TEXT_PLAIN)
+	public Response setIndicator(@ApiParam(value = "Indicator", required = true) String body) {
+		String id = operationsService.setIndicator(body);
+		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
 
 
 
