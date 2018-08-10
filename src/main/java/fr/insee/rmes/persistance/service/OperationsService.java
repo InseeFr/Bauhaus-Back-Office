@@ -50,6 +50,8 @@ public interface OperationsService {
 
 	void setIndicator(String id, String body);
 
+	String setIndicator(String body);
+
 
 
 

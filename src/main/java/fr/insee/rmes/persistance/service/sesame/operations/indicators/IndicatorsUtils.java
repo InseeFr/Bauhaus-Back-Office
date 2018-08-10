@@ -66,7 +66,35 @@ public class IndicatorsUtils {
 		}
 	}
 
+	/**
+	 * Create
+	 * @param body
+	 * @return
+	 */
+	public String setIndicator(String body) {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Indicator indicator = new Indicator();
+		if (indicator.getId() == null) {
+			logger.error("Create indicator cancelled - no id");
+			return null;
+		}
+		try {
+			indicator = mapper.readValue(body, Indicator.class);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfIndicator(indicator);
+		logger.info("Create indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
+		return indicator.getId();
+	}
 
+
+	/**
+	 * Update
+	 * @param id
+	 * @param body
+	 */
 	public void setIndicator(String id, String body) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -147,5 +175,16 @@ public class IndicatorsUtils {
 		
 		RepositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
+
+
+	public String createID() {
+		JSONObject json = RepositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
+		if (json.length()==0) {return null;}
+		String id = json.getString("id");
+		int ID = Integer.parseInt(id.substring(1))+1;
+		return "p" + ID;
+	}
+
+
 
 }
