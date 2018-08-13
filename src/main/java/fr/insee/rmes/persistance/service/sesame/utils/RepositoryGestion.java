@@ -85,6 +85,7 @@ public class RepositoryGestion {
 		try {
 			RepositoryConnection conn = repository.getConnection();
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
+			logger.debug(queryWithPrefixes);
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
 		} catch (OpenRDFException e) {
