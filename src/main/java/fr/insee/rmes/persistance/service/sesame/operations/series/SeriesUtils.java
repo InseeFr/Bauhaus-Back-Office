@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -82,18 +83,22 @@ public class SeriesUtils {
 		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
 	}
 	
-	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) {
+	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) {
 		JSONArray links = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
-			object.put(predicate.getLocalName(), links);
+			series.put(predicate.getLocalName(), links);
 		}
 	}
 	
-	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) {
+	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) {
 		JSONArray organizations = RepositoryGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
-			object.put(predicate.getLocalName(), organizations);
+			 for (int i = 0; i < organizations.length(); i++) {
+		         JSONObject orga = organizations.getJSONObject(i);
+		         orga.put("type", ObjectType.ORGANIZATION.getLabelType());
+		     }
+			series.put(predicate.getLocalName(), organizations);
 		}
 	}
 	
@@ -135,17 +140,17 @@ public class SeriesUtils {
 
 		SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(series.getCreator()), model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR, organizationsService.getOrganizationUriById(series.getContributor()), model, SesameUtils.operationsGraph());
-		List<String> stakeHolders = series.getStakeHolder();
+		List<OperationsLink> stakeHolders = series.getStakeHolder();
 		if (stakeHolders != null){
-			for (String stakeHolder : stakeHolders) {
-				SesameUtils.addTripleUri(seriesURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder),model, SesameUtils.operationsGraph());
+			for (OperationsLink stakeHolder : stakeHolders) {
+				SesameUtils.addTripleUri(seriesURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder.getId()),model, SesameUtils.operationsGraph());
 			}
 		}
 		
-		List<String> dataCollectors = series.getDataCollector();
+		List<OperationsLink> dataCollectors = series.getDataCollector();
 		if (dataCollectors != null) {
-			for (String dataCollector : dataCollectors) {
-				SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector),model, SesameUtils.operationsGraph());
+			for (OperationsLink dataCollector : dataCollectors) {
+				SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
 			}		
 		}
 

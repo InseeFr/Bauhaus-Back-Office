@@ -56,6 +56,22 @@ public class IndicatorsQueries {
 				+ "} \n"
 				+ "ORDER BY ?labelLg1";
 	}
+	
+	public static String getMultipleOrganizations(String idIndicator, URI linkPredicate) {
+		return "SELECT ?id ?labelLg1 ?labelLg2\n"
+				+ "WHERE { \n" 
+				+"?indicator <"+linkPredicate+"> ?uri . \n"
+				+ "?uri dcterms:identifier  ?id . \n"
+				+ "?uri skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
+				
+				+ "FILTER(STRENDS(STR(?indicator),'/produits/indicateur/" + idIndicator + "')) . \n"
+
+				+ "} \n"
+				+ "ORDER BY ?id";
+	}
 
 	private static void getSimpleAttr(String id) {
 		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" );
@@ -102,11 +118,6 @@ public class IndicatorsQueries {
 		addClauseToWhereClause(
 				"OPTIONAL {?indic dcterms:creator ?uriCreator . \n"
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
-						+ "}   \n");
-		addVariableToList(" ?stakeHolder  ");
-		addClauseToWhereClause(  
-				"OPTIONAL {?indic insee:stakeHolder ?uriStakeHolder . \n"
-						+ "?uriStakeHolder dcterms:identifier  ?stakeHolder . \n"
 						+ "}   \n");
 	}
 

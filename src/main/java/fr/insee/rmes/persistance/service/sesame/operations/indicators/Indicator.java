@@ -47,7 +47,7 @@ public class Indicator {
 	public String creator;
 
 	@ApiModelProperty(value = "Identifier of stake holder")
-	public List<String> stakeHolder;
+	public List<OperationsLink> stakeHolder;
 
 	@ApiModelProperty(value = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -131,7 +131,7 @@ public class Indicator {
 	}
 
 
-	public List<String> getStakeHolder() {
+	public List<OperationsLink> getStakeHolder() {
 		return stakeHolder;
 	}
 

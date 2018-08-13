@@ -8,6 +8,7 @@ import org.openrdf.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.ontologies.ORG;
 
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
@@ -16,6 +17,7 @@ public enum ObjectType {
 	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
 	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
+	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
 	UNDEFINED("undefined",null, "");
 	
 	

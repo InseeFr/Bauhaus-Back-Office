@@ -56,6 +56,7 @@ public class IndicatorsUtils {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
+		addOneOrganizationLink(idIndic,indicator, INSEE.STAKEHOLDER);
 	}
 	
 	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) {
@@ -63,6 +64,17 @@ public class IndicatorsUtils {
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
+		}
+	}
+	
+	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) {
+		JSONArray organizations = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
+		if (organizations.length() != 0) {
+			 for (int i = 0; i < organizations.length(); i++) {
+		         JSONObject orga = organizations.getJSONObject(i);
+		         orga.put("type", ObjectType.ORGANIZATION.getLabelType());
+		     }
+			 object.put(predicate.getLocalName(), organizations);
 		}
 	}
 
@@ -128,10 +140,10 @@ public class IndicatorsUtils {
 		SesameUtils.addTripleString(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.productsGraph());
 
 		SesameUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, SesameUtils.productsGraph());
-		List<String> stakeHolders = indicator.getStakeHolder();
+		List<OperationsLink> stakeHolders = indicator.getStakeHolder();
 		if (stakeHolders != null){
-			for (String stakeHolder : stakeHolders) {
-				SesameUtils.addTripleUri(indicURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder),model, SesameUtils.productsGraph());
+			for (OperationsLink stakeHolder : stakeHolders) {
+				SesameUtils.addTripleUri(indicURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder.getId()),model, SesameUtils.productsGraph());
 			}
 		}
 		
@@ -178,9 +190,12 @@ public class IndicatorsUtils {
 
 
 	public String createID() {
+		logger.info("Generate indicator id");
 		JSONObject json = RepositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
+		logger.debug("JSON for indicator id : " + json);
 		if (json.length()==0) {return null;}
 		String id = json.getString("id");
+		if (id.equals("undefined")) {return null;}
 		int ID = Integer.parseInt(id.substring(1))+1;
 		return "p" + ID;
 	}
