@@ -56,7 +56,7 @@ public class FamiliesQueries {
 	}
 
 	public static String getSubjects(String idFamily) {
-		return "SELECT (?subjectUri as ?id) ?labelLg1 ?labelLg2 \n"
+		return "SELECT  ?id ?labelLg1 ?labelLg2 \n"
 				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
 				+ "WHERE { \n" 
 
@@ -65,6 +65,8 @@ public class FamiliesQueries {
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
 				+ "?subjectUri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+				
+				+ "?subjectUri skos:notation ?id . \n"
 
 				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
 				+ "}"
