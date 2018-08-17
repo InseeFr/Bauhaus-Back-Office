@@ -1,13 +1,13 @@
 package fr.insee.rmes.config.swagger.model;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class LabelUrl {
 	
-	@ApiModelProperty(value = "Label", required = true)
+	@Schema(description = "Label", required = true)
 	public String label;
 	
-	@ApiModelProperty(value = "Url", required = true)
+	@Schema(description = "Url", required = true)
 	public String url;
 
 }

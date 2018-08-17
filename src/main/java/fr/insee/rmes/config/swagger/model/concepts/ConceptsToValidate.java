@@ -1,19 +1,19 @@
 package fr.insee.rmes.config.swagger.model.concepts;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class ConceptsToValidate {
 
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 	
-	@ApiModelProperty(value = "Label", required = true)
+	@Schema(description = "Label", required = true)
 	public String label;
 	
-	@ApiModelProperty(value = "Owner", required = true)
+	@Schema(description = "Owner", required = true)
 	public String creator;
 	
-	@ApiModelProperty(value = "Expiration date")
+	@Schema(description = "Expiration date")
 	public String valid;
 	
 }

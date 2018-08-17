@@ -1,30 +1,30 @@
 package fr.insee.rmes.config.swagger.model.organizations;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Organization {
 
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 
-	@ApiModelProperty(value = "Label lg1", required = true)
+	@Schema(description = "Label lg1", required = true)
 	public String labelLg1;
 
-	@ApiModelProperty(value = "Label lg2")
+	@Schema(description = "Label lg2")
 	public String labelLg2;
 
-	@ApiModelProperty(value = "Alternative label")
+	@Schema(description = "Alternative label")
 	public String altLabel;
 
-	@ApiModelProperty(value = "Uri of Type")
+	@Schema(description = "Uri of Type")
 	public String type;
 
-	@ApiModelProperty(value = "Is part of")
+	@Schema(description = "Is part of")
 	public String motherOrganization;
 
-	@ApiModelProperty(value = "Is linked to")
+	@Schema(description = "Is linked to")
 	public String linkedTo;
 
-	@ApiModelProperty(value = "See also")
+	@Schema(description = "See also")
 	public String seeAlso;
 }

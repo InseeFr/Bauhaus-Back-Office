@@ -1,35 +1,35 @@
 package fr.insee.rmes.config.swagger.model.concepts;
 
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class ConceptsSearch {
 	
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 	
-	@ApiModelProperty(value = "Label", required = true)
+	@Schema(description = "Label", required = true)
 	public String label;
 	
-	@ApiModelProperty(value = "Owner", required = true)
+	@Schema(description = "Owner", required = true)
 	public String creator;
 	
-	@ApiModelProperty(value = "Dissemination status", required = true)
+	@Schema(description = "Dissemination status", required = true)
 	public DisseminationStatus disseminationStatus;
 	
-	@ApiModelProperty(value = "Validation status", required = true)
+	@Schema(description = "Validation status", required = true)
 	public Boolean validationStatus;
 	
-	@ApiModelProperty(value = "Definition")
+	@Schema(description = "Definition")
 	public String definition;
 	
-	@ApiModelProperty(value = "Creation date", required = true)
+	@Schema(description = "Creation date", required = true)
 	public String created;
 	
-	@ApiModelProperty(value = "Modification date")
+	@Schema(description = "Modification date")
 	public String modified;
 	
-	@ApiModelProperty(value = "Expiration date")
+	@Schema(description = "Expiration date")
 	public String valid;
 
 }

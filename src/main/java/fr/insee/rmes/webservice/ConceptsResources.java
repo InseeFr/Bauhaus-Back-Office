@@ -31,11 +31,15 @@ import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
 import fr.insee.rmes.persistance.service.ConceptsService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * WebService class for resources of Concepts
@@ -46,26 +50,27 @@ import io.swagger.annotations.ApiResponses;
  */
 @Component
 @Path("/concepts")
-@Api(value = "Concept API", tags = { "Concepts" })
+@Tag(name="Concepts", description="Concept API")
 @ApiResponses(value = { 
-		@ApiResponse(code = 200, message = "Success"),
-		@ApiResponse(code = 204, message = "No Content"),
-		@ApiResponse(code = 400, message = "Bad Request"),
-		@ApiResponse(code = 401, message = "Unauthorized"),
-		@ApiResponse(code = 403, message = "Forbidden"),
-		@ApiResponse(code = 404, message = "Not found"),
-		@ApiResponse(code = 406, message = "Not Acceptable"),
-		@ApiResponse(code = 500, message = "Internal server error") })
-public class ConceptsResources {
-
+		@ApiResponse(responseCode = "200", description = "Success"), 
+		@ApiResponse(responseCode = "204", description = "No Content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"), 
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden"), 
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
+		@ApiResponse(responseCode = "500", description = "Internal server error") })
+public class ConceptsResources   {
+	
 	final static Logger logger = LogManager.getLogger(ConceptsResources.class);
-
+	
 	@Autowired
 	ConceptsService conceptsService;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConcepts", value = "List of concepts", response = IdLabelAltLabel.class , responseContainer = "List")																 
+	@Operation(operationId = "getConcepts", summary = "List of concepts",
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
 	public Response getConcepts() {
 		String jsonResultat = conceptsService.getConcepts();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -74,7 +79,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptsSearch", value = "Rich list of concepts", response = ConceptsSearch.class , responseContainer = "List")																 
+	@Operation(operationId = "getConceptsSearch", summary = "Rich list of concepts", 
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
 	public Response getConceptsSearch() {
 		String jsonResultat = conceptsService.getConceptsSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -83,7 +89,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptByID", value = "Concept", response = ConceptById.class)																 
+	@Operation(operationId = "getConceptByID", summary = "Concept", 
+		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
 	public Response getConceptByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getConceptByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -92,7 +99,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptsToValidate", value = "List of concepts to validate", response = ConceptsToValidate.class , responseContainer = "List")
+	@Operation(operationId = "getConceptsToValidate", summary = "List of concepts to validate", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
 	public Response getConceptsToValidate() {
 		String jsonResultat = conceptsService.getConceptsToValidate();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -101,7 +109,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}/links")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptLinksByID", value = "List of linked concepts", response = ConceptLinks.class , responseContainer = "List")
+	@Operation(operationId = "getConceptLinksByID", summary = "List of linked concepts", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
 	public Response getConceptLinksByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getConceptLinksByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -110,7 +119,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/{id}/notes/{conceptVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getConceptNotesByID", value = "Last notes of the concept", response = ConceptNotes.class)
+	@Operation(operationId = "getConceptNotesByID", summary = "Last notes of the concept", 
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
 	public Response getConceptNotesByID(@PathParam("id") String id, @PathParam("conceptVersion") int conceptVersion) {
 		String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -119,7 +129,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getCollections", value = "List of collections", response = IdLabel.class , responseContainer = "List")
+	@Operation(operationId = "getCollections", summary = "List of collections", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getCollections() {
 		String jsonResultat = conceptsService.getCollections();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -128,7 +139,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections/dashboard")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getCollectionsDashboard", value = "Rich list of collections", response = IdLabel.class , responseContainer = "List")
+	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getCollectionsDashboard() {
 		String jsonResultat = conceptsService.getCollectionsDashboard();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -137,7 +149,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/collections/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getCollectionsToValidate", value = "List of collections to validate", response = CollectionsToValidate.class , responseContainer = "List")
+	@Operation(operationId = "getCollectionsToValidate", summary = "List of collections to validate", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
 	public Response getCollectionsToValidate() {
 		String jsonResultat = conceptsService.getCollectionsToValidate();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -146,7 +159,8 @@ public class ConceptsResources {
 	@GET
 	@Path("/collection/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getCollectionByID", value = "Collection", response = CollectionById.class)
+	@Operation(operationId = "getCollectionByID", summary = "Collection", 
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public Response getCollectionByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getCollectionByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -154,7 +168,8 @@ public class ConceptsResources {
 
 	@GET
 	@Path("/collection/{id}/members")
-	@ApiOperation(nickname = "getCollectionMembersByID", value = "List of collection member concepts", response = CollectionMembers.class , responseContainer = "List")
+	@Operation(operationId = "getCollectionMembersByID", summary = "List of collection member concepts", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCollectionMembersByID(@PathParam("id") String id) {
 		String jsonResultat = conceptsService.getCollectionMembersByID(id);
@@ -165,8 +180,8 @@ public class ConceptsResources {
 	@POST
 	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setConcept", value = "Create concept")
-	public Response setConcept(@ApiParam(value = "Concept", required = true) String body) {
+	@Operation(operationId = "setConcept", summary = "Create concept" )
+	public Response setConcept(@RequestBody(description = "Concept", required = true) String body) {
 		String id = conceptsService.setConcept(body);
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -175,10 +190,10 @@ public class ConceptsResources {
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setConceptById", value = "Update concept")
+	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public Response setConcept(
-			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
-			@ApiParam(value = "Concept", required = true) String body) {
+			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@RequestBody(description = "Concept", required = true) String body) {
 		conceptsService.setConcept(id, body);
 		logger.info("Update concept : " + id);
 		return Response.status(Status.NO_CONTENT).build();
@@ -188,9 +203,9 @@ public class ConceptsResources {
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setConceptsValidation", value = "Concepts validation")
+	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public Response setConceptsValidation(
-			@ApiParam(value = "Concept id array to validate", required = true) String body) throws Exception {
+			@RequestBody(description = "Concept id array to validate", required = true) String body) throws Exception {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return Response.status(Status.NO_CONTENT).build();
@@ -203,7 +218,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@ApiOperation(nickname = "getConceptExport", value = "Blob of concept")
+	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
 	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		return conceptsService.getConceptExport(id, acceptHeader);
 	}
@@ -213,10 +228,11 @@ public class ConceptsResources {
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	@ApiOperation(nickname = "setConceptSend", value = "Send concept", response = Boolean.class)
+	@Operation(operationId = "setConceptSend", summary = "Send concept", 
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setConceptSend(
-			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
-			@ApiParam(value = "Mail informations", required = true) String body) throws Exception {
+			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@RequestBody(description = "Mail informations", required = true) String body) throws Exception {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : " + id);
@@ -231,8 +247,8 @@ public class ConceptsResources {
 	@POST
 	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setCollection", value = "Create collection")
-	public Response setCollection(@ApiParam(value = "Collection", required = true) String body) {
+	@Operation(operationId = "setCollection", summary = "Create collection")
+	public Response setCollection(@RequestBody(description = "Collection", required = true) String body) {
 		conceptsService.setCollection(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -241,10 +257,10 @@ public class ConceptsResources {
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setCollectionById", value = "Update collection")
+	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public Response setCollection(
-			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
-			@ApiParam(value = "Collection", required = true) String body) throws Exception {
+			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@RequestBody(description = "Collection", required = true) String body) throws Exception {
 		try {
 			conceptsService.setCollection(id, body);
 			logger.info("Update collection : " + id);
@@ -259,9 +275,9 @@ public class ConceptsResources {
 	@PUT
 	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setCollectionsValidation", value = "Collections validation")
+	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public Response setCollectionsValidation(
-			@ApiParam(value = "Collection id array to validate", required = true) String body) throws Exception {
+			@RequestBody(description = "Collection id array to validate", required = true) String body) throws Exception {
 		try {
 			conceptsService.setCollectionsValidation(body);
 			logger.info("Validated concepts : " + body);
@@ -275,7 +291,7 @@ public class ConceptsResources {
 	@GET
 	@Path("/collection/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@ApiOperation(nickname = "getCollectionExport", value = "Blob of collection")
+	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
 		return conceptsService.getCollectionExport(id, acceptHeader);
 	}
@@ -285,10 +301,11 @@ public class ConceptsResources {
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
-	@ApiOperation(nickname = "setCollectionSend", value = "Send collection", response = Boolean.class)
+	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setCollectionSend(
-			@ApiParam(value = "Id", required = true) @PathParam("id") String id,
-			@ApiParam(value = "Mail informations", required = true) String body) throws Exception {
+			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@RequestBody(description = "Mail informations", required = true) String body) throws Exception {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
 			logger.info("Send concept : " + id);

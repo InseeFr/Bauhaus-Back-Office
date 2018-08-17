@@ -58,4 +58,6 @@ public class Config {
 
 	public static String SWAGGER_HOST = "";
 	public static String SWAGGER_BASEPATH = "";
+	public static final String SWAGGER_URL = Config.REQUIRES_SSL ? "https" : "http" + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
+
 }

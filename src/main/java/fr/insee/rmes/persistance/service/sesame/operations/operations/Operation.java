@@ -1,26 +1,26 @@
 package fr.insee.rmes.persistance.service.sesame.operations.operations;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Operation {
 
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 
-	@ApiModelProperty(value = "Label lg1", required = true)
+	@Schema(description = "Label lg1", required = true)
 	public String prefLabelLg1;
 
-	@ApiModelProperty(value = "Label lg2")
+	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-	@ApiModelProperty(value = "Alternative label lg1")
+	@Schema(description = "Alternative label lg1")
 	public String altLabelLg1;
 
-	@ApiModelProperty(value = "Alternative label lg2")
+	@Schema(description = "Alternative label lg2")
 	public String altLabelLg2;
 
-	@ApiModelProperty(value = "Series")
+	@Schema(description = "Series")
 	public IdLabelTwoLangs series;
 
 
