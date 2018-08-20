@@ -19,7 +19,8 @@ public class QueryUtils {
 					+ "PREFIX foaf:<http://xmlns.com/foaf/0.1/> \n"
 					+ "PREFIX org:<http://www.w3.org/ns/org#> \n"
 					+ "PREFIX prov:<http://www.w3.org/ns/prov#> \n"
-					+ "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#> \n\n" ;
+					+ "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#> \n"
+					+ "PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#> \n\n" ;
 
 	/**
 	 * Hack to fix Sparql groupconcat which returns an empty object in array

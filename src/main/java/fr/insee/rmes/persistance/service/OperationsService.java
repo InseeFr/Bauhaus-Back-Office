@@ -54,7 +54,12 @@ public interface OperationsService {
 
 
 
+	/**
+	 * DOCUMENTATION
+	 */
+	String getMSD();
 
+	String getMetadataAttribute(String id);
 
 
 

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
+import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
@@ -133,7 +135,8 @@ public class OperationsResources {
 	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", 
+	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public Response getOperations() throws Exception {
 		String jsonResultat = operationsService.getOperations();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -143,7 +146,8 @@ public class OperationsResources {
 	@GET
 	@Path("/operation/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Operation.class)))})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Operation.class)))})
 	public Response getOperationByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getOperationByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -183,7 +187,8 @@ public class OperationsResources {
 	@GET
 	@Path("/indicators")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
+	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public Response getIndicators() throws Exception {
 		String jsonResultat = operationsService.getIndicators();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -193,7 +198,8 @@ public class OperationsResources {
 	@GET
 	@Path("/indicator/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Indicator.class)))})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Indicator.class)))})
 	public Response getIndicatorByID(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getIndicatorByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -216,7 +222,8 @@ public class OperationsResources {
 	@POST
 	@Path("/indicator")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",responses = { @ApiResponse(content = @Content(mediaType = "text/plain"))})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
+	responses = { @ApiResponse(content = @Content(mediaType = "text/plain"))})
 	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
@@ -225,7 +232,27 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-
-
+	/***************************************************************************************************
+	 * DOCUMENTATION
+	 ******************************************************************************************************/
+	@GET
+	@Path("/metadataStructureDefinition")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getMsd", summary = "Metadata structure definition", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = MSD.class)))})
+	public Response getMSD() {
+		String jsonResultat = operationsService.getMSD();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/metadataAttribute/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getMA", summary = "Metadata attribute specification and property", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
+	public Response getMetadataAttribute(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getMetadataAttribute(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }
