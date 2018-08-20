@@ -179,5 +179,11 @@ public class OperationsImpl implements OperationsService {
 		return attribute.toString();
 	}
 
+	@Override
+	public String getMetadataReport(String id) {
+		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
+		return documentation.toString();
+	}
+
 
 }

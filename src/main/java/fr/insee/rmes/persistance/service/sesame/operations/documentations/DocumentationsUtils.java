@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -17,24 +18,33 @@ public class DocumentationsUtils {
 		return mas;
 	}
 	
+	public JSONObject getDocumentationByIdSims(String idSims){
+		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
+		doc.put("id", idSims);
+		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
+		doc.put("rubrics", docRubrics);
+		return doc;
+	}
+	
+
 	public void transformRangeType(JSONObject mas) {
-      String rangeUri = mas.getString("range");
-      RangeType type = RangeType.getEnumByRdfType(SesameUtils.toURI(rangeUri));
-      mas.put("rangeType", type.getJsonType());
-      mas.remove("range");
-      
-      switch (type) {
-		case CODELIST:
-			JSONObject codeList = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
-			if (codeList != null && !codeList.isNull("notation")) {
-				String codeListNotation = codeList.getString("notation");
+		String rangeUri = mas.getString("range");
+		RangeType type = RangeType.getEnumByRdfType(SesameUtils.toURI(rangeUri));
+		mas.put("rangeType", type.getJsonType());
+		mas.remove("range");
+
+		switch (type) {
+			case CODELIST:
+				JSONObject codeList = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
+				if (codeList != null && !codeList.isNull("notation")) {
+					String codeListNotation = codeList.getString("notation");
 					mas.put("codeList", codeListNotation);
-			}
-			break;
-		default:
-			break;
-	}
-      
-	}
+				}
+				break;
+			default:
+				break;
+		}
+
+	}	
 
 }

@@ -254,5 +254,16 @@ public class OperationsResources {
 		String jsonResultat = operationsService.getMetadataAttribute(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/metadataReport/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Metadata report for an id", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json"//TODO , schema = @Schema(implementation = .class)
+	))})
+	public Response getMetadataReport(@PathParam("id") String id) {
+		String jsonResultat = operationsService.getMetadataReport(id);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 }
