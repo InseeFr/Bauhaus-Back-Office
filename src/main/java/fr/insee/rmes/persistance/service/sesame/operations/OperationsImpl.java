@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
@@ -47,6 +49,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
+	
+	@Autowired
+	DocumentationsUtils documentationsUtils;
 
 	/***************************************************************************************************
 	 * SERIES
@@ -155,6 +160,29 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String setIndicator(String body) {
 		return indicatorsUtils.setIndicator(body);
+	}
+
+	
+	/***************************************************************************************************
+	 * DOCUMENTATION
+	 *****************************************************************************************************/
+
+	@Override
+	public String getMSD() {
+		String resQuery = RepositoryGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getMetadataAttribute(String id) {
+		JSONObject attribute = documentationsUtils.getMetadataAttributeById(id);
+		return attribute.toString();
+	}
+
+	@Override
+	public String getMetadataReport(String id) {
+		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
+		return documentation.toString();
 	}
 
 

@@ -32,11 +32,15 @@ import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.config.swagger.model.application.Roles;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.stamps.StampsService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * WebService class for resources of Concepts
@@ -53,16 +57,16 @@ import io.swagger.annotations.ApiResponses;
  */
 @Component
 @Path("/")
-@Api(value = "Concept API", tags = { "Application" })
+@Tag(name="Application", description="Application API")
 @ApiResponses(value = { 
-		@ApiResponse(code = 200, message = "Success"),
-		@ApiResponse(code = 204, message = "No Content"),
-		@ApiResponse(code = 400, message = "Bad Request"),
-		@ApiResponse(code = 401, message = "Unauthorized"),
-		@ApiResponse(code = 403, message = "Forbidden"),
-		@ApiResponse(code = 404, message = "Not found"),
-		@ApiResponse(code = 406, message = "Not Acceptable"),
-		@ApiResponse(code = 500, message = "Internal server error") })
+		@ApiResponse(responseCode = "200", description = "Success"), 
+		@ApiResponse(responseCode = "204", description = "No Content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"), 
+		@ApiResponse(responseCode = "401", description = "Unauthorized"),
+		@ApiResponse(responseCode = "403", description = "Forbidden"), 
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
+		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class PublicResources {
 
 	final static Logger logger = LogManager.getLogger(PublicResources.class);
@@ -76,7 +80,7 @@ public class PublicResources {
 	@GET
 	@Path("/init")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getInit", value = "Initial properties", response = Init.class)
+	@Operation(operationId = "getInit", summary = "Initial properties", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
 	public Response getProperties() {
 		JSONObject props = new JSONObject();
 		try {
@@ -97,7 +101,7 @@ public class PublicResources {
 	@GET
 	@Path("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getStamps", value = "List of stamps", response = String.class)
+	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public Response getStamps() {
 		return Response.status(HttpStatus.SC_OK).entity(stampsService.getStamps()).build();
 	}
@@ -105,7 +109,7 @@ public class PublicResources {
 	@GET
 	@Path("/disseminationStatus")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getDisseminationStatus", value = "List of dissemination status", response = LabelUrl.class, responseContainer = "List")
+	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})
 	public Response getDisseminationStatus() {
 		TreeSet<String> dsList = new TreeSet<String>();
 		for (DisseminationStatus ds : DisseminationStatus.values()) {
@@ -121,7 +125,7 @@ public class PublicResources {
 	@GET
 	@Path("/roles")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getRoles", value = "List of roles", response = Roles.class, responseContainer = "List")
+	@Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Roles.class))))})
 	public Response getRoles() {
 		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getRoles()).build();
 	}
@@ -129,7 +133,7 @@ public class PublicResources {
 	@GET
 	@Path("/agents")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getAgents", value = "List of agents", response = IdLabel.class, responseContainer = "List")
+	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getAgents() {
 		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getAgents()).build();
 	}
@@ -138,8 +142,8 @@ public class PublicResources {
 	@POST
 	@Path("/private/role/add")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setAddRole", value = "Add roles")
-	public Response setAddRole(@ApiParam(value = "Roles and users to add", required = true) String body) {
+	@Operation(operationId = "setAddRole", summary = "Add roles")
+	public Response setAddRole(@Parameter(required=true)@RequestBody(description = "Roles and users to add") String body) {
 		userRolesManagerService.setAddRole(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -148,8 +152,8 @@ public class PublicResources {
 	@POST
 	@Path("/private/role/delete")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "setDeleteRole", value = "Delete role")
-	public Response setDeleteRole(@ApiParam(value = "Role and user to delete", required = true) String body) {
+	@Operation(operationId = "setDeleteRole", summary = "Delete role")
+	public Response setDeleteRole(@Parameter(required=true)@RequestBody(description = "Role and user to delete") String body) {
 		userRolesManagerService.setDeleteRole(body);
 		return Response.status(Status.NO_CONTENT).build();
 	}

@@ -1,19 +1,19 @@
 package fr.insee.rmes.persistance.service.sesame.links;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class OperationsLink {
 
-	@ApiModelProperty(value = "Id of the resource linked", required = true)
+	@Schema(description = "Id of the resource linked", required = true)
 	public String id;
 	
-	@ApiModelProperty(value = "Type of object", required = true)
+	@Schema(description = "Type of object", required = true)
 	public String type;
 
-	@ApiModelProperty(value = "Label lg1", required = true)
+	@Schema(description = "Label lg1", required = true)
 	public String labelLg1;
 
-	@ApiModelProperty(value = "Label lg2")
+	@Schema(description = "Label lg2")
 	public String labelLg2;
 
 	public String getId() {

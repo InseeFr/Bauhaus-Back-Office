@@ -1,19 +1,19 @@
 package fr.insee.rmes.config.swagger.model.concepts;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class ConceptLinks {
 
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 	
-	@ApiModelProperty(value = "Type of link", required = true)
+	@Schema(description = "Type of link", required = true)
 	public String typeOfLink;
 	
-	@ApiModelProperty(value = "Label lg1", required = true)
+	@Schema(description = "Label lg1", required = true)
 	public String prefLabelLg1;
 	
-	@ApiModelProperty(value = "Label lg2")
+	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
 }

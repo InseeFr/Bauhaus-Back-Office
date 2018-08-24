@@ -14,13 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.swagger.model.IdLabel;
-import fr.insee.rmes.config.swagger.model.classifications.Family;
+import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.persistance.service.ClassificationsService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * WebService class for resources of Classifications
@@ -32,16 +35,16 @@ import io.swagger.annotations.ApiResponses;
 
 @Component
 @Path("/classifications")
-@Api(value = "Classification API", tags = { "Classifications" })
+@Tag(name ="Classifications",description = "Classification API")
 @ApiResponses(value = { 
-		@ApiResponse(code = 200, message = "Success"),
-		@ApiResponse(code = 204, message = "No Content"),
-		@ApiResponse(code = 400, message = "Bad Request"),
-		@ApiResponse(code = 401, message = "Unauthorized"),
-		@ApiResponse(code = 403, message = "Forbidden"),
-		@ApiResponse(code = 404, message = "Not found"),
-		@ApiResponse(code = 406, message = "Not Acceptable"),
-		@ApiResponse(code = 500, message = "Internal server error") })
+@ApiResponse(responseCode = "200", description = "Success"), 
+@ApiResponse(responseCode = "204", description = "No Content"),
+@ApiResponse(responseCode = "400", description = "Bad Request"), 
+@ApiResponse(responseCode = "401", description = "Unauthorized"),
+@ApiResponse(responseCode = "403", description = "Forbidden"), 
+@ApiResponse(responseCode = "404", description = "Not found"),
+@ApiResponse(responseCode = "406", description = "Not Acceptable"),
+@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class ClassificationsResources {
 
 	final static Logger logger = LogManager.getLogger(ClassificationsResources.class);
@@ -52,7 +55,8 @@ public class ClassificationsResources {
 	@GET
 	@Path("/families")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassificationFamilies", value = "List of classification families", response = IdLabel.class, responseContainer = "List")
+	@Operation(operationId = "getClassificationFamilies", summary = "List of classification families", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getFamilies() throws Exception {
 		String jsonResultat = classificationsService.getFamilies();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -61,7 +65,8 @@ public class ClassificationsResources {
 	@GET
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getFamily", value = "Classification family", response = Family.class)
+	@Operation(operationId = "getFamily", summary = "Classification family", 
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
 	public Response getFamily(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getFamily(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -70,7 +75,8 @@ public class ClassificationsResources {
 	@GET
 	@Path("/family/{id}/members")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getFamilyMembers", value = "Members of family", response = Members.class , responseContainer = "List")
+	@Operation(operationId = "getFamilyMembers", summary = "Members of family", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public Response getFamilyMembers(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getFamilyMembers(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -79,7 +85,8 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassificationSeries", value = "List of classification series", response = IdLabel.class, responseContainer = "List")
+	@Operation(operationId = "getClassificationSeries", summary = "List of classification series", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getSeries() throws Exception {
 		String jsonResultat = classificationsService.getSeries();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -96,7 +103,8 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series/{id}/members")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getSeriesMembers", value = "Members of series", response = Members.class , responseContainer = "List")
+	@Operation(operationId = "getSeriesMembers", summary = "Members of series", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
 	public Response getSeriesMembers(@PathParam("id") String id) throws Exception {
 		String jsonResultat = classificationsService.getSeriesMembers(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -104,7 +112,8 @@ public class ClassificationsResources {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(nickname = "getClassifications", value = "List of classifications", response = IdLabel.class, responseContainer = "List")
+	@Operation(operationId = "getClassifications", summary = "List of classifications", 
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getClassifications() throws Exception {
 		String jsonResultat = classificationsService.getClassifications();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();

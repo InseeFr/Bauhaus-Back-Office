@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
 	id="WebApp_ID" version="3.1">
 
-	<display-name>gncs-core</display-name>
+	<display-name>bauhaus-core</display-name>
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
@@ -61,7 +61,7 @@
 		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>jersey.config.server.provider.packages</param-name>
-			<param-value>fr.insee.rmes.webservice,io.swagger.jaxrs.listing</param-value>
+			<param-value>fr.insee.rmes.webservice,io.swagger.v3.jaxrs2.integration.resources,fr.insee.rmes.config.swagger.SwaggerConfig</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -72,13 +72,12 @@
 
 
 	<!-- SWAGGER ANNOTATIONS -->
-	<servlet>
-		<servlet-name>SwaggerBootstrap</servlet-name>
+ <!-- <servlet>
+		<servlet-name>SwaggerConfig</servlet-name>
 		<servlet-class>fr.insee.rmes.config.swagger.SwaggerConfig</servlet-class>
 		<load-on-startup>2</load-on-startup>
-	</servlet>
-
-
+</servlet> -->
+	
 
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>

@@ -53,5 +53,21 @@ public class CodeListQueries {
 				+ "?uri skos:notation '"+notationCode +"' . \n"
 				+ " }}";
 	}
+	
+	public static String getCodeListNotationByUri(String uri) {
+		return "SELECT ?notation \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+						
+				+ "    OPTIONAL {<"+uri+"> rdfs:seeAlso ?codeListCS . \n" 
+				+ "      ?codeListCS rdf:type skos:ConceptScheme . \n"
+				+"       ?codeListCS skos:notation ?notation "
+				+ "		} \n"
+				
+				+ "    OPTIONAL {<"+uri+"> rdf:type skos:ConceptScheme . \n"
+				+"      <"+uri+"> skos:notation ?notation "
+				+ "		} \n"
+		
+				+ " }}";
+	}
 
 }

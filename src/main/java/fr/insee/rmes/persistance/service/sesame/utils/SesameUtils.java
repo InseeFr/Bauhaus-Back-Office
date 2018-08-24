@@ -95,12 +95,12 @@ public class SesameUtils {
 	}
 	
 	public static Literal setLiteralString(String string) {
-		Literal literalString = factory.createLiteral(string);
+		Literal literalString = factory.createLiteral(string.trim());
 		return literalString;
 	}
 	
 	public static Literal setLiteralString(String string, String language) {
-		Literal literalString = factory.createLiteral(string,language);
+		Literal literalString = factory.createLiteral(string.trim(),language);
 		return literalString;
 	}
 	
@@ -120,17 +120,17 @@ public class SesameUtils {
 	}
 	
 	public static Literal setLiteralXML(String string) {
-		Literal literalString = factory.createLiteral(string, RDF.XMLLITERAL);
+		Literal literalString = factory.createLiteral(string.trim(), RDF.XMLLITERAL);
 		return literalString;
 	}
 	
 	public static Literal setLiteralLanguage(String string) {
-		Literal literalString = factory.createLiteral(string, XMLSchema.LANGUAGE);
+		Literal literalString = factory.createLiteral(string.trim(), XMLSchema.LANGUAGE);
 		return literalString;
 	}
 	
 	public static URI toURI(String string) {
-		URI stringToResource = factory.createURI(string);
+		URI stringToResource = factory.createURI(string.trim());
 		return stringToResource;
 	}
 	

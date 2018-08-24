@@ -3,31 +3,31 @@ package fr.insee.rmes.persistance.service.sesame.operations.families;
 import java.util.List;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Family {
 
-	@ApiModelProperty(value = "Id", required = true)
+	@Schema(description = "Id", required = true)
 	public String id;
 
-	@ApiModelProperty(value = "Label lg1", required = true)
+	@Schema(description = "Label lg1", required = true)
 	public String prefLabelLg1;
 
-	@ApiModelProperty(value = "Label lg2")
+	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
 
-	@ApiModelProperty(value = "Abstract lg1, description")
+	@Schema(description = "Abstract lg1, description")
 	public String abstractLg1;
 
 
-	@ApiModelProperty(value = "Abstract lg2")
+	@Schema(description = "Abstract lg2")
 	public String abstractLg2;
 
-	@ApiModelProperty(value = "Subjects, Topics")
+	@Schema(description = "Subjects, Topics")
 	public List<IdLabelTwoLangs> subjects;
 
-	@ApiModelProperty(value = "Series")
+	@Schema(description = "Series")
 	public List<IdLabelTwoLangs> series;
 	
 	
