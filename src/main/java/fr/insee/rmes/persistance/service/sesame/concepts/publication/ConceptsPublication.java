@@ -23,6 +23,7 @@ import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQuerie
 import fr.insee.rmes.persistance.service.sesame.ontologies.XKOS;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
+import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class ConceptsPublication {
@@ -46,7 +47,7 @@ public class ConceptsPublication {
 			checkTopConceptOf(conceptId, model);
 			Resource concept = SesameUtils.conceptIRI(conceptId);
 
-			RepositoryConnection con = RepositoryGestion.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, concept);
 
 			try {
@@ -184,7 +185,7 @@ public class ConceptsPublication {
 			Resource collection = SesameUtils.collectionIRI(collectionId);
 			Boolean creation = !RepositoryPublication
 					.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
-			RepositoryConnection con = RepositoryGestion.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, collection);
 
 			try {
