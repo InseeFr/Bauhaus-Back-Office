@@ -45,6 +45,17 @@ public class DocumentationsUtils {
 				break;
 		}
 
+	}
+
+	public JSONArray getMetadataAttributes() {
+		JSONArray attributesList = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery());
+		if (attributesList.length() != 0) {
+			 for (int i = 0; i < attributesList.length(); i++) {
+		         JSONObject attribute = attributesList.getJSONObject(i);
+		         transformRangeType(attribute);
+		     }
+		}
+		return attributesList;
 	}	
 
 }
