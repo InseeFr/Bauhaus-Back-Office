@@ -63,6 +63,8 @@ public interface OperationsService {
 
 	String getMetadataReport(String id);
 
+	String getMetadataAttributes();
+
 
 
 }
