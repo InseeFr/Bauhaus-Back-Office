@@ -178,6 +178,12 @@ public class OperationsImpl implements OperationsService {
 		JSONObject attribute = documentationsUtils.getMetadataAttributeById(id);
 		return attribute.toString();
 	}
+	
+	@Override
+	public String getMetadataAttributes() {
+		String attributes = documentationsUtils.getMetadataAttributes().toString();
+		return QueryUtils.correctEmptyGroupConcat(attributes);
+	}
 
 	@Override
 	public String getMetadataReport(String id) {

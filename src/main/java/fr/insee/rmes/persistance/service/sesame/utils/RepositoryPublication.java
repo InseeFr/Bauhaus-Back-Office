@@ -1,9 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.utils;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,14 +14,10 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.SKOS;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.http.HTTPRepository;
 
 import fr.insee.rmes.config.Config;
 
@@ -32,47 +26,10 @@ public class RepositoryPublication {
 	
 	final static Logger logger = LogManager.getLogger(RepositoryPublication.class);
 	
-	public final static Repository REPOSITORY_PUBLICATION = initRepository(Config.SESAME_SERVER_PUBLICATION,
+	public final static Repository REPOSITORY_PUBLICATION = RepositoryUtils.initRepository(Config.SESAME_SERVER_PUBLICATION,
 			Config.REPOSITORY_ID_PUBLICATION);
 	
-	public static Repository initRepository(String sesameServer, String repositoryID) {
-		Repository repo = new HTTPRepository(sesameServer, repositoryID);
-		try {
-			repo.initialize();
-		} catch (RepositoryException e) {
-			logger.error("Initialisation de la connection à la base sesame " + sesameServer + " impossible");
-			logger.error(e.getMessage());
-			e.getMessage();
-		}
-		return repo;
-	}
-
-	public static RepositoryConnection getConnection(Repository repository) {
-		RepositoryConnection con = null;
-		try {
-			con = repository.getConnection();
-		} catch (RepositoryException e) {
-			logger.error("Connection au repository impossible : " + repository.getDataDir());
-			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
-		return con;
-	}
-
-	public static String executeQuery(RepositoryConnection conn, String query) {
-		TupleQuery tupleQuery = null;
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		try {
-			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
-			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-		} catch (OpenRDFException e) {
-			logger.error("Execute query failed : " + query);
-			logger.error(e.getMessage());
-			e.getMessage();
-		}
-		return stream.toString();
-	}
-
+	
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
@@ -80,45 +37,27 @@ public class RepositoryPublication {
 	 * @return String
 	 */
 	public static String getResponse(String query) {
-		String response = "";
-		Repository repository = REPOSITORY_PUBLICATION;
-		try {
-			RepositoryConnection conn = repository.getConnection();
-			String queryWithPrefixes = QueryUtils.PREFIXES + query;
-			response = executeQuery(conn, queryWithPrefixes);
-			conn.close();
-		} catch (OpenRDFException e) {
-			logger.error("Execute query failed : " + query);
-			logger.error(e.getMessage());
-			e.getMessage();
-		}
-		return response;
+		return RepositoryUtils.getResponse(query,REPOSITORY_PUBLICATION);
 	}
 
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
 	 * @param query
-	 * @return String
+	 * @return JSONArray
 	 */
 	public static JSONArray getResponseAsArray(String query) {
-		JSONObject res = new JSONObject(getResponse(query));
-		JSONArray resArray = sparqlJSONToResultArrayValues(res);
-		return resArray;
+		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_PUBLICATION);
 	}
 
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
 	 * @param query
-	 * @return String
+	 * @return JSONObject
 	 */
 	public static JSONObject getResponseAsObject(String query) {
-		JSONObject res = new JSONObject(getResponse(query));
-		JSONArray resArray = sparqlJSONToResultArrayValues(res);
-		if (resArray.length() == 0)
-			return new JSONObject();
-		return (JSONObject) resArray.get(0);
+		return RepositoryUtils.getResponseAsObject(query, REPOSITORY_PUBLICATION);
 	}
 
 	/**
@@ -128,41 +67,10 @@ public class RepositoryPublication {
 	 * @return String
 	 */
 	public static Boolean getResponseAsBoolean(String query) {
-		JSONObject res = new JSONObject(getResponse(query));
-		return res.getBoolean("boolean");
+		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
 	}
 
-	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
-		JSONArray arrayRes = new JSONArray();
-		if (jsonSparql.get("results") == null)
-			return null;
 
-		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings")).length();
-
-		for (int i = 0; i < nbRes; i++) {
-			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings"))
-					.get(i);
-			final JSONObject jsonResults = new JSONObject();
-
-			Set<String> set = json.keySet();
-			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get("value")));
-			arrayRes.put(jsonResults);
-		}
-		return arrayRes;
-	}
-
-	public static JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
-		if (jsonSparql.get("results") == null)
-			return null;
-
-		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings"))
-				.get(0);
-		final JSONObject jsonResults = new JSONObject();
-
-		Set<String> set = json.keySet();
-		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get("value")));
-		return jsonResults;
-	}
 	
 	public static void publishConcept(Resource concept, Model model, List<Resource> noteToClear, List<Resource> topConceptOfToDelete) {
 		try {
