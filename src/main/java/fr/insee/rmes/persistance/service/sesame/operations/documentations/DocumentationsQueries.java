@@ -85,7 +85,7 @@ public class DocumentationsQueries {
 	
 	public static String getDocumentationRubricsQuery(String idSims) {
 		//TODO RangeType.STRING, RangeType.ORGANIZATION, RangeType.UNDEFINED
-		return "SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 \n "
+		return "SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType \n "
 			+ "FROM <http://rdf.insee.fr/graphes/qualite/rapport/" + idSims+"> \n " 
 			+" FROM <http://rdf.insee.fr/graphes/codes> \n"
 			+ "WHERE { \n "
@@ -96,8 +96,11 @@ public class DocumentationsQueries {
 			+ " BIND(REPLACE( STR(?attr) , '(.*/)(\\\\w.+$)', '$2' ) AS ?idAttribute) . \n"
 			+ " ?report ?attr ?value . "
 			+ " FILTER ( datatype(?value) = <"+RangeType.DATE.getRdfType()+"> ) "
+			+ "BIND('"+RangeType.DATE.getJsonType()+"' AS ?rangeType) . \n"
+
 			+"  } \n"
-				 
+			
+			 
 			//RangeType.ATTRIBUTE --> label
 			+ " UNION {\n"
 			+ " ?report rdf:type sdmx-mm:MetadataReport .\n "
@@ -107,6 +110,8 @@ public class DocumentationsQueries {
 			+ "    FILTER(lang(?labelLg1) = '" + Config.LG1 + "') \n" 
 			+ " OPTIONAL{?node rdf:value ?labelLg2 ."
 			+ "    FILTER(lang(?labelLg2) = '" + Config.LG2 + "') } \n" 
+			+ "BIND('"+RangeType.ATTRIBUTE.getJsonType()+"' AS ?rangeType) . \n"
+
 			+"  } \n"
 			
 			//RangeType.CODELIST --> value
@@ -115,12 +120,11 @@ public class DocumentationsQueries {
 			+ " BIND(REPLACE( STR(?attr) , '(.*/)(\\\\w.+$)', '$2' ) AS ?idAttribute) . \n"
 			+ " ?report ?attr ?codeUri . "
 			+ " ?codeUri skos:notation ?value ."
+			+ " ?codeUri skos:inScheme ?listUri ."
+			+ " ?listUri skos:notation ?codeList ."
+			+ "BIND('"+RangeType.CODELIST.getJsonType()+"' AS ?rangeType) . \n"
+
 			+"  } \n"
-			
-			
-			
-			
-		
 			
 			+"}";
 		

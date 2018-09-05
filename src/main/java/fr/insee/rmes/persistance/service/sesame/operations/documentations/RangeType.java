@@ -12,7 +12,7 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.XSD;
 
 public enum RangeType {
 	
-	STRING(XSD.STRING, "TEXTE"),
+	STRING(XSD.STRING, "TEXT"),
 	ATTRIBUTE(SDMX_MM.REPORTED_ATTRIBUTE, "REPORTED_ATTRIBUTE"),
 	DATE(XSD.DATE, "DATE"),
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),

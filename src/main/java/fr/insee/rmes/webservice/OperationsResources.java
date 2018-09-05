@@ -270,7 +270,7 @@ public class OperationsResources {
 	@Path("/metadataReport/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Metadata report for an id", 
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json"//TODO , schema = @Schema(implementation = .class)
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 	))})
 	public Response getMetadataReport(@PathParam("id") String id) {
 		String jsonResultat = operationsService.getMetadataReport(id);
