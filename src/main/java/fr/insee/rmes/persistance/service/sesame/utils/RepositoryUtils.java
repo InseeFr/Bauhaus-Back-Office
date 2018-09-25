@@ -6,6 +6,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.QueryLanguage;
@@ -15,6 +16,8 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
+
+import fr.insee.rmes.exceptions.RmesException;
 
 public class RepositoryUtils {
 	
@@ -32,20 +35,19 @@ public class RepositoryUtils {
 		return repo;
 	}
 	
-	public static RepositoryConnection getConnection(Repository repository) {
+	public static RepositoryConnection getConnection(Repository repository) throws RmesException {
 		RepositoryConnection con = null;
 		try {
 			con = repository.getConnection();
 		} catch (RepositoryException e) {
 			logger.error("Connection au repository impossible : " + repository.getDataDir());
 			logger.error(e.getMessage());
-			e.printStackTrace();
-		}
+			throw new RmesException(500, e.getMessage(), "Connection au repository impossible : " + repository.getDataDir());		}
 		return con;
 	}
 	
 
-	public static String executeQuery(RepositoryConnection conn, String query) {
+	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
 		TupleQuery tupleQuery = null;
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		try {
@@ -54,7 +56,7 @@ public class RepositoryUtils {
 		} catch (OpenRDFException e) {
 			logger.error("Execute query failed : " + query);
 			logger.error(e.getMessage());
-			e.getMessage();
+			throw new RmesException(500, e.getMessage(), "Execute query failed : " + query);		
 		}
 		return stream.toString();
 	}
@@ -64,8 +66,9 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
+	 * @throws RmesException 
 	 */
-	public static String getResponse(String query, Repository repository) {
+	public static String getResponse(String query, Repository repository) throws RmesException {
 		String response = "";
 		try {
 			RepositoryConnection conn = repository.getConnection();
@@ -75,7 +78,7 @@ public class RepositoryUtils {
 		} catch (OpenRDFException e) {
 			logger.error("Execute query failed : " + query);
 			logger.error(e.getMessage());
-			e.getMessage();
+			throw new RmesException(500, e.getMessage(), "Execute query failed : " + query);		
 		}
 		return response;
 	}
@@ -85,8 +88,9 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return JSONArray
+	 * @throws RmesException 
 	 */
-	public static JSONArray getResponseAsArray(String query, Repository repository) {
+	public static JSONArray getResponseAsArray(String query, Repository repository) throws RmesException {
 		String response = getResponse(query, repository);
 		if (response.equals("")){
 			return null;
@@ -101,8 +105,9 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return JSONObject
+	 * @throws RmesException 
 	 */
-	public static JSONObject getResponseAsObject(String query, Repository repository) {
+	public static JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
 		JSONArray resArray = getResponseAsArray(query, repository);
 		if (resArray==null || resArray.length() == 0) {
 			return new JSONObject();
@@ -116,8 +121,10 @@ public class RepositoryUtils {
 	 * 
 	 * @param query
 	 * @return String
+	 * @throws RmesException 
+	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query, Repository repository) {
+	public static Boolean getResponseAsBoolean(String query, Repository repository) throws JSONException, RmesException {
 		JSONObject res = new JSONObject(getResponse(query, repository));
 		return res.getBoolean("boolean");
 	}
@@ -157,5 +164,7 @@ public class RepositoryUtils {
 		return jsonResults;
 	}
 	
+
 	
+
 }

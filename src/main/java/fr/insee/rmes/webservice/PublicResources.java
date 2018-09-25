@@ -30,6 +30,7 @@ import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.config.swagger.model.application.Roles;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -103,7 +104,13 @@ public class PublicResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public Response getStamps() {
-		return Response.status(HttpStatus.SC_OK).entity(stampsService.getStamps()).build();
+			String entity = null;
+			try {
+				entity = stampsService.getStamps();
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
 	@GET
@@ -116,7 +123,7 @@ public class PublicResources {
 			try {
 				dsList.add(new ObjectMapper().writeValueAsString(ds));
 			} catch (JsonProcessingException e) {
-				e.printStackTrace();
+				return Response.status(500).entity(e.getMessage()).build();
 			}
 		}
 		return Response.status(HttpStatus.SC_OK).entity(dsList.toString()).build();
@@ -127,7 +134,13 @@ public class PublicResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Roles.class))))})
 	public Response getRoles() {
-		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getRoles()).build();
+		String entity = null;
+		try {
+			entity = userRolesManagerService.getRoles();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
 	@GET
@@ -135,7 +148,13 @@ public class PublicResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getAgents() {
-		return Response.status(HttpStatus.SC_OK).entity(userRolesManagerService.getAgents()).build();
+		String entity = null;
+		try {
+			entity = userRolesManagerService.getAgents();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
 	@Secured({ Constants.SPRING_ADMIN })

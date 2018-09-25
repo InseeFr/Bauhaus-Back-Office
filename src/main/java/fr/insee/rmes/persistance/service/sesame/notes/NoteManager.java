@@ -8,6 +8,7 @@ import java.util.Set;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.Concept;
 import fr.insee.rmes.persistance.service.sesame.notes.concepts.ConceptsDatedNoteTypes;
 import fr.insee.rmes.persistance.service.sesame.notes.concepts.ConceptsVersionnedNoteTypes;
@@ -15,7 +16,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class NoteManager {
 
-	public List<List<URI>> setNotes(Concept concept, Model model) {
+	public List<List<URI>> setNotes(Concept concept, Model model) throws RmesException {
 
 		NotesUtils noteUtils = new NotesUtils();
 		// TODO : see extreme cases to close notes
@@ -31,7 +32,7 @@ public class NoteManager {
 		
 		Set<String> versionableNoteTypesInConcept = new HashSet<String>();
 
-		versionableNotes.forEach(versionableNote -> {
+		for (VersionableNote versionableNote : versionableNotes) {
 			versionableNoteTypesInConcept.add(versionableNote.getNoteType());
 			for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
 				if (c.toString().equals(versionableNote.getNoteType())) {
@@ -53,7 +54,7 @@ public class NoteManager {
 			}
 			if (!versionableNote.getContent().isEmpty() && !versionableNote.getContent().equals("<div xmlns=\"http://www.w3.org/1999/xhtml\"></div>"))
 				noteUtils.createRdfVersionableNote(conceptId, versionableNote, model);
-		});
+		}
 		
 		Set<String> versionableNoteTypes = new HashSet<String>();
 		for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
@@ -61,7 +62,7 @@ public class NoteManager {
 		}
 		versionableNoteTypes.removeAll(versionableNoteTypesInConcept);
 		
-		versionableNoteTypes.forEach(noteType -> {
+		for (String noteType : versionableNoteTypes) {
 			ConceptsVersionnedNoteTypes versionnedNoteType = ConceptsVersionnedNoteTypes.getByName(noteType);
 			VersionableNote versionableNote = new VersionableNote();
 			versionableNote.setPath(versionnedNoteType.pathComponent());
@@ -79,10 +80,9 @@ public class NoteManager {
 			else if (!concept.getCreation()) {
 				noteUtils.keepNote(conceptId, versionableNote, model);
 			}
-		});
+		}
 		
-		
-		datableNotes.forEach(datableNote -> {
+		for (DatableNote datableNote : datableNotes) {
 			for (ConceptsDatedNoteTypes c : ConceptsDatedNoteTypes.values()) {
 				if (c.toString().equals(datableNote.getNoteType())) {
 					datableNote.setPath(c.pathComponent());
@@ -93,7 +93,7 @@ public class NoteManager {
 			}
 			noteUtils.deleteDatableNote(conceptId, datableNote, notesToDelete);
 			noteUtils.createRdfDatableNote(conceptId, datableNote, model);
-		});
+		}
 		
 		// Keep historical notes
 		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);

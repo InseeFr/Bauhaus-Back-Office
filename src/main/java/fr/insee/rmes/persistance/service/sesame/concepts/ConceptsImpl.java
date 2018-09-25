@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.MailSenderContract;
 import fr.insee.rmes.persistance.service.ConceptsService;
@@ -43,61 +44,61 @@ public class ConceptsImpl implements ConceptsService {
 	MailSenderContract mailSender;
 	
 	@Override
-	public String getConcepts() {
+	public String getConcepts()  throws RmesException{
 		logger.info("Starting to get concepts list");
 		String resQuery = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 	
 	@Override
-	public String getConceptsSearch() {
+	public String getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
 	}
 	
 	@Override
-	public String getConceptsToValidate() {
+	public String getConceptsToValidate()  throws RmesException{
 		logger.info("Starting to get provisionals concepts list");
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsToValidateQuery()).toString();
 	}
 	@Override
-	public String getConceptByID(String id) {
+	public String getConceptByID(String id)  throws RmesException{
 		JSONObject concept = conceptsUtils.getConceptById(id);
 		return concept.toString();
 	}
 	
 	@Override
-	public String getConceptLinksByID(String id) {
+	public String getConceptLinksByID(String id)  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id)).toString();
 	}
 	
 	@Override
-	public String getConceptNotesByID(String id, int conceptVersion) {
+	public String getConceptNotesByID(String id, int conceptVersion)  throws RmesException{
 		return RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
 	}
 		
 	@Override
-	public String getCollections() {
+	public String getCollections()  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
 	}
 	
 	@Override
-	public String getCollectionsDashboard() {
+	public String getCollectionsDashboard()  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
 	}
 	
 	@Override
-	public String getCollectionsToValidate() {
+	public String getCollectionsToValidate()  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
 	}
 	
 	@Override
-	public String getCollectionByID(String id) {
+	public String getCollectionByID(String id)  throws RmesException{
 		return RepositoryGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
 	}
 	
 	@Override
-	public String getCollectionMembersByID(String id) {
+	public String getCollectionMembersByID(String id)  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
 	}
 	
@@ -105,26 +106,29 @@ public class ConceptsImpl implements ConceptsService {
 
 	/**
 	 * Create new concept
+	 * @throws RmesException 
 	 */
 	@Override
-	public String setConcept(String body) {
+	public String setConcept(String body) throws RmesException {
 		return conceptsUtils.setConcept(body);
 	}
 	
 	
 	/**
 	 * Modify concept
+	 * @throws RmesException 
 	 */
 	@Override
-	public void setConcept(String id, String body) {
+	public void setConcept(String id, String body) throws RmesException {
 		conceptsUtils.setConcept(id, body);
 	}
 		
 
 	/**
 	 * Create new collection
+	 * @throws RmesException 
 	 */
-	public void setCollection(String body) {
+	public void setCollection(String body) throws RmesException {
 		collectionsUtils.setCollection(body);
 	}
 //	
@@ -145,8 +149,13 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Export concept(s)
 	 */
-	public Response getConceptExport(String id, String acceptHeader) {
-		JSONObject concept = conceptsExport.getConceptData(id);
+	public Response getConceptExport(String id, String acceptHeader)  {
+		JSONObject concept;
+		try {
+			concept = conceptsExport.getConceptData(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
@@ -165,8 +174,13 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Export collection(s)
 	 */
-	public Response getCollectionExport(String id, String acceptHeader) {
-		JSONObject collection = conceptsExport.getCollectionData(id);
+	public Response getCollectionExport(String id, String acceptHeader){
+		JSONObject collection = null;
+		try {
+			collection = conceptsExport.getCollectionData(id);
+		} catch (RmesException e) {
+			Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();

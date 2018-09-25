@@ -1,12 +1,14 @@
 package fr.insee.rmes.config.auth.roles;
 
+import fr.insee.rmes.exceptions.RmesException;
+
 public interface UserRolesManagerService {
 	
 	public String getAuth(String body);
 	
-	public String getRoles();
+	public String getRoles() throws RmesException;
 	
-	public String getAgents();
+	public String getAgents() throws RmesException;
 	
 	public void setAddRole(String body);
 	

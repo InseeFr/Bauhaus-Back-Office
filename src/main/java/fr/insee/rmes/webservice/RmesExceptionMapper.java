@@ -7,6 +7,7 @@ import javax.ws.rs.ext.Provider;
 import org.springframework.security.access.AccessDeniedException;
 
 import fr.insee.rmes.exceptions.RestMessage;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 
 @Provider
@@ -22,7 +23,13 @@ public class RmesExceptionMapper implements ExceptionMapper<Exception> {
                     .build();
     	}
     	
-        return Response.status(500)
+    	if (e.getClass().equals(RmesException.class)) {
+    		RmesException re = (RmesException) e;
+            return Response.status(re.getStatus()).entity(re.getMessageAndDetails()).type("text/plain")
+                    .build();
+    	}
+    	
+        return Response.status(500).entity(e.getMessage()).type("text/plain")
                 .build();
     }
 }

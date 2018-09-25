@@ -22,4 +22,13 @@ public class RmesException extends Exception {
     public RestMessage toRestMessage(){
         return new RestMessage(this.status, this.getMessage(), this.details);
     }
+
+	public int getStatus() {
+		return status;
+	}
+	
+	public String getMessageAndDetails() {
+		return getMessage() + " " + details;
+	}
+	
 }

@@ -30,6 +30,7 @@ import fr.insee.rmes.config.swagger.model.concepts.ConceptLinks;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -72,7 +73,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
 	public Response getConcepts() {
-		String jsonResultat = conceptsService.getConcepts();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConcepts();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -82,7 +88,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConceptsSearch", summary = "Rich list of concepts", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
 	public Response getConceptsSearch() {
-		String jsonResultat = conceptsService.getConceptsSearch();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConceptsSearch();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -92,7 +103,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConceptByID", summary = "Concept", 
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
 	public Response getConceptByID(@PathParam("id") String id) {
-		String jsonResultat = conceptsService.getConceptByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConceptByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -102,7 +118,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConceptsToValidate", summary = "List of concepts to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
 	public Response getConceptsToValidate() {
-		String jsonResultat = conceptsService.getConceptsToValidate();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConceptsToValidate();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -112,7 +133,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConceptLinksByID", summary = "List of linked concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
 	public Response getConceptLinksByID(@PathParam("id") String id) {
-		String jsonResultat = conceptsService.getConceptLinksByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConceptLinksByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -122,7 +148,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getConceptNotesByID", summary = "Last notes of the concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
 	public Response getConceptNotesByID(@PathParam("id") String id, @PathParam("conceptVersion") int conceptVersion) {
-		String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -132,7 +163,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getCollections", summary = "List of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getCollections() {
-		String jsonResultat = conceptsService.getCollections();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getCollections();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -142,7 +178,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getCollectionsDashboard() {
-		String jsonResultat = conceptsService.getCollectionsDashboard();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getCollectionsDashboard();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -152,7 +193,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getCollectionsToValidate", summary = "List of collections to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
 	public Response getCollectionsToValidate() {
-		String jsonResultat = conceptsService.getCollectionsToValidate();
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getCollectionsToValidate();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -162,7 +208,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "getCollectionByID", summary = "Collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public Response getCollectionByID(@PathParam("id") String id) {
-		String jsonResultat = conceptsService.getCollectionByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getCollectionByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -172,7 +223,12 @@ public class ConceptsResources   {
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getCollectionMembersByID(@PathParam("id") String id) {
-		String jsonResultat = conceptsService.getCollectionMembersByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.getCollectionMembersByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -182,7 +238,12 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public Response setConcept(@RequestBody(description = "Concept", required = true) String body) {
-		String id = conceptsService.setConcept(body);
+		String id = null;
+		try {
+			id = conceptsService.setConcept(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
@@ -194,7 +255,11 @@ public class ConceptsResources   {
 	public Response setConcept(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
 			@RequestBody(description = "Concept", required = true) String body) {
-		conceptsService.setConcept(id, body);
+		try {
+			conceptsService.setConcept(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		logger.info("Update concept : " + id);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -220,7 +285,7 @@ public class ConceptsResources   {
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
 	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
-		return conceptsService.getConceptExport(id, acceptHeader);
+			return conceptsService.getConceptExport(id, acceptHeader);
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPTS_CREATOR })
@@ -249,7 +314,11 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollection", summary = "Create collection")
 	public Response setCollection(@RequestBody(description = "Collection", required = true) String body) {
-		conceptsService.setCollection(body);
+		try {
+			conceptsService.setCollection(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
@@ -293,7 +362,7 @@ public class ConceptsResources   {
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
-		return conceptsService.getCollectionExport(id, acceptHeader);
+			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })

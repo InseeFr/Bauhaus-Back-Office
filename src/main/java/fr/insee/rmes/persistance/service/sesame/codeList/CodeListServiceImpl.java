@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -18,7 +19,7 @@ public class CodeListServiceImpl implements CodeListService {
 
 
 	@Override
-	public String getCodeList(String notation) {
+	public String getCodeList(String notation) throws RmesException{
 		JSONObject codeList = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
 		codeList.put("notation",notation);
 		JSONArray items = RepositoryGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation));
@@ -30,7 +31,7 @@ public class CodeListServiceImpl implements CodeListService {
 
 
 	@Override
-	public String getCode(String notationCodeList, String notationCode) {
+	public String getCode(String notationCodeList, String notationCode) throws RmesException{
 		JSONObject code = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeByNotation(notationCodeList,notationCode));
 		code.put("code", notationCode);
 		code.put("notationCodeList", notationCodeList);
@@ -38,7 +39,7 @@ public class CodeListServiceImpl implements CodeListService {
 	}
 
 	@Override
-	public String getCodeUri(String notationCodeList, String notationCode) {
+	public String getCodeUri(String notationCodeList, String notationCode) throws RmesException{
 		if (StringUtils.isEmpty(notationCodeList) ||StringUtils.isEmpty(notationCode)) {return null;}
 		JSONObject code = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeUriByNotation(notationCodeList,notationCode));
 		return QueryUtils.correctEmptyGroupConcat(code.getString("uri"));

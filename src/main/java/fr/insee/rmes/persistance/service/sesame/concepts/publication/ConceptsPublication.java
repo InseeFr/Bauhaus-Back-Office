@@ -16,9 +16,9 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.ontologies.XKOS;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -36,11 +36,12 @@ public class ConceptsPublication {
 
 	}
 
-	public static void publishConcepts(JSONArray conceptsToPublish) {
+	public static void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
 
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
 			String conceptId = conceptsToPublish.getString(i);
-			Boolean creation = !RepositoryPublication.getResponseAsBoolean(ConceptsQueries.isConceptExist(conceptId));
+			//TODO uncomment when we can notify...
+			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(ConceptsQueries.isConceptExist(conceptId));
 			Model model = new LinkedHashModel();
 			List<Resource> noteToClear = new ArrayList<Resource>();
 			List<Resource> topConceptOfToDelete = new ArrayList<Resource>();
@@ -98,7 +99,8 @@ public class ConceptsPublication {
 							graph);
 				}
 			} catch (RepositoryException e) {
-				e.printStackTrace();
+				throw new RmesException(500, e.getMessage(), "RepositoryException");
+
 			}
 			
 			RepositoryGestion.closeStatements(statements);
@@ -106,16 +108,17 @@ public class ConceptsPublication {
 			
 			Resource conceptToPublish = tranformBaseURIToPublish(concept);
 			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
-			// if (creation)
+			//TODO uncomment when we can notify...
+			/* if (creation)
 			// notification.notifyConceptCreation(conceptId,
 			// concept.toString());
 			// else notification.notifyConceptUpdate(conceptId,
-			// concept.toString());
+			// concept.toString());*/
 		}
 
 	}
 
-	public static void checkTopConceptOf(String conceptId, Model model) {
+	public static void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
 		JSONArray conceptsToCheck = RepositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
@@ -127,7 +130,7 @@ public class ConceptsPublication {
 		}
 	}
 
-	public static void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) {
+	public static void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, note);
 		try {
 			String lg = "", xhtml = "";
@@ -155,16 +158,17 @@ public class ConceptsPublication {
 			Literal plainText = SesameUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
 			model.add(tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "RepositoryException");
+
 		}
 	}
 
-	public static void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) {
+	public static void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "RepositoryException");
 		}
 		try {
 			while (statements.hasNext()) {
@@ -173,18 +177,18 @@ public class ConceptsPublication {
 						tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "RepositoryException");
 		}
 	}
 
-	public static void publishCollection(JSONArray collectionsToValidate) {
+	public static void publishCollection(JSONArray collectionsToValidate) throws RmesException {
 
 		for (int i = 0; i < collectionsToValidate.length(); ++i) {
 			String collectionId = collectionsToValidate.getString(i);
 			Model model = new LinkedHashModel();
 			Resource collection = SesameUtils.collectionIRI(collectionId);
-			Boolean creation = !RepositoryPublication
-					.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
+			//TODO uncomment when we can notify...
+			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
 			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, collection);
 
@@ -208,7 +212,7 @@ public class ConceptsPublication {
 						}
 					}
 				} catch (RepositoryException e) {
-					e.printStackTrace();
+					throw new RmesException(500, e.getMessage(), "RepositoryException");
 				}
 			} finally {
 				RepositoryGestion.closeStatements(statements);

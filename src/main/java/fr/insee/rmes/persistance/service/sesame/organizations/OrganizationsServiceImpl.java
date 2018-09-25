@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -16,7 +17,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 
 
 	@Override
-	public String getOrganization(String organizationIdentifier) {
+	public String getOrganization(String organizationIdentifier) throws RmesException {
 		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.organizationQuery(organizationIdentifier));
 		orga.put("id", organizationIdentifier);
 		return QueryUtils.correctEmptyGroupConcat(orga.toString());
@@ -24,14 +25,14 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 
 	
 	@Override
-	public String getOrganizationUriById(String organizationIdentifier) {
+	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
 		if (organizationIdentifier==null) {return null;}
 		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString("uri"));
 	}
 
 	@Override
-	public String getOrganizations() {
+	public String getOrganizations() throws RmesException {
 		logger.info("Starting to get organizations list");
 		String resQuery = RepositoryGestion.getResponseAsArray(OrganizationQueries.organizationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);

@@ -2,6 +2,8 @@ package fr.insee.rmes.persistance.service;
 
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.exceptions.RmesException;
+
 /**
  * Concept Service Query interface to assume the persistance of App in JSON
  * 
@@ -11,31 +13,31 @@ import javax.ws.rs.core.Response;
 
 public interface ConceptsService {
 		
-	public String getConcepts();
+	public String getConcepts() throws RmesException ;
 	
-	public String getConceptsSearch();
+	public String getConceptsSearch() throws RmesException;
 	
-	public String getConceptsToValidate();
+	public String getConceptsToValidate() throws RmesException;
 	
-	public String getConceptByID(String id);
+	public String getConceptByID(String id) throws RmesException;
 	
-	public String getConceptLinksByID(String id);
+	public String getConceptLinksByID(String id) throws RmesException;
 	
-	public String getConceptNotesByID(String id, int conceptVersion);
+	public String getConceptNotesByID(String id, int conceptVersion) throws RmesException;
 	
-	public String getCollections();
+	public String getCollections() throws RmesException;
 	
-	public String getCollectionsDashboard();
+	public String getCollectionsDashboard() throws RmesException;
 	
-	public String getCollectionsToValidate();
+	public String getCollectionsToValidate() throws RmesException;
 	
-	public String getCollectionByID(String id);
+	public String getCollectionByID(String id) throws RmesException;
 	
-	public String getCollectionMembersByID(String id);
+	public String getCollectionMembersByID(String id) throws RmesException;
 	
-	public String setConcept(String body);	
+	public String setConcept(String body) throws RmesException;	
 
-	public void setConcept(String id, String body);
+	public void setConcept(String id, String body) throws RmesException;
 	
 	public void setConceptsValidation(String body) throws Exception;
 	
@@ -43,13 +45,13 @@ public interface ConceptsService {
 	
 	public boolean setConceptSend(String id, String body) throws Exception;
 	
-	public void setCollection(String body);
+	public void setCollection(String body) throws RmesException;
 	
 	public void setCollection(String id, String body) throws Exception;
 	
 	public void setCollectionsValidation(String body) throws Exception;
 	
-	public Response getCollectionExport(String id, String acceptHeader);
+	public Response getCollectionExport(String id, String acceptHeader) ;
 	
 	public boolean setCollectionSend(String id, String body) throws Exception;
 }

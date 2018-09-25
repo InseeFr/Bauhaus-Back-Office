@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -27,18 +28,18 @@ public class OperationsUtils {
 	final static Logger logger = LogManager.getLogger(OperationsUtils.class);
 
 
-	public JSONObject getOperationById(String id) {
+	public JSONObject getOperationById(String id) throws RmesException {
 		JSONObject operation = RepositoryGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
 		return operation;
 	}
 
-	private void getOperationSeries(String id, JSONObject operation) {
+	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = RepositoryGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
 		operation.put("series", series);
 	}
 
-	public void setOperation(String id, String body) {
+	public void setOperation(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Operation operation = new Operation(id);
@@ -53,7 +54,7 @@ public class OperationsUtils {
 	}
 
 
-	public void createRdfOperation(Operation operation) {
+	public void createRdfOperation(Operation operation) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/
@@ -67,7 +68,7 @@ public class OperationsUtils {
 		
 		RepositoryGestion.keepHierarchicalOperationLinks(operationURI,model);
 		
-		RepositoryGestion.loadSimpleObject(operationURI, model);
+		RepositoryGestion.loadSimpleObject(operationURI, model, null);
 	}
 
 }

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
@@ -43,7 +44,7 @@ public class IndicatorsUtils {
 	@Autowired
 	OrganizationsService organizationsService;
 
-	public JSONObject getIndicatorById(String id){
+	public JSONObject getIndicatorById(String id) throws RmesException{
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		indicator.put("id", id);
 		addLinks(id, indicator);
@@ -51,7 +52,7 @@ public class IndicatorsUtils {
 	}
 
 
-	private void addLinks(String idIndic, JSONObject indicator) {
+	private void addLinks(String idIndic, JSONObject indicator) throws RmesException {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.REPLACES);
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
@@ -59,7 +60,7 @@ public class IndicatorsUtils {
 		addOneOrganizationLink(idIndic,indicator, INSEE.STAKEHOLDER);
 	}
 	
-	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) {
+	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) throws RmesException {
 		JSONArray links = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
@@ -67,7 +68,7 @@ public class IndicatorsUtils {
 		}
 	}
 	
-	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) {
+	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) throws RmesException {
 		JSONArray organizations = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			 for (int i = 0; i < organizations.length(); i++) {
@@ -82,8 +83,9 @@ public class IndicatorsUtils {
 	 * Create
 	 * @param body
 	 * @return
+	 * @throws RmesException 
 	 */
-	public String setIndicator(String body) {
+	public String setIndicator(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();
@@ -106,8 +108,9 @@ public class IndicatorsUtils {
 	 * Update
 	 * @param id
 	 * @param body
+	 * @throws RmesException 
 	 */
-	public void setIndicator(String id, String body) {
+	public void setIndicator(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator(id);
@@ -121,7 +124,7 @@ public class IndicatorsUtils {
 		
 	}
 	
-	public void createRdfIndicator(Indicator indicator) {
+	public void createRdfIndicator(Indicator indicator) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI indicURI = SesameUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
@@ -189,7 +192,7 @@ public class IndicatorsUtils {
 	}
 
 
-	public String createID() {
+	public String createID() throws RmesException {
 		logger.info("Generate indicator id");
 		JSONObject json = RepositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : " + json);
