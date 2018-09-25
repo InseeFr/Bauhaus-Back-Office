@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.mailSender.rmes.MessageTemplate;
@@ -131,13 +132,13 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		return isMailSent(result);
 	}
 	
-	private Mail prepareMail(String body) {
+	private Mail prepareMail(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		Mail mail = new Mail();
 		try {
 			mail = mapper.readValue(body, Mail.class);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
 		}
 		return mail;
 	}

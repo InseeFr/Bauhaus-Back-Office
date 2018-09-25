@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.userRolesManager.rmes.Igesa;
 import fr.insee.rmes.persistance.userRolesManager.rmes.JSONComparator;
 
@@ -58,7 +59,8 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		return "NONE";
 	}
 
-	public String getRoles() {
+	@SuppressWarnings("unchecked")
+	public String getRoles() throws RmesException {
 		JSONArray roles = new JSONArray();
 		try {
 			Client client = ClientBuilder.newClient();
@@ -67,13 +69,11 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 					.request(MediaType.APPLICATION_XML).get(String.class);
 
 			Document doc = new SAXBuilder().build(new StringReader(xmlResponse));
-			@SuppressWarnings("unchecked")
 			List<Element> l = (List<Element>) (XPath.selectNodes(doc, ROLES_XPATH));
 			for (Element e : l) {
 				JSONObject jsonO = new JSONObject();
 				jsonO.put("id", XPath.newInstance(ROLE_ID_XPATH).valueOf(e));
 				jsonO.put("label", XPath.newInstance(ROLE_LABEL_XPATH).valueOf(e));
-				@SuppressWarnings("unchecked")
 				List<Element> p = (List<Element>) (XPath.selectNodes(e, ROLE_PERSONS_XPATH));
 				JSONArray persons = new JSONArray();
 				for (Element person : p) {
@@ -87,12 +87,12 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 				roles.put(jsonO);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "Fail to getRoles");
 		}
 		return roles.toString();
 	}
 
-	public String getAgents() {
+	public String getAgents() throws RmesException {
 		TreeSet<JSONObject> agents = new TreeSet<JSONObject>(new JSONComparator("label"));
 		logger.info("Connection to LDAP : " + Config.LDAP_URL);
 		try {
@@ -124,7 +124,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			logger.info("Get agents succeed");
 		} catch (NamingException e) {
 			logger.error("Get agents failed : " + e.getMessage());
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "Get agents failed");
 		}
 		return agents.toString();
 	}

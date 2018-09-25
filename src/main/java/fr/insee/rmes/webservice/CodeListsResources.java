@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.swagger.model.codeList.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.codeList.CodeList;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +50,12 @@ public class CodeListsResources {
 	@Operation(operationId = "getCodeListByNotation", summary = "List of codes", 
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
 	public Response getCodeListByNotation(@PathParam("notation") String notation) {
-		String jsonResultat = codeListService.getCodeList(notation);
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getCodeList(notation);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -59,7 +65,12 @@ public class CodeListsResources {
 	@Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
 	public Response getCodeByNotation(@PathParam("notation") String notation, @PathParam("code") String code) {
-		String jsonResultat = codeListService.getCode(notation, code);
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getCode(notation, code);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 }

@@ -2,17 +2,20 @@ package fr.insee.rmes.persistance.service;
 
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.exceptions.RmesException;
+
 public interface OperationsService {
 
 	/**
 	 * FAMILIES
+	 * @throws RmesException 
 	 */
 
-	String getFamilies();
+	String getFamilies() throws RmesException;
 
-	String getFamilyByID(String id);
+	String getFamilyByID(String id) throws Exception;
 	
-	void setFamily(String id, String body);
+	void setFamily(String id, String body) throws RmesException;
 
 
 
@@ -22,9 +25,9 @@ public interface OperationsService {
 
 	String getSeries() throws Exception;
 
-	String getSeriesByID(String id);
+	String getSeriesByID(String id) throws RmesException;
 
-	void setSeries(String id, String body);
+	void setSeries(String id, String body) throws RmesException;
 
 
 	/**
@@ -35,35 +38,37 @@ public interface OperationsService {
 
 	String getOperations() throws Exception;
 
-	String getOperationByID(String id);
+	String getOperationByID(String id) throws RmesException;
 
-	void setOperation(String id, String body);
+	void setOperation(String id, String body) throws RmesException;
 	
 	
 	/**
 	 * INDICATORS
+	 * @throws RmesException 
 	 */
 
-	String getIndicators();
+	String getIndicators() throws RmesException;
 
-	String getIndicatorByID(String id);
+	String getIndicatorByID(String id) throws RmesException;
 
-	void setIndicator(String id, String body);
+	void setIndicator(String id, String body) throws RmesException;
 
-	String setIndicator(String body);
+	String setIndicator(String body) throws RmesException;
 
 
 
 	/**
 	 * DOCUMENTATION
+	 * @throws RmesException 
 	 */
-	String getMSD();
+	String getMSD() throws RmesException;
 
-	String getMetadataAttribute(String id);
+	String getMetadataAttribute(String id) throws RmesException;
 
-	String getMetadataReport(String id);
+	String getMetadataReport(String id) throws RmesException;
 
-	String getMetadataAttributes();
+	String getMetadataAttributes() throws RmesException;
 
 
 

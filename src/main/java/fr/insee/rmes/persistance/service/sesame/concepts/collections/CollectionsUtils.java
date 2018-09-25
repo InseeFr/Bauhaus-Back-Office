@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collection;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
@@ -39,9 +40,10 @@ public class CollectionsUtils {
 	
 	/**
 	 * Collections
+	 * @throws RmesException 
 	 */
 	
-	public void setCollection(String body) {
+	public void setCollection(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -49,7 +51,7 @@ public class CollectionsUtils {
 		try {
 			collection = mapper.readValue(body, Collection.class);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
 		}
 		setRdfCollection(collection);
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
@@ -66,7 +68,8 @@ public class CollectionsUtils {
 		try {
 			collection = mapper.readerForUpdating(collection).readValue(body);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
+
 		}
 		setRdfCollection(collection);
 		logger.info("Update collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
@@ -79,9 +82,10 @@ public class CollectionsUtils {
 	
 	/**
 	 * Collections to sesame
+	 * @throws RmesException 
 	 */
 	
-	public static void setRdfCollection(Collection collection) {
+	public static void setRdfCollection(Collection collection) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI collectionURI = SesameUtils.collectionIRI(collection.getId().replaceAll(" ", "-").toLowerCase());
 		/*Required*/
@@ -103,7 +107,7 @@ public class CollectionsUtils {
 		    model.add(collectionURI, SKOS.MEMBER, memberIRI, SesameUtils.conceptGraph());
 		});
 		
-		RepositoryGestion.loadSimpleObject(collectionURI, model);
+		RepositoryGestion.loadSimpleObject(collectionURI, model, null);
 	}
 	
 	public void collectionsValidation(JSONArray collectionsToValidate) throws Exception {
