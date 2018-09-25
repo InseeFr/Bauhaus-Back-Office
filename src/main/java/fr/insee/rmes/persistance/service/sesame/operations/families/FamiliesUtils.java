@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -29,22 +30,23 @@ public class FamiliesUtils {
 	final static Logger logger = LogManager.getLogger(FamiliesUtils.class);
 
 /*READ*/
-	public JSONObject getFamilyById(String id){
+	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
+		if (family.length()==0) throw new RmesException(400, "Family "+id+ " not found", "Maybe id is wrong");
 		addFamilySeries(id, family);
 		addSubjects(id, family);
 		return family;
 	}
 
 
-	private void addFamilySeries(String idFamily, JSONObject family) {
+	private void addFamilySeries(String idFamily, JSONObject family) throws RmesException {
 		JSONArray series = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSeries(idFamily));
 		if (series.length() != 0) {
 			family.put("series", series);
 		}
 	}
 
-	private void addSubjects(String idFamily, JSONObject family) {
+	private void addSubjects(String idFamily, JSONObject family) throws RmesException {
 		JSONArray subjects = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSubjects(idFamily));
 		if (subjects.length() != 0) {
 			family.put("subjects", subjects);
@@ -53,7 +55,7 @@ public class FamiliesUtils {
 
 
 /*WRITE*/
-	public void setFamily(String id, String body) {
+	public void setFamily(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family(id);
@@ -61,15 +63,27 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
+			throw new RmesException(404, e.getMessage(), "Can't read request body");
 		}
+		boolean familyExists = RepositoryGestion.getResponseAsBoolean(FamiliesQueries.isFamilyExisting(family.id));
+		if (!familyExists) {
+			throw new RmesException(406, "Family "+id+" doesn't exist", "Can't update unexisting family");
+		}
+		
 		createRdfFamily(family);
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
 	
 	
-	public void createRdfFamily(Family family) {
+	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
+		if (family == null || family.id ==null) {
+			throw new RmesException(404, "No id found", "Can't read request body");
+		}
+		if (family.getPrefLabelLg1() ==null) {
+			throw new RmesException(404, "prefLabelLg1 not found", "Can't read request body");
+		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, SesameUtils.operationsGraph());
@@ -82,7 +96,7 @@ public class FamiliesUtils {
 
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
-		RepositoryGestion.loadSimpleObject(familyURI, model);
+		RepositoryGestion.loadSimpleObject(familyURI, model, null);
 	}
 	
 }

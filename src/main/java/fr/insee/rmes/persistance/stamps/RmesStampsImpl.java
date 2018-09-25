@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 
 @Service
 public class RmesStampsImpl implements StampsService {
@@ -23,7 +24,7 @@ public class RmesStampsImpl implements StampsService {
 	final static Logger logger = LogManager.getLogger(RmesStampsImpl.class);
 
 	@Override
-	public String getStamps() {
+	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<String>();
 		logger.info("Connection to LDAP : " + Config.LDAP_URL);
 		try {
@@ -77,7 +78,8 @@ public class RmesStampsImpl implements StampsService {
 			logger.info("Get stamps succeed");
 		} catch (NamingException e) {
 			logger.error("Get stamps failed");
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "Get stamps failed");		
+
 		}
 		
 		return stamps.toString();

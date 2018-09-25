@@ -2,6 +2,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 
 import java.util.List;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -66,7 +67,7 @@ public class Indicator {
 		this.id=id;
 	}
 	
-	public Indicator() {
+	public Indicator() throws RmesException {
 		this.id= new IndicatorsUtils().createID();
 	}
 

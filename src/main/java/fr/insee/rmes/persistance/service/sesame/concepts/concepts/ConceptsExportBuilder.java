@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -22,7 +23,7 @@ public class ConceptsExportBuilder {
 	@Autowired 
 	ConceptsUtils conceptsUtils;
 
-	public JSONObject getConceptData(String id) {
+	public JSONObject getConceptData(String id) throws RmesException {
 		JSONObject data = new JSONObject();
 		JSONObject general = conceptsUtils.getConceptById(id);
 		if (general.has("altLabelLg1")) {
@@ -45,7 +46,7 @@ public class ConceptsExportBuilder {
 		return data;
 	}
 
-	public JSONObject getCollectionData(String id) {
+	public JSONObject getCollectionData(String id)  throws RmesException{
 		JSONObject data = new JSONObject();
 		JSONObject json = RepositoryGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		data.put("prefLabelLg1", json.getString("prefLabelLg1"));

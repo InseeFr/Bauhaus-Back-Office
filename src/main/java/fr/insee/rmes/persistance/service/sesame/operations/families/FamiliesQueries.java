@@ -4,6 +4,12 @@ import fr.insee.rmes.config.Config;
 
 public class FamiliesQueries {
 
+	public static String isFamilyExisting(String id) {
+		return "ASK  { ?family a insee:StatisticalOperationFamily"
+				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
+				+ "}";
+	}
+	
 	public static String familiesQuery() {
 		return "SELECT DISTINCT ?id ?label  \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"

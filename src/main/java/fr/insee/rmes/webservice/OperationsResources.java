@@ -24,7 +24,9 @@ import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
+import fr.insee.rmes.config.swagger.model.operations.documentation.Documentation;
 import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
@@ -77,7 +79,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 		responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 	)
-	public Response getFamilyByID(@PathParam("id") String id) {
+	public Response getFamilyByID(@PathParam("id") String id) throws Exception {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -91,7 +93,11 @@ public class OperationsResources {
 			@PathParam("id") String id, 
 			@RequestBody(description = "Family to update", required = true,
             content = @Content(schema = @Schema(implementation = Family.class))) String body) {
-		operationsService.setFamily(id, body);
+		try {
+			operationsService.setFamily(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
@@ -112,7 +118,12 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesByID", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
 	public Response getSeriesByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getSeriesByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getSeriesByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -125,7 +136,11 @@ public class OperationsResources {
 			@QueryParam("id") String id, 
 			@RequestBody(description = "Series to update", required = true,
             content = @Content(schema = @Schema(implementation = Series.class)))String body) {
-		operationsService.setSeries(id, body);
+		try {
+			operationsService.setSeries(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
@@ -149,7 +164,12 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Operation.class)))})
 	public Response getOperationByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getOperationByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getOperationByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -177,7 +197,11 @@ public class OperationsResources {
 			@QueryParam("id") String id, 
 			@RequestBody(description = "Operation to update", required = true,
             content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
-		operationsService.setOperation(id, body);
+		try {
+			operationsService.setOperation(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
@@ -201,7 +225,12 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Indicator.class)))})
 	public Response getIndicatorByID(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getIndicatorByID(id);
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getIndicatorByID(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -214,7 +243,11 @@ public class OperationsResources {
 			@QueryParam("id") String id, 
 			@RequestBody(description = "Indicator to update", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
-		operationsService.setIndicator(id, body);
+		try {
+			operationsService.setIndicator(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
 	
@@ -227,7 +260,12 @@ public class OperationsResources {
 	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
-		String id = operationsService.setIndicator(body);
+		String id = null;
+		try {
+			id = operationsService.setIndicator(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -241,7 +279,12 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMsd", summary = "Metadata structure definition", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = MSD.class)))})
 	public Response getMSD() {
-		String jsonResultat = operationsService.getMSD();
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getMSD();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
@@ -251,7 +294,12 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMA", summary = "Metadata attribute specification and property", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
 	public Response getMetadataAttribute(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getMetadataAttribute(id);
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getMetadataAttribute(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
@@ -261,7 +309,12 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMAs", summary = "Metadata attributes specification and property", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type="array",implementation = Attribute.class)))})
 	public Response getMetadataAttributes() {
-		String jsonResultat = operationsService.getMetadataAttributes();
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getMetadataAttributes();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
@@ -273,7 +326,12 @@ public class OperationsResources {
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 	))})
 	public Response getMetadataReport(@PathParam("id") String id) {
-		String jsonResultat = operationsService.getMetadataReport(id);
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getMetadataReport(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.organizations.Organization;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -49,7 +50,12 @@ public class OrganizationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getOrganizationByIdentifier", summary = "Organization" , responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Organization.class)))})
 	public Response getOrganizationByIdentifier(@PathParam("identifier") String identifier) {
-		String jsonResultat = organizationsService.getOrganization(identifier);
+		String jsonResultat;
+		try {
+			jsonResultat = organizationsService.getOrganization(identifier);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
@@ -57,7 +63,12 @@ public class OrganizationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getOrganizations", summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getOrganizations() {
-		String jsonResultat = organizationsService.getOrganizations();
+		String jsonResultat;
+		try {
+			jsonResultat = organizationsService.getOrganizations();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 

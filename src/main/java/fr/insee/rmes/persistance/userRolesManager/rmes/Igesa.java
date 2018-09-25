@@ -41,7 +41,7 @@ public class Igesa {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 			logger.info(readBuffer(reader));
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -54,7 +54,7 @@ public class Igesa {
 				builder.append(aux);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		return builder.toString();
