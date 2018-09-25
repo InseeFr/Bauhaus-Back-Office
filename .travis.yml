@@ -7,3 +7,9 @@ install:
 
 script:
 - bash scripts/gitbook.sh
+
+- mvn sonar:sonar \
+  -Dsonar.projectKey=alicela_Bauhaus-Back-Office \
+  -Dsonar.organization=alicela-github \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.login=20b0883d1b882f8bc9df3efb4c814ca919ea4871
