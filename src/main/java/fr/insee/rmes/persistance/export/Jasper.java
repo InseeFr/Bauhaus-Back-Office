@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insee.rmes.exceptions.RmesException;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JREmptyDataSource;
@@ -94,7 +95,7 @@ public class Jasper {
 			jasperParams = mapper.readValue(json.toString(), new TypeReference<Map<String, Object>>() {
 			});
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
 		}
 
 		getJrProperties();

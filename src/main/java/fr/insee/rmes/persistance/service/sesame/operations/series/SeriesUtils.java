@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
@@ -43,7 +44,7 @@ public class SeriesUtils {
 	final static Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 /*READ*/
-	public JSONObject getSeriesById(String id){
+	public JSONObject getSeriesById(String id) throws RmesException{
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		series.put("id", id);
 		addSeriesOperations(id, series);
@@ -54,14 +55,14 @@ public class SeriesUtils {
 	}
 
 
-	private void addSeriesOperations(String idSeries, JSONObject series) {
+	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
 		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
 		if (operations.length() != 0) {
 			series.put("operations", operations);
 		}
 	}
 	
-	private void addGeneratedWith(String idSeries, JSONObject series) {
+	private void addGeneratedWith(String idSeries, JSONObject series) throws RmesException {
 		JSONArray generated = RepositoryGestion.getResponseAsArray(SeriesQueries.getGeneratedWith(idSeries));
 		if (generated.length() != 0) {
 			generated = QueryUtils.transformRdfTypeInString(generated);
@@ -69,12 +70,12 @@ public class SeriesUtils {
 		}
 	}
 	
-	private void addSeriesFamily(String idSeries, JSONObject series) {
+	private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
 		JSONObject family = RepositoryGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
 		series.put("family", family);
 	}
 
-	private void addSeriesLinks(String idSeries, JSONObject series) {
+	private void addSeriesLinks(String idSeries, JSONObject series) throws RmesException {
 		addOneTypeOfLink(idSeries,series,DCTERMS.REPLACES);
 		addOneTypeOfLink(idSeries,series,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idSeries,series,RDFS.SEEALSO);
@@ -82,7 +83,7 @@ public class SeriesUtils {
 		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
 	}
 	
-	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) {
+	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) throws RmesException {
 		JSONArray links = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
@@ -90,7 +91,7 @@ public class SeriesUtils {
 		}
 	}
 	
-	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) {
+	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) throws RmesException {
 		JSONArray organizations = RepositoryGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			 for (int i = 0; i < organizations.length(); i++) {
@@ -104,7 +105,7 @@ public class SeriesUtils {
 	
 	
 /*WRITE*/
-	public void setSeries(String id, String body) {
+	public void setSeries(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Series series = new Series(id);
@@ -119,7 +120,7 @@ public class SeriesUtils {
 	}
 	
 	
-	public void createRdfSeries(Series series) {
+	public void createRdfSeries(Series series) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/

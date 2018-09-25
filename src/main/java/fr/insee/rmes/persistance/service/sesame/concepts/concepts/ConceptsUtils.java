@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
@@ -44,14 +45,14 @@ public class ConceptsUtils {
 	 * Concepts
 	 */
 	
-	public String createID() {
+	public String createID()  throws RmesException{
 		JSONObject json = RepositoryGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
 		String id = json.getString("notation");
 		int ID = Integer.parseInt(id.substring(1))+1;
 		return "c" + ID;
 	}
 	
-	public JSONObject getConceptById(String id) {
+	public JSONObject getConceptById(String id)  throws RmesException{
 		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
 		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
@@ -60,7 +61,7 @@ public class ConceptsUtils {
 		return concept;
 	}
 	
-	public String setConcept(String body) {
+	public String setConcept(String body) throws RmesException {
 				
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
@@ -69,14 +70,14 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readValue(body, Concept.class);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 		return concept.getId();
 	}
 	
-	public void setConcept(String id, String body) {
+	public void setConcept(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -84,7 +85,7 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RmesException(500, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
@@ -97,9 +98,10 @@ public class ConceptsUtils {
 	
 	/**
 	 * Concepts to sesame
+	 * @throws RmesException 
 	 */
 		
-	public void createRdfConcept(Concept concept) {
+	public void createRdfConcept(Concept concept) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI conceptURI = SesameUtils.conceptIRI(concept.getId());
 		/*Const*/

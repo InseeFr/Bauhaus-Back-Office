@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.export.Jasper;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
@@ -66,13 +67,13 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
-	public String getSeriesByID(String id) {
+	public String getSeriesByID(String id) throws RmesException {
 		JSONObject series = seriesUtils.getSeriesById(id);
 		return series.toString();
 	}
 
 	@Override
-	public void setSeries(String id, String body) {
+	public void setSeries(String id, String body) throws RmesException {
 		seriesUtils.setSeries(id,body);
 	}
 
@@ -98,95 +99,99 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
-	public String getOperationByID(String id) {
+	public String getOperationByID(String id) throws RmesException {
 		JSONObject operation = operationsUtils.getOperationById(id);
 		return operation.toString();
 	}
 
 	@Override
-	public void setOperation(String id, String body) {
+	public void setOperation(String id, String body) throws RmesException {
 		operationsUtils.setOperation(id,body);
 	}
 
 	/***************************************************************************************************
 	 * FAMILIES
+	 * @throws RmesException 
 	 *****************************************************************************************************/
 
 	@Override
-	public String getFamilies() {
+	public String getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
 		String resQuery = RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
-	public String getFamilyByID(String id) {
+	public String getFamilyByID(String id) throws RmesException {
 		JSONObject family = familiesUtils.getFamilyById(id);
 		return family.toString();
 	}
 
 	@Override
-	public void setFamily(String id, String body) {
+	public void setFamily(String id, String body) throws RmesException {
 		familiesUtils.setFamily(id,body);
 	}
 
 
 	/***************************************************************************************************
 	 * INDICATORS
+	 * @throws RmesException 
 	 *****************************************************************************************************/
 
 
 	@Override
-	public String getIndicators() {
+	public String getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
 		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
-	public String getIndicatorByID(String id) {
+	public String getIndicatorByID(String id) throws RmesException {
 		JSONObject indic = indicatorsUtils.getIndicatorById(id);
 		return indic.toString();
 	}
 
 	@Override
-	public void setIndicator(String id, String body) {
+	public void setIndicator(String id, String body) throws RmesException {
 		indicatorsUtils.setIndicator(id,body);
 	}
 
 	/**
 	 * Create indicator
+	 * @throws RmesException 
 	 */
 	@Override
-	public String setIndicator(String body) {
+	public String setIndicator(String body) throws RmesException {
 		return indicatorsUtils.setIndicator(body);
 	}
 
 	
 	/***************************************************************************************************
 	 * DOCUMENTATION
+	 * @throws RmesException 
 	 *****************************************************************************************************/
 
 	@Override
-	public String getMSD() {
+	public String getMSD() throws RmesException {
 		String resQuery = RepositoryGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
-	public String getMetadataAttribute(String id) {
+	public String getMetadataAttribute(String id) throws RmesException {
 		JSONObject attribute = documentationsUtils.getMetadataAttributeById(id);
 		return attribute.toString();
 	}
 	
 	@Override
-	public String getMetadataAttributes() {
+	public String getMetadataAttributes() throws RmesException {
 		String attributes = documentationsUtils.getMetadataAttributes().toString();
 		return QueryUtils.correctEmptyGroupConcat(attributes);
 	}
 
 	@Override
-	public String getMetadataReport(String id) {
+	public String getMetadataReport(String id) throws RmesException {
 		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
 		return documentation.toString();
 	}

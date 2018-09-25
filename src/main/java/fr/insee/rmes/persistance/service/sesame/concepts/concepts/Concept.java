@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service.sesame.concepts.concepts;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.links.Link;
 import fr.insee.rmes.persistance.service.sesame.notes.DatableNote;
 import fr.insee.rmes.persistance.service.sesame.notes.VersionableNote;
@@ -29,7 +30,7 @@ public class Concept {
 	private Boolean versioning;
 
 	
-	public Concept() {
+	public Concept() throws RmesException {
 		this.id = new ConceptsUtils().createID();
 		this.created = LocalDateTime.now().toString();
 		this.isValidated = "false";

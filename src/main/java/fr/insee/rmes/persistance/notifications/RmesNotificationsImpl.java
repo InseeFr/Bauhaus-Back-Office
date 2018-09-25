@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 
 public class RmesNotificationsImpl implements NotificationsContract {
 	
@@ -24,27 +25,27 @@ public class RmesNotificationsImpl implements NotificationsContract {
 
 	final static Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
 	
-	public void notifyConceptCreation(String id, String URI) {
+	public void notifyConceptCreation(String id, String URI) throws RmesException {
 		logger.info("Notification : concept creation, id : " + id);
 		sendMessageToBrocker(RmesNotificationsMessages.conceptCreation(id, URI));
 	}
 	
-	public void notifyConceptUpdate(String id, String URI) {
+	public void notifyConceptUpdate(String id, String URI) throws RmesException {
 		logger.info("Notification : concept update, id : " + id);
 		sendMessageToBrocker(RmesNotificationsMessages.conceptUpdate(id, URI));
 	}
 	
-	public void notifyCollectionCreation(String id, String URI) {
+	public void notifyCollectionCreation(String id, String URI) throws RmesException {
 		logger.info("Notification : collection creation, id : " + id);
 		sendMessageToBrocker(RmesNotificationsMessages.collectionCreation(id, URI));
 	}
 	
-	public void notifyCollectionUpdate(String id, String URI) {
+	public void notifyCollectionUpdate(String id, String URI) throws RmesException {
 		logger.info("Notification : collection update, id : " + id);
 		sendMessageToBrocker(RmesNotificationsMessages.collectionUpdate(id, URI));
 	}    
 	
-	public void sendMessageToBrocker(String message) {
+	public void sendMessageToBrocker(String message) throws RmesException {
         String url = BROKER_URL;
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(Config.BROKER_USER, Config.BROKER_PASSWORD, url);
         Connection connection = null;
@@ -72,14 +73,15 @@ public class RmesNotificationsImpl implements NotificationsContract {
             session.close();
 
         } catch (Exception e) {
-            System.out.println("JMS : " + e.getMessage());
+			throw new RmesException(500, e.getMessage(), "Fail to send notification");
+
         }
         finally {
             if (connection != null) {
                 try {
                     connection.close();
                 } catch (JMSException e) {
-                    System.out.println("JMS : Could not close an open connection...");
+        			throw new RmesException(500, e.getMessage(), "JMS : Could not close an open connection...");
                 }
             }
         }
