@@ -68,7 +68,7 @@ public class ConceptsPublication {
 						noteToClear.add(tranformBaseURIToPublish((Resource) st.getObject()));
 					}
 					// Other URI to transform
-					else if (predicat.endsWith("inScheme") || predicat.endsWith("disseminationStatus")) {
+					else if (predicat.endsWith("inScheme") || predicat.endsWith("disseminationStatus") || predicat.endsWith("references") ||predicat.endsWith("replaces")||predicat.endsWith("related")) {
 						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 					}
