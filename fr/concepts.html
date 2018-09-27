@@ -1,0 +1,608 @@
+
+<!DOCTYPE HTML>
+<html lang="fr" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Concepts · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="getting-started.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Tapez pour rechercher" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        <li class="header">Guide du développeur</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="getting-started.html">
+            
+                <a href="getting-started.html">
+            
+                    
+                    Démarrage
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Modèle de données statistique</li>
+        
+        
+    
+        <li class="chapter active" data-level="2.1" data-path="concepts.html">
+            
+                <a href="concepts.html">
+            
+                    
+                    Concepts
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Publié avec GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Concepts</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="concepts">Concepts</h1>
+<p>Le r&#xE9;f&#xE9;rentiel des concepts est au format <a href="http://www.w3.org/RDF/" target="_blank">RDF</a>. La description des concepts se fait &#xE0; l&apos;aide des vocabulaires adapt&#xE9;s, et en particulier suit la recommandation <a href="http://www.w3.org/2004/02/skos/" target="_blank">SKOS</a> du W3C.</p>
+<p>Les tableaux suivants illustrent la fa&#xE7;on dont est impl&#xE9;ment&#xE9;e en RDF le diagramme de classe des concepts. Pour chaque classe, on trouve les diff&#xE9;rents liens entre objets puis les attributs des classes. La colonne &#xAB; relations s&#xE9;mantiques &#xBB; indique pr&#xE9;cis&#xE9;ment l&apos;attribut RDF utilis&#xE9; :</p>
+<ul>
+<li>Le premier terme est un raccourci pour d&#xE9;signer le vocabulaire utilis&#xE9; (ex : skos, cf. liste des vocabulaires)</li>
+<li>une propri&#xE9;t&#xE9; de cet objet (ex : skos:prefLabel). </li>
+</ul>
+<p>Pour les cardinalit&#xE9;s associ&#xE9;es &#xE0; certains attributs, se r&#xE9;f&#xE9;rer au diagramme de classes.</p>
+<p><img src="../../.gitbook/assets/concept-rdf.png" alt="Diagramme de classe des Concepts"></p>
+<h3 id="liste-des-vocabulaires-utilis&#xE9;s">Liste des vocabulaires utilis&#xE9;s</h3>
+<p>dc <a href="http://purl.org/dc/elements/1.1/" target="_blank">http://purl.org/dc/elements/1.1/</a> </p>
+<p>dcterms <a href="http://purl.org/dc/terms/" target="_blank">http://purl.org/dc/terms/</a> </p>
+<p>skos <a href="http://www.w3.org/2004/02/skos/core#" target="_blank">http://www.w3.org/2004/02/skos/core#</a> </p>
+<p>pav <a href="http://purl.org/pav/" target="_blank">http://purl.org/pav/</a></p>
+<p>insee <a href="http://rdf.insee.fr/def/base#" target="_blank">http://rdf.insee.fr/def/base#</a> </p>
+<p>xkos <a href="http://rdf-vocabulary.ddialliance.org/xkos#" target="_blank">http://rdf-vocabulary.ddialliance.org/xkos#</a></p>
+<h2 id="description-des-classes">Description des classes</h2>
+<h3 id="Collection">Collection Concepts </h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Propriet&#xE9;</th>
+<th style="text-align:left">Relation s&#xE9;mantique</th>
+<th style="text-align:left">Objet</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Type</td>
+<td style="text-align:left">rdf:type</td>
+<td style="text-align:left">skos:Collection</td>
+<td style="text-align:left">Collection de concepts identifi&#xE9;e de mani&#xE8;re unique par son URI</td>
+</tr>
+<tr>
+<td style="text-align:left">DateCreation</td>
+<td style="text-align:left">dcterms:created</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">DateFinValidite</td>
+<td style="text-align:left">dcterms:valid</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">DateVersion</td>
+<td style="text-align:left">dcterms:modified</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left">Date de derni&#xE8;re modification effectu&#xE9;e</td>
+</tr>
+<tr>
+<td style="text-align:left">Description</td>
+<td style="text-align:left">dcterms:description</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Sert &#xE0; pr&#xE9;ciser l&apos;objectif de la collection</td>
+</tr>
+<tr>
+<td style="text-align:left">Gestionnaire</td>
+<td style="text-align:left">dc:contributor</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Entit&#xE9; responsable des contributions sur la ressource.</td>
+</tr>
+<tr>
+<td style="text-align:left">Proprietaire</td>
+<td style="text-align:left">dc:creator</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Propri&#xE9;taire (au sein de l&apos;organisme) ; entit&#xE9; responsable de la cr&#xE9;ation de la ressource</td>
+</tr>
+<tr>
+<td style="text-align:left">Titre</td>
+<td style="text-align:left">dcterms:title</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">StatutValidation</td>
+<td style="text-align:left">insee:isValidated</td>
+<td style="text-align:left">&#xAB; Provisoire &#xBB; ou &#xAB; Valid&#xE9; &#xBB;</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">ComposeDe</td>
+<td style="text-align:left">skos:member</td>
+<td style="text-align:left"><a href="concepts.html#Concept">Concept</a></td>
+<td style="text-align:left">ensemble des concepts contenus dans la collection</td>
+</tr>
+</tbody>
+</table>
+<h3 id="concept-scheme">Concept Scheme</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Propriet&#xE9;</th>
+<th style="text-align:left">Relation s&#xE9;mantique</th>
+<th style="text-align:left">Objet</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Type</td>
+<td style="text-align:left">rdf:type</td>
+<td style="text-align:left">skos:ConceptScheme</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Responsable l&#xE9;gal</td>
+<td style="text-align:left">dcterms:publisher</td>
+<td style="text-align:left">&quot;INSEE&quot;</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Titre</td>
+<td style="text-align:left">dcterms:title</td>
+<td style="text-align:left">&quot;Base de d&#xE9;finitions de l&apos;INSEE&quot;@fr</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Label</td>
+<td style="text-align:left">skos:prefLabel</td>
+<td style="text-align:left">&quot;Base de d&#xE9;finitions de l&apos;INSEE&quot;@fr</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Date de mise &#xE0; jour</td>
+<td style="text-align:left">pav:lastRefreshedOn</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left">Date de derni&#xE8;re mise &#xE0; jour des concepts ( = max (dcterms:modified) )</td>
+</tr>
+</tbody>
+</table>
+<h3 id="Concept">Concept  </h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Propriet&#xE9;</th>
+<th style="text-align:left">Relation s&#xE9;mantique</th>
+<th style="text-align:left">Objet</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Scheme</td>
+<td style="text-align:left">skos:inScheme</td>
+<td style="text-align:left"><a href="concepts.html#concept-scheme">ConceptScheme</a></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">skos:topConceptOf</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Caract&#xE9;rise les concepts de premier niveau dans le concept scheme</td>
+</tr>
+<tr>
+<td style="text-align:left">A pour parent</td>
+<td style="text-align:left">skos:broader</td>
+<td style="text-align:left">Concept</td>
+<td style="text-align:left">Lien ascendant(hi&#xE9;rarchique) avec UN concept</td>
+</tr>
+<tr>
+<td style="text-align:left">A pour enfant</td>
+<td style="text-align:left">skos:narrower</td>
+<td style="text-align:left">Concept</td>
+<td style="text-align:left">Lien descendant(hi&#xE9;rarchique) avec un ou plusieurs (autres) concepts</td>
+</tr>
+<tr>
+<td style="text-align:left">Reference</td>
+<td style="text-align:left">dcterms:references</td>
+<td style="text-align:left">Concept</td>
+<td style="text-align:left">Lien entre un concept et les concepts cit&#xE9;s dans la d&#xE9;finition</td>
+</tr>
+<tr>
+<td style="text-align:left">Li&#xE9; &#xE0;</td>
+<td style="text-align:left">skos:related</td>
+<td style="text-align:left">Concept</td>
+<td style="text-align:left">Lien avec un ou plusieurs autre(s) concepts, autre que ceux d&#xE9;j&#xE0; d&#xE9;finis</td>
+</tr>
+<tr>
+<td style="text-align:left">Remplace</td>
+<td style="text-align:left">dcterms:replaces</td>
+<td style="text-align:left">Concept</td>
+<td style="text-align:left">Lien avec le(s) concept(s) qui a &#xE9;t&#xE9; supplant&#xE9; par le concept courant</td>
+</tr>
+<tr>
+<td style="text-align:left">Type</td>
+<td style="text-align:left">rdf:type</td>
+<td style="text-align:left">skos:Concept</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Identifiant</td>
+<td style="text-align:left">skos:notation</td>
+<td style="text-align:left">Suit la regex &#xAB; c[1-9]{1}[0-9]{3} &#xBB; Exemple : c1453</td>
+<td style="text-align:left">Identifiant du concept</td>
+</tr>
+<tr>
+<td style="text-align:left">DateCreation</td>
+<td style="text-align:left">dcterms:created</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left">Date de cr&#xE9;ation du concept</td>
+</tr>
+<tr>
+<td style="text-align:left">DateFinValidite</td>
+<td style="text-align:left">dcterms:valid</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left">Date de fin de validit&#xE9; du concept. Un concept qui n&apos;est plus valide a une date de fin de validit&#xE9; renseign&#xE9;e, mais doit &#xEA;tre conserv&#xE9; dans le r&#xE9;f&#xE9;rentiel et rester accessible &#xE0; partir des liens pos&#xE9;s sur les produits et publications y faisant r&#xE9;f&#xE9;rence.</td>
+</tr>
+<tr>
+<td style="text-align:left">DateVersion</td>
+<td style="text-align:left">dcterms:modified</td>
+<td style="text-align:left">date</td>
+<td style="text-align:left">Date de version : i.e derni&#xE8;re modification du concept (cf version)</td>
+</tr>
+<tr>
+<td style="text-align:left">Definition</td>
+<td style="text-align:left">skos:definition</td>
+<td style="text-align:left"><a href="concepts.html#note">Note</a></td>
+<td style="text-align:left">D&#xE9;finition longue du concept</td>
+</tr>
+<tr>
+<td style="text-align:left">DefinitionCourte</td>
+<td style="text-align:left">skos:scopeNote</td>
+<td style="text-align:left"><a href="concepts.html#note">Note</a></td>
+<td style="text-align:left">D&#xE9;finition courte du concept</td>
+</tr>
+<tr>
+<td style="text-align:left">DocumentLie</td>
+<td style="text-align:left">insee:additionnalMaterial</td>
+<td style="text-align:left">URL du document li&#xE9;</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Etat</td>
+<td style="text-align:left">insee:isValidated</td>
+<td style="text-align:left">Trois modalit&#xE9;s possibles :  - Provisoire - Valid&#xE9; - Publi&#xE9;</td>
+<td style="text-align:left">Attribut de gestion utilis&#xE9; lors du processus de validation (non export&#xE9; en diffusion)</td>
+</tr>
+<tr>
+<td style="text-align:left">Gestionnaire</td>
+<td style="text-align:left">dc:contributor</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Entit&#xE9; responsable des contributions sur la ressource.</td>
+</tr>
+<tr>
+<td style="text-align:left">NoteChangement</td>
+<td style="text-align:left">skos:changeNote</td>
+<td style="text-align:left"><a href="concepts.html#note">Note</a></td>
+<td style="text-align:left">Remarques internes sur le concept</td>
+</tr>
+<tr>
+<td style="text-align:left">NotePubliable</td>
+<td style="text-align:left">skos:editorialNote</td>
+<td style="text-align:left"><a href="concepts.html#note">Note</a></td>
+<td style="text-align:left">Remarques publiques sur le concept</td>
+</tr>
+<tr>
+<td style="text-align:left">NumeroVersion</td>
+<td style="text-align:left">pav:version</td>
+<td style="text-align:left">Version du concept. Format : 1, 2, etc.</td>
+<td style="text-align:left">Une nouvelle version du concept correspond &#xE0; une modification de la r&#xE9;daction  de la d&#xE9;finition, des synonymes ou des notes (et PJ) Remarque :  en cas de modification &#xAB; majeure &#xBB; d&apos;un concept, un nouveau concept (qui remplace l&apos;ancien) sera  cr&#xE9;&#xE9;. (voir dcterms:replaces)</td>
+</tr>
+<tr>
+<td style="text-align:left">Proprietaire</td>
+<td style="text-align:left">dc:creator</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Propri&#xE9;taire (au sein de l&apos;organisme) ; entit&#xE9; responsable de la cr&#xE9;ation de la ressource.</td>
+</tr>
+<tr>
+<td style="text-align:left">StatutDiffusion</td>
+<td style="text-align:left">insee:disseminationStatus</td>
+<td style="text-align:left">Priv&#xE9; PublicSpecifique PublicGenerique</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Synonyme</td>
+<td style="text-align:left">skos:altLabel</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Libell&#xE9; alternatif, sigle</td>
+</tr>
+<tr>
+<td style="text-align:left">Titre</td>
+<td style="text-align:left">skos:prefLabel</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Intitul&#xE9; du concept</td>
+</tr>
+</tbody>
+</table>
+<h3 id="note">Note</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Propriet&#xE9;</th>
+<th style="text-align:left">Relation s&#xE9;mantique</th>
+<th style="text-align:left">Objet</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Identifiant (cf lignes suivantes selon le type de note)</td>
+<td style="text-align:left">rdf:type</td>
+<td style="text-align:left">xkos:ExplanatoryNote</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">AuteurNote</td>
+<td style="text-align:left">dcterms:contributor</td>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Date</td>
+<td style="text-align:left">dcterms:issued</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Date de publication d&apos;une changeNote &#x2013; Applicable aux objets (instance de xkos:ExplanatoryNote) des pr&#xE9;dicats skos:changeNote (dat&#xE9;e, mais non versionn&#xE9;e)</td>
+</tr>
+<tr>
+<td style="text-align:left">NumeroVersion</td>
+<td style="text-align:left">pav:version</td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Applicable aux objets (instance de xkos:ExplanatoryNote) des pr&#xE9;dicats skos:scopeNote, skos:definition, xkos:exclusionNote</td>
+</tr>
+<tr>
+<td style="text-align:left">TexteNote</td>
+<td style="text-align:left">xkos:plainText</td>
+<td style="text-align:left">Contenu de la note (texte brut)</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Version</td>
+<td style="text-align:left">Insee:conceptVersion</td>
+<td style="text-align:left">Version du concept &#xE0; laquelle la note se rattache</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">Langue</td>
+<td style="text-align:left">Dctermes:language</td>
+<td style="text-align:left">Fr ou en</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">TexteNote</td>
+<td style="text-align:left">Evoc:noteLiteral</td>
+<td style="text-align:left">Contenu de la note en xhtml</td>
+</tr>
+</tbody>
+</table>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="getting-started.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Démarrage">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Concepts","level":"2.1","depth":1,"previous":{"title":"Démarrage","level":"1.2","depth":1,"path":"getting-started.md","ref":"getting-started.md","articles":[]},"dir":"ltr"},"config":{"plugins":["include-codeblock","sequence-diagrams"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"include-codeblock":{"check":false,"edit":false,"fixlang":false,"lang":"","template":"default","theme":"chrome","unindent":false},"sequence-diagrams":{},"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"language":"fr","gitbook":"*"},"file":{"path":"concepts.md","mtime":"2018-09-27T14:34:28.644Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2018-09-27T14:36:34.863Z"},"basePath":".","book":{"language":"fr"}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
