@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
+import fr.insee.rmes.persistance.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;

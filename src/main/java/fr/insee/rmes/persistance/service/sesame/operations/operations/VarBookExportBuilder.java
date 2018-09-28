@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,13 +34,13 @@ import fr.insee.rmes.utils.XMLUtils;
 @Component
 public class VarBookExportBuilder {
 
-	final static Logger logger = LogManager.getLogger(VarBookExportBuilder.class);
+	static final Logger logger = LogManager.getLogger(VarBookExportBuilder.class);
 
 	@Autowired
 	RestTemplate restTemplate;
 
 
-	public String getData(String id) throws Exception, ParserConfigurationException, SAXException, IOException {
+	public String getData(String id) throws TransformerFactoryConfigurationError, TransformerException, ParserConfigurationException, SAXException, IOException {
 		String xml = getDataForVarBook(id);
 		Document xmlDocForJasper = addSortedVariableList(xml);
 		return XMLUtils.toString(xmlDocForJasper);
@@ -50,7 +52,7 @@ public class VarBookExportBuilder {
 	 * @return
 	 * @throws Exception
 	 */
-	private String getDataForVarBook(String operationId) throws Exception {
+	private String getDataForVarBook(String operationId)  {
 		String url = String.format("%s/api/meta-data/operation/%s/variableBook", Config.BASE_URI_METADATA_API,
 				operationId);
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
@@ -88,7 +90,7 @@ public class VarBookExportBuilder {
 
 		// copy all variables
 		NodeList list = xmlInitial.getElementsByTagName("RepresentedVariable");
-		Map<String, Node> sortedList = new TreeMap<String, Node>();
+		Map<String, Node> sortedList = new TreeMap<>();
 
 		for (int i = 0; i < list.getLength(); i++) {
 			Node variableNode = list.item(i);
@@ -107,7 +109,6 @@ public class VarBookExportBuilder {
 	private static String getVariableName(Node variableNode) {
 		Node nameNode = XMLUtils.getChild(variableNode, "RepresentedVariableName");
 		Node nameNodeString = XMLUtils.getChild(nameNode, "r:String");
-		String name = nameNodeString.getFirstChild().getNodeValue();
-		return name;
+		return nameNodeString.getFirstChild().getNodeValue();
 	}
 }

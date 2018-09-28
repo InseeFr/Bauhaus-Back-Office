@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.mailSender;
+package fr.insee.rmes.persistance.mail_sender;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,14 +30,14 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.export.Jasper;
-import fr.insee.rmes.persistance.mailSender.rmes.MessageTemplate;
-import fr.insee.rmes.persistance.mailSender.rmes.NameValuePairType;
-import fr.insee.rmes.persistance.mailSender.rmes.Recipient;
-import fr.insee.rmes.persistance.mailSender.rmes.SendRequest;
-import fr.insee.rmes.persistance.mailSender.rmes.SendRequest.Recipients;
+import fr.insee.rmes.persistance.mail_sender.rmes.MessageTemplate;
+import fr.insee.rmes.persistance.mail_sender.rmes.NameValuePairType;
+import fr.insee.rmes.persistance.mail_sender.rmes.Recipient;
+import fr.insee.rmes.persistance.mail_sender.rmes.SendRequest;
+import fr.insee.rmes.persistance.mail_sender.rmes.ServiceConfiguration;
+import fr.insee.rmes.persistance.mail_sender.rmes.SendRequest.Recipients;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.mailSender.rmes.ServiceConfiguration;
 
 @Service
 public class RmesMailSenderImpl implements MailSenderContract {
@@ -51,7 +51,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 		
-	public boolean sendMailConcept(String id, String body) throws Exception {
+	public boolean sendMailConcept(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		URI conceptURI = SesameUtils.conceptIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI))
 			throw new RmesUnauthorizedException();
@@ -61,7 +61,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		return sendMail(mail, is, json);
 	}
 	
-	public boolean sendMailCollection(String id, String body) throws Exception {
+	public boolean sendMailCollection(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		URI collectionURI = SesameUtils.collectionIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
 			throw new RmesUnauthorizedException();
@@ -88,7 +88,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		messagetemplate.setContent(mail.getMessage());
 
 		// PJ
-		List<String> attachments = new ArrayList<String>();
+		List<String> attachments = new ArrayList<>();
 		attachments.add(fileName);
 		
 		// création des destinataires
@@ -148,8 +148,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		if (response.get("ReportItem").toString() != null) {
 			JSONArray reportItem = (JSONArray) response.get("ReportItem");
 			JSONObject firstReportItem = (JSONObject) reportItem.get(0);
-			boolean sent = firstReportItem.getBoolean("sent");
-			return sent;
+			return firstReportItem.getBoolean("sent");
 		}
 		else return false;
 	}

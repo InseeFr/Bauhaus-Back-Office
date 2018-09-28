@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +107,7 @@ public class Recipient {
      */
     public List<NameValuePairType> getProperties() {
         if (properties == null) {
-            properties = new ArrayList<NameValuePairType>();
+            properties = new ArrayList<>();
         }
         return this.properties;
     }
@@ -136,7 +136,7 @@ public class Recipient {
      */
     public List<String> getAttachments() {
         if (attachments == null) {
-            attachments = new ArrayList<String>();
+            attachments = new ArrayList<>();
         }
         return this.attachments;
     }

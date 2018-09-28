@@ -36,7 +36,7 @@ import fr.insee.rmes.utils.JSONUtils;
 @Component
 public class ConceptsUtils {
 	
-	final static Logger logger = LogManager.getLogger(ConceptsUtils.class);
+	static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
 	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
@@ -47,9 +47,9 @@ public class ConceptsUtils {
 	
 	public String createID()  throws RmesException{
 		JSONObject json = RepositoryGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
-		String id = json.getString("notation");
-		int ID = Integer.parseInt(id.substring(1))+1;
-		return "c" + ID;
+		String notation = json.getString("notation");
+		int id = Integer.parseInt(notation.substring(1))+1;
+		return "c" + id;
 	}
 	
 	public JSONObject getConceptById(String id)  throws RmesException{
@@ -91,7 +91,7 @@ public class ConceptsUtils {
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 	}
 	
-	public void conceptsValidation(String body) throws Exception {
+	public void conceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
 		JSONArray conceptsToValidate = new JSONArray(body);
 		conceptsValidation(conceptsToValidate);
 	}
@@ -138,9 +138,9 @@ public class ConceptsUtils {
 		RepositoryGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
 	
-	public void conceptsValidation(JSONArray conceptsToValidate) throws Exception {
+	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
-		List<URI> conceptsToValidateList = new ArrayList<URI>();
+		List<URI> conceptsToValidateList = new ArrayList<>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
 			URI conceptURI = SesameUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);

@@ -25,9 +25,13 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class RepositoryPublication {
 
-	final static Logger logger = LogManager.getLogger(RepositoryPublication.class);
+	private static final String CONNECTION_TO = "Connection to ";
 
-	public final static Repository REPOSITORY_PUBLICATION = RepositoryUtils
+	private static final String FAILED = " failed";
+
+	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
+
+	public static final Repository REPOSITORY_PUBLICATION = RepositoryUtils
 			.initRepository(Config.SESAME_SERVER_PUBLICATION, Config.REPOSITORY_ID_PUBLICATION);
 
 	/**
@@ -71,7 +75,7 @@ public class RepositoryPublication {
 	 * @throws RmesException 
 	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query) throws JSONException, RmesException {
+	public static Boolean getResponseAsBoolean(String query) throws  RmesException {
 		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
 	}
 
@@ -96,8 +100,8 @@ public class RepositoryPublication {
 			logger.info("Publication of concept : " + concept);
 		} catch (OpenRDFException e) {
 			logger.error("Publication of concept : " + concept + " failed : " + e.getMessage());
-			logger.error("Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
-			throw new RmesException(500, e.getMessage(), "Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(500, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 		}
 	}
 
@@ -110,9 +114,9 @@ public class RepositoryPublication {
 			conn.close();
 			logger.info("Publication of collection : " + collection);
 		} catch (OpenRDFException e) {
-			logger.error("Publication of collection : " + collection + " failed");
-			logger.error("Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
-			throw new RmesException(500, e.getMessage(), "Connection to " + Config.SESAME_SERVER_PUBLICATION + " failed");
+			logger.error("Publication of collection : " + collection + FAILED);
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(500, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 
 		}
 	}
@@ -134,6 +138,10 @@ public class RepositoryPublication {
 				throw new RmesException(500, e.getMessage(), "RepositoryException");
 			}
 		}
+	}
+	
+	private RepositoryPublication() {
+	    throw new IllegalStateException("Utility class");
 	}
 
 }

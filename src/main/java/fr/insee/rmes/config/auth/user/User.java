@@ -9,7 +9,7 @@ public class User {
 	
 	JSONArray roles;
 	String stamp = "";
-	Collection<? extends GrantedAuthority> authorities;
+	Collection<GrantedAuthority> authorities;
 	
 	public User() {
 		super();
@@ -32,10 +32,10 @@ public class User {
 	public void setStamp(String stamp) {
 		this.stamp = stamp;
 	}
-	public Collection<? extends GrantedAuthority> getAuthorities() {
+	public Collection<GrantedAuthority> getAuthorities() {
         return authorities;
     }
-    public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
+    public void setAuthorities(Collection<GrantedAuthority> authorities) {
         this.authorities = authorities;
     }
 	

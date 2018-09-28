@@ -17,32 +17,32 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class RmesNotificationsImpl implements NotificationsContract {
 	
-	private static String BROKER_URL = "failover:(" + Config.BROKER_URL + ")?randomize=false";
+	private static final String BROKER_URL = "failover:(" + Config.BROKER_URL + ")?randomize=false";
 	
     private static final Boolean NON_TRANSACTED = false;
     private static final long DELAY = 1;
     private static final long DUREE_VIE_MESSAGE = 300000;
 
-	final static Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
+    static final Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
 	
-	public void notifyConceptCreation(String id, String URI) throws RmesException {
+	public void notifyConceptCreation(String id, String uri) throws RmesException {
 		logger.info("Notification : concept creation, id : " + id);
-		sendMessageToBrocker(RmesNotificationsMessages.conceptCreation(id, URI));
+		sendMessageToBrocker(RmesNotificationsMessages.conceptCreation(id, uri));
 	}
 	
-	public void notifyConceptUpdate(String id, String URI) throws RmesException {
+	public void notifyConceptUpdate(String id, String uri) throws RmesException {
 		logger.info("Notification : concept update, id : " + id);
-		sendMessageToBrocker(RmesNotificationsMessages.conceptUpdate(id, URI));
+		sendMessageToBrocker(RmesNotificationsMessages.conceptUpdate(id, uri));
 	}
 	
-	public void notifyCollectionCreation(String id, String URI) throws RmesException {
+	public void notifyCollectionCreation(String id, String uri) throws RmesException {
 		logger.info("Notification : collection creation, id : " + id);
-		sendMessageToBrocker(RmesNotificationsMessages.collectionCreation(id, URI));
+		sendMessageToBrocker(RmesNotificationsMessages.collectionCreation(id, uri));
 	}
 	
-	public void notifyCollectionUpdate(String id, String URI) throws RmesException {
+	public void notifyCollectionUpdate(String id, String uri) throws RmesException {
 		logger.info("Notification : collection update, id : " + id);
-		sendMessageToBrocker(RmesNotificationsMessages.collectionUpdate(id, URI));
+		sendMessageToBrocker(RmesNotificationsMessages.collectionUpdate(id, uri));
 	}    
 	
 	public void sendMessageToBrocker(String message) throws RmesException {
@@ -81,7 +81,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
                 try {
                     connection.close();
                 } catch (JMSException e) {
-        			throw new RmesException(500, e.getMessage(), "JMS : Could not close an open connection...");
+        			logger.error("JMS : Could not close an open connection...");
                 }
             }
         }

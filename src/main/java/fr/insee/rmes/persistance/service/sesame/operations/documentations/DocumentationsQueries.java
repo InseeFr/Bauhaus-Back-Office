@@ -130,4 +130,7 @@ public class DocumentationsQueries {
 		
 	}
 	
+	 private DocumentationsQueries() {
+		 throw new IllegalStateException("Utility class");
+	 }
 }

@@ -6,4 +6,4 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://xml.insee.fr/schema/outils", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;

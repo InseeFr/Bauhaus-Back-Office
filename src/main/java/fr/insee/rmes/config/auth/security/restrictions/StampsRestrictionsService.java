@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.openrdf.model.URI;
 
+import fr.insee.rmes.exceptions.RmesException;
+
 public interface StampsRestrictionsService {
 	
-	Boolean isConceptOrCollectionOwner(URI URI) throws Exception;
+	Boolean isConceptOrCollectionOwner(URI uri) throws RmesException;
 
-	Boolean isConceptsOrCollectionsOwner(List<URI> URIs) throws Exception;
+	Boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException;
 
 }

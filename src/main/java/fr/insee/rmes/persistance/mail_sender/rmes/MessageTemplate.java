@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,13 +101,13 @@ public class MessageTemplate {
      */
     public List<NameValuePairType> getHeader() {
         if (header == null) {
-            header = new ArrayList<NameValuePairType>();
+            header = new ArrayList<>();
         }
         return this.header;
     }
 
     /**
-     * Obtient la valeur de la propri�t� sender.
+     * Get the value of sender property.
      * 
      * @return
      *     possible object is

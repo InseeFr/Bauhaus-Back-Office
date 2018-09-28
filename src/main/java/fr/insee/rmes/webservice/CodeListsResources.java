@@ -13,8 +13,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.swagger.model.codeList.CodeLabelList;
-import fr.insee.rmes.config.swagger.model.codeList.CodeList;
+import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import io.swagger.v3.oas.annotations.Operation;
