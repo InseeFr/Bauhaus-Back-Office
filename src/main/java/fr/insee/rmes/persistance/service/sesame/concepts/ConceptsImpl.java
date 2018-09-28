@@ -12,8 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.export.Jasper;
-import fr.insee.rmes.persistance.mailSender.MailSenderContract;
+import fr.insee.rmes.persistance.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.service.ConceptsService;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
@@ -45,7 +46,7 @@ public class ConceptsImpl implements ConceptsService {
 	
 	@Override
 	public String getConcepts()  throws RmesException{
-		logger.info("Starting to get concepts list");
+        logger.info("Starting to get concepts list");
 		String resQuery = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
@@ -134,15 +135,20 @@ public class ConceptsImpl implements ConceptsService {
 //	
 	/**
 	 * Modify collection
+	 * @throws RmesException 
+	 * @throws RmesUnauthorizedException 
+	 * @throws Exception 
 	 */
-	public void setCollection(String id, String body) throws Exception {
+	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException {
 		collectionsUtils.setCollection(id, body);
 	}
 	
 	/**
 	 * Validate concept(s)
+	 * @throws RmesException 
+	 * @throws RmesUnauthorizedException 
 	 */
-	public void setConceptsValidation(String body) throws Exception {
+	public void setConceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
 		conceptsUtils.conceptsValidation(body);
 	}
 	
@@ -166,8 +172,11 @@ public class ConceptsImpl implements ConceptsService {
 	
 	/**
 	 * Validate collection(s)
+	 * @throws RmesException 
+	 * @throws RmesUnauthorizedException 
+	 * @throws Exception 
 	 */
-	public void setCollectionsValidation(String body) throws Exception {
+	public void setCollectionsValidation(String body) throws RmesUnauthorizedException, RmesException   {
 		collectionsUtils.collectionsValidation(body);
 	}
 	
@@ -179,7 +188,7 @@ public class ConceptsImpl implements ConceptsService {
 		try {
 			collection = conceptsExport.getCollectionData(id);
 		} catch (RmesException e) {
-			Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
 		}
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
@@ -191,15 +200,19 @@ public class ConceptsImpl implements ConceptsService {
 	
 	/**
 	 * Send concept
+	 * @throws RmesException 
+	 * @throws RmesUnauthorizedException 
 	 */
-	public boolean setConceptSend(String id, String body) throws Exception {
+	public boolean setConceptSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		return mailSender.sendMailConcept(id, body);
 	}
 	
 	/**
 	 * Send collection
+	 * @throws RmesException 
+	 * @throws RmesUnauthorizedException 
 	 */
-	public boolean setCollectionSend(String id, String body) throws Exception {
+	public boolean setCollectionSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		return mailSender.sendMailCollection(id, body);
 	}
 

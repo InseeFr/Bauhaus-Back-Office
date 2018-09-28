@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.mailSender;
+package fr.insee.rmes.persistance.mail_sender;
 
 public class Mail {
 	

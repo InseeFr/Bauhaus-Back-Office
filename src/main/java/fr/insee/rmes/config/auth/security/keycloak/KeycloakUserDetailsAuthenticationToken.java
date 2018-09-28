@@ -11,13 +11,10 @@ import fr.insee.rmes.config.auth.user.User;
 
 public class KeycloakUserDetailsAuthenticationToken extends KeycloakAuthenticationToken {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
     private final User user;
 
-    public KeycloakUserDetailsAuthenticationToken(User user, OidcKeycloakAccount account, Collection<? extends GrantedAuthority> authorities) {
+    public KeycloakUserDetailsAuthenticationToken(User user, OidcKeycloakAccount account, Collection<GrantedAuthority> authorities) {
         super(account, authorities);
         Assert.notNull(user, "User required");
         this.user = user;

@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.userRolesManager.rmes;
+package fr.insee.rmes.persistance.user_roles_manager.rmes;
 
 import java.io.BufferedReader;
 import java.io.IOException;

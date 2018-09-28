@@ -27,9 +27,11 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 
 public class RepositoryGestion {
 
-	final static Logger logger = LogManager.getLogger(RepositoryGestion.class);
+	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 
-	public final static Repository REPOSITORY_GESTION = RepositoryUtils.initRepository(Config.SESAME_SERVER_GESTION,
+	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
+
+	public static final Repository REPOSITORY_GESTION = RepositoryUtils.initRepository(Config.SESAME_SERVER_GESTION,
 			Config.REPOSITORY_ID_GESTION);
 
 	/**
@@ -66,7 +68,7 @@ public class RepositoryGestion {
 	 * @throws RmesException 
 	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query) throws JSONException, RmesException {
+	public static Boolean getResponseAsBoolean(String query) throws RmesException {
 		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_GESTION);
 	}
 
@@ -127,9 +129,9 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error("Failure load object : " + object);
+			logger.error(FAILURE_LOAD_OBJECT + object);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), "Failure load object : " + object);
+			throw new RmesException(500, e.getMessage(), FAILURE_LOAD_OBJECT + object);
 
 		}
 	}
@@ -140,7 +142,7 @@ public class RepositoryGestion {
 			clearReplaceLinks(object, conn);
 			loadSimpleObject(object, model, conn);
 		} catch (OpenRDFException e) {
-			throwsRmesException(e, "Failure load object : " + object);
+			throwsRmesException(e, FAILURE_LOAD_OBJECT + object);
 		}
 	}
 
@@ -233,7 +235,10 @@ public class RepositoryGestion {
 		throw new RmesException(500, e.getMessage(), details);
 	}
 
-
+    private RepositoryGestion() {
+    	throw new IllegalStateException("Utility class");
+    }
+    
 
 
 }

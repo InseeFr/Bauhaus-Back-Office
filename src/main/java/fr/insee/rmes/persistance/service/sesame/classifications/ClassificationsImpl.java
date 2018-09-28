@@ -19,7 +19,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 @Service
 public class ClassificationsImpl implements ClassificationsService {
 
-	final static Logger logger = LogManager.getLogger(ClassificationsImpl.class);
+	static final Logger logger = LogManager.getLogger(ClassificationsImpl.class);
 	
 	@Override
 	public String getFamilies() throws RmesException {

@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -196,7 +196,7 @@ public class SendRequest {
          */
         public List<Recipient> getRecipient() {
             if (recipient == null) {
-                recipient = new ArrayList<Recipient>();
+                recipient = new ArrayList<>();
             }
             return this.recipient;
         }

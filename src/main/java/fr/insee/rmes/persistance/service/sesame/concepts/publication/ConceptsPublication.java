@@ -1,8 +1,10 @@
 package fr.insee.rmes.persistance.service.sesame.concepts.publication;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.openrdf.model.Literal;
@@ -28,6 +30,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class ConceptsPublication {
 
+	private static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	private static Resource tranformBaseURIToPublish(Resource resource) {
@@ -43,13 +46,17 @@ public class ConceptsPublication {
 			//TODO uncomment when we can notify...
 			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(ConceptsQueries.isConceptExist(conceptId));
 			Model model = new LinkedHashModel();
-			List<Resource> noteToClear = new ArrayList<Resource>();
-			List<Resource> topConceptOfToDelete = new ArrayList<Resource>();
+			List<Resource> noteToClear = new ArrayList<>();
+			List<Resource> topConceptOfToDelete = new ArrayList<>();
 			checkTopConceptOf(conceptId, model);
 			Resource concept = SesameUtils.conceptIRI(conceptId);
 
 			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, concept);
+			
+			String[] notes = {"scopeNote","definition","editorialNote"} ;
+			String[] links = {"inScheme","disseminationStatus","references","replaces","related"};
+			String[] ignoredAttrs = {"isValidated","changeNote","creator","contributor"};
 
 			try {
 				Boolean hasBroader = false;
@@ -60,15 +67,14 @@ public class ConceptsPublication {
 					graph = st.getContext();
 					String predicat = st.getPredicate().toString();
 					// Notes, transform URI and get attributs
-					if (predicat.endsWith("scopeNote") || predicat.endsWith("definition")
-							|| predicat.endsWith("editorialNote")) {
+					if (stringEndsWithItemFromList(predicat,notes)) {
 						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						publishExplanatoryNotes(con, SesameUtils.toURI(st.getObject().toString()), model);
 						noteToClear.add(tranformBaseURIToPublish((Resource) st.getObject()));
 					}
-					// Other URI to transform
-					else if (predicat.endsWith("inScheme") || predicat.endsWith("disseminationStatus") || predicat.endsWith("references") ||predicat.endsWith("replaces")||predicat.endsWith("related")) {
+					// Other URI to transform	
+					else if (stringEndsWithItemFromList(predicat,links)) {
 						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 					}
@@ -85,8 +91,7 @@ public class ConceptsPublication {
 						topConceptOfToDelete.add(object);
 						model.add(subject, st.getPredicate(), object, graph);
 						model.add(object, SKOS.BROADER, subject, graph);
-					} else if (predicat.endsWith("isValidated") || predicat.endsWith("changeNote")
-							|| predicat.endsWith("creator") || predicat.endsWith("contributor")) {
+					} else if (stringEndsWithItemFromList(predicat,ignoredAttrs)) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals
@@ -99,7 +104,7 @@ public class ConceptsPublication {
 							graph);
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(500, e.getMessage(), "RepositoryException");
+				throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
 
 			}
 			
@@ -116,6 +121,10 @@ public class ConceptsPublication {
 			// concept.toString());*/
 		}
 
+	}
+	
+	private static boolean stringEndsWithItemFromList(String inputStr, String[] items) {
+	    return Arrays.stream(items).parallel().anyMatch(inputStr::endsWith);
 	}
 
 	public static void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
@@ -156,9 +165,12 @@ public class ConceptsPublication {
 				}
 			}
 			Literal plainText = SesameUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
+			if (subject == null) {
+				throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
+			}
 			model.add(tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), "RepositoryException");
+			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
 
 		}
 	}
@@ -168,7 +180,7 @@ public class ConceptsPublication {
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), "RepositoryException");
+			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 		try {
 			while (statements.hasNext()) {
@@ -177,7 +189,7 @@ public class ConceptsPublication {
 						tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), "RepositoryException");
+			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 	}
 
@@ -212,7 +224,7 @@ public class ConceptsPublication {
 						}
 					}
 				} catch (RepositoryException e) {
-					throw new RmesException(500, e.getMessage(), "RepositoryException");
+					throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
 				}
 			} finally {
 				RepositoryGestion.closeStatements(statements);

@@ -46,8 +46,8 @@ public enum ObjectType {
 	}
 	
 	
-	private static Map<String, ObjectType> lookupLabel = new HashMap<String, ObjectType>();
-	private static Map<URI, ObjectType> lookupUri = new HashMap<URI, ObjectType>();
+	private static Map<String, ObjectType> lookupLabel = new HashMap<>();
+	private static Map<URI, ObjectType> lookupUri = new HashMap<>();
 
 	static {
 		// Populate out lookup when enum is created

@@ -44,6 +44,11 @@ public class QueryUtils {
             jsonObject.remove("typeOfObject");
         }
         return jArray;
-}
+	}
+	
+    private QueryUtils() {
+    	throw new IllegalStateException("Utility class");
+    }
+    
 
 }

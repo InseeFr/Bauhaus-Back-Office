@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
@@ -34,6 +34,7 @@ public class ObjectFactory {
      * 
      */
     public ObjectFactory() {
+    	//Create a new ObjectFactory 
     }
 
     /**

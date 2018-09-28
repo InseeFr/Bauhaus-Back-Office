@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.service.sesame.codeList;
+package fr.insee.rmes.persistance.service.sesame.code_list;
 
 import fr.insee.rmes.config.Config;
 
