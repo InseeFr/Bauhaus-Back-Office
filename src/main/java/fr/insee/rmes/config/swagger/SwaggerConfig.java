@@ -21,7 +21,7 @@ public class SwaggerConfig extends HttpServlet {
 			super.init(config);
 			BeanConfig beanConfig = new BeanConfig();
 			beanConfig.setTitle("Bauhaus API");
-			beanConfig.setVersion("1.1.2");
+			beanConfig.setVersion("2.0.1");
 			beanConfig.setDescription("Rest Endpoints and services Integration used by Bauhaus");
 			beanConfig.setSchemes(new String[] { Config.REQUIRES_SSL ? "https" : "http" });
 			beanConfig.setBasePath("/" + Config.SWAGGER_BASEPATH);
