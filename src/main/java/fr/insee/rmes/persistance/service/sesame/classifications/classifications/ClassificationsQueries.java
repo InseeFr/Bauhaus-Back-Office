@@ -136,4 +136,10 @@ public class ClassificationsQueries {
 			+ "ORDER BY ?depth ?id ";
 	}
 	
+	
+	private ClassificationsQueries() {
+	    throw new IllegalStateException("Utility class");
+	}
+
+	
 }

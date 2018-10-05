@@ -47,7 +47,7 @@ import net.sf.jasperreports.export.SimpleXlsReportConfiguration;
 @Component
 public class Jasper {
 
-	final static Logger logger = LogManager.getLogger(Jasper.class);
+	static final Logger logger = LogManager.getLogger(Jasper.class);
 
 	public InputStream exportConcept(JSONObject json, String acceptHeader) {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_concept.jrxml");
@@ -85,9 +85,11 @@ public class Jasper {
 	 * @param is jasper template
 	 * @param acceptHeader mimeType
 	 * @return 
+	 * @throws RmesException 
+	 * @throws JRException 
 	 * @throws Exception
 	 */
-	private static InputStream exportJson(JSONObject json, InputStream is, String acceptHeader) throws Exception {
+	private static InputStream exportJson(JSONObject json, InputStream is, String acceptHeader) throws RmesException, JRException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Map<String, Object> jasperParams = null;
@@ -100,8 +102,7 @@ public class Jasper {
 
 		getJrProperties();
 		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, null);
-		InputStream in = new ByteArrayInputStream(output.toByteArray());
-		return in;
+		return new ByteArrayInputStream(output.toByteArray());
 	}
 
 	/**
@@ -110,20 +111,20 @@ public class Jasper {
 	 * @param is jasper template
 	 * @param acceptHeader mimeType
 	 * @return 
+	 * @throws JRException 
 	 * @throws Exception
 	 */
-	private InputStream exportXml(String xml, InputStream is, String acceptHeader) throws Exception {
+	private InputStream exportXml(String xml, InputStream is, String acceptHeader) throws JRException  {
 		Map<String, Object> jasperParams = new HashMap<>();
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		String pathJasper = classLoader.getResource("jasper/export_varBook.jrxml").getPath()
 				.replace("export_varBook.jrxml", "").substring(1).replace("%20", " ");
 		jasperParams.put("PATH_JASPER", pathJasper);
-		InputStream xmlInput = new ByteArrayInputStream(xml.toString().getBytes());
+		InputStream xmlInput = new ByteArrayInputStream(xml.getBytes());
 		JRDataSource datasource = new JRXmlDataSource(xmlInput, "/*[local-name()='DDIInstance']", true);
 		getJrProperties();
 		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, datasource);
-		InputStream in = new ByteArrayInputStream(output.toByteArray());
-		return in;
+		return new ByteArrayInputStream(output.toByteArray());
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -169,10 +170,7 @@ public class Jasper {
 				config = new SimpleXlsReportConfiguration();
 				break;
 			case "application/vnd.oasis.opendocument.text":// ODT
-			case "Mail":
-				exporter = new JROdtExporter();
-				config = new SimpleOdtReportConfiguration();
-				break;
+			case "Mail":// ODT
 			default:// TODO odt pour le moment
 				exporter = new JROdtExporter();
 				config = new SimpleOdtReportConfiguration();

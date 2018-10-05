@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.swagger.model.codeList;
+package fr.insee.rmes.config.swagger.model.code_list;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

@@ -57,7 +57,7 @@ public class CollectionsUtils {
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public void setCollection(String id, String body) throws Exception {
+	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		URI collectionURI = SesameUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
@@ -75,7 +75,7 @@ public class CollectionsUtils {
 		logger.info("Update collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
 	}
 	
-	public void collectionsValidation(String body) throws Exception {
+	public void collectionsValidation(String body) throws RmesUnauthorizedException, RmesException   {
 		JSONArray collectionsToValidate = new JSONArray(body);
 		collectionsValidation(collectionsToValidate);
 	}
@@ -110,7 +110,7 @@ public class CollectionsUtils {
 		RepositoryGestion.loadSimpleObject(collectionURI, model, null);
 	}
 	
-	public void collectionsValidation(JSONArray collectionsToValidate) throws Exception {
+	public void collectionsValidation(JSONArray collectionsToValidate) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		List<URI> collectionsToValidateList = new ArrayList<URI>();
 		for (int i = 0; i < collectionsToValidate.length(); i++) {

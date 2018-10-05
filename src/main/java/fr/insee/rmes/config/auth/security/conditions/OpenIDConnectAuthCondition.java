@@ -1,6 +1,7 @@
 package fr.insee.rmes.config.auth.security.conditions;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -13,6 +14,8 @@ public class OpenIDConnectAuthCondition implements Condition {
 
 	private String env;
 
+	private static final String WEBAPPS = "%s/webapps/%s";
+	private static final String CATALINA_BASE = "catalina.base";
 	@Override
 	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		try {
@@ -20,9 +23,7 @@ public class OpenIDConnectAuthCondition implements Condition {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (env.equals("pre-prod") || env.equals("prod"))
-			return true;
-		return false;
+		return  (env.equals("pre-prod") || env.equals("prod"))?true:false;
 	}
 
 	private String getEnv() throws IOException {
@@ -30,25 +31,19 @@ public class OpenIDConnectAuthCondition implements Condition {
         props.load(getClass()
                 .getClassLoader()
                 .getResourceAsStream("bauhaus-dev.properties"));
-        File f = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-dev.properties"));
+        loadPropertiesIfExist(props, "bauhaus-dev.properties");
+        loadPropertiesIfExist(props, "bauhaus-qf.properties");
+        loadPropertiesIfExist(props, "production.properties");
+        return props.getProperty("fr.insee.rmes.bauhaus.env");
+    }
+
+	
+	private void loadPropertiesIfExist(Properties props, String fileName) throws FileNotFoundException, IOException {
+		File f = new File(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), fileName));
         if(f.exists() && !f.isDirectory()) {
             FileReader r = new FileReader(f);
             props.load(r);
             r.close();
         }
-        File f2 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "bauhaus-qf.properties"));
-        if(f2.exists() && !f2.isDirectory()) {
-            FileReader r2 = new FileReader(f2);
-            props.load(r2);
-            r2.close();
-        }
-        File f3 = new File(String.format("%s/webapps/%s", System.getProperty("catalina.base"), "production.properties"));
-        if(f3.exists() && !f3.isDirectory()) {
-            FileReader r3 = new FileReader(f3);
-            props.load(r3);
-            r3.close();
-        }
-        return props.getProperty("fr.insee.rmes.bauhaus.env");
-    }
-
+	}
 }

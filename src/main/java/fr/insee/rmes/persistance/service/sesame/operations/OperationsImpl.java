@@ -1,8 +1,12 @@
 package fr.insee.rmes.persistance.service.sesame.operations;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,6 +14,7 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.export.Jasper;
@@ -31,7 +36,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 @Service
 public class OperationsImpl implements OperationsService {
 
-	final static Logger logger = LogManager.getLogger(OperationsImpl.class);
+	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
 
 	@Autowired
 	Jasper jasper;
@@ -56,11 +61,12 @@ public class OperationsImpl implements OperationsService {
 
 	/***************************************************************************************************
 	 * SERIES
+	 * 
 	 *****************************************************************************************************/
 
 
 	@Override
-	public String getSeries() throws Exception {
+	public String getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
 		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
@@ -79,18 +85,19 @@ public class OperationsImpl implements OperationsService {
 
 	/***************************************************************************************************
 	 * OPERATIONS
+	 * 
 	 *****************************************************************************************************/
 
 
 	@Override
-	public String getOperations() throws Exception {
+	public String getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
 		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
-	public Response getVarBookExport(String id, String acceptHeader) throws Exception {
+	public Response getVarBookExport(String id, String acceptHeader) throws ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException  {
 		String xmlForJasper = varBookExport.getData(id);
 		InputStream is = jasper.exportVariableBook(xmlForJasper, acceptHeader);
 		String fileName = "Dico" + id + jasper.getExtension(acceptHeader);

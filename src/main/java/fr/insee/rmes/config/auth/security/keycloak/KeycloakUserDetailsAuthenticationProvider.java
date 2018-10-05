@@ -10,7 +10,6 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import fr.insee.rmes.config.auth.user.User;
@@ -20,7 +19,7 @@ public class KeycloakUserDetailsAuthenticationProvider extends KeycloakAuthentic
     private static final Logger log = LoggerFactory.getLogger(KeycloakUserDetailsAuthenticationProvider.class);
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         final KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) super.authenticate(authentication);
         if (token == null) {
             return null;
@@ -33,9 +32,9 @@ public class KeycloakUserDetailsAuthenticationProvider extends KeycloakAuthentic
         user.setStamp((String) otherClaims.getOrDefault("timbre", "default stamp"));
         
         String userId = token.getAccount().getKeycloakSecurityContext().getToken().getPreferredUsername();
-        log.info("User " + userId + " connected");
+        log.info(String.format("User %s connected", userId));
         
-        List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 		user.getRoles().forEach(r -> authorities.add(new SimpleGrantedAuthority((String) r)));
 
         return new KeycloakUserDetailsAuthenticationToken(user, token.getAccount(), token.getAuthorities());

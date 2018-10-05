@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service;
 import javax.ws.rs.core.Response;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 
 /**
  * Concept Service Query interface to assume the persistance of App in JSON
@@ -39,19 +40,19 @@ public interface ConceptsService {
 
 	public void setConcept(String id, String body) throws RmesException;
 	
-	public void setConceptsValidation(String body) throws Exception;
+	public void setConceptsValidation(String body) throws RmesUnauthorizedException, RmesException ;
 	
 	public Response getConceptExport(String id, String acceptHeader);
 	
-	public boolean setConceptSend(String id, String body) throws Exception;
+	public boolean setConceptSend(String id, String body) throws RmesUnauthorizedException, RmesException ;
 	
 	public void setCollection(String body) throws RmesException;
 	
-	public void setCollection(String id, String body) throws Exception;
+	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException;
 	
-	public void setCollectionsValidation(String body) throws Exception;
+	public void setCollectionsValidation(String body) throws RmesUnauthorizedException, RmesException ;
 	
 	public Response getCollectionExport(String id, String acceptHeader) ;
 	
-	public boolean setCollectionSend(String id, String body) throws Exception;
+	public boolean setCollectionSend(String id, String body) throws RmesUnauthorizedException, RmesException ;
 }

@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.userRolesManager;
+package fr.insee.rmes.persistance.user_roles_manager;
 
 import java.io.StringReader;
 import java.text.MessageFormat;
@@ -30,8 +30,8 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.userRolesManager.rmes.Igesa;
-import fr.insee.rmes.persistance.userRolesManager.rmes.JSONComparator;
+import fr.insee.rmes.persistance.user_roles_manager.rmes.Igesa;
+import fr.insee.rmes.persistance.user_roles_manager.rmes.JSONComparator;
 
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {

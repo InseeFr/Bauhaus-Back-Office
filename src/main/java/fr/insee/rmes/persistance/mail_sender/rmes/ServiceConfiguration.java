@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class ServiceConfiguration {
      */
     public List<NameValuePairType> getSMTPProperties() {
         if (smtpProperties == null) {
-            smtpProperties = new ArrayList<NameValuePairType>();
+            smtpProperties = new ArrayList<>();
         }
         return this.smtpProperties;
     }
@@ -103,7 +103,7 @@ public class ServiceConfiguration {
      */
     public List<NameValuePairType> getServiceProperties() {
         if (serviceProperties == null) {
-            serviceProperties = new ArrayList<NameValuePairType>();
+            serviceProperties = new ArrayList<>();
         }
         return this.serviceProperties;
     }

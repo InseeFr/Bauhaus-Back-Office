@@ -21,31 +21,26 @@ public class SesameUtils {
 	
 	static ValueFactory factory = ValueFactoryImpl.getInstance();
 
-	private final static String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
+	private static final String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
 	
 	public static Resource conceptGraph(){
-		Resource conceptGraph = factory.createURI(Config.CONCEPTS_GRAPH);
-		return conceptGraph;
+		return factory.createURI(Config.CONCEPTS_GRAPH);
 	}
 	
 	public static Resource operationsGraph(){
-		Resource conceptGraph = factory.createURI(Config.OPERATIONS_GRAPH);
-		return conceptGraph;
+		return factory.createURI(Config.OPERATIONS_GRAPH);
 	}
 	
 	public static Resource productsGraph(){
-		Resource conceptGraph = factory.createURI(Config.PRODUCTS_GRAPH);
-		return conceptGraph;
+		return factory.createURI(Config.PRODUCTS_GRAPH);
 	}
 	
 	public static Resource conceptScheme(){
-		Resource conceptScheme = factory.createURI(CONCEPTS_SCHEME);
-		return conceptScheme;
+		return factory.createURI(CONCEPTS_SCHEME);
 	}
 	
 	public static URI objectIRI(ObjectType objType, String id) {
-		URI uri = factory.createURI(objType.getBaseUri() + "/" + id);
-		return uri;
+		return factory.createURI(objType.getBaseUri() + "/" + id);
 	}
 	
 	public static URI conceptIRI(String id) {
@@ -59,79 +54,68 @@ public class SesameUtils {
 	
 	
 	public static URI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
-		URI noteURI = SesameUtils.factory.createURI(
+		return SesameUtils.factory.createURI(
 				ObjectType.CONCEPT.getBaseUri() 
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
 				+ "/" + versionableNote.getLang());
-		return noteURI;
 	}
 	
 	public static URI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
-		URI noteURI = SesameUtils.factory.createURI(
+		return SesameUtils.factory.createURI(
 				ObjectType.CONCEPT.getBaseUri()
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
 				+ "/" + versionableNote.getLang());
-		return noteURI;
 	}
 	
 	public static URI datableNoteIRI(String conceptId, DatableNote datableNote) {
-		String parsedDate = "";
+		String text = "";
 
 		if (Config.ENV.matches("prod|pre-prod")) {
 			LocalDate date = LocalDate.now();
-			String text = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-			parsedDate = LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE).toString();
+			text = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
 		} else {
-			parsedDate = new Date().toString();
+			text = new Date().toString();
 		}
-		URI noteURI = SesameUtils.factory.createURI(ObjectType.CONCEPT.getBaseUri() + "/" + conceptId + "/" + datableNote.getPath()
+		String parsedDate = LocalDate.parse(text, DateTimeFormatter.ISO_LOCAL_DATE).toString();
+		return SesameUtils.factory.createURI(ObjectType.CONCEPT.getBaseUri() + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
-		return noteURI;
 	}
 	
 	public static Literal setLiteralString(String string) {
-		Literal literalString = factory.createLiteral(string.trim());
-		return literalString;
+		return factory.createLiteral(string.trim());
 	}
 	
 	public static Literal setLiteralString(String string, String language) {
-		Literal literalString = factory.createLiteral(string.trim(),language);
-		return literalString;
+		return factory.createLiteral(string.trim(),language);
 	}
 	
 	public static Literal setLiteralBoolean(Boolean bool) {
-		Literal literalBoolean = factory.createLiteral(bool);
-		return literalBoolean;
+		return factory.createLiteral(bool);
 	}
 	
 	public static Literal setLiteralInt(String number) {
-		Literal literalInt = factory.createLiteral(number, XMLSchema.INT);
-		return literalInt;
+		return factory.createLiteral(number, XMLSchema.INT);
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
-		Literal literalDate = factory.createLiteral(date, XMLSchema.DATETIME);
-		return literalDate;
+		return factory.createLiteral(date, XMLSchema.DATETIME);
 	}
 	
 	public static Literal setLiteralXML(String string) {
-		Literal literalString = factory.createLiteral(string.trim(), RDF.XMLLITERAL);
-		return literalString;
+		return factory.createLiteral(string.trim(), RDF.XMLLITERAL);
 	}
 	
 	public static Literal setLiteralLanguage(String string) {
-		Literal literalString = factory.createLiteral(string.trim(), XMLSchema.LANGUAGE);
-		return literalString;
+		return factory.createLiteral(string.trim(), XMLSchema.LANGUAGE);
 	}
 	
 	public static URI toURI(String string) {
-		URI stringToResource = factory.createURI(string.trim());
-		return stringToResource;
+		return factory.createURI(string.trim());
 	}
 	
 	/**
@@ -176,4 +160,7 @@ public class SesameUtils {
 		}
 	}
 
+	private SesameUtils() {
+	    throw new IllegalStateException("Utility class");
+	}
 }

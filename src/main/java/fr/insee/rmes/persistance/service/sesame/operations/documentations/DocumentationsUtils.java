@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.codeList.CodeListQueries;
+import fr.insee.rmes.persistance.service.sesame.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 

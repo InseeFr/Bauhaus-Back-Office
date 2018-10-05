@@ -1,4 +1,4 @@
-package fr.insee.rmes.persistance.disseminationStatus;
+package fr.insee.rmes.persistance.dissemination_status;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 

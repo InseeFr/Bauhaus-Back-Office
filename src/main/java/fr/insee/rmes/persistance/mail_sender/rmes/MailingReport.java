@@ -6,7 +6,7 @@
 //
 
 
-package fr.insee.rmes.persistance.mailSender.rmes;
+package fr.insee.rmes.persistance.mail_sender.rmes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +105,7 @@ public class MailingReport {
      */
     public List<ReportItem> getReportItem() {
         if (reportItem == null) {
-            reportItem = new ArrayList<ReportItem>();
+            reportItem = new ArrayList<>();
         }
         return this.reportItem;
     }

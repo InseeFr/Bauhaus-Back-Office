@@ -21,7 +21,11 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class RepositoryUtils {
 	
-	final static Logger logger = LogManager.getLogger(RepositoryUtils.class);
+	private static final String VALUE = "value";
+	private static final String BINDINGS = "bindings";
+	private static final String RESULTS = "results";
+	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
+	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
 
 
 	public static Repository initRepository(String sesameServer, String repositoryID) {
@@ -54,9 +58,9 @@ public class RepositoryUtils {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
 		} catch (OpenRDFException e) {
-			logger.error("Execute query failed : " + query);
+			logger.error(EXECUTE_QUERY_FAILED + query);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), "Execute query failed : " + query);		
+			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
 		return stream.toString();
 	}
@@ -76,9 +80,9 @@ public class RepositoryUtils {
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error("Execute query failed : " + query);
+			logger.error(EXECUTE_QUERY_FAILED + query);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), "Execute query failed : " + query);		
+			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
 		return response;
 	}
@@ -96,8 +100,7 @@ public class RepositoryUtils {
 			return null;
 		}
 		JSONObject res = new JSONObject(response);
-		JSONArray resArray = sparqlJSONToResultArrayValues(res);
-		return resArray;
+		return sparqlJSONToResultArrayValues(res);
 	}
 	
 	/**
@@ -124,7 +127,7 @@ public class RepositoryUtils {
 	 * @throws RmesException 
 	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query, Repository repository) throws JSONException, RmesException {
+	public static Boolean getResponseAsBoolean(String query, Repository repository) throws RmesException {
 		JSONObject res = new JSONObject(getResponse(query, repository));
 		return res.getBoolean("boolean");
 	}
@@ -132,39 +135,41 @@ public class RepositoryUtils {
 	
 	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
 		JSONArray arrayRes = new JSONArray();
-		if (jsonSparql.get("results") == null) {
+		if (jsonSparql.get(RESULTS) == null) {
 			return null;
 		}
 
-		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings")).length();
+		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
 
 		for (int i = 0; i < nbRes; i++) {
-			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings"))
+			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
 					.get(i);
 			final JSONObject jsonResults = new JSONObject();
 
 			Set<String> set = json.keySet();
-			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get("value")));
+			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(VALUE)));
 			arrayRes.put(jsonResults);
 		}
 		return arrayRes;
 	}
 	
 	public static JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
-		if (jsonSparql.get("results") == null) {
+		if (jsonSparql.get(RESULTS) == null) {
 			return null;
 		}
 
-		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get("results")).get("bindings"))
+		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
 				.get(0);
 		final JSONObject jsonResults = new JSONObject();
 
 		Set<String> set = json.keySet();
-		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get("value")));
+		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(VALUE)));
 		return jsonResults;
 	}
 	
-
+	private RepositoryUtils() {
+		throw new IllegalStateException("Utility class");
+	}
 	
 
 }

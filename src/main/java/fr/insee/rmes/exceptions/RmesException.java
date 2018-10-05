@@ -4,8 +4,8 @@ public class RmesException extends Exception {
 
 	private static final long serialVersionUID = -7959158367542389147L;
 
-	private int status;
-    private String details;
+	private final int status;
+    private final String details;
 
     /**
      *

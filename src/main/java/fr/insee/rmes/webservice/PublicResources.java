@@ -31,7 +31,7 @@ import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.config.swagger.model.application.Roles;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.disseminationStatus.DisseminationStatus;
+import fr.insee.rmes.persistance.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -18,4 +18,8 @@ public class FileUtils {
         return tempFile;
     }
     
+    private FileUtils() {
+    	throw new IllegalStateException("Utility class");
+    }
+    
 }
