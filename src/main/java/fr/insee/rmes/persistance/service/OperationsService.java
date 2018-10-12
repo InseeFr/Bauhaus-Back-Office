@@ -13,10 +13,9 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface OperationsService {
 
-	/**
+	/******************************************************************************************
 	 * FAMILIES
-	 * @throws RmesException 
-	 */
+	 * *******************************************************************************************/
 
 	String getFamilies() throws RmesException;
 
@@ -26,10 +25,9 @@ public interface OperationsService {
 
 
 
-	/**
+	/******************************************************************************************
 	 * SERIES
-	 * @throws RmesException 
-	 */
+	 * *******************************************************************************************/
 
 	String getSeries() throws RmesException;
 
@@ -38,12 +36,10 @@ public interface OperationsService {
 	void setSeries(String id, String body) throws RmesException;
 
 
-	/**
+	/******************************************************************************************
 	 * OPERATIONS
-	 * @throws TransformerException 
-	 * @throws TransformerFactoryConfigurationError 
+	 * *******************************************************************************************/
 
-	 */
 
 	Response getVarBookExport(String id, String acceptHeader) throws ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException;
 
@@ -54,33 +50,48 @@ public interface OperationsService {
 	void setOperation(String id, String body) throws RmesException;
 	
 	
-	/**
+	/******************************************************************************************
 	 * INDICATORS
+	 * *******************************************************************************************/
 
-	 */
 
 	String getIndicators() throws RmesException;
 
 	String getIndicatorByID(String id) throws RmesException;
 
+	/**
+	 * UPDATE
+	 * @param id
+	 * @param body
+	 * @throws RmesException
+	 */
 	void setIndicator(String id, String body) throws RmesException;
 
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 * @throws RmesException
+	 */
 	String setIndicator(String body) throws RmesException;
 
 
 
-	/**
+	/******************************************************************************************
 	 * DOCUMENTATION
-	 * @throws RmesException 
-	 */
+	 * *******************************************************************************************/
+
+	
+	//MSD
 	String getMSD() throws RmesException;
 
 	String getMetadataAttribute(String id) throws RmesException;
 
+	String getMetadataAttributes() throws RmesException;
+	
+	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
-	String getMetadataAttributes() throws RmesException;
-
-
+	String setMetadataReport(String body, boolean isCreation) throws RmesException;
 
 }

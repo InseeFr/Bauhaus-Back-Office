@@ -24,10 +24,10 @@ import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
-import fr.insee.rmes.config.swagger.model.operations.documentation.Documentation;
 import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.OperationsService;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.Documentation;
 import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
@@ -234,6 +234,12 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	/**
+	 * UPDATE
+	 * @param id
+	 * @param body
+	 * @return
+	 */
 	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/indicator/{id}")
@@ -251,6 +257,11 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 	
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
 	@Secured({ Constants.SPRING_ADMIN })
 	@POST
 	@Path("/indicator")
@@ -333,6 +344,30 @@ public class OperationsResources {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/metadataReport")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
+	responses = { @ApiResponse(content = @Content(mediaType = "text/plain"))})
+	public Response setMetadataReport(@RequestBody(description = "Metadata report to create", required = true,
+            content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+		logger.info("POST Metadata report");
+		String id = null;
+		try {
+			id = operationsService.setMetadataReport(body, true);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+		}
+		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
 }

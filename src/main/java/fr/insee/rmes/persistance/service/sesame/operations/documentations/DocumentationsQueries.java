@@ -67,20 +67,62 @@ public class DocumentationsQueries {
 				+ "  ORDER BY ?mas";
 	}
 	
+	public static String getAttributesUriQuery() {
+		return "SELECT ?id ?uri \n" 
+				+ "  FROM <http://rdf.insee.fr/graphes/def/simsv2fr> \n" 
+				+ "  WHERE { \n" 
+				+ "    ?uri rdf:type sdmx-mm:MetadataAttributeProperty \n" 
+																				
+				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w.+$)', '$2' ) AS ?id) . \n"
+
+				+ "  } \n" 
+				+ "  ORDER BY ?id";
+	}
+	
+	
 	public static String getDocumentationTitleQuery(String idSims) {
-		return "SELECT ?labelLg1 ?labelLg2 \n"
+		return "SELECT ?labelLg1 ?labelLg2 ?idOperation \n"
 				+ "FROM <http://rdf.insee.fr/graphes/qualite/rapport/" + idSims +"> \n"
 				+ " WHERE { \n"
-				+ " ?report rdf:type sdmx-mm:MetadataReport ."
-				+ " ?report rdfs:label ?labelLg1 "
+				+ " ?report rdf:type sdmx-mm:MetadataReport . \n"
+				
+				+ "OPTIONAL{ ?report sdmx-mm:target ?operation . \n"
+				+ " BIND(STRAFTER(STR(?operation),'/operation/') AS ?idOperation) . }\n" 
+				
+				+ " ?report rdfs:label ?labelLg1 . "
 				+ "    FILTER(lang(?labelLg1) = '" + Config.LG1 + "') \n" 
-				+ " ?report rdfs:label ?labelLg2 "
+				+ " ?report rdfs:label ?labelLg2 . "
 				+ "    FILTER(lang(?labelLg2) = '" + Config.LG2 + "') \n" 
 				
 				+ "    FILTER(STRENDS(STR(?report), '"+idSims+"')) \n"
 				+ "}";
 		
 
+	}
+	/**
+	 * Get operation by documentation
+	 */
+	public static String getDocumentationOperationQuery(String idSims) {
+		return "SELECT ?idOperation \n"
+				+ "FROM <http://rdf.insee.fr/graphes/qualite/rapport/" + idSims +"> \n"
+				+ " WHERE { \n"
+				+ " ?report rdf:type sdmx-mm:MetadataReport . \n"
+				+ " ?report sdmx-mm:target ?operation . \n"
+				+ "BIND(STRAFTER(STR(?operation),'/operation/') AS ?idOperation) . \n" 
+				+ "}";
+	}
+	
+	/**
+	 * Get documentation by operation
+	 */
+	public static String getOperationDocumentationQuery(String idOperation) {
+		return "SELECT ?idSims \n"
+				+ " WHERE { \n"
+				+ " ?report rdf:type sdmx-mm:MetadataReport ."
+				+ " ?report sdmx-mm:target ?operation "
+				+ "    FILTER(STRENDS(STR(?operation), '"+idOperation+"')) \n"
+				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n" 
+				+ "}";
 	}
 	
 	public static String getDocumentationRubricsQuery(String idSims) {
@@ -129,6 +171,17 @@ public class DocumentationsQueries {
 			+"}";
 		
 	}
+	
+	public static String lastID() {
+		return "SELECT DISTINCT ?idSims \n" 
+				+ " WHERE {" 
+				+ "    GRAPH ?g {?report a sdmx-mm:MetadataReport } \n" 
+				+ "    BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ " }    \n"  
+				+ " GROUP BY ?g ?idSims \n"  
+				+ " ORDER BY DESC(?idSims)"
+				+ " LIMIT 1 ";
+	}	
 	
 	 private DocumentationsQueries() {
 		 throw new IllegalStateException("Utility class");

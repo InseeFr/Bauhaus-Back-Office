@@ -61,7 +61,14 @@ public class OperationsQueries {
 		+ "LIMIT 1";
 	}
 
-
+	public static String operationUriQuery(String id) {
+		return "SELECT ?uri \n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "?uri a insee:StatisticalOperation . \n" 
+				+ "FILTER(STRENDS(STR(?uri),'/operations/operation/" + id+ "')) . \n" 
+		+ "}} \n"
+		+ "LIMIT 1";
+	}
 
 
 }

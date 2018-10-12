@@ -39,18 +39,21 @@ public enum RangeType {
 	}
 	
 	
-	private static Map<URI, RangeType> lookupRdfType = new HashMap<URI, RangeType>();
+	private static Map<URI, RangeType> lookupRdfType = new HashMap<>();
+	private static Map<String, RangeType> lookupJsonType = new HashMap<>();
+
 
 	static {
 		// Populate out lookup when enum is created
 		for (RangeType e : RangeType.values()) {
 			lookupRdfType.put(e.getRdfType(), e);
+			lookupJsonType.put(e.getJsonType(), e);
 		}
 	}
 	
 	/**
-	 * Get Enum type by label
-	 * @param label
+	 * Get Enum type by RDF type
+	 * @param rdfType
 	 * @return
 	 */
 	public static RangeType getEnumByRdfType(URI rdfType) {
@@ -60,6 +63,14 @@ public enum RangeType {
 		return lookupRdfType.get(rdfType)!=null ? lookupRdfType.get(rdfType):UNDEFINED;
 	}
 	
+	/**
+	 * Get Enum type by Json Type
+	 * @param jsonType
+	 * @return
+	 */
+	public static RangeType getEnumByJsonType(String jsonType) {
+		return lookupJsonType.get(jsonType)!=null ? lookupJsonType.get(jsonType):UNDEFINED;
+	}
 	
 
 	
