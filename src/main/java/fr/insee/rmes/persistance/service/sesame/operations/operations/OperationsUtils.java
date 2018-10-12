@@ -52,9 +52,18 @@ public class OperationsUtils {
 		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 		
 	}
+	
+	public static URI getOperationUriById(String id) throws RmesException {
+		JSONObject operation = RepositoryGestion.getResponseAsObject(OperationsQueries.operationUriQuery(id));
+		if (operation == null || operation.length()==0) {
+			return null;
+		}
+		String uriStr = operation.get("uri").toString();
+		return SesameUtils.toURI(uriStr);
+	}
 
 
-	public void createRdfOperation(Operation operation) throws RmesException {
+	private void createRdfOperation(Operation operation) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/

@@ -124,7 +124,7 @@ public class IndicatorsUtils {
 		
 	}
 	
-	public void createRdfIndicator(Indicator indicator) throws RmesException {
+	private void createRdfIndicator(Indicator indicator) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI indicURI = SesameUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
@@ -153,21 +153,9 @@ public class IndicatorsUtils {
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		SesameUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.productsGraph());
 		
-		List<OperationsLink> seeAlsos = indicator.getSeeAlso();
-		if (seeAlsos != null) {
-			for (OperationsLink seeAlso : seeAlsos) {
-				String seeAlsoUri = ObjectType.getCompleteUriGestion(seeAlso.getType(), seeAlso.getId());
-				SesameUtils.addTripleUri(indicURI, RDFS.SEEALSO ,seeAlsoUri, model, SesameUtils.productsGraph());
-			}
-		}
-		
-		List<OperationsLink> replaces = indicator.getReplaces();
-		if (replaces != null) {
-			for (OperationsLink repl : replaces) {
-				String replUri = ObjectType.getCompleteUriGestion(repl.getType(), repl.getId());
-				SesameUtils.addTripleUri(indicURI, DCTERMS.REPLACES ,replUri, model, SesameUtils.productsGraph());
-			}
-		}
+		addOneWayLink(model, indicURI, indicator.getSeeAlso(), RDFS.SEEALSO);
+		addOneWayLink(model, indicURI,  indicator.getReplaces(), DCTERMS.REPLACES);
+		addOneWayLink(model, indicURI, indicator.getWasGeneratedBy(), PROV.WAS_GENERATED_BY);
 		
 		List<OperationsLink> isReplacedBys = indicator.getIsReplacedBy();
 		if (isReplacedBys != null) {
@@ -178,17 +166,19 @@ public class IndicatorsUtils {
 			}
 		}
 		
-		List<OperationsLink> wasGeneratedBys = indicator.getWasGeneratedBy();
-		if (wasGeneratedBys != null) {
-			for (OperationsLink wGb : wasGeneratedBys) {
-				String wGbUri = ObjectType.getCompleteUriGestion(wGb.getType(), wGb.getId());
-				SesameUtils.addTripleUri(indicURI, PROV.WAS_GENERATED_BY ,wGbUri, model, SesameUtils.productsGraph());
-			}
-		}
-		
 		RepositoryGestion.keepHierarchicalOperationLinks(indicURI,model);
 		
 		RepositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
+	}
+
+
+	private void addOneWayLink(Model model, URI indicURI, List<OperationsLink> links, URI linkPredicate) {
+		if (links != null) {
+			for (OperationsLink oneLink : links) {
+				String linkedObjectUri = ObjectType.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
+				SesameUtils.addTripleUri(indicURI, linkPredicate ,linkedObjectUri, model, SesameUtils.productsGraph());
+			}
+		}
 	}
 
 

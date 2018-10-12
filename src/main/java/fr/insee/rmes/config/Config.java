@@ -28,6 +28,9 @@ public class Config {
 	public static String OPERATIONS_BASE_URI = "";
 	public static String SERIES_BASE_URI = "";
 	public static String FAMILIES_BASE_URI = "";
+	public static String DOCUMENTATIONS_BASE_URI = "";
+	public static String DOCUMENTATIONS_BASE_GRAPH = "";
+
 	
 	public static String PRODUCTS_GRAPH = "";
 	public static String INDICATORS_BASE_URI = "";
@@ -91,6 +94,10 @@ public class Config {
 		Config.OPERATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.baseURI");
 		Config.SERIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.series.baseURI");
 		Config.FAMILIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.families.baseURI");
+		Config.DOCUMENTATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseURI");
+		Config.DOCUMENTATIONS_BASE_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseGraph");
+
+
 		
 		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");
 		Config.INDICATORS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.indicators.baseURI");

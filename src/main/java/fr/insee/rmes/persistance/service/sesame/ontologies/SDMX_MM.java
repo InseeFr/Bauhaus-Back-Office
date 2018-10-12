@@ -24,14 +24,17 @@ public class SDMX_MM {
 
 	/*  classes */
 
-	/**
-	 * The xsd:string class
-	 */
 	public static final URI REPORTED_ATTRIBUTE;
+	public static final URI METADATA_REPORT;
+	public static final URI TARGET;
+
+	
 	
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		REPORTED_ATTRIBUTE = f.createURI(NAMESPACE, "ReportedAttribute");
+		METADATA_REPORT = f.createURI(NAMESPACE,"MetadataReport");
+		TARGET = f.createURI(NAMESPACE,"target");
 	}
 }

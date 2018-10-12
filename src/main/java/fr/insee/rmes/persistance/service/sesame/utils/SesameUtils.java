@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -33,6 +34,10 @@ public class SesameUtils {
 	
 	public static Resource productsGraph(){
 		return factory.createURI(Config.PRODUCTS_GRAPH);
+	}
+	
+	public static Resource simsGraph(String id) {
+		return factory.createURI(Config.DOCUMENTATIONS_BASE_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
 	}
 	
 	public static Resource conceptScheme(){
@@ -157,6 +162,20 @@ public class SesameUtils {
 	public static void addTripleUri(URI objectURI, URI predicat, String value, Model model,Resource graph) {
 		if (value != null&& !value.isEmpty()) {
 			model.add(objectURI, predicat, toURI(value), graph);
+		}
+	}
+	
+	public static void addTripleBNode(URI objectURI, URI predicat, BNode value, Model model,Resource graph) {
+		if (value != null) {
+			model.add(objectURI, predicat, value, graph);
+		}
+	}
+	
+	public static void addTripleBNode(BNode bnode, URI predicat, String value,String lang, Model model,Resource graph) {
+		if (value != null) {
+			if (value != null && !value.isEmpty()) {
+				model.add(bnode, predicat, SesameUtils.setLiteralString(value, lang), graph);
+			}
 		}
 	}
 
