@@ -19,7 +19,7 @@ public class OperationsQueries {
 	}
 
 	public static String operationQuery(String id){
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
@@ -35,7 +35,12 @@ public class OperationsQueries {
 			+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "') } . \n" 
 
 
-		+ "}} \n"
+		+ "}"
+		+ " ?report rdf:type sdmx-mm:MetadataReport ."
+		+ " ?report sdmx-mm:target ?operation "
+		+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+		
+		+ "} \n"
 		+ "LIMIT 1";
 	}
 	
