@@ -9,6 +9,7 @@ import org.openrdf.model.vocabulary.SKOS;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.ORG;
+import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
@@ -17,6 +18,7 @@ public enum ObjectType {
 	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
 	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
+	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
 	UNDEFINED("undefined",null, "");
 	
@@ -27,8 +29,8 @@ public enum ObjectType {
 	private URI uri;
 	private String baseUri;
 
-	ObjectType(String label, URI uri, String baseUri){
-		this.labelType=label;
+	ObjectType(String labelType, URI uri, String baseUri){
+		this.labelType=labelType;
 		this.uri=uri;
 		this.baseUri=baseUri;
 	}
@@ -62,8 +64,8 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static ObjectType getEnum(String label) {
-		return lookupLabel.get(label)!=null ? lookupLabel.get(label): UNDEFINED;
+	public static ObjectType getEnum(String labelType) {
+		return lookupLabel.get(labelType)!=null ? lookupLabel.get(labelType): UNDEFINED;
 	}
 	
 	/**

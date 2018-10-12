@@ -203,5 +203,13 @@ public class OperationsImpl implements OperationsService {
 		return documentation.toString();
 	}
 
+	/**
+	 * CREATE
+	 */
+	@Override
+	public String setMetadataReport(String body, boolean isCreation) throws RmesException {
+		return documentationsUtils.setMetadataReport(body, isCreation);
+	}
+
 
 }

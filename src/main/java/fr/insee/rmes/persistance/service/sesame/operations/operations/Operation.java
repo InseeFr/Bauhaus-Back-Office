@@ -22,6 +22,8 @@ public class Operation {
 
 	@Schema(description = "Series")
 	public IdLabelTwoLangs series;
+	
+	public String idSims;
 
 
 	public Operation(String id) {
@@ -56,6 +58,11 @@ public class Operation {
 
 	public IdLabelTwoLangs getSeries() {
 		return series;
+	}
+
+
+	public String getIdSims() {
+		return idSims;
 	}
 
 
