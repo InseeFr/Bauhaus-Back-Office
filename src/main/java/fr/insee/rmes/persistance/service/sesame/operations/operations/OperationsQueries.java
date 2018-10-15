@@ -20,27 +20,27 @@ public class OperationsQueries {
 
 	public static String operationQuery(String id){
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
-				+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?operation),'/operation/') AS ?id) . \n" 
-
-		+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
-		+ "OPTIONAL {?operation skos:prefLabel ?prefLabelLg2 . \n"
-		+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n" 
-
-			+ "OPTIONAL {?operation skos:altLabel ?altLabelLg1 . \n"
-			+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } . \n" 
-			+ "OPTIONAL {?operation skos:altLabel ?altLabelLg2 . \n"
-			+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "') } . \n" 
-
-
-		+ "}"
-		+ " ?report rdf:type sdmx-mm:MetadataReport ."
-		+ " ?report sdmx-mm:target ?operation "
-		+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
-		
-		+ "} \n"
+				+ "WHERE { "
+					+ "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+					+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
+					+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
+					+ "BIND(STRAFTER(STR(?operation),'/operation/') AS ?id) . \n" 
+	
+					+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
+					+ "OPTIONAL {?operation skos:prefLabel ?prefLabelLg2 . \n"
+					+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n" 
+	
+					+ "OPTIONAL {?operation skos:altLabel ?altLabelLg1 . \n"
+					+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } . \n" 
+					+ "OPTIONAL {?operation skos:altLabel ?altLabelLg2 . \n"
+					+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "') } . \n" 
+					+ "}"
+					
+					+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
+					+ " ?report sdmx-mm:target ?operation "
+					+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+					+ "} \n"
+				+ "} \n"
 		+ "LIMIT 1";
 	}
 	
