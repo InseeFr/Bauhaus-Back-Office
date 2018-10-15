@@ -210,7 +210,7 @@ public class DocumentationsUtils {
 			}
 			switch (type) {
 				case DATE:
-					SesameUtils.addTripleString(simsUri,predicateUri, rubric.getValue(), model, graph);
+					SesameUtils.addTripleDateTime(simsUri,predicateUri, rubric.getValue(), model, graph);
 					break;
 				case CODELIST :
 					String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
