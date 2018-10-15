@@ -11,11 +11,11 @@ import io.swagger.v3.oas.annotations.servers.Server;
 @OpenAPIDefinition(
 		info = @Info(title="Bauhaus API", version="2.0.0", description="Rest Endpoints and services Integration used by Bauhaus"),
 		servers = {
-		        @Server(
-		                description = "API server",
-		                url = "http://localhost:6969/Bauhaus-Back-Office/api" // Config.SWAGGER_URL
-		               )
-		        }
+				@Server(
+						description = "API server",
+						url = "http://localhost:8080/api" // Config.SWAGGER_URL
+				)
+		}
 )
 public class SwaggerConfig extends OpenApiServlet  {
 	//TODO find a way to configure api definition via servlet and not with the above annotation
