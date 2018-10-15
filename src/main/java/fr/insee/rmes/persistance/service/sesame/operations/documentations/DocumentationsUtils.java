@@ -214,7 +214,9 @@ public class DocumentationsUtils {
 					break;
 				case CODELIST :
 					String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
-					SesameUtils.addTripleUri(simsUri,predicateUri , SesameUtils.toURI(codeUri), model, graph);
+					if (codeUri != null) { 
+						SesameUtils.addTripleUri(simsUri,predicateUri , SesameUtils.toURI(codeUri), model, graph);
+					}
 					break; 
 				case ATTRIBUTE :
 					BNode bnode = new BNodeImpl(rubric.getIdAttribute()); 
