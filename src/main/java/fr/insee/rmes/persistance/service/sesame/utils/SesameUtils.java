@@ -111,6 +111,10 @@ public class SesameUtils {
 		return factory.createLiteral(date, XMLSchema.DATETIME);
 	}
 	
+	public static Literal setLiteralDate(String date) {
+		return factory.createLiteral(date, XMLSchema.DATE);
+	}
+	
 	public static Literal setLiteralXML(String string) {
 		return factory.createLiteral(string.trim(), RDF.XMLLITERAL);
 	}
@@ -140,6 +144,11 @@ public class SesameUtils {
 	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, SesameUtils.setLiteralDateTime(value), graph);
+		}
+	}
+	public static void addTripleDate(URI objectURI, URI predicat, String value, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			model.add(objectURI, predicat, SesameUtils.setLiteralDate(value), graph);
 		}
 	}
 	public static void addTripleInt(URI objectURI, URI predicat, String value, Model model, Resource graph) {
