@@ -242,7 +242,7 @@ public class DocumentationsUtils {
 		if (json.length()==0) {return null;}
 		String id = json.getString("idSims");
 		if (id.equals("undefined")) {return null;}
-		int newId = Integer.parseInt(id.substring(1))+1;
+		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
 	}
 
