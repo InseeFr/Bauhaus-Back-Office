@@ -36,7 +36,7 @@ import fr.insee.rmes.persistance.user_roles_manager.rmes.JSONComparator;
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
-	final static Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
+	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
 

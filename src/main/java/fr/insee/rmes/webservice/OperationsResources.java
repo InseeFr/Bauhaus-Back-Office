@@ -1,5 +1,7 @@
 package fr.insee.rmes.webservice;
 
+import java.io.IOException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -12,6 +14,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
+import org.xml.sax.SAXException;
 
 import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
@@ -55,7 +61,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class OperationsResources {
 
-	final static Logger logger = LogManager.getLogger(OperationsResources.class);
+	private static final String TEXT_PLAIN = "text/plain";
+
+	static final Logger logger = LogManager.getLogger(OperationsResources.class);
 
 	@Autowired
 	OperationsService operationsService;
@@ -68,7 +76,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getFamilies() throws Exception {
+	public Response getFamilies() throws RmesException {
 		String jsonResultat = operationsService.getFamilies();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -79,7 +87,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 		responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 	)
-	public Response getFamilyByID(@PathParam("id") String id) throws Exception {
+	public Response getFamilyByID(@PathParam("id") String id) throws RmesException {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -96,7 +104,7 @@ public class OperationsResources {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -108,7 +116,7 @@ public class OperationsResources {
 	@Path("/series")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeries", summary = "List of series", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public Response getSeries() throws Exception {
+	public Response getSeries() throws RmesException {
 		String jsonResultat = operationsService.getSeries();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -122,7 +130,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getSeriesByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -139,7 +147,7 @@ public class OperationsResources {
 		try {
 			operationsService.setSeries(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -152,7 +160,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public Response getOperations() throws Exception {
+	public Response getOperations() throws RmesException {
 		String jsonResultat = operationsService.getOperations();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
@@ -168,7 +176,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getOperationByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -179,13 +187,8 @@ public class OperationsResources {
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
 	public Response getVarBookExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader)
-			throws Exception {
-		try {
+			throws RmesException, ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException {
 			return operationsService.getVarBookExport(id, acceptHeader);
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
 	}
 	
 	@Secured({ Constants.SPRING_ADMIN })
@@ -200,7 +203,7 @@ public class OperationsResources {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -229,7 +232,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getIndicatorByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -252,7 +255,7 @@ public class OperationsResources {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -267,7 +270,7 @@ public class OperationsResources {
 	@Path("/indicator")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
-	responses = { @ApiResponse(content = @Content(mediaType = "text/plain"))})
+	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
 	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
@@ -275,7 +278,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.setIndicator(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
@@ -294,7 +297,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMSD();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -309,7 +312,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttribute(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -324,7 +327,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttributes();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -341,7 +344,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -356,7 +359,7 @@ public class OperationsResources {
 	@Path("/metadataReport")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
-	responses = { @ApiResponse(content = @Content(mediaType = "text/plain"))})
+	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
 	public Response setMetadataReport(@RequestBody(description = "Metadata report to create", required = true,
             content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		logger.info("POST Metadata report");
@@ -364,7 +367,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.setMetadataReport(body, true);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();

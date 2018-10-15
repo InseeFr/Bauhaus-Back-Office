@@ -40,11 +40,11 @@ public interface ConceptsService {
 
 	public void setConcept(String id, String body) throws RmesException;
 	
-	public void setConceptsValidation(String body) throws RmesUnauthorizedException, RmesException ;
+	public void setConceptsValidation(String body) throws  RmesException ;
 	
 	public Response getConceptExport(String id, String acceptHeader);
 	
-	public boolean setConceptSend(String id, String body) throws RmesUnauthorizedException, RmesException ;
+	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	
 	public void setCollection(String body) throws RmesException;
 	

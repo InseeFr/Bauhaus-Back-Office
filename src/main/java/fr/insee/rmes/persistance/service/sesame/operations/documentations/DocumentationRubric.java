@@ -4,12 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class DocumentationRubric {
 
-	public String idAttribute;
-	public String value;
-	public String labelLg1;
-	public String labelLg2;
-	public String codeList;
-	public String rangeType;
+	private String idAttribute;
+	private String value;
+	private String labelLg1;
+	private String labelLg2;
+	private String codeList;
+	private String rangeType;
 	
 	
 	public String getIdAttribute() {

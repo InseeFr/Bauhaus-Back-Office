@@ -51,7 +51,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 		
-	public boolean sendMailConcept(String id, String body) throws RmesUnauthorizedException, RmesException  {
+	public boolean sendMailConcept(String id, String body) throws  RmesException  {
 		URI conceptURI = SesameUtils.conceptIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI))
 			throw new RmesUnauthorizedException();
@@ -61,7 +61,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		return sendMail(mail, is, json);
 	}
 	
-	public boolean sendMailCollection(String id, String body) throws RmesUnauthorizedException, RmesException  {
+	public boolean sendMailCollection(String id, String body) throws  RmesException  {
 		URI collectionURI = SesameUtils.collectionIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
 			throw new RmesUnauthorizedException();
