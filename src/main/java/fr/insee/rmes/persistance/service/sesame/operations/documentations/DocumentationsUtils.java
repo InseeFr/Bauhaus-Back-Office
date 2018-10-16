@@ -43,6 +43,7 @@ public class DocumentationsUtils {
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
 		JSONObject mas = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
+		if (mas.length()==0) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
 		transformRangeType(mas);
 		mas.put(ID, id);
 		return mas;
@@ -50,6 +51,7 @@ public class DocumentationsUtils {
 	
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException{
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
+		if (doc.length()==0) {throw new RmesException(HttpStatus.SC_NOT_FOUND, "Not found", "");}
 		doc.put(ID, idSims);
 		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		doc.put("rubrics", docRubrics);
@@ -58,6 +60,7 @@ public class DocumentationsUtils {
 	
 
 	public void transformRangeType(JSONObject mas) throws RmesException {
+		if (!mas.has("range")) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", "");}
 		String rangeUri = mas.getString("range");
 		RangeType type = RangeType.getEnumByRdfType(SesameUtils.toURI(rangeUri));
 		mas.put("rangeType", type.getJsonType());
@@ -219,10 +222,12 @@ public class DocumentationsUtils {
 					}
 					break; 
 				case ATTRIBUTE :
-					BNode bnode = new BNodeImpl(rubric.getIdAttribute()); 
-					SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
-					SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
-					SesameUtils.addTripleBNode(simsUri,predicateUri, bnode, model, graph);					
+					if (StringUtils.isNotEmpty(rubric.getLabelLg1()) || StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+						BNode bnode = new BNodeImpl(rubric.getIdAttribute()); 
+						SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
+						SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
+						SesameUtils.addTripleBNode(simsUri,predicateUri, bnode, model, graph);					
+					}
 					break; 
 				case ORGANIZATION :
 					break; 
