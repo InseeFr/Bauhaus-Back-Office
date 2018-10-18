@@ -365,12 +365,35 @@ public class OperationsResources {
 		logger.info("POST Metadata report");
 		String id = null;
 		try {
-			id = operationsService.setMetadataReport(body, true);
+			id = operationsService.createMetadataReport(body);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	/**
+	 * UPDATE
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@PUT
+	@Path("/metadataReport/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
+	public Response setMetadataReportById(
+			@QueryParam("id") String id, 
+			@RequestBody(description = "Report to update", required = true,
+            content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+		try {
+			operationsService.setMetadataReport(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(Status.NO_CONTENT).build();
 	}
 
 }
