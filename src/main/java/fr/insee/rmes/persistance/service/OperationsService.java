@@ -92,6 +92,8 @@ public interface OperationsService {
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
-	String setMetadataReport(String body, boolean isCreation) throws RmesException;
+	String createMetadataReport(String body) throws RmesException;
+
+	String setMetadataReport(String id, String body) throws RmesException;
 
 }
