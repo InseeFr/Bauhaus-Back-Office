@@ -63,7 +63,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class ConceptsResources   {
 	
-	final static Logger logger = LogManager.getLogger(ConceptsResources.class);
+	private static final String TEXT_PLAIN = "text/plain";
+
+	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
 	
 	@Autowired
 	ConceptsService conceptsService;
@@ -77,7 +79,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConcepts();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -92,7 +94,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptsSearch();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -107,7 +109,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -122,7 +124,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptsToValidate();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -137,7 +139,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptLinksByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -152,7 +154,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -167,7 +169,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollections();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -182,7 +184,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionsDashboard();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -197,7 +199,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionsToValidate();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -212,7 +214,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -227,7 +229,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionMembersByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -242,7 +244,7 @@ public class ConceptsResources   {
 		try {
 			id = conceptsService.setConcept(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -258,7 +260,7 @@ public class ConceptsResources   {
 		try {
 			conceptsService.setConcept(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		logger.info("Update concept : " + id);
 		return Response.status(Status.NO_CONTENT).build();
@@ -270,11 +272,11 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public Response setConceptsValidation(
-			@RequestBody(description = "Concept id array to validate", required = true) String body) throws Exception {
+			@RequestBody(description = "Concept id array to validate", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return Response.status(Status.NO_CONTENT).build();
-		} catch (Exception e) {
+		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
@@ -297,12 +299,12 @@ public class ConceptsResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setConceptSend(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
-			@RequestBody(description = "Mail informations", required = true) String body) throws Exception {
+			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : " + id);
 			return Response.status(Status.OK).entity(isSent).build();
-		} catch (Exception e) {
+		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
@@ -317,7 +319,7 @@ public class ConceptsResources   {
 		try {
 			conceptsService.setCollection(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -329,12 +331,12 @@ public class ConceptsResources   {
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public Response setCollection(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
-			@RequestBody(description = "Collection", required = true) String body) throws Exception {
+			@RequestBody(description = "Collection", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollection(id, body);
 			logger.info("Update collection : " + id);
 			return Response.status(Status.NO_CONTENT).build();
-		} catch (Exception e) {
+		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
@@ -346,12 +348,12 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public Response setCollectionsValidation(
-			@RequestBody(description = "Collection id array to validate", required = true) String body) throws Exception {
+			@RequestBody(description = "Collection id array to validate", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollectionsValidation(body);
 			logger.info("Validated concepts : " + body);
 			return Response.status(Status.NO_CONTENT).build();
-		} catch (Exception e) {
+		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
@@ -374,12 +376,12 @@ public class ConceptsResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setCollectionSend(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
-			@RequestBody(description = "Mail informations", required = true) String body) throws Exception {
+			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
 			logger.info("Send concept : " + id);
 			return Response.status(Status.OK).entity(isSent).build();
-		} catch (Exception e) {
+		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}

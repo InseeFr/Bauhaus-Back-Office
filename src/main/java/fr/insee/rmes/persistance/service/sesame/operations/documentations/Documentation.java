@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Documentation {
 
-	public String id;
-	public String idOperation;
-	public String labelLg1;
-	public String labelLg2;
-	public List<DocumentationRubric> rubrics;
+	private String id;
+	private String idOperation;
+	private String labelLg1;
+	private String labelLg2;
+	private List<DocumentationRubric> rubrics;
 	
 	
 	public String getId() {

@@ -43,6 +43,7 @@ public class DocumentationsUtils {
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
 		JSONObject mas = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
+		if (mas.length()==0) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
 		transformRangeType(mas);
 		mas.put(ID, id);
 		return mas;
@@ -50,6 +51,7 @@ public class DocumentationsUtils {
 	
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException{
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
+		if (doc.length()==0) {throw new RmesException(HttpStatus.SC_NOT_FOUND, "Not found", "");}
 		doc.put(ID, idSims);
 		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		doc.put("rubrics", docRubrics);
@@ -58,6 +60,7 @@ public class DocumentationsUtils {
 	
 
 	public void transformRangeType(JSONObject mas) throws RmesException {
+		if (!mas.has("range")) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", "");}
 		String rangeUri = mas.getString("range");
 		RangeType type = RangeType.getEnumByRdfType(SesameUtils.toURI(rangeUri));
 		mas.put("rangeType", type.getJsonType());
@@ -110,7 +113,7 @@ public class DocumentationsUtils {
 	 * @return
 	 * @throws RmesException 
 	 */
-	public String setMetadataReport(String body, boolean create) throws RmesException {
+	public String setMetadataReport(String id, String body, boolean create) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Documentation sims = new Documentation();
@@ -124,6 +127,7 @@ public class DocumentationsUtils {
 		if (create) {
 			sims.setId(prepareCreation(sims.getIdOperation()));
 		}else {
+			checkIdSims(id, sims.getId());
 			checkIdOperation(sims.getIdOperation(), sims.getId());
 		}
 		URI operation = getOperation(sims.getIdOperation());
@@ -146,12 +150,20 @@ public class DocumentationsUtils {
 		return operation;
 	}
 	
+	private void checkIdSims(String idRequest, String idSims) throws RmesException {
+		if (idRequest==null || idSims == null || !idRequest.equals(idSims)) {
+			logger.error("Can't update a documentation if idSims or id don't exist");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request", "idSims in param : "+idRequest+" /id in body : "+idSims)	;	
+		}
+	}
+
+	
 	private void checkIdOperation(String idOperation, String idSims) throws RmesException {
 		if (idOperation==null || idSims == null) {
 			logger.error("Can't update a documentation if idOperation or id don't exist");
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation can't be null", "idOperation or id is null")	;	
 		}
-		JSONObject existingIdOperation = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationOperationQuery(idSims));
+		JSONObject existingIdOperation =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationOperationQuery(idSims));
 		if (existingIdOperation == null || existingIdOperation.get("idOperation")==null) {
 			logger.error("Can't find operation linked to the documentation");
 			throw new RmesException(HttpStatus.SC_NOT_FOUND, "Operation not found", "Maybe this is a creation")	;	
@@ -219,10 +231,12 @@ public class DocumentationsUtils {
 					}
 					break; 
 				case ATTRIBUTE :
-					BNode bnode = new BNodeImpl(rubric.getIdAttribute()); 
-					SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
-					SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
-					SesameUtils.addTripleBNode(simsUri,predicateUri, bnode, model, graph);					
+					if (StringUtils.isNotEmpty(rubric.getLabelLg1()) || StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+						BNode bnode = new BNodeImpl(rubric.getIdAttribute()); 
+						SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
+						SesameUtils.addTripleBNode(bnode,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
+						SesameUtils.addTripleBNode(simsUri,predicateUri, bnode, model, graph);					
+					}
 					break; 
 				case ORGANIZATION :
 					break; 
