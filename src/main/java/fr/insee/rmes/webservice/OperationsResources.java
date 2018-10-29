@@ -385,7 +385,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
 	public Response setMetadataReportById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Report to update", required = true,
             content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		try {
