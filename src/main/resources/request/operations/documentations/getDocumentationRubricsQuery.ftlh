@@ -18,9 +18,9 @@ WHERE {
 			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			 ?report ?attr ?node . 
 			 ?node rdf:value ?labelLg1 .
-			 FILTER(lang(?labelLg1) = '" + Config.LG1 + "') 
+			 FILTER(lang(?labelLg1) = '${LG1}') 
 			 OPTIONAL{?node rdf:value ?labelLg2 .
-			 FILTER(lang(?labelLg2) = '" + Config.LG2 + "') } 
+			 FILTER(lang(?labelLg2) = '${LG2}') } 
 			 BIND('${ATTRIBUTE.jsonType}' AS ?rangeType) . 
 		} 
 			
