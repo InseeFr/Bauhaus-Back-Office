@@ -141,7 +141,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
 	public Response setSeriesById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Series to update", required = true,
             content = @Content(schema = @Schema(implementation = Series.class)))String body) {
 		try {
@@ -197,7 +197,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public Response setOperationById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Operation to update", required = true,
             content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
@@ -249,7 +249,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
 	public Response setIndicatorById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Indicator to update", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		try {
