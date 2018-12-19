@@ -286,27 +286,6 @@
 			<version>20160810</version>
 		</dependency>
 
-	<!-- INCLUDE IN 	<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.glassfish.jersey.core</groupId>
-			<artifactId>jersey-client</artifactId>
-			<version>${jersey.version}</version>
-		</dependency> -->
 
 		<!-- INSEE for JMS -->
 		<dependency>
@@ -362,7 +341,33 @@
  			 <artifactId>freemarker</artifactId>
 			 <version>2.3.28</version><!-- change in FreemarkerConfig too -->
 		</dependency>
-
+		
+		<dependency>
+ 			 <groupId>fr.opensagres.xdocreport</groupId>
+ 			 <artifactId>fr.opensagres.xdocreport.document.odt</artifactId>
+ 			 <version>2.0.1</version>
+		</dependency>
+		<dependency>
+ 			 <groupId>fr.opensagres.xdocreport</groupId>
+ 			 <artifactId>fr.opensagres.xdocreport.template.freemarker</artifactId>
+ 			  <version>2.0.1</version>
+		</dependency>	
+		<dependency>
+		  <groupId>fr.opensagres.xdocreport</groupId>
+		  <artifactId>fr.opensagres.xdocreport.converter.odt.odfdom</artifactId>
+		  <version>2.0.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>xerces</groupId>
+		    <artifactId>xercesImpl</artifactId>
+		    <version>2.12.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.itextpdf</groupId>
+		    <artifactId>itextpdf</artifactId>
+		    <version>5.5.13</version>
+		</dependency>
+				
 		<!-- https://mvnrepository.com/artifact/jdom/jdom -->
 		<dependency>
 			<groupId>jdom</groupId>

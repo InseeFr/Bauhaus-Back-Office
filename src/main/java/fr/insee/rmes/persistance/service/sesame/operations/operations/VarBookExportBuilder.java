@@ -1,8 +1,11 @@
 package fr.insee.rmes.persistance.service.sesame.operations.operations;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.charset.Charset;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -13,22 +16,20 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
@@ -40,25 +41,90 @@ public class VarBookExportBuilder {
 	RestTemplate restTemplate;
 
 
-	public String getData(String id) throws TransformerFactoryConfigurationError, TransformerException, ParserConfigurationException, SAXException, IOException {
-		String xml = getDataForVarBook(id);
-		Document xmlDocForJasper = addSortedVariableList(xml);
-		return XMLUtils.toString(xmlDocForJasper);
+	public String getData(String xml) throws RmesException {
+		Document xmlReadyToExport = transformXml(xml);	
+		try {
+			return XMLUtils.toString(xmlReadyToExport);
+		} catch (TransformerFactoryConfigurationError | TransformerException e) {
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, e.getMessage(), "IOException - Can't convert xml to text");
+		}
 	}
 
-	/**
-	 * Call DDI Access Service
-	 * @param operationId
-	 * @return
-	 * @throws Exception
-	 */
-	private String getDataForVarBook(String operationId)  {
-		String url = String.format("%s/api/meta-data/operation/%s/variableBook", Config.BASE_URI_METADATA_API,
-				operationId);
-		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-		ResponseEntity<String> seriesRes = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
-		logger.info("GET data for variable book");
-		return seriesRes.getBody();
+
+	private Document transformXml(String xml) throws RmesException {
+		// transform inputXml into Document
+		Document xmlInput = getDocument(xml);
+		xmlInput = dereferenceAll(xmlInput);
+		return addSortedVariableList(xmlInput);
+	}
+
+	private Document dereferenceAll(Document xmlInput) throws RmesException {
+		// initialize document with DDIInstance + new root for variables
+		NodeList alls = xmlInput.getElementsByTagName("StudyUnit");
+		Node root = alls.item(0);
+		Document xmlOutput = null;
+		try {
+			xmlOutput = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "ParserConfigurationException");
+		}
+
+	     Node copiedRoot = xmlOutput.importNode(root, true);
+	     xmlOutput.appendChild(copiedRoot);
+		
+		Map<String, Node> targets = listReferenceTargets(xmlInput);	      
+		renameAndDereference(xmlOutput.getDocumentElement(), targets);//xmlOutput.getDocumentElement()
+				
+		return xmlOutput;
+	}
+
+
+	private Map<String, Node> listReferenceTargets(Document xmlInput) {
+		Map<String, Node> references = new HashMap<>();//TODO remove unused
+		Map<String, Node> targets = new HashMap<>();
+		NodeList ids = xmlInput.getElementsByTagName("r:ID");
+	    for (int i = 0; i < ids.getLength(); i++) {
+	    	Node idNode = ids.item(i);
+	    	Node parentNode = idNode.getParentNode();
+	    	if (parentNode.getNodeName().endsWith("Reference")) {
+	    		references.put(idNode.getTextContent(), parentNode);
+	    	}else {
+	    		targets.put(idNode.getTextContent(), parentNode);
+	    	}
+	    }
+		return targets;
+	}
+	
+	private static void renameAndDereference(Node node, Map<String, Node> targets) {
+	    // Remove namespace and keep only lang attr
+		Document document = node.getOwnerDocument();
+		if (node.getNodeName().contains(":")) {
+			document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
+		}
+		int nbAtt = 0;
+		while (node.getAttributes().getLength() > nbAtt) {
+		    Node att = node.getAttributes().item(nbAtt);
+		    if(att.getNodeName().contains("lang")||att.getNodeName().contains("Length")||att.getNodeName().contains("regExp")||att.getNodeName().contains("blank")||att.getNodeName().contains("scale")) {
+		    	document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
+		    	nbAtt++;
+		    }else {
+		    	node.getAttributes().removeNamedItem(att.getNodeName());
+		    }
+		}
+		
+		//Dereference
+	    NodeList nodeList = node.getChildNodes();
+    	for (int i = 0; i < nodeList.getLength(); i++) {
+   	        Node childNode = nodeList.item(i);
+   	        if (node.getNodeName().endsWith("Reference")  && childNode.getNodeName().endsWith("ID")) {
+   	        	Node targetNode = document.importNode(targets.get(childNode.getTextContent()),true);
+   	        	node.getParentNode().replaceChild(targetNode,node);
+   	        	renameAndDereference(targetNode,  targets);
+   	        } else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
+ 	            //calls this method for all the children which is Element
+ 	            renameAndDereference(childNode,targets);
+   	        }   	
+   	    }
 	}
 
 
@@ -70,26 +136,15 @@ public class VarBookExportBuilder {
 	 * 
 	 * @param xml
 	 * @return
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
+	 * @throws RmesException 
 	 */
-	private static Document addSortedVariableList(String xml)
-			throws ParserConfigurationException, SAXException, IOException {
-
-		// transform inputXml into Document
-		InputSource inputXml = new InputSource(new StringReader(xml));
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setValidating(false);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document xmlInitial = db.parse(inputXml);
-
+	private static Document addSortedVariableList(Document xmlInput) throws RmesException {
 		// initialize document with DDIInstance + new root for variables
-		Document xmlListVar = xmlInitial;
-		Element rootElem = xmlListVar.createElement("rootListVar");
+		Document xmlOutput = xmlInput;
+		Element rootElem = xmlOutput.createElement("rootListVar");
 
 		// copy all variables
-		NodeList list = xmlInitial.getElementsByTagName("RepresentedVariable");
+		NodeList list = xmlInput.getElementsByTagName("RepresentedVariable");
 		Map<String, Node> sortedList = new TreeMap<>();
 
 		for (int i = 0; i < list.getLength(); i++) {
@@ -98,17 +153,35 @@ public class VarBookExportBuilder {
 		}
 
 		for (Entry<String, Node> entry : sortedList.entrySet()) {
-			Node importNode = xmlListVar.importNode(entry.getValue(), true);
+			Node importNode = xmlOutput.importNode(entry.getValue(), true);
 			rootElem.appendChild(importNode);
 		}
 
-		xmlListVar.getDocumentElement().appendChild(rootElem);
-		return xmlListVar;
+		xmlOutput.getDocumentElement().appendChild(rootElem);
+		return xmlOutput;
+	}
+
+
+	private static Document getDocument(String xml) throws RmesException {
+		//InputSource inputXml = new InputSource(new StringReader(xml));
+		final InputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		//dbf.setValidating(false);
+		DocumentBuilder db;
+		Document xmlInitial = null;
+		try {
+			db = dbf.newDocumentBuilder();
+			xmlInitial = db.parse(stream);
+			stream.close();
+		} catch (ParserConfigurationException | SAXException | IOException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass() + " Can't parse xml");
+		}
+		return xmlInitial;
 	}
 
 	private static String getVariableName(Node variableNode) {
 		Node nameNode = XMLUtils.getChild(variableNode, "RepresentedVariableName");
-		Node nameNodeString = XMLUtils.getChild(nameNode, "r:String");
-		return nameNodeString.getFirstChild().getNodeValue();
+		Node nameNodeString = XMLUtils.getChild(nameNode, "String");
+		return nameNodeString.getFirstChild().getTextContent();
 	}
 }
