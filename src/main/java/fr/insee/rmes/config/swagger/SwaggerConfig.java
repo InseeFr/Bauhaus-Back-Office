@@ -34,7 +34,9 @@ public class SwaggerConfig extends ResourceConfig   {
 
 		Server server = new Server();
 		logger.info("______________________________________________________________________");
-		logger.info("____________________"+Config.SWAGGER_URL+"_________________________________________________");
+		logger.info("____________________SWAGGER HOST : "+Config.SWAGGER_HOST+"_________________________________________________");
+		logger.info("____________________SWAGGER BASEPATH : "+Config.SWAGGER_BASEPATH+"_________________________________________________");
+		logger.info("____________________SWAGGER CONFIG : "+Config.SWAGGER_URL+"_________________________________________________");
 		logger.info("______________________________________________________________________");
 		server.url(Config.SWAGGER_URL);
 		openApi.addServersItem(server);

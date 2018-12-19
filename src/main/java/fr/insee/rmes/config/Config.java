@@ -130,6 +130,6 @@ public class Config {
 
 		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");
 		Config.SWAGGER_BASEPATH = env.getProperty("fr.insee.rmes.bauhaus.api.basepath");
-		Config.SWAGGER_URL=Config.REQUIRES_SSL ? "https" : "http" + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
+		Config.SWAGGER_URL=(Config.REQUIRES_SSL ? "https" : "http") + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
 	}
 }
