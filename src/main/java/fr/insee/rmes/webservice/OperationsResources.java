@@ -208,6 +208,7 @@ public class OperationsResources {
 	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 1"))
 	@FormDataParam("file") InputStream isDDI,
+	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
 		String ddi = IOUtils.toString(isDDI, "utf-8"); ;
 		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
