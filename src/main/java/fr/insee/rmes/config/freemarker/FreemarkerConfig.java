@@ -34,6 +34,7 @@ public class FreemarkerConfig {
 			FileTemplateLoader ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
 
 			MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
+			logger.info("Init freemarker templateloader "+ FreemarkerConfig.class.getClassLoader().getResource("request")+", "+ FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
 			cfg.setTemplateLoader(mtl);
 
 		} catch (IOException e) {
