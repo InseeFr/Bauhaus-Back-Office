@@ -415,6 +415,7 @@
       </method>
     </configuration>
     <configuration name="run bauhaus" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 8.5.32" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="$USER_HOME$/.jabba/jdk/zulu@1.8.162/Contents/Home">
+      <option name="OPEN_IN_BROWSER_URL" value="http://localhost:8080/swagger-ui/#/" />
       <option name="COMMON_VM_ARGUMENTS" value="-Dfile.encoding=utf-8" />
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
@@ -535,7 +536,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="57354000" />
+    <option name="totallyTimeSpent" value="57747000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="809" extended-state="0" />
