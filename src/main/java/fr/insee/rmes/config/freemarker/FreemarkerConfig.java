@@ -30,10 +30,18 @@ public class FreemarkerConfig {
 		// Specify the source where the template files come from. Here I set a
 		// plain directory for it, but non-file-system sources are possible too:
 		try {
+			MultiTemplateLoader mtl = null;
+			
 			FileTemplateLoader ftl1 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
-			FileTemplateLoader ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
-
-			MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
+			FileTemplateLoader ftl2 = null;
+			try {
+				ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
+			} catch (NullPointerException e) {
+				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl1 });
+			}
+			if (mtl == null) {
+				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
+			}
 			logger.info("Init freemarker templateloader "+ FreemarkerConfig.class.getClassLoader().getResource("request")+", "+ FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
 			cfg.setTemplateLoader(mtl);
 
