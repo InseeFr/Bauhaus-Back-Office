@@ -47,8 +47,8 @@ public class Indicator {
 	@Schema(description = "Identifier of creator")
 	public String creator;
 
-	@Schema(description = "Identifier of stake holder")
-	public List<OperationsLink> stakeHolder;
+	@Schema(description = "Identifier of contributor")
+	public List<OperationsLink> contributors;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -132,8 +132,8 @@ public class Indicator {
 	}
 
 
-	public List<OperationsLink> getStakeHolder() {
-		return stakeHolder;
+	public List<OperationsLink> getContributor() {
+		return contributors;
 	}
 
 

@@ -58,14 +58,14 @@ public class Series {
 	@Schema(description = "Identifier of creator")
 	public String creator;
 
-	@Schema(description = "Identifiers of stake holder")
-	public List<OperationsLink> stakeHolder;
+	@Schema(description = "Identifiers of contributors")
+	public List<OperationsLink> contributor;
 
 	@Schema(description = "Identifiers of data collector")
 	public List<OperationsLink> dataCollector;
 
-	@Schema(description = "Identifier of contributor")
-	public String contributor;
+	@Schema(description = "Identifier of gestionnaire")
+	public String gestionnaire;
 	
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -152,16 +152,16 @@ public class Series {
 		return creator;
 	}
 
-	public List<OperationsLink> getStakeHolder() {
-		return stakeHolder;
+	public List<OperationsLink> getContributor() {
+		return contributor;
 	}
 
 	public List<OperationsLink> getDataCollector() {
 		return dataCollector;
 	}
 
-	public String getContributor() {
-		return contributor;
+	public String getGestionnaire() {
+		return gestionnaire;
 	}
 
 	public List<OperationsLink> getSeeAlso() {

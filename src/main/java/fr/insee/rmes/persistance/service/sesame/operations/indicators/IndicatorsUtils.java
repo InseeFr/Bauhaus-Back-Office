@@ -57,7 +57,7 @@ public class IndicatorsUtils {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
-		addOneOrganizationLink(idIndic,indicator, INSEE.STAKEHOLDER);
+		addOneOrganizationLink(idIndic,indicator, DCTERMS.CONTRIBUTOR);
 	}
 	
 	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) throws RmesException {
@@ -143,10 +143,10 @@ public class IndicatorsUtils {
 		SesameUtils.addTripleString(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.productsGraph());
 
 		SesameUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, SesameUtils.productsGraph());
-		List<OperationsLink> stakeHolders = indicator.getStakeHolder();
-		if (stakeHolders != null){
-			for (OperationsLink stakeHolder : stakeHolders) {
-				SesameUtils.addTripleUri(indicURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder.getId()),model, SesameUtils.productsGraph());
+		List<OperationsLink> contributors = indicator.getContributor();
+		if (contributors != null){//partenaires
+			for (OperationsLink contributor : contributors) {
+				SesameUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.productsGraph());
 			}
 		}
 		

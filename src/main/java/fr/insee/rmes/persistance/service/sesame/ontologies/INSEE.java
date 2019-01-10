@@ -31,8 +31,8 @@ public class INSEE {
 	public static final URI SERIES;
 	public static final URI INDICATOR;
 	
-	public static final URI STAKEHOLDER;
 	public static final URI DATA_COLLECTOR;
+	public static final URI GESTIONNAIRE;
 	
 	
 	/*TEST REACT*/
@@ -59,8 +59,8 @@ public class INSEE {
 		SERIES = f.createURI(NAMESPACE,"StatisticalOperationSeries");
 		INDICATOR = f.createURI(NAMESPACE,"StatisticalIndicator");
 
-		STAKEHOLDER = f.createURI(NAMESPACE,"stakeHolder");
 		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");
+		GESTIONNAIRE = f.createURI(NAMESPACE,"gestionnaire");
 	}
 	
 
