@@ -1,40 +1,44 @@
 package fr.insee.rmes.config.swagger;
 
+import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.ServletConfig;
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Context;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.server.ResourceConfig;
+
 import fr.insee.rmes.config.Config;
-import io.swagger.v3.jaxrs2.integration.OpenApiServlet;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.servers.Server;
 
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
 
-@SuppressWarnings("serial")
-@OpenAPIDefinition(
-		info = @Info(title="Bauhaus API", version="2.0.0", description="Rest Endpoints and services Integration used by Bauhaus"),
-		servers = {
-				@Server(
-						description = "API server",
-						url = "http://localhost:8080/api" // Config.SWAGGER_URL
-				)
-		}
-)
-public class SwaggerConfig extends OpenApiServlet  {
-	//TODO find a way to configure api definition via servlet and not with the above annotation
-	
-	
-	/*private final static Logger logger = LogManager.getLogger(SwaggerConfig.class);
+@ApplicationPath("/")
+public class SwaggerConfig extends ResourceConfig   {
 
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
+	private final static Logger logger = LogManager.getLogger(SwaggerConfig.class);
+
+	public SwaggerConfig(@Context ServletConfig servletConfig) throws IOException {
+		super();
 		OpenAPI openApi = new OpenAPI();
 
-		Info info = new Info();
-		info.setTitle("Bauhaus API");
-		info.setVersion("2.0.0");
-		info.setDescription("Rest Endpoints and services Integration used by Bauhaus");
+		Info info = new Info().title("Bauhaus API").version("2.0.0").description("Rest Endpoints and services Integration used by Bauhaus");
 		openApi.info(info);
 
 		Server server = new Server();
+		logger.info("______________________________________________________________________");
+		logger.info("____________________SWAGGER HOST : "+Config.SWAGGER_HOST+"_________________________________________________");
+		logger.info("____________________SWAGGER BASEPATH : "+Config.SWAGGER_BASEPATH+"_________________________________________________");
+		logger.info("____________________SWAGGER CONFIG : "+Config.SWAGGER_URL+"_________________________________________________");
+		logger.info("______________________________________________________________________");
 		server.url(Config.SWAGGER_URL);
 		openApi.addServersItem(server);
 
@@ -43,15 +47,12 @@ public class SwaggerConfig extends OpenApiServlet  {
 				.prettyPrint(true);
 
 		logger.debug("SWAGGER : " + oasConfig.toString());
-		try {
-			new JaxrsOpenApiContextBuilder<>().servletConfig(config).openApiConfiguration(oasConfig).buildContext(true);
-		} catch (OpenApiConfigurationException e) {
-			throw new ServletException(e.getMessage(), e);
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error(e.getMessage());
-		}
 		
-	}*/
+		OpenApiResource openApiResource = new OpenApiResource();
+ 		openApiResource.setOpenApiConfiguration(oasConfig);
+		register(openApiResource);
+		register(MultiPartFeature.class);
+		
+	}
 
 }

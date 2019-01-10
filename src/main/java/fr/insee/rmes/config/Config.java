@@ -62,7 +62,7 @@ public class Config {
 
 	public static String SWAGGER_HOST = "";
 	public static String SWAGGER_BASEPATH = "";
-	public static final String SWAGGER_URL = Config.REQUIRES_SSL ? "https" : "http" + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
+	public static String SWAGGER_URL = "";
 
 	private Config() {
 		throw new IllegalStateException("Utility class");
@@ -130,5 +130,6 @@ public class Config {
 
 		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");
 		Config.SWAGGER_BASEPATH = env.getProperty("fr.insee.rmes.bauhaus.api.basepath");
+		Config.SWAGGER_URL=(Config.REQUIRES_SSL ? "https" : "http") + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
 	}
 }

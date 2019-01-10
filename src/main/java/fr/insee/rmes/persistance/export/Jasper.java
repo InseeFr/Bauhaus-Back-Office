@@ -193,14 +193,7 @@ public class Jasper {
 	}
 
 	public String getExtension(String acceptHeader) {
-		if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
-			return ".odt";
-		} else if (acceptHeader.equals("application/octet-stream")) {
-			return ".pdf";
-			// default --> Odt
-		} else {
-			return ".odt";
-		}
+		return ExportUtils.getExtension(acceptHeader);
 	}
 
 }

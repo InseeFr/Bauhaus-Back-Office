@@ -1,6 +1,11 @@
 package fr.insee.rmes.webservice;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -10,7 +15,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -18,9 +22,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
@@ -38,6 +44,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
 import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -67,6 +74,7 @@ public class OperationsResources {
 
 	@Autowired
 	OperationsService operationsService;
+
 
 	/***************************************************************************************************
 	 * FAMILY
@@ -141,7 +149,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
 	public Response setSeriesById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Series to update", required = true,
             content = @Content(schema = @Schema(implementation = Series.class)))String body) {
 		try {
@@ -183,6 +191,7 @@ public class OperationsResources {
 
 
 	@GET
+	@Deprecated
 	@Path("/operation/{id}/variableBook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
@@ -191,14 +200,29 @@ public class OperationsResources {
 			return operationsService.getVarBookExport(id, acceptHeader);
 	}
 	
+	@POST
+	@Path("/operation/codebook")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
+	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
+	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 1"))
+	@FormDataParam("file") InputStream isDDI,
+	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
+	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
+		String ddi = IOUtils.toString(isDDI, "utf-8"); ;
+		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
+		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
+	}
+	
 	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/operation/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public Response setOperationById(
-			@QueryParam("id") String id, 
-			@RequestBody(description = "Operation to update", required = true,
+			@PathParam("id") String id, 
+			@RequestBody(description = "Operation to update", required = true, 
             content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
 			operationsService.setOperation(id, body);
@@ -249,7 +273,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
 	public Response setIndicatorById(
-			@QueryParam("id") String id, 
+			@PathParam("id") String id, 
 			@RequestBody(description = "Indicator to update", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		try {
@@ -396,4 +420,11 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+	
+	static String readFile(String path, Charset encoding) 
+			  throws IOException 
+			{
+			  byte[] encoded = Files.readAllBytes(Paths.get(path));
+			  return new String(encoded, encoding);
+			}
 }

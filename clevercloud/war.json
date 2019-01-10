@@ -1,0 +1,16 @@
+{
+  "build": {
+    "type": "maven",
+    "goal": "war:war"
+  },
+  "deploy": {
+    "container": "TOMCAT8",
+    "war": [
+      {
+        "file": "target/bauhaus.war",
+        "context": "/bauhaus",
+        "checkMe": "/bauhaus/swagger-ui/#/"
+      }
+    ]
+  }
+}

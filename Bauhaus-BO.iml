@@ -25,23 +25,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-jaxrs2:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.5" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.0" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.5" level="project" />
-    <orderEntry type="library" name="Maven: org.reflections:reflections:0.9.11" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:guava:20.0" level="project" />
-    <orderEntry type="library" name="Maven: org.javassist:javassist:3.22.0-GA" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-models:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-annotations:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-integration:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: io.swagger.core.v3:swagger-core:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.3.0" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.7" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.5" level="project" />
-    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.18" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.5" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.9.5" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet-core:2.19" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.hk2.external:javax.inject:2.4.0-b25" level="project" />
     <orderEntry type="library" name="Maven: org.glassfish.jersey.core:jersey-common:2.19" level="project" />
@@ -216,11 +199,25 @@
     <orderEntry type="library" name="Maven: com.google.zxing:core:3.2.1" level="project" />
     <orderEntry type="library" name="Maven: com.ibm.icu:icu4j:57.1" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jasperreports:jasperreports-fonts:6.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.freemarker:freemarker:2.3.28" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.document.odt:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.document:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.core:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.template.freemarker:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.template:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.converter.odt.odfdom:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.converter:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.odfdom.converter.pdf:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.odfdom.converter.core:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: org.odftoolkit:odfdom-java:0.8.7" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.xdocreport.itext.extension:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: fr.opensagres.xdocreport:fr.opensagres.odfdom.converter.xhtml:2.0.1" level="project" />
+    <orderEntry type="library" name="Maven: xerces:xercesImpl:2.12.0" level="project" />
+    <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.4.01" level="project" />
+    <orderEntry type="library" name="Maven: com.itextpdf:itextpdf:5.5.13" level="project" />
     <orderEntry type="library" name="Maven: jdom:jdom:1.0" level="project" />
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: dom4j:dom4j:1.6.1" level="project" />
-    <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.3.02" level="project" />
-    <orderEntry type="library" name="Maven: xerces:xercesImpl:2.6.2" level="project" />
     <orderEntry type="library" name="Maven: xom:xom:1.0" level="project" />
     <orderEntry type="library" name="Maven: xerces:xmlParserAPIs:2.6.2" level="project" />
     <orderEntry type="library" name="Maven: xalan:xalan:2.6.0" level="project" />

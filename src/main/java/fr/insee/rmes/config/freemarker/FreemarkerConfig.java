@@ -8,6 +8,9 @@ import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 
@@ -26,13 +29,20 @@ public class FreemarkerConfig {
 
 		// Specify the source where the template files come from. Here I set a
 		// plain directory for it, but non-file-system sources are possible too:
+        logger.info("======================= hello");
 		try {
-			cfg.setDirectoryForTemplateLoading(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
+			FileTemplateLoader ftl1 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
+
+			MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {  ftl1 });
+			logger.info("Init freemarker templateloader "+ FreemarkerConfig.class.getClassLoader().getResource("request")+", "+ FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
+			cfg.setTemplateLoader(mtl);
+
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-		} catch (URISyntaxException e) {
-			logger.error(e.getMessage());
+		} catch (Exception e) {
+			logger.error(e);
 		}
+		
 
 		// Set the preferred charset template files are stored in. UTF-8 is
 		// a good choice in most applications:

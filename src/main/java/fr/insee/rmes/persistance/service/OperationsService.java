@@ -1,13 +1,8 @@
 package fr.insee.rmes.persistance.service;
 
-import java.io.IOException;
+import java.io.File;
 
 import javax.ws.rs.core.Response;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
-import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -40,8 +35,10 @@ public interface OperationsService {
 	 * OPERATIONS
 	 * *******************************************************************************************/
 
-
-	Response getVarBookExport(String id, String acceptHeader) throws ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException;
+	@Deprecated
+	Response getVarBookExport(String id, String acceptHeader) throws RmesException;
+	
+	Response getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException, Exception;
 
 	String getOperations() throws RmesException ;
 
@@ -95,5 +92,6 @@ public interface OperationsService {
 	String createMetadataReport(String body) throws RmesException;
 
 	String setMetadataReport(String id, String body) throws RmesException;
+
 
 }

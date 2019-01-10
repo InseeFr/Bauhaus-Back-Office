@@ -1,12 +1,15 @@
 package fr.insee.rmes.persistance.service.sesame.operations;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,10 +17,11 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.export.ExportUtils;
 import fr.insee.rmes.persistance.export.Jasper;
+import fr.insee.rmes.persistance.export.XDocReport;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
@@ -43,6 +47,9 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	VarBookExportBuilder varBookExport;
+	
+	@Autowired
+	XDocReport xdr;
 
 	@Autowired
 	SeriesUtils seriesUtils;
@@ -96,14 +103,39 @@ public class OperationsImpl implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
+	@Deprecated
 	@Override
-	public Response getVarBookExport(String id, String acceptHeader) throws ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException  {
+	public Response getVarBookExport(String id, String acceptHeader) throws RmesException  {
 		String xmlForJasper = varBookExport.getData(id);
 		InputStream is = jasper.exportVariableBook(xmlForJasper, acceptHeader);
 		String fileName = "Dico" + id + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
 	}
+	
+	@Override
+	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws Exception  {
+		OutputStream os;
+		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
+			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
+		}else {
+			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
+		}
+		
+		InputStream is = transformFileOutputStreamInInputStream(os);
+		String fileName = "Codebook"+ExportUtils.getExtension(acceptHeader);
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
+	}
+
+	private InputStream transformFileOutputStreamInInputStream(OutputStream os)
+			throws NoSuchFieldException, IllegalAccessException, FileNotFoundException {
+		Field pathField = FileOutputStream.class.getDeclaredField("path");
+		pathField.setAccessible(true);
+		String path = (String) pathField.get(os);
+		return new FileInputStream(path);
+	}
+	
 
 	@Override
 	public String getOperationByID(String id) throws RmesException {
