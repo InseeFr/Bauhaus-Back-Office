@@ -4,7 +4,7 @@
     "goal": "war:war"
   },
   "deploy": {
-    "container": "TOMCAT8",
+    "container": "TOMCAT9",
     "war": [
       {
         "file": "target/bauhaus.war",
