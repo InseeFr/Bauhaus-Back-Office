@@ -253,9 +253,9 @@ public class DocumentationsUtils {
 		logger.info("Generate documentation id");
 		JSONObject json = RepositoryGestion.getResponseAsObject(DocumentationsQueries.lastID());
 		logger.debug("JSON for documentation id : " + json);
-		if (json.length()==0) {return null;}
+		if (json.length()==0) {return "1000";}
 		String id = json.getString("idSims");
-		if (id.equals("undefined")) {return null;}
+		if (id.equals("undefined")) {return "1000";}
 		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
 	}
