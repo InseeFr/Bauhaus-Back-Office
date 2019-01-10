@@ -79,7 +79,7 @@ public class SeriesUtils {
 		addOneTypeOfLink(idSeries,series,DCTERMS.REPLACES);
 		addOneTypeOfLink(idSeries,series,DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idSeries,series,RDFS.SEEALSO);
-		addOneOrganizationLink(idSeries,series, INSEE.STAKEHOLDER);
+		addOneOrganizationLink(idSeries,series, DCTERMS.CONTRIBUTOR);
 		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
 	}
 	
@@ -139,11 +139,12 @@ public class SeriesUtils {
 		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
 		SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(series.getCreator()), model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR, organizationsService.getOrganizationUriById(series.getContributor()), model, SesameUtils.operationsGraph());
-		List<OperationsLink> stakeHolders = series.getStakeHolder();
-		if (stakeHolders != null){
-			for (OperationsLink stakeHolder : stakeHolders) {
-				SesameUtils.addTripleUri(seriesURI, INSEE.STAKEHOLDER,organizationsService.getOrganizationUriById(stakeHolder.getId()),model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(series.getGestionnaire()), model, SesameUtils.operationsGraph());
+		//partenaires
+		List<OperationsLink> contributors = series.getContributor();
+		if (contributors != null){
+			for (OperationsLink contributor : contributors) {
+				SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());
 			}
 		}
 		
