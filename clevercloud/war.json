@@ -8,8 +8,7 @@
     "war": [
       {
         "file": "target/bauhaus.war",
-        "context": "/bauhaus",
-        "checkMe": "/bauhaus/swagger-ui/#/"
+        "context": "/bauhaus"
       }
     ]
   }

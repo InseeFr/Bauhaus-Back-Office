@@ -7,42 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c8876fef-3a29-4221-a646-5396553eee47" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_itextpdf_itextpdf_5_5_13.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_odfdom_converter_core_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_odfdom_converter_pdf_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_odfdom_converter_xhtml_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_converter_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_converter_odt_odfdom_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_core_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_document_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_document_odt_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_itext_extension_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_template_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__fr_opensagres_xdocreport_fr_opensagres_xdocreport_template_freemarker_2_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_freemarker_freemarker_2_3_28.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_odftoolkit_odfdom_java_0_8_7.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__xerces_xercesImpl_2_12_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__xml_apis_xml_apis_1_4_01.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/clevercloud/war.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/export/ExportUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/export/XDocReport.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/Bauhaus_BO_war_exploded.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/Bauhaus_BO_war_exploded.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__xerces_xercesImpl_2_6_2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__xml_apis_xml_apis_1_3_02.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Bauhaus-BO.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Bauhaus-BO.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WebContent/WEB-INF/web.xml" beforeDir="false" afterPath="$PROJECT_DIR$/WebContent/WEB-INF/web.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/Config.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/Config.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/freemarker/FreemarkerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/freemarker/FreemarkerConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/swagger/SwaggerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/config/swagger/SwaggerConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/export/Jasper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/export/Jasper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/OperationsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/OperationsService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/sesame/operations/OperationsImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/sesame/operations/OperationsImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/sesame/operations/operations/VarBookExportBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/sesame/operations/operations/VarBookExportBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/persistance/service/sesame/utils/FileUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/utils/FileUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/webservice/OperationsResources.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/insee/rmes/webservice/OperationsResources.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/log4j2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/log4j2.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/clevercloud/war.json" beforeDir="false" afterPath="$PROJECT_DIR$/clevercloud/war.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -114,8 +79,8 @@
       <file leaf-file-name="war.json" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/clevercloud/war.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="13" column="5" lean-forward="true" selection-start-line="13" selection-start-column="5" selection-end-line="13" selection-end-column="5" />
+            <state relative-caret-position="150">
+              <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
             </state>
           </provider>
         </entry>
@@ -570,7 +535,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="55951000" />
+    <option name="totallyTimeSpent" value="56343000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="809" extended-state="0" />
@@ -1015,8 +980,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/clevercloud/war.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="5" lean-forward="true" selection-start-line="13" selection-start-column="5" selection-end-line="13" selection-end-column="5" />
+        <state relative-caret-position="150">
+          <caret line="10" column="29" selection-start-line="10" selection-start-column="29" selection-end-line="10" selection-end-column="29" />
         </state>
       </provider>
     </entry>
