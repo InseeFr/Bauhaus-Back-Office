@@ -89,6 +89,12 @@ public class OperationsImpl implements OperationsService {
 	public void setSeries(String id, String body) throws RmesException {
 		seriesUtils.setSeries(id,body);
 	}
+	
+	@Override
+	public String getOperationsWithoutReport(String idSeries) throws RmesException {
+		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries)).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -250,5 +256,7 @@ public class OperationsImpl implements OperationsService {
 	public String setMetadataReport(String id, String body) throws RmesException {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
+
+
 	
 }
