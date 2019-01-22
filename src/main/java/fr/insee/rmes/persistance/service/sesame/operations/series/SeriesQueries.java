@@ -150,10 +150,10 @@ public class SeriesQueries {
 				"OPTIONAL {?series dcterms:creator ?uriCreator . \n"
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
-		addVariableToList(" ?contributor  ");
+		addVariableToList(" ?gestionnaire  ");
 		addClauseToWhereClause(  
-				"OPTIONAL {?series dcterms:contributor ?uriContributor . \n"
-						+ "?uriContributor dcterms:identifier  ?contributor . \n"
+				"OPTIONAL {?series insee:gestionnaire ?uriGestionnaire . \n"
+						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
 						+ "}   \n");
 	}
 	
