@@ -6,7 +6,7 @@ WHERE {
  		<#-- RangeType.DATE : value -->
 		{
 			?report rdf:type sdmx-mm:MetadataReport .
-			?attr dc:identifier ?idAttribute .
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			?report ?attr ?value . 
 			FILTER ( datatype(?value) = <${DATE.rdfType}> ) 
 			BIND('${DATE.jsonType}' AS ?rangeType) .
@@ -15,7 +15,7 @@ WHERE {
 		<#-- RangeType.ATTRIBUTE : label -->
 		UNION {
 			 ?report rdf:type sdmx-mm:MetadataReport .
-			 ?attr dc:identifier ?idAttribute .
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			 ?report ?attr ?node . 
 			 ?node rdf:value ?labelLg1 .
 			 FILTER(lang(?labelLg1) = '${LG1}') 
@@ -27,7 +27,7 @@ WHERE {
 		<#-- RangeType.CODELIST : value -->
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
-			?attr dc:identifier ?idAttribute .
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			?report ?attr ?codeUri . 
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
