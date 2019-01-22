@@ -31,9 +31,19 @@ public class FreemarkerConfig {
 		// plain directory for it, but non-file-system sources are possible too:
         logger.info("======================= hello");
 		try {
+			MultiTemplateLoader mtl = null;
+			
 			FileTemplateLoader ftl1 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
 
-			MultiTemplateLoader mtl = new MultiTemplateLoader(new TemplateLoader[] {  ftl1 });
+			FileTemplateLoader ftl2 = null;
+			try {
+				ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
+			} catch (NullPointerException e) {
+				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl1 });
+			}
+			if (mtl == null) {
+				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
+			}
 			logger.info("Init freemarker templateloader "+ FreemarkerConfig.class.getClassLoader().getResource("request")+", "+ FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
 			cfg.setTemplateLoader(mtl);
 

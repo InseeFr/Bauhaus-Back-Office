@@ -159,6 +159,20 @@ public class OperationsResources {
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
+	
+	@GET
+	@Path("/series/{id}/operationsWithoutReport")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsWithoutReport", summary = "Operations without metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
+	public Response getOperationsWithoutReport(@PathParam("id") String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getOperationsWithoutReport(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 	/***************************************************************************************************
 	 * OPERATIONS

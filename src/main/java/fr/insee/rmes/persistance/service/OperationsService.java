@@ -93,5 +93,7 @@ public interface OperationsService {
 
 	String setMetadataReport(String id, String body) throws RmesException;
 
+	String getOperationsWithoutReport(String id) throws RmesException;
+
 
 }
