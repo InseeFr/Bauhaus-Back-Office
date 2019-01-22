@@ -8,11 +8,11 @@ SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational
     	FILTER(lang(?masLabelLg2) = '${LG2}') 
 
    		OPTIONAL {?mas sdmx-mm:parent ?parent } 
-		?parent dc:identifier ?idParent .
+		BIND(REPLACE( STR(?parent) , '(.*/)(\\w.+$)', '$2' ) AS ?idParent) . 
 		
    		OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
 		
 		FILTER(STRENDS(STR(?reportStructure),'/qualite/simsv2fr/reportStructure')) . 
-		?mas dc:identifier ?idMas . 
+		BIND(REPLACE( STR(?mas) , '(.*/)(\\w.+$)', '$2' ) AS ?idMas) . 
   } 
  ORDER BY ?mas
