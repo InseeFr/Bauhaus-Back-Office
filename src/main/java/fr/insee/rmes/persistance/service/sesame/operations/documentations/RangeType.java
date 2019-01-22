@@ -8,11 +8,13 @@ import org.openrdf.model.URI;
 import fr.insee.rmes.persistance.service.sesame.ontologies.ORG;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.ontologies.XSD;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 
 public enum RangeType {
 	
 	STRING(XSD.STRING, "TEXT"),
+	STRING2(SesameUtils.toURI("http://purl.org/dc/dcmitype/Text"), "TEXT"),
 	ATTRIBUTE(SDMX_MM.REPORTED_ATTRIBUTE, "REPORTED_ATTRIBUTE"),
 	DATE(XSD.DATE, "DATE"),
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),
