@@ -72,7 +72,7 @@ public class OperationsQueries {
 
 	public static String operationsWithoutSimsQuery(String idSeries) {
 		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE {  \n"
 				+ "?operation a insee:StatisticalOperation . \n" 
 				+ "?series dcterms:hasPart ?operation \n "
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries+ "')) . \n" 
@@ -81,10 +81,11 @@ public class OperationsQueries {
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
 				+ "?operation skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') \n"
-				
+					
 				+ "BIND(STRAFTER(STR(?operation),'/operations/operation/') AS ?id) . \n"
+				+ "FILTER NOT EXISTS { ?documentation sdmx-mm:target ?operation }"
 				
-				+ "}} \n" 
+				+ "} \n" 
 				+ "GROUP BY ?id ?labelLg1 ?labelLg2 \n"
 				+ "ORDER BY ?labelLg1 ";
 	}

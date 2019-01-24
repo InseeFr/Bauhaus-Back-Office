@@ -47,8 +47,8 @@ public class Indicator {
 	@Schema(description = "Identifier of creator")
 	public String creator;
 
-	@Schema(description = "Identifier of contributor")
-	public List<OperationsLink> contributors;
+	@Schema(description = "Identifiers of contributors")
+	public List<OperationsLink> contributor;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -133,7 +133,7 @@ public class Indicator {
 
 
 	public List<OperationsLink> getContributor() {
-		return contributors;
+		return contributor;
 	}
 
 
