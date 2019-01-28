@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -45,10 +47,17 @@ public class RepositoryGestion {
 		return RepositoryUtils.getResponse(query, REPOSITORY_GESTION);
 	}
 
-	public static JSONArray getResponseAsArray(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_GESTION);
+	/**
+	 * Method which aims to execute sparql update
+	 * 
+	 * @param updateQuery
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
+		return RepositoryUtils.executeUpdate(updateQuery, REPOSITORY_GESTION);
 	}
-
+	
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
@@ -60,6 +69,10 @@ public class RepositoryGestion {
 		return RepositoryUtils.getResponseAsObject(query, REPOSITORY_GESTION);
 	}
 
+	public static JSONArray getResponseAsArray(String query) throws RmesException {
+		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_GESTION);
+	}
+	
 	/**
 	 * Method which aims to produce response from a sparql ASK query
 	 * 

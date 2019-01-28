@@ -1,6 +1,7 @@
 package fr.insee.rmes.webservice;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -84,6 +85,36 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@GET
+	@Path("/linkedConcepts/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getRelatedConcepts", summary = "List of concepts",
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
+	public Response getRelatedConcepts(@PathParam("id") String id) {
+		String resultat;
+		try {
+			resultat = conceptsService.getRelatedConcepts(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
+	}
+	
+	
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
+	@DELETE
+	@Path("/{id}")
+	@Operation(operationId = "deleteConcept", summary = "deletion")
+	public Response deleteConcept(@PathParam("id") String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = conceptsService.deleteConcept(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
 	@GET
 	@Path("/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)

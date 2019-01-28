@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -29,29 +31,30 @@ import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPub
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class ConceptsUtils {
-	
+
 	static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
-	
+
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
-	
+
 	/**
 	 * Concepts
 	 */
-	
+
 	public String createID()  throws RmesException{
 		JSONObject json = RepositoryGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
 		String notation = json.getString("notation");
 		int id = Integer.parseInt(notation.substring(1))+1;
 		return "c" + id;
 	}
-	
+
 	public JSONObject getConceptById(String id)  throws RmesException{
 		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
@@ -60,12 +63,12 @@ public class ConceptsUtils {
 		if(altLabelLg2.length() != 0) concept.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
 		return concept;
 	}
-	
+
 	public String setConcept(String body) throws RmesException {
-				
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
-			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Concept concept = new Concept();
 		try {
 			concept = mapper.readValue(body, Concept.class);
@@ -76,11 +79,11 @@ public class ConceptsUtils {
 		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 		return concept.getId();
 	}
-	
+
 	public void setConcept(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
-			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Concept concept = new Concept(id);
 		try {
 			concept = mapper.readerForUpdating(concept).readValue(body);
@@ -90,17 +93,17 @@ public class ConceptsUtils {
 		createRdfConcept(concept);
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
 	}
-	
+
 	public void conceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
 		JSONArray conceptsToValidate = new JSONArray(body);
 		conceptsValidation(conceptsToValidate);
 	}
-	
+
 	/**
 	 * Concepts to sesame
 	 * @throws RmesException 
 	 */
-		
+
 	public void createRdfConcept(Concept concept) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI conceptURI = SesameUtils.conceptIRI(concept.getId());
@@ -128,16 +131,16 @@ public class ConceptsUtils {
 		SesameUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, SesameUtils.conceptGraph());
 		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model, SesameUtils.conceptGraph());
 		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, SesameUtils.conceptGraph());
-		
+
 		// Add notes to model, delete some notes and updates some other notes
 		List<List<URI>> notesToDeleteAndUpdate = new NoteManager().setNotes(concept, model);
 
 		// Add links to model and save member links
 		new LinksUtils().createRdfLinks(conceptURI, concept.getLinks(), model);
-		
+
 		RepositoryGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
-	
+
 	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		List<URI> conceptsToValidateList = new ArrayList<>();
@@ -153,4 +156,23 @@ public class ConceptsUtils {
 		ConceptsPublication.publishConcepts(conceptsToValidate);
 	}
 
+	public JSONArray getGraphsWithConcept(String id) throws RmesException {
+		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery(id));
+	}
+
+	public JSONArray getRelatedConcepts(String id)  throws RmesException{
+		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
+	}
+
+	public String getConceptUriByID(String id)throws RmesException{
+		return ConceptsQueries.getConceptUriByIDQuery(id);
+	}
+
+	public Response.Status deleteConcept(String uriConcept, String uriGraph) throws RmesException{
+		return RepositoryGestion.executeUpdate(ConceptsQueries.deleteConcept(uriConcept,uriGraph));
+	}
+
+	public JSONArray getConceptVersions(String uriConcept) throws RmesException{
+		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getConceptVersions(uriConcept));
+	}
 }

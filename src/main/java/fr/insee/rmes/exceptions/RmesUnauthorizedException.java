@@ -7,5 +7,9 @@ public class RmesUnauthorizedException extends RmesException {
 	public RmesUnauthorizedException() {
 		super(403, "Unauthorized", "");
 	}
+	
+	public RmesUnauthorizedException(String message, String details) {
+		super(403, message, details);
+	}
 
 }

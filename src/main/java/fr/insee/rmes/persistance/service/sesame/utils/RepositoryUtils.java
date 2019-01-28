@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 import java.io.ByteArrayOutputStream;
 import java.util.Set;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -11,6 +13,7 @@ import org.json.JSONObject;
 import org.openrdf.OpenRDFException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
+import org.openrdf.query.Update;
 import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -50,7 +53,36 @@ public class RepositoryUtils {
 		return con;
 	}
 	
+	/**
+	 * Method which aims to execute a sparql update
+	 * 
+	 * @param updateQuery
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static Response.Status executeUpdate(String updateQuery,Repository repository) throws RmesException {
+		Update update = null;
+		String queryWithPrefixes = QueryUtils.PREFIXES + updateQuery;
+		try {
+			RepositoryConnection conn = repository.getConnection();
+			update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
+			update.execute();
+			conn.close();
+		} catch (OpenRDFException e) {
+			logger.error(EXECUTE_QUERY_FAILED + updateQuery,repository);
+			logger.error(e.getMessage());
+			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
+		}
+		return(Response.Status.OK);
+	}
 
+	/**
+	 * Method which aims to execute a sparql query
+	 * 
+	 * @param query
+	 * @return String
+	 * @throws RmesException 
+	 */
 	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
 		TupleQuery tupleQuery = null;
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
