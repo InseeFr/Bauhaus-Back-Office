@@ -304,7 +304,7 @@ public class ConceptsQueries {
 	}
 	
 	private static String buildConceptRequest(String fileName, Map<String, Object> params) throws RmesException  {
-		return FreeMarkerUtils.buildRequest("operations/concepts/", fileName, params);
+		return FreeMarkerUtils.buildRequest("concepts/", fileName, params);
 	}
 	
 	
