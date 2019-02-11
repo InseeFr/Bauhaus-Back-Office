@@ -74,20 +74,27 @@ public class ConceptsImpl implements ConceptsService {
 		JSONArray resQuery =getRelatedConceptsAsArray(id);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
-	
+
 	public JSONArray getRelatedConceptsAsArray(String id)  throws RmesException{
 		String uriConcept = getConceptUriByID(id);
 		return conceptsUtils.getRelatedConcepts(uriConcept);
 	}
-		
+
+	/**
+	 * @param id
+	 * @return String
+	 * @throws RmesException
+	 */	
 	@Override
 	public String deleteConcept(String id) throws RmesException {
 
 		String uriConcept = getConceptUriByID(id);
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
+		/* check concept isn't used in several graphs */
 		if (graphArray.length()>1) {
 			String listGraphs="";
+			/* list the graphs involved in log */
 			for (int i=0; i<graphArray.length(); i++) {
 				JSONObject currentGraph=(JSONObject) graphArray.get(i);
 				listGraphs.concat(currentGraph.getString("src"));
@@ -95,31 +102,19 @@ public class ConceptsImpl implements ConceptsService {
 			}
 			throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is used in several graphs.",listGraphs);
 		}
-		else {
-			String listConcepts=getRelatedConcepts(id);
-			if(!listConcepts.equals("[]")) {
-				throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is linked to other concepts.",listConcepts);
-			}
-			else {
-				JSONObject jsonGraph=(JSONObject) graphArray.get(0);
-				String uriGraph = jsonGraph.getString("src");
-				Response.Status result= deleteConceptFromGraph(uriConcept,uriGraph);
-				String successMessage="The concept "+id+" has been deleted from graph "+uriGraph;
-				if (result!= Status.OK) {
-					throw new RmesException(402,"Unexpected return message: ",result.toString());
-				} else { return successMessage;}
-			}
+		/* Check concept has no link */
+		String listConcepts=getRelatedConcepts(id);
+		if(!listConcepts.equals("[]")) {
+			throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is linked to other concepts.",listConcepts);
 		}
-	}
-/*
-	private JSONArray getConceptVersions(String uriConcept) throws RmesException {
-		JSONArray versions = conceptsUtils.getConceptVersions(uriConcept);
-		return versions;
-	}
-*/
-	@Override
-	public Response.Status deleteConceptFromGraph(String uriConcept, String uriGraph) throws RmesException {
-		return conceptsUtils.deleteConcept(uriConcept,uriGraph);
+		/* deletion */
+		JSONObject jsonGraph=(JSONObject) graphArray.get(0);
+		String uriGraph = jsonGraph.getString("src");
+		Response.Status result= conceptsUtils.deleteConcept(uriConcept,uriGraph);
+		String successMessage="The concept "+id+" has been deleted from graph "+uriGraph;
+		if (result!= Status.OK) {
+			throw new RmesException(402,"Unexpected return message: ",result.toString());
+		} else { return successMessage;}
 	}
 
 	@Override

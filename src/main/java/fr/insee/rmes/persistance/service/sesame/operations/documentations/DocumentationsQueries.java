@@ -8,18 +8,18 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class DocumentationsQueries {
-	
+
 	static Map<String,Object> params ;
-	
+
 	/**
 	 * @return ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational 
 	 * @throws RmesException
 	 */
 	public static String msdQuery() throws RmesException{
 		if (params==null) {initParams();}
-        return buildRequest("msdQuery.ftlh", params);
+		return buildRequest("msdQuery.ftlh", params);
 	}
-	
+
 	/**
 	 * @param idMas
 	 * @return ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational 
@@ -28,27 +28,26 @@ public class DocumentationsQueries {
 	public static String getAttributeSpecificationQuery(String idMas) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("idMas", idMas);
-        return buildRequest("getAttributeSpecificationQuery.ftlh", params);
+		return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
-	
+
 	/**
 	 * @return ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational
 	 * @throws RmesException
 	 */
 	public static String getAttributesQuery() throws RmesException {
 		if (params==null) {initParams();}
-        return buildRequest("getAttributesQuery.ftlh", params);
+		return buildRequest("getAttributesQuery.ftlh", params);
 	}
-	
+
 	/**
 	 * @return ?id ?uri 
 	 * @throws RmesException
 	 */
 	public static String getAttributesUriQuery() throws RmesException {
-        return buildRequest("getAttributesUriQuery.ftlh", null);
+		return buildRequest("getAttributesUriQuery.ftlh", null);
 	}
-	
-	
+
 	/**
 	 * @param idSims
 	 * @return ?labelLg1 ?labelLg2 ?idOperation
@@ -57,9 +56,9 @@ public class DocumentationsQueries {
 	public static String getDocumentationTitleQuery(String idSims) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
-        return buildRequest("getDocumentationTitleQuery.ftlh", params);
+		return buildRequest("getDocumentationTitleQuery.ftlh", params);
 	}
-	
+
 	/**
 	 * Get operation by documentation
 	 * @return ?idOperation 
@@ -69,7 +68,7 @@ public class DocumentationsQueries {
 		Map<String, Object> root = new HashMap<>();
 		root.put("idSims", idSims);
 		return buildRequest("getDocumentationOperationQuery.ftlh", root);
-		
+
 	}
 
 	/**
@@ -82,7 +81,7 @@ public class DocumentationsQueries {
 		root.put("idOperation", idOperation);
 		return buildRequest("getOperationDocumentationQuery.ftlh", root);
 	}
-	
+
 	/**
 	 * @param idSims
 	 * @return ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType 
@@ -96,29 +95,29 @@ public class DocumentationsQueries {
 		params.put("CODELIST", RangeType.CODELIST);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
-	
+
 	/**
 	 * @return ?idSims 
 	 * @throws RmesException
 	 */
 	public static String lastID() throws RmesException {
-        return buildRequest("lastID.ftlh", null);
+		return buildRequest("lastID.ftlh", null);
 	}	
-	
 
+	
 	private static void initParams() {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 	}
-	
-	
+
 	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/documentations/", fileName, params);
 	}
-	
-	
-	 private DocumentationsQueries() {
-		 throw new IllegalStateException("Utility class");
-	 }
+
+
+
+	private DocumentationsQueries() {
+		throw new IllegalStateException("Utility class");
+	}
 }
