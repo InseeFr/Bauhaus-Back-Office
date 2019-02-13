@@ -65,5 +65,4 @@ public interface ConceptsService {
 
 	public String deleteConcept(String id) throws RmesException;
 
-	public Status deleteConceptFromGraph(String uriConcept, String uriGraph) throws RmesException;
 }
