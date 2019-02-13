@@ -26,6 +26,7 @@ public class SDMX_MM {
 
 	public static final URI REPORTED_ATTRIBUTE;
 	public static final URI METADATA_REPORT;
+	public static final URI METADATA_REPORT_PREDICATE;
 	public static final URI TARGET;
 
 	
@@ -35,6 +36,7 @@ public class SDMX_MM {
 
 		REPORTED_ATTRIBUTE = f.createURI(NAMESPACE, "ReportedAttribute");
 		METADATA_REPORT = f.createURI(NAMESPACE,"MetadataReport");
+		METADATA_REPORT_PREDICATE = f.createURI(NAMESPACE,"metadataReport");
 		TARGET = f.createURI(NAMESPACE,"target");
 	}
 }

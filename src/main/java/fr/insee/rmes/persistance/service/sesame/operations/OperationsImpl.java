@@ -25,6 +25,7 @@ import fr.insee.rmes.persistance.export.XDocReport;
 import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
@@ -65,6 +66,9 @@ public class OperationsImpl implements OperationsService {
 	
 	@Autowired
 	DocumentationsUtils documentationsUtils;
+	
+	@Autowired
+	MetadataStructureDefUtils msdUtils;
 
 	/***************************************************************************************************
 	 * SERIES
@@ -225,13 +229,13 @@ public class OperationsImpl implements OperationsService {
 
 	@Override
 	public String getMetadataAttribute(String id) throws RmesException {
-		JSONObject attribute = documentationsUtils.getMetadataAttributeById(id);
+		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
 		return attribute.toString();
 	}
 	
 	@Override
 	public String getMetadataAttributes() throws RmesException {
-		String attributes = documentationsUtils.getMetadataAttributes().toString();
+		String attributes = msdUtils.getMetadataAttributes().toString();
 		return QueryUtils.correctEmptyGroupConcat(attributes);
 	}
 

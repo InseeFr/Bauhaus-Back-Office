@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.SKOS;
+import org.openrdf.model.vocabulary.FOAF;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
@@ -19,6 +20,7 @@ public enum ObjectType {
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
 	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
 	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
+	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
 	UNDEFINED("undefined",null, "");
 	
