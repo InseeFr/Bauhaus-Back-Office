@@ -1,8 +1,15 @@
 package fr.insee.rmes.persistance.service.sesame.concepts.concepts;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class ConceptsQueries {
+	
+	static Map<String,Object> params ;
 	
 	public static String lastConceptID() {
 		return "SELECT ?notation \n"
@@ -222,4 +229,83 @@ public class ConceptsQueries {
 				+ "}";
 	}
 
+
+
+	/**
+	 * @param idConcept
+	 * @return ?idGraph
+	 * @throws RmesException
+	 */
+	public static String getGraphWithConceptQuery(String uriConcept) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriConcept", uriConcept);
+		return buildConceptRequest("getGraphWithConceptQuery.ftlh", params);	
+	}
+
+	/**
+	 * @param uriConcept
+	 * @return ?listConcepts
+	 * @throws RmesException
+	 */
+	public static String getRelatedConceptsQuery(String uriConcept) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriConcept", uriConcept);
+		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param idConcept
+	 * @return String
+	 * @throws RmesException
+	 */
+	public static String getConceptUriByIDQuery(String idConcept)  throws RmesException {
+		if (params==null) {initParams();}
+		params.put("idConcept", idConcept);
+		return buildConceptRequest("getUriFromIdQuery.ftlh", params);	
+	}
+
+	/**
+	 * @param uriConcept, uriGraph
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String deleteConcept(String uriConcept, String uriGraph) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriConcept", uriConcept);
+		params.put("uriGraph", uriGraph);
+		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
+	}
+
+	/**
+	 * @return ?uri 
+	 * @throws RmesException
+	 */
+	public static String getUriFromIdQuery(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("idConcept", id);
+		return buildConceptRequest("getUriFromIdQuery.ftlh", params);
+	}
+	
+	/**
+	 * @param uriConcept
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getConceptVersions(String uriConcept) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriConcept", uriConcept);
+		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);	
+	}
+	
+	private static void initParams() {
+		params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+	}
+	
+	private static String buildConceptRequest(String fileName, Map<String, Object> params) throws RmesException  {
+		return FreeMarkerUtils.buildRequest("concepts/", fileName, params);
+	}
+	
+	
 }

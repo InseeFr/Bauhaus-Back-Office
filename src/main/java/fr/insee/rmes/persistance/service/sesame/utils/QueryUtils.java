@@ -20,7 +20,9 @@ public class QueryUtils {
 					+ "PREFIX org:<http://www.w3.org/ns/org#> \n"
 					+ "PREFIX prov:<http://www.w3.org/ns/prov#> \n"
 					+ "PREFIX xsd:<http://www.w3.org/2001/XMLSchema#> \n"
-					+ "PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#> \n\n" ;
+					+ "PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#> \n"
+					+ "PREFIX dcmitype:<http://purl.org/dc/dcmitype/> \n \n" ;
+	
 
 	/**
 	 * Hack to fix Sparql groupconcat which returns an empty object in array

@@ -1,6 +1,10 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentLink;
 
 public class DocumentationRubric {
 
@@ -10,6 +14,7 @@ public class DocumentationRubric {
 	private String labelLg2;
 	private String codeList;
 	private String rangeType;
+	private List<DocumentLink> documents;
 	
 	
 	public String getIdAttribute() {
@@ -47,6 +52,12 @@ public class DocumentationRubric {
 	}
 	public void setRangeType(String rangeType) {
 		this.rangeType = rangeType;
+	}
+	public List<DocumentLink> getDocuments() {
+		return documents;
+	}
+	public void setDocuments(List<DocumentLink> documents) {
+		this.documents = documents;
 	}
 }
 

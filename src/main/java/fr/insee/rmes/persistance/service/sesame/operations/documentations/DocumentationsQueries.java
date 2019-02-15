@@ -92,6 +92,8 @@ public class DocumentationsQueries {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
 		params.put("DATE", RangeType.DATE);
+		params.put("STRING", RangeType.STRING);
+		params.put("RICHTEXT", RangeType.RICHTEXT);
 		params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
 		params.put("CODELIST", RangeType.CODELIST);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
