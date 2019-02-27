@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,8 +97,9 @@ public class OperationsImpl implements OperationsService {
 	
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
-		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries)).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		JSONArray resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
+		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
 	/***************************************************************************************************
