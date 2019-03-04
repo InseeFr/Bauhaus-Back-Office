@@ -96,6 +96,7 @@ public class DocumentationsQueries {
 		params.put("RICHTEXT", RangeType.RICHTEXT);
 		params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
 		params.put("CODELIST", RangeType.CODELIST);
+		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	
