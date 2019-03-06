@@ -1,6 +1,7 @@
 SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc
 	FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
 	FROM <http://rdf.insee.fr/graphes/codes> 
+	FROM <http://rdf.insee.fr/graphes/organisations>
  
 WHERE { 
  		<#-- RangeType.DATE : value -->
@@ -54,6 +55,14 @@ WHERE {
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .
 			BIND('${CODELIST.jsonType}' AS ?rangeType) .
+		} 
+		UNION {
+			?report rdf:type sdmx-mm:MetadataReport .
+			?reportAttr sdmx-mm:metadataReport ?report .
+			?reportAttr ?attr ?organisationUri . 
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			?organisationUri dcterms:identifier ?value .
+			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
 		} 
 			
 }
