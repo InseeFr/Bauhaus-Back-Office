@@ -30,6 +30,7 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 public class RepositoryGestion {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
+	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
@@ -145,6 +146,28 @@ public class RepositoryGestion {
 			logger.error(FAILURE_LOAD_OBJECT + object);
 			logger.error(e.getMessage());
 			throw new RmesException(500, e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
+	}
+	
+	/**
+	 * @param graph
+	 * @param model
+	 * @param conn : can be null - initialized by the method
+	 * @throws RmesException
+	 */
+	public static void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = REPOSITORY_GESTION.getConnection();
+			}
+			conn.clear(graph);
+			conn.add(model);
+			conn.close();
+		} catch (OpenRDFException e) {
+			logger.error(FAILURE_REPLACE_GRAPH + graph);
+			logger.error(e.getMessage());
+			throw new RmesException(500, e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
 
 		}
 	}

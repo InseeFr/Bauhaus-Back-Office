@@ -192,7 +192,7 @@ public class DocumentationsUtils {
 		
 		addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 		
-		RepositoryGestion.loadSimpleObject(simsUri, model, null);
+		RepositoryGestion.replaceGraph(graph, model, null);
 	}
 
 	/**
