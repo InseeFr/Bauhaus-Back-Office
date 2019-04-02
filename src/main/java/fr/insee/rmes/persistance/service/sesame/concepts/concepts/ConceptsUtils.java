@@ -18,6 +18,7 @@ import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -64,7 +65,6 @@ public class ConceptsUtils {
 	}
 
 	public String setConcept(String body) throws RmesException {
-
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -72,7 +72,7 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readValue(body, Concept.class);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
@@ -87,7 +87,7 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());

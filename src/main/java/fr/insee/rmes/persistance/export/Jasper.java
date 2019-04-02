@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -97,7 +98,7 @@ public class Jasper {
 			jasperParams = mapper.readValue(json.toString(), new TypeReference<Map<String, Object>>() {
 			});
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 
 		getJrProperties();

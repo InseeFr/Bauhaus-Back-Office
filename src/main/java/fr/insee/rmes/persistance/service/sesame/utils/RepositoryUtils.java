@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -49,7 +50,7 @@ public class RepositoryUtils {
 		} catch (RepositoryException e) {
 			logger.error("Connection au repository impossible : " + repository.getDataDir());
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), "Connection au repository impossible : " + repository.getDataDir());		}
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Connection au repository impossible : " + repository.getDataDir());		}
 		return con;
 	}
 	
@@ -71,7 +72,7 @@ public class RepositoryUtils {
 		} catch (OpenRDFException e) {
 			logger.error(EXECUTE_QUERY_FAILED + updateQuery,repository);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
 		}
 		return(Response.Status.OK);
 	}
@@ -92,7 +93,7 @@ public class RepositoryUtils {
 		} catch (OpenRDFException e) {
 			logger.error(EXECUTE_QUERY_FAILED + query);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
 		return stream.toString();
 	}
@@ -114,7 +115,7 @@ public class RepositoryUtils {
 		} catch (OpenRDFException e) {
 			logger.error(EXECUTE_QUERY_FAILED + query);
 			logger.error(e.getMessage());
-			throw new RmesException(500, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
 		return response;
 	}

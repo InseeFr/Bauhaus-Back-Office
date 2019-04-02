@@ -5,6 +5,7 @@ import java.io.InputStream;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -113,7 +114,7 @@ public class ConceptsImpl implements ConceptsService {
 		Response.Status result= conceptsUtils.deleteConcept(uriConcept,uriGraph);
 		String successMessage="The concept "+id+" has been deleted from graph "+uriGraph;
 		if (result!= Status.OK) {
-			throw new RmesException(402,"Unexpected return message: ",result.toString());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Unexpected return message: ",result.toString());
 		} else { return successMessage;}
 	}
 

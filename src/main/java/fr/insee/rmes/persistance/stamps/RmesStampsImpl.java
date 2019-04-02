@@ -11,6 +11,7 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class RmesStampsImpl implements StampsService {
 			logger.info("Get stamps succeed");
 		} catch (NamingException e) {
 			logger.error("Get stamps failed");
-			throw new RmesException(500, e.getMessage(), "Get stamps failed");		
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get stamps failed");		
 
 		}
 		

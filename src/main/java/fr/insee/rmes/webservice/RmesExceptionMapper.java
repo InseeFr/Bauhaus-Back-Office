@@ -4,6 +4,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 
 import fr.insee.rmes.exceptions.RestMessage;
@@ -29,7 +30,7 @@ public class RmesExceptionMapper implements ExceptionMapper<Exception> {
                     .build();
     	}
     	
-        return Response.status(500).entity(e.getMessage()).type("text/plain")
+        return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(e.getMessage()).type("text/plain")
                 .build();
     }
 }
