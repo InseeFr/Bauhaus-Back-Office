@@ -117,6 +117,32 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/family")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
+	public Response createFamily(
+			@RequestBody(description = "Family to create", required = true, 
+            content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+		String id = null;
+		try {
+			id = operationsService.createFamily(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	
+	
+	
 	/***************************************************************************************************
 	 * SERIES
 	 ******************************************************************************************************/

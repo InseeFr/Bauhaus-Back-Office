@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.families;
 import java.io.IOException;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -79,10 +81,10 @@ public class FamiliesUtils {
 	
 	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
-		if (family == null || family.id ==null) {
+		if (family == null || StringUtils.isEmpty(family.id)) {
 			throw new RmesException(HttpStatus.SC_NOT_FOUND, "No id found", "Can't read request body");
 		}
-		if (family.getPrefLabelLg1() ==null) {
+		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
 			throw new RmesException(HttpStatus.SC_NOT_FOUND, "prefLabelLg1 not found", "Can't read request body");
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
@@ -98,6 +100,24 @@ public class FamiliesUtils {
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
 		RepositoryGestion.loadSimpleObject(familyURI, model, null);
+	}
+
+
+	public String createFamily(String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Family family = new Family();
+		String id = family.getId();
+		try {
+			family = mapper.readValue(body,Family.class);
+			family.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfFamily(family);
+		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
+		return id;
+
 	}
 	
 }
