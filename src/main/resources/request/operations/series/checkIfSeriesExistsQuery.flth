@@ -1,0 +1,5 @@
+ASK
+ WHERE 
+  { graph <http://rdf.insee.fr/graphes/operations>   
+  	{<${uriSeries}> ?a ?b}
+  }
