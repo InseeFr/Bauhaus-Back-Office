@@ -3,6 +3,9 @@ package fr.insee.rmes.persistance.service.sesame.operations.series;
 import java.io.IOException;
 import java.util.List;
 
+import javax.ws.rs.core.Response.Status;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -36,14 +39,23 @@ public class SeriesUtils {
 
 	@Autowired
 	CodeListService codeListService;
-	
+
 	@Autowired
 	OrganizationsService organizationsService;
-	
+
 
 	final static Logger logger = LogManager.getLogger(SeriesUtils.class);
 
-/*READ*/
+	/*READ*/
+
+
+	public Boolean checkIfSeriesExists(String id) throws RmesException {
+		String uriSeries="http://bauhaus/operations/serie/"+id; //.substring(1)
+		Boolean result=RepositoryGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesExists(uriSeries));		
+		return result;
+	}
+
+
 	public JSONObject getSeriesById(String id) throws RmesException{
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		series.put("id", id);
@@ -61,7 +73,7 @@ public class SeriesUtils {
 			series.put("operations", operations);
 		}
 	}
-	
+
 	private void addGeneratedWith(String idSeries, JSONObject series) throws RmesException {
 		JSONArray generated = RepositoryGestion.getResponseAsArray(SeriesQueries.getGeneratedWith(idSeries));
 		if (generated.length() != 0) {
@@ -69,7 +81,7 @@ public class SeriesUtils {
 			series.put("generate", generated);
 		}
 	}
-	
+
 	private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
 		JSONObject family = RepositoryGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
 		series.put("family", family);
@@ -82,7 +94,7 @@ public class SeriesUtils {
 		addOneOrganizationLink(idSeries,series, DCTERMS.CONTRIBUTOR);
 		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
 	}
-	
+
 	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) throws RmesException {
 		JSONArray links = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
@@ -90,21 +102,41 @@ public class SeriesUtils {
 			series.put(predicate.getLocalName(), links);
 		}
 	}
-	
+
 	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) throws RmesException {
 		JSONArray organizations = RepositoryGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
-			 for (int i = 0; i < organizations.length(); i++) {
-		         JSONObject orga = organizations.getJSONObject(i);
-		         orga.put("type", ObjectType.ORGANIZATION.getLabelType());
-		     }
+			for (int i = 0; i < organizations.length(); i++) {
+				JSONObject orga = organizations.getJSONObject(i);
+				orga.put("type", ObjectType.ORGANIZATION.getLabelType());
+			}
 			series.put(predicate.getLocalName(), organizations);
 		}
 	}
-	
-	
-	
-/*WRITE*/
+
+
+
+	/*WRITE*/
+
+
+	public String createSeries(String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Series series = new Series();
+		String id = series.getId();
+		try {
+			series = mapper.readValue(body,Series.class);
+			series.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfSeries(series);
+		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
+		return id;
+
+	}
+
+
 	public void setSeries(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -116,10 +148,10 @@ public class SeriesUtils {
 		}
 		createRdfSeries(series);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
-		
+
 	}
-	
-	
+
+
 	public void createRdfSeries(Series series) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
@@ -131,64 +163,88 @@ public class SeriesUtils {
 		SesameUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-		
+
 		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-		
+
 		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
-		SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(series.getCreator()), model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(series.getGestionnaire()), model, SesameUtils.operationsGraph());
+		String creator=series.getCreator();
+		if (!StringUtils.isEmpty(creator)) {
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creator), model, SesameUtils.operationsGraph());
+		}
+		String gestionnaire=series.getGestionnaire();
+		if (!StringUtils.isEmpty(gestionnaire)) {
+			SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.operationsGraph());
+		}
+
 		//partenaires
 		List<OperationsLink> contributors = series.getContributor();
 		if (contributors != null){
 			for (OperationsLink contributor : contributors) {
-				SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());
+				if(!contributor.isEmpty()) {
+					SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());		
+				}
 			}
 		}
-		
+
 		List<OperationsLink> dataCollectors = series.getDataCollector();
 		if (dataCollectors != null) {
 			for (OperationsLink dataCollector : dataCollectors) {
-				SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
-			}		
+				if(!dataCollector.isEmpty()) {
+					SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
+				}		
+			}
 		}
 
-		String typeUri = codeListService.getCodeUri(series.getTypeList(), series.getTypeCode());
-		SesameUtils.addTripleUri(seriesURI, DCTERMS.TYPE, typeUri,model, SesameUtils.operationsGraph());
-		
-		String accPeriodicityUri = codeListService.getCodeUri(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode());
-		SesameUtils.addTripleUri(seriesURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.operationsGraph());
-		
+		String typeList=series.getTypeList();
+		String typeCode=series.getTypeCode();
+		if (!StringUtils.isEmpty(typeList) & !StringUtils.isEmpty(typeCode)) {
+			String typeUri = codeListService.getCodeUri(typeList, typeCode);
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.TYPE, typeUri,model, SesameUtils.operationsGraph());
+		}
+
+		String accrualPeriodicityList=series.getAccrualPeriodicityList();
+		String accrualPeriodicityCode=series.getAccrualPeriodicityCode();
+		if (!StringUtils.isEmpty(accrualPeriodicityList) & !StringUtils.isEmpty(accrualPeriodicityCode)) {
+			String accPeriodicityUri = codeListService.getCodeUri(accrualPeriodicityList, accrualPeriodicityCode);
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.operationsGraph());
+		}
 
 		List<OperationsLink> seeAlsos = series.getSeeAlso();
 		if (seeAlsos != null) {
 			for (OperationsLink seeAlso : seeAlsos) {
-				String seeAlsoUri = ObjectType.getCompleteUriGestion(seeAlso.getType(), seeAlso.getId());
-				SesameUtils.addTripleUri(seriesURI, RDFS.SEEALSO ,seeAlsoUri, model, SesameUtils.operationsGraph());
+				if(!seeAlso.isEmpty()) {
+					String seeAlsoUri = ObjectType.getCompleteUriGestion(seeAlso.getType(), seeAlso.getId());
+					SesameUtils.addTripleUri(seriesURI, RDFS.SEEALSO ,seeAlsoUri, model, SesameUtils.operationsGraph());
+				}
 			}
 		}
-		
+
 		List<OperationsLink> replaces = series.getReplaces();
 		if (replaces != null) {
 			for (OperationsLink repl : replaces) {
-				String replUri = ObjectType.getCompleteUriGestion(repl.getType(), repl.getId());
-				SesameUtils.addTripleUri(seriesURI, DCTERMS.REPLACES ,replUri, model, SesameUtils.operationsGraph());
+				if(!repl.isEmpty()) {
+					String replUri = ObjectType.getCompleteUriGestion(repl.getType(), repl.getId());
+					SesameUtils.addTripleUri(seriesURI, DCTERMS.REPLACES ,replUri, model, SesameUtils.operationsGraph());
+				}
 			}
 		}
-		
+
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
-				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-				SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_REPLACED_BY ,isReplUri, model, SesameUtils.operationsGraph());
-				SesameUtils.addTripleUri(SesameUtils.toURI(isReplUri), DCTERMS.REPLACES ,seriesURI, model, SesameUtils.operationsGraph());
+				if(!isRepl.isEmpty()) {
+					String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+					SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_REPLACED_BY ,isReplUri, model, SesameUtils.operationsGraph());
+					SesameUtils.addTripleUri(SesameUtils.toURI(isReplUri), DCTERMS.REPLACES ,seriesURI, model, SesameUtils.operationsGraph());
+				}
 			}
 		}
-		
+
 		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
-		
+
 		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 

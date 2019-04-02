@@ -1,13 +1,19 @@
 package fr.insee.rmes.persistance.service.sesame.operations.series;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.openrdf.model.URI;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class SeriesQueries {
 
 	private static StringBuilder variables;
 	private static StringBuilder whereClause;
+	static Map<String,Object> params ;
 
 	public static String seriesQuery() {
 		return "SELECT DISTINCT ?id ?label ?altLabel \n"
@@ -208,7 +214,26 @@ public class SeriesQueries {
 		whereClause.append(clause);
 	}
 
-
+	/**
+	 * @param uriSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String checkIfSeriesExists(String uriSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriSeries", uriSeries);
+		return buildSeriesRequest("checkIfSeriesExistsQuery.flth", params);	
+	}
+	
+	private static void initParams() {
+		params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+	}
+	
+	private static String buildSeriesRequest(String fileName, Map<String, Object> params) throws RmesException  {
+		return FreeMarkerUtils.buildRequest("operations/series/", fileName, params);
+	}
 
 
 

@@ -26,6 +26,7 @@ import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.MetadataStructureDefUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.famOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
@@ -100,6 +101,17 @@ public class OperationsImpl implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
+	@Override
+	public String createSeries(String body) throws RmesException {
+		// TODO: check if there is already a series with the same name ?
+				
+		String id = seriesUtils.createSeries(body);
+		return id;
+		
+	}
+	
+	
+	
 	/***************************************************************************************************
 	 * OPERATIONS
 	 * 
@@ -153,11 +165,23 @@ public class OperationsImpl implements OperationsService {
 		return operation.toString();
 	}
 
+	/**
+	 * UPDATE
+	 */
 	@Override
 	public void setOperation(String id, String body) throws RmesException {
 		operationsUtils.setOperation(id,body);
 	}
 
+	/**
+	 * CREATE
+	 */
+	@Override
+	public String createOperation(String body) throws RmesException {
+		return operationsUtils.setOperation(body);				
+	}
+	
+	
 	/***************************************************************************************************
 	 * FAMILIES
 	 * @throws RmesException 
@@ -253,6 +277,7 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.setMetadataReport(null, body, true);
 	}
 
+
 	/**
 	 * UPDATE
 	 */
@@ -260,7 +285,5 @@ public class OperationsImpl implements OperationsService {
 	public String setMetadataReport(String id, String body) throws RmesException {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
-
-
 	
 }
