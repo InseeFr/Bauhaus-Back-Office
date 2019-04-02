@@ -11,6 +11,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -138,7 +139,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		try {
 			mail = mapper.readValue(body, Mail.class);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		return mail;
 	}

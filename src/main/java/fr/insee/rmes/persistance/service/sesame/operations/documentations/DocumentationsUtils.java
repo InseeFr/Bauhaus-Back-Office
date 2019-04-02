@@ -192,7 +192,7 @@ public class DocumentationsUtils {
 		
 		addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 		
-		RepositoryGestion.loadSimpleObject(simsUri, model, null);
+		RepositoryGestion.replaceGraph(graph, model, null);
 	}
 
 	/**
@@ -246,7 +246,7 @@ public class DocumentationsUtils {
 				}
 				break; 
 			case RICHTEXT :
-				URI textUri =SesameUtils.toURI( attributeUri.getLocalName().concat("/texte"));
+				URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
 				SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
 				SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
 				if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {

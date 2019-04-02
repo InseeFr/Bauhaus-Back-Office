@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -101,7 +102,7 @@ public class RepositoryPublication {
 		} catch (OpenRDFException e) {
 			logger.error("Publication of concept : " + concept + " failed : " + e.getMessage());
 			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(500, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 		}
 	}
 
@@ -116,7 +117,7 @@ public class RepositoryPublication {
 		} catch (OpenRDFException e) {
 			logger.error("Publication of collection : " + collection + FAILED);
 			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(500, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 
 		}
 	}
@@ -130,12 +131,12 @@ public class RepositoryPublication {
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {
-				throw new RmesException(500, e.getMessage(), "RepositoryException");
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "RepositoryException");
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				throw new RmesException(500, e.getMessage(), "RepositoryException");
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "RepositoryException");
 			}
 		}
 	}

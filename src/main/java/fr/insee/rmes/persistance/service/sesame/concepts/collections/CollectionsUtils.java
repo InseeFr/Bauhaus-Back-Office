@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -51,7 +52,7 @@ public class CollectionsUtils {
 		try {
 			collection = mapper.readValue(body, Collection.class);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		setRdfCollection(collection);
 		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
@@ -68,7 +69,7 @@ public class CollectionsUtils {
 		try {
 			collection = mapper.readerForUpdating(collection).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 
 		}
 		setRdfCollection(collection);

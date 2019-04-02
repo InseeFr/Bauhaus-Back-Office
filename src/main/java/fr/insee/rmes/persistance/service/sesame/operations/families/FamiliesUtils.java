@@ -2,6 +2,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import java.io.IOException;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -32,7 +33,7 @@ public class FamiliesUtils {
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
-		if (family.length()==0) throw new RmesException(400, "Family "+id+ " not found", "Maybe id is wrong");
+		if (family.length()==0) throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		addFamilySeries(id, family);
 		addSubjects(id, family);
 		return family;
@@ -63,11 +64,11 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(404, e.getMessage(), "Can't read request body");
+			throw new RmesException(HttpStatus.SC_NOT_FOUND, e.getMessage(), "Can't read request body");
 		}
 		boolean familyExists = RepositoryGestion.getResponseAsBoolean(FamiliesQueries.isFamilyExisting(family.id));
 		if (!familyExists) {
-			throw new RmesException(406, "Family "+id+" doesn't exist", "Can't update unexisting family");
+			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update unexisting family");
 		}
 		
 		createRdfFamily(family);
@@ -79,10 +80,10 @@ public class FamiliesUtils {
 	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || family.id ==null) {
-			throw new RmesException(404, "No id found", "Can't read request body");
+			throw new RmesException(HttpStatus.SC_NOT_FOUND, "No id found", "Can't read request body");
 		}
 		if (family.getPrefLabelLg1() ==null) {
-			throw new RmesException(404, "prefLabelLg1 not found", "Can't read request body");
+			throw new RmesException(HttpStatus.SC_NOT_FOUND, "prefLabelLg1 not found", "Can't read request body");
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/

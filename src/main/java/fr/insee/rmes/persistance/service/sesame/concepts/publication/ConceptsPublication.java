@@ -104,7 +104,7 @@ public class ConceptsPublication {
 							graph);
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 
 			}
 			
@@ -170,7 +170,7 @@ public class ConceptsPublication {
 			}
 			model.add(tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 
 		}
 	}
@@ -180,7 +180,7 @@ public class ConceptsPublication {
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 		try {
 			while (statements.hasNext()) {
@@ -189,7 +189,7 @@ public class ConceptsPublication {
 						tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 	}
 
@@ -224,7 +224,7 @@ public class ConceptsPublication {
 						}
 					}
 				} catch (RepositoryException e) {
-					throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 				}
 			} finally {
 				RepositoryGestion.closeStatements(statements);
