@@ -27,8 +27,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 	
 	@Override
 	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
-		if (organizationIdentifier==null) {return null;}
-		if (StringUtils.isEmpty(organizationIdentifier)) {return "";}
+		if (StringUtils.isEmpty(organizationIdentifier)) {return null;}
 		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString("uri"));
 	}
