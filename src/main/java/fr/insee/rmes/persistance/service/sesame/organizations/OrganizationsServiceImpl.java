@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.organizations;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -26,7 +27,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 	
 	@Override
 	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
-		if (organizationIdentifier==null) {return null;}
+		if (StringUtils.isEmpty(organizationIdentifier)) {return null;}
 		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString("uri"));
 	}

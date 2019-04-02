@@ -13,4 +13,8 @@ public class IdLabelTwoLangs {
 	@Schema(description = "Label lg2")
 	public String labelLg2;
 
+	public String getId() {
+		return this.id;
+	}
+
 }

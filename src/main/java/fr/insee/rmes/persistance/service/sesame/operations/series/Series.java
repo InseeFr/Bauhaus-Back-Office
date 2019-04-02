@@ -3,7 +3,9 @@ package fr.insee.rmes.persistance.service.sesame.operations.series;
 import java.util.List;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.famOpeSerUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Series {
@@ -80,13 +82,22 @@ public class Series {
 	public List<OperationsLink> isReplacedBy;
 	
 	
+	/*
+	 * Constructors
+	 */
 	
-	
+	public Series() throws RmesException {
+		this.id=  famOpeSerUtils.createId();
+}	
 	
 	public Series(String id) {
 		this.id=id;
 	}
 
+	/*
+	 * Getters
+	 */
+	
 	public String getId() {
 		return id;
 	}
