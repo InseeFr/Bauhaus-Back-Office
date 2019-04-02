@@ -97,6 +97,8 @@ public interface OperationsService {
 
 	String getOperationsWithoutReport(String id) throws RmesException;
 
+	String createFamily(String body) throws RmesException;
+
 
 
 
