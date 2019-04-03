@@ -25,10 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -130,12 +132,17 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfSeries(series);
+		// Tester l'existence de la famille
+		String idFamily= series.getFamily().getId();
+		if (! new FamiliesUtils().checkIfFamilyExists(idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
+
+		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
+		createRdfSeries(series, familyURI);
 		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
+	
 		return id;
 
 	}
-
 
 	public void setSeries(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -146,13 +153,19 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfSeries(series);
+		createRdfSeries(series,null);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 
+		
 	}
 
 
-	public void createRdfSeries(Series series) throws RmesException {
+		/*
+		 * CREATE OR UPDATE
+		 */
+		private void createRdfSeries(Series series, URI familyURI) throws RmesException {
+	
+		
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
@@ -243,6 +256,12 @@ public class SeriesUtils {
 			}
 		}
 
+		if (familyURI != null) {
+			//case CREATION : link series to family
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, SesameUtils.operationsGraph());
+			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
+		}
+		
 		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
 
 		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);

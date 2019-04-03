@@ -23,6 +23,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -118,6 +119,13 @@ public class FamiliesUtils {
 		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
 		return id;
 
+	}
+
+
+	public boolean checkIfFamilyExists(String idFamily) throws RmesException {
+		String uriFamily="http://bauhaus/operations/famille/"+idFamily; 
+		Boolean result=RepositoryGestion.getResponseAsBoolean(FamiliesQueries.checkIfFamilyExists(uriFamily));		
+		return result;
 	}
 	
 }
