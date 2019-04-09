@@ -163,10 +163,6 @@ public class ConceptsUtils {
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
-	public String getConceptUriByID(String id)throws RmesException{
-		return ConceptsQueries.getConceptUriByIDQuery(id);
-	}
-
 	public Response.Status deleteConcept(String uriConcept, String uriGraph) throws RmesException{
 		return RepositoryGestion.executeUpdate(ConceptsQueries.deleteConcept(uriConcept,uriGraph));
 	}

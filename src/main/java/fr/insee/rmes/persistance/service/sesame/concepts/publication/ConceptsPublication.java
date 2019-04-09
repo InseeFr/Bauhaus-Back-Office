@@ -40,7 +40,6 @@ public class ConceptsPublication {
 	}
 
 	public static void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
-
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
 			String conceptId = conceptsToPublish.getString(i);
 			//TODO uncomment when we can notify...
@@ -105,7 +104,6 @@ public class ConceptsPublication {
 				}
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
-
 			}
 			
 			RepositoryGestion.closeStatements(statements);
