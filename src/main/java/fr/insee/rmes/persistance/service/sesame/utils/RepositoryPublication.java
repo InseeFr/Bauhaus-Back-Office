@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -78,6 +80,17 @@ public class RepositoryPublication {
 	 */
 	public static Boolean getResponseAsBoolean(String query) throws  RmesException {
 		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
+	}
+	
+	/**
+	 * Method which aims to execute sparql update
+	 * 
+	 * @param updateQuery
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
+		return RepositoryUtils.executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
 	}
 
 	public static void publishConcept(Resource concept, Model model, List<Resource> noteToClear,

@@ -48,6 +48,10 @@ public class SesameUtils {
 		return factory.createURI(objType.getBaseUri() + "/" + id);
 	}
 	
+	public static URI objectIRIPublication(ObjectType objType, String id) {
+		return factory.createURI(objType.getBaseUriPublication() + "/" + id);
+	}
+	
 	public static URI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
