@@ -276,15 +276,6 @@ public class ConceptsQueries {
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
 	}
 
-	/**
-	 * @return ?uri 
-	 * @throws RmesException
-	 */
-	public static String getUriFromIdQuery(String id) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("idConcept", id);
-		return buildConceptRequest("getUriFromIdQuery.ftlh", params);
-	}
 	
 	/**
 	 * @param uriConcept
