@@ -27,7 +27,6 @@ import fr.insee.rmes.persistance.service.OperationsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.MetadataStructureDefUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.famOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;

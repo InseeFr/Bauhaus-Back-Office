@@ -3,8 +3,6 @@ package fr.insee.rmes.persistance.service.sesame.operations.series;
 import java.io.IOException;
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
