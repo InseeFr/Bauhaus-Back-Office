@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -65,7 +66,7 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_NOT_FOUND, e.getMessage(), "Can't read request body");
+			throw new RmesNotFoundException( e.getMessage(), "Can't read request body");
 		}
 		boolean familyExists = RepositoryGestion.getResponseAsBoolean(FamiliesQueries.isFamilyExisting(family.id));
 		if (!familyExists) {
@@ -81,10 +82,10 @@ public class FamiliesUtils {
 	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
-			throw new RmesException(HttpStatus.SC_NOT_FOUND, "No id found", "Can't read request body");
+			throw new RmesNotFoundException( "No id found", "Can't read request body");
 		}
 		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
-			throw new RmesException(HttpStatus.SC_NOT_FOUND, "prefLabelLg1 not found", "Can't read request body");
+			throw new RmesNotFoundException( "prefLabelLg1 not found", "Can't read request body");
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
