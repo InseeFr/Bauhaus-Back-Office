@@ -17,6 +17,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
@@ -87,7 +88,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 				roles.put(jsonO);
 			}
 		} catch (Exception e) {
-			throw new RmesException(500, e.getMessage(), "Fail to getRoles");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to getRoles");
 		}
 		return roles.toString();
 	}
@@ -124,7 +125,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			logger.info("Get agents succeed");
 		} catch (NamingException e) {
 			logger.error("Get agents failed : " + e.getMessage());
-			throw new RmesException(500, e.getMessage(), "Get agents failed");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents failed");
 		}
 		return agents.toString();
 	}

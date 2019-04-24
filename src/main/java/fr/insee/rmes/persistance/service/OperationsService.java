@@ -30,6 +30,7 @@ public interface OperationsService {
 
 	void setSeries(String id, String body) throws RmesException;
 
+	String createSeries(String body) throws RmesException;
 
 	/******************************************************************************************
 	 * OPERATIONS
@@ -45,7 +46,8 @@ public interface OperationsService {
 	String getOperationByID(String id) throws RmesException;
 
 	void setOperation(String id, String body) throws RmesException;
-	
+
+	String createOperation(String body) throws RmesException;
 	
 	/******************************************************************************************
 	 * INDICATORS
@@ -94,6 +96,10 @@ public interface OperationsService {
 	String setMetadataReport(String id, String body) throws RmesException;
 
 	String getOperationsWithoutReport(String id) throws RmesException;
+
+	String createFamily(String body) throws RmesException;
+
+
 
 
 }

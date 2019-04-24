@@ -49,7 +49,7 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	VarBookExportBuilder varBookExport;
-	
+
 	@Autowired
 	XDocReport xdr;
 
@@ -64,10 +64,10 @@ public class OperationsImpl implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
-	
+
 	@Autowired
 	DocumentationsUtils documentationsUtils;
-	
+
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
 
@@ -94,13 +94,24 @@ public class OperationsImpl implements OperationsService {
 	public void setSeries(String id, String body) throws RmesException {
 		seriesUtils.setSeries(id,body);
 	}
-	
+
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
 		JSONArray resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
 		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
+
+	@Override
+	public String createSeries(String body) throws RmesException {
+		// TODO: check if there is already a series with the same name ?
+
+		String id = seriesUtils.createSeries(body);
+		return id;
+
+	}
+
+
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -124,7 +135,7 @@ public class OperationsImpl implements OperationsService {
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
 	}
-	
+
 	@Override
 	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws Exception  {
 		OutputStream os;
@@ -133,7 +144,7 @@ public class OperationsImpl implements OperationsService {
 		}else {
 			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		}
-		
+
 		InputStream is = transformFileOutputStreamInInputStream(os);
 		String fileName = "Codebook"+ExportUtils.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
@@ -147,7 +158,7 @@ public class OperationsImpl implements OperationsService {
 		String path = (String) pathField.get(os);
 		return new FileInputStream(path);
 	}
-	
+
 
 	@Override
 	public String getOperationByID(String id) throws RmesException {
@@ -155,10 +166,22 @@ public class OperationsImpl implements OperationsService {
 		return operation.toString();
 	}
 
+	/**
+	 * UPDATE
+	 */
 	@Override
 	public void setOperation(String id, String body) throws RmesException {
 		operationsUtils.setOperation(id,body);
 	}
+
+	/**
+	 * CREATE
+	 */
+	@Override
+	public String createOperation(String body) throws RmesException {
+		return operationsUtils.setOperation(body);				
+	}
+
 
 	/***************************************************************************************************
 	 * FAMILIES
@@ -183,6 +206,14 @@ public class OperationsImpl implements OperationsService {
 		familiesUtils.setFamily(id,body);
 	}
 
+	/**
+	 * CREATE
+	 */
+	@Override
+	public String createFamily(String body) throws RmesException {
+		String id = familiesUtils.createFamily(body);
+		return id;
+	}
 
 	/***************************************************************************************************
 	 * INDICATORS
@@ -217,7 +248,7 @@ public class OperationsImpl implements OperationsService {
 		return indicatorsUtils.setIndicator(body);
 	}
 
-	
+
 	/***************************************************************************************************
 	 * DOCUMENTATION
 	 * @throws RmesException 
@@ -234,7 +265,7 @@ public class OperationsImpl implements OperationsService {
 		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
 		return attribute.toString();
 	}
-	
+
 	@Override
 	public String getMetadataAttributes() throws RmesException {
 		String attributes = msdUtils.getMetadataAttributes().toString();
@@ -255,6 +286,7 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.setMetadataReport(null, body, true);
 	}
 
+
 	/**
 	 * UPDATE
 	 */
@@ -264,5 +296,4 @@ public class OperationsImpl implements OperationsService {
 	}
 
 
-	
 }

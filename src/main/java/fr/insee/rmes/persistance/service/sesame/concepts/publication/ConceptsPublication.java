@@ -40,7 +40,6 @@ public class ConceptsPublication {
 	}
 
 	public static void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
-
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
 			String conceptId = conceptsToPublish.getString(i);
 			//TODO uncomment when we can notify...
@@ -104,8 +103,7 @@ public class ConceptsPublication {
 							graph);
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
-
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 			}
 			
 			RepositoryGestion.closeStatements(statements);
@@ -170,7 +168,7 @@ public class ConceptsPublication {
 			}
 			model.add(tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 
 		}
 	}
@@ -180,7 +178,7 @@ public class ConceptsPublication {
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 		try {
 			while (statements.hasNext()) {
@@ -189,7 +187,7 @@ public class ConceptsPublication {
 						tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 		}
 	}
 
@@ -224,7 +222,7 @@ public class ConceptsPublication {
 						}
 					}
 				} catch (RepositoryException e) {
-					throw new RmesException(500, e.getMessage(), REPOSITORY_EXCEPTION);
+					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 				}
 			} finally {
 				RepositoryGestion.closeStatements(statements);

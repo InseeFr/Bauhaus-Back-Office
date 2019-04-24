@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -31,7 +33,9 @@ import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPub
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.utils.JSONUtils;
 
@@ -64,7 +68,6 @@ public class ConceptsUtils {
 	}
 
 	public String setConcept(String body) throws RmesException {
-
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -72,7 +75,7 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readValue(body, Concept.class);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
@@ -87,7 +90,7 @@ public class ConceptsUtils {
 		try {
 			concept = mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(500, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
@@ -163,12 +166,12 @@ public class ConceptsUtils {
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
-	public String getConceptUriByID(String id)throws RmesException{
-		return ConceptsQueries.getConceptUriByIDQuery(id);
-	}
-
-	public Response.Status deleteConcept(String uriConcept, String uriGraph) throws RmesException{
-		return RepositoryGestion.executeUpdate(ConceptsQueries.deleteConcept(uriConcept,uriGraph));
+	public Response.Status deleteConcept(String id) throws RmesException{
+		Response.Status result =  RepositoryGestion.executeUpdate(ConceptsQueries.deleteConcept(SesameUtils.objectIRI(ObjectType.CONCEPT,id).toString(),SesameUtils.conceptGraph().toString()));
+		if (result.equals(Status.OK)) {
+			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(SesameUtils.objectIRIPublication(ObjectType.CONCEPT,id).toString(),SesameUtils.conceptGraph().toString()));
+		}
+		return result;
 	}
 
 	public JSONArray getConceptVersions(String uriConcept) throws RmesException{

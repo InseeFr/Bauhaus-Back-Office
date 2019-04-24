@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.service;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -58,10 +57,6 @@ public interface ConceptsService {
 	public boolean setCollectionSend(String id, String body) throws RmesUnauthorizedException, RmesException ;
 
 	public String getRelatedConcepts(String id) throws RmesException;
-	
-	public String getGraphWithConcept(String id) throws RmesException;
-
-	public String getConceptUriByID(String id)throws RmesException;
 
 	public String deleteConcept(String id) throws RmesException;
 

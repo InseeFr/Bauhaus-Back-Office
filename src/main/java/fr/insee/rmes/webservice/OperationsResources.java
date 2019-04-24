@@ -117,6 +117,32 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/family")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
+	public Response createFamily(
+			@RequestBody(description = "Family to create", required = true, 
+            content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+		String id = null;
+		try {
+			id = operationsService.createFamily(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	
+	
+	
 	/***************************************************************************************************
 	 * SERIES
 	 ******************************************************************************************************/
@@ -174,9 +200,36 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/series")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
+	public Response createSeries(
+			@RequestBody(description = "Series to create", required = true, 
+            content = @Content(schema = @Schema(implementation = Series.class))) String body) {
+		String id = null;
+		try {
+			id = operationsService.createSeries(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	
 	/***************************************************************************************************
 	 * OPERATIONS
 	 ******************************************************************************************************/
+	
+
+	
 	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -229,6 +282,12 @@ public class OperationsResources {
 		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
 	}
 	
+	/**
+	 * UPDATE
+	 * @param id
+	 * @param body
+	 * @return
+	 */
 	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/operation/{id}")
@@ -246,6 +305,29 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+	/**
+	 * CREATE
+	 * @param body
+	 * @return
+	 */
+	@Secured({ Constants.SPRING_ADMIN })
+	@POST
+	@Path("/operation")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
+	public Response createOperation(
+			@RequestBody(description = "Operation to create", required = true, 
+            content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
+		String id = null;
+		try {
+			id = operationsService.createOperation(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	
 	/***************************************************************************************************
 	 * INDICATORS
 	 ******************************************************************************************************/

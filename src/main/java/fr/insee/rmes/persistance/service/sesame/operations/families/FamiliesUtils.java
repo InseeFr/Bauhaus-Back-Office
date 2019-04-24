@@ -2,6 +2,8 @@ package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import java.io.IOException;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -19,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -32,7 +35,7 @@ public class FamiliesUtils {
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
-		if (family.length()==0) throw new RmesException(400, "Family "+id+ " not found", "Maybe id is wrong");
+		if (family.length()==0) throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		addFamilySeries(id, family);
 		addSubjects(id, family);
 		return family;
@@ -63,11 +66,11 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(404, e.getMessage(), "Can't read request body");
+			throw new RmesNotFoundException( e.getMessage(), "Can't read request body");
 		}
 		boolean familyExists = RepositoryGestion.getResponseAsBoolean(FamiliesQueries.isFamilyExisting(family.id));
 		if (!familyExists) {
-			throw new RmesException(406, "Family "+id+" doesn't exist", "Can't update unexisting family");
+			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update unexisting family");
 		}
 		
 		createRdfFamily(family);
@@ -78,11 +81,11 @@ public class FamiliesUtils {
 	
 	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
-		if (family == null || family.id ==null) {
-			throw new RmesException(404, "No id found", "Can't read request body");
+		if (family == null || StringUtils.isEmpty(family.id)) {
+			throw new RmesNotFoundException( "No id found", "Can't read request body");
 		}
-		if (family.getPrefLabelLg1() ==null) {
-			throw new RmesException(404, "prefLabelLg1 not found", "Can't read request body");
+		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
+			throw new RmesNotFoundException( "prefLabelLg1 not found", "Can't read request body");
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
@@ -97,6 +100,31 @@ public class FamiliesUtils {
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
 		RepositoryGestion.loadSimpleObject(familyURI, model, null);
+	}
+
+
+	public String createFamily(String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Family family = new Family();
+		String id = family.getId();
+		try {
+			family = mapper.readValue(body,Family.class);
+			family.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfFamily(family);
+		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
+		return id;
+
+	}
+
+
+	public boolean checkIfFamilyExists(String idFamily) throws RmesException {
+		String uriFamily="http://bauhaus/operations/famille/"+idFamily; 
+		Boolean result=RepositoryGestion.getResponseAsBoolean(FamiliesQueries.checkIfFamilyExists(uriFamily));		
+		return result;
 	}
 	
 }

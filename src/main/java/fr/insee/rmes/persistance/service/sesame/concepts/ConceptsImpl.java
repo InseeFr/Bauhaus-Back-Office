@@ -5,6 +5,7 @@ import java.io.InputStream;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -23,8 +24,10 @@ import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collections
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 @Service
 public class ConceptsImpl implements ConceptsService {
@@ -64,21 +67,20 @@ public class ConceptsImpl implements ConceptsService {
 		logger.info("Starting to get provisionals concepts list");
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsToValidateQuery()).toString();
 	}
+	
 	@Override
 	public String getConceptByID(String id)  throws RmesException{
 		JSONObject concept = conceptsUtils.getConceptById(id);
 		return concept.toString();
 	}
+	
 	@Override
 	public String getRelatedConcepts(String id)  throws RmesException{
-		JSONArray resQuery =getRelatedConceptsAsArray(id);
+		String uriConcept = SesameUtils.objectIRI(ObjectType.CONCEPT,id).toString();
+		JSONArray resQuery = conceptsUtils.getRelatedConcepts(uriConcept);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
-	public JSONArray getRelatedConceptsAsArray(String id)  throws RmesException{
-		String uriConcept = getConceptUriByID(id);
-		return conceptsUtils.getRelatedConcepts(uriConcept);
-	}
 
 	/**
 	 * @param id
@@ -87,8 +89,7 @@ public class ConceptsImpl implements ConceptsService {
 	 */	
 	@Override
 	public String deleteConcept(String id) throws RmesException {
-
-		String uriConcept = getConceptUriByID(id);
+		String uriConcept = SesameUtils.objectIRI(ObjectType.CONCEPT,id).toString();
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
 		/* check concept isn't used in several graphs */
@@ -108,31 +109,18 @@ public class ConceptsImpl implements ConceptsService {
 			throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is linked to other concepts.",listConcepts);
 		}
 		/* deletion */
-		JSONObject jsonGraph=(JSONObject) graphArray.get(0);
-		String uriGraph = jsonGraph.getString("src");
-		Response.Status result= conceptsUtils.deleteConcept(uriConcept,uriGraph);
-		String successMessage="The concept "+id+" has been deleted from graph "+uriGraph;
+		Response.Status result= conceptsUtils.deleteConcept(id);
+		String successMessage="The concept "+id+" has been deleted from graph "+SesameUtils.conceptGraph();
 		if (result!= Status.OK) {
-			throw new RmesException(402,"Unexpected return message: ",result.toString());
-		} else { return successMessage;}
-	}
-
-	@Override
-	public String getGraphWithConcept(String id)  throws RmesException{
-		String uriConcept = getConceptUriByID(id);
-		JSONArray graph = conceptsUtils.getGraphsWithConcept(uriConcept);
-		return graph.toString();
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Unexpected return message: ",result.toString());
+		} else { 
+			return successMessage;
+		}
 	}
 
 	@Override
 	public String getConceptLinksByID(String id)  throws RmesException{
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id)).toString();
-	}
-
-	@Override
-	public String getConceptUriByID(String id)  throws RmesException{
-		JSONObject json = RepositoryGestion.getResponseAsObject(conceptsUtils.getConceptUriByID(id));
-		return json.getString("uri");
 	}
 
 	@Override

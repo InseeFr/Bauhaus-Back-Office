@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.links;
 
+import fr.opensagres.xdocreport.core.utils.StringUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class OperationsLink {
@@ -32,4 +33,7 @@ public class OperationsLink {
 		return labelLg2;
 	}
 
+	public boolean isEmpty() {
+		return StringUtils.isEmpty(id);
+	}
 }

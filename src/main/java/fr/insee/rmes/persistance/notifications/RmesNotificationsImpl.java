@@ -9,6 +9,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,7 +74,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
             session.close();
 
         } catch (Exception e) {
-			throw new RmesException(500, e.getMessage(), "Fail to send notification");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to send notification");
 
         }
         finally {

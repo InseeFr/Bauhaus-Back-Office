@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.code_list.CodeListUtils;
 import fr.insee.rmes.persistance.service.sesame.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
@@ -55,7 +56,7 @@ public class DocumentationsUtils {
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException{
 		//Get general informations
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
-		if (doc.length()==0) {throw new RmesException(HttpStatus.SC_NOT_FOUND, "Not found", "");}
+		if (doc.length()==0) {throw new RmesNotFoundException("Not found", "");}
 		doc.put(ID, idSims);
 		
 		//Get all rubrics
@@ -144,7 +145,7 @@ public class DocumentationsUtils {
 		JSONObject existingIdOperation =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationOperationQuery(idSims));
 		if (existingIdOperation == null || existingIdOperation.get("idOperation")==null) {
 			logger.error("Can't find operation linked to the documentation");
-			throw new RmesException(HttpStatus.SC_NOT_FOUND, "Operation not found", "Maybe this is a creation")	;	
+			throw new RmesNotFoundException("Operation not found", "Maybe this is a creation")	;	
 		}
 		if (!idOperation.equals(existingIdOperation.get("idOperation"))) {
 			logger.error("idOperation and idSims don't match");
@@ -192,7 +193,7 @@ public class DocumentationsUtils {
 		
 		addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 		
-		RepositoryGestion.loadSimpleObject(simsUri, model, null);
+		RepositoryGestion.replaceGraph(graph, model, null);
 	}
 
 	/**
