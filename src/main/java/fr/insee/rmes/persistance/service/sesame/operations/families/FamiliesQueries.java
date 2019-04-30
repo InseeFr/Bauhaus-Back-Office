@@ -12,7 +12,7 @@ public class FamiliesQueries {
 	static Map<String,Object> params ;
 
 	public static String isFamilyExisting(String id) {
-		return "ASK  { ?family a insee:StatisticalOperationFamily"
+		return "ASK  { ?family a insee:StatisticalOperationFamily \n"
 				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
 				+ "}";
 	}
