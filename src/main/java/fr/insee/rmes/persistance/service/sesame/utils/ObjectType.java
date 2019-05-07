@@ -49,6 +49,10 @@ public enum ObjectType {
 		return Config.BASE_URI_GESTION + this.baseUri;
 	}
 	
+	public String getBaseUriPublication() {
+		return Config.BASE_URI_PUBLICATION + this.baseUri;
+	}
+	
 	
 	private static Map<String, ObjectType> lookupLabel = new HashMap<>();
 	private static Map<URI, ObjectType> lookupUri = new HashMap<>();
