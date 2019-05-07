@@ -78,6 +78,48 @@ public class DocumentsUtils {
 		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims,idRubric));
 	}
 
+	/**
+	 * Get contexts that include a Sims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getAllGraphsWithSims() throws RmesException {
+		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllGraphsWithSimsQuery());
+	}
+	
+
+	/**
+	 * Get documents in a Sims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getAllDocumentsInSims(String idSims) throws RmesException {
+		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery(idSims));
+	}
+	
+	/**
+	 * Get all documents
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getAllDocuments() throws RmesException {
+		JSONArray allSims = getAllGraphsWithSims();
+		JSONArray allDocs = new JSONArray();
+		
+		allSims.forEach(sims -> {
+			String idSims = ((JSONObject) sims).getString("sims");
+			JSONArray newDocs = new JSONArray();
+			try {
+				newDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery(idSims));
+			} catch (RmesException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			allDocs.put(newDocs);
+		});
+		return allDocs;
+	}
+	
 	
 	
 	/**
@@ -85,7 +127,7 @@ public class DocumentsUtils {
 	 * @return
 	 * @throws RmesException
 	 */
-	private String createDocumentID() throws RmesException {
+	protected String createDocumentID() throws RmesException {
 		logger.info("Generate document id");
 		JSONObject json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastDocumentID());
 		if (json.length()==0) {return "1000";}
