@@ -104,11 +104,11 @@ public class ConceptsResources   {
 	//@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
 	@DELETE
 	@Path("/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
 	public Response deleteConcept(@PathParam("id") String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.deleteConcept(id);
+			conceptsService.deleteConcept(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}

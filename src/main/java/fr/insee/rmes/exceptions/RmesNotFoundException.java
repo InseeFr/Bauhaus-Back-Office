@@ -1,11 +1,13 @@
 package fr.insee.rmes.exceptions;
 
-//private static final long serialVersionUID = ?? ;
+import org.apache.commons.httpclient.HttpStatus;
 
 public class RmesNotFoundException extends RmesException {
 
+	private static final long serialVersionUID = 1L;
+
 	public RmesNotFoundException(String message, String details) {
-		super(404, message, details);
+		super(HttpStatus.SC_NOT_FOUND, message, details);
 	}
 
 }
