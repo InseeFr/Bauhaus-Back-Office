@@ -122,9 +122,6 @@ public class SeriesQueries {
 
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
-
-
-
 	}
 
 	private static void addOptionalClause(String predicate, String variableName){

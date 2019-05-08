@@ -50,7 +50,7 @@ public class SeriesUtils {
 
 
 	public Boolean checkIfSeriesExists(String id) throws RmesException {
-		String uriSeries="http://bauhaus/operations/serie/"+id; //.substring(1)
+		String uriSeries="http://bauhaus/operations/serie/"+id; 
 		Boolean result=RepositoryGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesExists(uriSeries));		
 		return result;
 	}
