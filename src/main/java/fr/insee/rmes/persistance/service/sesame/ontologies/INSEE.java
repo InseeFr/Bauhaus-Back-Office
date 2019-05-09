@@ -2,6 +2,7 @@ package fr.insee.rmes.persistance.service.sesame.ontologies;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
@@ -30,6 +31,7 @@ public class INSEE {
 	public static final URI OPERATION;
 	public static final URI SERIES;
 	public static final URI INDICATOR;
+	public static final URI DOCUMENT ;
 	
 	public static final URI DATA_COLLECTOR;
 	public static final URI GESTIONNAIRE;
@@ -38,6 +40,7 @@ public class INSEE {
 	/*TEST REACT*/
 	public static final URI CONCEPT_VERSION;
 	public static final URI IS_VALIDATED;
+
 	
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
@@ -57,6 +60,7 @@ public class INSEE {
 		FAMILY = f.createURI(NAMESPACE,"StatisticalOperationFamily");
 		OPERATION = f.createURI(NAMESPACE,"StatisticalOperation");
 		SERIES = f.createURI(NAMESPACE,"StatisticalOperationSeries");
+		DOCUMENT = f.createURI(NAMESPACE,"document");
 		INDICATOR = f.createURI(NAMESPACE,"StatisticalIndicator");
 
 		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");

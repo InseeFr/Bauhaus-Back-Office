@@ -1,5 +1,8 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,18 +11,26 @@ import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.DC;
+import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PAV;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -111,11 +122,16 @@ public class DocumentsUtils {
 			JSONArray newDocs = new JSONArray();
 			try {
 				newDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery(idSims));
+			//	System.out.println("---------------------\n newDocs: " +newDocs);
 			} catch (RmesException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			allDocs.put(newDocs);
+			
+			newDocs.forEach(doc -> {
+				allDocs.put(doc);
+			//	System.out.println("doc: " + doc.toString());
+			});
+			
 		});
 		return allDocs;
 	}
@@ -135,6 +151,90 @@ public class DocumentsUtils {
 		if (id.equals("undefined")) {return "1000";}
 		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
+	}
+
+	/**
+	 * Create a new document
+	 * @return
+	 * @throws RmesException
+	 */
+	
+	public void setDocument(String id, String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Document document = new Document(id);
+		try {
+			document = mapper.readerForUpdating(document).readValue(body);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfDocument(document);
+		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1());
+	}
+
+
+		/*
+		 * CREATE OR UPDATE
+		 */
+		private void createRdfDocument(Document document) throws RmesException {
+	
+		// Dans quel graph ??
+		Model model = new LinkedHashModel();
+		URI documentURI = document.getUri();
+		/*Const*/
+		model.add(documentURI, RDF.TYPE, INSEE.DOCUMENT, SesameUtils.operationsGraph());
+		/*Required
+		model.add(seriesURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(series.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
+		/*Optional
+		SesameUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+
+		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+
+		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+
+		String creator=series.getCreator();
+		if (!StringUtils.isEmpty(creator)) {
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creator), model, SesameUtils.operationsGraph());
+		}
+		String gestionnaire=series.getGestionnaire();
+		if (!StringUtils.isEmpty(gestionnaire)) {
+			SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.operationsGraph());
+		}
+
+		//partenaires
+		List<OperationsLink> contributors = series.getContributor();
+		if (contributors != null){
+			for (OperationsLink contributor : contributors) {
+				if(!contributor.isEmpty()) {
+					SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());		
+				}
+			}
+		}
+
+		List<OperationsLink> dataCollectors = series.getDataCollector();
+		if (dataCollectors != null) {
+			for (OperationsLink dataCollector : dataCollectors) {
+				if(!dataCollector.isEmpty()) {
+					SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
+				}		
+			}
+		}
+
+	
+
+		if (familyURI != null) {
+			//case CREATION : link series to family
+			SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, SesameUtils.operationsGraph());
+			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
+		}*/
+		
+		RepositoryGestion.keepHierarchicalOperationLinks(documentURI,model);
+
+		RepositoryGestion.loadObjectWithReplaceLinks(documentURI, model);
 	}
 
 }

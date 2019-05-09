@@ -24,7 +24,6 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String getDocuments() throws RmesException {
 		logger.info("Starting to get documents list");
-		DocumentsUtils documentsUtils=new DocumentsUtils();
 		String resQuery = documentsUtils.getAllDocuments().toString();
 		return resQuery;
 	}
@@ -35,10 +34,9 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public String setDocument(String body) throws RmesException {
-		DocumentsUtils documentsUtils=new DocumentsUtils();
 		String id=documentsUtils.createDocumentID();
-		// TODO Auto-generated method stub
-		return null;
+		documentsUtils.setDocument(id,body);
+		return id;
 	}
 	
 	/*
