@@ -1,6 +1,10 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
+import org.openrdf.model.URI;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class Document {
 	
@@ -8,51 +12,15 @@ public class Document {
 	private String labelLg2;
 	private String descriptionLg1;
 	private String descriptionLg2;
-	
-	
-	//private List<StringWithLang> label =  new ArrayList<StringWithLang>();
-	//private List<StringWithLang> description =  new ArrayList<StringWithLang>();
 	private String dateMiseAJour;
 	private String langue;
 	private String url;
-	private String uri;
+	private URI uri;
 	
-	/*
-	@JsonProperty("labelLg1")
-	public List<StringWithLang> getLabel() {
-		return label;
-	}
-	
-	public void setLabelLg1(String labelLg1) {
-		label.add(new StringWithLang(labelLg1, Lang.FR));
-	}
-	
-	public void setLabelLg2(String labelLg2) {
-		if (StringUtils.isNotEmpty(labelLg2)) {
-				label.add(new StringWithLang(labelLg2, Lang.EN));
-		}
-	}
-	
-	public List<StringWithLang> getDescription() {
-		return description;
-	}
 
-	public void setDescription(List<StringWithLang> description) {
-		this.description = description;
+	public Document(String id) {
+		this.uri = SesameUtils.documentIRI(id);
 	}
-	
-	public void setDescriptionLg1(String description) {
-		if (StringUtils.isNotEmpty(description)) {
-			label.add(new StringWithLang(description, Lang.FR));
-		}
-	}
-	
-	public void setDescriptionLg2(String description) {
-		if (StringUtils.isNotEmpty(description)) {
-			label.add(new StringWithLang(description, Lang.EN));
-		}
-	}*/
-	
 	public String getLabelLg1() {
 		return labelLg1;
 	}
@@ -101,13 +69,15 @@ public class Document {
 	}
 
 	@JsonProperty("uri")
-	public String getUri() {
+	public URI getUri() {
 		return uri;
 	}
 
-	public void setUri(String uri) {
+	public void setUri(URI uri) {
 		this.uri = uri;
 	}
-
+	public void setUri(String id) {
+		this.uri =  SesameUtils.documentIRI(id);
+	}
 	
 }
