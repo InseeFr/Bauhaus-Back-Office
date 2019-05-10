@@ -59,7 +59,10 @@ public class SesameUtils {
 	public static URI collectionIRI(String id) {
 		return objectIRI(ObjectType.COLLECTION, id);
 	}
-	
+
+	public static URI documentIRI(String id) {
+		return objectIRI(ObjectType.DOCUMENT, id);
+	}
 	
 	
 	public static URI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
