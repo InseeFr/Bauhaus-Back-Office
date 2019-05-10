@@ -2,7 +2,6 @@ package fr.insee.rmes.persistance.service.sesame.ontologies;
 
 import org.openrdf.model.Namespace;
 import org.openrdf.model.URI;
-import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.impl.NamespaceImpl;
 import org.openrdf.model.impl.ValueFactoryImpl;
