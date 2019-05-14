@@ -60,5 +60,14 @@ public class DocumentationRubric {
 	public void setDocuments(List<DocumentLink> documents) {
 		this.documents = documents;
 	}
+	
+	public boolean isEmpty() {
+		return 
+		 StringUtils.isEmpty(value) ||
+		StringUtils.isEmpty(labelLg1) ||
+		StringUtils.isEmpty(labelLg2) ||
+		StringUtils.isEmpty(codeList) ||
+		(documents == null || documents.isEmpty());
+	}
 }
 
