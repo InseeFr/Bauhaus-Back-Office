@@ -2,7 +2,6 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
