@@ -1,5 +1,7 @@
 package fr.insee.rmes.webservice;
 
+import java.io.InputStream;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -15,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
@@ -73,6 +76,22 @@ public class DocumentsRessources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
+	@GET
+	@Path("/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getDocument", summary = "Document",
+	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
+	public Response getDocument(@PathParam("id") String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = documentsService.getDocument(id).toString();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	
 	@DELETE
 	@Path("/{id}")
 	@Operation(operationId = "deleteDocument", summary = "deletion")
@@ -90,10 +109,14 @@ public class DocumentsRessources {
 	@Path("/document")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDocument", summary = "Create document" )
-	public Response setDocument(@RequestBody(description = "Document", required = true) String body) {
+	public Response setDocument(
+			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class)) String body,
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file 2"))
+			@FormDataParam(value = "file") InputStream documentFile
+			) throws Exception {
 		String id = null;
 		try {
-			id = documentsService.setDocument(body);
+			id = documentsService.setDocument(body, documentFile);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
@@ -107,7 +130,8 @@ public class DocumentsRessources {
 	@Operation(operationId = "setDocumentById", summary = "Update document")
 	public Response setDocument(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
-			@RequestBody(description = "Concept", required = true) String body) {
+			@RequestBody(description = "Document", required = true)
+			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
 		try {
 			documentsService.setDocument(id, body);
 		} catch (RmesException e) {
