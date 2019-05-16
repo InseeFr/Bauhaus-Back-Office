@@ -3,12 +3,17 @@ package fr.insee.rmes.persistance.service.sesame.operations.documentations.docum
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
+import org.openrdf.model.impl.LinkedHashModel;
+import org.openrdf.model.vocabulary.RDF;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class DocumentsQueries {
 	
@@ -19,13 +24,7 @@ public class DocumentsQueries {
 		if (params==null) {initParams();}
 		return  buildRequest("getAllSimsContextsQuery.ftlh", params);
 	}
-	
-	public static String getAllDocumentsQuery(String idSims) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("idSims", idSims);
-		return  buildRequest("getAllDocumentsQuery.ftlh", params);
-	}
-	
+			
 	public static String createDocumentQuery(URI uri, Document document) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
@@ -47,7 +46,6 @@ public class DocumentsQueries {
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
 	
-	public static String updateDocumentQuery(URI uri, Document document) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
 		return  buildRequest("updateDocumentQuery.ftlh", params);
@@ -67,7 +65,14 @@ public class DocumentsQueries {
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	
+	public static String getDocumentQuery(String id) throws RmesException {
+		initParams();
+		params.put("id", id);
+		return  buildRequest("getDocumentQuery.ftlh", params);
+	}
+	
 	public static String lastDocumentID() throws RmesException {
+		initParams();
         return buildRequest("lastDocumentID.ftlh", null);
 	}	
 	
@@ -87,6 +92,12 @@ public class DocumentsQueries {
 	 private DocumentsQueries() {
 		 throw new IllegalStateException("Utility class");
 	 }
+
+	public static String getAllDocumentsQuery() throws RmesException {
+		if (params==null) {initParams();}
+		return  buildRequest("getAllDocumentsQuery.ftlh", params);
+	}
+
 
 
 }

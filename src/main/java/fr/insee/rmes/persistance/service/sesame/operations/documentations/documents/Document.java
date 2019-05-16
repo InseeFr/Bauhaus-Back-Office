@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
-import org.openrdf.model.URI;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -15,11 +15,11 @@ public class Document {
 	private String dateMiseAJour;
 	private String langue;
 	private String url;
-	private URI uri;
-	
+	//private URI uri;
+	private String uri;
 
 	public Document(String id) {
-		this.uri = SesameUtils.documentIRI(id);
+		this.uri = SesameUtils.documentIRI(id).toString();
 	}
 	public String getLabelLg1() {
 		return labelLg1;
@@ -68,16 +68,27 @@ public class Document {
 		this.url = url;
 	}
 
-	@JsonProperty("uri")
-	public URI getUri() {
+//	@JsonProperty("uri")
+//	public URI getUri() {
+//		return uri;
+//	}
+
+	public String getUri() {
 		return uri;
 	}
-
-	public void setUri(URI uri) {
+	
+//	public void setUri(URI uri) {
+//		this.uri = uri;
+//	}
+//	public void setUri(String id) {
+//		this.uri =  SesameUtils.documentIRI(id);
+//	}
+	
+	public void setUri(String uri) {
 		this.uri = uri;
 	}
-	public void setUri(String id) {
-		this.uri =  SesameUtils.documentIRI(id);
-	}
 	
+	public String getId() {
+		return StringUtils.substringAfter(uri, "/");
+	}
 }
