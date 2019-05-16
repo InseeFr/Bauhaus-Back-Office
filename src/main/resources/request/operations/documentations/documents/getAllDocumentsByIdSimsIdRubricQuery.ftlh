@@ -16,10 +16,10 @@ WHERE {
 		FILTER(lang(?labelLg2) = '${LG2}')  
 	 }
 	 
-	 OPTIONAL{ ?document rdfs:comments ?descriptionLg1 . 
+	 OPTIONAL{ ?document rdfs:comment ?descriptionLg1 . 
 		FILTER(lang(?descriptionLg1) = '${LG1}') 
 	 }
-	 OPTIONAL{ ?document rdfs:comments ?descriptionLg2 . 
+	 OPTIONAL{ ?document rdfs:comment ?descriptionLg2 . 
 		FILTER(lang(?descriptionLg2) = '${LG2}')  
 	 }
 	 
