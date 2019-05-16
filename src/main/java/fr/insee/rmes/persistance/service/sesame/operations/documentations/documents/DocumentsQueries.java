@@ -46,6 +46,7 @@ public class DocumentsQueries {
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
 	
+	public static String updateDocumentQuery(Document oldDocument, Document document) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
 		return  buildRequest("updateDocumentQuery.ftlh", params);
