@@ -247,6 +247,7 @@ public class DocumentationsUtils {
 				}
 				break; 
 			case RICHTEXT :
+				if (rubric.isEmpty()) break;
 				URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
 				SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
 				SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
@@ -265,6 +266,7 @@ public class DocumentationsUtils {
 				}
 				break; 
 			case STRING :
+				if (rubric.isEmpty()) break;
 				SesameUtils.addTripleUri(attributeUri,RDF.TYPE,SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
 				if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 					SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg1(),Config.LG1, model, graph);

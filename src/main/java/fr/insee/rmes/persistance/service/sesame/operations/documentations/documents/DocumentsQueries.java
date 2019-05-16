@@ -61,8 +61,8 @@ public class DocumentsQueries {
 	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
 		root.put("url", url);
-		root.put("graph", graph);
-		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
+		root.put("graph", graph.toString());
+		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", root);
 	}
 	
 	public static String getDocumentQuery(String id) throws RmesException {
