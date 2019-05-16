@@ -57,7 +57,7 @@ public class DocumentsQueries {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
 		params.put("idRubric", idRubric);
-		return  buildRequest("getDocumentsQuery.ftlh", params);
+		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
 	}
 	
 	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
