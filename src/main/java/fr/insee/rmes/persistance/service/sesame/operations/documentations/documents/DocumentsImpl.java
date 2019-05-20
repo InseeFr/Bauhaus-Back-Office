@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
+import java.io.InputStream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -45,10 +47,10 @@ public class DocumentsImpl implements DocumentsService {
 	 * @see fr.insee.rmes.persistance.service.DocumentsService#setDocument(java.lang.String)
 	 */
 	@Override
-	public String setDocument(String body, java.io.InputStream documentFile) throws RmesException {
+	public String setDocument(String body, InputStream documentFile) throws RmesException {
 		String id=documentsUtils.createDocumentID();
 		System.out.println("--------------\n doc_id:" + id + "--------------\n");
-		documentsUtils.setDocument(id,body);
+		documentsUtils.createDocument(id,body,documentFile);
 		return id;
 	}
 

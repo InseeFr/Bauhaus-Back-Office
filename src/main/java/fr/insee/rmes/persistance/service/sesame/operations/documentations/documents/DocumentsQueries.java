@@ -24,13 +24,7 @@ public class DocumentsQueries {
 		if (params==null) {initParams();}
 		return  buildRequest("getAllSimsContextsQuery.ftlh", params);
 	}
-			
-	public static String createDocumentQuery(URI uri, Document document) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uri", uri);
-		return  buildRequest("createDocumentQuery.ftlh", params);
-	}
-	
+		/*
 	public static String addDocumentLinkQuery(URI uriDocument, String idSims, String idRubric) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uriDocument", uriDocument);
@@ -38,18 +32,12 @@ public class DocumentsQueries {
 		params.put("idRubric", idRubric);
 		return  buildRequest("addDocumentLinkQuery.ftlh", params);
 	}
-	
+	*/
 	
 	public static String deleteDocumentQuery(URI uri) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
-	}
-	
-	public static String updateDocumentQuery(Document oldDocument, Document document) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uri", uri);
-		return  buildRequest("updateDocumentQuery.ftlh", params);
 	}
 	
 	public static String getDocumentsQuery(String idSims, String idRubric) throws RmesException {
@@ -60,9 +48,12 @@ public class DocumentsQueries {
 	}
 	
 	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
-		Map<String, Object> root = new HashMap<>();
+		/*Map<String, Object> root = new HashMap<>();
 		root.put("url", url);
-		root.put("graph", graph);
+		root.put("graph", graph);*/
+		if (params==null) {initParams();}
+		params.put("url", url);
+		params.put("graph", graph);
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	

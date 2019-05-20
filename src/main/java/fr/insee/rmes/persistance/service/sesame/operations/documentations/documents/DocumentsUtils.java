@@ -1,7 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -14,11 +14,9 @@ import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -26,15 +24,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PAV;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationRubric;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
-import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -46,7 +39,6 @@ public class DocumentsUtils {
 	final static Logger logger = LogManager.getLogger(DocumentsUtils.class);
 
 
-// A adapter pour createDocument
 	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, URI textUri) throws RmesException {
 		if (rubric.getDocuments() != null && !rubric.getDocuments().isEmpty()) {
 			for (DocumentLink doc : rubric.getDocuments()) {
@@ -71,8 +63,67 @@ public class DocumentsUtils {
 		}
 	}
 
-/*
- 
+	/**
+	 * Create document
+	 * @param id
+	 * @param body
+	 * @param documentFile
+	 * @throws RmesException
+	 */
+
+	public void createDocument(String id, String body, InputStream documentFile) throws RmesException {
+
+		Resource graph = SesameUtils.documentsGraph();
+		Model model = new LinkedHashModel();
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Document document = new Document(id);
+
+		try {
+			document = mapper.readerForUpdating(document).readValue(body);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+		// TODO : upload file at URL.
+
+
+		URI url = SesameUtils.toURI(document.getUrl());
+		URI docUri = getDocumentUri(url, graph);
+
+		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
+		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
+		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
+			SesameUtils.addTripleString(docUri,RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
+			SesameUtils.addTripleString(docUri,RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
+		}
+
+		if (StringUtils.isNotEmpty(document.getLangue())) {
+			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
+			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+		}
+
+	}
+
+
+
+
+
+
+
+	/*
+
 	/**
 	 * Check the existing id is the same that the id to set
 	 * Update only
@@ -80,7 +131,7 @@ public class DocumentsUtils {
 	 * @param idSims
 	 * @param idOperation
 	 * @throws RmesException
-	 
+
 	private void checkIdsBeforeUpdate(String idRequest, String idSims, String idOperation) throws RmesException {
 		//Check idSims
 		if (idRequest==null || idSims == null || !idRequest.equals(idSims)) {
@@ -102,9 +153,9 @@ public class DocumentsUtils {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation and idSims don't match", "Documentation linked to operation : " + existingIdOperation)	;	
 		}
 	}
- * 
- * 
- */
+	 * 
+	 * 
+	 */
 	private URI getDocumentUri(URI url, Resource graph) throws RmesException {
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
 		if (uri.length()==0 || !uri.has("document")) {
@@ -114,7 +165,15 @@ public class DocumentsUtils {
 		return SesameUtils.toURI(uri.getString("document"));
 	}
 
-
+	private URI getDocumentUriIfExists(URI url, Resource graph) throws RmesException {
+		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
+		if (uri.length()==0 || !uri.has("document")) {
+			throw new RmesException(HttpStatus.SC_NOT_FOUND,"No document with with URL","");
+		}
+		return SesameUtils.toURI(uri.getString("document"));
+		}
+	
+	
 	/**
 	 * Get documents link to one rubric of a metadata report
 	 * @param idSims
@@ -136,7 +195,7 @@ public class DocumentsUtils {
 	}
 
 
-	
+
 	/**
 	 * Get all documents
 	 * @return
@@ -144,12 +203,11 @@ public class DocumentsUtils {
 	 */
 	public JSONArray getAllDocuments() throws RmesException {
 		JSONArray allDocs = new JSONArray();
-			try {
-				allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery());
-				//	System.out.println("---------------------\n newDocs: " +newDocs);
-			} catch (RmesException e) {
-				e.printStackTrace();
-			}
+		try {
+			allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery());
+		} catch (RmesException e) {
+			logger.error(e.getMessage());
+		}
 		return allDocs;
 	}
 
@@ -176,15 +234,56 @@ public class DocumentsUtils {
 	 */
 
 	public void setDocument(String id, String body) throws RmesException {
+
+		Model model = new LinkedHashModel();
+		Resource graph = SesameUtils.documentsGraph();
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Document document = new Document(id);
+
 		try {
 			document = mapper.readerForUpdating(document).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfDocument(document);
+
+		Document oldDocument = new Document(id);
+		try {
+			oldDocument = mapper.readerForUpdating(oldDocument).readValue(getDocument(id).toString());
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		System.out.println("OldDoc: " + oldDocument.getLabelLg1());
+		System.out.println("NewDoc: " + document.getLabelLg1());
+
+		// comparer oldDocument et document et corriger au besoin les triplets
+		URI url = SesameUtils.toURI(document.getUrl());
+		URI docUri = getDocumentUriIfExists(url, graph);
+
+		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
+		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
+		if (document.getLabelLg1()!=oldDocument.getLabelLg1() | document.getLabelLg2()!=oldDocument.getLabelLg2() ) {
+			model.remove((Resource)docUri, RDFS.LABEL, null, graph);	
+			//model.remove((Resource)docUri, RDFS.LABEL, (Value)oldDocument.getLabelLg1(), graph);			
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
+		}
+		if (document.getDescriptionLg1()!=oldDocument.getDescriptionLg1() | document.getDescriptionLg2()!=oldDocument.getDescriptionLg2() ) {
+			model.remove((Resource)docUri, RDFS.COMMENT, null, graph);	
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
+		}
+	
+
+		if (StringUtils.isNotEmpty(document.getLangue())) {
+			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
+			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+		}
+		
+		
 		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1());
 	}
 

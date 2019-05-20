@@ -27,6 +27,11 @@ public class SesameUtils {
 	public static Resource conceptGraph(){
 		return factory.createURI(Config.CONCEPTS_GRAPH);
 	}
+
+	public static Resource documentsGraph() {
+		System.out.println("Config.DOCUMENTS_GRAPH= "+Config.DOCUMENTS_GRAPH);
+		return factory.createURI(Config.DOCUMENTS_GRAPH);
+	}
 	
 	public static Resource operationsGraph(){
 		return factory.createURI(Config.OPERATIONS_GRAPH);
@@ -198,4 +203,5 @@ public class SesameUtils {
 	private SesameUtils() {
 	    throw new IllegalStateException("Utility class");
 	}
+
 }
