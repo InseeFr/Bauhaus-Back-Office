@@ -3,17 +3,12 @@ package fr.insee.rmes.persistance.service.sesame.operations.documentations.docum
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.RDF;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class DocumentsQueries {
 	
@@ -44,17 +39,14 @@ public class DocumentsQueries {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
 		params.put("idRubric", idRubric);
-		return  buildRequest("getDocumentsQuery.ftlh", params);
+		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
 	}
 	
 	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
-		/*Map<String, Object> root = new HashMap<>();
+		Map<String, Object> root = new HashMap<>();
 		root.put("url", url);
-		root.put("graph", graph);*/
-		if (params==null) {initParams();}
-		params.put("url", url);
-		params.put("graph", graph);
-		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
+		root.put("graph", graph);
+		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", root);
 	}
 	
 	public static String getDocumentQuery(String id) throws RmesException {
