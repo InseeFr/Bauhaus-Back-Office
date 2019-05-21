@@ -15,7 +15,6 @@ public class Document {
 	private String dateMiseAJour;
 	private String langue;
 	private String url;
-	//private URI uri;
 	private String uri;
 
 	public Document(String id) {
@@ -68,22 +67,10 @@ public class Document {
 		this.url = url;
 	}
 
-//	@JsonProperty("uri")
-//	public URI getUri() {
-//		return uri;
-//	}
-
 	public String getUri() {
 		return uri;
 	}
-	
-//	public void setUri(URI uri) {
-//		this.uri = uri;
-//	}
-//	public void setUri(String id) {
-//		this.uri =  SesameUtils.documentIRI(id);
-//	}
-	
+		
 	public void setUri(String uri) {
 		this.uri = uri;
 	}

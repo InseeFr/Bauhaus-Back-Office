@@ -1,10 +1,9 @@
 SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
 
 WHERE { 
-	 ?text rdf:type dcmitype:Text .
-	 ?text insee:additionalMaterial ?uri . 
+
 	 ?uri rdf:type foaf:Document .
-	 
+
 	 ?uri <http://schema.org/url> ?url
  
  	 OPTIONAL{ ?uri rdfs:label ?labelLg1 . 
@@ -14,10 +13,17 @@ WHERE {
 		FILTER(lang(?labelLg2) = '${LG2}')  
 	 }
 	 
+	 OPTIONAL{ ?uri rdfs:comment ?descriptionLg1 . 
+		FILTER(lang(?descriptionLg1) = '${LG1}') 
+	 }
+	 OPTIONAL{ ?uri rdfs:comment ?descriptionLg2 . 
+		FILTER(lang(?descriptionLg2) = '${LG2}')  
+	 }
+	 
 	 OPTIONAL{ ?uri pav:lastRefreshedOn ?updatedDate .  }
+	 
 	 OPTIONAL{ ?uri dc:language ?lang .  }
 	 
-	BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id) .  
-	FILTER(?id = '${id}') 
+	 FILTER(STRENDS(STR(?uri), '${id}'))
 
  }

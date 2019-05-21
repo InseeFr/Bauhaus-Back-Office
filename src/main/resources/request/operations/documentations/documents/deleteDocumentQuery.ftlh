@@ -1,4 +1,4 @@
-WITH <${uriGraph}>
+WITH <${graph}>
 
 DELETE  {
 			<${uriConcept}> skos:definition ?def .

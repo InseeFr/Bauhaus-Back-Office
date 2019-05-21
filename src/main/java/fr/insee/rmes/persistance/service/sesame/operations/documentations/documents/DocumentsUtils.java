@@ -114,6 +114,10 @@ public class DocumentsUtils {
 			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
 
+		RepositoryGestion.keepHierarchicalOperationLinks(docUri,model);
+
+		RepositoryGestion.loadObjectWithReplaceLinks(docUri, model);
+		
 	}
 
 
@@ -229,7 +233,6 @@ public class DocumentsUtils {
 
 	/**
 	 * Update a document
-	 * @return
 	 * @throws RmesException
 	 */
 
@@ -263,28 +266,24 @@ public class DocumentsUtils {
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
-		if (document.getLabelLg1()!=oldDocument.getLabelLg1() | document.getLabelLg2()!=oldDocument.getLabelLg2() ) {
-			model.remove((Resource)docUri, RDFS.LABEL, null, graph);	
-			//model.remove((Resource)docUri, RDFS.LABEL, (Value)oldDocument.getLabelLg1(), graph);			
+		
+		if (document.getLabelLg1()!=oldDocument.getLabelLg1() | document.getLabelLg2()!=oldDocument.getLabelLg2() ) {		
 			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
 			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
 		}
 		if (document.getDescriptionLg1()!=oldDocument.getDescriptionLg1() | document.getDescriptionLg2()!=oldDocument.getDescriptionLg2() ) {
-			model.remove((Resource)docUri, RDFS.COMMENT, null, graph);	
 			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
 			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
 		}
-	
-
-		if (StringUtils.isNotEmpty(document.getLangue())) {
+		if (document.getLangue()!=oldDocument.getLangue()) {
 			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
 		}
-		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
+		if (document.getDateMiseAJour()!=oldDocument.getDateMiseAJour()) {
 			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
-		
-		
 		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1());
+		RepositoryGestion.keepDocumentLinks(docUri,model);
+		RepositoryGestion.loadSimpleObject(docUri, model, null);
 	}
 
 

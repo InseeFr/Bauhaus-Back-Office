@@ -275,7 +275,37 @@ public class RepositoryGestion {
     private RepositoryGestion() {
     	throw new IllegalStateException("Utility class");
     }
-    
 
+	public static void keepDocumentLinks(URI object, Model model) throws RmesException {
+		List<URI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF, INSEE.ADDITIONALMATERIAL);
+		RepositoryConnection conn = null;
+		try {
+			conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			getDocumentLinksModel(object, model, typeOfLink, conn);
+		} catch (RmesException e) {
+			throw e;
+		} catch (Exception e) {
+			throwsRmesException(e, "Failure keepDocumentLinks : "+ object);
+		}
+	}
+
+	private static void getDocumentLinksModel(URI object, Model model, List<URI> typeOfLink,
+			RepositoryConnection conn)  throws RmesException {
+		for (URI predicat : typeOfLink) {
+			RepositoryResult<Statement> statements;
+			try {
+				statements = conn.getStatements(null, predicat, object, false);
+				addStatementToModel(model, statements);
+				conn.remove(statements);
+
+				statements = conn.getStatements(object, predicat, null, false);
+				addStatementToModel(model, statements);
+				conn.remove(statements);
+			} catch (RepositoryException e) {
+				throwsRmesException(e, "Failure getDocumentLinksModel : "+ object);
+			}
+		}
+    
+	}
 
 }

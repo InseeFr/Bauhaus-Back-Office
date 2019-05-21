@@ -111,7 +111,7 @@ public class DocumentsRessources {
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	public Response setDocument(
 			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class)) String body,
-			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file 2"))
+			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file 2"))
 			@FormDataParam(value = "file") InputStream documentFile
 			) throws Exception {
 		String id = null;
@@ -138,7 +138,7 @@ public class DocumentsRessources {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		logger.info("Update concept : " + id);
-		return Response.status(Status.NO_CONTENT).build();
+		return Response.status(Status.OK).build();
 	}
 	
 }
