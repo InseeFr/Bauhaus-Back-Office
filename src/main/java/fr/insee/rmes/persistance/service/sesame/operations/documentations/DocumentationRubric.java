@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentLink;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.Document;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class DocumentationRubric {
@@ -15,7 +15,7 @@ public class DocumentationRubric {
 	private String labelLg2;
 	private String codeList;
 	private String rangeType;
-	private List<DocumentLink> documents;
+	private List<Document> documents;
 	
 	
 	public String getIdAttribute() {
@@ -54,10 +54,10 @@ public class DocumentationRubric {
 	public void setRangeType(String rangeType) {
 		this.rangeType = rangeType;
 	}
-	public List<DocumentLink> getDocuments() {
+	public List<Document> getDocuments() {
 		return documents;
 	}
-	public void setDocuments(List<DocumentLink> documents) {
+	public void setDocuments(List<Document> documents) {
 		this.documents = documents;
 	}
 	

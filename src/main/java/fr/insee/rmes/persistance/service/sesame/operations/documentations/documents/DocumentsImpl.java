@@ -29,16 +29,13 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public String getDocuments() throws RmesException {
-		logger.info("Starting to get documents list");
-		String resQuery = documentsUtils.getAllDocuments().toString();
-		return resQuery;
+		logger.debug("Starting to get documents list");
+		return documentsUtils.getAllDocuments().toString();
 	}
 
 	@Override
 	public JSONObject getDocument(String id) throws RmesException {
-		logger.info("Starting to get document " + id);
-		/*String resQuery = documentsUtils.getDocument(id).toString();
-		return resQuery;*/
+		logger.debug("Starting to get document " + id);
 		return documentsUtils.getDocument(id);
 	}
 
@@ -49,7 +46,7 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String setDocument(String body, InputStream documentFile) throws RmesException {
 		String id=documentsUtils.createDocumentID();
-		System.out.println("--------------\n doc_id:" + id + "--------------\n");
+		logger.debug("Create document : "+ id);
 		documentsUtils.createDocument(id,body,documentFile);
 		return id;
 	}

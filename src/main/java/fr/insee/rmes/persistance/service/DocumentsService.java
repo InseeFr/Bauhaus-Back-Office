@@ -3,8 +3,6 @@ package fr.insee.rmes.persistance.service;
 
 import java.io.InputStream;
 
-import javax.ws.rs.core.Response;
-
 import org.json.JSONObject;
 
 import fr.insee.rmes.exceptions.RmesException;

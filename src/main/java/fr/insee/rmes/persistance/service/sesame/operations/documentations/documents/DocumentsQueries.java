@@ -15,20 +15,6 @@ public class DocumentsQueries {
 	static Map<String,Object> params ;
 	
 
-	public static String getAllGraphsWithSimsQuery() throws RmesException {
-		if (params==null) {initParams();}
-		return  buildRequest("getAllSimsContextsQuery.ftlh", params);
-	}
-		/*
-	public static String addDocumentLinkQuery(URI uriDocument, String idSims, String idRubric) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uriDocument", uriDocument);
-		params.put("idSims", idSims);
-		params.put("idRubric", idRubric);
-		return  buildRequest("addDocumentLinkQuery.ftlh", params);
-	}
-	*/
-	
 	public static String deleteDocumentQuery(URI uri) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
@@ -50,13 +36,12 @@ public class DocumentsQueries {
 	}
 	
 	public static String getDocumentQuery(String id) throws RmesException {
-		initParams();
+		if (params==null) {initParams();}
 		params.put("id", id);
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
 	
 	public static String lastDocumentID() throws RmesException {
-		initParams();
         return buildRequest("lastDocumentID.ftlh", null);
 	}	
 	

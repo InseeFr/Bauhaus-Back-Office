@@ -41,24 +41,10 @@ public class DocumentsUtils {
 
 	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, URI textUri) throws RmesException {
 		if (rubric.getDocuments() != null && !rubric.getDocuments().isEmpty()) {
-			for (DocumentLink doc : rubric.getDocuments()) {
+			for (Document doc : rubric.getDocuments()) {
 				URI url = SesameUtils.toURI(doc.getUrl());
-				URI docUri = getDocumentUri(url, graph);
+				URI docUri = getDocumentUri(url);
 				SesameUtils.addTripleUri(textUri,INSEE.ADDITIONALMATERIAL , docUri, model, graph);
-				SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
-				SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
-				if (StringUtils.isNotEmpty(doc.getLabelLg1())) {
-					SesameUtils.addTripleString(docUri, RDFS.LABEL, doc.getLabelLg1(),Config.LG1, model, graph);
-				}
-				if (StringUtils.isNotEmpty(doc.getLabelLg2())) {
-					SesameUtils.addTripleString(docUri,RDFS.LABEL, doc.getLabelLg2(),Config.LG2, model, graph);
-				}
-				if (StringUtils.isNotEmpty(doc.getLang())) {
-					SesameUtils.addTripleString(docUri,DC.LANGUAGE, doc.getLang(), model, graph);
-				}
-				if (StringUtils.isNotEmpty(doc.getLastRefresh())) {
-					SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, doc.getLastRefresh(), model, graph);
-				}
 			}					
 		}
 	}
@@ -70,7 +56,6 @@ public class DocumentsUtils {
 	 * @param documentFile
 	 * @throws RmesException
 	 */
-
 	public void createDocument(String id, String body, InputStream documentFile) throws RmesException {
 
 		Resource graph = SesameUtils.documentsGraph();
@@ -88,9 +73,9 @@ public class DocumentsUtils {
 
 		// TODO : upload file at URL.
 
-
-		URI url = SesameUtils.toURI(document.getUrl());
-		URI docUri = getDocumentUri(url, graph);
+		URI url = SesameUtils.toURI(document.getUrl());//TODO : check if exists => update, not create
+		
+		URI docUri = getDocumentUri(url);
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
@@ -113,55 +98,19 @@ public class DocumentsUtils {
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
 			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
-
-		RepositoryGestion.keepHierarchicalOperationLinks(docUri,model);
-
-		RepositoryGestion.loadObjectWithReplaceLinks(docUri, model);
+		RepositoryGestion.loadSimpleObject(docUri, model, null);
 		
 	}
 
-
-
-
-
-
-
-	/*
-
+	
 	/**
-	 * Check the existing id is the same that the id to set
-	 * Update only
-	 * @param idRequest
-	 * @param idSims
-	 * @param idOperation
+	 * return new uri if url doesn't exist
+	 * @param url
+	 * @return
 	 * @throws RmesException
-
-	private void checkIdsBeforeUpdate(String idRequest, String idSims, String idOperation) throws RmesException {
-		//Check idSims
-		if (idRequest==null || idSims == null || !idRequest.equals(idSims)) {
-			logger.error("Can't update a documentation if idSims or id don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request", "idSims in param : "+idRequest+" /id in body : "+idSims)	;	
-		}
-		//Check idOperation
-		if (idOperation==null) {
-			logger.error("Can't update a documentation if idOperation don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation can't be null", "idOperation or id is null")	;	
-		}
-		JSONObject existingIdOperation =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationOperationQuery(idSims));
-		if (existingIdOperation == null || existingIdOperation.get("idOperation")==null) {
-			logger.error("Can't find operation linked to the documentation");
-			throw new RmesNotFoundException("Operation not found", "Maybe this is a creation")	;	
-		}
-		if (!idOperation.equals(existingIdOperation.get("idOperation"))) {
-			logger.error("idOperation and idSims don't match");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation and idSims don't match", "Documentation linked to operation : " + existingIdOperation)	;	
-		}
-	}
-	 * 
-	 * 
 	 */
-	private URI getDocumentUri(URI url, Resource graph) throws RmesException {
-		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
+	private URI getDocumentUri(URI url) throws RmesException {
+		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, SesameUtils.documentsGraph()));
 		if (uri.length()==0 || !uri.has("document")) {
 			String id = createDocumentID();
 			return SesameUtils.objectIRI(ObjectType.DOCUMENT,id);
@@ -169,6 +118,13 @@ public class DocumentsUtils {
 		return SesameUtils.toURI(uri.getString("document"));
 	}
 
+	/**
+	 * throw exception if url doesn't exist
+	 * @param url
+	 * @param graph
+	 * @return
+	 * @throws RmesException
+	 */
 	private URI getDocumentUriIfExists(URI url, Resource graph) throws RmesException {
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
 		if (uri.length()==0 || !uri.has("document")) {
@@ -188,16 +144,6 @@ public class DocumentsUtils {
 	public JSONArray getListDocumentLink(String idSims, String idRubric) throws RmesException {
 		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims,idRubric));
 	}
-
-	/**
-	 * Get contexts that include a Sims
-	 * @return
-	 * @throws RmesException
-	 */
-	public JSONArray getAllGraphsWithSims() throws RmesException {
-		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllGraphsWithSimsQuery());
-	}
-
 
 
 	/**
@@ -231,11 +177,11 @@ public class DocumentsUtils {
 		return String.valueOf(newId);
 	}
 
+	
 	/**
 	 * Update a document
 	 * @throws RmesException
 	 */
-
 	public void setDocument(String id, String body) throws RmesException {
 
 		Model model = new LinkedHashModel();
@@ -251,38 +197,32 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}
 
-		Document oldDocument = new Document(id);
-		try {
-			oldDocument = mapper.readerForUpdating(oldDocument).readValue(getDocument(id).toString());
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		System.out.println("OldDoc: " + oldDocument.getLabelLg1());
-		System.out.println("NewDoc: " + document.getLabelLg1());
-
-		// comparer oldDocument et document et corriger au besoin les triplets
 		URI url = SesameUtils.toURI(document.getUrl());
 		URI docUri = getDocumentUriIfExists(url, graph);
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
 		
-		if (document.getLabelLg1()!=oldDocument.getLabelLg1() | document.getLabelLg2()!=oldDocument.getLabelLg2() ) {		
+		if (StringUtils.isNotEmpty(document.getLabelLg1())) {		
 			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getLabelLg2())) {		
 			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
 		}
-		if (document.getDescriptionLg1()!=oldDocument.getDescriptionLg1() | document.getDescriptionLg2()!=oldDocument.getDescriptionLg2() ) {
+		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {		
 			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
-			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
 		}
-		if (document.getLangue()!=oldDocument.getLangue()) {
+		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {		
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getLangue())) {		
 			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
 		}
-		if (document.getDateMiseAJour()!=oldDocument.getDateMiseAJour()) {
+		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {		
 			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
+
 		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1());
-		RepositoryGestion.keepDocumentLinks(docUri,model);
 		RepositoryGestion.loadSimpleObject(docUri, model, null);
 	}
 
@@ -292,75 +232,9 @@ public class DocumentsUtils {
 		try {
 			jsonDocs = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentQuery(id));
 		} catch (RmesException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}		
 		return jsonDocs;
-	}
-
-
-	/*
-	 * CREATE
-	 */
-	private void createRdfDocument(Document document) throws RmesException {
-
-		// Dans quel graph ??
-		Model model = new LinkedHashModel();
-		String uri = document.getUri();
-		URI documentURI = SesameUtils.documentIRI(document.getId());
-		/*Const*/
-		model.add(documentURI, RDF.TYPE, INSEE.DOCUMENT, SesameUtils.operationsGraph());
-		/*Required
-		model.add(seriesURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(series.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
-		/*Optional
-		SesameUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-
-		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-
-		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-
-		String creator=series.getCreator();
-		if (!StringUtils.isEmpty(creator)) {
-			SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creator), model, SesameUtils.operationsGraph());
-		}
-		String gestionnaire=series.getGestionnaire();
-		if (!StringUtils.isEmpty(gestionnaire)) {
-			SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.operationsGraph());
-		}
-
-		//partenaires
-		List<OperationsLink> contributors = series.getContributor();
-		if (contributors != null){
-			for (OperationsLink contributor : contributors) {
-				if(!contributor.isEmpty()) {
-					SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());		
-				}
-			}
-		}
-
-		List<OperationsLink> dataCollectors = series.getDataCollector();
-		if (dataCollectors != null) {
-			for (OperationsLink dataCollector : dataCollectors) {
-				if(!dataCollector.isEmpty()) {
-					SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
-				}		
-			}
-		}
-
-
-
-		if (familyURI != null) {
-			//case CREATION : link series to family
-			SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, SesameUtils.operationsGraph());
-			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
-		}*/
-
-		RepositoryGestion.keepHierarchicalOperationLinks(documentURI,model);
-
-		RepositoryGestion.loadObjectWithReplaceLinks(documentURI, model);
 	}
 
 }

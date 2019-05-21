@@ -28,7 +28,6 @@ public class SesameUtils {
 	}
 
 	public static Resource documentsGraph() {
-		System.out.println("Config.DOCUMENTS_GRAPH= "+Config.DOCUMENTS_GRAPH);
 		return factory.createURI(Config.DOCUMENTS_GRAPH);
 	}
 	
