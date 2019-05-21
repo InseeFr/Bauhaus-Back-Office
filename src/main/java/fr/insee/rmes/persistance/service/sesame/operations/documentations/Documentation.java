@@ -2,10 +2,16 @@ package fr.insee.rmes.persistance.service.sesame.operations.documentations;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Documentation {
 
 	private String id;
+	
 	private String idOperation;
+	private String idSeries;
+	private String idIndicator;
+
 	private String labelLg1;
 	private String labelLg2;
 	private List<DocumentationRubric> rubrics;
@@ -35,10 +41,31 @@ public class Documentation {
 	public void setRubrics(List<DocumentationRubric> rubrics) {
 		this.rubrics = rubrics;
 	}
+	public String getIdTarget() {
+		if (StringUtils.isNotEmpty(idOperation)) {
+			return idOperation;
+		}
+		if (StringUtils.isNotEmpty(idSeries)) {
+			return idSeries;
+		}
+		if (StringUtils.isNotEmpty(idIndicator)) {
+			return idIndicator;
+		}
+		return null;
+	}
+	public String getIdSeries() {
+		return idSeries;
+	}
+	public void setIdSeries(String idSeries) {
+		this.idSeries = idSeries;
+	}
+	public String getIdIndicator() {
+		return idIndicator;
+	}
+	public void setIdIndicator(String idIndicator) {
+		this.idIndicator = idIndicator;
+	}
 	public String getIdOperation() {
 		return idOperation;
-	}
-	public void setIdOperation(String idOperation) {
-		this.idOperation = idOperation;
 	}
 }

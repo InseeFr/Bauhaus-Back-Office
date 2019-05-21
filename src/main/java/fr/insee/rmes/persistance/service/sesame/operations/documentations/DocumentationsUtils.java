@@ -29,7 +29,8 @@ import fr.insee.rmes.persistance.service.sesame.code_list.CodeListUtils;
 import fr.insee.rmes.persistance.service.sesame.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -92,15 +93,17 @@ public class DocumentationsUtils {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_METHOD_FAILURE, e.getMessage(), "IOException")	;	
 		}
-		//Check idOperation and Init or check id sims
-		String idOperation = sims.getIdOperation();
+		//Check idOperation/idSerie/IdIndicator and Init or check id sims
+		String idTarget = sims.getIdTarget();
 		if (create) {
-			sims.setId(prepareCreation(idOperation));
+			sims.setId(prepareCreation(idTarget));
 		}else {
-			checkIdsBeforeUpdate(id, sims.getId(), idOperation);
+			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
+		URI targetUri = getTarget(sims);
 
 		//Update rubrics
+		saveRdfMetadataReport(sims, targetUri);
 		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
 		return sims.getId();
 	}
@@ -108,12 +111,27 @@ public class DocumentationsUtils {
 	
 	/**
 	 * get Operation URI to create or update SIMS
-	 * @param idOperation
+	 * @param idTarget
 	 * @return
 	 * @throws RmesException
 	 */
+	private URI getTarget(Documentation sims) throws RmesException {
+		URI target = null;
+		
+		if (StringUtils.isNotEmpty(sims.getIdOperation()) && FamOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION,sims.getIdTarget())){
+			target= SesameUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
 		}
-		return operation;
+		if (StringUtils.isNotEmpty(sims.getIdSeries()) && FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,sims.getIdTarget())){
+			target= SesameUtils.objectIRI(ObjectType.SERIES, sims.getIdTarget());
+		}
+		if (StringUtils.isNotEmpty(sims.getIdIndicator()) && IndicatorsUtils.checkIfIndicatorExists(sims.getIdTarget())) {
+			target= SesameUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
+		}
+		if (target==null) {
+			logger.error("Create or Update sims cancelled - no target");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator doesn't exist", "id Operation/Series/Indicator doesn't match with an existing Operation/Series/Indicator")	;	
+		}
+		return target;
 	}
 	
 	/**
@@ -121,47 +139,57 @@ public class DocumentationsUtils {
 	 * Update only
 	 * @param idRequest
 	 * @param idSims
-	 * @param idOperation
+	 * @param idTarget
 	 * @throws RmesException
 	 */
-	private void checkIdsBeforeUpdate(String idRequest, String idSims, String idOperation) throws RmesException {
+	private void checkIdsBeforeUpdate(String idRequest, String idSims, String idTarget) throws RmesException {
 		//Check idSims
 		if (idRequest==null || idSims == null || !idRequest.equals(idSims)) {
 			logger.error("Can't update a documentation if idSims or id don't exist");
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request", "idSims in param : "+idRequest+" /id in body : "+idSims)	;	
 		}
-		//Check idOperation
-		if (idOperation==null) {
-			logger.error("Can't update a documentation if idOperation don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation can't be null", "idOperation or id is null")	;	
+		//Check id Operation/Serie/Indicator
+		if (idTarget==null) {
+			logger.error("Can't update a documentation if id Operation/Serie/Indicator doesn't exist");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null", "id Operation/Serie/Indicator or id is null")	;	
 		}
-		JSONObject existingIdOperation =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationOperationQuery(idSims));
-		if (existingIdOperation == null || existingIdOperation.get("idOperation")==null) {
-			logger.error("Can't find operation linked to the documentation");
-			throw new RmesNotFoundException("Operation not found", "Maybe this is a creation")	;	
+		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		Object idDatabase = null;
+		if (existingIdTarget != null ) {
+			idDatabase = existingIdTarget.get("idOperation");
+			if (idDatabase == null) {
+				idDatabase = existingIdTarget.get("idSeries");
+			}
+			if (idDatabase == null) {
+				idDatabase = existingIdTarget.get("idIndicator");
+			}
 		}
-		if (!idOperation.equals(existingIdOperation.get("idOperation"))) {
-			logger.error("idOperation and idSims don't match");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation and idSims don't match", "Documentation linked to operation : " + existingIdOperation)	;	
+		if (existingIdTarget == null || idDatabase == null) {
+			logger.error("Can't find Operation/Serie/Indicator linked to the documentation");
+			throw new RmesNotFoundException("Operation/Serie/Indicator not found", "Maybe this is a creation")	;	
+		}
+		if (!idTarget.equals(idDatabase)) {
+			logger.error("id Operation/Serie/Indicator and idSims don't match");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match", "Documentation linked to Operation/Serie/Indicator : " + existingIdTarget)	;	
 		}
 	}
 
 	/**
-	 * check idOperation is not null and has no sims yet
+	 * check idTarget is not null and has no sims yet
 	 * create only
-	 * @param idOperation
+	 * @param idTarget
 	 * @return
 	 * @throws RmesException
 	 */
-	private String prepareCreation(String idOperation) throws RmesException {
-		if (idOperation==null) {
-			logger.error("Can't create a documentation if idOperation doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idOperation can't be null", "idOperation is null")	;	
+	private String prepareCreation(String idTarget) throws RmesException {
+		if (idTarget==null) {
+			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null", "id is null")	;	
 		}
-		JSONObject existingIdSims = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getOperationDocumentationQuery(idOperation));
+		JSONObject existingIdSims = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has("idSims")) {
 			logger.error("Documentation already exists");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation already has a documentation", "Maybe this is an update")	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation", "Maybe this is an update")	;	
 		}
 		return createSimsID();
 	}
@@ -169,16 +197,16 @@ public class DocumentationsUtils {
 	/**
 	 * Load in database the metadataReport to create or update
 	 * @param sims
-	 * @param operation
+	 * @param target
 	 * @throws RmesException
 	 */
-	private void saveRdfMetadataReport(Documentation sims, URI operation) throws RmesException {
+	private void saveRdfMetadataReport(Documentation sims, URI target) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,sims.getId());
 		Resource graph = SesameUtils.simsGraph(sims.getId());
 		/*Const*/
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
-		model.add(simsUri, SDMX_MM.TARGET, operation, graph);
+		model.add(simsUri, SDMX_MM.TARGET, target, graph);
 		
 		/*Optional*/
 		SesameUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);
