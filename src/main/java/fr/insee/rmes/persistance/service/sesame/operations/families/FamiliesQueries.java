@@ -1,22 +1,14 @@
 package fr.insee.rmes.persistance.service.sesame.operations.families;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class FamiliesQueries {
 
 	static Map<String,Object> params ;
 
-	public static String isFamilyExisting(String id) {
-		return "ASK  { ?family a insee:StatisticalOperationFamily \n"
-				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
-				+ "}";
-	}
-	
+
 	public static String familiesQuery() {
 		return "SELECT DISTINCT ?id ?label  \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
@@ -86,28 +78,5 @@ public class FamiliesQueries {
 				+ " ORDER BY ?subjectUri"
 				;
 	}
-
-	
-	/**
-	 * @param uriSeries
-	 * @return String
-	 * @throws RmesException
-	 */	
-		public static String checkIfFamilyExists(String uriFamily) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uriFamily", uriFamily);
-		return buildFamilyRequest("checkIfFamilyExistsQuery.flth", params);	
-	}
-	
-	private static void initParams() {
-		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-	}
-	
-	private static String buildFamilyRequest(String fileName, Map<String, Object> params) throws RmesException  {
-		return FreeMarkerUtils.buildRequest("operations/families/", fileName, params);
-	}
-
 
 }

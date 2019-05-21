@@ -28,7 +28,7 @@ import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -39,7 +39,7 @@ public class SeriesUtils {
 
 	@Autowired
 	CodeListService codeListService;
-
+	
 	@Autowired
 	OrganizationsService organizationsService;
 
@@ -47,14 +47,6 @@ public class SeriesUtils {
 	final static Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
-
-
-	public Boolean checkIfSeriesExists(String id) throws RmesException {
-		String uriSeries="http://bauhaus/operations/serie/"+id; 
-		Boolean result=RepositoryGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesExists(uriSeries));		
-		return result;
-	}
-
 
 	public JSONObject getSeriesById(String id) throws RmesException{
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
@@ -115,7 +107,6 @@ public class SeriesUtils {
 	}
 
 
-
 	/*WRITE*/
 
 
@@ -132,7 +123,7 @@ public class SeriesUtils {
 		}
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
-		if (! new FamiliesUtils().checkIfFamilyExists(idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
+		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI);
@@ -161,7 +152,7 @@ public class SeriesUtils {
 		/*
 		 * CREATE OR UPDATE
 		 */
-		private void createRdfSeries(Series series, URI familyURI) throws RmesException {
+	private void createRdfSeries(Series series, URI familyURI) throws RmesException {
 	
 		
 		Model model = new LinkedHashModel();

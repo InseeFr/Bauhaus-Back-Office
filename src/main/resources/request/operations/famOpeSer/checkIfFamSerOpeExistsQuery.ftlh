@@ -1,5 +1,5 @@
 ASK
  WHERE 
   { graph <http://rdf.insee.fr/graphes/operations>   
-  	{<${uriFamily}> ?a ?b}
+  	{<${uri}> ?a ?b}
   }

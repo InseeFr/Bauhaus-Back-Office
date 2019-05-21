@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.operations;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.famOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.opensagres.xdocreport.utils.StringUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -35,7 +35,7 @@ public class Operation {
 
 
 	public Operation() throws RmesException {
-			this.id=  famOpeSerUtils.createId();
+			this.id=  FamOpeSerUtils.createId();
 	}
 
 

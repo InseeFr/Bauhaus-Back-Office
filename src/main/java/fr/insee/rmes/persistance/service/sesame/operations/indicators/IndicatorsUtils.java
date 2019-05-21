@@ -193,6 +193,9 @@ public class IndicatorsUtils {
 		return "p" + ID;
 	}
 
+	public static Boolean checkIfIndicatorExists(String id) throws RmesException {
+		return RepositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
+	}
 
 
 }

@@ -147,7 +147,15 @@ public class IndicatorsQueries {
 				+ "LIMIT 1";
 	}	
 
-
+	public static String checkIfExists(String id) {
+		return "ASK \n"
+				+ "WHERE  \n"
+				+ "{ graph <http://rdf.insee.fr/graphes/produits>    \n"
+				+ "?uri ?b ?c .\n "
+				+ "FILTER(STRENDS(STR(?uri),'/produits/indicateur/" + id + "')) . \n"
+				+ "}";
+		  	
+	}
 
 
 

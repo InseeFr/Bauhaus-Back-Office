@@ -99,10 +99,8 @@ public class DocumentationsUtils {
 		}else {
 			checkIdsBeforeUpdate(id, sims.getId(), idOperation);
 		}
-		URI operationUri = getOperation(idOperation);
 
 		//Update rubrics
-		saveRdfMetadataReport(sims, operationUri);
 		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
 		return sims.getId();
 	}
@@ -114,11 +112,6 @@ public class DocumentationsUtils {
 	 * @return
 	 * @throws RmesException
 	 */
-	private URI getOperation(String idOperation) throws RmesException {
-		URI operation = OperationsUtils.getOperationUriById(idOperation);
-		if (operation==null) {
-			logger.error("Create or Update sims cancelled - no operation");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation doesn't exist", "idOperation doesn't match with an existing operation")	;	
 		}
 		return operation;
 	}
