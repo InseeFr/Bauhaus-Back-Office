@@ -1,7 +1,10 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
+import java.io.InputStream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,38 +20,50 @@ public class DocumentsImpl implements DocumentsService {
 	@Autowired 
 	DocumentsUtils documentsUtils;
 
-	
+
 	public DocumentsImpl() {
 	}
 
+	/*
+	 * Get 
+	 */
 	@Override
 	public String getDocuments() throws RmesException {
-		logger.info("Starting to get documents list");
-		String resQuery = documentsUtils.getAllDocuments().toString();
-		return resQuery;
+		logger.debug("Starting to get documents list");
+		return documentsUtils.getAllDocuments().toString();
 	}
-		
+
+	@Override
+	public JSONObject getDocument(String id) throws RmesException {
+		logger.debug("Starting to get document " + id);
+		return documentsUtils.getDocument(id);
+	}
+
 	/*
 	 * Create
 	 * @see fr.insee.rmes.persistance.service.DocumentsService#setDocument(java.lang.String)
 	 */
 	@Override
-	public String setDocument(String body) throws RmesException {
+	public String setDocument(String body, InputStream documentFile) throws RmesException {
 		String id=documentsUtils.createDocumentID();
-		documentsUtils.setDocument(id,body);
+		logger.debug("Create document : "+ id);
+		documentsUtils.createDocument(id,body,documentFile);
 		return id;
 	}
-	
+
 	/*
 	 * Update
 	 * @see fr.insee.rmes.persistance.service.DocumentsService#setDocument(java.lang.String)
 	 */
 	@Override
 	public String setDocument(String id, String body) throws RmesException {
-		// TODO Auto-generated method stub
-		return null;
+		documentsUtils.setDocument(id,body);
+		return id;
 	}
 
+	/*
+	 * Delete 
+	 */
 	@Override
 	public String deleteDocument(String id) throws RmesException {
 		// TODO Auto-generated method stub

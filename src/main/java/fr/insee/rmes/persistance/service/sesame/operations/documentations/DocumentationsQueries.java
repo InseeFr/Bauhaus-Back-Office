@@ -65,10 +65,10 @@ public class DocumentationsQueries {
 	 * @return ?idOperation 
 	 * @throws RmesException
 	 */
-	public static String getDocumentationOperationQuery(String idSims) throws RmesException {
+	public static String getTargetByIdSims(String idSims) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
 		root.put("idSims", idSims);
-		return buildRequest("getDocumentationOperationQuery.ftlh", root);
+		return buildRequest("getTargetByIdSimsQuery.ftlh", root);
 		
 	}
 
@@ -77,10 +77,10 @@ public class DocumentationsQueries {
 	 * @return ?idSims 
 	 * @throws RmesException 
 	 */
-	public static String getOperationDocumentationQuery(String idOperation) throws RmesException {
+	public static String getSimsByTarget(String idTarget) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
-		root.put("idOperation", idOperation);
-		return buildRequest("getOperationDocumentationQuery.ftlh", root);
+		root.put("idTarget", idTarget);
+		return buildRequest("getSimsByIdTargetQuery.ftlh", root);
 	}
 	
 	/**

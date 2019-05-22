@@ -147,18 +147,6 @@
 			<artifactId>spring-security-web</artifactId>
 			<version>${spring.security.version}</version>
 		</dependency>
-		<!-- Bind csv into POJOs -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-csv</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
-		<!-- XML mapping -->
-		<dependency>
-		    <groupId>com.fasterxml.jackson.dataformat</groupId>
-		    <artifactId>jackson-dataformat-xml</artifactId>
-		    <version>${jackson.version}</version>
-		</dependency>
 
 		<!-- Keycloak -->
 		<dependency>
@@ -397,6 +385,13 @@
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
 			<version>1.7.2</version>
+		</dependency>
+		
+		<!--  XHTML to Markdown parser -->
+		<dependency>
+    		<groupId>com.vladsch.flexmark</groupId>
+    		<artifactId>flexmark-all</artifactId>
+   			<version>0.42.4</version>
 		</dependency>
 	</dependencies>
 

@@ -20,7 +20,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -59,7 +59,7 @@ public class OperationsUtils {
 		}
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! new SeriesUtils().checkIfSeriesExists(idSeries)) throw new RmesNotFoundException("Unknown series: ",idSeries);
+		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) throw new RmesNotFoundException("Unknown series: ",idSeries);
 
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,idSeries);
 		createRdfOperation(operation, seriesURI);
@@ -88,17 +88,6 @@ public class OperationsUtils {
 		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 		return operation.getId();
 	}
-
-
-	public static URI getOperationUriById(String id) throws RmesException {
-		JSONObject operation = RepositoryGestion.getResponseAsObject(OperationsQueries.operationUriQuery(id));
-		if (operation == null || operation.length()==0) {
-			return null;
-		}
-		String uriStr = operation.get("uri").toString();
-		return SesameUtils.toURI(uriStr);
-	}
-
 
 	private void createRdfOperation(Operation operation, URI serieUri) throws RmesException {
 		Model model = new LinkedHashModel();

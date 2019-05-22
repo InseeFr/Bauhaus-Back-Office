@@ -15,56 +15,30 @@ public class DocumentsQueries {
 	static Map<String,Object> params ;
 	
 
-	public static String getAllGraphsWithSimsQuery() throws RmesException {
-		if (params==null) {initParams();}
-		return  buildRequest("getAllSimsContextsQuery.ftlh", params);
-	}
-	
-	public static String getAllDocumentsQuery(String idSims) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("idSims", idSims);
-		return  buildRequest("getAllDocumentsQuery.ftlh", params);
-	}
-	
-	public static String createDocumentQuery(URI uri, Document document) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uri", uri);
-		return  buildRequest("createDocumentQuery.ftlh", params);
-	}
-	
-	public static String addDocumentLinkQuery(URI uriDocument, String idSims, String idRubric) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uriDocument", uriDocument);
-		params.put("idSims", idSims);
-		params.put("idRubric", idRubric);
-		return  buildRequest("addDocumentLinkQuery.ftlh", params);
-	}
-	
-	
 	public static String deleteDocumentQuery(URI uri) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
 	
-	public static String updateDocumentQuery(URI uri, Document document) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uri", uri);
-		return  buildRequest("updateDocumentQuery.ftlh", params);
-	}
-	
 	public static String getDocumentsQuery(String idSims, String idRubric) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
 		params.put("idRubric", idRubric);
-		return  buildRequest("getDocumentsQuery.ftlh", params);
+		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
 	}
 	
 	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
 		root.put("url", url);
 		root.put("graph", graph);
-		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
+		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", root);
+	}
+	
+	public static String getDocumentQuery(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
 	
 	public static String lastDocumentID() throws RmesException {
@@ -87,6 +61,12 @@ public class DocumentsQueries {
 	 private DocumentsQueries() {
 		 throw new IllegalStateException("Utility class");
 	 }
+
+	public static String getAllDocumentsQuery() throws RmesException {
+		if (params==null) {initParams();}
+		return  buildRequest("getAllDocumentsQuery.ftlh", params);
+	}
+
 
 
 }

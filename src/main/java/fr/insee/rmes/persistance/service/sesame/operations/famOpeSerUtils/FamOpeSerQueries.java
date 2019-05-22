@@ -7,21 +7,9 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
-public class famOpeSerQueries {
+public class FamOpeSerQueries {
 
 	static Map<String,Object> params ;
-
-	public static String lastIdProv() {
-		return "SELECT ?id \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
-				+ "?uri ?b ?c .\n "
-				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
-				+ "FILTER regex(STR(?uri),'/produits/family/' | STR(?uri),'/produits/series/' | STR(?uri),'/produits/operation/') . \n"
-				+ "}} \n"
-				+ "ORDER BY DESC(?id) \n"
-				+ "LIMIT 1";
-	}	
-
 
 	public static String lastId() throws RmesException {
 		if (params==null) {initParams();}
@@ -34,7 +22,21 @@ public class famOpeSerQueries {
 		params.put("LG2", Config.LG2);
 	}
 	
+	/**
+	 * Graph http://rdf.insee.fr/graphes/operations = Family/Series/Operation
+	 * @param uri
+	 * @return
+	 * @throws RmesException
+	 */
+	public static String checkIfOperationExists(String uri) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uri", uri);
+		return buildOperationRequest("checkIfFamSerOpeExistsQuery.ftlh", params);	
+	}
+	
+	
 	private static String buildOperationRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
+	
 }

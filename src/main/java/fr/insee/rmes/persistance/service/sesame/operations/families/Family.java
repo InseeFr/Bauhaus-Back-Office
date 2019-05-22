@@ -4,7 +4,7 @@ import java.util.List;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.famOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Family {
@@ -39,7 +39,7 @@ public class Family {
 
 
 	public Family() throws RmesException {
-		this.id=famOpeSerUtils.createId();
+		this.id=FamOpeSerUtils.createId();
 	}
 
 

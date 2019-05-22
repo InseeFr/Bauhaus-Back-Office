@@ -3,6 +3,7 @@ package fr.insee.rmes.config;
 import org.springframework.core.env.Environment;
 public class Config {
 	
+
 	public static String APP_HOST = "";
 	
 	public static String ENV = "";
@@ -31,6 +32,7 @@ public class Config {
 	public static String DOCUMENTATIONS_BASE_URI = "";
 	public static String DOCUMENTATIONS_BASE_GRAPH = "";
 	public static String DOCUMENTS_BASE_URI = "";
+	public static String DOCUMENTS_GRAPH = "";
 	
 	public static String PRODUCTS_GRAPH = "";
 	public static String INDICATORS_BASE_URI = "";
@@ -97,7 +99,7 @@ public class Config {
 		Config.DOCUMENTATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseURI");
 		Config.DOCUMENTATIONS_BASE_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseGraph");
 		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
-
+		Config.DOCUMENTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.documents.baseGraph");
 
 		
 		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");

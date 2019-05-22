@@ -23,6 +23,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -68,7 +69,7 @@ public class FamiliesUtils {
 			logger.error(e.getMessage());
 			throw new RmesNotFoundException( e.getMessage(), "Can't read request body");
 		}
-		boolean familyExists = RepositoryGestion.getResponseAsBoolean(FamiliesQueries.isFamilyExisting(family.id));
+		boolean familyExists = FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
 		if (!familyExists) {
 			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update unexisting family");
 		}
@@ -77,8 +78,7 @@ public class FamiliesUtils {
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
-	
-	
+
 	public void createRdfFamily(Family family) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
@@ -118,13 +118,6 @@ public class FamiliesUtils {
 		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
 		return id;
 
-	}
-
-
-	public boolean checkIfFamilyExists(String idFamily) throws RmesException {
-		String uriFamily="http://bauhaus/operations/famille/"+idFamily; 
-		Boolean result=RepositoryGestion.getResponseAsBoolean(FamiliesQueries.checkIfFamilyExists(uriFamily));		
-		return result;
 	}
 	
 }
