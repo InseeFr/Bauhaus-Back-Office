@@ -107,10 +107,10 @@ public class DocumentsResources {
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/document")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	public Response setDocument(
-			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class)) String body,
+			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))@FormDataParam(value="body") String body,
 			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file 2"))
 			@FormDataParam(value = "file") InputStream documentFile
 			) throws Exception {

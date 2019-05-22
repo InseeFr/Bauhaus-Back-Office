@@ -31,6 +31,7 @@ public class IndicatorsQueries {
 		getSimpleAttr(id);
 		getCodesLists();
 		getOrganizations();
+		getSimsId();
 
 		return "SELECT "
 		+ variables.toString()
@@ -120,6 +121,14 @@ public class IndicatorsQueries {
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
 	}
+	
+	private static void getSimsId() {
+		addVariableToList(" ?simsId ");
+		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
+				+ " ?report sdmx-mm:target ?indic "
+				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n");
+	}
 
 
 	private static void addVariableToList(String variable) {
@@ -151,8 +160,8 @@ public class IndicatorsQueries {
 		return "ASK \n"
 				+ "WHERE  \n"
 				+ "{ graph <http://rdf.insee.fr/graphes/produits>    \n"
-				+ "?uri ?b ?c .\n "
-				+ "FILTER(STRENDS(STR(?uri),'/produits/indicateur/" + id + "')) . \n"
+				+ "{?uri ?b ?c .\n "
+				+ "FILTER(STRENDS(STR(?uri),'/produits/indicateur/" + id + "')) . }\n"
 				+ "}";
 		  	
 	}

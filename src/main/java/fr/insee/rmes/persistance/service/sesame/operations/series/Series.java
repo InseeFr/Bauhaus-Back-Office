@@ -81,6 +81,7 @@ public class Series {
 	@Schema(description = "List of resources replaced by the series")
 	public List<OperationsLink> isReplacedBy;
 	
+	public String idSims;
 	
 	/*
 	 * Constructors
@@ -185,6 +186,10 @@ public class Series {
 
 	public List<OperationsLink> getIsReplacedBy() {
 		return isReplacedBy;
+	}
+
+	public String getIdSims() {
+		return idSims;
 	}
 
 
