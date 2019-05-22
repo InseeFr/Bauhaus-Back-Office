@@ -17,6 +17,9 @@ public class Document {
 	private String url;
 	private String uri;
 
+	public Document() {
+	}
+	
 	public Document(String id) {
 		this.uri = SesameUtils.documentIRI(id).toString();
 	}

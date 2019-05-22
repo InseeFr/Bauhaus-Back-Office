@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import java.io.File;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -110,13 +111,16 @@ public class DocumentsResources {
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	public Response setDocument(
-			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))@FormDataParam(value="body") String body,
-			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file 2"))
-			@FormDataParam(value = "file") InputStream documentFile
+			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))
+			@FormDataParam(value="body") String body,
+			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file"))
+			@FormDataParam(value = "file") InputStream documentFile,
+			@Parameter(schema = @Schema(implementation=String.class)) 
+			@FormDataParam(value="name") String documentName
 			) throws Exception {
 		String id = null;
 		try {
-			id = documentsService.setDocument(body, documentFile);
+			id = documentsService.setDocument(body, documentFile, documentName);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}

@@ -24,7 +24,7 @@ public interface DocumentsService {
 	/*
 	 * Create
 	 */
-	public String setDocument(String body, InputStream documentFile) throws RmesException ;
+	public String setDocument(String body, InputStream documentFile, String documentName) throws RmesException ;
 	
 	/*
 	 * Update

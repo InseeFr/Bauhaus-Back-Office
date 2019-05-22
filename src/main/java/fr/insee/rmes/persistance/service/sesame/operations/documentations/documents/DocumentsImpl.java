@@ -44,10 +44,10 @@ public class DocumentsImpl implements DocumentsService {
 	 * @see fr.insee.rmes.persistance.service.DocumentsService#setDocument(java.lang.String)
 	 */
 	@Override
-	public String setDocument(String body, InputStream documentFile) throws RmesException {
+	public String setDocument(String body, InputStream documentFile,String documentName) throws RmesException {
 		String id=documentsUtils.createDocumentID();
 		logger.debug("Create document : "+ id);
-		documentsUtils.createDocument(id,body,documentFile);
+		documentsUtils.createDocument(id,body,documentFile,documentName);
 		return id;
 	}
 

@@ -2,6 +2,9 @@ package fr.insee.rmes.persistance.service.sesame.operations.documentations.docum
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -17,7 +20,10 @@ import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.openrdf.model.impl.URIImpl;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +40,9 @@ import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 @Component
 public class DocumentsUtils {
+	
+	@Autowired
+	Environment env;
 
 	private static final String ID = "id";
 	final static Logger logger = LogManager.getLogger(DocumentsUtils.class);
@@ -56,7 +65,7 @@ public class DocumentsUtils {
 	 * @param documentFile
 	 * @throws RmesException
 	 */
-	public void createDocument(String id, String body, InputStream documentFile) throws RmesException {
+	public void createDocument(String id, String body, InputStream documentFile, String documentName) throws RmesException {
 
 		Resource graph = SesameUtils.documentsGraph();
 		Model model = new LinkedHashModel();
@@ -71,11 +80,21 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}
 
-		// TODO : upload file at URL.
-
-		URI url = SesameUtils.toURI(document.getUrl());//TODO : check if exists => update, not create
 		
-		URI docUri = getDocumentUri(url);
+		String url = createUrl(documentName);
+		document.setUrl(url);
+		
+		// upload file in storage folder
+		Path path = Paths.get(url);
+		try {
+			Files.copy(documentFile, path);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+				//TODO : check if exists => update, not create
+	
+		URI docUri = new URIImpl(document.getUri());
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, url, model, graph);
@@ -102,6 +121,11 @@ public class DocumentsUtils {
 		
 	}
 
+
+	private String createUrl(String name) {
+		//TODO: check that url is not already used
+		return env.getProperty("fr.insee.rmes.bauhaus.storage.document")+"/"+name;
+	}
 	
 	/**
 	 * return new uri if url doesn't exist
