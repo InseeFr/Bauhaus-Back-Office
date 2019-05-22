@@ -62,6 +62,7 @@ public class Indicator {
 	@Schema(description = "List of resources which generate the indicator")
 	public List<OperationsLink> wasGeneratedBy;
 	
+	public String idSims;
 
 	public Indicator(String id) {
 		this.id=id;
@@ -154,6 +155,10 @@ public class Indicator {
 
 	public List<OperationsLink> getWasGeneratedBy() {
 		return wasGeneratedBy;
+	}
+
+	public String getIdSims() {
+		return idSims;
 	}
 
 	

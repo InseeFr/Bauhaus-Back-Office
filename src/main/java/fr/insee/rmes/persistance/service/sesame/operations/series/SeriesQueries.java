@@ -119,6 +119,9 @@ public class SeriesQueries {
 
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
+		
+		addVariableToList(" ?simsId ");
+		addGetSimsId();
 	}
 
 	private static void addOptionalClause(String predicate, String variableName){
@@ -126,6 +129,13 @@ public class SeriesQueries {
 		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg1) = '" + Config.LG1 + "') } \n ");
 		addClauseToWhereClause( "OPTIONAL{?series "+predicate+" "+variableName + "Lg2 \n");
 		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + Config.LG2 + "') } \n ");
+	}
+	
+	private static void addGetSimsId() {
+		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
+					+ " ?report sdmx-mm:target ?series "
+					+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+					+ "} \n");
 	}
 
 	private static void getCodesLists() {
