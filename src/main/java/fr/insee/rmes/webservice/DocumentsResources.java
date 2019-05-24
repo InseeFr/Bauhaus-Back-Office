@@ -113,11 +113,9 @@ public class DocumentsResources {
 	public Response setDocument(
 			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))
 			@FormDataParam(value="body") String body,
-			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "object", format = "binary", description = "file"))
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
 			@FormDataParam(value = "file") InputStream documentFile,
-			@FormDataParam(value = "file") FormDataContentDisposition fileDisposition
-//			@Parameter(schema = @Schema(implementation=String.class)) 
-//			@FormDataParam(value="name") String documentName
+			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition
 			) throws Exception {
 		String id = null;
 		String documentName = fileDisposition.getFileName();
