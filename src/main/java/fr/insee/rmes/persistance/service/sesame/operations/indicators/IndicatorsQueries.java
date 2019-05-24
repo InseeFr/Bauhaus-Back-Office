@@ -123,7 +123,7 @@ public class IndicatorsQueries {
 	}
 	
 	private static void getSimsId() {
-		addVariableToList(" ?simsId ");
+		addVariableToList(" ?idSims ");
 		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
 				+ " ?report sdmx-mm:target ?indic "
 				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
