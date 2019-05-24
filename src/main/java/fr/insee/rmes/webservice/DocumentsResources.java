@@ -1,6 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import java.io.File;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -18,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -113,12 +113,14 @@ public class DocumentsResources {
 	public Response setDocument(
 			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))
 			@FormDataParam(value="body") String body,
-			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file"))
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "object", format = "binary", description = "file"))
 			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(schema = @Schema(implementation=String.class)) 
-			@FormDataParam(value="name") String documentName
+			@FormDataParam(value = "file") FormDataContentDisposition fileDisposition
+//			@Parameter(schema = @Schema(implementation=String.class)) 
+//			@FormDataParam(value="name") String documentName
 			) throws Exception {
 		String id = null;
+		String documentName = fileDisposition.getFileName();
 		try {
 			id = documentsService.setDocument(body, documentFile, documentName);
 		} catch (RmesException e) {
@@ -127,6 +129,35 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
+	
+	/*
+	 * Change the file of a document
+	 */
+
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PUT
+	@Path("/{id}")
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@Operation(operationId = "changeDocument", summary = "Change document" )
+	public Response changeDocument(
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
+			@FormDataParam(value = "file") InputStream documentFile,
+			@Parameter(schema = @Schema(implementation=String.class)) 
+			@FormDataParam(value="name") String documentUri
+			) throws Exception {
+		String id = null;
+		try {
+			id = documentsService.changeDocument(documentUri, documentFile);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	/*
+	 * Update infos about a document, but not the file
+	 */
+	
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/document/{id}")
@@ -141,7 +172,7 @@ public class DocumentsResources {
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
-		logger.info("Update concept : " + id);
+		logger.info("Update document : " + id);
 		return Response.status(Status.OK).build();
 	}
 	

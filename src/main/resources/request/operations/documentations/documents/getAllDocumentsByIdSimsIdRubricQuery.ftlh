@@ -1,4 +1,4 @@
-SELECT ?url ?labelLg1 ?labelLg2 ?lastRefresh ?lang ?descriptionLg1 ?descriptionLg2 (?document AS ?uri)
+SELECT ?url ?labelLg1 ?labelLg2 ?updatedDate ?lang ?descriptionLg1 ?descriptionLg2 (?document AS ?uri)
 FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
 FROM <http://rdf.insee.fr/graphes/qualite/documents>
 
@@ -24,7 +24,7 @@ WHERE {
 	 }
 	 
 	 
-	 OPTIONAL{ ?document pav:lastRefreshedOn ?lastRefresh .  }
+	 OPTIONAL{ ?document pav:lastRefreshedOn ?updatedDate .  }
 	 OPTIONAL{ ?document dc:language ?lang .  }
 	 
 	FILTER(REGEX(STR(?text), '${idRubric}')) 

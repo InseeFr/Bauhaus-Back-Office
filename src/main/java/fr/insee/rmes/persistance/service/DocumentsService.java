@@ -36,4 +36,9 @@ public interface DocumentsService {
 	 */
 	public String deleteDocument(String id) throws RmesException ;
 
+	/*
+	 * Change an uploaded document
+	 */
+	public String changeDocument(String documentUri, InputStream documentFile) throws RmesException ;
+
 }

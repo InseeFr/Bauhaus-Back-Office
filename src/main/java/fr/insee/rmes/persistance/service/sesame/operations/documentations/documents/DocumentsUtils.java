@@ -53,6 +53,7 @@ public class DocumentsUtils {
 			for (Document doc : rubric.getDocuments()) {
 				URI url = SesameUtils.toURI(doc.getUrl());
 				URI docUri = getDocumentUri(url);
+				// TODO: Attention si plusieurs doc avec la même url
 				SesameUtils.addTripleUri(textUri,INSEE.ADDITIONALMATERIAL , docUri, model, graph);
 			}					
 		}
@@ -259,6 +260,11 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}		
 		return jsonDocs;
+	}
+
+	public Document getDocumentFromUri(String documentUri) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
