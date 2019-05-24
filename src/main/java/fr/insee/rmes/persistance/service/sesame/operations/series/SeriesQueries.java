@@ -120,7 +120,7 @@ public class SeriesQueries {
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
 		
-		addVariableToList(" ?simsId ");
+		addVariableToList(" ?idSims ");
 		addGetSimsId();
 	}
 
