@@ -1,10 +1,8 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,9 +67,8 @@ public class DocumentsImpl implements DocumentsService {
 	 * Delete 
 	 */
 	@Override
-	public String deleteDocument(String id) throws RmesException {
-		// TODO Auto-generated method stub
-		return null;
+	public Status deleteDocument(String id) throws RmesException {
+		return documentsUtils.deleteDocument(id);
 	}
 
 	/*
@@ -79,22 +76,10 @@ public class DocumentsImpl implements DocumentsService {
 	 * Keep the document links
 	 */
 	@Override
-	public String changeDocument(String documentUri, InputStream documentFile)
+	public String changeDocument(String docId, InputStream documentFile, String documentName)
 			throws RmesException {
-		Document document = documentsUtils.getDocumentFromUri(documentUri);
-		String docId=document.getId();
-		String docUrl=document.getUrl();
-	//	String documentName=StringUtils.substringAfterLast(docUrl,"/");
-
-		// upload file in storage folder
-		Path path = Paths.get(docUrl);
-				try {
-					Files.copy(documentFile, path);
-				} catch (IOException e) {
-					logger.error(e.getMessage());
-				}
 		
-		return docId;
+		return documentsUtils.changeDocument(docId,documentFile,documentName);		
 	}	
 	
 }

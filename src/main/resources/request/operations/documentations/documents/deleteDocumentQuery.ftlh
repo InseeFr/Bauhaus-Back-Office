@@ -1,29 +1,30 @@
 WITH <${graph}>
 
 DELETE  {
-			<${uriConcept}> skos:definition ?def .
-			<${uriConcept}> skos:scopeNote ?sn .
-			<${uriConcept}> skos:editorialNote ?en .
-			<${uriConcept}> skos:changeNote ?cn . 
-			<${uriConcept}> ?p ?c . 
-			?def ?q ?z .
-			?sn ?q ?z .
-			?en ?q ?z .
-			?cn ?q ?z .
-		}
+	 
+	 ?uri rdf:type foaf:Document .
+	 ?uri <http://schema.org/url> ?url .
+ 	 ?uri rdfs:label ?label . 
+	 ?uri rdfs:comment ?description . 
+	 ?uri pav:lastRefreshedOn ?updatedDate . 
+	 ?uri dc:language ?lang .
+	}
  WHERE {
-       { <${uriConcept}> skos:definition ?def . 
-        OPTIONAL { ?def ?q ?z }
-       } UNION
-	    { <${uriConcept}> skos:scopeNote ?sn . 
-        OPTIONAL { ?sn ?q ?z }
-       } UNION
-	    { <${uriConcept}> skos:editorialNote ?en . 
-        OPTIONAL { ?en ?q ?z }
-       } UNION
-	    { <${uriConcept}> skos:changeNote ?cn . 
-        OPTIONAL { ?cn ?q ?z }
-       } UNION
-	    { <${uriConcept}> ?p ?c  
-	   } 
+   
+	 ?uri rdf:type foaf:Document .
+	 ?uri <http://schema.org/url> ?url .
+ 	OPTIONAL { ?uri rdfs:label ?label }
+	OPTIONAL {  ?uri rdfs:comment ?description }
+	OPTIONAL {  ?uri pav:lastRefreshedOn ?updatedDate } 
+	OPTIONAL {  ?uri dc:language ?lang }
+	 FILTER(?uri = <${uri}>) 
 	  }
+	; 
+	 
+DELETE {
+	?text insee:additionalMaterial  ?uri .
+	}
+ WHERE {	
+	?text insee:additionalMaterial  ?uri .
+	 FILTER(?uri = <${uri}>) 
+	}

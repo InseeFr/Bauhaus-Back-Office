@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.service;
 
 import java.io.InputStream;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.json.JSONObject;
 
 import fr.insee.rmes.exceptions.RmesException;
@@ -34,11 +36,11 @@ public interface DocumentsService {
 	/*
 	 * Delete
 	 */
-	public String deleteDocument(String id) throws RmesException ;
+	public Status deleteDocument(String id) throws RmesException ;
 
 	/*
 	 * Change an uploaded document
 	 */
-	public String changeDocument(String documentUri, InputStream documentFile) throws RmesException ;
+	public String changeDocument(String documentUri, InputStream documentFile, String documentName) throws RmesException ;
 
 }

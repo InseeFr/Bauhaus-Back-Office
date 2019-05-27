@@ -27,6 +27,7 @@ import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.DocumentsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.Document;
+import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -97,12 +98,13 @@ public class DocumentsResources {
 	@Path("/{id}")
 	@Operation(operationId = "deleteDocument", summary = "deletion")
 	public Response deleteConcept(@PathParam("id") String id) {
+		Status status = null;
 		try {
-			documentsService.deleteDocument(id);
+			status = documentsService.deleteDocument(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return Response.status(status).entity(id).build();
 	}
 	
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
@@ -140,16 +142,17 @@ public class DocumentsResources {
 	public Response changeDocument(
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
 			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(schema = @Schema(implementation=String.class)) 
-			@FormDataParam(value="name") String documentUri
+			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
+			@Parameter(description = "Id", required = true) @PathParam("id") String id
 			) throws Exception {
-		String id = null;
+		String url = null;
+		String documentName = fileDisposition.getFileName();
 		try {
-			id = documentsService.changeDocument(documentUri, documentFile);
+			url = documentsService.changeDocument(id, documentFile, documentName);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return Response.status(HttpStatus.SC_OK).entity(url).build();
 	}
 
 	/*

@@ -15,9 +15,10 @@ public class DocumentsQueries {
 	static Map<String,Object> params ;
 	
 
-	public static String deleteDocumentQuery(URI uri) throws RmesException {
+	public static String deleteDocumentQuery(URI uri, URI graph) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
+		params.put("graph", graph);
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
 	
@@ -65,6 +66,15 @@ public class DocumentsQueries {
 	public static String getAllDocumentsQuery() throws RmesException {
 		if (params==null) {initParams();}
 		return  buildRequest("getAllDocumentsQuery.ftlh", params);
+	}
+
+	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl, Resource graph) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriGraph", graph.toString());
+		params.put("id", docId);
+		params.put("oldUrl", oldUrl);
+		params.put("newUrl", newUrl);
+		return  buildRequest("changeDocumentUrlQuery.ftlh", params);
 	}
 
 
