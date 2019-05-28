@@ -1,5 +1,7 @@
 package fr.insee.rmes.exceptions;
 
+import org.json.JSONArray;
+
 public class RmesException extends Exception {
 
 	private static final long serialVersionUID = -7959158367542389147L;
@@ -19,7 +21,13 @@ public class RmesException extends Exception {
         this.details = details;
     }
 
-    public RestMessage toRestMessage(){
+    public RmesException(int status, String message, JSONArray details) {
+    	 super(message);
+         this.status = status;
+         this.details = details.toString();
+	}
+
+	public RestMessage toRestMessage(){
         return new RestMessage(this.status, this.getMessage(), this.details);
     }
 

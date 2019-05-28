@@ -219,8 +219,8 @@ public class DocumentsUtils {
 		JSONArray jsonResultat = getLinksToDocument(docId);
 		if (jsonResultat.length()>0) { 
 			throw new RmesUnauthorizedException(
-					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: ", 
-					((JSONObject) jsonResultat.get(0)).get("text").toString());
+					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: "+ 
+					((JSONObject) jsonResultat.get(0)).get("text").toString(),jsonResultat);
 		}
 		// remove the physical file
 		if(!isLink(docId)) {deleteFile(url);}
@@ -340,7 +340,7 @@ public class DocumentsUtils {
 	}
 
 	private String createUrl(String name) {
-		return env.getProperty("fr.insee.rmes.bauhaus.storage.document")+"/"+name;
+		return Config.DOCUMENTS_STORAGE+"/"+name;
 	}
 
 	/**
