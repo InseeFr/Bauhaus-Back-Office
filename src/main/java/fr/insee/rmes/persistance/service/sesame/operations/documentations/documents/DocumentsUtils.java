@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
@@ -147,7 +148,7 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}
 
-		String url = createUrl(documentName);
+		String url = createFileUrl(documentName);
 
 		document.setUrl(url);
 		Path path = Paths.get(url);
@@ -267,7 +268,7 @@ public class DocumentsUtils {
 		// Different documentName -> create a new URL
 		else {
 			// Upload the new file
-			newUrl=createUrl(documentName);
+			newUrl=createFileUrl(documentName);
 			Path path = Paths.get(newUrl);
 			try {
 				Files.copy(documentFile, path); // throws an error if a file already exists under this name
@@ -285,6 +286,39 @@ public class DocumentsUtils {
 		return newUrl;
 	}
 
+	/*
+	 * LINKS
+	 */
+	public void createLink(String id, String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Document link = new Document(id, true);
+			
+		try {
+			link = mapper.readerForUpdating(link).readValue(body);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+		String url = link.getUrl();
+		if (StringUtils.isEmpty(url)) { throw new RmesNotAcceptableException("A link must have a non-empty url. ",id);}
+		
+		//Check if the url is already used by a link
+		URI uriUrl= SesameUtils.toURI(url);
+		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
+		if (uri.length()>0 ) {
+			throw new RmesNotAcceptableException("There already exists a link to that url: ",
+					uri.getString("document"));
+			}
+		
+		
+		URI docUri = new URIImpl(link.getUri());
+
+		writeRdfDocument(link, docUri);
+
+	}
+	
+	
 	/**
 	 * Write a document in rdf database
 	 * @param document
@@ -339,7 +373,7 @@ public class DocumentsUtils {
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
 
-	private String createUrl(String name) {
+	private String createFileUrl(String name) {
 		return Config.DOCUMENTS_STORAGE+"/"+name;
 	}
 
@@ -391,26 +425,5 @@ public class DocumentsUtils {
 		return true;
 	}
 
-	/*
-	 * LINKS
-	 */
-	public void createLink(String id, String body) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Document link = new Document(id, true);
-			
-		try {
-			link = mapper.readerForUpdating(link).readValue(body);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-
-		String url = link.getUrl();
-		if (StringUtils.isEmpty(url)) { throw new RmesException(406,"A link must have a non-empty url. ",id);}
-		
-		URI docUri = new URIImpl(link.getUri());
-
-		writeRdfDocument(link, docUri);
-
-	}
+	
 }
