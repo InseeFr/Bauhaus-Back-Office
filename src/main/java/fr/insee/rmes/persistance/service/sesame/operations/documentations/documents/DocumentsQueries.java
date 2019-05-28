@@ -42,6 +42,27 @@ public class DocumentsQueries {
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
 	
+	public static String getLinksToDocumentQuery(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return  buildRequest("getLinksToDocumentQuery.ftlh", params);
+	}
+
+
+	public static String getAllDocumentsQuery() throws RmesException {
+		if (params==null) {initParams();}
+		return  buildRequest("getAllDocumentsQuery.ftlh", params);
+	}
+
+	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl, Resource graph) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("uriGraph", graph.toString());
+		params.put("id", docId);
+		params.put("oldUrl", oldUrl);
+		params.put("newUrl", newUrl);
+		return  buildRequest("changeDocumentUrlQuery.ftlh", params);
+	}
+
 	public static String lastDocumentID() throws RmesException {
         return buildRequest("lastDocumentID.ftlh", null);
 	}	
@@ -63,20 +84,5 @@ public class DocumentsQueries {
 		 throw new IllegalStateException("Utility class");
 	 }
 
-	public static String getAllDocumentsQuery() throws RmesException {
-		if (params==null) {initParams();}
-		return  buildRequest("getAllDocumentsQuery.ftlh", params);
-	}
-
-	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl, Resource graph) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uriGraph", graph.toString());
-		params.put("id", docId);
-		params.put("oldUrl", oldUrl);
-		params.put("newUrl", newUrl);
-		return  buildRequest("changeDocumentUrlQuery.ftlh", params);
-	}
-
-
-
+	
 }

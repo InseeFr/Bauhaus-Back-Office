@@ -27,7 +27,6 @@ import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.DocumentsService;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.Document;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -39,7 +38,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * WebService class for resources of Documents
+ * WebService class for resources of Documents and Links
  * 
  *
  */
@@ -60,10 +59,13 @@ public class DocumentsResources {
 	private static final String TEXT_PLAIN = "text/plain";
 
 	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
-	
+
 	@Autowired
 	DocumentsService documentsService;
-	
+
+	/*
+	 * get the list of all documents
+	 */
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDocuments", summary = "List of documents",
@@ -77,7 +79,10 @@ public class DocumentsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
+	/*
+	 * get one document
+	 */
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -92,21 +97,10 @@ public class DocumentsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
-	
-	@DELETE
-	@Path("/{id}")
-	@Operation(operationId = "deleteDocument", summary = "deletion")
-	public Response deleteConcept(@PathParam("id") String id) {
-		Status status = null;
-		try {
-			status = documentsService.deleteDocument(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
-		}
-		return Response.status(status).entity(id).build();
-	}
-	
+
+	/*
+	 * Create a new document
+	 */
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/document")
@@ -129,7 +123,7 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-	
+
 	/*
 	 * Change the file of a document
 	 */
@@ -156,9 +150,9 @@ public class DocumentsResources {
 	}
 
 	/*
-	 * Update infos about a document, but not the file
+	 * Update informations about a document, but not the file
 	 */
-	
+
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/document/{id}")
@@ -176,5 +170,19 @@ public class DocumentsResources {
 		logger.info("Update document : " + id);
 		return Response.status(Status.OK).build();
 	}
-	
+
+
+	@DELETE
+	@Path("/{id}")
+	@Operation(operationId = "deleteDocument", summary = "deletion")
+	public Response deleteDocument(@PathParam("id") String id) {
+		Status status = null;
+		try {
+			status = documentsService.deleteDocument(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(status).entity(id).build();
+	}
+
 }

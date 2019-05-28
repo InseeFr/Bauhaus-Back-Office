@@ -35,11 +35,14 @@ public interface DocumentsService {
 	
 	/*
 	 * Delete
+	 * Delete the document and the links towards it.
 	 */
 	public Status deleteDocument(String id) throws RmesException ;
 
 	/*
 	 * Change an uploaded document
+	 * Delete the previous document
+	 * Update the document's url if the document's name has changed
 	 */
 	public String changeDocument(String documentUri, InputStream documentFile, String documentName) throws RmesException ;
 

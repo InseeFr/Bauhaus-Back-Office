@@ -68,45 +68,6 @@ public class DocumentsUtils {
 	}
 
 
-	private String getDocumentNameFromUrl (String docUrl) {
-		return StringUtils.substringAfterLast(docUrl, "/");
-	}
-
-	private String createUrl(String name) {
-		return env.getProperty("fr.insee.rmes.bauhaus.storage.document")+"/"+name;
-	}
-
-	/**
-	 * return new uri if url doesn't exist
-	 * @param url
-	 * @return
-	 * @throws RmesException
-	 */
-	private URI getDocumentUri(URI url) throws RmesException {
-		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, SesameUtils.documentsGraph()));
-		if (uri.length()==0 || !uri.has("document")) {
-			String id = createDocumentID();
-			return SesameUtils.objectIRI(ObjectType.DOCUMENT,id);
-		}
-		return SesameUtils.toURI(uri.getString("document"));
-	}
-
-	/**
-	 * throw exception if url doesn't exist
-	 * @param url
-	 * @param graph
-	 * @return
-	 * @throws RmesException
-	 */
-	private URI getDocumentUriIfExists(URI url, Resource graph) throws RmesException {
-		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
-		if (uri.length()==0 || !uri.has("document")) {
-			throw new RmesException(HttpStatus.SC_NOT_FOUND,"No document with with URL","");
-		}
-		return SesameUtils.toURI(uri.getString("document"));
-	}
-
-
 	/**
 	 * Get documents link to one rubric of a metadata report
 	 * @param idSims
@@ -148,42 +109,6 @@ public class DocumentsUtils {
 		if (id.equals("undefined")) {return "1000";}
 		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
-	}
-
-	/**
-	 * Write a document in rdf database
-	 * @param document
-	 * @param docUri
-	 * @throws RmesException
-	 */
-
-	private void writeRdfDocument(Document document, URI docUri) throws RmesException {
-
-		Resource graph = SesameUtils.documentsGraph();
-		Model model = new LinkedHashModel();
-
-		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
-		SesameUtils.addTripleUri(docUri, SCHEMA.URL, document.getUrl(), model, graph);
-		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
-			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
-		}
-		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
-			SesameUtils.addTripleString(docUri,RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
-		}
-		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
-			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
-		}
-		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
-			SesameUtils.addTripleString(docUri,RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
-		}
-
-		if (StringUtils.isNotEmpty(document.getLangue())) {
-			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
-		}
-		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
-			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
-		}
-		RepositoryGestion.loadSimpleObject(docUri, model, null);
 	}
 
 
@@ -267,12 +192,6 @@ public class DocumentsUtils {
 		return jsonDocs;
 	}
 
-	private String getDocumentUrlFromId(String id) throws RmesException {
-		JSONObject jsonDoc = getDocument(id);
-		String url = jsonDoc.getString(URL);
-		return url;
-	}
-
 	public Status deleteDocument(String docId) throws RmesException {
 
 		Resource graph = SesameUtils.documentsGraph();
@@ -281,9 +200,23 @@ public class DocumentsUtils {
 		String url = jsonDoc.getString(URL);
 		URI docUri = new URIImpl(uri);
 
+		// Check that the document is not referred to by any sims
+		JSONArray jsonResultat = getLinksToDocument(docId);
+		if (jsonResultat.length()>0) { 
+			throw new RmesUnauthorizedException(
+					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: ", 
+					((JSONObject) jsonResultat.get(0)).get("text").toString());
+		}
+		// remove the physical file
 		deleteFile(url);
+		// delete the Document in the rdf base
 		return RepositoryGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri,(URI) graph));
 	}
+
+	public JSONArray getLinksToDocument(String docId) throws RmesException {
+		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
+	}
+
 
 	public String changeDocument(String docId, InputStream documentFile, String documentName) throws RmesException {
 
@@ -325,13 +258,50 @@ public class DocumentsUtils {
 			// Delete the old file
 			deleteFile(docUrl);
 
-			// Update doc's url
+			// Update document's url
 			changeDocumentsURL(docId,docUrl,newUrl);
 		}
 
 		return newUrl;
 	}
 
+
+
+	/**
+	 * Write a document in rdf database
+	 * @param document
+	 * @param docUri
+	 * @throws RmesException
+	 */
+
+	private void writeRdfDocument(Document document, URI docUri) throws RmesException {
+
+		Resource graph = SesameUtils.documentsGraph();
+		Model model = new LinkedHashModel();
+
+		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
+		SesameUtils.addTripleUri(docUri, SCHEMA.URL, document.getUrl(), model, graph);
+		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
+			SesameUtils.addTripleString(docUri,RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
+			SesameUtils.addTripleString(docUri,RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
+		}
+
+		if (StringUtils.isNotEmpty(document.getLangue())) {
+			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
+		}
+		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
+			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+		}
+		RepositoryGestion.loadSimpleObject(docUri, model, null);
+	}
 
 	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
 		Resource graph = SesameUtils.documentsGraph();
@@ -347,4 +317,50 @@ public class DocumentsUtils {
 		}
 	}
 
+
+	private String getDocumentNameFromUrl (String docUrl) {
+		return StringUtils.substringAfterLast(docUrl, "/");
+	}
+
+	private String createUrl(String name) {
+		return env.getProperty("fr.insee.rmes.bauhaus.storage.document")+"/"+name;
+	}
+
+	/**
+	 * return new uri if url doesn't exist
+	 * @param url
+	 * @return
+	 * @throws RmesException
+	 */
+	private URI getDocumentUri(URI url) throws RmesException {
+		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, SesameUtils.documentsGraph()));
+		if (uri.length()==0 || !uri.has("document")) {
+			String id = createDocumentID();
+			return SesameUtils.objectIRI(ObjectType.DOCUMENT,id);
+		}
+		return SesameUtils.toURI(uri.getString("document"));
+	}
+
+	/**
+	 * throw exception if url doesn't exist
+	 * @param url
+	 * @param graph
+	 * @return
+	 * @throws RmesException
+	 */
+	private URI getDocumentUriIfExists(URI url, Resource graph) throws RmesException {
+		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
+		if (uri.length()==0 || !uri.has("document")) {
+			throw new RmesException(HttpStatus.SC_NOT_FOUND,"No document with with URL","");
+		}
+		return SesameUtils.toURI(uri.getString("document"));
+	}
+
+	private String getDocumentUrlFromId(String id) throws RmesException {
+		JSONObject jsonDoc = getDocument(id);
+		String url = jsonDoc.getString(URL);
+		return url;
+	}
+
+	
 }
