@@ -64,11 +64,16 @@ public class DocumentsResources {
 	DocumentsService documentsService;
 
 	/*
-	 * get the list of all documents
+	 * DOCUMENTS AND LINKS
 	 */
+	
+	/*
+	 * Get the list of all documents and links
+	 */
+	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDocuments", summary = "List of documents",
+	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
 	public Response getDocuments() {
 		String jsonResultat;
@@ -81,12 +86,13 @@ public class DocumentsResources {
 	}
 
 	/*
-	 * get one document
+	 * Get one document or link
 	 */
+	
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDocument", summary = "Document",
+	@Operation(operationId = "getDocument", summary = "Document or Link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
 	public Response getDocument(@PathParam("id") String id) {
 		String jsonResultat;
@@ -98,6 +104,35 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	/*
+	 * Update informations about a document (or link), but not the file
+	 */
+
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PUT
+	@Path("/document/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setDocumentById", summary = "Update document or link")
+	public Response setDocument(
+			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@RequestBody(description = "Document", required = true)
+			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
+		try {
+			documentsService.setDocument(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		logger.info("Update document : " + id);
+		return Response.status(Status.OK).build();
+	}
+	
+	
+	
+	/*
+	 * DOCUMENTS
+	 */
+	
+	
 	/*
 	 * Create a new document
 	 */
@@ -149,32 +184,10 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(url).build();
 	}
 
-	/*
-	 * Update informations about a document, but not the file
-	 */
-
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
-	@PUT
-	@Path("/document/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "setDocumentById", summary = "Update document")
-	public Response setDocument(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
-			@RequestBody(description = "Document", required = true)
-			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
-		try {
-			documentsService.setDocument(id, body);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
-		}
-		logger.info("Update document : " + id);
-		return Response.status(Status.OK).build();
-	}
-
-
 	@DELETE
 	@Path("/{id}")
-	@Operation(operationId = "deleteDocument", summary = "deletion")
+	@Operation(operationId = "deleteDocument", summary = "Delete a document")
 	public Response deleteDocument(@PathParam("id") String id) {
 		Status status = null;
 		try {
@@ -185,4 +198,31 @@ public class DocumentsResources {
 		return Response.status(status).entity(id).build();
 	}
 
+	/*
+	 * LINKS
+	 */
+	
+	/*
+	 * Create a new document
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@POST
+	@Path("/link")
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@Operation(operationId = "setDocument", summary = "Create link" )
+	public Response setLink(
+			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class))
+			@FormDataParam(value="body") String body
+			) throws Exception {
+		String id = null;
+		try {
+			id = documentsService.setLink(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	
+	
 }

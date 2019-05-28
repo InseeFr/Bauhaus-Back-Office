@@ -66,7 +66,11 @@ public class DocumentsQueries {
 	public static String lastDocumentID() throws RmesException {
         return buildRequest("lastDocumentID.ftlh", null);
 	}	
-	
+
+	public static String lastLinkID() throws RmesException{
+		return buildRequest("lastLinkIdQuery.ftlh", null);
+	}
+
 
 	private static void initParams() {
 		params = new HashMap<>();

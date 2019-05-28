@@ -46,4 +46,13 @@ public interface DocumentsService {
 	 */
 	public String changeDocument(String documentUri, InputStream documentFile, String documentName) throws RmesException ;
 
+	/*
+	 * LINKS
+	 */
+	
+	/*
+	 * Create new link
+	 */
+	public String setLink(String body) throws RmesException;
+
 }

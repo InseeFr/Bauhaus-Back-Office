@@ -67,6 +67,9 @@ public class SesameUtils {
 		return objectIRI(ObjectType.DOCUMENT, id);
 	}
 	
+	public static URI linkIRI(String id) {
+		return objectIRI(ObjectType.LINK, id);
+	}
 	
 	public static URI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return SesameUtils.factory.createURI(

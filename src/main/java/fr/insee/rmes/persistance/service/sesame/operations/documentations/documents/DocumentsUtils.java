@@ -102,13 +102,29 @@ public class DocumentsUtils {
 	 * @throws RmesException
 	 */
 	protected String createDocumentID() throws RmesException {
+		Boolean noDocInBase = false;
+		Boolean noLinkInBase = false;
+		int maxDocId = 0;
+		int maxLinkId = 0;
+		String id = null;
+
 		logger.info("Generate document id");
+
 		JSONObject json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastDocumentID());
-		if (json.length()==0) {return "1000";}
-		String id = json.getString(ID);
-		if (id.equals("undefined")) {return "1000";}
-		int newId = Integer.parseInt(id)+1;
-		return String.valueOf(newId);
+		if (json.length()==0) {noDocInBase= true;}
+		else { id = json.getString(ID);
+		if (id.equals("undefined") || StringUtils.isEmpty(id)) {noDocInBase= true;}
+		else maxDocId = Integer.parseInt(id);}
+
+		json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastLinkID());
+		if (json.length()==0)  {noLinkInBase= true;}
+		else {id = json.getString(ID);
+		if (id.equals("undefined") || StringUtils.isEmpty(id)) {noLinkInBase= true;}
+		else maxLinkId = Integer.parseInt(id);}
+
+		if (noDocInBase & noLinkInBase) {return "1000";}
+
+		return String.valueOf(java.lang.Math.max(maxDocId,maxLinkId)+1);
 	}
 
 
@@ -123,7 +139,7 @@ public class DocumentsUtils {
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Document document = new Document(id);
+		Document document = new Document(id, false);
 
 		try {
 			document = mapper.readerForUpdating(document).readValue(body);
@@ -154,16 +170,14 @@ public class DocumentsUtils {
 
 
 	/**
-	 * Update a document
+	 * Update a document or link
 	 * @throws RmesException
 	 */
 	public void setDocument(String id, String body) throws RmesException {
 
-		Resource graph = SesameUtils.documentsGraph();
-
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Document document = new Document(id);
+		Document document = new Document(id,isLink(id));
 
 		try {
 			document = mapper.readerForUpdating(document).readValue(body);
@@ -171,10 +185,11 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}
 
-		URI url = SesameUtils.toURI(document.getUrl());
-		URI docUri = getDocumentUriIfExists(url, graph);
-
-		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1());
+		//TODO: for a document, check that the url isn't changed ?
+		
+		URI docUri =SesameUtils.toURI(document.getUri());
+		
+		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1() + " / " + document.getLabelLg2());
 
 		writeRdfDocument(document, docUri);
 
@@ -208,7 +223,7 @@ public class DocumentsUtils {
 					((JSONObject) jsonResultat.get(0)).get("text").toString());
 		}
 		// remove the physical file
-		deleteFile(url);
+		if(!isLink(docId)) {deleteFile(url);}
 		// delete the Document in the rdf base
 		return RepositoryGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri,(URI) graph));
 	}
@@ -222,11 +237,16 @@ public class DocumentsUtils {
 
 		String docUrl=getDocumentUrlFromId(docId);
 
+		// Cannot upload file for a Link
+		if (isLink(docId)) {
+			throw new RmesException(406, "Links have no attached file. Cannot upload file "+documentName+" for this document: ",docId);
+		}
+
 		// Warning if different file extension 
 		String oldExt=StringUtils.substringAfterLast(docUrl, ".");
 		String newExt=StringUtils.substringAfterLast(documentName, ".");
 		if (!oldExt.equals(newExt)) {
-			logger.info("The new file has extension: ."+newExt+" while the old file had extension: ."+oldExt);
+			logger.info("Warning: The new file has extension: ."+newExt+" while the old file had extension: ."+oldExt);
 		}
 
 		String oldName=getDocumentNameFromUrl(docUrl);
@@ -234,7 +254,7 @@ public class DocumentsUtils {
 
 		// Same documentName -> keep the same URL
 		if (oldName.equals(documentName)) {
-			logger.info("Replace file "+documentName+" at the same Url");
+			logger.info("Replacing file "+documentName+" at the same Url");
 			newUrl=docUrl;
 			// upload file in storage folder
 			Path path = Paths.get(docUrl);
@@ -264,8 +284,6 @@ public class DocumentsUtils {
 
 		return newUrl;
 	}
-
-
 
 	/**
 	 * Write a document in rdf database
@@ -317,7 +335,6 @@ public class DocumentsUtils {
 		}
 	}
 
-
 	private String getDocumentNameFromUrl (String docUrl) {
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
@@ -351,7 +368,7 @@ public class DocumentsUtils {
 	private URI getDocumentUriIfExists(URI url, Resource graph) throws RmesException {
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, graph));
 		if (uri.length()==0 || !uri.has("document")) {
-			throw new RmesException(HttpStatus.SC_NOT_FOUND,"No document with with URL","");
+			throw new RmesException(HttpStatus.SC_NOT_FOUND,"No document with URL","");
 		}
 		return SesameUtils.toURI(uri.getString("document"));
 	}
@@ -362,5 +379,38 @@ public class DocumentsUtils {
 		return url;
 	}
 
-	
+	private boolean isLink(Document document) {
+		String url = document.getUrl();
+		if (StringUtils.startsWith(url, Config.DOCUMENTS_GRAPH)) {return false;}
+		return true;
+	}
+
+	private boolean isLink(String id ) throws RmesException {
+		String url = getDocumentUrlFromId(id);
+		if (StringUtils.startsWith(url, Config.DOCUMENTS_GRAPH)) {return false;}
+		return true;
+	}
+
+	/*
+	 * LINKS
+	 */
+	public void createLink(String id, String body) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Document link = new Document(id, true);
+			
+		try {
+			link = mapper.readerForUpdating(link).readValue(body);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+		String url = link.getUrl();
+		if (StringUtils.isEmpty(url)) { throw new RmesException(406,"A link must have a non-empty url. ",id);}
+		
+		URI docUri = new URIImpl(link.getUri());
+
+		writeRdfDocument(link, docUri);
+
+	}
 }

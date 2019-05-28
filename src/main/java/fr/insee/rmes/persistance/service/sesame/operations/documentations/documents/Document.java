@@ -23,6 +23,12 @@ public class Document {
 	public Document(String id) {
 		this.uri = SesameUtils.documentIRI(id).toString();
 	}
+
+	public Document(String id, boolean isLink) {
+		if (isLink) {this.uri = SesameUtils.linkIRI(id).toString();}
+		else {this.uri = SesameUtils.documentIRI(id).toString();}
+	}
+	
 	public String getLabelLg1() {
 		return labelLg1;
 	}

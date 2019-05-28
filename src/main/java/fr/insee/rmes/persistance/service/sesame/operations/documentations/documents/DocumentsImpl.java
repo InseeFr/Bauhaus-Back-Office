@@ -81,4 +81,19 @@ public class DocumentsImpl implements DocumentsService {
 		return documentsUtils.changeDocument(docId,documentFile,documentName);		
 	}	
 	
+	/*
+	 * LINKS
+	 */
+	
+	/*
+	 * Create new link
+	 */
+	public String setLink(String body) throws RmesException {
+		String id=documentsUtils.createDocumentID();
+		logger.debug("Create document : "+ id);
+		documentsUtils.createLink(id,body);
+		return id;
+	}
+
+	
 }
