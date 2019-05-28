@@ -154,14 +154,14 @@ public class DocumentationsUtils {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null", "id Operation/Serie/Indicator or id is null")	;	
 		}
 		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
-		Object idDatabase = null;
+		String idDatabase = null;
 		if (existingIdTarget != null ) {
-			idDatabase = existingIdTarget.get("idOperation");
-			if (idDatabase == null) {
-				idDatabase = existingIdTarget.get("idSeries");
+			idDatabase = (String) existingIdTarget.get("idOperation");
+			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+				idDatabase = (String) existingIdTarget.get("idSeries");
 			}
-			if (idDatabase == null) {
-				idDatabase = existingIdTarget.get("idIndicator");
+			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+				idDatabase = (String) existingIdTarget.get("idIndicator");
 			}
 		}
 		if (existingIdTarget == null || idDatabase == null) {
