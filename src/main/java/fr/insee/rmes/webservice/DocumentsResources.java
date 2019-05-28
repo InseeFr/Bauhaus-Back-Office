@@ -92,7 +92,7 @@ public class DocumentsResources {
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDocument", summary = "Document or Link",
+	@Operation(operationId = "getDocument", summary = "Document or link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
 	public Response getDocument(@PathParam("id") String id) {
 		String jsonResultat;
@@ -126,6 +126,24 @@ public class DocumentsResources {
 		return Response.status(Status.OK).build();
 	}
 	
+	/*
+	 * Delete a document or link
+	 */
+	
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@DELETE
+	@Path("/{id}")
+	@Operation(operationId = "deleteDocument", summary = "Delete a document or link")
+	public Response deleteDocument(@PathParam("id") String id) {
+		Status status = null;
+		try {
+			status = documentsService.deleteDocument(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(status).entity(id).build();
+	}
+
 	
 	
 	/*
@@ -184,26 +202,12 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(url).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
-	@DELETE
-	@Path("/{id}")
-	@Operation(operationId = "deleteDocument", summary = "Delete a document")
-	public Response deleteDocument(@PathParam("id") String id) {
-		Status status = null;
-		try {
-			status = documentsService.deleteDocument(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
-		}
-		return Response.status(status).entity(id).build();
-	}
-
 	/*
 	 * LINKS
 	 */
 	
 	/*
-	 * Create a new document
+	 * Create a new link
 	 */
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
