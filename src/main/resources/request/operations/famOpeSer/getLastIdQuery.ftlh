@@ -6,5 +6,5 @@ SELECT ?id
       BIND (xsd:integer(REPLACE(str(?s), "^http://bauhaus/operations/(.*)/(.)", "")) AS ?id)
  } 
 }
-	ORDER BY DESC(?id) 
+	ORDER BY DESC(xsd:integer(?id)) 
 	LIMIT 1

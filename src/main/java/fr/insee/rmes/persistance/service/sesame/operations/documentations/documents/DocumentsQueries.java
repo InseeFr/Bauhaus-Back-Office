@@ -64,7 +64,7 @@ public class DocumentsQueries {
 	}
 
 	public static String lastDocumentID() throws RmesException {
-        return buildRequest("lastDocumentID.ftlh", null);
+        return buildRequest("lastDocumentIdQuery.ftlh", null);
 	}	
 
 	public static String lastLinkID() throws RmesException{
