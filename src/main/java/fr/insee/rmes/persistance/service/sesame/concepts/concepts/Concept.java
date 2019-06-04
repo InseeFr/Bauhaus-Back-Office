@@ -30,6 +30,8 @@ public class Concept {
 	private Boolean versioning;
 
 	
+	// create empty lists for altLabels and Notes in the constructors ?
+	
 	public Concept() throws RmesException {
 		this.id = new ConceptsUtils().createID();
 		this.created = LocalDateTime.now().toString();

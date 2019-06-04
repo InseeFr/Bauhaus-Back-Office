@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
@@ -45,6 +46,7 @@ public class IndicatorsUtils {
 	OrganizationsService organizationsService;
 
 	public JSONObject getIndicatorById(String id) throws RmesException{
+		if (!checkIfIndicatorExists(id)) {throw new RmesNotFoundException("Indicator not found: ", id);}
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		indicator.put("id", id);
 		addLinks(id, indicator);
