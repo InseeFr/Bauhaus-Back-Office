@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
@@ -33,6 +34,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class SeriesUtils {
@@ -50,6 +52,10 @@ public class SeriesUtils {
 
 	public JSONObject getSeriesById(String id) throws RmesException{
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
+		//check that the series exist
+		if (JSONUtils.isEmpty(series)) {
+			throw new RmesNotFoundException("Series not found","The series "+id+" cannot be found.");
+		}			
 		series.put("id", id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
