@@ -127,6 +127,12 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
+		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
+			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+		}
+		
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
@@ -147,6 +153,11 @@ public class SeriesUtils {
 			series = mapper.readerForUpdating(series).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
+		}
+		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
+		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
+			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
 		}
 		createRdfSeries(series,null);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
