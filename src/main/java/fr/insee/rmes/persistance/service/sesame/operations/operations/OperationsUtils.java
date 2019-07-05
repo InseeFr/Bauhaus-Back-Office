@@ -51,6 +51,7 @@ public class OperationsUtils {
 	 * @throws RmesException
 	 */
 	public String setOperation(String body) throws RmesException {
+		SeriesUtils seriesUtils= new SeriesUtils();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Operation operation = new Operation();
@@ -63,8 +64,7 @@ public class OperationsUtils {
 		String idSeries= operation.getSeries().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) throw new RmesNotFoundException("Unknown series: ",idSeries);
 		// Tester que la série n'a pas de Sims
-		SeriesUtils seriesUtils= new SeriesUtils();
-		if (!seriesUtils.getSeriesById(idSeries).getString("idSims").isEmpty()){
+		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
 					seriesUtils.getSeriesById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
 		}

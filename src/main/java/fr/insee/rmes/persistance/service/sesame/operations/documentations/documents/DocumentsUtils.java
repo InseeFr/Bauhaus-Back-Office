@@ -332,7 +332,10 @@ public class DocumentsUtils {
 		Model model = new LinkedHashModel();
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
-		SesameUtils.addTripleUri(docUri, SCHEMA.URL, document.getUrl(), model, graph);
+		
+		String uriString= document.getUrl();
+		if (uriString.indexOf(':') < 0)  uriString="file:/"+uriString;
+		SesameUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
 		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
 			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
 		}

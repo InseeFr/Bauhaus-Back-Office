@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -41,7 +42,7 @@ public class SeriesUtils {
 
 	@Autowired
 	CodeListService codeListService;
-	
+
 	@Autowired
 	OrganizationsService organizationsService;
 
@@ -128,11 +129,12 @@ public class SeriesUtils {
 			logger.error(e.getMessage());
 		}
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
-		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
-			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
-					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+		if ((series.getIdSims()!=null) & (series.getOperations()!=null) ) {
+			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
+				throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+			}
 		}
-		
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
@@ -140,7 +142,7 @@ public class SeriesUtils {
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI);
 		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
-	
+
 		return id;
 
 	}
@@ -162,16 +164,16 @@ public class SeriesUtils {
 		createRdfSeries(series,null);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 
-		
+
 	}
 
 
-		/*
-		 * CREATE OR UPDATE
-		 */
+	/*
+	 * CREATE OR UPDATE
+	 */
 	private void createRdfSeries(Series series, URI familyURI) throws RmesException {
-	
-		
+
+
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
@@ -267,10 +269,25 @@ public class SeriesUtils {
 			SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, SesameUtils.operationsGraph());
 			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
 		}
-		
+
 		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
 
 		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 
+	public boolean hasSims(String seriesId) throws RmesException {
+		JSONObject series;
+		String idSims;
+		series = getSeriesById(seriesId);
+		try {	idSims=series.getString("idSims");} 
+		catch (JSONException e) {
+			return false;
+		}
+		if (idSims==null | idSims.isEmpty()) {
+			return false;
+		}
+		return true;
+	}
 }
+
+
