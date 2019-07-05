@@ -187,9 +187,9 @@ public class DocumentsUtils {
 		}
 
 		//TODO: for a document, check that the url isn't changed ?
-		
+
 		URI docUri =SesameUtils.toURI(document.getUri());
-		
+
 		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1() + " / " + document.getLabelLg2());
 
 		writeRdfDocument(document, docUri);
@@ -221,7 +221,7 @@ public class DocumentsUtils {
 		if (jsonResultat.length()>0) { 
 			throw new RmesUnauthorizedException(
 					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: "+ 
-					((JSONObject) jsonResultat.get(0)).get("text").toString(),jsonResultat);
+							((JSONObject) jsonResultat.get(0)).get("text").toString(),jsonResultat);
 		}
 		// remove the physical file
 		if(!isLink(docId)) {deleteFile(url);}
@@ -238,11 +238,16 @@ public class DocumentsUtils {
 
 		String docUrl=getDocumentUrlFromId(docId);
 
-		// Cannot upload file for a Link
-		if (isLink(docId)) {
-			throw new RmesException(406, "Links have no attached file. Cannot upload file "+documentName+" for this document: ",docId);
+		// clean url with prefix "file:/"
+		if (docUrl.startsWith("file:/")) {
+			docUrl=docUrl.substring(6);
 		}
-
+		// Cannot upload file for a Link
+		else {
+			if (isLink(docId)) {
+				throw new RmesException(406, "Links have no attached file. Cannot upload file "+documentName+" for this document: ",docId);
+			}
+		}
 		// Warning if different file extension 
 		String oldExt=StringUtils.substringAfterLast(docUrl, ".");
 		String newExt=StringUtils.substringAfterLast(documentName, ".");
@@ -280,6 +285,7 @@ public class DocumentsUtils {
 			deleteFile(docUrl);
 
 			// Update document's url
+			if (newUrl.indexOf(':') < 0)  newUrl="file:/"+newUrl;
 			changeDocumentsURL(docId,docUrl,newUrl);
 		}
 
@@ -293,7 +299,7 @@ public class DocumentsUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Document link = new Document(id, true);
-			
+
 		try {
 			link = mapper.readerForUpdating(link).readValue(body);
 		} catch (IOException e) {
@@ -302,23 +308,23 @@ public class DocumentsUtils {
 
 		String url = link.getUrl();
 		if (StringUtils.isEmpty(url)) { throw new RmesNotAcceptableException("A link must have a non-empty url. ",id);}
-		
+
 		//Check if the url is already used by a link
 		URI uriUrl= SesameUtils.toURI(url);
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
 		if (uri.length()>0 ) {
 			throw new RmesNotAcceptableException("There already exists a link to that url: ",
 					uri.getString("document"));
-			}
-		
-		
+		}
+
+
 		URI docUri = new URIImpl(link.getUri());
 
 		writeRdfDocument(link, docUri);
 
 	}
-	
-	
+
+
 	/**
 	 * Write a document in rdf database
 	 * @param document
@@ -332,7 +338,7 @@ public class DocumentsUtils {
 		Model model = new LinkedHashModel();
 
 		SesameUtils.addTripleUri(docUri,RDF.TYPE , FOAF.DOCUMENT, model, graph);
-		
+
 		String uriString= document.getUrl();
 		if (uriString.indexOf(':') < 0)  uriString="file:/"+uriString;
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
@@ -360,6 +366,7 @@ public class DocumentsUtils {
 
 	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
 		Resource graph = SesameUtils.documentsGraph();
+		if (docUrl.indexOf(':') < 0)  docUrl="file:/"+docUrl;
 		return RepositoryGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId,docUrl,newUrl,graph));	
 	}
 
@@ -428,5 +435,5 @@ public class DocumentsUtils {
 		return true;
 	}
 
-	
+
 }
