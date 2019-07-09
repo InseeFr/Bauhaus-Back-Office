@@ -28,6 +28,8 @@ public interface OperationsService {
 
 	String getSeriesByID(String id) throws RmesException;
 
+	String getSeriesWithSims() throws RmesException;
+	
 	void setSeries(String id, String body) throws RmesException;
 
 	String createSeries(String body) throws RmesException;

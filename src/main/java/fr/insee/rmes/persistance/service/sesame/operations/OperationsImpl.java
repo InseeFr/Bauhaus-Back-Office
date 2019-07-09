@@ -86,6 +86,14 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
+	public String getSeriesWithSims() throws RmesException  {
+		logger.info("Starting to get series list with sims");
+		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+	
+	
+	@Override
 	public String getSeriesByID(String id) throws RmesException {
 		JSONObject series = seriesUtils.getSeriesById(id);
 		return series.toString();
@@ -282,14 +290,14 @@ public class OperationsImpl implements OperationsService {
 
 	private void convertJSONObject(JSONObject jsonObj) {
 		jsonObj.keySet().forEach(keyStr ->
-	    {
-	        Object keyvalue = jsonObj.get(keyStr);
-	        if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
-	        else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
-	        else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
-	    });
+		{
+			Object keyvalue = jsonObj.get(keyStr);
+			if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
+			else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
+			else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+		});
 	}
-	
+
 	private void convertJSONArray(JSONArray jsonArr) {
 		for (int i = 0; i < jsonArr.length(); i++) {
 			convertJSONObject(jsonArr.getJSONObject(i));

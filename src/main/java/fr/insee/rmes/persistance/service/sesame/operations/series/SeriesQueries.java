@@ -26,6 +26,28 @@ public class SeriesQueries {
 				+ "ORDER BY ?label ";
 	}
 
+	public static String seriesWithSimsQuery() {
+		return "SELECT DISTINCT ?id ?label ?altLabel ?idSims \n"
+				+ "WHERE { \n"
+			//	+ +"GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "?series a insee:StatisticalOperationSeries . \n" 
+				+ "?series skos:prefLabel ?label . \n"
+				+ "?series skos:prefLabel ?label . \n"
+				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
+				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
+				+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
+				+ " ?report sdmx-mm:target ?series "
+				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n"
+				+ "OPTIONAL{?series skos:altLabel ?altLabel . "
+				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
+			//	+ "}"
+				+ "} \n" 
+				+ "GROUP BY ?id ?label ?altLabel ?idSims \n"
+				+ "ORDER BY ?label ";
+	}
+	
+	
 
 	public static String oneSeriesQuery(String id) {
 		variables=null;
