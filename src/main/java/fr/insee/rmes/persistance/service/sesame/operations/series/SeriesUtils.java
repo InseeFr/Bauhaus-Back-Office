@@ -157,6 +157,7 @@ public class SeriesUtils {
 			logger.error(e.getMessage());
 		}
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
+		if (series.getIdSims() != null & series.getOperations()!= null )
 		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
 			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
 					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
