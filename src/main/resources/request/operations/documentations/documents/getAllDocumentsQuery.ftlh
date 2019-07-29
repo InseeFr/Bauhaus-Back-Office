@@ -1,4 +1,4 @@
-SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?lastRefresh ?lang
+SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
 FROM <http://rdf.insee.fr/graphes/qualite/documents>
 WHERE { 
 
@@ -21,7 +21,7 @@ WHERE {
 		FILTER(lang(?descriptionLg2) = '${LG2}')  
 	 }
 	 
-	 OPTIONAL{ ?uri pav:lastRefreshedOn ?lastRefresh .  }
+	 OPTIONAL{ ?uri pav:lastRefreshedOn ?updatedDate .  }
 	 OPTIONAL{ ?uri dc:language ?lang .  }
 	
  }

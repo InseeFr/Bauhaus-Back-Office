@@ -35,6 +35,7 @@ import org.xml.sax.SAXException;
 import fr.insee.rmes.config.auth.roles.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
+import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
 import fr.insee.rmes.exceptions.RmesException;
@@ -155,6 +156,15 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@GET
+	@Path("/series/withSims")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithSims", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabelSims.class)))})
+	public Response getSeriesWIthSims() throws RmesException {
+		String jsonResultat = operationsService.getSeriesWithSims();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
 	@GET
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)

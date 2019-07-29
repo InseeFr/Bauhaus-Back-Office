@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -37,7 +38,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
- * WebService class for resources of Documents
+ * WebService class for resources of Documents and Links
  * 
  *
  */
@@ -58,13 +59,21 @@ public class DocumentsResources {
 	private static final String TEXT_PLAIN = "text/plain";
 
 	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
-	
+
 	@Autowired
 	DocumentsService documentsService;
+
+	/*
+	 * DOCUMENTS AND LINKS
+	 */
+	
+	/*
+	 * Get the list of all documents and links
+	 */
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDocuments", summary = "List of documents",
+	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
 	public Response getDocuments() {
 		String jsonResultat;
@@ -75,11 +84,15 @@ public class DocumentsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+
+	/*
+	 * Get one document or link
+	 */
 	
 	@GET
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDocument", summary = "Document",
+	@Operation(operationId = "getDocument", summary = "Document or link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
 	public Response getDocument(@PathParam("id") String id) {
 		String jsonResultat;
@@ -90,44 +103,16 @@ public class DocumentsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
-	
-	@DELETE
-	@Path("/{id}")
-	@Operation(operationId = "deleteDocument", summary = "deletion")
-	public Response deleteConcept(@PathParam("id") String id) {
-		try {
-			documentsService.deleteDocument(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
-		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
-	}
-	
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
-	@POST
-	@Path("/document")
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
-	@Operation(operationId = "setDocument", summary = "Create document" )
-	public Response setDocument(
-			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))@FormDataParam(value="body") String body,
-			@Parameter(description = "Fichier", required = false, schema = @Schema(type = "string", format = "binary", description = "file 2"))
-			@FormDataParam(value = "file") InputStream documentFile
-			) throws Exception {
-		String id = null;
-		try {
-			id = documentsService.setDocument(body, documentFile);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
-		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
-	}
+
+	/*
+	 * Update informations about a document (or link), but not the file
+	 */
 
 	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/document/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "setDocumentById", summary = "Update document")
+	@Operation(operationId = "setDocumentById", summary = "Update document or link")
 	public Response setDocument(
 			@Parameter(description = "Id", required = true) @PathParam("id") String id,
 			@RequestBody(description = "Document", required = true)
@@ -137,8 +122,111 @@ public class DocumentsResources {
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
-		logger.info("Update concept : " + id);
+		logger.info("Update document : " + id);
 		return Response.status(Status.OK).build();
 	}
+	
+	/*
+	 * Delete a document or link
+	 */
+	
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@DELETE
+	@Path("/{id}")
+	@Operation(operationId = "deleteDocument", summary = "Delete a document or link")
+	public Response deleteDocument(@PathParam("id") String id) {
+		Status status = null;
+		try {
+			status = documentsService.deleteDocument(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(status).entity(id).build();
+	}
+
+	
+	
+	/*
+	 * DOCUMENTS
+	 */
+	
+	
+	/*
+	 * Create a new document
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@POST
+	@Path("/document")
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@Operation(operationId = "setDocument", summary = "Create document" )
+	public Response setDocument(
+			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))
+			@FormDataParam(value="body") String body,
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
+			@FormDataParam(value = "file") InputStream documentFile,
+			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition
+			) throws Exception {
+		String id = null;
+		String documentName = fileDisposition.getFileName();
+		try {
+			id = documentsService.setDocument(body, documentFile, documentName);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+
+	/*
+	 * Change the file of a document
+	 */
+
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PUT
+	@Path("/{id}")
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@Operation(operationId = "changeDocument", summary = "Change document" )
+	public Response changeDocument(
+			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
+			@FormDataParam(value = "file") InputStream documentFile,
+			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
+			@Parameter(description = "Id", required = true) @PathParam("id") String id
+			) throws Exception {
+		String url = null;
+		String documentName = fileDisposition.getFileName();
+		try {
+			url = documentsService.changeDocument(id, documentFile, documentName);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(url).build();
+	}
+
+	/*
+	 * LINKS
+	 */
+	
+	/*
+	 * Create a new link
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@POST
+	@Path("/link")
+	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@Operation(operationId = "setDocument", summary = "Create link" )
+	public Response setLink(
+			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class))
+			@FormDataParam(value="body") String body
+			) throws Exception {
+		String id = null;
+		try {
+			id = documentsService.setLink(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	
 	
 }

@@ -123,7 +123,7 @@ public class IndicatorsQueries {
 	}
 	
 	private static void getSimsId() {
-		addVariableToList(" ?simsId ");
+		addVariableToList(" ?idSims ");
 		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
 				+ " ?report sdmx-mm:target ?indic "
 				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
@@ -150,9 +150,10 @@ public class IndicatorsQueries {
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
 				+ "?uri ?b ?c .\n "
 				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
+				+ "BIND(SUBSTR( ?id , 2 ) AS ?intid) . \n"
 				+ "FILTER regex(STR(?uri),'/produits/indicateur/') . \n"
 				+ "}} \n"
-				+ "ORDER BY DESC(?id) \n"
+				+ "ORDER BY DESC(xsd:integer(?intid)) \n"
 				+ "LIMIT 1";
 	}	
 

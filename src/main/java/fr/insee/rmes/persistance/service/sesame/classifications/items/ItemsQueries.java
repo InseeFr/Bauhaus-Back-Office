@@ -29,7 +29,7 @@ public class ItemsQueries {
 				+ "?broaderURI skos:prefLabel ?broaderLg2 . \n"
 				+ "FILTER (lang(?broaderLg2) = '" + Config.LG2 + "') } \n"
 				+ "} \n"
-				+ "ORDER BY DESC(?conceptVersion) \n"
+				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";	
 	}
 	

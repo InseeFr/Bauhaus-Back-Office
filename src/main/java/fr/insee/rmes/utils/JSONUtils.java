@@ -1,5 +1,7 @@
 package fr.insee.rmes.utils;
 
+import java.util.Iterator;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,6 +23,15 @@ public class JSONUtils {
 		}
 		sb.append(jsonArray.getString(jsonArray.length()-1));
 		return sb.toString();
+	}
+	
+	public static boolean isEmpty(JSONObject obj) {
+		Iterator<String> keys = obj.keys();
+		while(keys.hasNext())  {
+	        if(!obj.getString((String)(keys.next())).isEmpty())
+	            return false;
+	    }
+	    return true;
 	}
 
 }

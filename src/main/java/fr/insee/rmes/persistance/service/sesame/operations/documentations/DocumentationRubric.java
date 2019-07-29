@@ -63,10 +63,10 @@ public class DocumentationRubric {
 	
 	public boolean isEmpty() {
 		return 
-		 StringUtils.isEmpty(value) ||
-		StringUtils.isEmpty(labelLg1) ||
-		StringUtils.isEmpty(labelLg2) ||
-		StringUtils.isEmpty(codeList) ||
+		 StringUtils.isEmpty(value) &&
+		StringUtils.isEmpty(labelLg1) &&
+		StringUtils.isEmpty(labelLg2) &&
+		StringUtils.isEmpty(codeList) &&
 		(documents == null || documents.isEmpty());
 	}
 }

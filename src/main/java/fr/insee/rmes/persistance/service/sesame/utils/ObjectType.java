@@ -21,6 +21,7 @@ public enum ObjectType {
 	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
 	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
+	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
 	UNDEFINED("undefined",null, "");
 	

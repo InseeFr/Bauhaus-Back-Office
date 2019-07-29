@@ -22,8 +22,8 @@ public class NoteManager {
 		// TODO : see extreme cases to close notes
 
 		List<VersionableNote> versionableNotes = concept.getVersionableNotes();
-
 		List<DatableNote> datableNotes = concept.getDatableNotes();
+		
 		String conceptId = concept.getId();
 		String conceptVersion = noteUtils.getConceptVersion(concept);
 

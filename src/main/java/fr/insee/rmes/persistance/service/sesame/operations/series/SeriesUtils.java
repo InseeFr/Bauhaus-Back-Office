@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
@@ -33,13 +35,14 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class SeriesUtils {
 
 	@Autowired
 	CodeListService codeListService;
-	
+
 	@Autowired
 	OrganizationsService organizationsService;
 
@@ -50,6 +53,10 @@ public class SeriesUtils {
 
 	public JSONObject getSeriesById(String id) throws RmesException{
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
+		//check that the series exist
+		if (JSONUtils.isEmpty(series)) {
+			throw new RmesNotFoundException("Series not found","The series "+id+" cannot be found.");
+		}			
 		series.put("id", id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
@@ -121,6 +128,13 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
+		if ((series.getIdSims()!=null) & (series.getOperations()!=null) ) {
+			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
+				throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+			}
+		}
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
@@ -128,7 +142,7 @@ public class SeriesUtils {
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI);
 		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
-	
+
 		return id;
 
 	}
@@ -142,19 +156,24 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
+		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
+			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+		}
 		createRdfSeries(series,null);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 
-		
+
 	}
 
 
-		/*
-		 * CREATE OR UPDATE
-		 */
+	/*
+	 * CREATE OR UPDATE
+	 */
 	private void createRdfSeries(Series series, URI familyURI) throws RmesException {
-	
-		
+
+
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
@@ -250,10 +269,25 @@ public class SeriesUtils {
 			SesameUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, SesameUtils.operationsGraph());
 			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
 		}
-		
+
 		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
 
 		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 
+	public boolean hasSims(String seriesId) throws RmesException {
+		JSONObject series;
+		String idSims;
+		series = getSeriesById(seriesId);
+		try {	idSims=series.getString("idSims");} 
+		catch (JSONException e) {
+			return false;
+		}
+		if (idSims==null | idSims.isEmpty()) {
+			return false;
+		}
+		return true;
+	}
 }
+
+

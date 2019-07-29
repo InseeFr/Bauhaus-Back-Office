@@ -7,6 +7,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -19,7 +20,6 @@ import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.apache.commons.httpclient.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
@@ -59,6 +60,7 @@ public class ConceptsUtils {
 	}
 
 	public JSONObject getConceptById(String id)  throws RmesException{
+		if (!checkIfConceptExists(id)) throw new RmesNotFoundException("This concept cannot be found in database: ", id);
 		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
 		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
@@ -71,7 +73,8 @@ public class ConceptsUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Concept concept = new Concept();
+		//Concept concept = new Concept();
+		Concept concept = null;
 		try {
 			concept = mapper.readValue(body, Concept.class);
 		} catch (IOException e) {
@@ -123,13 +126,17 @@ public class ConceptsUtils {
 		/*Optional*/
 		SesameUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.LG2, model, SesameUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();
-		List<String> altLabelsLg2 = concept.getAltLabelLg2();
-		for (String altLabelLg1 : altLabelsLg1) {
-			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model, SesameUtils.conceptGraph());
+		List<String> altLabelsLg2 =  concept.getAltLabelLg2();
+		if (altLabelsLg1!=null) {
+			for (String altLabelLg1 : altLabelsLg1) {
+				SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model, SesameUtils.conceptGraph());
+			}
 		}
-		for (String altLabelLg2 : altLabelsLg2) {
-			SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model, SesameUtils.conceptGraph());
-		}		
+		if (altLabelsLg2!=null) {
+			for (String altLabelLg2 : altLabelsLg2) {
+				SesameUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model, SesameUtils.conceptGraph());
+			}		
+		}
 		SesameUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, SesameUtils.conceptGraph());
 		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.VALID, concept.getValid(), model, SesameUtils.conceptGraph());
 		SesameUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, SesameUtils.conceptGraph());
@@ -177,4 +184,10 @@ public class ConceptsUtils {
 	public JSONArray getConceptVersions(String uriConcept) throws RmesException{
 		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getConceptVersions(uriConcept));
 	}
+
+	public static Boolean checkIfConceptExists(String id) throws RmesException {
+		return RepositoryGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id));
+	}
+
+
 }

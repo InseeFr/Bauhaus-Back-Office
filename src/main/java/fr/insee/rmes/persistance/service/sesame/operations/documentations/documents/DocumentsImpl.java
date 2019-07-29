@@ -2,6 +2,8 @@ package fr.insee.rmes.persistance.service.sesame.operations.documentations.docum
 
 import java.io.InputStream;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -19,7 +21,6 @@ public class DocumentsImpl implements DocumentsService {
 
 	@Autowired 
 	DocumentsUtils documentsUtils;
-
 
 	public DocumentsImpl() {
 	}
@@ -44,10 +45,10 @@ public class DocumentsImpl implements DocumentsService {
 	 * @see fr.insee.rmes.persistance.service.DocumentsService#setDocument(java.lang.String)
 	 */
 	@Override
-	public String setDocument(String body, InputStream documentFile) throws RmesException {
+	public String setDocument(String body, InputStream documentFile,String documentName) throws RmesException {
 		String id=documentsUtils.createDocumentID();
 		logger.debug("Create document : "+ id);
-		documentsUtils.createDocument(id,body,documentFile);
+		documentsUtils.createDocument(id,body,documentFile,documentName);
 		return id;
 	}
 
@@ -65,9 +66,34 @@ public class DocumentsImpl implements DocumentsService {
 	 * Delete 
 	 */
 	@Override
-	public String deleteDocument(String id) throws RmesException {
-		// TODO Auto-generated method stub
-		return null;
+	public Status deleteDocument(String id) throws RmesException {
+		return documentsUtils.deleteDocument(id);
 	}
 
+	/*
+	 * Change an uploaded document 
+	 * Keep the document links
+	 */
+	@Override
+	public String changeDocument(String docId, InputStream documentFile, String documentName)
+			throws RmesException {
+		
+		return documentsUtils.changeDocument(docId,documentFile,documentName);		
+	}	
+	
+	/*
+	 * LINKS
+	 */
+	
+	/*
+	 * Create new link
+	 */
+	public String setLink(String body) throws RmesException {
+		String id=documentsUtils.createDocumentID();
+		logger.debug("Create document : "+ id);
+		documentsUtils.createLink(id,body);
+		return id;
+	}
+
+	
 }

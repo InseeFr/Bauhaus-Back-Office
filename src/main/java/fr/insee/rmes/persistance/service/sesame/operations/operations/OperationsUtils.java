@@ -18,9 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
@@ -49,6 +51,7 @@ public class OperationsUtils {
 	 * @throws RmesException
 	 */
 	public String setOperation(String body) throws RmesException {
+		SeriesUtils seriesUtils= new SeriesUtils();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Operation operation = new Operation();
@@ -60,7 +63,11 @@ public class OperationsUtils {
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) throw new RmesNotFoundException("Unknown series: ",idSeries);
-
+		// Tester que la série n'a pas de Sims
+		if (seriesUtils.hasSims(idSeries)){
+			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+					seriesUtils.getSeriesById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
+		}
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,idSeries);
 		createRdfOperation(operation, seriesURI);
 		logger.info("Create operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());

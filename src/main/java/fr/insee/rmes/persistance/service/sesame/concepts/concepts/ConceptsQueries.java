@@ -14,8 +14,9 @@ public class ConceptsQueries {
 	public static String lastConceptID() {
 		return "SELECT ?notation \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
-				+ "?concept skos:notation ?notation }} \n"
-				+ "ORDER BY DESC(?notation) \n"
+				+ "?concept skos:notation ?notation  .\n"
+				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
+				+ "ORDER BY DESC(xsd:integer(?id)) \n"
 				+ "LIMIT1";
 	}	
 	
@@ -102,7 +103,7 @@ public class ConceptsQueries {
 				+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
 				+ "?concept insee:isValidated ?isValidated . \n"
 				+ "}} \n"
-				+ "ORDER BY DESC(?conceptVersion) \n"
+				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";
 	}
 	
@@ -296,6 +297,16 @@ public class ConceptsQueries {
 	
 	private static String buildConceptRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("concepts/", fileName, params);
+	}
+
+
+
+	public static String checkIfExists(String id) {
+			return "ASK \n"
+					+ "WHERE  \n"
+					+ "{ ?uri ?b ?c .\n "
+					+ "FILTER(STRENDS(STR(?uri),'/concepts/definition/" + id + "')) . }";
+			  	
 	}
 	
 	
