@@ -29,7 +29,7 @@ public class FreemarkerConfig {
 
 		// Specify the source where the template files come from. Here I set a
 		// plain directory for it, but non-file-system sources are possible too:
-        logger.info("======================= hello");
+        
 		try {
 			MultiTemplateLoader mtl = null;
 			
