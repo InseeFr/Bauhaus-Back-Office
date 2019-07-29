@@ -350,8 +350,9 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
+	@Override
 	public String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException {
-		return "";//documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
+		return documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
 	}
 
 

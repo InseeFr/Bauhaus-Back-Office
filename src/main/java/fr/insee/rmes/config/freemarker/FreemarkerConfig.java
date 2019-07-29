@@ -49,8 +49,8 @@ public class FreemarkerConfig {
 
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-		} catch (Exception e) {
-			logger.error(e);
+		} catch (URISyntaxException e) {
+			logger.error(e.getMessage());
 		}
 		
 
