@@ -154,7 +154,7 @@ public class DocumentsUtils {
 		Path path = Paths.get(url);
 
 		// This check might be useless: Files.copy already throws an Exception if we try to overwrite an existing file
-		if (Files.exists(path)) throw new RmesUnauthorizedException("There already exists a document under this name", documentName);
+		if (Files.exists(path)) throw new RmesUnauthorizedException("DOCUMENT_EXISTING_FILE", documentName);
 
 		// upload file in storage folder
 		try {
@@ -313,7 +313,7 @@ public class DocumentsUtils {
 		URI uriUrl= SesameUtils.toURI(url);
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
 		if (uri.length()>0 ) {
-			throw new RmesNotAcceptableException("There already exists a link to that url: ",
+			throw new RmesNotAcceptableException("LINK_EXISTING_URL",
 					uri.getString("document"));
 		}
 
