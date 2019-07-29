@@ -91,6 +91,16 @@ public class OperationsResources {
 	}
 
 	@GET
+	@Path("/families_search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
+	public Response getFamiliesForSearch() throws RmesException {
+		String jsonResultat = operationsService.getFamiliesForSearch();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
@@ -179,6 +189,20 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@GET
+	@Path("/series_search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearch", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
+	public Response getSeriesByID() {
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getSeriesForSearch();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
 	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/series/{id}")
@@ -247,6 +271,17 @@ public class OperationsResources {
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public Response getOperations() throws RmesException {
 		String jsonResultat = operationsService.getOperations();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+
+	}
+
+	@GET
+	@Path("/operations_search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsForSearch", summary = "List of operations",
+			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
+	public Response getOperationsForSearch() throws RmesException {
+		String jsonResultat = operationsService.getOperationsForSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
 	}
@@ -348,6 +383,17 @@ public class OperationsResources {
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public Response getIndicators() throws Exception {
 		String jsonResultat = operationsService.getIndicators();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+
+	}
+
+	@GET
+	@Path("/indicators_search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
+			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
+	public Response getIndicatorsForSearch() throws Exception {
+		String jsonResultat = operationsService.getIndicatorsForSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
 	}

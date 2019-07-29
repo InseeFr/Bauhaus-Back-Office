@@ -64,6 +64,21 @@ public class SeriesQueries {
 		+ "LIMIT 1";
 	}
 
+	public static String getSeriesForSearch() {
+		variables=null;
+		whereClause=null;
+		getSimpleAttr(null);
+		getCodesLists();
+		getSingleOrganizations();
+
+		return "SELECT DISTINCT "
+				+ variables.toString()
+				+ " WHERE {  \n"
+				+ whereClause.toString()
+				+ "} \n";
+	}
+
+
 	public static String seriesLinks(String idSeries, URI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
@@ -125,9 +140,13 @@ public class SeriesQueries {
 
 	private static void getSimpleAttr(String id) {
 		
-		addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );
-		
-		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
+		if(id != null) addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );
+		else {
+			addClauseToWhereClause("?series a insee:StatisticalOperationSeries .");
+			addClauseToWhereClause("BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . ");
+		}
+
+		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ");
 		addClauseToWhereClause( "?series skos:prefLabel ?prefLabelLg1 \n");
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "')  \n ");
 		addClauseToWhereClause( "OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
