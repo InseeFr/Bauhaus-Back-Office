@@ -193,7 +193,7 @@ public class OperationsResources {
 	@Path("/series_search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearch", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
-	public Response getSeriesByID() {
+	public Response getSeriesForSearch() {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getSeriesForSearch();
