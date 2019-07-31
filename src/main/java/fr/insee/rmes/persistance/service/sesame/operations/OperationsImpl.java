@@ -87,9 +87,7 @@ public class OperationsImpl implements OperationsService {
 
 	@Override
 	public String getSeriesForSearch() throws RmesException  {
-		logger.info("Starting to get operation series list");
-		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		return seriesUtils.getSeriesForSearch();
 	}
 
 	@Override
