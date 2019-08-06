@@ -25,7 +25,16 @@ public class IndicatorsQueries {
 	}
 
 
+	public static String indicatorsQueryForSearch() {
+		return indicatorFullObjectQuery(null, false);
+	}
+
+
 	public static String indicatorQuery(String id) {
+		return indicatorFullObjectQuery(id, true);
+	}
+
+	private static String indicatorFullObjectQuery(String id, boolean withLimit){
 		variables=null;
 		whereClause=null;
 		getSimpleAttr(id);
@@ -33,12 +42,14 @@ public class IndicatorsQueries {
 		getOrganizations();
 		getSimsId();
 
-		return "SELECT "
-		+ variables.toString()
-		+ " WHERE {  \n"
-		+ whereClause.toString()
-		+ "} \n"
-		+ "LIMIT 1";
+		String query =  "SELECT "
+				+ variables.toString()
+				+ " WHERE {  \n"
+				+ whereClause.toString()
+				+ "} \n"
+				+ (withLimit ? "LIMIT 1" : "");
+
+		return query;
 	}
 
 	public static String indicatorLinks(String id, URI linkPredicate) {
@@ -75,9 +86,13 @@ public class IndicatorsQueries {
 	}
 
 	private static void getSimpleAttr(String id) {
-		addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" );
+		if(id != null) addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" );
+		else {
+			addClauseToWhereClause("?indic a insee:StatisticalIndicator .");
+			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/produits/indicateur/') AS ?id) . ");
+		}
 
-		addVariableToList(" ?prefLabelLg1 ?prefLabelLg2 ");
+		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ");
 		addClauseToWhereClause( "?indic skos:prefLabel ?prefLabelLg1 \n");
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n ");
 		addClauseToWhereClause( "OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \n");
@@ -166,7 +181,6 @@ public class IndicatorsQueries {
 				+ "}";
 		  	
 	}
-
 
 
 }

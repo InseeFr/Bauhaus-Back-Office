@@ -14,6 +14,8 @@ public interface OperationsService {
 
 	String getFamilies() throws RmesException;
 
+	String getFamiliesForSearch() throws RmesException;
+
 	String getFamilyByID(String id) throws RmesException ;
 	
 	void setFamily(String id, String body) throws RmesException;
@@ -25,6 +27,8 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 	String getSeries() throws RmesException;
+
+	String getSeriesForSearch() throws RmesException;
 
 	String getSeriesByID(String id) throws RmesException;
 
@@ -45,6 +49,9 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
+	String getOperationsForSearch() throws RmesException;
+
+
 	String getOperationByID(String id) throws RmesException;
 
 	void setOperation(String id, String body) throws RmesException;
@@ -57,6 +64,8 @@ public interface OperationsService {
 
 
 	String getIndicators() throws RmesException;
+
+	String getIndicatorsForSearch() throws RmesException;
 
 	String getIndicatorByID(String id) throws RmesException;
 
@@ -100,8 +109,6 @@ public interface OperationsService {
 	String getOperationsWithoutReport(String id) throws RmesException;
 
 	String createFamily(String body) throws RmesException;
-
-
 
 
 }

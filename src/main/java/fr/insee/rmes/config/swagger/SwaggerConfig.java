@@ -14,6 +14,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import fr.insee.rmes.config.Config;
+
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -22,7 +23,7 @@ import io.swagger.v3.oas.models.servers.Server;
 
 @ApplicationPath("/")
 public class SwaggerConfig extends ResourceConfig   {
-	
+
 	private final static Logger logger = LogManager.getLogger(SwaggerConfig.class);
 
 	public SwaggerConfig(@Context ServletConfig servletConfig) throws IOException {
