@@ -65,6 +65,16 @@ public class SeriesUtils {
 		return series;
 	}
 
+	public String getSeriesForSearch() throws RmesException {
+		JSONArray resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
+		JSONArray result = new JSONArray();
+		for (int i = 0; i < resQuery.length(); i++) {
+			JSONObject series = resQuery.getJSONObject(i);
+			addOneOrganizationLink(series.get("id").toString(),series, INSEE.DATA_COLLECTOR);
+			result.put(series);
+		}
+		return QueryUtils.correctEmptyGroupConcat(result.toString());
+	}
 
 	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
 		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
@@ -289,6 +299,8 @@ public class SeriesUtils {
 		}
 		return true;
 	}
+
+
 }
 
 

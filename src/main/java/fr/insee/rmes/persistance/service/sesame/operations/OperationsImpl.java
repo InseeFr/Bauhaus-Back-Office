@@ -86,6 +86,11 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
+	public String getSeriesForSearch() throws RmesException  {
+		return seriesUtils.getSeriesForSearch();
+	}
+
+	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
 		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
@@ -134,6 +139,14 @@ public class OperationsImpl implements OperationsService {
 		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
+
+	@Override
+	public String getOperationsForSearch() throws RmesException  {
+		logger.info("Starting to get operations list for search");
+		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQueryForSearch()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
 
 	@Deprecated
 	@Override
@@ -205,6 +218,13 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	@Override
+	public String getFamiliesForSearch() throws RmesException {
+		logger.info("Starting to get families list for search");
+		String resQuery = RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesSearchQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
 	public String getFamilyByID(String id) throws RmesException {
 		JSONObject family = familiesUtils.getFamilyById(id);
 		return family.toString();
@@ -234,6 +254,13 @@ public class OperationsImpl implements OperationsService {
 	public String getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
 		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getIndicatorsForSearch() throws RmesException {
+		logger.info("Starting to get indicators list");
+		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
