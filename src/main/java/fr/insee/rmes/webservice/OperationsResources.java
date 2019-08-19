@@ -275,16 +275,6 @@ public class OperationsResources {
 
 	}
 
-	@GET
-	@Path("/operations_search")
-	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsForSearch", summary = "List of operations",
-			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
-	public Response getOperationsForSearch() throws RmesException {
-		String jsonResultat = operationsService.getOperationsForSearch();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-
-	}
 
 	@GET
 	@Path("/operation/{id}")

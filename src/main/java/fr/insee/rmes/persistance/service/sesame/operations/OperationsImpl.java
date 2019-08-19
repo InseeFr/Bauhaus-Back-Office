@@ -140,13 +140,6 @@ public class OperationsImpl implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
-	@Override
-	public String getOperationsForSearch() throws RmesException  {
-		logger.info("Starting to get operations list for search");
-		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQueryForSearch()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
 
 	@Deprecated
 	@Override
@@ -348,9 +341,9 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
-	@Override
+	//@Override
 	public String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException {
-		return documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
+		return "";//documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
 	}
 
 
