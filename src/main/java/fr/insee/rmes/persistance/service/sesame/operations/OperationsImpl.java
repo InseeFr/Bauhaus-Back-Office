@@ -140,13 +140,6 @@ public class OperationsImpl implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
-	@Override
-	public String getOperationsForSearch() throws RmesException  {
-		logger.info("Starting to get operations list for search");
-		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQueryForSearch()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
 
 	@Deprecated
 	@Override
