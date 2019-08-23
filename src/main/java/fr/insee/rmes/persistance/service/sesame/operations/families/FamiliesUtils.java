@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -72,10 +73,14 @@ public class FamiliesUtils {
 		}
 		boolean familyExists = FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
 		if (!familyExists) {
-			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update unexisting family");
+			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
-		
-		createRdfFamily(family,INSEE.MODIFIED);
+
+		String status=getFamilyValidationStatus(id);
+		if(status.equals(INSEE.UNPUBLISHED.toString()) | status.equals("UNDEFINED")) {
+			createRdfFamily(family,INSEE.UNPUBLISHED);
+		}
+		else 	createRdfFamily(family,INSEE.MODIFIED);
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
@@ -142,6 +147,9 @@ public class FamiliesUtils {
 	}
 	
 	private String getFamilyValidationStatus(String id) throws RmesException{
-		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state");
+		try {		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
+		catch (JSONException e) {
+			return "UNDEFINED";
+		}
 	}
 }
