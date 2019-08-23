@@ -151,7 +151,21 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
-	
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@PUT
+	@Path("/family/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Family validation")
+	public Response setFamilyValidation(
+			@PathParam("id") String id) throws RmesException {
+		try {
+			operationsService.setFamilyValidation(id);
+			return Response.status(HttpStatus.SC_OK).entity(id).build();
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
+	}
 	
 	
 	/***************************************************************************************************
@@ -572,6 +586,30 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+	/*
+	 * UPDATE
+	 * @param idSims
+	 * @param idDoc
+	 * @param rubric
+	 * @return
+	
+	@Secured({ Constants.SPRING_ADMIN })
+	@PUT
+	@Path("/metadataReport/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
+	public Response addDocumentToSims(
+			@PathParam("sims") String idSims, 
+			@PathParam("document") String idDoc, 
+			@PathParam("rubric") String rubric) {
+		try {
+			operationsService.addDocumentToSims(idSims, rubric, idDoc);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(Status.NO_CONTENT).build();
+	}
+	 */
 	
 	static String readFile(String path, Charset encoding) 
 			  throws IOException 

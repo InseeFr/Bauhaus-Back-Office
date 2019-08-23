@@ -235,6 +235,11 @@ public class OperationsImpl implements OperationsService {
 		familiesUtils.setFamily(id,body);
 	}
 
+	@Override
+	public String setFamilyValidation(String id) throws RmesException{
+		return familiesUtils.setFamilyValidation(id);
+	}
+	
 	/**
 	 * CREATE
 	 */
@@ -348,10 +353,12 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
+
 //	@Override
 //	public String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException {
 //		return documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
 //	}
+
 
 
 }

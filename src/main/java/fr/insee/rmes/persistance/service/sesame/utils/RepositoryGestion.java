@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -188,6 +189,7 @@ public class RepositoryGestion {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			for (URI item : itemToValidateList) {
 				conn.remove(item, INSEE.IS_VALIDATED, null);
+				conn.remove(item, INSEE.VALIDATION_STATE, null);
 			}
 			conn.add(model);
 			conn.close();
@@ -196,6 +198,13 @@ public class RepositoryGestion {
 		}
 	}
 
+	public static void objectsValidation(URI familyURI, Model model) throws RmesException {
+		List<URI> famURIList=new ArrayList<URI>();
+		famURIList.add(familyURI);
+		objectsValidation(famURIList,model);
+	}
+	
+	
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
 		getStatementsAndRemove(concept, conn, typeOfLink);
@@ -275,6 +284,8 @@ public class RepositoryGestion {
     private RepositoryGestion() {
     	throw new IllegalStateException("Utility class");
     }
+
+	
 
 
 }

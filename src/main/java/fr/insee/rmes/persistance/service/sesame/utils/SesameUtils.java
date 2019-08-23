@@ -62,6 +62,18 @@ public class SesameUtils {
 	public static URI collectionIRI(String id) {
 		return objectIRI(ObjectType.COLLECTION, id);
 	}
+	
+	public static Resource familyIRI(String id) {
+		return objectIRI(ObjectType.FAMILY, id);
+	}
+	
+	public static Resource seriesIRI(String id) {
+		return objectIRI(ObjectType.SERIES, id);
+	}
+	
+	public static Resource operationIRI(String id) {
+		return objectIRI(ObjectType.OPERATION, id);
+	}
 
 	public static URI documentIRI(String id) {
 		return objectIRI(ObjectType.DOCUMENT, id);
@@ -196,5 +208,7 @@ public class SesameUtils {
 	private SesameUtils() {
 	    throw new IllegalStateException("Utility class");
 	}
+
+	
 
 }

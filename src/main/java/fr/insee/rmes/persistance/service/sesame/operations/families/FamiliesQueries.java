@@ -43,7 +43,7 @@ public class FamiliesQueries {
 	}
 
 	public static String familyQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState\n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
@@ -52,7 +52,7 @@ public class FamiliesQueries {
 				+ "FILTER (lang(?prefLabelLg1) = '"	+ Config.LG1 + "') . \n" 
 				+ "OPTIONAL {?family skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n" 
-
+				+ "OPTIONAL {?family insee:validationState ?validationState} . \n"
 				+ "OPTIONAL {?family dcterms:abstract ?abstractLg1 . \n"
 				+ "FILTER (lang(?abstractLg1) = '" + Config.LG1 + "') } . \n" 
 				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 . \n"

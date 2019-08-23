@@ -39,6 +39,10 @@ public class INSEE {
 	/*TEST REACT*/
 	public static final URI CONCEPT_VERSION;
 	public static final URI IS_VALIDATED;
+	public static final URI VALIDATION_STATE;
+	public static final URI UNPUBLISHED;
+	public static final URI MODIFIED;
+	public static final URI VALIDATED;
 
 	
 	static {
@@ -55,6 +59,11 @@ public class INSEE {
 		
 		CONCEPT_VERSION = f.createURI(NAMESPACE, "conceptVersion");
 		IS_VALIDATED = f.createURI(NAMESPACE, "isValidated");
+
+		VALIDATED = f.createURI(NAMESPACE, "validated");
+		MODIFIED = f.createURI(NAMESPACE, "isModified");
+		UNPUBLISHED = f.createURI(NAMESPACE, "isUnpublished");
+		VALIDATION_STATE = f.createURI(NAMESPACE, "validationState");
 		
 		FAMILY = f.createURI(NAMESPACE,"StatisticalOperationFamily");
 		OPERATION = f.createURI(NAMESPACE,"StatisticalOperation");

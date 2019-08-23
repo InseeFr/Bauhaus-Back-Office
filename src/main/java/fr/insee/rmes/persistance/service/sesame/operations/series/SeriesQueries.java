@@ -136,6 +136,41 @@ public class SeriesQueries {
 	}
 
 
+	public static String getMultipleOrganizations(String idSeries, URI linkPredicate) {
+		return "SELECT ?id ?labelLg1 ?labelLg2\n"
+				+ "WHERE { \n" 
+				+"?series <"+linkPredicate+"> ?uri . \n"
+				+ "?uri dcterms:identifier  ?id . \n"
+				+ "?uri skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
+				
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+
+				+ "} \n"
+				+ "ORDER BY ?id";
+	}
+	
+
+	public static String getFamily(String idSeries) {
+	
+		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
+		+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+		+ "WHERE { \n" 
+
+		+ "?family dcterms:hasPart ?series . \n"
+		+ "?family skos:prefLabel ?labelLg1 . \n"
+		+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+		+ "?family skos:prefLabel ?labelLg2 . \n"
+		+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+		+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
+
+		+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
+		+ "}"
+		
+		;
+	}
 
 
 	private static void getSimpleAttr(String id) {
@@ -208,41 +243,6 @@ public class SeriesQueries {
 						+ "}   \n");
 	}
 	
-	public static String getMultipleOrganizations(String idSeries, URI linkPredicate) {
-		return "SELECT ?id ?labelLg1 ?labelLg2\n"
-				+ "WHERE { \n" 
-				+"?series <"+linkPredicate+"> ?uri . \n"
-				+ "?uri dcterms:identifier  ?id . \n"
-				+ "?uri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
-				
-				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
-
-				+ "} \n"
-				+ "ORDER BY ?id";
-	}
-	
-
-	public static String getFamily(String idSeries) {
-	
-		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
-		+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
-		+ "WHERE { \n" 
-
-		+ "?family dcterms:hasPart ?series . \n"
-		+ "?family skos:prefLabel ?labelLg1 . \n"
-		+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-		+ "?family skos:prefLabel ?labelLg2 . \n"
-		+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
-		+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
-
-		+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
-		+ "}"
-		
-		;
-	}
 
 
 	private static void addVariableToList(String variable) {

@@ -20,6 +20,7 @@ public interface OperationsService {
 	
 	void setFamily(String id, String body) throws RmesException;
 
+	String setFamilyValidation(String body) throws RmesException;
 
 
 	/******************************************************************************************
@@ -109,6 +110,10 @@ public interface OperationsService {
 	String getOperationsWithoutReport(String id) throws RmesException;
 
 	String createFamily(String body) throws RmesException;
+
+	/*String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException;*/
+
+
 
 
 }

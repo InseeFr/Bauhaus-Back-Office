@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import java.io.IOException;
-
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -74,12 +75,12 @@ public class FamiliesUtils {
 			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update unexisting family");
 		}
 		
-		createRdfFamily(family);
+		createRdfFamily(family,INSEE.MODIFIED);
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
 
-	public void createRdfFamily(Family family) throws RmesException {
+	public void createRdfFamily(Family family, URI newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
 			throw new RmesNotFoundException( "No id found", "Can't read request body");
@@ -92,6 +93,7 @@ public class FamiliesUtils {
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, SesameUtils.operationsGraph());
 		/*Required*/
 		model.add(familyURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(family.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
+		model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(newStatus.toString()), SesameUtils.operationsGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
@@ -114,10 +116,32 @@ public class FamiliesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfFamily(family);
+		createRdfFamily(family,INSEE.UNPUBLISHED);
 		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
 		return id;
 
 	}
+
+
+	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
+		Model model = new LinkedHashModel();
+		
+			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);
+					//SesameUtils.familyIRI(body);
+			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED.toString()), SesameUtils.operationsGraph());
+			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED.toString()), SesameUtils.operationsGraph());
+			logger.info("Validate family : " + familyURI);
+		//TODO Check autorisation
+		RepositoryGestion.objectsValidation(familyURI, model);
+		FamilyPublication.publishFamily(id);
+		return id;
+	}
 	
+	private void setFamilyValidationStatus(URI familyURI, URI status) throws RmesException{
+		RepositoryGestion.executeUpdate(FamOpeSerQueries.setPublicationState(familyURI,status));
+	}
+	
+	private String getFamilyValidationStatus(String id) throws RmesException{
+		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state");
+	}
 }

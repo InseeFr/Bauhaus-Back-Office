@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openrdf.model.URI;
+
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
@@ -34,9 +36,21 @@ public class FamOpeSerQueries {
 		return buildOperationRequest("checkIfFamSerOpeExistsQuery.ftlh", params);	
 	}
 	
+	public static String getPublicationState(String id) throws RmesException{
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return buildOperationRequest("getPublicationStatusQuery.ftlh", params);	
+	}
+	
+	public static String setPublicationState(URI familyURI, URI newState) throws RmesException{
+		if (params==null) {initParams();}
+		params.put("id", familyURI);
+		params.put("newState", newState);
+		return buildOperationRequest("changePublicationStatusQuery.ftlh", params);	
+	}
+	
 	
 	private static String buildOperationRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
-	
 }

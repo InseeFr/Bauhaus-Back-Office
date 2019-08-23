@@ -135,6 +135,24 @@ public class RepositoryPublication {
 		}
 	}
 
+	public static void publishFamily(Resource family, Model model) throws RmesException {
+		try {
+			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
+
+			conn.remove(family, null, null);
+			conn.add(model);
+			conn.close();
+			logger.info("Publication of family : " + family);
+		} catch (OpenRDFException e) {
+			logger.error("Publication of family : " + family + FAILED);
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+
+		}
+	}
+
+	
+	
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
 				DCTERMS.REPLACES, SKOS.RELATED);
