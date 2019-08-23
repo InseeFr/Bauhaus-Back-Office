@@ -50,9 +50,6 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
-	String getOperationsForSearch() throws RmesException;
-
-
 	String getOperationByID(String id) throws RmesException;
 
 	void setOperation(String id, String body) throws RmesException;
