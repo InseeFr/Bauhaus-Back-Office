@@ -4,13 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.model.vocabulary.FOAF;
+import org.openrdf.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.ORG;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
+import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
 
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
@@ -23,6 +24,10 @@ public enum ObjectType {
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
+	DSD("dsd", QB.DATA_STRUCTURE_DEFINITION, Config.DSDS_BASE_URI),
+	MEASURE("measure", QB.MEASURE, Config.DSDS_BASE_URI + "/measure"),
+	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.DSDS_BASE_URI + "/attribute"),
+	DIMENSION("dimension", QB.DIMENSION, Config.DSDS_BASE_URI + "/dimension"),
 	UNDEFINED("undefined",null, "");
 	
 	

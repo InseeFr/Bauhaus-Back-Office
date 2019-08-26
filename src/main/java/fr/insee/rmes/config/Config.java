@@ -38,6 +38,9 @@ public class Config {
 	
 	public static String PRODUCTS_GRAPH = "";
 	public static String INDICATORS_BASE_URI = "";
+	
+	public static String DSDS_GRAPH = "";
+	public static String DSDS_BASE_URI = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";
@@ -108,6 +111,10 @@ public class Config {
 		
 		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");
 		Config.INDICATORS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.indicators.baseURI");
+		
+		
+		Config.DSDS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.dsds.graph");
+		Config.DSDS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.dsds.baseURI");
 
 
 		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
