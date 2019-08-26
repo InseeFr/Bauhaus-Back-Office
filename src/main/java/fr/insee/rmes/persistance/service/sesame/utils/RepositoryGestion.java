@@ -28,6 +28,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.EVOC;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
 
 public class RepositoryGestion {
 
@@ -230,6 +231,43 @@ public class RepositoryGestion {
 				throwsRmesException(e, "Failure remove "+predicat +" links from " + object);
 
 			}
+		}
+	}
+	
+	public static void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
+		List<Resource> toRemove = new ArrayList<Resource>();
+		try {
+			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			try {
+				RepositoryResult<Statement> nodes = null, measures = null, dimensions = null, attributes = null;
+				nodes = conn.getStatements(dsd, QB.COMPONENT, null, false);
+				while (nodes.hasNext()) {
+					Resource node = (Resource) nodes.next().getObject();
+					toRemove.add(node);
+					measures = conn.getStatements(node, QB.MEASURE, null, false);
+					while (measures.hasNext()) toRemove.add((Resource) measures.next().getObject());
+					measures.close();
+					dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
+					while (dimensions.hasNext()) toRemove.add((Resource) dimensions.next().getObject());
+					dimensions.close();
+					attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
+					while (attributes.hasNext()) toRemove.add((Resource) attributes.next().getObject());
+					attributes.close();
+				}
+				nodes.close();
+				toRemove.forEach(res -> {
+					try {
+						RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
+						conn.remove(statements);
+					} catch (RepositoryException e) {
+						e.printStackTrace();
+					}
+				});
+			} catch (RepositoryException e) {
+				throwsRmesException(e, "");
+			}		
+		} catch (OpenRDFException e) {
+			throwsRmesException(e, "Failure deletion : " + dsd);
 		}
 	}
 

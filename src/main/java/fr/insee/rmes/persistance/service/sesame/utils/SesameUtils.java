@@ -16,12 +16,17 @@ import org.openrdf.model.vocabulary.XMLSchema;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.notes.DatableNote;
 import fr.insee.rmes.persistance.service.sesame.notes.VersionableNote;
+import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
 
 public class SesameUtils {
 	
 	static ValueFactory factory = ValueFactoryImpl.getInstance();
 
 	private static final String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
+	
+	public static Resource blankNode(){
+		return factory.createBNode();
+	}
 	
 	public static Resource conceptGraph(){
 		return factory.createURI(Config.CONCEPTS_GRAPH);
@@ -41,6 +46,10 @@ public class SesameUtils {
 	
 	public static Resource simsGraph(String id) {
 		return factory.createURI(Config.DOCUMENTATIONS_BASE_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
+	}
+	
+	public static Resource DSDGraph(){
+		return factory.createURI(Config.DSDS_GRAPH);
 	}
 	
 	public static Resource conceptScheme(){
@@ -81,6 +90,23 @@ public class SesameUtils {
 	
 	public static URI linkIRI(String id) {
 		return objectIRI(ObjectType.LINK, id);
+	}
+	
+	public static URI dsdIRI(String id) {
+		return objectIRI(ObjectType.DSD, id);
+	}
+	
+	public static URI componentIRI(String id, String URItype) {
+		URI uri = factory.createURI(URItype);
+		return objectIRI(ObjectType.getEnum(uri), id);
+	}
+	
+	public static URI componentTypeIRI(String URItype) {
+		URI uri = factory.createURI(URItype);
+		if (uri.equals(QB.ATTRIBUTE)) return QB.ATTRIBUTE_PROPERTY;
+		else if (uri.equals(QB.DIMENSION)) return QB.DIMENSION_PROPERTY;
+		else if (uri.equals(QB.MEASURE)) return QB.MEASURE_PROPERTY;
+		return null;
 	}
 	
 	public static URI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
@@ -185,8 +211,8 @@ public class SesameUtils {
 		}
 	}
 	
-	public static void addTripleUri(URI objectURI, URI predicat, String value, Model model,Resource graph) {
-		if (value != null&& !value.isEmpty()) {
+	public static void addTripleUri(Resource objectURI, URI predicat, String value, Model model,Resource graph) {
+		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, toURI(value), graph);
 		}
 	}
