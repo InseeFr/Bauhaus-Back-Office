@@ -49,6 +49,7 @@ public class FamilyPublication {
 								tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 					} else if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
+							|| st.getPredicate().toString().endsWith("hasPart")
 							|| st.getPredicate().toString().endsWith("creator")
 							|| st.getPredicate().toString().endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
@@ -66,7 +67,7 @@ public class FamilyPublication {
 			RepositoryGestion.closeStatements(statements);
 		}
 		Resource familyToPublishRessource = tranformBaseURIToPublish(family);
-		RepositoryPublication.publishCollection(familyToPublishRessource, model);
+		RepositoryPublication.publishFamily(familyToPublishRessource, model);
 		
 	}
 

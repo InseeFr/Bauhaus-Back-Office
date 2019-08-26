@@ -42,7 +42,7 @@ public class FamOpeSerQueries {
 		return buildOperationRequest("getPublicationStatusQuery.ftlh", params);	
 	}
 	
-	public static String setPublicationState(URI familyURI, URI newState) throws RmesException{
+	public static String setPublicationState(URI familyURI, String newState) throws RmesException{
 		if (params==null) {initParams();}
 		params.put("id", familyURI);
 		params.put("newState", newState);

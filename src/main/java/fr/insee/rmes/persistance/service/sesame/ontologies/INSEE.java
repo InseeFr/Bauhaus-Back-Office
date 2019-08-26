@@ -40,9 +40,9 @@ public class INSEE {
 	public static final URI CONCEPT_VERSION;
 	public static final URI IS_VALIDATED;
 	public static final URI VALIDATION_STATE;
-	public static final URI UNPUBLISHED;
-	public static final URI MODIFIED;
-	public static final URI VALIDATED;
+	public static final String UNPUBLISHED;
+	public static final String MODIFIED;
+	public static final String VALIDATED;
 
 	
 	static {
@@ -60,10 +60,14 @@ public class INSEE {
 		CONCEPT_VERSION = f.createURI(NAMESPACE, "conceptVersion");
 		IS_VALIDATED = f.createURI(NAMESPACE, "isValidated");
 
-		VALIDATED = f.createURI(NAMESPACE, "validated");
+/*		VALIDATED = f.createURI(NAMESPACE, "validated");
 		MODIFIED = f.createURI(NAMESPACE, "isModified");
-		UNPUBLISHED = f.createURI(NAMESPACE, "isUnpublished");
+		UNPUBLISHED = f.createURI(NAMESPACE, "isUnpublished");*/
 		VALIDATION_STATE = f.createURI(NAMESPACE, "validationState");
+		MODIFIED = "Modified";
+		UNPUBLISHED = "Unpublished";
+		VALIDATED = "Validated";
+		
 		
 		FAMILY = f.createURI(NAMESPACE,"StatisticalOperationFamily");
 		OPERATION = f.createURI(NAMESPACE,"StatisticalOperation");

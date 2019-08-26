@@ -77,7 +77,7 @@ public class FamiliesUtils {
 		}
 
 		String status=getFamilyValidationStatus(id);
-		if(status.equals(INSEE.UNPUBLISHED.toString()) | status.equals("UNDEFINED")) {
+		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
 			createRdfFamily(family,INSEE.UNPUBLISHED);
 		}
 		else 	createRdfFamily(family,INSEE.MODIFIED);
@@ -85,7 +85,7 @@ public class FamiliesUtils {
 		
 	}
 
-	public void createRdfFamily(Family family, URI newStatus) throws RmesException {
+	public void createRdfFamily(Family family, String newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
 			throw new RmesNotFoundException( "No id found", "Can't read request body");
@@ -132,17 +132,16 @@ public class FamiliesUtils {
 		Model model = new LinkedHashModel();
 		
 			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);
-					//SesameUtils.familyIRI(body);
-			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED.toString()), SesameUtils.operationsGraph());
-			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED.toString()), SesameUtils.operationsGraph());
+			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
 			logger.info("Validate family : " + familyURI);
 		//TODO Check autorisation
-		RepositoryGestion.objectsValidation(familyURI, model);
 		FamilyPublication.publishFamily(id);
+		RepositoryGestion.objectsValidation(familyURI, model);
 		return id;
 	}
 	
-	private void setFamilyValidationStatus(URI familyURI, URI status) throws RmesException{
+	private void setFamilyValidationStatus(URI familyURI, String status) throws RmesException{
 		RepositoryGestion.executeUpdate(FamOpeSerQueries.setPublicationState(familyURI,status));
 	}
 	
