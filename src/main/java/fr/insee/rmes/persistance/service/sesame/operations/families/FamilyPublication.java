@@ -12,6 +12,7 @@ import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -39,8 +40,10 @@ public class FamilyPublication {
 		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, family);
 
-		try {
+		
+		try {	
 			try {
+				if (!statements.hasNext()) throw new RmesNotFoundException("Family not found", familyId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Other URI to transform
@@ -63,6 +66,7 @@ public class FamilyPublication {
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
 			}
+		
 		} finally {
 			RepositoryGestion.closeStatements(statements);
 		}

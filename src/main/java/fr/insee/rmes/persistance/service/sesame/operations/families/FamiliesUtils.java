@@ -131,13 +131,17 @@ public class FamiliesUtils {
 	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
+		//TODO Check autorisation
+			FamilyPublication.publishFamily(id);
+		
 			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);
 			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
 			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
 			logger.info("Validate family : " + familyURI);
-		//TODO Check autorisation
-		FamilyPublication.publishFamily(id);
-		RepositoryGestion.objectsValidation(familyURI, model);
+
+			RepositoryGestion.objectsValidation(familyURI, model);
+			
 		return id;
 	}
 	
