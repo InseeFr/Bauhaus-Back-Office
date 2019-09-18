@@ -60,9 +60,6 @@ public class INSEE {
 		CONCEPT_VERSION = f.createURI(NAMESPACE, "conceptVersion");
 		IS_VALIDATED = f.createURI(NAMESPACE, "isValidated");
 
-/*		VALIDATED = f.createURI(NAMESPACE, "validated");
-		MODIFIED = f.createURI(NAMESPACE, "isModified");
-		UNPUBLISHED = f.createURI(NAMESPACE, "isUnpublished");*/
 		VALIDATION_STATE = f.createURI(NAMESPACE, "validationState");
 		MODIFIED = "Modified";
 		UNPUBLISHED = "Unpublished";
