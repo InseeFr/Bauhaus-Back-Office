@@ -27,6 +27,10 @@
 			<name>Nicolas Laval</name>
 			<email>nicolas.laval@insee.fr</email>
 		</developer>
+			<developer>
+			<name>Olivier Pucher</name>
+			<email>olivier.pucher@insee.fr</email>
+		</developer>
 	</developers>
 
 	<properties>
