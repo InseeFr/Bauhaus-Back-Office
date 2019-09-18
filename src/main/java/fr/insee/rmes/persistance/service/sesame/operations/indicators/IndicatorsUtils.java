@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -150,6 +151,11 @@ public class IndicatorsUtils {
 			for (OperationsLink contributor : contributors) {
 				SesameUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.productsGraph());
 			}
+		}
+		
+		String gestionnaire=indicator.getGestionnaire();
+		if (!StringUtils.isEmpty(gestionnaire)) {
+			SesameUtils.addTripleUri(indicURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.productsGraph());
 		}
 		
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());

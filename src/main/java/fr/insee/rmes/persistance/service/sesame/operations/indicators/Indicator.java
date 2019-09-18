@@ -49,6 +49,9 @@ public class Indicator {
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributor;
+	
+	@Schema(description = "Identifier of gestionnaire")
+	public String gestionnaire;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -159,6 +162,14 @@ public class Indicator {
 
 	public String getIdSims() {
 		return idSims;
+	}
+
+	public String getGestionnaire() {
+		return gestionnaire;
+	}
+
+	public void setGestionnaire(String gestionnaire) {
+		this.gestionnaire = gestionnaire;
 	}
 
 	
