@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -433,6 +435,21 @@ public class DocumentsUtils {
 		String url = getDocumentUrlFromId(id);
 		if (StringUtils.startsWith(url, Config.DOCUMENTS_GRAPH)) {return false;}
 		return true;
+	}
+
+
+	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {
+		if (fileName == null || fileName.trim().isEmpty()) {
+       	 throw new RmesNotAcceptableException("Empty fileName", fileName);
+        }
+		//if (!(Pattern.matches("[a-zA-Z._-]+", fileName))) throw;
+		 Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
+	     Matcher m = p.matcher(fileName);
+	     if (m.find()) {
+		        logger.info("There is a forbidden character in the FileName ");
+		        throw new RmesNotAcceptableException("FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens", fileName);
+	     }
+	     
 	}
 
 
