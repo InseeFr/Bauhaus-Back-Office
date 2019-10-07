@@ -9,6 +9,7 @@ public class Config {
 	public static String ENV = "";
 	
 	public static Boolean REQUIRES_SSL = false;
+	public static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	
 	public static String DEFAULT_CONTRIBUTOR = "";
 	public static String DEFAULT_MAIL_SENDER = "";
