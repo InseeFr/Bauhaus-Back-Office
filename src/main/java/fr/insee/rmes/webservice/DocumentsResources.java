@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -58,7 +59,7 @@ public class DocumentsResources {
 
 	private static final String TEXT_PLAIN = "text/plain";
 
-	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
+	static final Logger logger = LogManager.getLogger(DocumentsResources.class);
 
 	@Autowired
 	DocumentsService documentsService;
@@ -103,6 +104,23 @@ public class DocumentsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	@GET
+	@Path("/document/{id}")
+	@Produces("*/*")
+	@Operation(operationId = "downloadDocument", summary = "Download Document")																 
+	public Response downloadDocument(@PathParam("id") String id) {
+		try {
+			return documentsService.downloadDocument(id);
+		} catch (RmesException e) {
+			logger.error(e.getMessageAndDetails());
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		} catch (IOException e) {
+			logger.error("IOException" + e.getMessage());
+			return Response.status(HttpStatus.SC_NOT_FOUND).entity(e.getMessage()).type(TEXT_PLAIN).build();
+		}
+	}
+
 
 	/*
 	 * Update informations about a document (or link), but not the file

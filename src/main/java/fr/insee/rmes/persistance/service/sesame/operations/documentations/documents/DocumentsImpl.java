@@ -1,7 +1,9 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations.documents;
 
+import java.io.IOException;
 import java.io.InputStream;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,16 +14,15 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.DocumentsService;
-import fr.insee.rmes.persistance.service.sesame.concepts.ConceptsImpl;
 
 @Service
 public class DocumentsImpl implements DocumentsService {
 
-	final static Logger logger = LogManager.getLogger(ConceptsImpl.class);
+	final static Logger logger = LogManager.getLogger(DocumentsImpl.class);
 
 	@Autowired 
 	DocumentsUtils documentsUtils;
-
+	
 	public DocumentsImpl() {
 	}
 
@@ -94,6 +95,11 @@ public class DocumentsImpl implements DocumentsService {
 		logger.debug("Create document : "+ id);
 		documentsUtils.createLink(id,body);
 		return id;
+	}
+
+	@Override
+	public Response downloadDocument(String id) throws RmesException, IOException  {
+		return documentsUtils.downloadDocument(id);	
 	}
 
 	

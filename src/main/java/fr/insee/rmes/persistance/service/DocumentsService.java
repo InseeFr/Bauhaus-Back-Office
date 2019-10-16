@@ -1,8 +1,10 @@
 package fr.insee.rmes.persistance.service;
 
 
+import java.io.IOException;
 import java.io.InputStream;
 
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.json.JSONObject;
@@ -54,5 +56,7 @@ public interface DocumentsService {
 	 * Create new link
 	 */
 	public String setLink(String body) throws RmesException;
+
+	public Response downloadDocument(String id) throws RmesException, IOException;
 
 }
