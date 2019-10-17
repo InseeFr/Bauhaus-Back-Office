@@ -125,7 +125,10 @@ public class OperationsImpl implements OperationsService {
 
 	}
 
-
+	@Override
+	public String setSeriesValidation(String id) throws RmesException{
+		return seriesUtils.setSeriesValidation(id);
+	}
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -345,6 +348,8 @@ public class OperationsImpl implements OperationsService {
 	public String setMetadataReport(String id, String body) throws RmesException {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
+
+	
 
 
 //	@Override

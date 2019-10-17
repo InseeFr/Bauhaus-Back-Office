@@ -26,6 +26,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
@@ -299,6 +300,25 @@ public class SeriesUtils {
 		}
 		return true;
 	}
+
+	public String setSeriesValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+		Model model = new LinkedHashModel();
+		
+		//TODO Check autorisation
+			SeriesPublication.publishSeries(id);
+		
+			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
+			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			logger.info("Validate series : " + seriesURI);
+
+			RepositoryGestion.objectsValidation(seriesURI, model);
+			
+		return id;
+	}
+
+
 
 
 }

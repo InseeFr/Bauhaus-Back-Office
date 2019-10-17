@@ -252,7 +252,7 @@ public class OperationsResources {
 	/**
 	 * CREATE
 	 * @param body
-	 * @return
+	 * @return response
 	 */
 	@Secured({ Constants.SPRING_ADMIN })
 	@POST
@@ -269,6 +269,27 @@ public class OperationsResources {
 			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	/**
+	 * PUBLISH
+	 * @param id
+	 * @return response
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@PUT
+	@Path("/series/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")
+	public Response setSeriesValidation(
+			@PathParam("id") String id) throws RmesException {
+		try {
+			operationsService.setSeriesValidation(id);
+			return Response.status(HttpStatus.SC_OK).entity(id).build();
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 	
 	

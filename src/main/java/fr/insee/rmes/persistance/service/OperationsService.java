@@ -39,6 +39,9 @@ public interface OperationsService {
 
 	String createSeries(String body) throws RmesException;
 
+	String setSeriesValidation(String body) throws RmesException;
+	
+	
 	/******************************************************************************************
 	 * OPERATIONS
 	 * *******************************************************************************************/

@@ -55,6 +55,7 @@ public class SeriesQueries {
 		getSimpleAttr(id);
 		getCodesLists();
 		getSingleOrganizations();
+		getValidationState();
 
 		return "SELECT "
 		+ variables.toString()
@@ -243,7 +244,12 @@ public class SeriesQueries {
 						+ "}   \n");
 	}
 	
-
+	private static void getValidationState() {
+		addVariableToList(" ?validationState ");
+		addClauseToWhereClause(
+				"OPTIONAL {?series insee:validationState ?validationState . \n"
+						+ "}   \n");
+	}
 
 	private static void addVariableToList(String variable) {
 		if (variables == null){

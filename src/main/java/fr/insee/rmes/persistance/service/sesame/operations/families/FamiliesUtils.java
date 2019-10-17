@@ -149,7 +149,9 @@ public class FamiliesUtils {
 		RepositoryGestion.executeUpdate(FamOpeSerQueries.setPublicationState(familyURI,status));
 	}
 	
-	private String getFamilyValidationStatus(String id) throws RmesException{
+	
+	
+	public String getFamilyValidationStatus(String id) throws RmesException{
 		try {		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
 		catch (JSONException e) {
 			return "UNDEFINED";

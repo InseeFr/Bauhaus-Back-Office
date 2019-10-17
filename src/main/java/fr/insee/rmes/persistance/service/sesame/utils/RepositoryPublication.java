@@ -172,6 +172,27 @@ public class RepositoryPublication {
 		}
 	}
 	
+
+	public static void publishSeries(Resource series, Model model) throws RmesException {
+		try {
+			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
+
+			//TODO: work only in graph /operations/	?	
+			conn.remove(series, null, null);
+			//TODO: remove triplets ?a ?b series
+			
+			conn.add(model);
+			conn.close();
+			logger.info("Publication of series : " + series);
+		} catch (OpenRDFException e) {
+			logger.error("Publication of series : " + series + FAILED);
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+
+		}
+	}
+		
+	
 	private RepositoryPublication() {
 	    throw new IllegalStateException("Utility class");
 	}
