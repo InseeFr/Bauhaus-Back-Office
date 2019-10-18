@@ -35,7 +35,7 @@ public class SeriesPublication {
 		Resource series = SesameUtils.seriesIRI(seriesId);
 		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);
 		String familyId = serieJson.getJSONObject("family").getString("id");
-		String status=familiesUtils.getFamilyValidationStatus(familyId);
+		String status=FamOpeSerUtils.getValidationStatus(familyId);
 		
 		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
 			throw new RmesUnauthorizedException("This Series cannot be published before its family is published", 
