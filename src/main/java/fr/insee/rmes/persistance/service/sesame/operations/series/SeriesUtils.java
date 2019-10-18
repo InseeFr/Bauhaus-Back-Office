@@ -31,6 +31,7 @@ import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
@@ -151,13 +152,14 @@ public class SeriesUtils {
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
-		createRdfSeries(series, familyURI);
+		createRdfSeries(series, familyURI, INSEE.UNPUBLISHED);
 		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
 
 		return id;
 
 	}
 
+	/* Update Series */
 	public void setSeries(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -173,17 +175,21 @@ public class SeriesUtils {
 			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
 					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
 		}
-		createRdfSeries(series,null);
+		
+		String status=FamOpeSerUtils.getValidationStatus(id);
+		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+			createRdfSeries(series,null,INSEE.UNPUBLISHED);
+		}
+		else 	createRdfSeries(series,null,INSEE.MODIFIED);
+		logger.info("Update family : " + series.getId() + " - " + series.getPrefLabelLg1());
+				
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
-
-
 	}
-
 
 	/*
 	 * CREATE OR UPDATE
 	 */
-	private void createRdfSeries(Series series, URI familyURI) throws RmesException {
+	private void createRdfSeries(Series series, URI familyURI, String newStatus) throws RmesException {
 
 
 		Model model = new LinkedHashModel();
@@ -192,6 +198,7 @@ public class SeriesUtils {
 		model.add(seriesURI, RDF.TYPE, INSEE.SERIES, SesameUtils.operationsGraph());
 		/*Required*/
 		model.add(seriesURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(series.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
+		model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(newStatus.toString()), SesameUtils.operationsGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
@@ -317,9 +324,6 @@ public class SeriesUtils {
 			
 		return id;
 	}
-
-
-
 
 }
 

@@ -76,7 +76,7 @@ public class FamiliesUtils {
 			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 
-		String status=getFamilyValidationStatus(id);
+		String status=FamOpeSerUtils.getValidationStatus(id);
 		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
 			createRdfFamily(family,INSEE.UNPUBLISHED);
 		}
@@ -149,12 +149,4 @@ public class FamiliesUtils {
 		RepositoryGestion.executeUpdate(FamOpeSerQueries.setPublicationState(familyURI,status));
 	}
 	
-	
-	
-	public String getFamilyValidationStatus(String id) throws RmesException{
-		try {		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
-			return "UNDEFINED";
-		}
-	}
 }

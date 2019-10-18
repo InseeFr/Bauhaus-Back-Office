@@ -2,6 +2,7 @@ package fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Resource;
 import org.springframework.stereotype.Component;
@@ -37,5 +38,12 @@ public class FamOpeSerUtils {
 		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
 		return SesameUtils.toURI(newResource);
 
+	}
+	
+	public static String getValidationStatus(String id) throws RmesException{
+		try {		return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
+		catch (JSONException e) {
+			return "UNDEFINED";
+		}
 	}
 }
