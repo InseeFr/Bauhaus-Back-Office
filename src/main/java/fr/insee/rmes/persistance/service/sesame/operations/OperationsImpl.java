@@ -199,7 +199,11 @@ public class OperationsImpl implements OperationsService {
 	public String createOperation(String body) throws RmesException {
 		return operationsUtils.setOperation(body);				
 	}
-
+	
+	@Override
+	public String setOperationValidation(String id) throws RmesException{
+		return operationsUtils.setOperationValidation(id);
+	}
 
 	/***************************************************************************************************
 	 * FAMILIES

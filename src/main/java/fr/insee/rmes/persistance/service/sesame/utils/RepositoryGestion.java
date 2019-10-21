@@ -100,6 +100,17 @@ public class RepositoryGestion {
 		return statements;
 	}
 
+	public static RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
+			throws RmesException {
+		RepositoryResult<Statement> statements = null;
+		try {
+			statements = con.getStatements(null, DCTERMS.HAS_PART, object, false);
+		} catch (RepositoryException e) {
+			throwsRmesException(e, "Failure get hasPart statements : " + object);
+		}
+		return statements;
+	}
+	
 	public static void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
 		try {
 			statements.close();

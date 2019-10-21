@@ -58,6 +58,8 @@ public interface OperationsService {
 	void setOperation(String id, String body) throws RmesException;
 
 	String createOperation(String body) throws RmesException;
+
+	String setOperationValidation(String body) throws RmesException;
 	
 	/******************************************************************************************
 	 * INDICATORS
@@ -110,9 +112,6 @@ public interface OperationsService {
 	String getOperationsWithoutReport(String id) throws RmesException;
 
 	String createFamily(String body) throws RmesException;
-
-	/*String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException;*/
-
 
 
 

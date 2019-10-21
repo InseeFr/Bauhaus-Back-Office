@@ -397,6 +397,28 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
+	/**
+	 * PUBLISH
+	 * @param id
+	 * @return response
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@PUT
+	@Path("/operation/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
+	public Response setOperationValidation(
+			@PathParam("id") String id) throws RmesException {
+		try {
+			operationsService.setOperationValidation(id);
+			return Response.status(HttpStatus.SC_OK).entity(id).build();
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
+	}
+	
+	
 	
 	/***************************************************************************************************
 	 * INDICATORS

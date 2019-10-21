@@ -15,6 +15,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
@@ -25,11 +26,11 @@ public class FamilyPublication {
 	private static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	private static Resource tranformBaseURIToPublish(Resource resource) {
-		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
-		return SesameUtils.toURI(newResource);
-
-	}
+//	private static Resource tranformBaseURIToPublish(Resource resource) {
+//		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
+//		return SesameUtils.toURI(newResource);
+//
+//	}
 
 	
 	public static void publishFamily(String familyId) throws RmesException {
@@ -46,11 +47,8 @@ public class FamilyPublication {
 				if (!statements.hasNext()) throw new RmesNotFoundException("Family not found", familyId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					// Other URI to transform
-					if (st.getPredicate().toString().endsWith("member")) {
-						model.add(tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-								tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-					} else if (st.getPredicate().toString().endsWith("isValidated")
+					// Triplets that don't get published
+					if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
 							|| st.getPredicate().toString().endsWith("hasPart")
 							|| st.getPredicate().toString().endsWith("creator")
@@ -59,9 +57,12 @@ public class FamilyPublication {
 					}
 					// Literals
 					else {
-						model.add(tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
+						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+								st.getPredicate(), 
+								st.getObject(),
 								st.getContext());
 					}
+					// Other URI to transform : none
 				}
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
@@ -70,7 +71,7 @@ public class FamilyPublication {
 		} finally {
 			RepositoryGestion.closeStatements(statements);
 		}
-		Resource familyToPublishRessource = tranformBaseURIToPublish(family);
+		Resource familyToPublishRessource = FamOpeSerUtils.tranformBaseURIToPublish(family);
 		RepositoryPublication.publishFamily(familyToPublishRessource, model);
 		
 	}

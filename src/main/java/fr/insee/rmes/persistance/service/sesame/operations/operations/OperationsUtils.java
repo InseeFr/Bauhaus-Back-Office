@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -20,8 +21,11 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesPublication;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -69,7 +73,7 @@ public class OperationsUtils {
 					seriesUtils.getSeriesById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
 		}
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,idSeries);
-		createRdfOperation(operation, seriesURI);
+		createRdfOperation(operation, seriesURI, INSEE.UNPUBLISHED);
 		logger.info("Create operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 
 		return operation.getId();
@@ -91,18 +95,24 @@ public class OperationsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfOperation(operation, null);
+		
+		String status=FamOpeSerUtils.getValidationStatus(id);
+		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+			createRdfOperation(operation,null,INSEE.UNPUBLISHED);
+		}
+		else 	createRdfOperation(operation,null,INSEE.MODIFIED);
 		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 		return operation.getId();
 	}
 
-	private void createRdfOperation(Operation operation, URI serieUri) throws RmesException {
+	private void createRdfOperation(Operation operation, URI serieUri, String newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, SesameUtils.operationsGraph());
 		/*Required*/
 		model.add(operationURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(operation.getPrefLabelLg1(), Config.LG1), SesameUtils.operationsGraph());
+		model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(newStatus.toString()), SesameUtils.operationsGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
@@ -118,4 +128,22 @@ public class OperationsUtils {
 		RepositoryGestion.loadSimpleObject(operationURI, model, null);
 	}
 
+
+	public String setOperationValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+		Model model = new LinkedHashModel();
+		
+		//TODO Check autorisation
+		OperationPublication.publishOperation(id);
+		
+			URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION, id);
+			model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			logger.info("Validate operation : " + operationURI);
+
+			RepositoryGestion.objectsValidation(operationURI, model);
+			
+		return id;
+	}
+	
 }
