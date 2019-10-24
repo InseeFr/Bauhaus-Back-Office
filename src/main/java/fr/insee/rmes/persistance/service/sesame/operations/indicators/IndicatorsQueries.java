@@ -130,10 +130,14 @@ public class IndicatorsQueries {
 	}
 
 	private static void getOrganizations() {
-		addVariableToList(" ?creator ");
+		addVariableToList(" ?creator ?gestionnaire ");
 		addClauseToWhereClause(
 				"OPTIONAL {?indic dcterms:creator ?uriCreator . \n"
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
+						+ "}   \n");
+		addClauseToWhereClause(
+				"OPTIONAL {?indic insee:gestionnaire ?uriGestionnaire . \n"
+						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
 						+ "}   \n");
 	}
 	
