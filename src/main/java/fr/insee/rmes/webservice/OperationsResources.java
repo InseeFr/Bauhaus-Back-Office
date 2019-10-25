@@ -160,11 +160,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setFamilyValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -285,11 +285,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setSeriesValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -411,11 +411,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setOperationValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -497,13 +497,12 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setIndicatorValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
 	
 	/**
 	 * CREATE
