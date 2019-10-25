@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -23,9 +22,7 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesPublication;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
