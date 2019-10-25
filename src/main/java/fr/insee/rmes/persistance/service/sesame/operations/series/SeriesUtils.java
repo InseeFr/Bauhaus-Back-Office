@@ -31,13 +31,13 @@ import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
 public class SeriesUtils {
@@ -58,7 +58,8 @@ public class SeriesUtils {
 		//check that the series exist
 		if (JSONUtils.isEmpty(series)) {
 			throw new RmesNotFoundException("Series not found","The series "+id+" cannot be found.");
-		}			
+		}		
+		XhtmlToMarkdownUtils.convertJSONObject(series);
 		series.put("id", id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
@@ -204,11 +205,11 @@ public class SeriesUtils {
 		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
-		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
-		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
 		String creator=series.getCreator();
 		if (!StringUtils.isEmpty(creator)) {

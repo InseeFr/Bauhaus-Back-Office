@@ -316,25 +316,11 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getMetadataReport(String id) throws RmesException {
 		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
-		convertJSONObject(documentation);
+		XhtmlToMarkdownUtils.convertJSONObject(documentation);
 		return documentation.toString();
 	}
 
-	private void convertJSONObject(JSONObject jsonObj) {
-		jsonObj.keySet().forEach(keyStr ->
-		{
-			Object keyvalue = jsonObj.get(keyStr);
-			if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
-			else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
-			else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
-		});
-	}
 
-	private void convertJSONArray(JSONArray jsonArr) {
-		for (int i = 0; i < jsonArr.length(); i++) {
-			convertJSONObject(jsonArr.getJSONObject(i));
-		}
-	}
 
 	/**
 	 * CREATE

@@ -273,10 +273,10 @@ public class DocumentationsUtils {
 				SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
 				SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
 				if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-					SesameUtils.addTripleString(textUri, RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
+					SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
 				}
 				if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-					SesameUtils.addTripleString(textUri,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
+					SesameUtils.addTripleStringMdToXhtml(textUri,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
 				}
 				docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
 				break; 

@@ -1,12 +1,12 @@
 package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import java.io.IOException;
+
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -24,11 +24,11 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
 public class FamiliesUtils {
@@ -39,6 +39,7 @@ public class FamiliesUtils {
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
 		if (family.length()==0) throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
+		XhtmlToMarkdownUtils.convertJSONObject(family);
 		addFamilySeries(id, family);
 		addSubjects(id, family);
 		return family;
@@ -101,8 +102,8 @@ public class FamiliesUtils {
 		model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(newStatus.toString()), SesameUtils.operationsGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
-		SesameUtils.addTripleString(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
+		SesameUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
 		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
@@ -145,8 +146,5 @@ public class FamiliesUtils {
 		return id;
 	}
 	
-	private void setFamilyValidationStatus(URI familyURI, String status) throws RmesException{
-		RepositoryGestion.executeUpdate(FamOpeSerQueries.setPublicationState(familyURI,status));
-	}
 	
 }

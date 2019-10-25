@@ -17,6 +17,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.notes.DatableNote;
 import fr.insee.rmes.persistance.service.sesame.notes.VersionableNote;
 import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class SesameUtils {
 	
@@ -182,6 +183,11 @@ public class SesameUtils {
 	public static void addTripleString(URI objectURI, URI predicat, String value, String lang, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, SesameUtils.setLiteralString(value, lang), graph);
+		}
+	}
+	public static void addTripleStringMdToXhtml(URI objectURI, URI predicat, String value, String lang, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	;
 		}
 	}
 	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model, Resource graph) {
