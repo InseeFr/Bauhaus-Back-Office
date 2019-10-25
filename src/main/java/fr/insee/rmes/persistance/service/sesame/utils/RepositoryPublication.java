@@ -119,6 +119,10 @@ public class RepositoryPublication {
 		}
 	}
 
+	/*
+	 * TODO: factoriser les methodes pour publier famille/serie/Operation/Indicateur
+	 */
+	
 	public static void publishCollection(Resource collection, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
@@ -150,7 +154,22 @@ public class RepositoryPublication {
 
 		}
 	}
+	
+	public static void publishIndicator(Resource indicator, Model model) throws RmesException {
+		try {
+			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
 
+			conn.remove(indicator, null, null);
+			conn.add(model);
+			conn.close();
+			logger.info("Publication of indicator : " + indicator);
+		} catch (OpenRDFException e) {
+			logger.error("Publication of indicator : " + indicator + FAILED);
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+
+		}
+	}
 	
 	
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
@@ -179,7 +198,8 @@ public class RepositoryPublication {
 
 			//TODO: work only in graph /operations/	?	
 			conn.remove(series, null, null);
-			//TODO: remove triplets ?a ?b series
+			//TODO: remove triplets ?a ?b series où ?b = hasPart,SeeAlso,Replaces,IsReplacedBy mais pas si ?b = isPartOf
+			//conn.remove(null, null, series);
 			
 			conn.add(model);
 			conn.close();
@@ -198,7 +218,7 @@ public class RepositoryPublication {
 
 			//TODO: work only in graph /operations/	?	
 			conn.remove(operation, null, null);
-			//TODO: remove triplets ?a ?b series
+			//TODO: remove triplets ?a ?b operations
 			
 			conn.add(model);
 			conn.close();

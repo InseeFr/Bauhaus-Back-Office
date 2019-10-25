@@ -41,6 +41,7 @@ public class IndicatorsQueries {
 		getCodesLists();
 		getOrganizations();
 		getSimsId();
+		getValidationState();
 
 		String query =  "SELECT "
 				+ variables.toString()
@@ -162,6 +163,13 @@ public class IndicatorsQueries {
 			whereClause = new StringBuilder();
 		}
 		whereClause.append(clause);
+	}
+	
+	private static void getValidationState() {
+		addVariableToList(" ?validationState ");
+		addClauseToWhereClause(
+				"OPTIONAL {?indic insee:validationState ?validationState . \n"
+						+ "}   \n");
 	}
 	
 	public static String lastID() {

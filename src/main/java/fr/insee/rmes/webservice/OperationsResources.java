@@ -160,11 +160,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setFamilyValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -285,11 +285,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setSeriesValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -411,11 +411,11 @@ public class OperationsResources {
 			@PathParam("id") String id) throws RmesException {
 		try {
 			operationsService.setOperationValidation(id);
-			return Response.status(HttpStatus.SC_OK).entity(id).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
 		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	
@@ -484,6 +484,27 @@ public class OperationsResources {
 	}
 	
 	/**
+	 * PUBLISH
+	 * @param id
+	 * @return response
+	 */
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@PUT
+	@Path("/indicator/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
+	public Response setIndicatorValidation(
+			@PathParam("id") String id) throws RmesException {
+		try {
+			operationsService.setIndicatorValidation(id);
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+	
+	/**
 	 * CREATE
 	 * @param body
 	 * @return
@@ -507,6 +528,9 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
+	
+	
+	
 	/***************************************************************************************************
 	 * DOCUMENTATION
 	 ******************************************************************************************************/
