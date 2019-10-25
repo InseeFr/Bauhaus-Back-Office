@@ -18,12 +18,10 @@ import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import info.aduna.iteration.Iterations;
 
 public class SeriesPublication {
 
@@ -31,7 +29,6 @@ public class SeriesPublication {
 	
 	public static void publishSeries(String seriesId) throws RmesException {
 		SeriesUtils seriesUtils= new SeriesUtils();
-		FamiliesUtils familiesUtils= new FamiliesUtils();
 		Model model = new LinkedHashModel();
 		Resource series = SesameUtils.seriesIRI(seriesId);
 		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);

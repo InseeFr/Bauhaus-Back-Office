@@ -35,6 +35,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
 public class IndicatorsUtils {
@@ -51,6 +52,7 @@ public class IndicatorsUtils {
 	public JSONObject getIndicatorById(String id) throws RmesException{
 		if (!checkIfIndicatorExists(id)) {throw new RmesNotFoundException("Indicator not found: ", id);}
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
+		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put("id", id);
 		addLinks(id, indicator);
 		return indicator;
@@ -141,11 +143,11 @@ public class IndicatorsUtils {
 		SesameUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), Config.LG1, model, SesameUtils.productsGraph());
 		SesameUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), Config.LG2, model, SesameUtils.productsGraph());
 		
-		SesameUtils.addTripleString(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), Config.LG1, model, SesameUtils.productsGraph());
-		SesameUtils.addTripleString(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), Config.LG2, model, SesameUtils.productsGraph());
+		SesameUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), Config.LG1, model, SesameUtils.productsGraph());
+		SesameUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), Config.LG2, model, SesameUtils.productsGraph());
 		
-		SesameUtils.addTripleString(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.productsGraph());
-		SesameUtils.addTripleString(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.productsGraph());
+		SesameUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), Config.LG1, model, SesameUtils.productsGraph());
+		SesameUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, SesameUtils.productsGraph());
 
 		SesameUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, SesameUtils.productsGraph());
 		List<OperationsLink> contributors = indicator.getContributor();

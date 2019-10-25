@@ -1,5 +1,8 @@
 package fr.insee.rmes.utils;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.vladsch.flexmark.convert.html.FlexmarkHtmlParser;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
@@ -37,5 +40,21 @@ public class XhtmlToMarkdownUtils {
     private XhtmlToMarkdownUtils() {
     	throw new IllegalStateException("Utility class");
     }
+    
+	public static void convertJSONObject(JSONObject jsonObj) {
+		jsonObj.keySet().forEach(keyStr ->
+		{
+			Object keyvalue = jsonObj.get(keyStr);
+			if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
+			else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
+			else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+		});
+	}
+
+	public static void convertJSONArray(JSONArray jsonArr) {
+		for (int i = 0; i < jsonArr.length(); i++) {
+			convertJSONObject(jsonArr.getJSONObject(i));
+		}
+	}
 
 }

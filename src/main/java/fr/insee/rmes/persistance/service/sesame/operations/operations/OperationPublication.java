@@ -18,8 +18,6 @@ import fr.insee.rmes.persistance.notifications.NotificationsContract;
 import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
@@ -31,7 +29,6 @@ static NotificationsContract notification = new RmesNotificationsImpl();
 	
 	public static void publishOperation(String operationId) throws RmesException {
 		OperationsUtils operationsUtils= new OperationsUtils();
-		SeriesUtils seriesUtils= new SeriesUtils();
 		Model model = new LinkedHashModel();
 		Resource operation = SesameUtils.operationIRI(operationId);
 		JSONObject operationJson = operationsUtils.getOperationById(operationId);

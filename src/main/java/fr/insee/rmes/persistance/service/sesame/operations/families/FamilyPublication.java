@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.operations.families;
 
 import org.apache.http.HttpStatus;
-import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -10,7 +9,6 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
