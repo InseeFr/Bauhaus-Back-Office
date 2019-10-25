@@ -210,10 +210,10 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void objectsValidation(URI familyURI, Model model) throws RmesException {
-		List<URI> famURIList=new ArrayList<URI>();
-		famURIList.add(familyURI);
-		objectsValidation(famURIList,model);
+	public static void objectsValidation(URI ressourceURI, Model model) throws RmesException {
+		List<URI> itemURIList=new ArrayList<URI>();
+		itemURIList.add(ressourceURI);
+		objectsValidation(itemURIList,model);
 	}
 	
 	

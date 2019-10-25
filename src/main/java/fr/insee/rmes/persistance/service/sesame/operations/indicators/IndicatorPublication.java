@@ -39,7 +39,7 @@ public class IndicatorPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Family not found", indicatorId);
+				if (!statements.hasNext()) throw new RmesNotFoundException("Indicator not found", indicatorId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published
