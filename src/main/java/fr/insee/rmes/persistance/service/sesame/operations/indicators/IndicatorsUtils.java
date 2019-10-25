@@ -24,11 +24,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -180,6 +182,25 @@ public class IndicatorsUtils {
 	}
 
 
+	public String setIndicatorValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+		Model model = new LinkedHashModel();
+		
+		//TODO Check autorisation
+			IndicatorPublication.publishIndicator(id);
+		
+			URI indicatorURI = SesameUtils.objectIRI(ObjectType.INDICATOR, id);
+			model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			logger.info("Validate indicator : " + indicatorURI);
+
+			RepositoryGestion.objectsValidation(indicatorURI, model);
+			
+		return id;
+	}
+	
+	
+	
 	private void addOneWayLink(Model model, URI indicURI, List<OperationsLink> links, URI linkPredicate) {
 		if (links != null) {
 			for (OperationsLink oneLink : links) {

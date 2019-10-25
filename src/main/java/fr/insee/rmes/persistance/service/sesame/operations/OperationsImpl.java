@@ -279,7 +279,16 @@ public class OperationsImpl implements OperationsService {
 	public void setIndicator(String id, String body) throws RmesException {
 		indicatorsUtils.setIndicator(id,body);
 	}
-
+	
+	/**
+	 * Publish indicator
+	 * @throws RmesException 
+	 */
+	@Override
+	public String setIndicatorValidation(String id) throws RmesException{
+		return indicatorsUtils.setIndicatorValidation(id);
+	}
+	
 	/**
 	 * Create indicator
 	 * @throws RmesException 

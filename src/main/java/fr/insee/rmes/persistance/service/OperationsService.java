@@ -79,6 +79,14 @@ public interface OperationsService {
 	 * @throws RmesException
 	 */
 	void setIndicator(String id, String body) throws RmesException;
+	
+	/**
+	 * PUBLISH
+	 * @param body
+	 * @throws RmesException
+	 */
+
+	String setIndicatorValidation(String body) throws RmesException;
 
 	/**
 	 * CREATE
