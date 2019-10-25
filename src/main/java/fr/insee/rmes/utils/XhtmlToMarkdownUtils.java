@@ -3,16 +3,26 @@ package fr.insee.rmes.utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.vladsch.flexmark.convert.html.FlexmarkHtmlParser;
 import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
-import com.vladsch.flexmark.util.options.MutableDataSet;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 
 public class XhtmlToMarkdownUtils {
 	
-	public static String xhtmlToMarkdown(String xhtml) {
-		String md = FlexmarkHtmlParser.parse(xhtml);
+	static MutableDataSet optionsXhtmlToMd;
+	
+	private static void init(){
+		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().size()==0) {
+			optionsXhtmlToMd = new MutableDataSet();
+			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE,true);
+		}
+	}
+	
+	private static String xhtmlToMarkdown(String xhtml) {
+		init();
+      	String md = FlexmarkHtmlConverter.builder(optionsXhtmlToMd).build().convert(xhtml);
 		if (md.endsWith("\n")){
 			return md.substring(0,md.length()-1);
 		}
