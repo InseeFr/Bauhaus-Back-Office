@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
@@ -30,6 +31,7 @@ import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
@@ -127,7 +129,7 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		String status=FamOpeSerUtils.getValidationStatus(id);
+		String status=getValidationStatus(id);
 		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
 			createRdfIndicator(indicator,INSEE.UNPUBLISHED);
 		}
@@ -198,9 +200,9 @@ public class IndicatorsUtils {
 			IndicatorPublication.publishIndicator(id);
 		
 			URI indicatorURI = SesameUtils.objectIRI(ObjectType.INDICATOR, id);
-			model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
-			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
-			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.productsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.productsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.productsGraph());
 			logger.info("Validate indicator : " + indicatorURI);
 
 			RepositoryGestion.objectsValidation(indicatorURI, model);
@@ -235,5 +237,10 @@ public class IndicatorsUtils {
 		return RepositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
 	}
 
-
+	public static String getValidationStatus(String id) throws RmesException{
+		try {		return RepositoryGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); }
+		catch (JSONException e) {
+			return "UNDEFINED";
+		}
+	}
 }

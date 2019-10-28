@@ -1,15 +1,45 @@
 package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.openrdf.model.URI;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class IndicatorsQueries {
 
+	static Map<String,Object> params ;
 
 	private static StringBuilder variables;
 	private static StringBuilder whereClause;
 
+	/*
+	 * Requests from .flth files
+	 */
+	
+	private static void initParams() {
+		params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+	}
+	
+	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException  {
+		return FreeMarkerUtils.buildRequest("operations/indicators/", fileName, params);
+	}
+	
+	public static String getPublicationState(String id) throws RmesException{
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return buildIndicatorRequest("getPublicationStatusQuery.ftlh", params);	
+	}
+	
+	/*
+	 * Requests wirtten in strings
+	 */
+	
 	public static String indicatorsQuery() {
 		return "SELECT DISTINCT ?id ?label ?altLabel \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
@@ -194,5 +224,6 @@ public class IndicatorsQueries {
 		  	
 	}
 
+	
 
 }
