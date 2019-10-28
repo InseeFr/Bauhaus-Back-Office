@@ -238,7 +238,9 @@ public class IndicatorsUtils {
 	}
 
 	public static String getValidationStatus(String id) throws RmesException{
-		try {		return RepositoryGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); }
+		try {
+			return RepositoryGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
+			}
 		catch (JSONException e) {
 			return "UNDEFINED";
 		}

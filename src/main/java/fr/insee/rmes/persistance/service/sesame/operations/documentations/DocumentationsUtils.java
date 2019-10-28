@@ -140,11 +140,11 @@ public class DocumentationsUtils {
 	 */
 	public String publishMetadataReport(String id) throws RmesException {
 		Model model = new LinkedHashModel();
-		
 		JSONObject simsJson = getDocumentationByIdSims(id);
+		Resource graph = SesameUtils.simsGraph(id);
 		
 		String targetId = null;
-		try{targetId = simsJson.getString("idIndicateur");}
+		try{targetId = simsJson.getString("idIndicator");}
 		catch(JSONException e) {
 			try{targetId = simsJson.getString("idOperation");}
 			catch(JSONException e2) {
@@ -154,8 +154,6 @@ public class DocumentationsUtils {
 				}
 			}
 		}
-			
-		Resource graph = SesameUtils.simsGraph(id);
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
 		String status=FamOpeSerUtils.getValidationStatus(targetId);
