@@ -120,8 +120,6 @@ public interface OperationsService {
 
 	String setMetadataReport(String id, String body) throws RmesException;
 
-	//String publishMetadataReport(String id) throws RmesException;
-
-
+	String publishMetadataReport(String id) throws RmesException;
 
 }
