@@ -29,12 +29,12 @@ public class XSD {
 	 */
 	public static final URI STRING;
 	
-	public static final URI DATE;
+	public static final URI DATETIME;
 	
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		STRING = f.createURI(NAMESPACE, "string");
-		DATE = f.createURI(NAMESPACE, "date");
+		DATETIME = f.createURI(NAMESPACE, "dateTime");
 	}
 }

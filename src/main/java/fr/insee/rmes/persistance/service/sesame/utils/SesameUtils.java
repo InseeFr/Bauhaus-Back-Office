@@ -17,6 +17,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.service.sesame.notes.DatableNote;
 import fr.insee.rmes.persistance.service.sesame.notes.VersionableNote;
 import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
+import fr.insee.rmes.utils.DateParser;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class SesameUtils {
@@ -152,11 +153,8 @@ public class SesameUtils {
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
-		return factory.createLiteral(date, XMLSchema.DATETIME);
-	}
-	
-	public static Literal setLiteralDate(String date) {
-		return factory.createLiteral(date, XMLSchema.DATE);
+        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateParser.parseDate(date));	
+		return factory.createLiteral(parsedDate, XMLSchema.DATETIME);
 	}
 	
 	public static Literal setLiteralXML(String string) {
@@ -193,11 +191,6 @@ public class SesameUtils {
 	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, SesameUtils.setLiteralDateTime(value), graph);
-		}
-	}
-	public static void addTripleDate(URI objectURI, URI predicat, String value, Model model, Resource graph) {
-		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, SesameUtils.setLiteralDate(value), graph);
 		}
 	}
 	public static void addTripleInt(URI objectURI, URI predicat, String value, Model model, Resource graph) {
