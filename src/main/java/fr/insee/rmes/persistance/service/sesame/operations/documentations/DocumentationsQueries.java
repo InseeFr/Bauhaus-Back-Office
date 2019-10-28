@@ -109,6 +109,13 @@ public class DocumentationsQueries {
 	}	
 	
 
+	public static String getPublicationState(String id) throws RmesException{
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return buildRequest("getPublicationStatusQuery.ftlh", params);	
+	}
+	
+	
 	private static void initParams() {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
