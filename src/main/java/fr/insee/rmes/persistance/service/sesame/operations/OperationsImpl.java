@@ -349,12 +349,13 @@ public class OperationsImpl implements OperationsService {
 	}
 
 	
-
-
-//	@Override
-//	public String addDocumentToSims(String idSims, String rubric, String idDoc) throws RmesException {
-//		return documentationsUtils.addDocumentToSims(idSims, rubric, idDoc);
-//	}
+	/**
+	 * PUBLISH
+	 */
+	@Override
+	public String publishMetadataReport(String id) throws RmesException {
+		return documentationsUtils.publishMetadataReport(id);
+	}
 
 
 

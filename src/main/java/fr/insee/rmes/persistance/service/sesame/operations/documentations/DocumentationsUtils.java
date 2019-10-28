@@ -9,6 +9,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
@@ -25,10 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.code_list.CodeListUtils;
 import fr.insee.rmes.persistance.service.sesame.ontologies.DCMITYPE;
+import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
@@ -79,7 +83,7 @@ public class DocumentationsUtils {
 	
 	/**
 	 * CREATE or UPDATE
-	 * @param body
+	 * @param id, body
 	 * @return
 	 * @throws RmesException 
 	 */
@@ -103,16 +107,82 @@ public class DocumentationsUtils {
 		URI targetUri = getTarget(sims);
 
 		//Update rubrics
-		saveRdfMetadataReport(sims, targetUri);
+		if (create) {
+			saveRdfMetadataReport(sims, targetUri, INSEE.UNPUBLISHED);
+		} else {
+			String status = getValidationStatus(id);
+			if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+				saveRdfMetadataReport(sims, targetUri, INSEE.UNPUBLISHED);
+			}
+			else 	saveRdfMetadataReport(sims, targetUri, INSEE.MODIFIED);
+		}
 		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
 		return sims.getId();
 	}
 
+	private String getValidationStatus(String id) throws RmesException{
+		try {		return RepositoryGestion.getResponseAsObject(DocumentationsQueries.getPublicationState(id)).getString("state"); }
+		catch (JSONException e) {
+			return "UNDEFINED";
+		}
+	}
 	
+
+	/**
+	 * PUBLISH
+	 * @param id
+	 * @return
+	 * @throws RmesException 
+	 */
+	public String publishMetadataReport(String id) throws RmesException {
+		Model model = new LinkedHashModel();
+		
+		JSONObject simsJson = getDocumentationByIdSims(id);
+		
+		String targetId = null;
+		try{targetId = simsJson.getString("idIndicateur");}
+		catch(JSONException e) {
+			try{targetId = simsJson.getString("idOperation");}
+			catch(JSONException e2) {
+				try{targetId = simsJson.getString("idSeries");}
+				catch(JSONException e3) {
+					throw new RmesNotFoundException("target not found for this Sims", id);
+				}
+			}
+		}
+			
+		Resource graph = SesameUtils.simsGraph(id);
+
+		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
+		String status=FamOpeSerUtils.getValidationStatus(targetId);
+		if(status.equals("UNDEFINED")) {
+			status=IndicatorsUtils.getValidationStatus(targetId);
+		}			
+		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+			throw new RmesUnauthorizedException("This metadataReport cannot be published before its target is published", 
+					"MetadataReport: "+id+" ; Indicator/Series/Operation: "+targetId);
+		}
+		
+		DocumentationPublication.publishSims(id);
+		
+		URI simsURI = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, id);
+		model.add(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), graph);
+		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), graph);
+		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), graph);
+		logger.info("Validate sims : " + simsURI);
+
+		RepositoryGestion.objectsValidation(simsURI, model);
+	
+		return id;
+	}
+	
+	
+
+
 	/**
 	 * get Operation URI to create or update SIMS
-	 * @param idTarget
-	 * @return
+	 * @param sims
+	 * @return URItarget
 	 * @throws RmesException
 	 */
 	private URI getTarget(Documentation sims) throws RmesException {
@@ -200,13 +270,14 @@ public class DocumentationsUtils {
 	 * @param target
 	 * @throws RmesException
 	 */
-	private void saveRdfMetadataReport(Documentation sims, URI target) throws RmesException {
+	private void saveRdfMetadataReport(Documentation sims, URI target, String state) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,sims.getId());
 		Resource graph = SesameUtils.simsGraph(sims.getId());
 		/*Const*/
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
 		model.add(simsUri, SDMX_MM.TARGET, target, graph);
+		model.add(simsUri, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(state), graph);
 		
 		/*Optional*/
 		SesameUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);

@@ -231,7 +231,20 @@ public class RepositoryPublication {
 		}
 	}
 	
-	
+	public static void publishMetadataReport(Resource sims, Model model) throws RmesException {
+		try {
+			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
+
+			conn.clear(sims);
+			conn.add(model);
+			conn.close();
+			logger.info("Publication of sims : " + sims);
+		} catch (OpenRDFException e) {
+			logger.error("Publication of sims : " + sims + FAILED);
+			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+		}
+	}
 	
 	private RepositoryPublication() {
 	    throw new IllegalStateException("Utility class");

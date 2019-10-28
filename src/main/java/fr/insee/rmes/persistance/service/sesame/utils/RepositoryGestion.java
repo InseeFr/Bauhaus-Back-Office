@@ -29,6 +29,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.ontologies.EVOC;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
+import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 
 public class RepositoryGestion {
 
@@ -110,6 +111,19 @@ public class RepositoryGestion {
 		}
 		return statements;
 	}
+	
+
+	public static RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object, Resource context)
+			throws RmesException {
+		RepositoryResult<Statement> statements = null;
+		try {
+			statements = con.getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
+		} catch (RepositoryException e) {
+			throwsRmesException(e, "Failure get MetadataReport statements : " + object);
+		}
+		return statements;
+	}
+	
 	
 	public static void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
 		try {
@@ -200,7 +214,6 @@ public class RepositoryGestion {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			for (URI item : itemToValidateList) {
-				conn.remove(item, INSEE.IS_VALIDATED, null);
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
 			}
 			conn.add(model);

@@ -68,8 +68,7 @@ public class DocumentationsQueries {
 	public static String getTargetByIdSims(String idSims) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
 		root.put("idSims", idSims);
-		return buildRequest("getTargetByIdSimsQuery.ftlh", root);
-		
+		return buildRequest("getTargetByIdSimsQuery.ftlh", root);	
 	}
 
 	/**

@@ -1,4 +1,4 @@
-SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator
+SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator ?validationState
 FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>  
 WHERE {  
 	?report rdf:type sdmx-mm:MetadataReport . 				
@@ -15,6 +15,8 @@ WHERE {
 	 OPTIONAL{ ?report rdfs:label ?labelLg2 . 
 		FILTER(lang(?labelLg2) = '${LG2}')  
 	 }
-				
+	OPTIONAL{ ?report insee:validationState ?validationState .
+	 }
+	  						
 	FILTER(STRENDS(STR(?report), '${idSims}')) 
 }
