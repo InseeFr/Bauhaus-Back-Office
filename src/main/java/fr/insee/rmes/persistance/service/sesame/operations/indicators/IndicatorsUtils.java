@@ -30,6 +30,7 @@ import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
+import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
@@ -105,7 +106,7 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfIndicator(indicator);
+		createRdfIndicator(indicator,INSEE.UNPUBLISHED);
 		logger.info("Create indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
 		return indicator.getId();
 	}
@@ -126,18 +127,24 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfIndicator(indicator);
+		String status=FamOpeSerUtils.getValidationStatus(id);
+		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+			createRdfIndicator(indicator,INSEE.UNPUBLISHED);
+		}
+		else 	createRdfIndicator(indicator,INSEE.MODIFIED);
+		
 		logger.info("Update indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
 		
 	}
 	
-	private void createRdfIndicator(Indicator indicator) throws RmesException {
+	private void createRdfIndicator(Indicator indicator, String newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI indicURI = SesameUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
 		model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, SesameUtils.productsGraph());
 		/*Required*/
 		model.add(indicURI, SKOS.PREF_LABEL, SesameUtils.setLiteralString(indicator.getPrefLabelLg1(), Config.LG1), SesameUtils.productsGraph());
+		model.add(indicURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(newStatus.toString()), SesameUtils.productsGraph());
 		/*Optional*/
 		SesameUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), Config.LG2, model, SesameUtils.productsGraph());
 		SesameUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), Config.LG1, model, SesameUtils.productsGraph());

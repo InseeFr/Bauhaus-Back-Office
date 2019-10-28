@@ -192,7 +192,6 @@ public class SeriesUtils {
 	 */
 	private void createRdfSeries(Series series, URI familyURI, String newStatus) throws RmesException {
 
-
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
