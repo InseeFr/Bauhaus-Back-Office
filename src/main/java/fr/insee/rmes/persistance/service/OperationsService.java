@@ -22,6 +22,7 @@ public interface OperationsService {
 
 	String setFamilyValidation(String body) throws RmesException;
 
+	String createFamily(String body) throws RmesException;
 
 	/******************************************************************************************
 	 * SERIES
@@ -54,6 +55,8 @@ public interface OperationsService {
 	String getOperations() throws RmesException ;
 
 	String getOperationByID(String id) throws RmesException;
+
+	String getOperationsWithoutReport(String id) throws RmesException;
 
 	void setOperation(String id, String body) throws RmesException;
 
@@ -117,9 +120,7 @@ public interface OperationsService {
 
 	String setMetadataReport(String id, String body) throws RmesException;
 
-	String getOperationsWithoutReport(String id) throws RmesException;
-
-	String createFamily(String body) throws RmesException;
+	String publishMetadataReport(String id) throws RmesException;
 
 
 
