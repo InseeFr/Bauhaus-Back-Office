@@ -48,6 +48,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.documentations.Docume
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.DateParser;
 
 @Component
 public class DocumentsUtils {
@@ -107,6 +108,12 @@ public class DocumentsUtils {
 		JSONArray allDocs = new JSONArray();
 		try {
 			allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery());
+			if (allDocs.length() != 0) {
+				 for (int i = 0; i < allDocs.length(); i++) {
+			         JSONObject doc = allDocs.getJSONObject(i);
+			         doc.put("updatedDate", DateParser.getDate(doc.getString("updatedDate")));
+			     }
+			}
 		} catch (RmesException e) {
 			logger.error(e.getMessage());
 		}
@@ -218,6 +225,8 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}		
 		if (jsonDocs.isNull(URI)) { throw new RmesNotFoundException("Cannot find Document with id: ",id); };
+		jsonDocs.put("updatedDate", DateParser.getDate(jsonDocs.getString("updatedDate")));
+
 		return jsonDocs;
 	}
 
@@ -372,7 +381,7 @@ public class DocumentsUtils {
 			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
-			SesameUtils.addTripleDate(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+			SesameUtils.addTripleDateTime(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
 		RepositoryGestion.loadSimpleObject(docUri, model, null);
 	}

@@ -39,6 +39,7 @@ import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.utils.DateParser;
 
 @Component
 public class DocumentationsUtils {
@@ -74,6 +75,9 @@ public class DocumentationsUtils {
 		        	 rubric.put("documents", listDoc);
 		         }
 		         rubric.remove("hasDoc");
+		         if (rubric.get("rangeType").equals("DATE")) {
+		        	 rubric.put("value", DateParser.getDate(rubric.getString("value")));
+		         }
 		     }
 		}
 		doc.put("rubrics", docRubrics);
@@ -330,7 +334,7 @@ public class DocumentationsUtils {
 			URI predicateUri, URI attributeUri) throws RmesException {
 		switch (type) {
 			case DATE:
-				SesameUtils.addTripleDate(attributeUri,predicateUri, rubric.getValue(), model, graph);
+				SesameUtils.addTripleDateTime(attributeUri,predicateUri, rubric.getValue(), model, graph);
 				break;
 			case CODELIST :
 				String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
