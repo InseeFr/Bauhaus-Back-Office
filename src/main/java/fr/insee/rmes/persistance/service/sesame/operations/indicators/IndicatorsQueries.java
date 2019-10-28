@@ -17,7 +17,7 @@ public class IndicatorsQueries {
 	private static StringBuilder whereClause;
 
 	/*
-	 * Requests from .flth files
+	 * Requests from .ftlh files
 	 */
 	
 	private static void initParams() {
@@ -37,7 +37,7 @@ public class IndicatorsQueries {
 	}
 	
 	/*
-	 * Requests wirtten in strings
+	 * Requests written in strings
 	 */
 	
 	public static String indicatorsQuery() {
