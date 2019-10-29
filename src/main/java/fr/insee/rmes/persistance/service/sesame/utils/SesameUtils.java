@@ -140,6 +140,10 @@ public class SesameUtils {
 		return factory.createLiteral(string.trim());
 	}
 	
+	public static Literal setLiteralString(ValidationStatus status) {
+		return factory.createLiteral(status.getValue().trim());
+	}
+	
 	public static Literal setLiteralString(String string, String language) {
 		return factory.createLiteral(string.trim(),language);
 	}

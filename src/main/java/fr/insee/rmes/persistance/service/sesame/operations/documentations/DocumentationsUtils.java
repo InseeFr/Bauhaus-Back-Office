@@ -39,6 +39,7 @@ import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 import fr.insee.rmes.utils.DateParser;
 
 @Component
@@ -112,13 +113,13 @@ public class DocumentationsUtils {
 
 		//Update rubrics
 		if (create) {
-			saveRdfMetadataReport(sims, targetUri, INSEE.UNPUBLISHED);
+			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
 			String status = getValidationStatus(id);
-			if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-				saveRdfMetadataReport(sims, targetUri, INSEE.UNPUBLISHED);
+			if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 			}
-			else 	saveRdfMetadataReport(sims, targetUri, INSEE.MODIFIED);
+			else 	saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
 		}
 		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
 		return sims.getId();
@@ -160,17 +161,17 @@ public class DocumentationsUtils {
 		if(status.equals("UNDEFINED")) {
 			status=IndicatorsUtils.getValidationStatus(targetId);
 		}			
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-			throw new RmesUnauthorizedException("This metadataReport cannot be published before its target is published", 
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+			throw new RmesUnauthorizedException("This metadataReport cannot be published before its target is published. ", 
 					"MetadataReport: "+id+" ; Indicator/Series/Operation: "+targetId);
 		}
 		
 		DocumentationPublication.publishSims(id);
 		
 		URI simsURI = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, id);
-		model.add(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), graph);
-		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), graph);
-		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), graph);
+		model.add(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
+		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
 		logger.info("Validate sims : " + simsURI);
 
 		RepositoryGestion.objectsValidation(simsURI, model);
@@ -272,7 +273,7 @@ public class DocumentationsUtils {
 	 * @param target
 	 * @throws RmesException
 	 */
-	private void saveRdfMetadataReport(Documentation sims, URI target, String state) throws RmesException {
+	private void saveRdfMetadataReport(Documentation sims, URI target, ValidationStatus state) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,sims.getId());
 		Resource graph = SesameUtils.simsGraph(sims.getId());

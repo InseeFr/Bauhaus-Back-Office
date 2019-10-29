@@ -22,6 +22,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 
 public class OperationPublication {
 
@@ -35,7 +36,7 @@ static NotificationsContract notification = new RmesNotificationsImpl();
 		String seriesId = operationJson.getJSONObject("series").getString("id");
 		String status=FamOpeSerUtils.getValidationStatus(seriesId);
 		
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
 			throw new RmesUnauthorizedException("This operation cannot be published before its series is published", 
 					"Operation: "+operationId+" ; Series: "+seriesId);
 		}
@@ -54,8 +55,7 @@ static NotificationsContract notification = new RmesNotificationsImpl();
 					if (st.getPredicate().toString().endsWith("isPartOf")) {
 						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 								FamOpeSerUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-					} else if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")
+					} else if (st.getPredicate().toString().endsWith("validationState")
 							|| st.getPredicate().toString().endsWith("hasPart")
 							|| st.getPredicate().toString().endsWith("creator")
 							|| st.getPredicate().toString().endsWith("contributor")) {

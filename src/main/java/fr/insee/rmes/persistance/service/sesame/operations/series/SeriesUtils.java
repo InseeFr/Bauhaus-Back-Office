@@ -36,6 +36,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -153,7 +154,7 @@ public class SeriesUtils {
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
-		createRdfSeries(series, familyURI, INSEE.UNPUBLISHED);
+		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
 
 		return id;
@@ -178,10 +179,10 @@ public class SeriesUtils {
 		}
 		
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-			createRdfSeries(series,null,INSEE.UNPUBLISHED);
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
 		}
-		else 	createRdfSeries(series,null,INSEE.MODIFIED);
+		else 	createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		logger.info("Update family : " + series.getId() + " - " + series.getPrefLabelLg1());
 				
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
@@ -190,7 +191,7 @@ public class SeriesUtils {
 	/*
 	 * CREATE OR UPDATE
 	 */
-	private void createRdfSeries(Series series, URI familyURI, String newStatus) throws RmesException {
+	private void createRdfSeries(Series series, URI familyURI, ValidationStatus newStatus) throws RmesException {
 
 		Model model = new LinkedHashModel();
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,series.getId());
@@ -315,9 +316,9 @@ public class SeriesUtils {
 			SeriesPublication.publishSeries(id);
 		
 			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
-			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
-			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
-			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 			logger.info("Validate series : " + seriesURI);
 
 			RepositoryGestion.objectsValidation(seriesURI, model);

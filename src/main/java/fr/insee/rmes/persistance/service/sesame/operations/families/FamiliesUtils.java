@@ -28,6 +28,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -78,15 +79,15 @@ public class FamiliesUtils {
 		}
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-			createRdfFamily(family,INSEE.UNPUBLISHED);
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		}
-		else 	createRdfFamily(family,INSEE.MODIFIED);
+		else 	createRdfFamily(family,ValidationStatus.MODIFIED);
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
 
-	public void createRdfFamily(Family family, String newStatus) throws RmesException {
+	public void createRdfFamily(Family family, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
 			throw new RmesNotFoundException( "No id found", "Can't read request body");
@@ -122,7 +123,7 @@ public class FamiliesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfFamily(family,INSEE.UNPUBLISHED);
+		createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
 		return id;
 
@@ -136,9 +137,9 @@ public class FamiliesUtils {
 			FamilyPublication.publishFamily(id);
 		
 			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);
-			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
-			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
-			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 			logger.info("Validate family : " + familyURI);
 
 			RepositoryGestion.objectsValidation(familyURI, model);

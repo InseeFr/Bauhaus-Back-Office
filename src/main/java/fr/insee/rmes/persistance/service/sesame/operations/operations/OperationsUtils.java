@@ -27,6 +27,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 
 @Component
 public class OperationsUtils {
@@ -70,7 +71,7 @@ public class OperationsUtils {
 					seriesUtils.getSeriesById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
 		}
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,idSeries);
-		createRdfOperation(operation, seriesURI, INSEE.UNPUBLISHED);
+		createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 
 		return operation.getId();
@@ -94,15 +95,15 @@ public class OperationsUtils {
 		}
 		
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-			createRdfOperation(operation,null,INSEE.UNPUBLISHED);
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
 		}
-		else 	createRdfOperation(operation,null,INSEE.MODIFIED);
+		else 	createRdfOperation(operation,null,ValidationStatus.MODIFIED);
 		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 		return operation.getId();
 	}
 
-	private void createRdfOperation(Operation operation, URI serieUri, String newStatus) throws RmesException {
+	private void createRdfOperation(Operation operation, URI serieUri, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/
@@ -133,9 +134,9 @@ public class OperationsUtils {
 		OperationPublication.publishOperation(id);
 		
 			URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION, id);
-			model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.operationsGraph());
-			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.operationsGraph());
-			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.operationsGraph());
+			model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
+			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
+			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 			logger.info("Validate operation : " + operationURI);
 
 			RepositoryGestion.objectsValidation(operationURI, model);

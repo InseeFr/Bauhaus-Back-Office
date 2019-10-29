@@ -22,6 +22,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 
 public class SeriesPublication {
 
@@ -35,7 +36,7 @@ public class SeriesPublication {
 		String familyId = serieJson.getJSONObject("family").getString("id");
 		String status=FamOpeSerUtils.getValidationStatus(familyId);
 		
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
 			throw new RmesUnauthorizedException("This Series cannot be published before its family is published", 
 					"Series: "+seriesId+" ; Family: "+familyId);
 		}

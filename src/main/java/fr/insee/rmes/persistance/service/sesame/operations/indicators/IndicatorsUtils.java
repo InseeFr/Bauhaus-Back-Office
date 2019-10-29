@@ -38,6 +38,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -108,7 +109,7 @@ public class IndicatorsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfIndicator(indicator,INSEE.UNPUBLISHED);
+		createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
 		logger.info("Create indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
 		return indicator.getId();
 	}
@@ -130,16 +131,16 @@ public class IndicatorsUtils {
 			logger.error(e.getMessage());
 		}
 		String status=getValidationStatus(id);
-		if(status.equals(INSEE.UNPUBLISHED) | status.equals("UNDEFINED")) {
-			createRdfIndicator(indicator,INSEE.UNPUBLISHED);
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+			createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
 		}
-		else 	createRdfIndicator(indicator,INSEE.MODIFIED);
+		else 	createRdfIndicator(indicator,ValidationStatus.MODIFIED);
 		
 		logger.info("Update indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
 		
 	}
 	
-	private void createRdfIndicator(Indicator indicator, String newStatus) throws RmesException {
+	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI indicURI = SesameUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
@@ -200,9 +201,9 @@ public class IndicatorsUtils {
 			IndicatorPublication.publishIndicator(id);
 		
 			URI indicatorURI = SesameUtils.objectIRI(ObjectType.INDICATOR, id);
-			model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.VALIDATED), SesameUtils.productsGraph());
-			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.UNPUBLISHED), SesameUtils.productsGraph());
-			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(INSEE.MODIFIED), SesameUtils.productsGraph());
+			model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.productsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.productsGraph());
+			model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.productsGraph());
 			logger.info("Validate indicator : " + indicatorURI);
 
 			RepositoryGestion.objectsValidation(indicatorURI, model);
