@@ -32,7 +32,6 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
