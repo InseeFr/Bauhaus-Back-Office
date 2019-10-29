@@ -95,9 +95,10 @@ public class DocumentsUtils {
 	 * @throws RmesException
 	 */
 	public JSONArray getListDocumentLink(String idSims, String idRubric) throws RmesException {
-		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims,idRubric));
+		JSONArray allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims,idRubric));
+		formatDateInJsonArray(allDocs);
+		return allDocs;
 	}
-
 
 	/**
 	 * Get all documents
@@ -108,16 +109,22 @@ public class DocumentsUtils {
 		JSONArray allDocs = new JSONArray();
 		try {
 			allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getAllDocumentsQuery());
-			if (allDocs.length() != 0) {
-				 for (int i = 0; i < allDocs.length(); i++) {
-			         JSONObject doc = allDocs.getJSONObject(i);
-			         doc.put("updatedDate", DateParser.getDate(doc.getString("updatedDate")));
-			     }
-			}
+			formatDateInJsonArray(allDocs);
 		} catch (RmesException e) {
 			logger.error(e.getMessage());
 		}
 		return allDocs;
+	}
+	
+	private void formatDateInJsonArray(JSONArray allDocs) {
+		if (allDocs.length() != 0) {
+			 for (int i = 0; i < allDocs.length(); i++) {
+		         JSONObject doc = allDocs.getJSONObject(i);
+		         String formatedDate = DateParser.getDate(doc.getString("updatedDate"));
+		         doc.remove("updatedDate");
+		         doc.put("updatedDate", formatedDate);
+		     }
+		}
 	}
 
 
