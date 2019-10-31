@@ -7,7 +7,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class DateParser {
+
+	final static Logger logger = LogManager.getLogger(DateParser.class);
 
 	 private static List<String> dateFormats ;
 
@@ -17,6 +22,7 @@ public class DateParser {
 	    		dateFormats.add("yyyy-MM-dd HH:mm:ssxx");
 	    		dateFormats.add("yyyy-MM-dd");
 	    		dateFormats.add("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	    		dateFormats.add("yyyy-MM-dd'T'HH:mm:ss.SSS");
 	    	}
 	    }
 
@@ -42,8 +48,13 @@ public class DateParser {
 	     * @return String date with format ISO_LOCAL_DATE
 	     */
 	    public static String getDate(String dateStr) {
-	    	LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
-	    	return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+	    	try{
+	    		LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
+	    		return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
+	    	}catch (Exception e) {
+	    		logger.warn("Date can't be parse : "+dateStr + e.getMessage());
+	    		return dateStr;
+	    	}
 	    }
 	
 }

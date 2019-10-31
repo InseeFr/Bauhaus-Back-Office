@@ -53,6 +53,8 @@ import fr.insee.rmes.utils.DateParser;
 @Component
 public class DocumentsUtils {
 
+	private static final String UPDATED_DATE = "updatedDate";
+
 	@Autowired
 	Environment env;
 
@@ -120,9 +122,11 @@ public class DocumentsUtils {
 		if (allDocs.length() != 0) {
 			 for (int i = 0; i < allDocs.length(); i++) {
 		         JSONObject doc = allDocs.getJSONObject(i);
-		         String formatedDate = DateParser.getDate(doc.getString("updatedDate"));
-		         doc.remove("updatedDate");
-		         doc.put("updatedDate", formatedDate);
+		         if (doc.has(UPDATED_DATE) ) {
+		        	 String formatedDate = DateParser.getDate(doc.getString(UPDATED_DATE));
+		        	 doc.remove(UPDATED_DATE);
+		        	 doc.put(UPDATED_DATE, formatedDate);
+		         }
 		     }
 		}
 	}
@@ -232,7 +236,9 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}		
 		if (jsonDocs.isNull(URI)) { throw new RmesNotFoundException("Cannot find Document with id: ",id); };
-		jsonDocs.put("updatedDate", DateParser.getDate(jsonDocs.getString("updatedDate")));
+        if (jsonDocs.has(UPDATED_DATE) ) {
+        	jsonDocs.put(UPDATED_DATE, DateParser.getDate(jsonDocs.getString(UPDATED_DATE)));
+        }
 
 		return jsonDocs;
 	}
