@@ -4,7 +4,6 @@ import org.apache.http.HttpStatus;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
