@@ -1,7 +1,7 @@
 package fr.insee.rmes.utils;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,19 +26,28 @@ public class DateParser {
 	    	}
 	    }
 
-	    public static ZonedDateTime parseDate(String dateStr) {
+	    public static LocalDateTime parseDate(String dateStr) {
 	    	init();
+	    	try {
+        		return ZonedDateTime.parse(dateStr).toLocalDateTime();
+          	} catch (Exception e) {
+        		logger.debug(e.getMessage());	
+        	}
 	        for (String format : dateFormats) {
-	        	try {
-	        		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-	        		ZonedDateTime date = LocalDate.parse(dateStr, formatter).atStartOfDay(ZoneId.systemDefault());
-	                return date;
+        		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        		try {//keep the time
+	        		return LocalDateTime.parse(dateStr, formatter);
 	        	} catch (Exception e) {
-	        		e.getMessage();	
+	        		logger.debug(e.getMessage());	
+	        	}
+	        	try {//time is set to 00:00.000
+	        		return LocalDate.parse(dateStr, formatter).atStartOfDay();
+	        	} catch (Exception e) {
+	        		logger.debug(e.getMessage());	
 	        	}
 	        }
 	        // All parsers failed
-	        return ZonedDateTime.parse(dateStr);
+	        return LocalDateTime.parse(dateStr);
 	    }     
 	    
 	    
