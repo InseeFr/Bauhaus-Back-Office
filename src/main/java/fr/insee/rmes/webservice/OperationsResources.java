@@ -91,7 +91,7 @@ public class OperationsResources {
 	}
 
 	@GET
-	@Path("/families_search")
+	@Path("/families/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
@@ -204,7 +204,7 @@ public class OperationsResources {
 	}
 
 	@GET
-	@Path("/series_search")
+	@Path("/series/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearch", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
 	public Response getSeriesForSearch() {
@@ -435,7 +435,7 @@ public class OperationsResources {
 	}
 
 	@GET
-	@Path("/indicators_search")
+	@Path("/indicators/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
