@@ -23,9 +23,9 @@ public class FamOpeSerUtils {
 		logger.info("Generate famOpeSer id");
 		JSONObject json = RepositoryGestion.getResponseAsObject(FamOpeSerQueries.lastId());
 		logger.debug("JSON for famOpeSer id : " + json);
-		if (json.length()==0) {return null;}
+		if (json.length()==0) {return "1000";}
 		String id = json.getString("id");
-		if (id.equals("undefined")) {return null;}
+		if (id.equals("undefined")) {return "1000";}
 		int ID = Integer.parseInt(id)+1;
 		return "s" + ID;
 	}
