@@ -18,5 +18,20 @@ public class RmesUnauthorizedException extends RmesException {
 	public RmesUnauthorizedException(String message, JSONArray details) {
 		super(HttpStatus.SC_FORBIDDEN, message, details);
 	}
+	
+	public RmesUnauthorizedException(int errorCode, String details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, details);
+	}
 
+	public RmesUnauthorizedException(int errorCode, JSONArray details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, details);
+	}
+
+	public RmesUnauthorizedException(int errorCode, String message, JSONArray details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);
+	}
+
+	public RmesUnauthorizedException(int errorCode, String message, String details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);
+	}
 }

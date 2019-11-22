@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.export.Jasper;
@@ -55,7 +56,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	public boolean sendMailConcept(String id, String body) throws  RmesException  {
 		URI conceptURI = SesameUtils.conceptIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI))
-			throw new RmesUnauthorizedException();
+			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getConceptData(id);
 		InputStream is = jasper.exportConcept(json, "Mail");
@@ -65,7 +66,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	public boolean sendMailCollection(String id, String body) throws  RmesException  {
 		URI collectionURI = SesameUtils.collectionIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
-			throw new RmesUnauthorizedException();
+			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(json, "Mail");

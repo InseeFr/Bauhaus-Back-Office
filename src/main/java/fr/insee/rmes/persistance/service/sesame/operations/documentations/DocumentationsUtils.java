@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -53,6 +55,9 @@ public class DocumentationsUtils {
 	@Autowired
 	DocumentsUtils docUtils;
 
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
+	
 	/**
 	 * GETTER
 	 * @param idSims
@@ -62,7 +67,7 @@ public class DocumentationsUtils {
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException{
 		//Get general informations
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
-		if (doc.length()==0) {throw new RmesNotFoundException("Not found", "");}
+		if (doc.length()==0) {throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Documentation not found", "");}
 		doc.put(ID, idSims);
 		
 		//Get all rubrics
@@ -112,8 +117,10 @@ public class DocumentationsUtils {
 
 		//Update rubrics
 		if (create) {
+			if(!stampsRestrictionsService.canCreateSims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
+			if(!stampsRestrictionsService.canModifySims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED, "Only an admin, CNIS, or a manager can modify this sims.", id);
 			String status = getValidationStatus(id);
 			if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
@@ -150,7 +157,7 @@ public class DocumentationsUtils {
 			catch(JSONException e2) {
 				try{targetId = simsJson.getString("idSeries");}
 				catch(JSONException e3) {
-					throw new RmesNotFoundException("target not found for this Sims", id);
+					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
 				}
 			}
 		}
@@ -161,7 +168,9 @@ public class DocumentationsUtils {
 			status=IndicatorsUtils.getValidationStatus(targetId);
 		}			
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
-			throw new RmesUnauthorizedException("This metadataReport cannot be published before its target is published. ", 
+			throw new RmesUnauthorizedException(
+					ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
+					"This metadataReport cannot be published before its target is published. ", 
 					"MetadataReport: "+id+" ; Indicator/Series/Operation: "+targetId);
 		}
 		
@@ -238,7 +247,7 @@ public class DocumentationsUtils {
 		}
 		if (existingIdTarget == null || idDatabase == null) {
 			logger.error("Can't find Operation/Serie/Indicator linked to the documentation");
-			throw new RmesNotFoundException("Operation/Serie/Indicator not found", "Maybe this is a creation")	;	
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"Operation/Serie/Indicator not found", "Maybe this is a creation")	;	
 		}
 		if (!idTarget.equals(idDatabase)) {
 			logger.error("id Operation/Serie/Indicator and idSims don't match");

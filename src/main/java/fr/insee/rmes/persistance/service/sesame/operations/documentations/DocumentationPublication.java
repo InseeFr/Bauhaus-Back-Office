@@ -9,6 +9,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
@@ -40,7 +41,7 @@ public class DocumentationPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Sims not found", simsId);
+				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Sims not found", simsId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published

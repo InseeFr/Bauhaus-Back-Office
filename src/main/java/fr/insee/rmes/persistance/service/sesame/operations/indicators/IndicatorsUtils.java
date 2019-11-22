@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -53,8 +55,11 @@ public class IndicatorsUtils {
 	@Autowired
 	OrganizationsService organizationsService;
 
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
+
 	public JSONObject getIndicatorById(String id) throws RmesException{
-		if (!checkIfIndicatorExists(id)) {throw new RmesNotFoundException("Indicator not found: ", id);}
+		if (!checkIfIndicatorExists(id)) {throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);}
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put("id", id);
@@ -97,6 +102,7 @@ public class IndicatorsUtils {
 	 * @throws RmesException 
 	 */
 	public String setIndicator(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateIndicator()) throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_CREATION_RIGHTS_DENIED, "Only an admin can create a new indicator.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();

@@ -82,9 +82,8 @@ public class ConceptsQueries {
 	}
 		
 	public static String conceptQuery(String id) { 
-
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
-				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
+				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
@@ -101,7 +100,6 @@ public class ConceptsQueries {
 				+ "?concept dcterms:created ?created . \n"
 				+ "OPTIONAL {?concept dcterms:modified ?modified} . \n"
 				+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
-				+ "?concept insee:isValidated ?isValidated . \n"
 				+ "}} \n"
 				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";
@@ -223,14 +221,19 @@ public class ConceptsQueries {
 				+ "}";			
 	}
 	
-	public static String getOwner(String URIs) {
+	public static String getOwner(String URI) {
 		return "SELECT ?owner { \n"
 				+ "?concept dc:creator ?owner . \n" 
-				+ "VALUES ?concept { " + URIs + " } \n"
+				+ "VALUES ?concept { " + URI + " } \n"
 				+ "}";
 	}
-
-
+	
+	public static String getManager(String URI) {
+		return "SELECT ?manager { \n"
+				+ "?concept dc:contributor ?manager . \n" 
+				+ "VALUES ?concept { " + URI + " } \n"
+				+ "}";
+	}
 
 	/**
 	 * @param idConcept

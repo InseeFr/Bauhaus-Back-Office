@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.export.Jasper;
@@ -101,12 +102,17 @@ public class ConceptsImpl implements ConceptsService {
 				listGraphs.concat(currentGraph.getString("src"));
 				listGraphs.concat("-");
 			}
-			throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is used in several graphs.",listGraphs);
+			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
+					"The concept "+id+" cannot be deleted because it is used in several graphs.",
+					listGraphs);
 		}
 		/* Check concept has no link */
 		String listConcepts=getRelatedConcepts(id);
 		if(!listConcepts.equals("[]")) {
-			throw new RmesUnauthorizedException("The concept "+id+" cannot be deleted because it is linked to other concepts.",listConcepts);
+			throw new RmesUnauthorizedException(
+					ErrorCodes.CONCEPT_DELETION_LINKED,
+					"The concept "+id+" cannot be deleted because it is linked to other concepts.",
+					listConcepts);
 		}
 		/* deletion */
 		Response.Status result= conceptsUtils.deleteConcept(id);

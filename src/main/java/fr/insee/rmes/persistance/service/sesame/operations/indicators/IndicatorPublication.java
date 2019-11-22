@@ -10,6 +10,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
@@ -36,10 +37,9 @@ public class IndicatorPublication {
 		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, indicator);
 
-		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Indicator not found", indicatorId);
+				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found", indicatorId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published

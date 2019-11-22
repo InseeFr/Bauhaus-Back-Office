@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -231,7 +232,7 @@ public class DocumentsUtils {
 		} catch (RmesException e) {
 			logger.error(e.getMessage());
 		}		
-		if (jsonDocs.isNull(URI)) { throw new RmesNotFoundException("Cannot find Document with id: ",id); };
+		if (jsonDocs.isNull(URI)) { throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID,"Cannot find Document with id: ",id); };
 		jsonDocs.put("updatedDate", DateParser.getDate(jsonDocs.getString("updatedDate")));
 
 		return jsonDocs;
@@ -256,7 +257,7 @@ public class DocumentsUtils {
 	private void checkDocumentReference(String docId, String uri) throws RmesException, RmesUnauthorizedException {
 		JSONArray jsonResultat = getLinksToDocument(docId);
 		if (jsonResultat.length()>0) { 
-			throw new RmesUnauthorizedException(
+			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
 					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: "+ 
 							((JSONObject) jsonResultat.get(0)).get("text").toString(),jsonResultat);
 		}
@@ -318,7 +319,10 @@ public class DocumentsUtils {
 		logger.debug("URL : "+url);
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
 		logger.debug("PATH : "+path);
-		if (!sameName && Files.exists(path)) throw new RmesUnauthorizedException("DOCUMENT_EXISTING_FILE", documentName);
+		if (!sameName && Files.exists(path)) throw new RmesUnauthorizedException(
+				ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, 
+				"There is already a document with that name.",
+				documentName);
 		try {
 			Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING); // throws an error if a file already exists under this name
 		} catch (IOException e) {
@@ -341,13 +345,13 @@ public class DocumentsUtils {
 		}
 
 		String url = link.getUrl();
-		if (StringUtils.isEmpty(url)) { throw new RmesNotAcceptableException("A link must have a non-empty url. ",id);}
+		if (StringUtils.isEmpty(url)) { throw new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL,"A link must have a non-empty url. ",id);}
 
 		//Check if the url is already used by a link
 		URI uriUrl= SesameUtils.toURI(url);
 		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
 		if (uri.length()>0 ) {
-			throw new RmesNotAcceptableException("LINK_EXISTING_URL", uri.getString("document"));
+			throw new RmesNotAcceptableException(ErrorCodes.LINK_EXISTING_URL,"This url is already referenced by another link.", uri.getString("document"));
 		}
 
 		URI docUri = SesameUtils.toURI(link.getUri());
@@ -454,13 +458,13 @@ public class DocumentsUtils {
 
 	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {
 		if (fileName == null || fileName.trim().isEmpty()) {
-       		throw new RmesNotAcceptableException("Empty fileName", fileName);
+       		throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME,"Empty fileName", fileName);
         }
 		 Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
 	     Matcher m = p.matcher(fileName);
 	     if (m.find()) {
 		        logger.info("There is a forbidden character in the FileName ");
-		        throw new RmesNotAcceptableException("FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens", fileName);
+		        throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARATER_NAME,"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens", fileName);
 	     }
 	     
 	}

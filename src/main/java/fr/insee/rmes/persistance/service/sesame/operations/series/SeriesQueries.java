@@ -172,8 +172,23 @@ public class SeriesQueries {
 		
 		;
 	}
-
-
+	
+	public static String getOwner(String URIs) {
+		return "SELECT ?owner { \n"
+				+ "?series dcterms:creator ?owner . \n" 
+				+ "VALUES ?series { " + URIs + " } \n"
+				+ "}";
+	}
+	
+	public static String getManager(String URIs) {
+		return "SELECT ?manager { \n"
+				+ "?series insee:gestionnaire ?manager . \n" 
+				+ "VALUES ?series { " + URIs + " } \n"
+				+ "}";
+	}
+	
+	
+	
 	private static void getSimpleAttr(String id) {
 		
 		if(id != null) addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );

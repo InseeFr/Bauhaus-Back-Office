@@ -9,6 +9,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.notifications.NotificationsContract;
@@ -35,7 +36,7 @@ public class FamilyPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Family not found", familyId);
+				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID,"Family not found", familyId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published

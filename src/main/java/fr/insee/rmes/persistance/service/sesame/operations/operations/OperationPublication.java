@@ -11,6 +11,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -37,7 +38,9 @@ static NotificationsContract notification = new RmesNotificationsImpl();
 		String status=FamOpeSerUtils.getValidationStatus(seriesId);
 		
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
-			throw new RmesUnauthorizedException("This operation cannot be published before its series is published", 
+			throw new RmesUnauthorizedException(
+					ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
+					"This operation cannot be published before its series is published", 
 					"Operation: "+operationId+" ; Series: "+seriesId);
 		}
 		
@@ -48,7 +51,7 @@ static NotificationsContract notification = new RmesNotificationsImpl();
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Operation not found", operationId);
+				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_ID,"Operation not found", operationId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Other URI to transform
