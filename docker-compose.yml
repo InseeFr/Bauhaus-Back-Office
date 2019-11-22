@@ -1,0 +1,16 @@
+version: "3"
+services:
+  back:
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - graphdb
+    depends_on:
+      - graphdb
+  graphdb:
+    image: dhlabbasel/graphdb-free
+    volumes:
+      - ./graphdb:/graphdb/data/
+    ports:
+      - "7200:7200"
