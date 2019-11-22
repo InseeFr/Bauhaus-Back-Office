@@ -32,7 +32,6 @@ public class SeriesQueries {
 			//	+ +"GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
-				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
 				+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
