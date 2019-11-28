@@ -176,6 +176,10 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+
+		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,id);
+		if(!stampsRestrictionsService.canModifySeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
+
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
 		if (series.getIdSims() != null & series.getOperations()!= null )
 		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
@@ -188,8 +192,6 @@ public class SeriesUtils {
 			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
 		}
 		else 	createRdfSeries(series,null,ValidationStatus.MODIFIED);
-		logger.info("Update family : " + series.getId() + " - " + series.getPrefLabelLg1());
-				
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 	}
 
@@ -321,6 +323,8 @@ public class SeriesUtils {
 			SeriesPublication.publishSeries(id);
 		
 			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
+			if(!stampsRestrictionsService.canValidateSeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish series.");
+
 			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());

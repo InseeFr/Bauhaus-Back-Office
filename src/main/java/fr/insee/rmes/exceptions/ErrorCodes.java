@@ -21,14 +21,18 @@ public class ErrorCodes {
 
 	// INDICATORS
 	public static final int INDICATOR_CREATION_RIGHTS_DENIED = 201;
+	public static final int INDICATOR_MODIFICATION_RIGHTS_DENIED = 202;
+	public static final int INDICATOR_VALIDATION_RIGHTS_DENIED = 203;
 
 	// DOCUMENTS
 	public static final int DOCUMENT_CREATION_RIGHTS_DENIED = 301;
 	public static final int DOCUMENT_CREATION_EXISTING_FILE = 302;
+	public static final int DOCUMENT_MODIFICATION_RIGHTS_DENIED = 303;
 	public static final int DOCUMENT_DELETION_LINKED = 303;
 
 	// LINKS
 	public static final int LINK_CREATION_RIGHTS_DENIED = 401;
+	public static final int LINK_MODIFICATION_RIGHTS_DENIED = 403;
 
 	// FAMILIES
 	public static final int FAMILY_CREATION_RIGHTS_DENIED = 501;

@@ -69,7 +69,7 @@ public class FamiliesUtils {
 
 /*WRITE*/
 	public void setFamily(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can modify a family.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family(id);
@@ -119,6 +119,7 @@ public class FamiliesUtils {
 
 
 	public String createFamily(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family();
@@ -139,7 +140,8 @@ public class FamiliesUtils {
 	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
-		//TODO Check autorisation
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
+
 			FamilyPublication.publishFamily(id);
 		
 			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);

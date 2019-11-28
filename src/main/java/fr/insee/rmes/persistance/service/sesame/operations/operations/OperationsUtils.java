@@ -92,6 +92,10 @@ public class OperationsUtils {
 	 * @throws RmesException
 	 */
 	public String setOperation(String id, String body) throws RmesException {
+
+		URI seriesURI=getSeriesUri(id);
+		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Operation operation = new Operation(id);
@@ -100,7 +104,7 @@ public class OperationsUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		
+
 		String status=FamOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
@@ -136,19 +140,27 @@ public class OperationsUtils {
 
 	public String setOperationValidation(String id)  throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
-		
-		//TODO Check autorisation
-		OperationPublication.publishOperation(id);
-		
-			URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION, id);
-			model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
-			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
-			model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
-			logger.info("Validate operation : " + operationURI);
 
-			RepositoryGestion.objectsValidation(operationURI, model);
-			
+		URI seriesURI = getSeriesUri(id);
+		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+
+		OperationPublication.publishOperation(id);
+
+		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION, id);
+		model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
+		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
+		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
+		logger.info("Validate operation : " + operationURI);
+
+		RepositoryGestion.objectsValidation(operationURI, model);
+
 		return id;
 	}
-	
+
+	private URI getSeriesUri(String id) throws RmesException {
+		JSONObject jsonOperation = getOperationById(id);
+		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,jsonOperation.getJSONObject("series").getString("id"));
+		return seriesURI;
+	}
+
 }

@@ -37,4 +37,18 @@ public interface StampsRestrictionsService {
 	Boolean canCreateIndicator() throws RmesException;
 
 	Boolean canCreateSims(URI targetURI) throws RmesException;
+
+	Boolean canModifySeries(URI uri) throws RmesException;
+
+	Boolean canValidateSeries(URI uri) throws RmesException;
+
+	Boolean canModifyOperation(URI seriesURI) throws RmesException;
+
+	Boolean canValidateOperation(URI seriesURI) throws RmesException;
+
+	Boolean canModifyIndicator(URI uri) throws RmesException;
+
+	Boolean canValidateIndicator(URI uri) throws RmesException;
+
+	Boolean canManageDocumentsAndLinks() throws RmesException;
 }

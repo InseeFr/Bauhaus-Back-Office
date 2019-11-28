@@ -45,19 +45,19 @@ import fr.insee.rmes.utils.DateParser;
 
 @Component
 public class DocumentationsUtils {
-	
+
 	private static final String ID = "id";
 	final static Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
-	
+
 	@Autowired
 	DocumentsUtils docUtils;
 
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
-	
+
 	/**
 	 * GETTER
 	 * @param idSims
@@ -69,27 +69,27 @@ public class DocumentationsUtils {
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
 		if (doc.length()==0) {throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Documentation not found", "");}
 		doc.put(ID, idSims);
-		
+
 		//Get all rubrics
 		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		if (docRubrics.length() != 0) {
-			 for (int i = 0; i < docRubrics.length(); i++) {
-		         JSONObject rubric = docRubrics.getJSONObject(i);
-		         if (rubric.has("hasDoc") && rubric.getBoolean("hasDoc")) {
-		        	 JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-		        	 rubric.put("documents", listDoc);
-		         }
-		         rubric.remove("hasDoc");
-		         if (rubric.get("rangeType").equals("DATE")) {
-		        	 rubric.put("value", DateParser.getDate(rubric.getString("value")));
-		         }
-		     }
+			for (int i = 0; i < docRubrics.length(); i++) {
+				JSONObject rubric = docRubrics.getJSONObject(i);
+				if (rubric.has("hasDoc") && rubric.getBoolean("hasDoc")) {
+					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
+					rubric.put("documents", listDoc);
+				}
+				rubric.remove("hasDoc");
+				if (rubric.get("rangeType").equals("DATE")) {
+					rubric.put("value", DateParser.getDate(rubric.getString("value")));
+				}
+			}
 		}
 		doc.put("rubrics", docRubrics);
 		return doc;
 	}
-	
-	
+
+
 	/**
 	 * CREATE or UPDATE
 	 * @param id, body
@@ -137,7 +137,23 @@ public class DocumentationsUtils {
 			return "UNDEFINED";
 		}
 	}
-	
+
+	private String targetId(String idSims) throws RmesException {
+		JSONObject simsJson = getDocumentationByIdSims(idSims);
+		String targetId = null;
+		try{targetId = simsJson.getString("idIndicator");}
+		catch(JSONException e) {
+			try{targetId = simsJson.getString("idOperation");}
+			catch(JSONException e2) {
+				try{targetId = simsJson.getString("idSeries");}
+				catch(JSONException e3) {
+					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", idSims);
+				}
+			}
+		}
+		return targetId;
+	}
+
 
 	/**
 	 * PUBLISH
@@ -149,18 +165,31 @@ public class DocumentationsUtils {
 		Model model = new LinkedHashModel();
 		JSONObject simsJson = getDocumentationByIdSims(id);
 		Resource graph = SesameUtils.simsGraph(id);
-		
+
+		// Find target
 		String targetId = null;
-		try{targetId = simsJson.getString("idIndicator");}
+		URI targetUri = null;
+		try{
+			targetId = simsJson.getString("idIndicator");
+			targetUri= SesameUtils.objectIRI(ObjectType.INDICATOR, id);
+		}
 		catch(JSONException e) {
-			try{targetId = simsJson.getString("idOperation");}
+			try{
+				targetId = simsJson.getString("idOperation");
+				targetUri= SesameUtils.objectIRI(ObjectType.OPERATION, id);
+			}
 			catch(JSONException e2) {
-				try{targetId = simsJson.getString("idSeries");}
+				try{
+					targetId = simsJson.getString("idSeries");
+					targetUri= SesameUtils.objectIRI(ObjectType.SERIES, id);}
 				catch(JSONException e3) {
 					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
 				}
 			}
 		}
+
+		/* Check rights */
+		if(!stampsRestrictionsService.canCreateSims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
 		String status=FamOpeSerUtils.getValidationStatus(targetId);
@@ -173,9 +202,10 @@ public class DocumentationsUtils {
 					"This metadataReport cannot be published before its target is published. ", 
 					"MetadataReport: "+id+" ; Indicator/Series/Operation: "+targetId);
 		}
-		
+
+
 		DocumentationPublication.publishSims(id);
-		
+
 		URI simsURI = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, id);
 		model.add(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
 		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
@@ -183,11 +213,11 @@ public class DocumentationsUtils {
 		logger.info("Validate sims : " + simsURI);
 
 		RepositoryGestion.objectsValidation(simsURI, model);
-	
+
 		return id;
 	}
-	
-	
+
+
 
 
 	/**
@@ -198,7 +228,7 @@ public class DocumentationsUtils {
 	 */
 	private URI getTarget(Documentation sims) throws RmesException {
 		URI target = null;
-		
+
 		if (StringUtils.isNotEmpty(sims.getIdOperation()) && FamOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION,sims.getIdTarget())){
 			target= SesameUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
 		}
@@ -214,7 +244,7 @@ public class DocumentationsUtils {
 		}
 		return target;
 	}
-	
+
 	/**
 	 * Check the existing id is the same that the id to set
 	 * Update only
@@ -289,13 +319,13 @@ public class DocumentationsUtils {
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
 		model.add(simsUri, SDMX_MM.TARGET, target, graph);
 		model.add(simsUri, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(state), graph);
-		
+
 		/*Optional*/
 		SesameUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);
 		SesameUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.LG2, model, graph);
-		
+
 		addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
-		
+
 		RepositoryGestion.replaceGraph(graph, model, null);
 	}
 
@@ -310,7 +340,7 @@ public class DocumentationsUtils {
 	private void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics) throws RmesException {
 		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
 		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,simsId);
-		
+
 		for (DocumentationRubric rubric : rubrics) {
 			RangeType type = getRangeType(rubric);
 			URI predicateUri;
@@ -340,46 +370,46 @@ public class DocumentationsUtils {
 	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
 			URI predicateUri, URI attributeUri) throws RmesException {
 		switch (type) {
-			case DATE:
-				SesameUtils.addTripleDateTime(attributeUri,predicateUri, rubric.getValue(), model, graph);
-				break;
-			case CODELIST :
-				String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
-				if (codeUri != null) { 
-					SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(codeUri), model, graph);
-				}
-				break; 
-			case RICHTEXT :
-				if (rubric.isEmpty()) break;
-				URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
-				SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
-				SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
-				if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-					SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
-				}
-				if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-					SesameUtils.addTripleStringMdToXhtml(textUri,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
-				}
-				docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
-				break; 
-			case ORGANIZATION :
-				String orgaUri = OrganizationUtils.getUri(rubric.getValue());
-				if (orgaUri != null) { 
-					SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(orgaUri), model, graph);
-				}
-				break; 
-			case STRING :
-				if (rubric.isEmpty()) break;
-				SesameUtils.addTripleUri(attributeUri,RDF.TYPE,SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
-				if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-					SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg1(),Config.LG1, model, graph);
-				}	
-				if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-					SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg2(),Config.LG2, model, graph);
-				}
-				break; 
-			default:
-				break;
+		case DATE:
+			SesameUtils.addTripleDateTime(attributeUri,predicateUri, rubric.getValue(), model, graph);
+			break;
+		case CODELIST :
+			String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
+			if (codeUri != null) { 
+				SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(codeUri), model, graph);
+			}
+			break; 
+		case RICHTEXT :
+			if (rubric.isEmpty()) break;
+			URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
+			SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
+			SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
+			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+				SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
+			}
+			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+				SesameUtils.addTripleStringMdToXhtml(textUri,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
+			}
+			docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
+			break; 
+		case ORGANIZATION :
+			String orgaUri = OrganizationUtils.getUri(rubric.getValue());
+			if (orgaUri != null) { 
+				SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(orgaUri), model, graph);
+			}
+			break; 
+		case STRING :
+			if (rubric.isEmpty()) break;
+			SesameUtils.addTripleUri(attributeUri,RDF.TYPE,SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
+			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+				SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg1(),Config.LG1, model, graph);
+			}	
+			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+				SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg2(),Config.LG2, model, graph);
+			}
+			break; 
+		default:
+			break;
 		}
 	}
 
@@ -389,7 +419,7 @@ public class DocumentationsUtils {
 		RangeType type = RangeType.getEnumByJsonType(rubric.getRangeType());
 		return type;
 	}	
-	
+
 	/**
 	 * Get attribute uri for a metadata report and the associated attribute definition
 	 * @param simsId
