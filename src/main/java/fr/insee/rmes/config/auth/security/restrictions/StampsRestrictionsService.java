@@ -12,4 +12,43 @@ public interface StampsRestrictionsService {
 
 	Boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException;
 
+	Boolean canModifyIndicator(List<URI> uris) throws RmesException;
+	
+	Boolean canValidateIndicator(List<URI> uris) throws RmesException;
+
+	Boolean canModifySims(URI targetUri) throws RmesException;
+
+	Boolean canCreateOperation(URI seriesURI) throws RmesException;
+	
+	Boolean canCreateSims(List<URI> uris) throws RmesException;
+	
+	Boolean canModifySeries(List<URI> uris) throws RmesException;
+
+	Boolean canValidateSeries(List<URI> uris) throws RmesException;
+
+	Boolean canCreateConcept() throws RmesException;
+
+	Boolean canModifyConcept(URI uri) throws RmesException;
+
+	Boolean canCreateFamily() throws RmesException;
+
+	Boolean canCreateSeries() throws RmesException;
+
+	Boolean canCreateIndicator() throws RmesException;
+
+	Boolean canCreateSims(URI targetURI) throws RmesException;
+
+	Boolean canModifySeries(URI uri) throws RmesException;
+
+	Boolean canValidateSeries(URI uri) throws RmesException;
+
+	Boolean canModifyOperation(URI seriesURI) throws RmesException;
+
+	Boolean canValidateOperation(URI seriesURI) throws RmesException;
+
+	Boolean canModifyIndicator(URI uri) throws RmesException;
+
+	Boolean canValidateIndicator(URI uri) throws RmesException;
+
+	Boolean canManageDocumentsAndLinks() throws RmesException;
 }

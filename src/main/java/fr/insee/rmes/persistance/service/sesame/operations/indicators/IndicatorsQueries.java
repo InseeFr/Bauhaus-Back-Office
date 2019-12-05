@@ -224,6 +224,21 @@ public class IndicatorsQueries {
 		  	
 	}
 
+	public static String getOwner(String URIs) {
+		return "SELECT ?owner { \n"
+				+ "?indic dcterms:creator ?owner . \n" 
+				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "}";
+	}
+
+	public static String getManager(String URIs) {
+		return "SELECT ?manager { \n"
+				+ "?indic insee:gestionnaire ?manager . \n" 
+				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "}";
+	}
+
+
 	
 
 }

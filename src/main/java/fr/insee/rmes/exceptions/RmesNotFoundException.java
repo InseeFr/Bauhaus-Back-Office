@@ -10,4 +10,8 @@ public class RmesNotFoundException extends RmesException {
 		super(HttpStatus.SC_NOT_FOUND, message, details);
 	}
 
+	public RmesNotFoundException(int errorCode, String message, String details) {
+		super(HttpStatus.SC_NOT_FOUND, errorCode + " : " + message, details);
+	}
+	
 }

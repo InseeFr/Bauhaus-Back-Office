@@ -111,6 +111,12 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
+	/**
+	 * UPDATE
+	 * @param id, body
+	 * @return response
+	 */
+	
 	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/family/{id}")
@@ -132,7 +138,7 @@ public class OperationsResources {
 	/**
 	 * CREATE
 	 * @param body
-	 * @return
+	 * @return response
 	 */
 	@Secured({ Constants.SPRING_ADMIN })
 	@POST
@@ -151,7 +157,7 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN })
 	@PUT
 	@Path("/family/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -217,7 +223,7 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_CNIS })
 	@PUT
 	@Path("/series/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -276,7 +282,7 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
 	@PUT
 	@Path("/series/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -358,7 +364,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_CNIS })
 	@PUT
 	@Path("/operation/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -380,7 +386,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
 	@POST
 	@Path("/operation")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -402,7 +408,7 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
 	@PUT
 	@Path("/operation/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -413,7 +419,11 @@ public class OperationsResources {
 			operationsService.setOperationValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.
+					status(e.getStatus()).
+					entity(e.getMessageAndDetails()).
+					type(TEXT_PLAIN).
+					build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -466,7 +476,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/indicator/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -488,7 +498,7 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/indicator/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -509,7 +519,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
 	@POST
 	@Path("/indicator")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -601,7 +611,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR })
 	@POST
 	@Path("/metadataReport")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -626,7 +636,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR, Constants.SPRING_CNIS })
 	@PUT
 	@Path("/metadataReport/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -648,8 +658,8 @@ public class OperationsResources {
 	 * PUBLISH
 	 * @param id
 	 * @return response
-	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	 */	
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/metadataReport/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)

@@ -14,12 +14,15 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -35,6 +38,8 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 public class FamiliesUtils {
 
 	final static Logger logger = LogManager.getLogger(FamiliesUtils.class);
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
 
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
@@ -64,6 +69,7 @@ public class FamiliesUtils {
 
 /*WRITE*/
 	public void setFamily(String id, String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can modify a family.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family(id);
@@ -71,11 +77,11 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesNotFoundException( e.getMessage(), "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, e.getMessage(), "Can't read request body");
 		}
 		boolean familyExists = FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
 		if (!familyExists) {
-			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Family "+id+" doesn't exist", "Can't update non-existant family");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
@@ -90,10 +96,10 @@ public class FamiliesUtils {
 	public void createRdfFamily(Family family, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
-			throw new RmesNotFoundException( "No id found", "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "No id found", "Can't read request body");
 		}
 		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
-			throw new RmesNotFoundException( "prefLabelLg1 not found", "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, "prefLabelLg1 not found", "Can't read request body");
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
@@ -113,6 +119,7 @@ public class FamiliesUtils {
 
 
 	public String createFamily(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family();
@@ -133,7 +140,8 @@ public class FamiliesUtils {
 	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
-		//TODO Check autorisation
+		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
+
 			FamilyPublication.publishFamily(id);
 		
 			URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY, id);

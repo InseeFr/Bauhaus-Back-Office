@@ -27,6 +27,30 @@ public class RmesException extends Exception {
          this.details = details.toString();
 	}
 
+	public RmesException(int status, int errorCode, String message, String details) {
+		  super(errorCode+":"+message);
+	        this.status = status;
+	        this.details = details;
+	}
+	
+	public RmesException(int status, int errorCode, String details) {
+		  super();
+	        this.status = status;
+	        this.details = errorCode +":"+ details;
+	}
+	
+	public RmesException(int status, int errorCode, JSONArray details) {
+		  super();
+		  	this.status = status;
+	        this.details = errorCode +":"+ details.toString();
+	}
+	
+	public RmesException(int status, int errorCode, String message, JSONArray details) {
+		  super(errorCode + ":" + message);
+		  	this.status = status;
+	        this.details = details.toString();
+	}
+	
 	public RestMessage toRestMessage(){
         return new RestMessage(this.status, this.getMessage(), this.details);
     }

@@ -297,7 +297,7 @@ public class ConceptsResources   {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPT_CREATOR })
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -321,7 +321,7 @@ public class ConceptsResources   {
 			return conceptsService.getConceptExport(id, acceptHeader);
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPTS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPT_CREATOR })
 	@POST
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -355,7 +355,7 @@ public class ConceptsResources   {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTION_CREATOR })
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -373,7 +373,7 @@ public class ConceptsResources   {
 		}
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_COLLECTIONS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_COLLECTION_CREATOR })
 	@PUT
 	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -398,7 +398,7 @@ public class ConceptsResources   {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
+	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTION_CREATOR })
 	@POST
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)

@@ -11,6 +11,7 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -36,7 +37,9 @@ public class SeriesPublication {
 		String status=FamOpeSerUtils.getValidationStatus(familyId);
 		
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
-			throw new RmesUnauthorizedException("This Series cannot be published before its family is published", 
+			throw new RmesUnauthorizedException(
+					ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY,
+					"This Series cannot be published before its family is published", 
 					"Series: "+seriesId+" ; Family: "+familyId);
 		}
 		
@@ -47,7 +50,7 @@ public class SeriesPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException("Series not found", seriesId);
+				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found", seriesId);
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Other URI to transform

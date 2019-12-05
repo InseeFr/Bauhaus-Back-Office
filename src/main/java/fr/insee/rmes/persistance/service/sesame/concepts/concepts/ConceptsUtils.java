@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -44,7 +45,7 @@ import fr.insee.rmes.utils.JSONUtils;
 public class ConceptsUtils {
 
 	static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
-
+	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 
@@ -60,7 +61,7 @@ public class ConceptsUtils {
 	}
 
 	public JSONObject getConceptById(String id)  throws RmesException{
-		if (!checkIfConceptExists(id)) throw new RmesNotFoundException("This concept cannot be found in database: ", id);
+		if (!checkIfConceptExists(id)) throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
 		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
@@ -70,6 +71,7 @@ public class ConceptsUtils {
 	}
 
 	public String setConcept(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateConcept()) throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -86,6 +88,7 @@ public class ConceptsUtils {
 	}
 
 	public void setConcept(String id, String body) throws RmesException {
+		if(!stampsRestrictionsService.canModifyConcept(SesameUtils.conceptIRI(id))) throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -160,7 +163,9 @@ public class ConceptsUtils {
 			logger.info("Validate concept : " + conceptURI);
 		}
 		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList))
-			throw new RmesUnauthorizedException();
+			throw new RmesUnauthorizedException(
+					ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,
+					conceptsToValidate);
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
 		ConceptsPublication.publishConcepts(conceptsToValidate);
 	}

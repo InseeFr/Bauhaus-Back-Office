@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -49,6 +51,8 @@ public class SeriesUtils {
 	@Autowired
 	OrganizationsService organizationsService;
 
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
 
 	final static Logger logger = LogManager.getLogger(SeriesUtils.class);
 
@@ -58,7 +62,7 @@ public class SeriesUtils {
 		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		//check that the series exist
 		if (JSONUtils.isEmpty(series)) {
-			throw new RmesNotFoundException("Series not found","The series "+id+" cannot be found.");
+			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found","The series "+id+" cannot be found.");
 		}		
 		XhtmlToMarkdownUtils.convertJSONObject(series);
 		series.put("id", id);
@@ -132,6 +136,7 @@ public class SeriesUtils {
 
 
 	public String createSeries(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateSeries()) throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, "Only an admin can create a new series.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Series series = new Series();
@@ -145,13 +150,13 @@ public class SeriesUtils {
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
 		if ((series.getIdSims()!=null) & (series.getOperations()!=null) ) {
 			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
-				throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
 			}
 		}
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
-		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException("Unknown family: ",idFamily);
+		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY,"Unknown family: ",idFamily);
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
@@ -171,10 +176,14 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+
+		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,id);
+		if(!stampsRestrictionsService.canModifySeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
+
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
 		if (series.getIdSims() != null & series.getOperations()!= null )
 		if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
-			throw new RmesNotAcceptableException("A series cannot have both a Sims and Operation(s)", 
+			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 					series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
 		}
 		
@@ -183,8 +192,6 @@ public class SeriesUtils {
 			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
 		}
 		else 	createRdfSeries(series,null,ValidationStatus.MODIFIED);
-		logger.info("Update family : " + series.getId() + " - " + series.getPrefLabelLg1());
-				
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 	}
 
@@ -316,6 +323,8 @@ public class SeriesUtils {
 			SeriesPublication.publishSeries(id);
 		
 			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
+			if(!stampsRestrictionsService.canValidateSeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish series.");
+
 			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
