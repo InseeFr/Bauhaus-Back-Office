@@ -28,7 +28,7 @@ public class ErrorCodes {
 	public static final int DOCUMENT_CREATION_RIGHTS_DENIED = 301;
 	public static final int DOCUMENT_CREATION_EXISTING_FILE = 302;
 	public static final int DOCUMENT_MODIFICATION_RIGHTS_DENIED = 303;
-	public static final int DOCUMENT_DELETION_LINKED = 303;
+	public static final int DOCUMENT_DELETION_LINKED = 304;
 
 	// LINKS
 	public static final int LINK_CREATION_RIGHTS_DENIED = 401;
@@ -70,47 +70,47 @@ public class ErrorCodes {
 	 */
 
 	// CONCEPTS
-	public static final int CONCEPT_UNKNOWN_ID = 101;
+	public static final int CONCEPT_UNKNOWN_ID = 141;
 
 	// INDICATORS
-	public static final int INDICATOR_UNKNOWN_ID = 201;
+	public static final int INDICATOR_UNKNOWN_ID = 241;
 	
 	// DOCUMENTS
-	public static final int DOCUMENT_UNKNOWN_ID = 301;
+	public static final int DOCUMENT_UNKNOWN_ID = 341;
 	
 	// LINKS
-	public static final int LINK_UNKNOWN_ID = 401;
+	public static final int LINK_UNKNOWN_ID = 441;
 	
 	// FAMILIES
-	public static final int FAMILY_UNKNOWN_ID = 501;
-	public static final int FAMILY_INCORRECT_BODY = 502;
+	public static final int FAMILY_UNKNOWN_ID = 541;
+	public static final int FAMILY_INCORRECT_BODY = 542;
 	
 	// SERIES
-	public static final int SERIES_UNKNOWN_ID = 601;
-	public static final int SERIES_UNKNOWN_FAMILY = 604;
+	public static final int SERIES_UNKNOWN_ID = 641;
+	public static final int SERIES_UNKNOWN_FAMILY = 644;
 	
 	// OPERATIONS
-	public static final int OPERATION_UNKNOWN_ID = 701;
-	public static final int OPERATION_UNKNOWN_SERIES = 704;
+	public static final int OPERATION_UNKNOWN_ID = 741;
+	public static final int OPERATION_UNKNOWN_SERIES = 744;
 
 	// SIMS
-	public static final int SIMS_UNKNOWN_ID = 801;
-	public static final int SIMS_UNKNOWN_TARGET = 804;
+	public static final int SIMS_UNKNOWN_ID = 841;
+	public static final int SIMS_UNKNOWN_TARGET = 844;
 	
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
 	 */
 
 	// DOCUMENTS
-	public static final int DOCUMENT_EMPTY_NAME = 301;
-	public static final int DOCUMENT_FORBIDDEN_CHARATER_NAME = 302;
+	public static final int DOCUMENT_EMPTY_NAME = 361;
+	public static final int DOCUMENT_FORBIDDEN_CHARATER_NAME = 362;
 
 	// LINKS
-	public static final int LINK_EMPTY_URL = 401;
-	public static final int LINK_EXISTING_URL = 402;
+	public static final int LINK_EMPTY_URL = 461;
+	public static final int LINK_EXISTING_URL = 462;
 	
 	// SERIES
-	public static final int SERIES_OPERATION_OR_SIMS = 603;
+	public static final int SERIES_OPERATION_OR_SIMS = 663;
 
 	
 }

@@ -27,6 +27,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.persistance.service.sesame.code_list.CodeListUtils;
@@ -36,6 +37,7 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -54,6 +56,9 @@ public class DocumentationsUtils {
 
 	@Autowired
 	DocumentsUtils docUtils;
+	
+	@Autowired
+	SeriesUtils seriesUtils;
 
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
@@ -110,6 +115,7 @@ public class DocumentationsUtils {
 		String idTarget = sims.getIdTarget();
 		if (create) {
 			sims.setId(prepareCreation(idTarget));
+			checkIfTargetIsASeriesWithOperations(id,idTarget);
 		}else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
@@ -245,6 +251,17 @@ public class DocumentationsUtils {
 		return target;
 	}
 
+	private void checkIfTargetIsASeriesWithOperations(String idSims, String idTarget) throws RmesException {
+		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		String idSeries = (String) existingIdTarget.get("idSeries");
+		if (!(idSeries == null || StringUtils.isEmpty(idSeries))) {
+			if (seriesUtils.hasOperations(idSeries)) throw new RmesNotAcceptableException(
+					ErrorCodes.SERIES_OPERATION_OR_SIMS, 
+					"Cannot create Sims for a series which already has operations", idSeries);
+		}
+	}
+	
+	
 	/**
 	 * Check the existing id is the same that the id to set
 	 * Update only

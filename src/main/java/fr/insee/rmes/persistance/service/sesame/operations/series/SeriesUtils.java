@@ -316,6 +316,21 @@ public class SeriesUtils {
 		return true;
 	}
 
+	public boolean hasOperations(String seriesId) throws RmesException {
+		JSONObject series;
+		JSONArray operations;
+		series = getSeriesById(seriesId);
+		try {	operations=series.getJSONArray("operations");} 
+		catch (JSONException e) {
+			return false;
+		}
+		if (operations==null | operations.length()==0) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 	public String setSeriesValidation(String id)  throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
