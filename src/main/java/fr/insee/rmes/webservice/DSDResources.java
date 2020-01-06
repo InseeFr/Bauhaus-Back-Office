@@ -62,7 +62,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getDSDs();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -77,7 +77,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getDSDById(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -92,7 +92,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getDSDComponents(dsdId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -107,7 +107,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getDSDDetailedComponents(dsdId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -122,7 +122,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getDSDComponentById(dsdId, componentId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -136,7 +136,7 @@ public class DSDResources {
 		try {
 			id = DSDService.setDSD(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -150,7 +150,7 @@ public class DSDResources {
 		try {
 			id = DSDService.setDSD(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}

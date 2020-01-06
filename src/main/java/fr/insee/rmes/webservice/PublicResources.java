@@ -108,7 +108,7 @@ public class PublicResources {
 			try {
 				entity = stampsService.getStamps();
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+				return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 			}
 			return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
@@ -138,7 +138,7 @@ public class PublicResources {
 		try {
 			entity = userRolesManagerService.getRoles();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
@@ -152,7 +152,7 @@ public class PublicResources {
 		try {
 			entity = userRolesManagerService.getAgents();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}

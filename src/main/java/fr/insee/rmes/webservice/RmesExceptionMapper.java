@@ -26,7 +26,7 @@ public class RmesExceptionMapper implements ExceptionMapper<Exception> {
 
     	if (e.getClass().equals(RmesException.class)) {
     		RmesException re = (RmesException) e;
-            return Response.status(re.getStatus()).entity(re.getMessageAndDetails()).type("text/plain")
+            return Response.status(re.getStatus()).entity(re.getDetails()).type("text/plain")
                     .build();
     	}
     	
