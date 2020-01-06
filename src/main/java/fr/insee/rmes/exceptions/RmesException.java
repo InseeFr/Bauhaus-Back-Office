@@ -3,6 +3,8 @@ package fr.insee.rmes.exceptions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import io.swagger.v3.core.util.Json;
+
 public class RmesException extends Exception {
 
 	private static final long serialVersionUID = -7959158367542389147L;
@@ -51,7 +53,7 @@ public class RmesException extends Exception {
 		this.details.put("code", errorCode);
 		this.details.put("details", details.toString());
 	}
-
+		
 	public RmesException(int status, int errorCode, JSONArray details) {
 		super();
 		this.status = status;
@@ -70,6 +72,9 @@ public class RmesException extends Exception {
 		this.details.put("details", details.toString());
 	}
 
+	
+	
+	
 	public RestMessage toRestMessage(){
 		return new RestMessage(this.status, this.getMessage(), this.details.toString());
 	}
@@ -78,8 +83,12 @@ public class RmesException extends Exception {
 		return status;
 	}
 
-	public String getMessageAndDetails() {
-		return getMessage() + " " + details;
+	public String getDetails() {
+		return details.toString();
 	}
 
+	public String getMessageAndDetails2() {
+		return getMessage() + " " + details;
+	}
+	
 }

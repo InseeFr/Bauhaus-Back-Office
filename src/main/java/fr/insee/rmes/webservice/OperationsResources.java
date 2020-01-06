@@ -129,7 +129,7 @@ public class OperationsResources {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -152,7 +152,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createFamily(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -168,7 +168,7 @@ public class OperationsResources {
 			operationsService.setFamilyValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -204,7 +204,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getSeriesByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -218,7 +218,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getSeriesForSearch();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -235,7 +235,7 @@ public class OperationsResources {
 		try {
 			operationsService.setSeries(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -249,7 +249,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getOperationsWithoutReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -272,7 +272,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createSeries(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -293,7 +293,7 @@ public class OperationsResources {
 			operationsService.setSeriesValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -327,7 +327,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getOperationByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -376,7 +376,7 @@ public class OperationsResources {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -398,7 +398,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createOperation(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -421,7 +421,7 @@ public class OperationsResources {
 			logger.error(e.getMessage(), e);
 			return Response.
 					status(e.getStatus()).
-					entity(e.getMessageAndDetails()).
+					entity(e.getDetails()).
 					type(TEXT_PLAIN).
 					build();
 		}
@@ -465,7 +465,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getIndicatorByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -488,7 +488,7 @@ public class OperationsResources {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -509,7 +509,7 @@ public class OperationsResources {
 			operationsService.setIndicatorValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -532,7 +532,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.setIndicator(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
@@ -554,7 +554,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMSD();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -569,7 +569,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttribute(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -584,7 +584,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttributes();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -601,7 +601,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -624,7 +624,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createMetadataReport(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
@@ -648,7 +648,7 @@ public class OperationsResources {
 		try {
 			operationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -670,7 +670,7 @@ public class OperationsResources {
 			operationsService.publishMetadataReport(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}

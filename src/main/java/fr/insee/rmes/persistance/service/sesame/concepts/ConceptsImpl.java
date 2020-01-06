@@ -216,7 +216,7 @@ public class ConceptsImpl implements ConceptsService {
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
@@ -244,7 +244,7 @@ public class ConceptsImpl implements ConceptsService {
 		try {
 			collection = conceptsExport.getCollectionData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);

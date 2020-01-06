@@ -54,7 +54,7 @@ public class OrganizationsResources {
 		try {
 			jsonResultat = organizationsService.getOrganization(identifier);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -67,7 +67,7 @@ public class OrganizationsResources {
 		try {
 			jsonResultat = organizationsService.getOrganizations();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}

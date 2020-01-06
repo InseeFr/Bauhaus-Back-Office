@@ -81,7 +81,7 @@ public class DocumentsResources {
 		try {
 			jsonResultat = documentsService.getDocuments();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -100,7 +100,7 @@ public class DocumentsResources {
 		try {
 			jsonResultat = documentsService.getDocument(id).toString();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -113,8 +113,8 @@ public class DocumentsResources {
 		try {
 			return documentsService.downloadDocument(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessageAndDetails());
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			logger.error(e.getDetails());
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		} catch (IOException e) {
 			logger.error("IOException" + e.getMessage());
 			return Response.status(HttpStatus.SC_NOT_FOUND).entity(e.getMessage()).type(TEXT_PLAIN).build();
@@ -138,7 +138,7 @@ public class DocumentsResources {
 		try {
 			documentsService.setDocument(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		logger.info("Update document : " + id);
 		return Response.status(Status.OK).build();
@@ -157,7 +157,7 @@ public class DocumentsResources {
 		try {
 			status = documentsService.deleteDocument(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(status).entity(id).build();
 	}
@@ -189,7 +189,7 @@ public class DocumentsResources {
 		try {
 			id = documentsService.setDocument(body, documentFile, documentName);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -215,7 +215,7 @@ public class DocumentsResources {
 		try {
 			url = documentsService.changeDocument(id, documentFile, documentName);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(url).build();
 	}
@@ -240,7 +240,7 @@ public class DocumentsResources {
 		try {
 			id = documentsService.setLink(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getMessageAndDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
