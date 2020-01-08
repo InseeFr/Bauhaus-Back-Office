@@ -62,12 +62,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	private User dvOrQfUser() {
 		JSONArray roles= new JSONArray();
-//		ArrayList<String> arrayRoles = new ArrayList<String>();
-//		arrayRoles.add(0, "ROLE_offline_access");
-//		arrayRoles.add(1, "ROLE_Administrateur_RMESGNCS");
-//		arrayRoles.add(2, "ROLE_uma_authorization");
-//		roles.put(arrayRoles);
-		
 		roles.put("ROLE_offline_access");	
 		roles.put("ROLE_Administrateur_RMESGNCS");	
 		roles.put("ROLE_uma_authorization");
