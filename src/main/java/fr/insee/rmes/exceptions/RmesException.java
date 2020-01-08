@@ -63,7 +63,6 @@ public class RmesException extends Exception {
 	}
 
 	public RmesException(int status, int errorCode, String message, JSONArray details) {
-		// super(errorCode + ":" + message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();

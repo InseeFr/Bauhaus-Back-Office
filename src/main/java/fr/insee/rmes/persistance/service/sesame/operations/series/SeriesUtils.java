@@ -131,9 +131,7 @@ public class SeriesUtils {
 		}
 	}
 
-
 	/*WRITE*/
-
 
 	public String createSeries(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateSeries()) throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, "Only an admin can create a new series.");
