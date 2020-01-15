@@ -2,6 +2,7 @@ package fr.insee.rmes.exceptions;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class RmesUnauthorizedException extends RmesException {
 	
@@ -34,4 +35,7 @@ public class RmesUnauthorizedException extends RmesException {
 	public RmesUnauthorizedException(int errorCode, String message, String details) {
 		super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);
 	}
+
+	public RmesUnauthorizedException(int errorCode, String message, JSONObject details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);	}
 }

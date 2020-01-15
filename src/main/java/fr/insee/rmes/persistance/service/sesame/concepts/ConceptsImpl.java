@@ -102,17 +102,25 @@ public class ConceptsImpl implements ConceptsService {
 				listGraphs.concat(currentGraph.getString("src"));
 				listGraphs.concat("-");
 			}
+			{ 
+			JSONObject details = new JSONObject();
+			details.put("idConcept", id);
+			details.put("graphs", graphArray);
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
 					"The concept "+id+" cannot be deleted because it is used in several graphs.",
-					listGraphs);
+					details);
+			}
 		}
 		/* Check concept has no link */
 		String listConcepts=getRelatedConcepts(id);
-		if(!listConcepts.equals("[]")) {
+		if(!listConcepts.equals("[]")) { 
+			JSONObject details = new JSONObject();
+			details.put("idConcept", id);
+			details.put("linkedConcepts", listConcepts);
 			throw new RmesUnauthorizedException(
 					ErrorCodes.CONCEPT_DELETION_LINKED,
 					"The concept "+id+" cannot be deleted because it is linked to other concepts.",
-					listConcepts);
+					details);
 		}
 		/* deletion */
 		Response.Status result= conceptsUtils.deleteConcept(id);

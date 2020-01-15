@@ -70,10 +70,15 @@ public class RmesException extends Exception {
 		this.details.put("message", message);
 		this.details.put("details", details.toString());
 	}
+	
+	public RmesException(int status, int errorCode, String message, JSONObject details) {
+		super();
+		this.status = status;
+		this.details = details;
+		this.details.put("code", errorCode);
+		this.details.put("message", message);
+	}
 
-	
-	
-	
 	public RestMessage toRestMessage(){
 		return new RestMessage(this.status, this.getMessage(), this.details.toString());
 	}
