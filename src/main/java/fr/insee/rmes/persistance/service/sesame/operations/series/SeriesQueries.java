@@ -252,9 +252,12 @@ public class SeriesQueries {
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
 		addVariableToList(" ?gestionnaire  ");
+//		addClauseToWhereClause(  
+//				"OPTIONAL {?series insee:gestionnaire ?uriGestionnaire . \n"
+//						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
+//						+ "}   \n");
 		addClauseToWhereClause(  
-				"OPTIONAL {?series insee:gestionnaire ?uriGestionnaire . \n"
-						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
+				"OPTIONAL {?series insee:gestionnaire ?gestionnaire . \n"
 						+ "}   \n");
 	}
 	

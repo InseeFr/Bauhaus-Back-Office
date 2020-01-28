@@ -25,7 +25,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
 	public Boolean isConceptOrCollectionOwner(URI uri) throws RmesException {
-	//	if (!Config.ENV.equals("pre-prod") && !Config.ENV.equals("prod")) return true;
 		User user = getUser();
 		if (isAdmin(user)) return true;
 		String uriAsString = "<" + uri.toString() + ">";
@@ -37,7 +36,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
 	public Boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException {
-	//	if (!Config.ENV.equals("pre-prod") && !Config.ENV.equals("prod")) return true;
 		User user = getUser();
 		if (isAdmin(user)) return true;
 		StringBuilder sb = new StringBuilder();
@@ -110,7 +108,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		return isIndicatorContributor;
 	}
 
-
 	private Boolean isCnis(User user) {
 		Boolean isCnis = false;
 		JSONArray roles = user.getRoles();
@@ -148,7 +145,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		}
 		return isConceptManager;
 	}
-
 
 	private Boolean isSeriesOwner(List<URI> uris) throws RmesException {
 		User user = getUser();
@@ -282,7 +278,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		return (isAdmin(user) | isSeriesManager(uris) | isIndicatorManager(uris));
 	}
 
-
 	@Override
 	public Boolean canModifyConcept(URI uri) throws RmesException {
 		User user=getUser();
@@ -317,7 +312,6 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		return (isAdmin(user) | isCnis(user) | isSeriesManager(uris));
 	};
 
-
 	@Override
 	public Boolean canValidateSeries(URI uri) throws RmesException {
 		List<URI> uris = new ArrayList<URI>();
@@ -344,6 +338,5 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		return (isAdmin(user) | isSeriesContributor(user) |isIndicatorContributor(user));
 	}
-
 
 }

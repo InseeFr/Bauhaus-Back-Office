@@ -134,7 +134,8 @@ public class SeriesUtils {
 	/*WRITE*/
 
 	public String createSeries(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateSeries()) throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, "Only an admin can create a new series.");
+		if(!stampsRestrictionsService.canCreateSeries()) throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, 
+				"Only an admin can create a new series.");
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Series series = new Series();
@@ -222,7 +223,7 @@ public class SeriesUtils {
 		}
 		String gestionnaire=series.getGestionnaire();
 		if (!StringUtils.isEmpty(gestionnaire)) {
-			SesameUtils.addTripleUri(seriesURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.operationsGraph());
+			SesameUtils.addTripleString(seriesURI, INSEE.GESTIONNAIRE, gestionnaire, model, SesameUtils.operationsGraph());
 		}
 
 		//partenaires

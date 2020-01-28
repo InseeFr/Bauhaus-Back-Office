@@ -54,7 +54,6 @@ public class RmesStampsImpl implements StampsService {
 						.toString();
 				if(!stamp.equals("AUTRE")) {
 					stamps.add("\"" + stamp + "\"");
-					
 				}
 			}
 			// Add SSM Stamps
@@ -80,9 +79,7 @@ public class RmesStampsImpl implements StampsService {
 		} catch (NamingException e) {
 			logger.error("Get stamps failed");
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get stamps failed");		
-
-		}
-		
+		}		
 		return stamps.toString();
 	}
 
