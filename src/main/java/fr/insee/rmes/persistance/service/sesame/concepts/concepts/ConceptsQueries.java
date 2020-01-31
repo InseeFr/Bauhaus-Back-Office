@@ -83,13 +83,14 @@ public class ConceptsQueries {
 		
 	public static String conceptQuery(String id) { 
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
-				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion \n"
+				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n"
 				+ "?concept ?versionnedNote ?versionnedNoteURI . \n"
-				+ "?versionnedNoteURI insee:conceptVersion ?conceptVersion \n"
+				+ "?versionnedNoteURI insee:conceptVersion ?conceptVersion . \n"
+ 				+ "?concept insee:isValidated ?isValidated . \n"
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
 				+ "OPTIONAL {?concept skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n"
