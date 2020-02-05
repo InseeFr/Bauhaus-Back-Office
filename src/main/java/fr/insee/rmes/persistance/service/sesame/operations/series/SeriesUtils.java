@@ -333,7 +333,6 @@ public class SeriesUtils {
 	public String setSeriesValidation(String id)  throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
-		//TODO Check autorisation
 			SeriesPublication.publishSeries(id);
 		
 			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);

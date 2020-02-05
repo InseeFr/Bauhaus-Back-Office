@@ -88,6 +88,26 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		return isConceptsContributor;
 	}
 
+	private Boolean isConceptContributor(User user) {
+		Boolean isConceptContributor = false;
+		JSONArray roles = user.getRoles();
+		for (int i = 0; i < roles.length(); i++) {
+			if (roles.getString(i).equals(Constants.CONCEPT_CONTRIBUTOR))
+				isConceptContributor = true;
+		}
+		return isConceptContributor;
+	}
+	
+	private Boolean isConceptCreator(User user) {
+		Boolean isConceptCreator = false;
+		JSONArray roles = user.getRoles();
+		for (int i = 0; i < roles.length(); i++) {
+			if (roles.getString(i).equals(Constants.CONCEPT_CREATOR))
+				isConceptCreator = true;
+		}
+		return isConceptCreator;
+	}
+	
 	private Boolean isSeriesContributor(User user) {
 		Boolean isSeriesContributor = false;
 		JSONArray roles = user.getRoles();
@@ -207,7 +227,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canModifyIndicator(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isIndicatorManager(uris));
+		return (isAdmin(user) | 
+				(isIndicatorManager(uris) & isIndicatorContributor(user))
+				);
 	}
 
 	@Override
@@ -220,7 +242,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateIndicator(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isIndicatorManager(uris));
+		return (isAdmin(user) | 
+				(isIndicatorManager(uris) & isIndicatorContributor(user))
+				);
 	}
 
 	@Override
@@ -235,7 +259,11 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(targetURI);
-		return (isAdmin(user) | isCnis(user) | isSeriesManager(uris) | isIndicatorManager(uris));
+		return (isAdmin(user) |
+				isCnis(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user)) | 
+				(isIndicatorManager(uris) & isIndicatorContributor(user))
+				);
 	}
 
 	@Override
@@ -267,15 +295,25 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(seriesURI);
-		return (isAdmin(user) | isSeriesManager(uris));
+		return (isAdmin(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user))
+				);
 	}
 
 	@Override
 	public Boolean canCreateSims(URI targetURI) throws RmesException {
-		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(targetURI);
-		return (isAdmin(user) | isSeriesManager(uris) | isIndicatorManager(uris));
+		return canCreateSims(uris);
+	}
+
+	@Override
+	public Boolean canCreateSims(List<URI> uris) throws RmesException {
+		User user=getUser();
+		return (isAdmin(user) |
+				(isSeriesManager(uris) & isSeriesContributor(user)) | 
+				(isIndicatorManager(uris) & isIndicatorContributor(user))
+				);
 	}
 
 	@Override
@@ -283,15 +321,12 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(uri);
-		return (isAdmin(user) | isConceptsContributor(user) | isConceptManager(uris) | isConceptOwner(uris));
+		return (isAdmin(user) | 
+				isConceptsContributor(user) | 
+				(isConceptManager(uris) & isConceptContributor(user)) | 
+				(isConceptOwner(uris)) & isConceptCreator(user));
 	}
-
-	@Override
-	public Boolean canCreateSims(List<URI> uris) throws RmesException {
-		User user=getUser();
-		return (isAdmin(user) | isSeriesManager(uris) | isIndicatorManager(uris));
-	}
-
+	
 	@Override
 	public Boolean canModifySeries(URI uri) throws RmesException {
 		List<URI> uris = new ArrayList<URI>();
@@ -302,14 +337,20 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canModifySeries(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isCnis(user) | isSeriesManager(uris));
+		return (isAdmin(user) | 
+				isCnis(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user))
+				);
 	}
 
 	public Boolean canModifyOperation(URI seriesURI) throws RmesException {
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(seriesURI);
 		User user=getUser();
-		return (isAdmin(user) | isCnis(user) | isSeriesManager(uris));
+		return (isAdmin(user) | 
+				isCnis(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user))
+				);
 	};
 
 	@Override
@@ -322,7 +363,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateSeries(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isSeriesManager(uris));
+		return (isAdmin(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user))
+				);
 	}
 
 	@Override
@@ -330,13 +373,15 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(seriesURI);
 		User user=getUser();
-		return (isAdmin(user) | isSeriesManager(uris));
+		return (isAdmin(user) | 
+				(isSeriesManager(uris) & isSeriesContributor(user))
+				);
 	}
 
 	@Override
 	public Boolean canManageDocumentsAndLinks() throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isSeriesContributor(user) |isIndicatorContributor(user));
+		return (isAdmin(user) | isSeriesContributor(user) | isIndicatorContributor(user));
 	}
 
 }
