@@ -49,7 +49,7 @@
 		<repository>
 			<id>repository.spring.release</id>
 			<name>Spring GA Repository</name>
-			<url>http://repo.spring.io/release</url>
+			<url>https://repo.spring.io/release</url>
 		</repository>
 		<repository>
 			<id>repository.jboss.org-public</id>
