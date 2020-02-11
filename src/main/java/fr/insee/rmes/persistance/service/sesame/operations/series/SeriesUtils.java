@@ -190,7 +190,7 @@ public class SeriesUtils {
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
 			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
 		}
-		else 	createRdfSeries(series,null,ValidationStatus.MODIFIED);
+		else createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 	}
 

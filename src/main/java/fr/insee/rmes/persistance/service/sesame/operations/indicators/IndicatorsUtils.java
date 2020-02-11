@@ -176,9 +176,9 @@ public class IndicatorsUtils {
 
 		String gestionnaire=indicator.getGestionnaire();
 		if (!StringUtils.isEmpty(gestionnaire)) {
-			SesameUtils.addTripleUri(indicURI, INSEE.GESTIONNAIRE, organizationsService.getOrganizationUriById(gestionnaire), model, SesameUtils.productsGraph());
-		}
-
+			SesameUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, SesameUtils.productsGraph());
+		}	
+		
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		SesameUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.productsGraph());
 
@@ -200,7 +200,7 @@ public class IndicatorsUtils {
 		RepositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-
+	
 	public String setIndicatorValidation(String id)  throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 
