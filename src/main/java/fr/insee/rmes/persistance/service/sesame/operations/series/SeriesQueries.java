@@ -46,7 +46,6 @@ public class SeriesQueries {
 				+ "ORDER BY ?label ";
 	}
 	
-	
 
 	public static String oneSeriesQuery(String id) {
 		variables=null;
@@ -63,6 +62,7 @@ public class SeriesQueries {
 		+ "} \n"
 		+ "LIMIT 1";
 	}
+	
 
 	public static String getSeriesForSearch() {
 		variables=null;
@@ -187,7 +187,6 @@ public class SeriesQueries {
 	}
 	
 	
-	
 	private static void getSimpleAttr(String id) {
 		
 		if(id != null) addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );
@@ -252,10 +251,7 @@ public class SeriesQueries {
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
 		addVariableToList(" ?gestionnaire  ");
-//		addClauseToWhereClause(  
-//				"OPTIONAL {?series insee:gestionnaire ?uriGestionnaire . \n"
-//						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
-//						+ "}   \n");
+
 		addClauseToWhereClause(  
 				"OPTIONAL {?series insee:gestionnaire ?gestionnaire . \n"
 						+ "}   \n");
