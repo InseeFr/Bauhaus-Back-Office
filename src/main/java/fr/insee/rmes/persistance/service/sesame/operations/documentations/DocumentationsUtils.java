@@ -114,8 +114,9 @@ public class DocumentationsUtils {
 		//Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
-			sims.setId(prepareCreation(idTarget));
-			checkIfTargetIsASeriesWithOperations(id,idTarget);
+			id=prepareCreation(idTarget);
+			sims.setId(id);
+			checkIfTargetIsASeriesWithOperations(idTarget);
 		}else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
@@ -251,13 +252,11 @@ public class DocumentationsUtils {
 		return target;
 	}
 
-	private void checkIfTargetIsASeriesWithOperations(String idSims, String idTarget) throws RmesException {
-		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
-		String idSeries = (String) existingIdTarget.get("idSeries");
-		if (!(idSeries == null || StringUtils.isEmpty(idSeries))) {
-			if (seriesUtils.hasOperations(idSeries)) throw new RmesNotAcceptableException(
+	private void checkIfTargetIsASeriesWithOperations(String idTarget) throws RmesException {
+		if(FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idTarget)) {
+				if (seriesUtils.hasOperations(idTarget)) throw new RmesNotAcceptableException(
 					ErrorCodes.SERIES_OPERATION_OR_SIMS, 
-					"Cannot create Sims for a series which already has operations", idSeries);
+					"Cannot create Sims for a series which already has operations", idTarget);
 		}
 	}
 	

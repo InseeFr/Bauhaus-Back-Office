@@ -66,9 +66,11 @@ public class DocumentationsQueries {
 	 * @throws RmesException
 	 */
 	public static String getTargetByIdSims(String idSims) throws RmesException {
-		Map<String, Object> root = new HashMap<>();
-		root.put("idSims", idSims);
-		return buildRequest("getTargetByIdSimsQuery.ftlh", root);	
+//		Map<String, Object> root = new HashMap<>();
+//		root.put("idSims", idSims);
+		if (params==null) {initParams();}
+		params.put("idSims", idSims);
+		return buildRequest("getTargetByIdSimsQuery.ftlh", params);	
 	}
 
 	/**
@@ -77,9 +79,11 @@ public class DocumentationsQueries {
 	 * @throws RmesException 
 	 */
 	public static String getSimsByTarget(String idTarget) throws RmesException {
-		Map<String, Object> root = new HashMap<>();
-		root.put("idTarget", idTarget);
-		return buildRequest("getSimsByIdTargetQuery.ftlh", root);
+//		Map<String, Object> root = new HashMap<>();
+//		root.put("idTarget", idTarget);
+		if (params==null) {initParams();}
+		params.put("idTarget", idTarget);
+		return buildRequest("getSimsByIdTargetQuery.ftlh", params);
 	}
 	
 	/**
