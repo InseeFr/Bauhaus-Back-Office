@@ -13,23 +13,23 @@ public class SeriesQueries {
 	static Map<String,Object> params ;
 
 	public static String seriesQuery() {
-		return "SELECT DISTINCT ?id ?label ?altLabel \n"
+		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
-				+ "OPTIONAL{?series skos:altLabel ?altLabel . "
-				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
+				+ "OPTIONAL{?series skos:altLabel ?altLabelLg1 . "
+				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } \n "
 				+ "}} \n" 
-				+ "GROUP BY ?id ?label ?altLabel \n"
+				+ "GROUP BY ?id ?label \n"
 				+ "ORDER BY ?label ";
 	}
 
 	public static String seriesWithSimsQuery() {
-		return "SELECT DISTINCT ?id ?label ?altLabel ?idSims \n"
+		return "SELECT DISTINCT ?id ?label ?idSims (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 				+ "WHERE { \n"
-			//	+ +"GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
@@ -38,11 +38,11 @@ public class SeriesQueries {
 				+ " ?report sdmx-mm:target ?series "
 				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
 				+ "} \n"
-				+ "OPTIONAL{?series skos:altLabel ?altLabel . "
-				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
-			//	+ "}"
+				+ "OPTIONAL{?series skos:altLabel ?altLabelLg1 . "
+				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } \n "
+				+ "}"
 				+ "} \n" 
-				+ "GROUP BY ?id ?label ?altLabel ?idSims \n"
+				+ "GROUP BY ?id ?label ?idSims \n"
 				+ "ORDER BY ?label ";
 	}
 	

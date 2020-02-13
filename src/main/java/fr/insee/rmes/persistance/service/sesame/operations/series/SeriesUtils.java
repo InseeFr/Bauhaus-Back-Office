@@ -336,7 +336,9 @@ public class SeriesUtils {
 			SeriesPublication.publishSeries(id);
 		
 			URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
-			if(!stampsRestrictionsService.canValidateSeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish series.");
+			if(!stampsRestrictionsService.canValidateSeries(seriesURI)) 
+				throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, 
+						"Only authorized users can publish series.");
 
 			model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 			model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
