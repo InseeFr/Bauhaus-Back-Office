@@ -10,8 +10,8 @@ public interface UserRolesManagerService {
 	
 	public String getAgents() throws RmesException;
 	
-	public void setAddRole(String body);
+	public void setAddRole(String role, String user);
 	
-	public void setDeleteRole(String body);
+	public void setDeleteRole(String roles, String user);
 	
 }

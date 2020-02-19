@@ -130,24 +130,14 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		return agents.toString();
 	}
 
-	public void setAddRole(String body) {
-		JSONArray agents = new JSONArray(body);
-		agents.forEach(item -> {
-			JSONObject agent = (JSONObject) item;
-			agent.getJSONArray("roles").forEach(r -> {
-				String URL = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, agent.getString("id"), (String) r);
-				Igesa.post(URL);
-			});
-		});
+	public void setAddRole(String role, String user) {
+		String URL = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
+		Igesa.post(URL);
 	}
 
-	public void setDeleteRole(String body) {
-		JSONArray agents = new JSONArray(body);
-		agents.forEach(item -> {
-			JSONObject agent = (JSONObject) item;
-			String URL = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, agent.getString("id"), agent.getString("role"));
-			Igesa.post(URL);
-		});
+	public void setDeleteRole(String role, String user) {
+		String URL = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
+		Igesa.post(URL);
 	}
 
 }

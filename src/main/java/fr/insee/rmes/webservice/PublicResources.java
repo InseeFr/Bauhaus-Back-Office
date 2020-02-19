@@ -6,6 +6,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -34,11 +35,9 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -159,21 +158,21 @@ public class PublicResources {
 
 	@Secured({ Constants.SPRING_ADMIN })
 	@POST
-	@Path("/private/role/add")
+	@Path("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "setAddRole", summary = "Add roles")
-	public Response setAddRole(@Parameter(required=true)@RequestBody(description = "Roles and users to add") String body) {
-		userRolesManagerService.setAddRole(body);
+	@Operation(operationId = "setAddRole", summary = "Add role")
+	public Response setAddRole(@PathParam("role") String role, @PathParam("user") String user) {
+		userRolesManagerService.setAddRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
 	@Secured({ Constants.SPRING_ADMIN })
 	@POST
-	@Path("/private/role/delete")
+	@Path("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
-	public Response setDeleteRole(@Parameter(required=true)@RequestBody(description = "Role and user to delete") String body) {
-		userRolesManagerService.setDeleteRole(body);
+	public Response setDeleteRole(@PathParam("role") String role, @PathParam("user") String user) {
+		userRolesManagerService.setDeleteRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
 }
