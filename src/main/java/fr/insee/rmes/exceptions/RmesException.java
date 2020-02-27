@@ -3,8 +3,6 @@ package fr.insee.rmes.exceptions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import io.swagger.v3.core.util.Json;
-
 public class RmesException extends Exception {
 
 	private static final long serialVersionUID = -7959158367542389147L;
