@@ -70,7 +70,7 @@ public class VarBookExportBuilder {
 	     Node copiedRoot = xmlOutput.importNode(root, true);
 	     xmlOutput.appendChild(copiedRoot);
 		
-		Map<String, Node> targets = listReferenceTargets(xmlInput);	      
+		Map<String, Node> targets = listReferenceTargets(xmlInput);	     
 		renameAndDereference(xmlOutput.getDocumentElement(), targets);//xmlOutput.getDocumentElement()
 				
 		return xmlOutput;
@@ -96,33 +96,38 @@ public class VarBookExportBuilder {
 	private static void renameAndDereference(Node node, Map<String, Node> targets) {
 	    // Remove namespace and keep only lang attr
 		Document document = node.getOwnerDocument();
-		if (node.getNodeName().contains(":")) {
-			document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
+		if (node.getNodeName().contains("BasedOnObject")) {
+			node.getParentNode().removeChild(node);
 		}
-		int nbAtt = 0;
-		while (node.getAttributes().getLength() > nbAtt) {
-		    Node att = node.getAttributes().item(nbAtt);
-		    if(att.getNodeName().contains("lang")||att.getNodeName().contains("Length")||att.getNodeName().contains("regExp")||att.getNodeName().contains("blank")||att.getNodeName().contains("scale")) {
-		    	document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
-		    	nbAtt++;
-		    }else {
-		    	node.getAttributes().removeNamedItem(att.getNodeName());
-		    }
-		}
-		
-		//Dereference
-	    NodeList nodeList = node.getChildNodes();
-    	for (int i = 0; i < nodeList.getLength(); i++) {
-   	        Node childNode = nodeList.item(i);
-   	        if (node.getNodeName().endsWith("Reference")  && childNode.getNodeName().endsWith("ID")) {
-   	        	Node targetNode = document.importNode(targets.get(childNode.getTextContent()),true);
-   	        	node.getParentNode().replaceChild(targetNode,node);
-   	        	renameAndDereference(targetNode,  targets);
-   	        } else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
- 	            //calls this method for all the children which is Element
- 	            renameAndDereference(childNode,targets);
-   	        }   	
-   	    }
+		else {//Only for Node != BasedOnObject
+			if (node.getNodeName().contains(":")) {
+				document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
+			}
+			int nbAtt = 0;
+			while (node.getAttributes().getLength() > nbAtt) {
+			    Node att = node.getAttributes().item(nbAtt);
+			    if(att.getNodeName().contains("lang")||att.getNodeName().contains("Length")||att.getNodeName().contains("regExp")||att.getNodeName().contains("blank")||att.getNodeName().contains("scale")) {
+			    	document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
+			    	nbAtt++;
+			    }else {
+			    	node.getAttributes().removeNamedItem(att.getNodeName());
+			    }
+			}
+			
+			//Dereference
+		    NodeList nodeList = node.getChildNodes();
+	    	for (int i = 0; i < nodeList.getLength(); i++) {
+	   	        Node childNode = nodeList.item(i);
+	   	        if (node.getNodeName().endsWith("Reference")  && childNode.getNodeName().endsWith("ID")) {
+	   	        	Node targetNode = document.importNode(targets.get(childNode.getTextContent()),true);
+	   	        	node.getParentNode().replaceChild(targetNode,node);
+	   	        	renameAndDereference(targetNode,  targets);
+	   	        } else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
+	 	            //calls this method for all the children which is Element
+	 	            renameAndDereference(childNode,targets);
+	   	        }   	
+	   	    }
+		}	
 	}
 
 
