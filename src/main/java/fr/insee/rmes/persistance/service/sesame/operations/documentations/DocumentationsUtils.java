@@ -148,15 +148,16 @@ public class DocumentationsUtils {
 	private String targetId(String idSims) throws RmesException {
 		JSONObject simsJson = getDocumentationByIdSims(idSims);
 		String targetId = null;
-		try{targetId = simsJson.getString("idIndicator");}
-		catch(JSONException e) {
-			try{targetId = simsJson.getString("idOperation");}
-			catch(JSONException e2) {
-				try{targetId = simsJson.getString("idSeries");}
-				catch(JSONException e3) {
-					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", idSims);
+		try{
+			targetId = simsJson.getString("idIndicator");
+			if(targetId.isEmpty()) {
+				targetId = simsJson.getString("idOperation");
+				if(targetId.isEmpty()) {
+					targetId = simsJson.getString("idSeries");
 				}
 			}
+		} catch(JSONException e) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", idSims);
 		}
 		return targetId;
 	}
