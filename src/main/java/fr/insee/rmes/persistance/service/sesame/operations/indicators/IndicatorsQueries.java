@@ -41,16 +41,16 @@ public class IndicatorsQueries {
 	 */
 	
 	public static String indicatorsQuery() {
-		return "SELECT DISTINCT ?id ?label ?altLabel \n"
+		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n" 
 				+ "?indic skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?indic),'/produits/indicateur/') AS ?id) . \n"
-				+ "OPTIONAL{?indic skos:altLabel ?altLabel . "
-				+ "FILTER (lang(?altLabel) = '" + Config.LG1 + "') } \n "
+				+ "OPTIONAL{?indic skos:altLabel ?altLabelLg1 . "
+				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } \n "
 				+ "}} \n" 
-				+ "GROUP BY ?id ?label ?altLabel \n"
+				+ "GROUP BY ?id ?label ?altLabelLg1 \n"
 				+ "ORDER BY ?label ";
 	}
 
