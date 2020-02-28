@@ -56,7 +56,7 @@ public class DocumentationsUtils {
 
 	@Autowired
 	DocumentsUtils docUtils;
-	
+
 	@Autowired
 	SeriesUtils seriesUtils;
 
@@ -178,21 +178,23 @@ public class DocumentationsUtils {
 		URI targetUri = null;
 		try{
 			targetId = simsJson.getString("idIndicator");
-			targetUri= SesameUtils.objectIRI(ObjectType.INDICATOR, id);
-		}
-		catch(JSONException e) {
-			try{
+			if(!targetId.isEmpty()) {
+				targetUri = SesameUtils.objectIRI(ObjectType.INDICATOR, targetId);
+			} else {
 				targetId = simsJson.getString("idOperation");
-				targetUri= SesameUtils.objectIRI(ObjectType.OPERATION, id);
-			}
-			catch(JSONException e2) {
-				try{
+				if(!targetId.isEmpty()) {
+					targetUri = SesameUtils.objectIRI(ObjectType.OPERATION, targetId);
+				} else {
 					targetId = simsJson.getString("idSeries");
-					targetUri= SesameUtils.objectIRI(ObjectType.SERIES, id);}
-				catch(JSONException e3) {
-					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
+					targetUri = SesameUtils.objectIRI(ObjectType.SERIES, targetId);
 				}
 			}
+		}
+		catch(JSONException e) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
+		}
+		if(targetId.isEmpty()) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
 		}
 
 		/* Check rights */
@@ -254,13 +256,13 @@ public class DocumentationsUtils {
 
 	private void checkIfTargetIsASeriesWithOperations(String idTarget) throws RmesException {
 		if(FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idTarget)) {
-				if (seriesUtils.hasOperations(idTarget)) throw new RmesNotAcceptableException(
+			if (seriesUtils.hasOperations(idTarget)) throw new RmesNotAcceptableException(
 					ErrorCodes.SERIES_OPERATION_OR_SIMS, 
 					"Cannot create Sims for a series which already has operations", idTarget);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Check the existing id is the same that the id to set
 	 * Update only
