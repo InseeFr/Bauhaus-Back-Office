@@ -10,7 +10,7 @@ public class FamiliesQueries {
 
 	public static String familiesSearchQuery() {
 
-		return "SELECT DISTINCT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 \n"
+		return "SELECT DISTINCT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?abstractL1;separator=' || ') as ?abstractLg1) ?abstractLg2 \n"
 				+ "WHERE { \n"
 				+ "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
 				+ "?family a insee:StatisticalOperationFamily . \n"
@@ -18,14 +18,15 @@ public class FamiliesQueries {
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n"
 				+ "        OPTIONAL {?family skos:prefLabel ?prefLabelLg2 .\n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n"
-				+ "        OPTIONAL {?family dcterms:abstract ?abstractLg1 .\n"
-				+ "FILTER (lang(?abstractLg1) = '" + Config.LG1 + "') } .\n"
+				+ "        OPTIONAL {?family dcterms:abstract ?abstractL1 .\n"
+				+ "FILTER (lang(?abstractL1) = '" + Config.LG1 + "') } .\n"
 				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 .\n"
 				+ "FILTER (lang(?abstractLg2) = '" + Config.LG2 + "') } .  \n"
 				+ "BIND(STRAFTER(STR(?family),'/operations/famille/') AS ?id) . \n"
 				+ "} \n"
 				+ "} \n"
-				+ "ORDER BY ?label ";
+				+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractL1 ?abstractLg2 \n"
+				+ "ORDER BY ?prefLabelLg1 ";
 	}
 
 
