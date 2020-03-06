@@ -140,6 +140,23 @@ public class RepositoryUtils {
 	 * Method which aims to produce response from a sparql query
 	 * 
 	 * @param query
+	 * @return JSONArray
+	 * @throws RmesException 
+	 */
+	public static JSONArray getResponseAsJSONList(String query, Repository repository) throws RmesException {
+		String response = getResponse(query, repository);
+		if (response.equals("")){
+			return null;
+		}
+		JSONObject res = new JSONObject(response);
+		return sparqlJSONToResultListValues(res);
+	}
+	
+	
+	/**
+	 * Method which aims to produce response from a sparql query
+	 * 
+	 * @param query
 	 * @return JSONObject
 	 * @throws RmesException 
 	 */
@@ -185,6 +202,24 @@ public class RepositoryUtils {
 		}
 		return arrayRes;
 	}
+	
+	public static JSONArray sparqlJSONToResultListValues(JSONObject jsonSparql) {
+		JSONArray arrayRes = new JSONArray();
+		if (jsonSparql.get(RESULTS) == null) {
+			return null;
+		}
+
+		int nbRes = ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS)).length();
+
+		for (int i = 0; i < nbRes; i++) {
+			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
+					.get(i);
+			Set<String> set = json.keySet();
+			set.forEach(s -> arrayRes.put(((JSONObject)json.get(s)).get(VALUE)));
+		}
+		return arrayRes;
+	}
+	
 	
 	public static JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
 		if (jsonSparql.get(RESULTS) == null) {

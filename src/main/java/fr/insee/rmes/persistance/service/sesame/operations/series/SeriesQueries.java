@@ -45,7 +45,7 @@ public class SeriesQueries {
 				+ "GROUP BY ?id ?label ?idSims \n"
 				+ "ORDER BY ?label ";
 	}
-	
+
 
 	public static String oneSeriesQuery(String id) {
 		variables=null;
@@ -62,7 +62,7 @@ public class SeriesQueries {
 		+ "} \n"
 		+ "LIMIT 1";
 	}
-	
+
 
 	public static String getSeriesForSearch() {
 		variables=null;
@@ -72,10 +72,10 @@ public class SeriesQueries {
 		getSingleOrganizations();
 
 		return "SELECT DISTINCT "
-				+ variables.toString()
-				+ " WHERE {  \n"
-				+ whereClause.toString()
-				+ "} \n";
+		+ variables.toString()
+		+ " WHERE {  \n"
+		+ whereClause.toString()
+		+ "} \n";
 	}
 
 
@@ -126,7 +126,7 @@ public class SeriesQueries {
 				+ "?uri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
 				+ "?uri rdf:type ?typeOfObject . \n"
-				
+
 				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
@@ -145,19 +145,19 @@ public class SeriesQueries {
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
 				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
-				
+
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
 
 				+ "} \n"
 				+ "ORDER BY ?id";
 	}
-	
+
 
 	public static String getFamily(String idSeries) {
-	
+
 		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
-		+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
-		+ "WHERE { \n" 
+				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+				+ "WHERE { \n" 
 
 		+ "?family dcterms:hasPart ?series . \n"
 		+ "?family skos:prefLabel ?labelLg1 . \n"
@@ -168,27 +168,36 @@ public class SeriesQueries {
 
 		+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n"
 		+ "}"
-		
+
 		;
 	}
-	
+
 	public static String getOwner(String URIs) {
 		return "SELECT ?owner { \n"
 				+ "?series dcterms:creator ?owner . \n" 
 				+ "VALUES ?series { " + URIs + " } \n"
 				+ "}";
 	}
-	
-	public static String getManager(String URIs) {
+
+	public static String getManagers(String URIs) {
 		return "SELECT ?manager { \n"
 				+ "?series insee:gestionnaire ?manager . \n" 
 				+ "VALUES ?series { " + URIs + " } \n"
 				+ "}";
 	}
-	
-	
+
+	public static String getGestionnaires(String id) {
+		return "SELECT ?gestionnaire\n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "?series a insee:StatisticalOperationSeries . \n"  
+				+" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" 
+				+"?series insee:gestionnaire ?gestionnaire  . \n"
+				+ "} }"
+				;
+	}
+
 	private static void getSimpleAttr(String id) {
-		
+
 		if(id != null) addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id+ "')) . \n" );
 		else {
 			addClauseToWhereClause("?series a insee:StatisticalOperationSeries .");
@@ -200,7 +209,7 @@ public class SeriesQueries {
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "')  \n ");
 		addClauseToWhereClause( "OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
-		
+
 		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
 		addOptionalClause("skos:altLabel", "?altLabel");
 
@@ -209,10 +218,11 @@ public class SeriesQueries {
 
 		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
 		addOptionalClause("skos:historyNote", "?historyNote");
-		
+
 		addVariableToList(" ?idSims ");
 		addGetSimsId();
 	}
+
 
 	private static void addOptionalClause(String predicate, String variableName){
 		addClauseToWhereClause( "OPTIONAL{?series "+predicate+" "+variableName + "Lg1 \n");
@@ -220,12 +230,12 @@ public class SeriesQueries {
 		addClauseToWhereClause( "OPTIONAL{?series "+predicate+" "+variableName + "Lg2 \n");
 		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + Config.LG2 + "') } \n ");
 	}
-	
+
 	private static void addGetSimsId() {
 		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
-					+ " ?report sdmx-mm:target ?series "
-					+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
-					+ "} \n");
+				+ " ?report sdmx-mm:target ?series "
+				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n");
 	}
 
 	private static void getCodesLists() {
@@ -250,13 +260,14 @@ public class SeriesQueries {
 				"OPTIONAL {?series dcterms:creator ?uriCreator . \n"
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
-		addVariableToList(" ?gestionnaire  ");
-
-		addClauseToWhereClause(  
-				"OPTIONAL {?series insee:gestionnaire ?gestionnaire . \n"
-						+ "}   \n");
+		//		addVariableToList(" ?gestionnaire  ");
+		//
+		//		addClauseToWhereClause(  
+		//				"OPTIONAL {?series insee:gestionnaire ?gestionnaire . \n"
+		//						+ "}   \n");
 	}
-	
+
+
 	private static void getValidationState() {
 		addVariableToList(" ?validationState ");
 		addClauseToWhereClause(
@@ -277,7 +288,5 @@ public class SeriesQueries {
 		}
 		whereClause.append(clause);
 	}
-
-
 
 }

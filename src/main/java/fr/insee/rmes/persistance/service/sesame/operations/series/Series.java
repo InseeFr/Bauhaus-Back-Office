@@ -2,6 +2,10 @@ package fr.insee.rmes.persistance.service.sesame.operations.series;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
@@ -19,6 +23,7 @@ public class Series {
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
+//	@JsonInclude(JsonInclude.Include.ALWAYS)	
 	@Schema(description = "Alternative label Lg1")
 	public String altLabelLg1;
 
@@ -28,13 +33,11 @@ public class Series {
 	@Schema(description = "Abstract Lg1")
 	public String abstractLg1;
 
-
 	@Schema(description = "Abstract lg2")
 	public String abstractLg2;
 	
 	@Schema(description = "History note Lg1")
 	public String historyNoteLg1;
-
 
 	@Schema(description = "History note lg2")
 	public String historyNoteLg2;
@@ -67,7 +70,8 @@ public class Series {
 	public List<OperationsLink> dataCollector;
 
 	@Schema(description = "Identifier of gestionnaire")
-	public String gestionnaire;
+	@JsonFormat(shape = Shape.ARRAY)
+	public List<String> gestionnaires;
 	
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -172,8 +176,8 @@ public class Series {
 		return dataCollector;
 	}
 
-	public String getGestionnaire() {
-		return gestionnaire;
+	public List<String> getGestionnaires() {
+		return gestionnaires;
 	}
 
 	public List<OperationsLink> getSeeAlso() {

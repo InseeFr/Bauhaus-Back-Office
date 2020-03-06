@@ -78,6 +78,11 @@ public class RepositoryGestion {
 		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_GESTION);
 	}
 	
+	public static JSONArray getResponseAsJSONList(String query) throws RmesException {
+		return RepositoryUtils.getResponseAsJSONList(query, REPOSITORY_GESTION);
+	}
+	
+	
 	/**
 	 * Method which aims to produce response from a sparql ASK query
 	 * 
