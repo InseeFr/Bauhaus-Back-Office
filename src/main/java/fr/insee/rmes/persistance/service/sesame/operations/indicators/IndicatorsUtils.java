@@ -33,6 +33,7 @@ import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
+import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
@@ -56,12 +57,22 @@ public class IndicatorsUtils {
 	StampsRestrictionsService stampsRestrictionsService;
 
 	public JSONObject getIndicatorById(String id) throws RmesException{
-		if (!checkIfIndicatorExists(id)) {throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);}
+		if (!checkIfIndicatorExists(id)) {
+			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
+			}
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put("id", id);
 		addLinks(id, indicator);
+		addIndicatorGestionnaires(id, indicator);
+
 		return indicator;
+	}
+
+
+	private void addIndicatorGestionnaires(String id, JSONObject indicator) throws RmesException {
+		JSONArray gestionnaires = RepositoryGestion.getResponseAsJSONList(IndicatorsQueries.getGestionnaires(id));
+		indicator.put("gestionnaires", gestionnaires);
 	}
 
 
@@ -147,6 +158,20 @@ public class IndicatorsUtils {
 
 	}
 
+	public String getIndicatorsForSearch() throws RmesException {
+		logger.info("Starting to get indicators list");
+    
+		JSONArray resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch());
+		
+		JSONArray result = new JSONArray();
+		for (int i = 0; i < resQuery.length(); i++) {
+			JSONObject indicator = resQuery.getJSONObject(i);
+			addOneOrganizationLink(indicator.get("id").toString(),indicator, INSEE.DATA_COLLECTOR);
+			result.put(indicator);
+		}
+		return QueryUtils.correctEmptyGroupConcat(result.toString());
+	}
+	
 	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		URI indicURI = SesameUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
@@ -174,10 +199,12 @@ public class IndicatorsUtils {
 			}
 		}
 
-		String gestionnaire=indicator.getGestionnaire();
-		if (!StringUtils.isEmpty(gestionnaire)) {
-			SesameUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, SesameUtils.productsGraph());
-		}	
+		List<String> gestionnaires=indicator.getGestionnaires();
+		if (gestionnaires!=null) {
+			for (String gestionnaire : gestionnaires) {
+				SesameUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, SesameUtils.productsGraph());
+			}
+		}
 		
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		SesameUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.productsGraph());

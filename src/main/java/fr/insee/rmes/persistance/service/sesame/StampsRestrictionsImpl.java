@@ -220,7 +220,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray managers = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getManager(uriAsString));
+		JSONArray managers = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getManagers(uriAsString));
 		Boolean isIndicatorManager = false;
 		if (managers.length()==0) isIndicatorManager = false;
 		for (int i = 0; i < managers.length(); i++) {

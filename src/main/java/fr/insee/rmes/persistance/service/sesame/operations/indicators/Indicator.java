@@ -2,6 +2,9 @@ package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -51,7 +54,8 @@ public class Indicator {
 	public List<OperationsLink> contributor;
 	
 	@Schema(description = "Identifier of gestionnaire")
-	public String gestionnaire;
+	@JsonFormat(shape = Shape.ARRAY)
+	public List<String> gestionnaires;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -164,14 +168,12 @@ public class Indicator {
 		return idSims;
 	}
 
-	public String getGestionnaire() {
-		return gestionnaire;
+	public List<String> getGestionnaires() {
+		return gestionnaires;
 	}
 
-	public void setGestionnaire(String gestionnaire) {
-		this.gestionnaire = gestionnaire;
+	public void setGestionnaires(List<String> gestionnaires) {
+		this.gestionnaires = gestionnaires;
 	}
-
-	
 
 }

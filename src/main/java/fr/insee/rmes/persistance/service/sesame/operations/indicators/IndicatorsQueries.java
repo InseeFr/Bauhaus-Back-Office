@@ -92,7 +92,6 @@ public class IndicatorsQueries {
 			+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLang1 ?altLabelLg2 ?abstractLg1 ?abstractLg2 ?historyNoteLg1 ?historyNoteLg2  "
 			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?creator ?gestionnaire  ?idSims  ?validationState \n";	
 		
-//		return indicatorFullObjectQuery(null, false);
 	}
 
 
@@ -119,6 +118,16 @@ public class IndicatorsQueries {
 		return query;
 	}
 
+	public static String getGestionnaires(String id) {
+		return "SELECT ?gestionnaire\n"
+				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
+				+ "?indic a insee:StatisticalIndicator . \n"  
+				+" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
+				+"?indic insee:gestionnaire ?gestionnaire  . \n"
+				+ "} }"
+				;
+	}
+	
 	public static String indicatorLinks(String id, URI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
@@ -270,7 +279,7 @@ public class IndicatorsQueries {
 				+ "}";
 	}
 
-	public static String getManager(String URIs) {
+	public static String getManagers(String URIs) {
 		return "SELECT ?manager { \n"
 				+ "?indic insee:gestionnaire ?manager . \n" 
 				+ "VALUES ?indic { " + URIs + " } \n"
