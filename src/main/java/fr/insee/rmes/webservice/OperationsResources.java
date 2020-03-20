@@ -607,6 +607,29 @@ public class OperationsResources {
 	}
 	
 	/**
+	 * GET
+	 * @param id
+	 * @return
+	 */
+	
+	@GET
+	@Path("/metadataReport/Owner/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id", 
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
+	))})
+	public Response getMetadataReportOwner(@PathParam("id") String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getMetadataReportOwner(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	
+	/**
 	 * CREATE
 	 * @param body
 	 * @return

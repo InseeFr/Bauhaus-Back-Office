@@ -329,6 +329,13 @@ public class OperationsImpl implements OperationsService {
 		return documentation.toString();
 	}
 
+	@Override
+	public String getMetadataReportOwner(String id) throws RmesException {
+//		JSONObject owner = documentationsUtils.getDocumentationOwnerByIdSims(id);
+//		XhtmlToMarkdownUtils.convertJSONObject(owner);
+//		return owner.toString();
+		return documentationsUtils.getDocumentationOwnerByIdSims(id);
+	}
 
 
 	/**

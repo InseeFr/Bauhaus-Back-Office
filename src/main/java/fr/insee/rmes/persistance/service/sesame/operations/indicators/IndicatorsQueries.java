@@ -211,10 +211,6 @@ public class IndicatorsQueries {
 				"OPTIONAL {?indic dcterms:creator ?uriCreator . \n"
 						+ "?uriCreator dcterms:identifier  ?creator . \n"
 						+ "}   \n");
-//		addClauseToWhereClause(
-//				"OPTIONAL {?indic insee:gestionnaire ?uriGestionnaire . \n"
-//						+ "?uriGestionnaire dcterms:identifier  ?gestionnaire . \n"
-//						+ "}   \n");
 		addClauseToWhereClause(  
 				"OPTIONAL {?indic insee:gestionnaire ?gestionnaire . \n"
 						+ "}   \n");

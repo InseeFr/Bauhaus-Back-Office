@@ -37,6 +37,7 @@ import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
@@ -60,6 +61,12 @@ public class DocumentationsUtils {
 	@Autowired
 	SeriesUtils seriesUtils;
 
+	@Autowired
+	IndicatorsUtils indicatorsUtils;
+
+	@Autowired
+	OperationsUtils operationsUtils;
+	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 
@@ -466,6 +473,40 @@ public class DocumentationsUtils {
 		if (id.equals("undefined")) {return "1000";}
 		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
+	}
+
+
+	public String getDocumentationOwnerByIdSims(String idSims) throws RmesException {
+		logger.info("Search Sims Owner's Stamp");
+
+		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		String idDatabase = null;
+		String targetType = null;
+		if (existingIdTarget != null ) {
+			idDatabase = (String) existingIdTarget.get("idOperation");
+			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+				idDatabase = (String) existingIdTarget.get("idSeries");
+			} else targetType = "OPERATION";
+			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+				idDatabase = (String) existingIdTarget.get("idIndicator");
+				targetType = "INDICATOR";
+			} else targetType = "SERIES";
+		}
+
+		String stamp=null;
+		
+		switch(targetType) {
+			case "OPERATION" : stamp=seriesUtils.getSeriesById(operationsUtils.getOperationById(idDatabase).getJSONObject("series").getString("idSeries")).getString("creator");
+			case "SERIES" : stamp=seriesUtils.getSeriesById(idDatabase).getString("creator");
+			case "INDICATOR" : stamp=indicatorsUtils.getIndicatorById(idDatabase).getString("creator");
+		}
+
+//		JSONObject json =null;
+//
+//		//	JSONObject json = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getOwner(id));
+//		logger.debug("JSON for owner stamp : " + json);
+
+		return stamp;
 	}
 
 }
