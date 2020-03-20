@@ -1,4 +1,5 @@
 # Bauhaus-Back-Office
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3795/badge)](https://bestpractices.coreinfrastructure.org/projects/3795)
 
 Rest Endpoints and services Integration used by [Bauhaus](https://github.com/InseeFr/Bauhaus)
 
