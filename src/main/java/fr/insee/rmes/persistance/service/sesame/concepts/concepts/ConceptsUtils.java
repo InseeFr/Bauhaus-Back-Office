@@ -31,14 +31,17 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.modele.concepts.Concept;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.persistance.service.sesame.links.LinksUtils;
 import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 
 @Component
@@ -61,17 +64,25 @@ public class ConceptsUtils {
 	}
 
 	public JSONObject getConceptById(String id)  throws RmesException{
-		if (!checkIfConceptExists(id)) throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
+		if (!checkIfConceptExists(id)) {
+			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
+		}
 		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
 		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
-		if(altLabelLg1.length() != 0) concept.put("altLabelLg1", JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
-		if(altLabelLg2.length() != 0) concept.put("altLabelLg2", JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		if(altLabelLg1.length() != 0) {
+			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
+		}
+		if(altLabelLg2.length() != 0) {
+			concept.put(Constants.ALT_LABEL_LG2, JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+		}
 		return concept;
 	}
 
 	public String setConcept(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateConcept()) throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
+		if(!stampsRestrictionsService.canCreateConcept()) {
+			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -88,7 +99,9 @@ public class ConceptsUtils {
 	}
 
 	public void setConcept(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canModifyConcept(SesameUtils.conceptIRI(id))) throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
+		if(!stampsRestrictionsService.canModifyConcept(SesameUtils.conceptIRI(id))) {
+			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -162,10 +175,11 @@ public class ConceptsUtils {
 			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
 			logger.info("Validate concept : " + conceptURI);
 		}
-		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList))
+		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList)) {
 			throw new RmesUnauthorizedException(
 					ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,
 					conceptsToValidate);
+		}
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
 		ConceptsPublication.publishConcepts(conceptsToValidate);
 	}

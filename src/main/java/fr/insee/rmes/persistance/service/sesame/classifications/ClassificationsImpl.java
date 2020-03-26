@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.ClassificationsService;
-import fr.insee.rmes.persistance.service.sesame.classifications.classifications.ClassificationsQueries;
-import fr.insee.rmes.persistance.service.sesame.classifications.classifications.LevelsQueries;
-import fr.insee.rmes.persistance.service.sesame.classifications.correspondences.CorrespondencesQueries;
-import fr.insee.rmes.persistance.service.sesame.classifications.families.FamiliesQueries;
-import fr.insee.rmes.persistance.service.sesame.classifications.items.ItemsQueries;
-import fr.insee.rmes.persistance.service.sesame.classifications.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.ClassificationsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.CorrespondencesQueries;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.FamiliesQueries;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.ItemsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.LevelsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.classifications.SeriesQueries;
 
 @Service
 public class ClassificationsImpl implements ClassificationsService {

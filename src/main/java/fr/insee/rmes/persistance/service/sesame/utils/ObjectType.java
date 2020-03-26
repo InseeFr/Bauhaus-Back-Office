@@ -8,10 +8,10 @@ import org.openrdf.model.vocabulary.FOAF;
 import org.openrdf.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.ORG;
-import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.ORG;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),

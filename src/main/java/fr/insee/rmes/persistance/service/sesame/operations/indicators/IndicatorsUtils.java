@@ -3,7 +3,6 @@ package fr.insee.rmes.persistance.service.sesame.operations.indicators;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -28,17 +27,19 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.links.OperationsLink;
+import fr.insee.rmes.modele.operations.Indicator;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.PROV;
 import fr.insee.rmes.persistance.service.CodeListService;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OrganizationsService;
-import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.PROV;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.persistance.sparqlQueries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -62,7 +63,7 @@ public class IndicatorsUtils {
 			}
 		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
-		indicator.put("id", id);
+		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
 		addIndicatorGestionnaires(id, indicator);
 
@@ -110,7 +111,9 @@ public class IndicatorsUtils {
 	 * @throws RmesException 
 	 */
 	public String setIndicator(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateIndicator()) throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_CREATION_RIGHTS_DENIED, "Only an admin can create a new indicator.");
+		if(!stampsRestrictionsService.canCreateIndicator()) {
+			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_CREATION_RIGHTS_DENIED, "Only an admin can create a new indicator.");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();
@@ -137,8 +140,9 @@ public class IndicatorsUtils {
 	 */
 	public void setIndicator(String id, String body) throws RmesException {
 
-		if(!stampsRestrictionsService.canModifyIndicator(SesameUtils.objectIRI(ObjectType.INDICATOR, id)))
+		if(!stampsRestrictionsService.canModifyIndicator(SesameUtils.objectIRI(ObjectType.INDICATOR, id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify indicators.");
+		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -149,10 +153,11 @@ public class IndicatorsUtils {
 			logger.error(e.getMessage());
 		}
 		String status=getValidationStatus(id);
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
+		} else {
+			createRdfIndicator(indicator,ValidationStatus.MODIFIED);
 		}
-		else 	createRdfIndicator(indicator,ValidationStatus.MODIFIED);
 
 		logger.info("Update indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
 
@@ -166,7 +171,7 @@ public class IndicatorsUtils {
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject indicator = resQuery.getJSONObject(i);
-			addOneOrganizationLink(indicator.get("id").toString(),indicator, INSEE.DATA_COLLECTOR);
+			addOneOrganizationLink(indicator.get(Constants.ID).toString(),indicator, INSEE.DATA_COLLECTOR);
 			result.put(indicator);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -231,8 +236,9 @@ public class IndicatorsUtils {
 	public String setIndicatorValidation(String id)  throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 
-		if(!stampsRestrictionsService.canValidateIndicator(SesameUtils.objectIRI(ObjectType.INDICATOR, id)))
+		if(!stampsRestrictionsService.canValidateIndicator(SesameUtils.objectIRI(ObjectType.INDICATOR, id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
+		}
 
 		IndicatorPublication.publishIndicator(id);
 
@@ -242,7 +248,7 @@ public class IndicatorsUtils {
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.productsGraph());
 		logger.info("Validate indicator : " + indicatorURI);
 
-		RepositoryGestion.objectsValidation(indicatorURI, model);
+		RepositoryGestion.objectValidation(indicatorURI, model);
 
 		return id;
 	}
@@ -264,7 +270,7 @@ public class IndicatorsUtils {
 		JSONObject json = RepositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : " + json);
 		if (json.length()==0) {return null;}
-		String id = json.getString("id");
+		String id = json.getString(Constants.ID);
 		if (id.equals("undefined")) {return null;}
 		int ID = Integer.parseInt(id.substring(1))+1;
 		return "p" + ID;
@@ -279,7 +285,7 @@ public class IndicatorsUtils {
 			return RepositoryGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
 		}
 		catch (JSONException e) {
-			return "UNDEFINED";
+			return Constants.UNDEFINED;
 		}
 	}
 }

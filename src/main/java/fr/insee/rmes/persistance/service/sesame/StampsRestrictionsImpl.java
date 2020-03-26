@@ -11,14 +11,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
 
 @Service
 public class StampsRestrictionsImpl implements StampsRestrictionsService {
@@ -26,26 +26,33 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean isConceptOrCollectionOwner(URI uri) throws RmesException {
 		User user = getUser();
-		if (isAdmin(user)) return true;
+		if (isAdmin(user)) {
+			return true;
+		}
 		String uriAsString = "<" + uri.toString() + ">";
 		JSONObject owner = RepositoryGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
-		if (!owner.getString("owner").equals(user.getStamp())) isConceptOwner = false;
+		if (!owner.getString("owner").equals(user.getStamp())) {
+			isConceptOwner = false;
+		}
 		return isConceptOwner;
 	}
 
 	@Override
 	public Boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException {
 		User user = getUser();
-		if (isAdmin(user)) return true;
+		if (isAdmin(user)) {
+			return true;
+		}
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp()))
+			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp())) {
 				isConceptsOwner = false;
+			}
 		}
 		return isConceptsOwner;
 	}
@@ -72,8 +79,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isAdmin = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.SPRING_ADMIN))
+			if (roles.getString(i).equals(Roles.SPRING_ADMIN)) {
 				isAdmin = true;
+			}
 		}
 		return isAdmin;
 	}
@@ -82,8 +90,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isConceptsContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.CONCEPTS_CONTRIBUTOR))
+			if (roles.getString(i).equals(Roles.CONCEPTS_CONTRIBUTOR)) {
 				isConceptsContributor = true;
+			}
 		}
 		return isConceptsContributor;
 	}
@@ -92,8 +101,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isConceptContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.CONCEPT_CONTRIBUTOR))
+			if (roles.getString(i).equals(Roles.CONCEPT_CONTRIBUTOR)) {
 				isConceptContributor = true;
+			}
 		}
 		return isConceptContributor;
 	}
@@ -102,8 +112,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isConceptCreator = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.CONCEPT_CREATOR))
+			if (roles.getString(i).equals(Roles.CONCEPT_CREATOR)) {
 				isConceptCreator = true;
+			}
 		}
 		return isConceptCreator;
 	}
@@ -112,8 +123,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isSeriesContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.SERIES_CONTRIBUTOR))
+			if (roles.getString(i).equals(Roles.SERIES_CONTRIBUTOR)) {
 				isSeriesContributor = true;
+			}
 		}
 		return isSeriesContributor;
 	}
@@ -122,8 +134,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isIndicatorContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.INDICATOR_CONTRIBUTOR))
+			if (roles.getString(i).equals(Roles.INDICATOR_CONTRIBUTOR)) {
 				isIndicatorContributor = true;
+			}
 		}
 		return isIndicatorContributor;
 	}
@@ -132,8 +145,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		Boolean isCnis = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Constants.SPRING_CNIS))
+			if (roles.getString(i).equals(Roles.SPRING_CNIS)) {
 				isCnis = true;
+			}
 		}
 		return isCnis;
 	}
@@ -146,8 +160,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp()))
+			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp())) {
 				isConceptOwner = false;
+			}
 		}
 		return isConceptOwner;
 	}
@@ -160,43 +175,19 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		JSONArray managers = RepositoryGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp()))
+			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp())) {
 				isConceptManager = false;
+			}
 		}
 		return isConceptManager;
 	}
 
-	private Boolean isSeriesOwner(List<URI> uris) throws RmesException {
-		User user = getUser();
-		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
-		String uriAsString = sb.toString();
-		JSONArray owners = RepositoryGestion.getResponseAsArray(SeriesQueries.getOwner(uriAsString));
-		Boolean isSeriesOwner = false;
-		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp()))
-				isSeriesOwner = true;
-		}
-		return isSeriesOwner;
-	}
-
-	private Boolean isIndicatorOwner(List<URI> uris) throws RmesException {
-		User user = getUser();
-		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
-		String uriAsString = sb.toString();
-		JSONArray owners = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getOwner(uriAsString));
-		Boolean isIndicatorOwner = true;
-		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString("owner").equals(user.getStamp()))
-				isIndicatorOwner = false;
-		}
-		return isIndicatorOwner;
-	}
 
 	private Boolean isSeriesManager(List<URI> uris) throws RmesException {
 		for(URI uri:uris) {
-			if (!isSeriesManager(uri)) return false;
+			if (!isSeriesManager(uri)) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -209,8 +200,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		JSONArray managers = RepositoryGestion.getResponseAsArray(SeriesQueries.getManagers(uriAsString));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp()))
+			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp())) {
 				isSeriesManager = true;
+			}
 		}
 		return isSeriesManager;
 	}
@@ -222,10 +214,13 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		String uriAsString = sb.toString();
 		JSONArray managers = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getManagers(uriAsString));
 		Boolean isIndicatorManager = false;
-		if (managers.length()==0) isIndicatorManager = false;
+		if (managers.length()==0) {
+			isIndicatorManager = false;
+		}
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp()))
+			if (!managers.getJSONObject(i).getString("manager").equals(user.getStamp())) {
 				isIndicatorManager = true;
+			}
 		}
 		return isIndicatorManager;
 	}
@@ -233,7 +228,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canModifyIndicator(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isIndicatorManager(uris) & isIndicatorContributor(user))
 				);
 	}
@@ -248,7 +243,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateIndicator(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isIndicatorManager(uris) & isIndicatorContributor(user))
 				);
 	}
@@ -265,9 +260,9 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(targetURI);
-		return (isAdmin(user) |
-				isCnis(user) | 
-				(isSeriesManager(uris) & isSeriesContributor(user)) | 
+		return (isAdmin(user) ||
+				isCnis(user) || 
+				(isSeriesManager(uris) & isSeriesContributor(user)) || 
 				(isIndicatorManager(uris) & isIndicatorContributor(user))
 				);
 	}
@@ -275,7 +270,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canCreateConcept() throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isConceptsContributor(user));
+		return (isAdmin(user) || isConceptsContributor(user));
 	}
 
 	@Override
@@ -299,7 +294,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canCreateOperation(URI seriesURI) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isSeriesManager(seriesURI) & isSeriesContributor(user))
 				);
 	}
@@ -315,8 +310,8 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	public Boolean canCreateSims(List<URI> uris) throws RmesException {
 		User user=getUser();
 		return (isAdmin(user) |
-				(isSeriesManager(uris) & isSeriesContributor(user)) | 
-				(isIndicatorManager(uris) & isIndicatorContributor(user))
+				(isSeriesManager(uris) && isSeriesContributor(user)) || 
+				(isIndicatorManager(uris) && isIndicatorContributor(user))
 				);
 	}
 
@@ -325,17 +320,17 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		User user=getUser();
 		List<URI> uris = new ArrayList<URI>();
 		uris.add(uri);
-		return (isAdmin(user) | 
-				isConceptsContributor(user) | 
-				(isConceptManager(uris) & isConceptContributor(user)) | 
+		return (isAdmin(user) || 
+				isConceptsContributor(user) || 
+				(isConceptManager(uris) & isConceptContributor(user)) || 
 				(isConceptOwner(uris)) & isConceptCreator(user));
 	}
 
 	@Override
 	public Boolean canModifySeries(URI uri) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
-				isCnis(user) | 
+		return (isAdmin(user) || 
+				isCnis(user) || 
 				(isSeriesManager(uri) & isSeriesContributor(user))
 				);
 	}
@@ -343,16 +338,17 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canModifySeries(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
-				isCnis(user) | 
+		return (isAdmin(user) || 
+				isCnis(user) || 
 				(isSeriesManager(uris) & isSeriesContributor(user))
 				);
 	}
 
+	@Override
 	public Boolean canModifyOperation(URI seriesURI) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
-				isCnis(user) | 
+		return (isAdmin(user) || 
+				isCnis(user) || 
 				(isSeriesManager(seriesURI) & isSeriesContributor(user))
 				);
 	};
@@ -360,7 +356,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateSeries(URI uri) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isSeriesManager(uri) & isSeriesContributor(user))
 				);
 	}
@@ -368,7 +364,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateSeries(List<URI> uris) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isSeriesManager(uris) & isSeriesContributor(user))
 				);
 	}
@@ -376,7 +372,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canValidateOperation(URI seriesURI) throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | 
+		return (isAdmin(user) || 
 				(isSeriesManager(seriesURI) & isSeriesContributor(user))
 				);
 	}
@@ -384,7 +380,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public Boolean canManageDocumentsAndLinks() throws RmesException {
 		User user=getUser();
-		return (isAdmin(user) | isSeriesContributor(user) | isIndicatorContributor(user));
+		return (isAdmin(user) || isSeriesContributor(user) || isIndicatorContributor(user));
 	}
 
 }

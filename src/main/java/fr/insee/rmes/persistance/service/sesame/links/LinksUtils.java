@@ -7,10 +7,13 @@ import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.SKOS;
 
+import fr.insee.rmes.modele.links.Link;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class LinksUtils {
 
+	//TODO generalize or move in concepts
+	
 	public void createRdfLinks(URI conceptURI, List<Link> links, Model model) {
 
 		// Create links

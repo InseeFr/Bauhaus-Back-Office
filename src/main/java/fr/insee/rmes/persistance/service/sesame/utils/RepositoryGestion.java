@@ -26,10 +26,10 @@ import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.ontologies.EVOC;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
-import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
+import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 public class RepositoryGestion {
 
@@ -228,10 +228,15 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void objectsValidation(URI ressourceURI, Model model) throws RmesException {
-		List<URI> itemURIList=new ArrayList<URI>();
-		itemURIList.add(ressourceURI);
-		objectsValidation(itemURIList,model);
+	public static void objectValidation(URI ressourceURI, Model model) throws RmesException {
+		try {
+			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
+			conn.add(model);
+			conn.close();
+		} catch (OpenRDFException e) {
+			throwsRmesException(e, "Failure validation : " + ressourceURI);
+		}
 	}
 	
 	
@@ -274,13 +279,19 @@ public class RepositoryGestion {
 					Resource node = (Resource) nodes.next().getObject();
 					toRemove.add(node);
 					measures = conn.getStatements(node, QB.MEASURE, null, false);
-					while (measures.hasNext()) toRemove.add((Resource) measures.next().getObject());
+					while (measures.hasNext()) {
+						toRemove.add((Resource) measures.next().getObject());
+					}
 					measures.close();
 					dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
-					while (dimensions.hasNext()) toRemove.add((Resource) dimensions.next().getObject());
+					while (dimensions.hasNext()) {
+						toRemove.add((Resource) dimensions.next().getObject());
+					}
 					dimensions.close();
 					attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
-					while (attributes.hasNext()) toRemove.add((Resource) attributes.next().getObject());
+					while (attributes.hasNext()) {
+						toRemove.add((Resource) attributes.next().getObject());
+					}
 					attributes.close();
 				}
 				nodes.close();

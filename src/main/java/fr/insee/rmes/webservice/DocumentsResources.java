@@ -24,10 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.modele.operations.documentations.Document;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.DocumentsService;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.Document;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -95,7 +96,7 @@ public class DocumentsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDocument", summary = "Document or link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
-	public Response getDocument(@PathParam("id") String id) {
+	public Response getDocument(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getDocument(id).toString();
@@ -109,7 +110,7 @@ public class DocumentsResources {
 	@Path("/document/{id}")
 	@Produces("*/*")
 	@Operation(operationId = "downloadDocument", summary = "Download Document")																 
-	public Response downloadDocument(@PathParam("id") String id) {
+	public Response downloadDocument(@PathParam(Constants.ID) String id) {
 		try {
 			return documentsService.downloadDocument(id);
 		} catch (RmesException e) {
@@ -126,13 +127,13 @@ public class DocumentsResources {
 	 * Update informations about a document (or link), but not the file
 	 */
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/document/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDocumentById", summary = "Update document or link")
 	public Response setDocument(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
 			@RequestBody(description = "Document", required = true)
 			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
 		try {
@@ -148,11 +149,11 @@ public class DocumentsResources {
 	 * Delete a document or link
 	 */
 	
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@DELETE
 	@Path("/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document or link")
-	public Response deleteDocument(@PathParam("id") String id) {
+	public Response deleteDocument(@PathParam(Constants.ID) String id) {
 		Status status = null;
 		try {
 			status = documentsService.deleteDocument(id);
@@ -172,7 +173,7 @@ public class DocumentsResources {
 	/*
 	 * Create a new document
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/document")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
@@ -199,7 +200,7 @@ public class DocumentsResources {
 	 * Change the file of a document
 	 */
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/{id}")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
@@ -208,7 +209,7 @@ public class DocumentsResources {
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
 			@FormDataParam(value = "file") InputStream documentFile,
 			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
-			@Parameter(description = "Id", required = true) @PathParam("id") String id
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id
 			) throws Exception {
 		String url = null;
 		String documentName = fileDisposition.getFileName();
@@ -227,7 +228,7 @@ public class DocumentsResources {
 	/*
 	 * Create a new link
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/link")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })

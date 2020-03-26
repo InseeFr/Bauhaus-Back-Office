@@ -12,18 +12,18 @@ import org.openrdf.repository.RepositoryResult;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.persistance.notifications.NotificationsContract;
-import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
+import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.service.notifications.NotificationsContract;
+import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class DocumentationPublication {
 
-	private static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	public static void publishSims(String simsId) throws RmesException {
@@ -41,7 +41,9 @@ public class DocumentationPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Sims not found", simsId);
+				if (!statements.hasNext()) {
+					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Sims not found", simsId);
+				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published
@@ -55,15 +57,15 @@ public class DocumentationPublication {
 							|| st.getPredicate().toString().endsWith("additionalMaterial") 
 							|| st.getPredicate().toString().endsWith("metadataReport"))
 					{
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 							st.getPredicate(), 
-							FamOpeSerUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 							st.getContext());
 					}
 					
 					// Literals
 					else {
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext());
@@ -71,21 +73,21 @@ public class DocumentationPublication {
 				}
 				while (metadataReportStatements.hasNext()) {
 					Statement st = metadataReportStatements.next();
-					model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 							st.getPredicate(), 
-							FamOpeSerUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 							st.getContext());
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 		
 		} finally {
 			RepositoryGestion.closeStatements(statements);
 		}
 		
-		Resource simsToPublishRessource = FamOpeSerUtils.tranformBaseURIToPublish(sims);
-		RepositoryPublication.publishMetadataReport(simsToPublishRessource, model);
+		Resource simsToPublishRessource = PublicationUtils.tranformBaseURIToPublish(sims);
+		RepositoryPublication.publishResource(simsToPublishRessource, model, "sims");
 		
 	}
 

@@ -26,12 +26,15 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.operations.Family;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.persistance.sparqlQueries.operations.families.FamiliesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -44,7 +47,9 @@ public class FamiliesUtils {
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
-		if (family.length()==0) throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
+		if (family.length()==0) {
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
+		}
 		XhtmlToMarkdownUtils.convertJSONObject(family);
 		addFamilySeries(id, family);
 		addSubjects(id, family);
@@ -69,7 +74,9 @@ public class FamiliesUtils {
 
 /*WRITE*/
 	public void setFamily(String id, String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can modify a family.");
+		if(!stampsRestrictionsService.canCreateFamily()) {
+			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can modify a family.");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family(id);
@@ -85,10 +92,11 @@ public class FamiliesUtils {
 		}
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
+		} else {
+			createRdfFamily(family,ValidationStatus.MODIFIED);
 		}
-		else 	createRdfFamily(family,ValidationStatus.MODIFIED);
 		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
 		
 	}
@@ -119,7 +127,9 @@ public class FamiliesUtils {
 
 
 	public String createFamily(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
+		if(!stampsRestrictionsService.canCreateFamily()) {
+			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Family family = new Family();
@@ -140,7 +150,9 @@ public class FamiliesUtils {
 	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
 		Model model = new LinkedHashModel();
 		
-		if(!stampsRestrictionsService.canCreateFamily()) throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
+		if(!stampsRestrictionsService.canCreateFamily()) {
+			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
+		}
 
 			FamilyPublication.publishFamily(id);
 		
@@ -150,7 +162,7 @@ public class FamiliesUtils {
 			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 			logger.info("Validate family : " + familyURI);
 
-			RepositoryGestion.objectsValidation(familyURI, model);
+			RepositoryGestion.objectValidation(familyURI, model);
 			
 		return id;
 	}

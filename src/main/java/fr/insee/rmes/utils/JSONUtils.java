@@ -15,8 +15,15 @@ public class JSONUtils {
 		return res;
 	}
 	
+	/**
+	 * Transform an array to a string with " - " separator
+	 * @param jsonArray
+	 * @return
+	 */
 	public static String jsonArrayOfStringToString(JSONArray jsonArray) {
-		if (jsonArray.length() == 1) return jsonArray.getString(0);
+		if (jsonArray.length() == 1) {
+			return jsonArray.getString(0);
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < jsonArray.length()-1; i++) {
 			sb.append(jsonArray.getString(i) + " - ");
@@ -28,8 +35,9 @@ public class JSONUtils {
 	public static boolean isEmpty(JSONObject obj) {
 		Iterator<String> keys = obj.keys();
 		while(keys.hasNext())  {
-	        if(!obj.getString((String)(keys.next())).isEmpty())
-	            return false;
+	        if(!obj.getString((keys.next())).isEmpty()) {
+				return false;
+			}
 	    }
 	    return true;
 	}

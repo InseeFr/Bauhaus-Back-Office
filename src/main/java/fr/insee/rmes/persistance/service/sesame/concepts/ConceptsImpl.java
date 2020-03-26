@@ -17,18 +17,18 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.export.Jasper;
-import fr.insee.rmes.persistance.mail_sender.MailSenderContract;
+import fr.insee.rmes.modele.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.service.ConceptsService;
-import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExportBuilder;
-import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.service.export.Jasper;
 
 @Service
 public class ConceptsImpl implements ConceptsService {
@@ -193,6 +193,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * Create new collection
 	 * @throws RmesException 
 	 */
+	@Override
 	public void setCollection(String body) throws RmesException {
 		collectionsUtils.setCollection(body);
 	}
@@ -203,6 +204,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesUnauthorizedException 
 	 * @throws Exception 
 	 */
+	@Override
 	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException {
 		collectionsUtils.setCollection(id, body);
 	}
@@ -212,6 +214,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesException 
 	 * @throws RmesUnauthorizedException 
 	 */
+	@Override
 	public void setConceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
 		conceptsUtils.conceptsValidation(body);
 	}
@@ -219,6 +222,7 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Export concept(s)
 	 */
+	@Override
 	public Response getConceptExport(String id, String acceptHeader)  {
 		JSONObject concept;
 		try {
@@ -240,6 +244,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesUnauthorizedException 
 	 * @throws Exception 
 	 */
+	@Override
 	public void setCollectionsValidation(String body) throws RmesUnauthorizedException, RmesException   {
 		collectionsUtils.collectionsValidation(body);
 	}
@@ -247,6 +252,7 @@ public class ConceptsImpl implements ConceptsService {
 	/**
 	 * Export collection(s)
 	 */
+	@Override
 	public Response getCollectionExport(String id, String acceptHeader){
 		JSONObject collection = null;
 		try {
@@ -267,6 +273,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesException 
 	 * @throws RmesUnauthorizedException 
 	 */
+	@Override
 	public boolean setConceptSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		return mailSender.sendMailConcept(id, body);
 	}
@@ -276,6 +283,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesException 
 	 * @throws RmesUnauthorizedException 
 	 */
+	@Override
 	public boolean setCollectionSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		return mailSender.sendMailCollection(id, body);
 	}

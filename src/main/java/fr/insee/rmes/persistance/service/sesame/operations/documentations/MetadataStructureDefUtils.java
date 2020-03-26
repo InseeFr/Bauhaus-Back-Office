@@ -12,22 +12,24 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.code_list.CodeListQueries;
+import fr.insee.rmes.modele.operations.documentations.RangeType;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentationsQueries;
 
 @Component
 public class MetadataStructureDefUtils {
 	
-	private static final String ID = "id";
-	final static Logger logger = LogManager.getLogger(MetadataStructureDefUtils.class);
+		final static Logger logger = LogManager.getLogger(MetadataStructureDefUtils.class);
 
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
 		JSONObject mas = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
 		if (mas.length()==0) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
 		transformRangeType(mas);
-		mas.put(ID, id);
+		mas.put(Constants.ID, id);
 		return mas;
 	}
 	
@@ -70,9 +72,9 @@ public class MetadataStructureDefUtils {
 		if (attributesList.length() != 0) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);
-		         if (attribute.has(ID)&& attribute.has("uri")) {
-		        	 String id = StringUtils.upperCase(attribute.getString(ID));
-		        	 attributes.put(id, attribute.getString("uri"));
+		         if (attribute.has(Constants.ID)&& attribute.has(Constants.URI)) {
+		        	 String id = StringUtils.upperCase(attribute.getString(Constants.ID));
+		        	 attributes.put(id, attribute.getString(Constants.URI));
 		         }
 		     }
 		}

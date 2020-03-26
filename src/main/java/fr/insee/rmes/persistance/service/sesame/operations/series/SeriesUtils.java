@@ -29,16 +29,19 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.links.OperationsLink;
+import fr.insee.rmes.modele.operations.Series;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.CodeListService;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OrganizationsService;
-import fr.insee.rmes.persistance.service.sesame.links.OperationsLink;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -65,7 +68,7 @@ public class SeriesUtils {
 			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found","The series "+id+" cannot be found.");
 		}		
 		XhtmlToMarkdownUtils.convertJSONObject(series);
-		series.put("id", id);
+		series.put(Constants.ID, id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id,series);
 		addSeriesLinks(id, series);
@@ -79,7 +82,7 @@ public class SeriesUtils {
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
-			addOneOrganizationLink(series.get("id").toString(),series, INSEE.DATA_COLLECTOR);
+			addOneOrganizationLink(series.get(Constants.ID).toString(),series, INSEE.DATA_COLLECTOR);
 			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -249,8 +252,10 @@ public class SeriesUtils {
 	}
 
 	public String createSeries(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateSeries()) throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, 
-				"Only an admin can create a new series.");
+		if(!stampsRestrictionsService.canCreateSeries()) {
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, 
+					"Only an admin can create a new series.");
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Series series = new Series();
@@ -270,7 +275,9 @@ public class SeriesUtils {
 		}
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
-		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY,"Unknown family: ",idFamily);
+		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) {
+			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY,"Unknown family: ",idFamily);
+		}
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
@@ -292,20 +299,24 @@ public class SeriesUtils {
 		}
 
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,id);
-		if(!stampsRestrictionsService.canModifySeries(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
+		if(!stampsRestrictionsService.canModifySeries(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
+		}
 
 		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
-		if (series.getIdSims() != null & series.getOperations()!= null )
+		if (series.getIdSims() != null & series.getOperations()!= null ) {
 			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
 				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
 			}
+		}
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
+		} else {
+			createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		}
-		else createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
 	}
 
@@ -317,7 +328,7 @@ public class SeriesUtils {
 		catch (JSONException e) {
 			return false;
 		}
-		if (idSims==null | idSims.isEmpty()) {
+		if (idSims==null || idSims.isEmpty()) {
 			return false;
 		}
 		return true;
@@ -331,7 +342,7 @@ public class SeriesUtils {
 		catch (JSONException e) {
 			return false;
 		}
-		if (operations==null | operations.length()==0) {
+		if (operations==null || operations.length()==0) {
 			return false;
 		}
 		return true;
@@ -344,16 +355,17 @@ public class SeriesUtils {
 		SeriesPublication.publishSeries(id);
 
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES, id);
-		if(!stampsRestrictionsService.canValidateSeries(seriesURI)) 
+		if(!stampsRestrictionsService.canValidateSeries(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, 
 					"Only authorized users can publish series.");
+		}
 
 		model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 		logger.info("Validate series : " + seriesURI);
 
-		RepositoryGestion.objectsValidation(seriesURI, model);
+		RepositoryGestion.objectValidation(seriesURI, model);
 
 		return id;
 	}

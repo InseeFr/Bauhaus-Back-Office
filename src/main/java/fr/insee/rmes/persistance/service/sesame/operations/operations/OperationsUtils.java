@@ -24,13 +24,16 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.operations.Operation;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.persistance.sparqlQueries.operations.operations.OperationsQueries;
 
 @Component
 public class OperationsUtils {
@@ -69,7 +72,9 @@ public class OperationsUtils {
 		}
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries);
+		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
+			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries);
+		}
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
@@ -77,7 +82,9 @@ public class OperationsUtils {
 		}
 		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits
-		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
+		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
+		}
 		createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 
@@ -94,7 +101,9 @@ public class OperationsUtils {
 	public String setOperation(String id, String body) throws RmesException {
 
 		URI seriesURI=getSeriesUri(id);
-		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -106,10 +115,11 @@ public class OperationsUtils {
 		}
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
+		} else {
+			createRdfOperation(operation,null,ValidationStatus.MODIFIED);
 		}
-		else 	createRdfOperation(operation,null,ValidationStatus.MODIFIED);
 		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
 		return operation.getId();
 	}
@@ -142,24 +152,27 @@ public class OperationsUtils {
 		Model model = new LinkedHashModel();
 
 		URI seriesURI = getSeriesUri(id);
-		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
+		}
 
+		//PUBLISH
 		OperationPublication.publishOperation(id);
 
+		//UPDATE GESTION TO MARK AS PUBLISHED
 		URI operationURI = SesameUtils.objectIRI(ObjectType.OPERATION, id);
 		model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
 		logger.info("Validate operation : " + operationURI);
-
-		RepositoryGestion.objectsValidation(operationURI, model);
+		RepositoryGestion.objectValidation(operationURI, model);
 
 		return id;
 	}
 
 	private URI getSeriesUri(String id) throws RmesException {
 		JSONObject jsonOperation = getOperationById(id);
-		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,jsonOperation.getJSONObject("series").getString("id"));
+		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,jsonOperation.getJSONObject("series").getString(Constants.ID));
 		return seriesURI;
 	}
 

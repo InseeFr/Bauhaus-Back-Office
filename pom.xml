@@ -348,6 +348,13 @@
 			<version>6.0.0</version>
 		</dependency>
 		
+		<!-- SAXON FOR XSLT -->
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>10.0</version>
+		</dependency>
+		
 		<dependency>
  			 <groupId>org.freemarker</groupId>
  			 <artifactId>freemarker</artifactId>

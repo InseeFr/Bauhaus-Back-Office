@@ -26,9 +26,9 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.service.sesame.concepts.collections.Collection;
+import fr.insee.rmes.modele.concepts.Collection;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
@@ -62,8 +62,9 @@ public class CollectionsUtils {
 	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException  {
 		URI collectionURI = SesameUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
-		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
+		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MODIFICATION_RIGHTS_DENIED,"rights denied",id);
+		}
 		mapper.configure(
 			    DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Collection collection = new Collection(id);
@@ -121,8 +122,9 @@ public class CollectionsUtils {
 			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
 			logger.info("Validate collection : " + collectionURI);
 		}
-		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList))
+		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,collectionsToValidate);
+		}
 		RepositoryGestion.objectsValidation(collectionsToValidateList, model);
 		ConceptsPublication.publishCollection(collectionsToValidate);
 	}

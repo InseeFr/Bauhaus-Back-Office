@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.code_list.CodeListQueries;
 
 @Component
 public class CodeListUtils {

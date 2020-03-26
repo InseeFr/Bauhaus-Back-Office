@@ -32,7 +32,7 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String getDocuments() throws RmesException {
 		logger.debug("Starting to get documents list");
-		return documentsUtils.getAllDocuments().toString();
+		return documentsUtils.getAllDocuments().toString(); //TODO JsonArrayToString in JSONUtils ?
 	}
 
 	@Override
@@ -79,7 +79,6 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String changeDocument(String docId, InputStream documentFile, String documentName)
 			throws RmesException {
-		
 		return documentsUtils.changeDocument(docId,documentFile,documentName);		
 	}	
 	
@@ -90,6 +89,7 @@ public class DocumentsImpl implements DocumentsService {
 	/*
 	 * Create new link
 	 */
+	@Override
 	public String setLink(String body) throws RmesException {
 		String id=documentsUtils.createDocumentID();
 		logger.debug("Create document : "+ id);

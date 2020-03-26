@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.CodeListService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.code_list.CodeListQueries;
 
 @Service
 public class CodeListServiceImpl implements CodeListService {

@@ -15,14 +15,15 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.notifications.NotificationsContract;
-import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.service.notifications.NotificationsContract;
+import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class SeriesPublication {
 
@@ -33,10 +34,10 @@ public class SeriesPublication {
 		Model model = new LinkedHashModel();
 		Resource series = SesameUtils.seriesIRI(seriesId);
 		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);
-		String familyId = serieJson.getJSONObject("family").getString("id");
+		String familyId = serieJson.getJSONObject("family").getString(Constants.ID);
 		String status=FamOpeSerUtils.getValidationStatus(familyId);
 		
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(
 					ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY,
 					"This Series cannot be published before its family is published", 
@@ -50,7 +51,9 @@ public class SeriesPublication {
 		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found", seriesId);
+				if (!statements.hasNext()) {
+					throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found", seriesId);
+				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Other URI to transform
@@ -58,9 +61,9 @@ public class SeriesPublication {
 							st.getPredicate().toString().endsWith("seeAlso") |
 							st.getPredicate().toString().endsWith("replaces") |
 							st.getPredicate().toString().endsWith("isReplacedBy") ) {
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(),
-								FamOpeSerUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
+								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
 								st.getContext());
 					} else if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
@@ -71,7 +74,7 @@ public class SeriesPublication {
 					}
 					// Literals
 					else {
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext()
@@ -79,9 +82,9 @@ public class SeriesPublication {
 					}
 					while (hasPartStatements.hasNext()) {
 						Statement hpst = hasPartStatements.next();
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(hpst.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(hpst.getSubject()), 
 								hpst.getPredicate(), 
-								FamOpeSerUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
+								PublicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
 								hpst.getContext());
 					}
 					
@@ -94,8 +97,8 @@ public class SeriesPublication {
 			RepositoryGestion.closeStatements(statements);
 			RepositoryGestion.closeStatements(hasPartStatements);
 		}
-		Resource seriesToPublishRessource = FamOpeSerUtils.tranformBaseURIToPublish(series);
-		RepositoryPublication.publishSeries(seriesToPublishRessource, model);
+		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
+		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
 	}
 

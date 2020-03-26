@@ -25,15 +25,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.AuthType;
-import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
-import fr.insee.rmes.config.swagger.model.application.Roles;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.dissemination_status.DisseminationStatus;
-import fr.insee.rmes.persistance.stamps.StampsService;
+import fr.insee.rmes.modele.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.service.authentication.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -156,7 +155,7 @@ public class PublicResources {
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@POST
 	@Path("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -166,7 +165,7 @@ public class PublicResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@POST
 	@Path("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)

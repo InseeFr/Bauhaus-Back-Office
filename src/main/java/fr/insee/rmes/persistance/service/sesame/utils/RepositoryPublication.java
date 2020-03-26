@@ -25,6 +25,7 @@ import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.Constants;
 
 public class RepositoryPublication {
 
@@ -119,57 +120,22 @@ public class RepositoryPublication {
 		}
 	}
 
-	/*
-	 * TODO: factoriser les methodes pour publier famille/serie/Operation/Indicateur
-	 */
-	
-	public static void publishCollection(Resource collection, Model model) throws RmesException {
+	public static void publishResource(Resource resource, Model model, String type) throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
-
-			conn.remove(collection, null, null);
+			conn.remove(resource, null, null);
 			conn.add(model);
 			conn.close();
-			logger.info("Publication of collection : " + collection);
+			logger.info("Publication of "+type+" : " + resource);
 		} catch (OpenRDFException e) {
-			logger.error("Publication of collection : " + collection + FAILED);
+			logger.error("Publication of "+type+" : " + resource + FAILED);
 			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 
 		}
 	}
 
-	public static void publishFamily(Resource family, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
 
-			conn.remove(family, null, null);
-			conn.add(model);
-			conn.close();
-			logger.info("Publication of family : " + family);
-		} catch (OpenRDFException e) {
-			logger.error("Publication of family : " + family + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-
-		}
-	}
-	
-	public static void publishIndicator(Resource indicator, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
-
-			conn.remove(indicator, null, null);
-			conn.add(model);
-			conn.close();
-			logger.info("Publication of indicator : " + indicator);
-		} catch (OpenRDFException e) {
-			logger.error("Publication of indicator : " + indicator + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-
-		}
-	}
 	
 	
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
@@ -181,70 +147,16 @@ public class RepositoryPublication {
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "RepositoryException");
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "RepositoryException");
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 		}
 	}
-	
 
-	public static void publishSeries(Resource series, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
-
-			//TODO: work only in graph /operations/	?	
-			conn.remove(series, null, null);
-			//TODO: remove triplets ?a ?b series où ?b = hasPart,SeeAlso,Replaces,IsReplacedBy mais pas si ?b = isPartOf
-			//conn.remove(null, null, series);
-			
-			conn.add(model);
-			conn.close();
-			logger.info("Publication of series : " + series);
-		} catch (OpenRDFException e) {
-			logger.error("Publication of series : " + series + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-
-		}
-	}
-		
-	public static void publishOperation(Resource operation, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
-
-			//TODO: work only in graph /operations/	?	
-			conn.remove(operation, null, null);
-			//TODO: remove triplets ?a ?b operations
-			
-			conn.add(model);
-			conn.close();
-			logger.info("Publication of operation : " + operation);
-		} catch (OpenRDFException e) {
-			logger.error("Publication of operation : " + operation + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-
-		}
-	}
-	
-	public static void publishMetadataReport(Resource sims, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
-
-			conn.clear(sims);
-			conn.add(model);
-			conn.close();
-			logger.info("Publication of sims : " + sims);
-		} catch (OpenRDFException e) {
-			logger.error("Publication of sims : " + sims + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-		}
-	}
 	
 	private RepositoryPublication() {
 	    throw new IllegalStateException("Utility class");

@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -20,24 +21,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.export.ExportUtils;
-import fr.insee.rmes.persistance.export.Jasper;
-import fr.insee.rmes.persistance.export.XDocReport;
 import fr.insee.rmes.persistance.service.OperationsService;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.MetadataStructureDefUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.families.FamiliesUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExportBuilder;
-import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesQueries;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
+import fr.insee.rmes.service.export.ExportUtils;
+import fr.insee.rmes.service.export.Jasper;
+import fr.insee.rmes.service.export.XDocReport;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
@@ -119,10 +120,8 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String createSeries(String body) throws RmesException {
 		// TODO: check if there is already a series with the same name ?
-
 		String id = seriesUtils.createSeries(body);
 		return id;
-
 	}
 
 	@Override
@@ -357,6 +356,21 @@ public class OperationsImpl implements OperationsService {
 		return documentationsUtils.publishMetadataReport(id);
 	}
 
+	
+	@Override
+	public Response exportMetadataReport(String id) throws RmesException  {
+		File output;
+		InputStream is;
+		try {
+			output = documentationsUtils.exportMetadataReport(id);
+			is = new FileInputStream(output);
+		} catch (Exception e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+		}
+		String fileName = output.getName();
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", content).build();
+	}
 
 
 }

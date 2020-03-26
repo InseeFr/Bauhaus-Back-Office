@@ -11,13 +11,16 @@ import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.concepts.concepts.Concept;
-import fr.insee.rmes.persistance.service.sesame.ontologies.EVOC;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.PAV;
-import fr.insee.rmes.persistance.service.sesame.ontologies.XKOS;
+import fr.insee.rmes.modele.concepts.Concept;
+import fr.insee.rmes.modele.notes.DatableNote;
+import fr.insee.rmes.modele.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.PAV;
+import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.notes.NotesQueries;
 
 public class NotesUtils {
 	
@@ -89,24 +92,32 @@ public class NotesUtils {
 	
 	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<URI> notesToDelete)  throws RmesException{
 		JSONObject noteToDelete = RepositoryGestion.getResponseAsObject(NotesQueries.getChangeNoteToDelete(conceptId, datableNote));
-		if (noteToDelete.length() != 0) notesToDelete.add(SesameUtils.toURI(noteToDelete.getString("changeNoteURI")));
+		if (noteToDelete.length() != 0) {
+			notesToDelete.add(SesameUtils.toURI(noteToDelete.getString("changeNoteURI")));
+		}
 	}
 	
 	public String getVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException {
-		if (concept.getCreation()) return _ONE_;
-		else {
+		if (concept.getCreation()) {
+			return _ONE_;
+		} else {
 			String version = getLastVersion(concept,note,defaultVersion);
-			if (!concept.getVersioning()) return version;
+			if (!concept.getVersioning()) {
+				return version;
+			}
 			return String.valueOf(Integer.parseInt(version)+1) ;
 		}
 	}
 	
 	public String getLastVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException{
-		if (concept.getCreation()) return _ONE_;
-		else {
+		if (concept.getCreation()) {
+			return _ONE_;
+		} else {
 			JSONObject jsonVersion = RepositoryGestion.getResponseAsObject(
 					NotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
-			if (jsonVersion.length() == 0) return defaultVersion;
+			if (jsonVersion.length() == 0) {
+				return defaultVersion;
+			}
 			String version = jsonVersion.getString("version");
 			return version ;
 		}
@@ -115,9 +126,13 @@ public class NotesUtils {
 	public String getConceptVersion(Concept concept)  throws RmesException{
 		String conceptVersion = _ONE_;
 		JSONObject jsonConceptVersion = RepositoryGestion.getResponseAsObject(NotesQueries.getConceptVersion(concept.getId()));
-		if (jsonConceptVersion.length() == 0) return conceptVersion;
+		if (jsonConceptVersion.length() == 0) {
+			return conceptVersion;
+		}
 		conceptVersion = jsonConceptVersion.getString("conceptVersion");
-		if (concept.getVersioning()) conceptVersion = String.valueOf(Integer.parseInt(conceptVersion)+1) ;
+		if (concept.getVersioning()) {
+			conceptVersion = String.valueOf(Integer.parseInt(conceptVersion)+1) ;
+		}
 		return conceptVersion;
 		
 	}

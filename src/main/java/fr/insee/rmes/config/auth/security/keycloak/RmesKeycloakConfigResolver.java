@@ -20,30 +20,26 @@ public class RmesKeycloakConfigResolver implements KeycloakConfigResolver {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("keycloak-back-local.json");
 		
 		String url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-dev.json");
+		is = updateInputStreamIfFileExists(is, url);
+		
+		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-qf.json");
+		is = updateInputStreamIfFileExists(is, url);
+		
+		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-pre-prod.json");
+		is = updateInputStreamIfFileExists(is, url);
+		
+		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-prod.json");
+		is = updateInputStreamIfFileExists(is, url);
+		
+		return KeycloakDeploymentBuilder.build(is);
+	}
+
+	private InputStream updateInputStreamIfFileExists(InputStream is, String url) {
 		File f = new File(url);
 		if(f.exists() && !f.isDirectory()) { 
 			is = FileUtils.fileToIS(f);
 		}
-		
-		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-qf.json");
-		File f1 = new File(url);
-		if(f1.exists() && !f1.isDirectory()) {
-			is = FileUtils.fileToIS(f1);
-		}
-		
-		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-pre-prod.json");
-		File f2 = new File(url);
-		if(f2.exists() && !f2.isDirectory()) { 
-			is = FileUtils.fileToIS(f2);
-		}
-		
-		url = String.format(S_WEBAPPS_S, System.getProperty(CATALINA_BASE), "keycloak-back-prod.json");
-		File f3 = new File(url);
-		if(f3.exists() && !f3.isDirectory()) { 
-			is = FileUtils.fileToIS(f3);
-		}
-		
-		return KeycloakDeploymentBuilder.build(is);
+		return is;
 	}
 
 }

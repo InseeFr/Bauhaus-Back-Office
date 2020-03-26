@@ -43,13 +43,16 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.PAV;
-import fr.insee.rmes.persistance.service.sesame.ontologies.SCHEMA;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.modele.operations.documentations.Document;
+import fr.insee.rmes.modele.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.PAV;
+import fr.insee.rmes.persistance.ontologies.SCHEMA;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.DateParser;
 
 @Component
@@ -63,9 +66,6 @@ public class DocumentsUtils {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 
-	private static final String ID = "id";
-	private static final String URL = "url";
-	private static final String URI = "uri";
 	private static final String SCHEME_FILE = "file://";
 	final static Logger logger = LogManager.getLogger(DocumentsUtils.class);
 
@@ -143,29 +143,24 @@ public class DocumentsUtils {
 	 * @throws RmesException
 	 */
 	protected String createDocumentID() throws RmesException {
-		Boolean noDocInBase = false;
-		Boolean noLinkInBase = false;
-		int maxDocId = 0;
-		int maxLinkId = 0;
-		String id = null;
-
 		logger.info("Generate document id");
 
 		JSONObject json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastDocumentID());
-		if (json.length()==0) {noDocInBase= true;}
-		else { id = json.getString(ID);
-		if (id.equals("undefined") || StringUtils.isEmpty(id)) {noDocInBase= true;}
-		else maxDocId = Integer.parseInt(id);}
+		Integer id = getIdFromJson(json) == null ? 999 : getIdFromJson(json);
 
 		json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastLinkID());
-		if (json.length()==0)  {noLinkInBase= true;}
-		else {id = json.getString(ID);
-		if (id.equals("undefined") || StringUtils.isEmpty(id)) {noLinkInBase= true;}
-		else maxLinkId = Integer.parseInt(id);}
-
-		if (noDocInBase & noLinkInBase) {return "1000";}
-
-		return String.valueOf(java.lang.Math.max(maxDocId,maxLinkId)+1);
+		id = (getIdFromJson(json) == null ? id : Math.max(getIdFromJson(json), id))+1;
+		return id.toString();
+	}
+	
+	private Integer getIdFromJson(JSONObject json) {
+		if (json.length()==0) {return null;}
+		else { 
+			String id = json.getString(Constants.ID);
+			if (id.equals("undefined") || StringUtils.isEmpty(id)) {return null;} 
+			else {
+				return Integer.parseInt(id);
+		}}
 	}
 
 
@@ -179,7 +174,9 @@ public class DocumentsUtils {
 	public void createDocument(String id, String body, InputStream documentFile, String documentName) throws RmesException {
 
 		/* Check rights */
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new document.");
+		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new document.");
+		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -213,14 +210,16 @@ public class DocumentsUtils {
 	public void setDocument(String id, String body) throws RmesException {
 		/* Check rights */
 		if(isLink(id)) {
-			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) 
+			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
 				throw new RmesUnauthorizedException(
 						ErrorCodes.LINK_MODIFICATION_RIGHTS_DENIED, "Only an admin or a manager can modify a link.",id);
+			}
 		} else
 		{
-			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) 
+			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
 				throw new RmesUnauthorizedException(
 						ErrorCodes.DOCUMENT_MODIFICATION_RIGHTS_DENIED, "Only an admin or a manager can modify a document.",id);
+			}
 		} 
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -252,7 +251,7 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}		
 
-		if (jsonDocs.isNull(URI)) { throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID,"Cannot find Document with id: ",id); };
+		if (jsonDocs.isNull(Constants.URI)) { throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID,"Cannot find Document with id: ",id); };
 		if (jsonDocs.has(UPDATED_DATE) ) {
 			jsonDocs.put(UPDATED_DATE, DateParser.getDate(jsonDocs.getString(UPDATED_DATE)));
 		}
@@ -263,7 +262,7 @@ public class DocumentsUtils {
 	public Status deleteDocument(String docId) throws RmesException {
 		Resource graph = SesameUtils.documentsGraph();
 		JSONObject jsonDoc = getDocument(docId);
-		String uri = jsonDoc.getString(URI);
+		String uri = jsonDoc.getString(Constants.URI);
 		String url = getDocumentUrlFromDocument(jsonDoc);
 		URI docUri = SesameUtils.toURI(uri);
 
@@ -324,7 +323,7 @@ public class DocumentsUtils {
 
 			// Delete the old file
 			logger.info("Delete old file"+ documentName +", with URL  "+docUrl);
-			checkDocumentReference(docId, jsonDoc.getString(URI));
+			checkDocumentReference(docId, jsonDoc.getString(Constants.URI));
 			deleteFile(docUrl);
 
 			// Update document's url
@@ -341,10 +340,12 @@ public class DocumentsUtils {
 		logger.debug("URL : "+url);
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
 		logger.debug("PATH : "+path);
-		if (!sameName && Files.exists(path)) throw new RmesUnauthorizedException(
-				ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, 
-				"There is already a document with that name.",
-				documentName);
+		if (!sameName && Files.exists(path)) {
+			throw new RmesUnauthorizedException(
+					ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, 
+					"There is already a document with that name.",
+					documentName);
+		}
 		try {
 			Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING); // throws an error if a file already exists under this name
 		} catch (IOException e) {
@@ -357,9 +358,10 @@ public class DocumentsUtils {
 	 */
 	public void createLink(String id, String body) throws RmesException {
 		/* Check rights */
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) 
+		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
 			throw new RmesUnauthorizedException(
 					ErrorCodes.LINK_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new link.");
+		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -468,7 +470,7 @@ public class DocumentsUtils {
 	}
 
 	private String getDocumentUrlFromDocument(JSONObject jsonDoc) {
-		return jsonDoc.getString(URL).replace(SCHEME_FILE, "");
+		return jsonDoc.getString(Constants.URL).replace(SCHEME_FILE, "");
 	}
 
 	private boolean isLink(String id) throws RmesException {
@@ -477,7 +479,7 @@ public class DocumentsUtils {
 	}
 
 	private boolean isLink(JSONObject jsonDoc) throws RmesException {
-		String uri = jsonDoc.getString(URI);
+		String uri = jsonDoc.getString(Constants.URI);
 		if (StringUtils.contains(uri, Config.LINKS_BASE_URI)) {return true;}
 		return false;
 	}

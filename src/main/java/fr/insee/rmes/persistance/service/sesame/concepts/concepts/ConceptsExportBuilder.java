@@ -11,27 +11,34 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.dissemination_status.DisseminationStatus;
-import fr.insee.rmes.persistance.service.sesame.concepts.collections.CollectionsQueries;
+import fr.insee.rmes.modele.dissemination_status.DisseminationStatus;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.service.sesame.utils.StringComparator;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.StringComparator;
 
 @Component
 public class ConceptsExportBuilder {
 	
+
 	@Autowired 
 	ConceptsUtils conceptsUtils;
 
 	public JSONObject getConceptData(String id) throws RmesException {
 		JSONObject data = new JSONObject();
 		JSONObject general = conceptsUtils.getConceptById(id);
-		if (general.has("altLabelLg1")) {
-			general.put("altLabelLg1", JSONUtils.jsonArrayOfStringToString(general.getJSONArray("altLabelLg1")));
-		} else general.remove("altLabelLg1");
-		if (general.has("altLabelLg2")) {
-			general.put("altLabelLg2", JSONUtils.jsonArrayOfStringToString(general.getJSONArray("altLabelLg2")));
-		} else general.remove("altLabelLg2");
+		if (general.has(Constants.ALT_LABEL_LG1)) {
+			general.put(Constants.ALT_LABEL_LG1, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
+		} else {
+			general.remove(Constants.ALT_LABEL_LG1);
+		}
+		if (general.has(Constants.ALT_LABEL_LG2)) {
+			general.put(Constants.ALT_LABEL_LG2, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
+		} else {
+			general.remove(Constants.ALT_LABEL_LG2);
+		}
 		data.put("prefLabelLg1", general.getString("prefLabelLg1"));
 		if (general.has("prefLabelLg2")) {
 			data.put("prefLabelLg2", general.getString("prefLabelLg2"));
@@ -71,11 +78,11 @@ public class ConceptsExportBuilder {
 
 	private String editGeneral(JSONObject json, String context) {
 		StringBuilder xhtml = new StringBuilder("<ul>");
-		if (json.has("altLabelLg1")) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG1 + ") : " + json.getString("altLabelLg1") + "</li>");
+		if (json.has(Constants.ALT_LABEL_LG1)) {
+			xhtml.append("<li>Libellé alternatif (" + Config.LG1 + ") : " + json.getString(Constants.ALT_LABEL_LG1) + "</li>");
 		}
-		if (json.has("altLabelLg2")) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG2 + ") : " + json.getString("altLabelLg2") + "</li>");
+		if (json.has(Constants.ALT_LABEL_LG2)) {
+			xhtml.append("<li>Libellé alternatif (" + Config.LG2 + ") : " + json.getString(Constants.ALT_LABEL_LG2) + "</li>");
 		}
 		if (json.has("created")) {
 			xhtml.append("<li>Date de création : " + toDate(json.getString("created")) + "</li>");
@@ -223,10 +230,14 @@ public class ConceptsExportBuilder {
 	
 	private String toValidationStatus(String boolStatus, String context) {
 		if (boolStatus.equals("true")) {
-			if (context.equals("concepts")) return "Validé";
-			else return "Validée";
+			if (context.equals("concepts")) {
+				return "Validé";
+			} else {
+				return "Validée";
+			}
+		} else {
+			return "Provisoire";
 		}
-		else return "Provisoire";
 	}
 
 }

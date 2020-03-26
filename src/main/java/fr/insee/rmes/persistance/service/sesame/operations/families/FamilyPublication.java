@@ -12,17 +12,17 @@ import org.openrdf.repository.RepositoryResult;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.persistance.notifications.NotificationsContract;
-import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.persistance.service.Constants;
+import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.service.notifications.NotificationsContract;
+import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class FamilyPublication {
 
-	private static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	public static void publishFamily(String familyId) throws RmesException {
@@ -33,10 +33,11 @@ public class FamilyPublication {
 		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, family);
 
-		
 		try {	
 			try {
-				if (!statements.hasNext()) throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID,"Family not found", familyId);
+				if (!statements.hasNext()) {
+					throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID,"Family not found", familyId);
+				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published
@@ -49,7 +50,7 @@ public class FamilyPublication {
 					}
 					// Literals
 					else {
-						model.add(FamOpeSerUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext());
@@ -57,14 +58,14 @@ public class FamilyPublication {
 					// Other URI to transform : none
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 		
 		} finally {
 			RepositoryGestion.closeStatements(statements);
 		}
-		Resource familyToPublishRessource = FamOpeSerUtils.tranformBaseURIToPublish(family);
-		RepositoryPublication.publishFamily(familyToPublishRessource, model);
+		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
+		RepositoryPublication.publishResource(familyToPublishRessource, model, "family");
 		
 	}
 

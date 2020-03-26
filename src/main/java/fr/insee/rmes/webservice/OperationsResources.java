@@ -3,9 +3,6 @@ package fr.insee.rmes.webservice;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -32,19 +29,20 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 
-import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.modele.operations.Family;
+import fr.insee.rmes.modele.operations.Indicator;
+import fr.insee.rmes.modele.operations.Operation;
+import fr.insee.rmes.modele.operations.Series;
+import fr.insee.rmes.modele.operations.documentations.Documentation;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OperationsService;
-import fr.insee.rmes.persistance.service.sesame.operations.documentations.Documentation;
-import fr.insee.rmes.persistance.service.sesame.operations.families.Family;
-import fr.insee.rmes.persistance.service.sesame.operations.indicators.Indicator;
-import fr.insee.rmes.persistance.service.sesame.operations.operations.Operation;
-import fr.insee.rmes.persistance.service.sesame.operations.series.Series;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -106,7 +104,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 		responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 	)
-	public Response getFamilyByID(@PathParam("id") String id) throws RmesException {
+	public Response getFamilyByID(@PathParam(Constants.ID) String id) throws RmesException {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -117,13 +115,13 @@ public class OperationsResources {
 	 * @return response
 	 */
 	
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@PUT
 	@Path("/family/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update family" )
 	public Response setFamilyById(
-			@PathParam("id") String id, 
+			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Family to update", required = true,
             content = @Content(schema = @Schema(implementation = Family.class))) String body) {
 		try {
@@ -140,7 +138,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@POST
 	@Path("/family")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -157,13 +155,13 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@PUT
 	@Path("/family/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Family validation")
 	public Response setFamilyValidation(
-			@PathParam("id") String id) throws RmesException {
+			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setFamilyValidation(id);
 		} catch (RmesException e) {
@@ -199,7 +197,7 @@ public class OperationsResources {
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesByID", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
-	public Response getSeriesByID(@PathParam("id") String id) {
+	public Response getSeriesByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getSeriesByID(id);
@@ -223,13 +221,13 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_CNIS })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
 	@PUT
 	@Path("/series/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
 	public Response setSeriesById(
-			@PathParam("id") String id, 
+			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Series to update", required = true,
             content = @Content(schema = @Schema(implementation = Series.class)))String body) {
 		try {
@@ -244,7 +242,7 @@ public class OperationsResources {
 	@Path("/series/{id}/operationsWithoutReport")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsWithoutReport", summary = "Operations without metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
-	public Response getOperationsWithoutReport(@PathParam("id") String id) {
+	public Response getOperationsWithoutReport(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getOperationsWithoutReport(id);
@@ -260,7 +258,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN })
+	@Secured({ Roles.SPRING_ADMIN })
 	@POST
 	@Path("/series")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -282,13 +280,13 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
 	@PUT
 	@Path("/series/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")
 	public Response setSeriesValidation(
-			@PathParam("id") String id) throws RmesException {
+			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setSeriesValidation(id);
 		} catch (RmesException e) {
@@ -322,7 +320,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Operation.class)))})
-	public Response getOperationByID(@PathParam("id") String id) {
+	public Response getOperationByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getOperationByID(id);
@@ -338,7 +336,7 @@ public class OperationsResources {
 	@Path("/operation/{id}/variableBook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
-	public Response getVarBookExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader)
+	public Response getVarBookExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader)
 			throws RmesException, ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException {
 			return operationsService.getVarBookExport(id, acceptHeader);
 	}
@@ -364,13 +362,13 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_CNIS })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
 	@PUT
 	@Path("/operation/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public Response setOperationById(
-			@PathParam("id") String id, 
+			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Operation to update", required = true, 
             content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
@@ -386,7 +384,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
 	@POST
 	@Path("/operation")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -408,13 +406,13 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
 	@PUT
 	@Path("/operation/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public Response setOperationValidation(
-			@PathParam("id") String id) throws RmesException {
+			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setOperationValidation(id);
 		} catch (RmesException e) {
@@ -460,7 +458,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Indicator.class)))})
-	public Response getIndicatorByID(@PathParam("id") String id) {
+	public Response getIndicatorByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getIndicatorByID(id);
@@ -476,13 +474,13 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/indicator/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
 	public Response setIndicatorById(
-			@PathParam("id") String id, 
+			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Indicator to update", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		try {
@@ -498,13 +496,13 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/indicator/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
 	public Response setIndicatorValidation(
-			@PathParam("id") String id) throws RmesException {
+			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setIndicatorValidation(id);
 		} catch (RmesException e) {
@@ -519,7 +517,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_INDICATOR_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@POST
 	@Path("/indicator")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -564,7 +562,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMA", summary = "Metadata attribute specification and property", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
-	public Response getMetadataAttribute(@PathParam("id") String id) {
+	public Response getMetadataAttribute(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getMetadataAttribute(id);
@@ -596,7 +594,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Metadata report for an id", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 	))})
-	public Response getMetadataReport(@PathParam("id") String id) {
+	public Response getMetadataReport(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getMetadataReport(id);
@@ -611,7 +609,7 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@POST
 	@Path("/metadataReport")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -636,13 +634,13 @@ public class OperationsResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR, Constants.SPRING_CNIS })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR, Roles.SPRING_CNIS })
 	@PUT
 	@Path("/metadataReport/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
 	public Response setMetadataReportById(
-			@PathParam("id") String id, 
+			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Report to update", required = true,
             content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		try {
@@ -659,13 +657,13 @@ public class OperationsResources {
 	 * @param id
 	 * @return response
 	 */	
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_SERIES_CONTRIBUTOR, Constants.SPRING_INDICATOR_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/metadataReport/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public Response setSimsValidation(
-			@PathParam("id") String id) throws RmesException {
+			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.publishMetadataReport(id);
 		} catch (RmesException e) {
@@ -675,10 +673,12 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
-	static String readFile(String path, Charset encoding) 
-			  throws IOException 
-			{
-			  byte[] encoded = Files.readAllBytes(Paths.get(path));
-			  return new String(encoded, encoding);
-			}
+	@POST
+	@Path("/metadataReport/export")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	public Response getSimsExport() throws Exception {
+		return operationsService.exportMetadataReport("toto");	
+	}
+	
 }

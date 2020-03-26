@@ -7,9 +7,11 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.sparqlQueries.organizations.OrganizationQueries;
 
 @Service
 public class OrganizationsServiceImpl implements OrganizationsService {
@@ -20,7 +22,7 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 	@Override
 	public String getOrganization(String organizationIdentifier) throws RmesException {
 		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.organizationQuery(organizationIdentifier));
-		orga.put("id", organizationIdentifier);
+		orga.put(Constants.ID, organizationIdentifier);
 		return QueryUtils.correctEmptyGroupConcat(orga.toString());
 	}
 

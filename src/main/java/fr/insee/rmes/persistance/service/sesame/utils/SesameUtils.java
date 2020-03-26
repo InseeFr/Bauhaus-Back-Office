@@ -14,9 +14,10 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.XMLSchema;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.service.sesame.notes.DatableNote;
-import fr.insee.rmes.persistance.service.sesame.notes.VersionableNote;
-import fr.insee.rmes.persistance.service.sesame.ontologies.QB;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.notes.DatableNote;
+import fr.insee.rmes.modele.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.utils.DateParser;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -105,9 +106,13 @@ public class SesameUtils {
 	
 	public static URI componentTypeIRI(String URItype) {
 		URI uri = factory.createURI(URItype);
-		if (uri.equals(QB.ATTRIBUTE)) return QB.ATTRIBUTE_PROPERTY;
-		else if (uri.equals(QB.DIMENSION)) return QB.DIMENSION_PROPERTY;
-		else if (uri.equals(QB.MEASURE)) return QB.MEASURE_PROPERTY;
+		if (uri.equals(QB.ATTRIBUTE)) {
+			return QB.ATTRIBUTE_PROPERTY;
+		} else if (uri.equals(QB.DIMENSION)) {
+			return QB.DIMENSION_PROPERTY;
+		} else if (uri.equals(QB.MEASURE)) {
+			return QB.MEASURE_PROPERTY;
+		}
 		return null;
 	}
 	

@@ -21,6 +21,7 @@ import fr.insee.rmes.config.swagger.model.dsd.DSDById;
 import fr.insee.rmes.config.swagger.model.dsd.DSDComponentById;
 import fr.insee.rmes.config.swagger.model.dsd.IdLabelType;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.DSDService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -72,7 +73,7 @@ public class DSDResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDSDById", summary = "DSD", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=DSDById.class)))})	
-	public Response getDSDById(@PathParam("id") String id) {
+	public Response getDSDById(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = DSDService.getDSDById(id);

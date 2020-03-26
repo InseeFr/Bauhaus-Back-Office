@@ -1,6 +1,8 @@
 package fr.insee.rmes.persistance.service.sesame.operations.documentations;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -30,25 +32,30 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.modele.ValidationStatus;
+import fr.insee.rmes.modele.operations.documentations.Documentation;
+import fr.insee.rmes.modele.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.modele.operations.documentations.RangeType;
+import fr.insee.rmes.persistance.ontologies.DCMITYPE;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.code_list.CodeListUtils;
-import fr.insee.rmes.persistance.service.sesame.ontologies.DCMITYPE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.INSEE;
-import fr.insee.rmes.persistance.service.sesame.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.service.sesame.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
+import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.ValidationStatus;
+import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateParser;
 
 @Component
 public class DocumentationsUtils {
 
-	private static final String ID = "id";
 	final static Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
 	@Autowired
@@ -62,6 +69,9 @@ public class DocumentationsUtils {
 
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
+	
+	@Autowired
+	DocumentationExport docExport;
 
 	/**
 	 * GETTER
@@ -73,7 +83,7 @@ public class DocumentationsUtils {
 		//Get general informations
 		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
 		if (doc.length()==0) {throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Documentation not found", "");}
-		doc.put(ID, idSims);
+		doc.put(Constants.ID, idSims);
 
 		//Get all rubrics
 		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
@@ -124,15 +134,20 @@ public class DocumentationsUtils {
 
 		//Update rubrics
 		if (create) {
-			if(!stampsRestrictionsService.canCreateSims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+			if(!stampsRestrictionsService.canCreateSims(targetUri)) {
+				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+			}
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if(!stampsRestrictionsService.canModifySims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED, "Only an admin, CNIS, or a manager can modify this sims.", id);
-			String status = getValidationStatus(id);
-			if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
-				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
+			if(!stampsRestrictionsService.canModifySims(targetUri)) {
+				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED, "Only an admin, CNIS, or a manager can modify this sims.", id);
 			}
-			else 	saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
+			String status = getValidationStatus(id);
+			if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
+			} else {
+				saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
+			}
 		}
 		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
 		return sims.getId();
@@ -141,26 +156,10 @@ public class DocumentationsUtils {
 	private String getValidationStatus(String id) throws RmesException{
 		try {		return RepositoryGestion.getResponseAsObject(DocumentationsQueries.getPublicationState(id)).getString("state"); }
 		catch (JSONException e) {
-			return "UNDEFINED";
+			return Constants.UNDEFINED;
 		}
 	}
 
-	private String targetId(String idSims) throws RmesException {
-		JSONObject simsJson = getDocumentationByIdSims(idSims);
-		String targetId = null;
-		try{
-			targetId = simsJson.getString("idIndicator");
-			if(targetId.isEmpty()) {
-				targetId = simsJson.getString("idOperation");
-				if(targetId.isEmpty()) {
-					targetId = simsJson.getString("idSeries");
-				}
-			}
-		} catch(JSONException e) {
-			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", idSims);
-		}
-		return targetId;
-	}
 
 
 	/**
@@ -199,14 +198,16 @@ public class DocumentationsUtils {
 		}
 
 		/* Check rights */
-		if(!stampsRestrictionsService.canCreateSims(targetUri)) throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+		if(!stampsRestrictionsService.canCreateSims(targetUri)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+		}
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
 		String status=FamOpeSerUtils.getValidationStatus(targetId);
-		if(status.equals("UNDEFINED")) {
+		if(status.equals(Constants.UNDEFINED)) {
 			status=IndicatorsUtils.getValidationStatus(targetId);
 		}			
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) | status.equals("UNDEFINED")) {
+		if(PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(
 					ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
 					"This metadataReport cannot be published before its target is published. ", 
@@ -222,11 +223,10 @@ public class DocumentationsUtils {
 		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
 		logger.info("Validate sims : " + simsURI);
 
-		RepositoryGestion.objectsValidation(simsURI, model);
+		RepositoryGestion.objectValidation(simsURI, model);
 
 		return id;
 	}
-
 
 
 
@@ -257,9 +257,11 @@ public class DocumentationsUtils {
 
 	private void checkIfTargetIsASeriesWithOperations(String idTarget) throws RmesException {
 		if(FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idTarget)) {
-			if (seriesUtils.hasOperations(idTarget)) throw new RmesNotAcceptableException(
-					ErrorCodes.SERIES_OPERATION_OR_SIMS, 
-					"Cannot create Sims for a series which already has operations", idTarget);
+			if (seriesUtils.hasOperations(idTarget)) {
+				throw new RmesNotAcceptableException(
+						ErrorCodes.SERIES_OPERATION_OR_SIMS, 
+						"Cannot create Sims for a series which already has operations", idTarget);
+			}
 		}
 	}
 
@@ -399,7 +401,9 @@ public class DocumentationsUtils {
 			}
 			break; 
 		case RICHTEXT :
-			if (rubric.isEmpty()) break;
+			if (rubric.isEmpty()) {
+				break;
+			}
 			URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
 			SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
 			SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
@@ -418,7 +422,9 @@ public class DocumentationsUtils {
 			}
 			break; 
 		case STRING :
-			if (rubric.isEmpty()) break;
+			if (rubric.isEmpty()) {
+				break;
+			}
 			SesameUtils.addTripleUri(attributeUri,RDF.TYPE,SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 				SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg1(),Config.LG1, model, graph);
@@ -434,7 +440,9 @@ public class DocumentationsUtils {
 
 
 	private RangeType getRangeType(DocumentationRubric rubric) throws RmesException {
-		if (rubric.getRangeType() == null) throw new RmesException(HttpStatus.SC_BAD_REQUEST, "At least one rubric doesn't have rangeType", "Rubric :"+rubric.getIdAttribute());
+		if (rubric.getRangeType() == null) {
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "At least one rubric doesn't have rangeType", "Rubric :"+rubric.getIdAttribute());
+		}
 		RangeType type = RangeType.getEnumByJsonType(rubric.getRangeType());
 		return type;
 	}	
@@ -466,6 +474,12 @@ public class DocumentationsUtils {
 		if (id.equals("undefined")) {return "1000";}
 		int newId = Integer.parseInt(id)+1;
 		return String.valueOf(newId);
+	}
+
+
+	public File exportMetadataReport(String id) throws Exception {
+		InputStream test = getClass().getClassLoader().getResourceAsStream("testXML.xml");
+		return docExport.export(test);
 	}
 
 }

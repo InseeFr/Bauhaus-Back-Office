@@ -1,7 +1,6 @@
 package fr.insee.rmes.persistance.service.sesame.concepts.publication;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
@@ -17,27 +16,21 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.notifications.NotificationsContract;
-import fr.insee.rmes.persistance.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.service.sesame.ontologies.XKOS;
+import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.persistance.service.Constants;
+import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
+import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.service.notifications.NotificationsContract;
+import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class ConceptsPublication {
 
-	private static final String REPOSITORY_EXCEPTION = "RepositoryException";
 	static NotificationsContract notification = new RmesNotificationsImpl();
-
-	private static Resource tranformBaseURIToPublish(Resource resource) {
-		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
-		return SesameUtils.toURI(newResource);
-
-	}
 
 	public static void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
@@ -62,35 +55,35 @@ public class ConceptsPublication {
 				Resource subject = null, graph = null;
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					subject = tranformBaseURIToPublish(st.getSubject());
+					subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					graph = st.getContext();
 					String predicat = st.getPredicate().toString();
 					// Notes, transform URI and get attributs
-					if (stringEndsWithItemFromList(predicat,notes)) {
-						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
+					if (PublicationUtils.stringEndsWithItemFromList(predicat,notes)) {
+						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						publishExplanatoryNotes(con, SesameUtils.toURI(st.getObject().toString()), model);
-						noteToClear.add(tranformBaseURIToPublish((Resource) st.getObject()));
+						noteToClear.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
 					}
 					// Other URI to transform	
-					else if (stringEndsWithItemFromList(predicat,links)) {
-						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
+					else if (PublicationUtils.stringEndsWithItemFromList(predicat,links)) {
+						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 					}
 					// Broader links
 					else if (predicat.endsWith("broader")) {
 						hasBroader = true;
-						model.add(subject, st.getPredicate(), tranformBaseURIToPublish((Resource) st.getObject()),
+						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
-						model.add(tranformBaseURIToPublish((Resource) st.getObject()), SKOS.NARROWER, subject, graph);
+						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.NARROWER, subject, graph);
 					}
 					// Narrower links
 					else if (predicat.endsWith("narrower")) {
-						Resource object = tranformBaseURIToPublish((Resource) st.getObject());
+						Resource object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 						topConceptOfToDelete.add(object);
 						model.add(subject, st.getPredicate(), object, graph);
 						model.add(object, SKOS.BROADER, subject, graph);
-					} else if (stringEndsWithItemFromList(predicat,ignoredAttrs)) {
+					} else if (PublicationUtils.stringEndsWithItemFromList(predicat,ignoredAttrs)) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals
@@ -99,17 +92,17 @@ public class ConceptsPublication {
 					}
 				}
 				if (!hasBroader) {
-					model.add(subject, SKOS.TOP_CONCEPT_OF, tranformBaseURIToPublish(SesameUtils.conceptScheme()),
+					model.add(subject, SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(SesameUtils.conceptScheme()),
 							graph);
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 			
 			RepositoryGestion.closeStatements(statements);
 			publishMemberLinks(concept, model, con);
 			
-			Resource conceptToPublish = tranformBaseURIToPublish(concept);
+			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
 			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
 			//TODO uncomment when we can notify...
 			/* if (creation)
@@ -121,17 +114,15 @@ public class ConceptsPublication {
 
 	}
 	
-	private static boolean stringEndsWithItemFromList(String inputStr, String[] items) {
-	    return Arrays.stream(items).parallel().anyMatch(inputStr::endsWith);
-	}
+
 
 	public static void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
 		JSONArray conceptsToCheck = RepositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
 			if (!RepositoryGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
-				model.add(tranformBaseURIToPublish(SesameUtils.conceptIRI(id)),
-						SKOS.TOP_CONCEPT_OF, tranformBaseURIToPublish(SesameUtils.conceptScheme()),
+				model.add(PublicationUtils.tranformBaseURIToPublish(SesameUtils.conceptIRI(id)),
+						SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(SesameUtils.conceptScheme()),
 						SesameUtils.conceptGraph());
 			}
 		}
@@ -145,7 +136,7 @@ public class ConceptsPublication {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				String predicat = st.getPredicate().toString();
-				subject = tranformBaseURIToPublish(st.getSubject());
+				subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 				graph = st.getContext();
 				if (predicat.endsWith("conceptVersion")) {
 					// nothing, wouldn't copy this attr
@@ -166,9 +157,9 @@ public class ConceptsPublication {
 			if (subject == null) {
 				throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
 			}
-			model.add(tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
+			model.add(PublicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 
 		}
 	}
@@ -178,16 +169,16 @@ public class ConceptsPublication {
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				model.add(tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-						tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+				model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+						PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 	}
 
@@ -208,8 +199,8 @@ public class ConceptsPublication {
 						Statement st = statements.next();
 						// Other URI to transform
 						if (st.getPredicate().toString().endsWith("member")) {
-							model.add(tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-									tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+									PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 						} else if (st.getPredicate().toString().endsWith("isValidated")
 								|| st.getPredicate().toString().endsWith("creator")
 								|| st.getPredicate().toString().endsWith("contributor")) {
@@ -217,18 +208,18 @@ public class ConceptsPublication {
 						}
 						// Literals
 						else {
-							model.add(tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
+							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
 									st.getContext());
 						}
 					}
 				} catch (RepositoryException e) {
-					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), REPOSITORY_EXCEPTION);
+					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 				}
 			} finally {
 				RepositoryGestion.closeStatements(statements);
 			}
-			Resource collectionToPublish = tranformBaseURIToPublish(collection);
-			RepositoryPublication.publishCollection(collectionToPublish, model);
+			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
+			RepositoryPublication.publishResource(collectionToPublish, model, "collection");
 			// if (creation)
 			// notification.notifyCollectionCreation(collectionId,
 			// collection.toString());
