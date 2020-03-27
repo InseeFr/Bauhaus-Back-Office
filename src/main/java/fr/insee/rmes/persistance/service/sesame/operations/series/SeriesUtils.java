@@ -57,7 +57,7 @@ public class SeriesUtils {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 
-	final static Logger logger = LogManager.getLogger(SeriesUtils.class);
+	static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
 
@@ -169,6 +169,7 @@ public class SeriesUtils {
 		if (!StringUtils.isEmpty(creator)) {
 			SesameUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creator), model, SesameUtils.operationsGraph());
 		}
+		
 		List<String> gestionnaires=series.getGestionnaires();
 		if (gestionnaires!=null) {
 			for (String gestionnaire : gestionnaires) {
@@ -177,57 +178,19 @@ public class SeriesUtils {
 		}
 	
 		//partenaires
-		List<OperationsLink> contributors = series.getContributor();
-		if (contributors != null){
-			for (OperationsLink contributor : contributors) {
-				if(!contributor.isEmpty()) {
-					SesameUtils.addTripleUri(seriesURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, SesameUtils.operationsGraph());		
-				}
-			}
-		}
+		addOperationLinksOrganization(series.getContributor(),DCTERMS.CONTRIBUTOR,series, model, seriesURI);
+		
+		//Data_collector
+		addOperationLinksOrganization(series.getDataCollector(),INSEE.DATA_COLLECTOR,series, model, seriesURI);
 	
-		List<OperationsLink> dataCollectors = series.getDataCollector();
-		if (dataCollectors != null) {
-			for (OperationsLink dataCollector : dataCollectors) {
-				if(!dataCollector.isEmpty()) {
-					SesameUtils.addTripleUri(seriesURI, INSEE.DATA_COLLECTOR,organizationsService.getOrganizationUriById(dataCollector.getId()),model, SesameUtils.operationsGraph());
-				}		
-			}
-		}
-	
-		String typeList=series.getTypeList();
-		String typeCode=series.getTypeCode();
-		if (!StringUtils.isEmpty(typeList) & !StringUtils.isEmpty(typeCode)) {
-			String typeUri = codeListService.getCodeUri(typeList, typeCode);
-			SesameUtils.addTripleUri(seriesURI, DCTERMS.TYPE, typeUri,model, SesameUtils.operationsGraph());
-		}
-	
-		String accrualPeriodicityList=series.getAccrualPeriodicityList();
-		String accrualPeriodicityCode=series.getAccrualPeriodicityCode();
-		if (!StringUtils.isEmpty(accrualPeriodicityList) & !StringUtils.isEmpty(accrualPeriodicityCode)) {
-			String accPeriodicityUri = codeListService.getCodeUri(accrualPeriodicityList, accrualPeriodicityCode);
-			SesameUtils.addTripleUri(seriesURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, SesameUtils.operationsGraph());
-		}
-	
-		List<OperationsLink> seeAlsos = series.getSeeAlso();
-		if (seeAlsos != null) {
-			for (OperationsLink seeAlso : seeAlsos) {
-				if(!seeAlso.isEmpty()) {
-					String seeAlsoUri = ObjectType.getCompleteUriGestion(seeAlso.getType(), seeAlso.getId());
-					SesameUtils.addTripleUri(seriesURI, RDFS.SEEALSO ,seeAlsoUri, model, SesameUtils.operationsGraph());
-				}
-			}
-		}
-	
-		List<OperationsLink> replaces = series.getReplaces();
-		if (replaces != null) {
-			for (OperationsLink repl : replaces) {
-				if(!repl.isEmpty()) {
-					String replUri = ObjectType.getCompleteUriGestion(repl.getType(), repl.getId());
-					SesameUtils.addTripleUri(seriesURI, DCTERMS.REPLACES ,replUri, model, SesameUtils.operationsGraph());
-				}
-			}
-		}
+		//Type
+		addCodeList(series.getTypeList(), series.getTypeCode(), DCTERMS.TYPE, model, seriesURI);		
+		//PERIODICITY
+		addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);		
+		
+		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
+		addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
+		
 	
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
 		if (isReplacedBys != null) {
@@ -250,6 +213,34 @@ public class SeriesUtils {
 	
 		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
+	
+	private void addOperationLinks(List<OperationsLink> links, URI predicate, Model model, URI seriesURI) {
+		if (links != null) {
+			for (OperationsLink link : links) {
+				if(!link.isEmpty()) {
+					String linkUri = ObjectType.getCompleteUriGestion(link.getType(), link.getId());
+					SesameUtils.addTripleUri(seriesURI, predicate ,linkUri, model, SesameUtils.operationsGraph());
+				}
+			}
+		}
+	}
+
+	private void addCodeList(String list, String code, URI predicate, Model model, URI seriesURI) throws RmesException {
+		if (!StringUtils.isEmpty(list) && !StringUtils.isEmpty(code)) {
+			String uri = codeListService.getCodeUri(list, code);
+			SesameUtils.addTripleUri(seriesURI, predicate, uri, model, SesameUtils.operationsGraph());
+		}
+	}
+
+	private void addOperationLinksOrganization(List<OperationsLink> data, URI predicate, Series series, Model model, URI seriesURI) throws RmesException {
+		if (data != null) {
+			for (OperationsLink d : data) {
+				if(!d.isEmpty()) {
+					SesameUtils.addTripleUri(seriesURI, predicate,organizationsService.getOrganizationUriById(d.getId()),model, SesameUtils.operationsGraph());
+				}		
+			}
+		}
+	}
 
 	public String createSeries(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateSeries()) {
@@ -266,13 +257,8 @@ public class SeriesUtils {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
-		if ((series.getIdSims()!=null) & (series.getOperations()!=null) ) {
-			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
-				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
-			}
-		}
+		checkSimsWithOperations(series);
+		
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
 		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) {
@@ -281,10 +267,22 @@ public class SeriesUtils {
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-		logger.info("Create series : " + id + " - " + series.getPrefLabelLg1());
+		logger.info("Create series : {0} - {1}",id, series.getPrefLabelLg1());
 
 		return id;
 
+	}
+
+	/**
+	 * Une série ne peut avoir un Sims que si elle n'a pas d'opération
+	 * @param series
+	 * @throws RmesNotAcceptableException
+	 */
+	private void checkSimsWithOperations(Series series) throws RmesNotAcceptableException {
+		if (series.getIdSims()!=null && !series.getIdSims().isEmpty() && series.getOperations()!=null  && !series.getOperations().isEmpty()) {
+				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
+						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+		}
 	}
 
 	/* Update Series */
@@ -303,13 +301,7 @@ public class SeriesUtils {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
 		}
 
-		//Une série ne peut avoir un Sims que si elle n'a pas d'opération
-		if (series.getIdSims() != null & series.getOperations()!= null ) {
-			if (!series.getIdSims().isEmpty() & series.getOperations().size()>0) {
-				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
-			}
-		}
+		checkSimsWithOperations(series);
 
 		String status=FamOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
@@ -317,39 +309,33 @@ public class SeriesUtils {
 		} else {
 			createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		}
-		logger.info("Update series : " + series.getId() + " - " + series.getPrefLabelLg1());
+		logger.info("Update series : {0} - {1}", series.getId(), series.getPrefLabelLg1());
 	}
 
 	public boolean hasSims(String seriesId) throws RmesException {
-		JSONObject series;
+		JSONObject series = getSeriesById(seriesId); 
 		String idSims;
-		series = getSeriesById(seriesId);
-		try {	idSims=series.getString("idSims");} 
-		catch (JSONException e) {
+		try {	
+			idSims=series.getString("idSims"); 
+		} catch (JSONException e) {
 			return false;
 		}
-		if (idSims==null || idSims.isEmpty()) {
-			return false;
-		}
-		return true;
+		return idSims!=null && !idSims.isEmpty();
 	}
 
 	public boolean hasOperations(String seriesId) throws RmesException {
-		JSONObject series;
+		JSONObject series= getSeriesById(seriesId);
 		JSONArray operations;
-		series = getSeriesById(seriesId);
-		try {	operations=series.getJSONArray("operations");} 
-		catch (JSONException e) {
+		try {	
+			operations=series.getJSONArray("operations");
+		} catch (JSONException e) {
 			return false;
 		}
-		if (operations==null || operations.length()==0) {
-			return false;
-		}
-		return true;
+		return operations!=null && operations.length()>0;
 	}
 
 
-	public String setSeriesValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+	public String setSeriesValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
 		SeriesPublication.publishSeries(id);
@@ -363,7 +349,7 @@ public class SeriesUtils {
 		model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
-		logger.info("Validate series : " + seriesURI);
+		logger.info("Validate series : {0}", seriesURI);
 
 		RepositoryGestion.objectValidation(seriesURI, model);
 

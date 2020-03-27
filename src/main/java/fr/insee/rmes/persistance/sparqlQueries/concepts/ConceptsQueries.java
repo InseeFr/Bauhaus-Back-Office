@@ -9,7 +9,13 @@ import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class ConceptsQueries {
 	
+	private static final String URI_CONCEPT = "uriConcept";
 	static Map<String,Object> params ;
+	
+	private ConceptsQueries() {
+		throw new IllegalStateException("Utility class");
+	}
+
 	
 	public static String lastConceptID() {
 		return "SELECT ?notation \n"
@@ -217,17 +223,17 @@ public class ConceptsQueries {
 				+ "}";			
 	}
 	
-	public static String getOwner(String URI) {
+	public static String getOwner(String uri) {
 		return "SELECT ?owner { \n"
 				+ "?concept dc:creator ?owner . \n" 
-				+ "VALUES ?concept { " + URI + " } \n"
+				+ "VALUES ?concept { " + uri + " } \n"
 				+ "}";
 	}
 	
-	public static String getManager(String URI) {
+	public static String getManager(String uri) {
 		return "SELECT ?manager { \n"
 				+ "?concept dc:contributor ?manager . \n" 
-				+ "VALUES ?concept { " + URI + " } \n"
+				+ "VALUES ?concept { " + uri + " } \n"
 				+ "}";
 	}
 
@@ -238,7 +244,7 @@ public class ConceptsQueries {
 	 */
 	public static String getGraphWithConceptQuery(String uriConcept) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriConcept", uriConcept);
+		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getGraphWithConceptQuery.ftlh", params);	
 	}
 
@@ -249,7 +255,7 @@ public class ConceptsQueries {
 	 */
 	public static String getRelatedConceptsQuery(String uriConcept) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriConcept", uriConcept);
+		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);	
 	}
 	
@@ -271,7 +277,7 @@ public class ConceptsQueries {
 	 */	
 	public static String deleteConcept(String uriConcept, String uriGraph) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriConcept", uriConcept);
+		params.put(URI_CONCEPT, uriConcept);
 		params.put("uriGraph", uriGraph);
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
 	}
@@ -284,7 +290,7 @@ public class ConceptsQueries {
 	 */	
 	public static String getConceptVersions(String uriConcept) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriConcept", uriConcept);
+		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);	
 	}
 	

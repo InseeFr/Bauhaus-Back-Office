@@ -4,6 +4,10 @@ import fr.insee.rmes.config.Config;
 
 public class ItemsQueries {
 	
+	private ItemsQueries() {
+		throw new IllegalStateException("Utility class");
+	}
+	
 	public static String itemQuery(String classificationId, String itemId) {
 		return "SELECT ?classificationId ?itemId ?prefLabelLg1 ?prefLabelLg2 ?isValidated \n"
 				+ "?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion \n"

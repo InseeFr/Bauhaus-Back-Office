@@ -1,7 +1,6 @@
 package fr.insee.rmes.webservice;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -15,9 +14,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
@@ -27,7 +23,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
-import org.xml.sax.SAXException;
 
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
@@ -165,11 +160,12 @@ public class OperationsResources {
 		try {
 			operationsService.setFamilyValidation(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
+
+
 	
 	
 	/***************************************************************************************************
@@ -290,8 +286,7 @@ public class OperationsResources {
 		try {
 			operationsService.setSeriesValidation(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -331,13 +326,17 @@ public class OperationsResources {
 	}
 
 
+	  /**
+	    * Wait for an efficient service using xslt
+	    * @deprecated (can't parse ddi files)
+	    */
 	@GET
 	@Deprecated
 	@Path("/operation/{id}/variableBook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
 	public Response getVarBookExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader)
-			throws RmesException, ParserConfigurationException, SAXException, IOException, TransformerFactoryConfigurationError, TransformerException {
+			throws RmesException{
 			return operationsService.getVarBookExport(id, acceptHeader);
 	}
 	
@@ -351,7 +350,7 @@ public class OperationsResources {
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
-		String ddi = IOUtils.toString(isDDI, "utf-8"); ;
+		String ddi = IOUtils.toString(isDDI, "utf-8"); 
 		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
 		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
 	}
@@ -416,12 +415,7 @@ public class OperationsResources {
 		try {
 			operationsService.setOperationValidation(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			return Response.
-					status(e.getStatus()).
-					entity(e.getDetails()).
-					type(TEXT_PLAIN).
-					build();
+			return returnRmesException(e);
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -436,7 +430,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public Response getIndicators() throws Exception {
+	public Response getIndicators() throws RmesException {
 		String jsonResultat = operationsService.getIndicators();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
@@ -447,7 +441,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
-	public Response getIndicatorsForSearch() throws Exception {
+	public Response getIndicatorsForSearch() throws RmesException {
 		String jsonResultat = operationsService.getIndicatorsForSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
@@ -506,8 +500,7 @@ public class OperationsResources {
 		try {
 			operationsService.setIndicatorValidation(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -667,8 +660,7 @@ public class OperationsResources {
 		try {
 			operationsService.publishMetadataReport(id);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -677,8 +669,13 @@ public class OperationsResources {
 	@Path("/metadataReport/export")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public Response getSimsExport() throws Exception {
+	public Response getSimsExport() throws RmesException {
 		return operationsService.exportMetadataReport("toto");	
+	}
+	
+	private Response returnRmesException(RmesException e) {
+		logger.error(e.getMessage(), e);
+		return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 	}
 	
 }

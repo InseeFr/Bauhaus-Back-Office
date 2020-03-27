@@ -58,6 +58,8 @@ import fr.insee.rmes.utils.DateParser;
 @Component
 public class DocumentsUtils {
 
+	private static final String DOCUMENT = "document";
+
 	private static final String UPDATED_DATE = "updatedDate";
 
 	@Autowired
@@ -67,17 +69,16 @@ public class DocumentsUtils {
 	StampsRestrictionsService stampsRestrictionsService;
 
 	private static final String SCHEME_FILE = "file://";
-	final static Logger logger = LogManager.getLogger(DocumentsUtils.class);
+	static final Logger logger = LogManager.getLogger(DocumentsUtils.class);
 
-
-
-	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, URI textUri) throws RmesException {
+	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, URI textUri)
+			throws RmesException {
 		if (rubric.getDocuments() != null && !rubric.getDocuments().isEmpty()) {
 			for (Document doc : rubric.getDocuments()) {
 				URI url = SesameUtils.toURI(doc.getUrl());
 				URI docUri = getDocumentUri(url);
-				SesameUtils.addTripleUri(textUri,INSEE.ADDITIONALMATERIAL , docUri, model, graph);
-			}					
+				SesameUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
+			}
 		}
 	}
 
@@ -86,13 +87,12 @@ public class DocumentsUtils {
 		File dir = new File(Config.DOCUMENTS_STORAGE);
 		if (dir.exists()) {
 			path = Paths.get(Config.DOCUMENTS_STORAGE);
-		}
-		else {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Storage folder not found","Config.DOCUMENTS_STORAGE");
+		} else {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Storage folder not found",
+					"Config.DOCUMENTS_STORAGE");
 		}
 		return path;
 	}
-
 
 	/**
 	 * Get documents link to one rubric of a metadata report
@@ -102,7 +102,7 @@ public class DocumentsUtils {
 	 * @throws RmesException
 	 */
 	public JSONArray getListDocumentLink(String idSims, String idRubric) throws RmesException {
-		JSONArray allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims,idRubric));
+		JSONArray allDocs = RepositoryGestion.getResponseAsArray(DocumentsQueries.getDocumentsQuery(idSims, idRubric));
 		formatDateInJsonArray(allDocs);
 		return allDocs;
 	}
@@ -127,7 +127,7 @@ public class DocumentsUtils {
 		if (allDocs.length() != 0) {
 			for (int i = 0; i < allDocs.length(); i++) {
 				JSONObject doc = allDocs.getJSONObject(i);
-				if (doc.has(UPDATED_DATE) ) {
+				if (doc.has(UPDATED_DATE)) {
 					String formatedDate = DateParser.getDate(doc.getString(UPDATED_DATE));
 					doc.remove(UPDATED_DATE);
 					doc.put(UPDATED_DATE, formatedDate);
@@ -135,7 +135,6 @@ public class DocumentsUtils {
 			}
 		}
 	}
-
 
 	/**
 	 * Generate a new ID for document or link
@@ -149,20 +148,22 @@ public class DocumentsUtils {
 		Integer id = getIdFromJson(json) == null ? 999 : getIdFromJson(json);
 
 		json = RepositoryGestion.getResponseAsObject(DocumentsQueries.lastLinkID());
-		id = (getIdFromJson(json) == null ? id : Math.max(getIdFromJson(json), id))+1;
+		id = (getIdFromJson(json) == null ? id : Math.max(getIdFromJson(json), id)) + 1;
 		return id.toString();
 	}
-	
-	private Integer getIdFromJson(JSONObject json) {
-		if (json.length()==0) {return null;}
-		else { 
-			String id = json.getString(Constants.ID);
-			if (id.equals("undefined") || StringUtils.isEmpty(id)) {return null;} 
-			else {
-				return Integer.parseInt(id);
-		}}
-	}
 
+	private Integer getIdFromJson(JSONObject json) {
+		if (json.length() == 0) {
+			return null;
+		} else {
+			String id = json.getString(Constants.ID);
+			if (id.equals("undefined") || StringUtils.isEmpty(id)) {
+				return null;
+			} else {
+				return Integer.parseInt(id);
+			}
+		}
+	}
 
 	/**
 	 * Create document
@@ -171,11 +172,13 @@ public class DocumentsUtils {
 	 * @param documentFile
 	 * @throws RmesException
 	 */
-	public void createDocument(String id, String body, InputStream documentFile, String documentName) throws RmesException {
+	public void createDocument(String id, String body, InputStream documentFile, String documentName)
+			throws RmesException {
 
 		/* Check rights */
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new document.");
+		if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED,
+					"Only an admin or a manager can create a new document.");
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -189,15 +192,15 @@ public class DocumentsUtils {
 		}
 
 		String url = createFileUrl(documentName);
-		logger.info("URL CREATED :" + url);
+		logger.info("URL CREATED : {0}", url);
 		document.setUrl(url);
 
 		// upload file in storage folder
 		uploadFile(documentFile, documentName, url, false);
-		try {		
+		try {
 			URI docUri = SesameUtils.toURI(document.getUri());
 			writeRdfDocument(document, docUri);
-		}catch(RmesException e) {
+		} catch (RmesException e) {
 			deleteDocument(id);
 			throw e;
 		}
@@ -209,22 +212,21 @@ public class DocumentsUtils {
 	 */
 	public void setDocument(String id, String body) throws RmesException {
 		/* Check rights */
-		if(isLink(id)) {
-			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-				throw new RmesUnauthorizedException(
-						ErrorCodes.LINK_MODIFICATION_RIGHTS_DENIED, "Only an admin or a manager can modify a link.",id);
+		if (isLink(id)) {
+			if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+				throw new RmesUnauthorizedException(ErrorCodes.LINK_MODIFICATION_RIGHTS_DENIED,
+						"Only an admin or a manager can modify a link.", id);
 			}
-		} else
-		{
-			if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-				throw new RmesUnauthorizedException(
-						ErrorCodes.DOCUMENT_MODIFICATION_RIGHTS_DENIED, "Only an admin or a manager can modify a document.",id);
+		} else {
+			if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+				throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_MODIFICATION_RIGHTS_DENIED,
+						"Only an admin or a manager can modify a document.", id);
 			}
-		} 
+		}
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Document document = new Document(id,isLink(id));
+		Document document = new Document(id, isLink(id));
 
 		try {
 			document = mapper.readerForUpdating(document).readValue(body);
@@ -232,8 +234,8 @@ public class DocumentsUtils {
 			logger.error(e.getMessage());
 		}
 
-		URI docUri =SesameUtils.toURI(document.getUri());
-		logger.info("Update document : " + document.getUri() + " - " + document.getLabelLg1() + " / " + document.getLabelLg2());
+		URI docUri = SesameUtils.toURI(document.getUri());
+		logger.info("Update document : {0} - {1} / {2}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
 		writeRdfDocument(document, docUri);
 	}
 
@@ -249,10 +251,12 @@ public class DocumentsUtils {
 			jsonDocs = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentQuery(id));
 		} catch (RmesException e) {
 			logger.error(e.getMessage());
-		}		
+		}
 
-		if (jsonDocs.isNull(Constants.URI)) { throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID,"Cannot find Document with id: ",id); };
-		if (jsonDocs.has(UPDATED_DATE) ) {
+		if (jsonDocs.isNull(Constants.URI)) {
+			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find Document with id: ", id);
+		}
+		if (jsonDocs.has(UPDATED_DATE)) {
 			jsonDocs.put(UPDATED_DATE, DateParser.getDate(jsonDocs.getString(UPDATED_DATE)));
 		}
 
@@ -269,18 +273,20 @@ public class DocumentsUtils {
 		// Check that the document is not referred to by any sims
 		checkDocumentReference(docId, uri);
 		// remove the physical file
-		if(!isLink(jsonDoc)) {deleteFile(url);}
+		if (!isLink(jsonDoc)) {
+			deleteFile(url);
+		}
 		// delete the Document in the rdf base
-		return RepositoryGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri,(URI) graph));
+		return RepositoryGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri, (URI) graph));
 	}
 
-
-	private void checkDocumentReference(String docId, String uri) throws RmesException, RmesUnauthorizedException {
+	private void checkDocumentReference(String docId, String uri) throws RmesException {
 		JSONArray jsonResultat = getLinksToDocument(docId);
-		if (jsonResultat.length()>0) { 
+		if (jsonResultat.length() > 0) {
 			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
-					"The document "+uri+ "cannot be deleted because it is referred to by "+jsonResultat.length()+" sims, including: "+ 
-							((JSONObject) jsonResultat.get(0)).get("text").toString(),jsonResultat);
+					"The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
+							+ " sims, including: " + ((JSONObject) jsonResultat.get(0)).get("text").toString(),
+					jsonResultat);
 		}
 	}
 
@@ -288,66 +294,73 @@ public class DocumentsUtils {
 		return RepositoryGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
 	}
 
-
 	public String changeDocument(String docId, InputStream documentFile, String documentName) throws RmesException {
 
 		JSONObject jsonDoc = getDocument(docId);
-		String docUrl=getDocumentUrlFromDocument(jsonDoc);
+		String docUrl = getDocumentUrlFromDocument(jsonDoc);
 
 		// Cannot upload file for a Link
 		if (isLink(jsonDoc)) {
-			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, "Links have no attached file. Cannot upload file "+documentName+" for this document: ",docId);
+			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE,
+					"Links have no attached file. Cannot upload file " + documentName + " for this document: ", docId);
 		}
 
-		// Warning if different file extension 
-		String oldExt=StringUtils.substringAfterLast(docUrl, ".");
-		String newExt=StringUtils.substringAfterLast(documentName, ".");
+		// Warning if different file extension
+		String oldExt = StringUtils.substringAfterLast(docUrl, ".");
+		String newExt = StringUtils.substringAfterLast(documentName, ".");
 		if (!oldExt.equals(newExt)) {
-			logger.info("Warning: The new file has extension: ."+newExt+" while the old file had extension: ."+oldExt);
+			logger.info("Warning: The new file has extension: .{0} while the old file had extension: .{1}", newExt,oldExt);
 		}
 
-		String oldName=getDocumentNameFromUrl(docUrl);
-		String newUrl=null;
+		String oldName = getDocumentNameFromUrl(docUrl);
+		String newUrl = null;
 
 		// Same documentName -> keep the same URL
 		if (oldName.equals(documentName)) {
-			logger.info("Replacing file "+documentName+" at the same Url");
+			logger.info("Replacing file {0} at the same Url", documentName);
 			uploadFile(documentFile, documentName, docUrl, true);
 		}
 		// Different documentName -> create a new URL
 		else {
 			// Upload the new file
-			newUrl=createFileUrl(documentName);
-			logger.info("Try to replace file"+ documentName +", new URL is "+newUrl);
+			newUrl = createFileUrl(documentName);
+			logger.info("Try to replace file {0}, new URL is {1}", documentName, newUrl);
 			uploadFile(documentFile, documentName, newUrl, false);
 
 			// Delete the old file
-			logger.info("Delete old file"+ documentName +", with URL  "+docUrl);
+			logger.info("Delete old file {0}, with URL {1}", documentName, docUrl);
 			checkDocumentReference(docId, jsonDoc.getString(Constants.URI));
 			deleteFile(docUrl);
 
 			// Update document's url
-			changeDocumentsURL(docId,docUrl,newUrl);
+			changeDocumentsURL(docId, docUrl, newUrl);
 		}
 
 		return newUrl;
 	}
 
-
 	private void uploadFile(InputStream documentFile, String documentName, String url, Boolean sameName)
 			throws RmesUnauthorizedException {
 		// upload file in storage folder
-		logger.debug("URL : "+url);
+		logger.debug("URL : {0}" , url);
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
-		logger.debug("PATH : "+path);
-		if (!sameName && Files.exists(path)) {
-			throw new RmesUnauthorizedException(
-					ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE, 
-					"There is already a document with that name.",
-					documentName);
+		logger.debug("PATH : {0}" , path);
+		if (!Boolean.TRUE.equals(sameName) && Files.exists(path)) {
+			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
+					"There is already a document with that name.", documentName);
 		}
 		try {
-			Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING); // throws an error if a file already exists under this name
+			Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING); // throws
+																					// an
+																					// error
+																					// if
+																					// a
+																					// file
+																					// already
+																					// exists
+																					// under
+																					// this
+																					// name
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -358,9 +371,9 @@ public class DocumentsUtils {
 	 */
 	public void createLink(String id, String body) throws RmesException {
 		/* Check rights */
-		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-			throw new RmesUnauthorizedException(
-					ErrorCodes.LINK_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new link.");
+		if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+			throw new RmesUnauthorizedException(ErrorCodes.LINK_CREATION_RIGHTS_DENIED,
+					"Only an admin or a manager can create a new link.");
 		}
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -374,20 +387,23 @@ public class DocumentsUtils {
 		}
 
 		String url = link.getUrl();
-		if (StringUtils.isEmpty(url)) { throw new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL,"A link must have a non-empty url. ",id);}
+		if (StringUtils.isEmpty(url)) {
+			throw new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL, "A link must have a non-empty url. ", id);
+		}
 
-		//Check if the url is already used by a link
-		URI uriUrl= SesameUtils.toURI(url);
-		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
-		if (uri.length()>0 ) {
-			throw new RmesNotAcceptableException(ErrorCodes.LINK_EXISTING_URL,"This url is already referenced by another link.", uri.getString("document"));
+		// Check if the url is already used by a link
+		URI uriUrl = SesameUtils.toURI(url);
+		JSONObject uri = RepositoryGestion
+				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, SesameUtils.documentsGraph()));
+		if (uri.length() > 0) {
+			throw new RmesNotAcceptableException(ErrorCodes.LINK_EXISTING_URL,
+					"This url is already referenced by another link.", uri.getString(DOCUMENT));
 		}
 
 		URI docUri = SesameUtils.toURI(link.getUri());
 
 		writeRdfDocument(link, docUri);
 	}
-
 
 	/**
 	 * Write a document in rdf database
@@ -403,32 +419,32 @@ public class DocumentsUtils {
 
 		SesameUtils.addTripleUri(docUri, RDF.TYPE, FOAF.DOCUMENT, model, graph);
 
-		String uriString= document.getUrl();
+		String uriString = document.getUrl();
 		SesameUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
 		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
-			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(),Config.LG1, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), Config.LG1, model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
-			SesameUtils.addTripleString(docUri,RDFS.LABEL, document.getLabelLg2(),Config.LG2, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), Config.LG2, model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
-			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(),Config.LG1, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), Config.LG1, model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
-			SesameUtils.addTripleString(docUri,RDFS.COMMENT, document.getDescriptionLg2(),Config.LG2, model, graph);
+			SesameUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), Config.LG2, model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLangue())) {
-			SesameUtils.addTripleString(docUri,DC.LANGUAGE, document.getLangue(), model, graph);
+			SesameUtils.addTripleString(docUri, DC.LANGUAGE, document.getLangue(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
-			SesameUtils.addTripleDateTime(docUri,PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+			SesameUtils.addTripleDateTime(docUri, PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
 		RepositoryGestion.loadSimpleObject(docUri, model, null);
 	}
 
 	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
 		Resource graph = SesameUtils.documentsGraph();
-		return RepositoryGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId,docUrl,newUrl,graph));	
+		return RepositoryGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId, docUrl, newUrl, graph));
 	}
 
 	private void deleteFile(String docUrl) {
@@ -440,7 +456,7 @@ public class DocumentsUtils {
 		}
 	}
 
-	private String getDocumentNameFromUrl (String docUrl) {
+	private String getDocumentNameFromUrl(String docUrl) {
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
 
@@ -448,7 +464,7 @@ public class DocumentsUtils {
 		String url = getStorageFolderPath().resolve(name).toString();
 		Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
 		Matcher m = p.matcher(url);
-		if (m.find()) {//absolute URL
+		if (m.find()) {// absolute URL
 			return url;
 		}
 		return SCHEME_FILE + url;
@@ -461,12 +477,13 @@ public class DocumentsUtils {
 	 * @throws RmesException
 	 */
 	private URI getDocumentUri(URI url) throws RmesException {
-		JSONObject uri = RepositoryGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, SesameUtils.documentsGraph()));
-		if (uri.length()==0 || !uri.has("document")) {
+		JSONObject uri = RepositoryGestion
+				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, SesameUtils.documentsGraph()));
+		if (uri.length() == 0 || !uri.has(DOCUMENT)) {
 			String id = createDocumentID();
-			return SesameUtils.objectIRI(ObjectType.DOCUMENT,id);
+			return SesameUtils.objectIRI(ObjectType.DOCUMENT, id);
 		}
-		return SesameUtils.toURI(uri.getString("document"));
+		return SesameUtils.toURI(uri.getString(DOCUMENT));
 	}
 
 	private String getDocumentUrlFromDocument(JSONObject jsonDoc) {
@@ -478,22 +495,22 @@ public class DocumentsUtils {
 		return isLink(jsonDoc);
 	}
 
-	private boolean isLink(JSONObject jsonDoc) throws RmesException {
+	private boolean isLink(JSONObject jsonDoc)  {
 		String uri = jsonDoc.getString(Constants.URI);
-		if (StringUtils.contains(uri, Config.LINKS_BASE_URI)) {return true;}
-		return false;
+		return StringUtils.contains(uri, Config.LINKS_BASE_URI);
 	}
-
 
 	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {
 		if (fileName == null || fileName.trim().isEmpty()) {
-			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME,"Empty fileName", fileName);
+			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
 		}
 		Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
 		Matcher m = p.matcher(fileName);
 		if (m.find()) {
 			logger.info("There is a forbidden character in the FileName ");
-			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARATER_NAME,"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens", fileName);
+			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARATER_NAME,
+					"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
+					fileName);
 		}
 
 	}
@@ -503,13 +520,22 @@ public class DocumentsUtils {
 		String url = getDocumentUrlFromDocument(jsonDoc);
 
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
-		InputStream is = new FileInputStream(path.toFile());
+		InputStream is = null;
+		ContentDisposition content = null;
+		try {
+			is = new FileInputStream(path.toFile());
 
-		String fileName = getDocumentNameFromUrl(url);
+			String fileName = getDocumentNameFromUrl(url);
 
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+			content = ContentDisposition.type("attachment").fileName(fileName).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
 		return Response.ok(is).header("Content-Disposition", content).build();
 	}
-
 
 }

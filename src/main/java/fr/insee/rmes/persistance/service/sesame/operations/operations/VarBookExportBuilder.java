@@ -38,16 +38,15 @@ public class VarBookExportBuilder {
 	@Autowired
 	RestTemplate restTemplate;
 
-
 	public String getData(String xml) throws RmesException {
-		Document xmlReadyToExport = transformXml(xml);	
+		Document xmlReadyToExport = transformXml(xml);
 		try {
 			return XMLUtils.toString(xmlReadyToExport);
 		} catch (TransformerFactoryConfigurationError | TransformerException e) {
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, e.getMessage(), "IOException - Can't convert xml to text");
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, e.getMessage(),
+					"IOException - Can't convert xml to text");
 		}
 	}
-
 
 	private Document transformXml(String xml) throws RmesException {
 		// transform inputXml into Document
@@ -57,6 +56,10 @@ public class VarBookExportBuilder {
 	}
 
 	private Document dereferenceAll(Document xmlInput) throws RmesException {
+		if (xmlInput == null) {
+			return null;
+		}
+		
 		// initialize document with DDIInstance + new root for variables
 		NodeList alls = xmlInput.getElementsByTagName("StudyUnit");
 		Node root = alls.item(0);
@@ -64,72 +67,72 @@ public class VarBookExportBuilder {
 		try {
 			xmlOutput = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		} catch (ParserConfigurationException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "ParserConfigurationException");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					"ParserConfigurationException");
 		}
 
-	     Node copiedRoot = xmlOutput.importNode(root, true);
-	     xmlOutput.appendChild(copiedRoot);
-		
-		Map<String, Node> targets = listReferenceTargets(xmlInput);	     
-		renameAndDereference(xmlOutput.getDocumentElement(), targets);//xmlOutput.getDocumentElement()
-				
+		Node copiedRoot = xmlOutput.importNode(root, true);
+		xmlOutput.appendChild(copiedRoot);
+
+		Map<String, Node> targets = listReferenceTargets(xmlInput);
+		renameAndDereference(xmlOutput.getDocumentElement(), targets);// xmlOutput.getDocumentElement()
+
 		return xmlOutput;
 	}
 
-
 	private Map<String, Node> listReferenceTargets(Document xmlInput) {
-		Map<String, Node> references = new HashMap<>();//TODO remove unused
+		Map<String, Node> references = new HashMap<>();// TODO remove unused
 		Map<String, Node> targets = new HashMap<>();
 		NodeList ids = xmlInput.getElementsByTagName("r:ID");
-	    for (int i = 0; i < ids.getLength(); i++) {
-	    	Node idNode = ids.item(i);
-	    	Node parentNode = idNode.getParentNode();
-	    	if (parentNode.getNodeName().endsWith("Reference")) {
-	    		references.put(idNode.getTextContent(), parentNode);
-	    	}else {
-	    		targets.put(idNode.getTextContent(), parentNode);
-	    	}
-	    }
+		for (int i = 0; i < ids.getLength(); i++) {
+			Node idNode = ids.item(i);
+			Node parentNode = idNode.getParentNode();
+			if (parentNode.getNodeName().endsWith("Reference")) {
+				references.put(idNode.getTextContent(), parentNode);
+			} else {
+				targets.put(idNode.getTextContent(), parentNode);
+			}
+		}
 		return targets;
 	}
-	
+
 	private static void renameAndDereference(Node node, Map<String, Node> targets) {
-	    // Remove namespace and keep only lang attr
+		// Remove namespace and keep only lang attr
 		Document document = node.getOwnerDocument();
 		if (node.getNodeName().contains("BasedOnObject")) {
 			node.getParentNode().removeChild(node);
-		}
-		else {//Only for Node != BasedOnObject
+		} else {// Only for Node != BasedOnObject
 			if (node.getNodeName().contains(":")) {
 				document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
 			}
 			int nbAtt = 0;
 			while (node.getAttributes().getLength() > nbAtt) {
-			    Node att = node.getAttributes().item(nbAtt);
-			    if(att.getNodeName().contains("lang")||att.getNodeName().contains("Length")||att.getNodeName().contains("regExp")||att.getNodeName().contains("blank")||att.getNodeName().contains("scale")) {
-			    	document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
-			    	nbAtt++;
-			    }else {
-			    	node.getAttributes().removeNamedItem(att.getNodeName());
-			    }
+				Node att = node.getAttributes().item(nbAtt);
+				if (att.getNodeName().contains("lang") || att.getNodeName().contains("Length")
+						|| att.getNodeName().contains("regExp") || att.getNodeName().contains("blank")
+						|| att.getNodeName().contains("scale")) {
+					document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
+					nbAtt++;
+				} else {
+					node.getAttributes().removeNamedItem(att.getNodeName());
+				}
 			}
-			
-			//Dereference
-		    NodeList nodeList = node.getChildNodes();
-	    	for (int i = 0; i < nodeList.getLength(); i++) {
-	   	        Node childNode = nodeList.item(i);
-	   	        if (node.getNodeName().endsWith("Reference")  && childNode.getNodeName().endsWith("ID")) {
-	   	        	Node targetNode = document.importNode(targets.get(childNode.getTextContent()),true);
-	   	        	node.getParentNode().replaceChild(targetNode,node);
-	   	        	renameAndDereference(targetNode,  targets);
-	   	        } else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
-	 	            //calls this method for all the children which is Element
-	 	            renameAndDereference(childNode,targets);
-	   	        }   	
-	   	    }
-		}	
-	}
 
+			// Dereference
+			NodeList nodeList = node.getChildNodes();
+			for (int i = 0; i < nodeList.getLength(); i++) {
+				Node childNode = nodeList.item(i);
+				if (node.getNodeName().endsWith("Reference") && childNode.getNodeName().endsWith("ID")) {
+					Node targetNode = document.importNode(targets.get(childNode.getTextContent()), true);
+					node.getParentNode().replaceChild(targetNode, node);
+					renameAndDereference(targetNode, targets);
+				} else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
+					// calls this method for all the children which is Element
+					renameAndDereference(childNode, targets);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Copy all variables from DDIStudyUnit to DDIInstance/rootListVar
@@ -142,6 +145,9 @@ public class VarBookExportBuilder {
 	 * @throws RmesException 
 	 */
 	private static Document addSortedVariableList(Document xmlInput) throws RmesException {
+		if (xmlInput == null) {
+			return null;
+		}
 		// initialize document with DDIInstance + new root for variables
 		Document xmlOutput = xmlInput;
 		Element rootElem = xmlOutput.createElement("rootListVar");
@@ -164,20 +170,28 @@ public class VarBookExportBuilder {
 		return xmlOutput;
 	}
 
-
 	private static Document getDocument(String xml) throws RmesException {
-		//InputSource inputXml = new InputSource(new StringReader(xml));
-		final InputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		//dbf.setValidating(false);
+		InputStream stream = null;
 		DocumentBuilder db;
 		Document xmlInitial = null;
+
 		try {
+			stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			db = dbf.newDocumentBuilder();
 			xmlInitial = db.parse(stream);
 			stream.close();
 		} catch (ParserConfigurationException | SAXException | IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass() + " Can't parse xml");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					e.getClass() + " Can't parse xml");
+		} finally {
+			try {
+				if (stream != null) {
+					stream.close();
+				}
+			} catch (IOException e) {
+				logger.error(e.getMessage());
+			}
 		}
 		return xmlInitial;
 	}

@@ -99,8 +99,8 @@ public class ConceptsImpl implements ConceptsService {
 			/* list the graphs involved in log */
 			for (int i=0; i<graphArray.length(); i++) {
 				JSONObject currentGraph=(JSONObject) graphArray.get(i);
-				listGraphs.concat(currentGraph.getString("src"));
-				listGraphs.concat("-");
+				listGraphs = listGraphs.concat(currentGraph.getString("src"));
+				listGraphs = listGraphs.concat("-");
 			}
 			{ 
 			JSONObject details = new JSONObject();

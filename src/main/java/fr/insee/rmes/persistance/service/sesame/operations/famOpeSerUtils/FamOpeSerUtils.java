@@ -30,7 +30,7 @@ public class FamOpeSerUtils {
 		return "s" + ID;
 	}
 
-	public static Boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
+	public static boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
 		return RepositoryGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfOperationExists(SesameUtils.objectIRI(type, id).toString()));
 	}
 	
