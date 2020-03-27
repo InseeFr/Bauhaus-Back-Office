@@ -8,7 +8,7 @@ public class Link {
 	private List<String> ids;
 	
 	public Link() {
-		
+		//nothing to do
 	}
 	
 	public String getTypeOfLink() {

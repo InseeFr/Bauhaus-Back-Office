@@ -11,7 +11,7 @@ import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.organizations.OrganizationQueries;
+import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 
 @Service
 public class OrganizationsServiceImpl implements OrganizationsService {

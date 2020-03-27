@@ -16,8 +16,8 @@ import fr.insee.rmes.modele.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 
 @Component
 public class MetadataStructureDefUtils {

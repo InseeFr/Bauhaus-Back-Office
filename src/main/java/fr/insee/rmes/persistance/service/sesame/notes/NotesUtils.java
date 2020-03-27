@@ -20,7 +20,7 @@ import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.notes.NotesQueries;
+import fr.insee.rmes.persistance.sparql_queries.notes.NotesQueries;
 
 public class NotesUtils {
 	

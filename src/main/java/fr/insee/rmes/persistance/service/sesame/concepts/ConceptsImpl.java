@@ -26,8 +26,8 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.CollectionsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.service.export.Jasper;
 
 @Service

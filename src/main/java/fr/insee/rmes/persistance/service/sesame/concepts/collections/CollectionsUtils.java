@@ -56,7 +56,7 @@ public class CollectionsUtils {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		setRdfCollection(collection);
-		logger.info("Create collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
+		logger.info("Create collection : {0} - {1} ",  collection.getId(), collection.getPrefLabelLg1());
 	}
 	
 	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException  {
@@ -75,7 +75,7 @@ public class CollectionsUtils {
 
 		}
 		setRdfCollection(collection);
-		logger.info("Update collection : " + collection.getId() + " - " + collection.getPrefLabelLg1());
+		logger.info("Update collection : {0} - {1} ",  collection.getId(), collection.getPrefLabelLg1());
 	}
 	
 	public void collectionsValidation(String body) throws RmesUnauthorizedException, RmesException   {
@@ -90,7 +90,7 @@ public class CollectionsUtils {
 	
 	public static void setRdfCollection(Collection collection) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI collectionURI = SesameUtils.collectionIRI(collection.getId().replaceAll(" ", "-").toLowerCase());
+		URI collectionURI = SesameUtils.collectionIRI(collection.getId().replace(" ", "-").toLowerCase());
 		/*Required*/
 		model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, SesameUtils.conceptGraph());	
 		model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(collection.getIsValidated()), SesameUtils.conceptGraph());
@@ -117,7 +117,7 @@ public class CollectionsUtils {
 		Model model = new LinkedHashModel();
 		List<URI> collectionsToValidateList = new ArrayList<URI>();
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
-			URI collectionURI = SesameUtils.collectionIRI(collectionsToValidate.getString(i).replaceAll(" ", "").toLowerCase());
+			URI collectionURI = SesameUtils.collectionIRI(collectionsToValidate.getString(i).replace(" ", "").toLowerCase());
 			collectionsToValidateList.add(collectionURI);
 			model.add(collectionURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
 			logger.info("Validate collection : " + collectionURI);

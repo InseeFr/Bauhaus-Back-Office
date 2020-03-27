@@ -41,7 +41,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 

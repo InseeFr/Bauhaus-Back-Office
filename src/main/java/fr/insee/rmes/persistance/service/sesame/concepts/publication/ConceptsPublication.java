@@ -24,7 +24,7 @@ import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.service.notifications.NotificationsContract;
 import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 

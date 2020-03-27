@@ -57,9 +57,9 @@ public class SeriesPublication {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Other URI to transform
-					if (st.getPredicate().toString().endsWith("isPartOf") |
-							st.getPredicate().toString().endsWith("seeAlso") |
-							st.getPredicate().toString().endsWith("replaces") |
+					if (st.getPredicate().toString().endsWith("isPartOf") ||
+							st.getPredicate().toString().endsWith("seeAlso") ||
+							st.getPredicate().toString().endsWith("replaces") ||
 							st.getPredicate().toString().endsWith("isReplacedBy") ) {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(),

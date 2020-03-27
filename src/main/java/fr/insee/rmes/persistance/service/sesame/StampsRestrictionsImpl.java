@@ -16,9 +16,9 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
 @Service
 public class StampsRestrictionsImpl implements StampsRestrictionsService {
@@ -289,7 +289,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public boolean canCreateOperation(URI seriesURI) throws RmesException {
 		User user = getUser();
-		return (isAdmin(user) || (isSeriesManager(seriesURI) & isSeriesContributor(user)));
+		return (isAdmin(user) || (isSeriesManager(seriesURI) && isSeriesContributor(user)));
 	}
 
 	@Override

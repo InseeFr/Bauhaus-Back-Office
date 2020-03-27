@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.DSDService;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.structures.DSDQueries;
+import fr.insee.rmes.persistance.sparql_queries.structures.DSDQueries;
 
 @Service
 public class DSDImpl implements DSDService {

@@ -31,11 +31,11 @@ import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExp
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.families.FamiliesQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.service.export.ExportUtils;
 import fr.insee.rmes.service.export.Jasper;
 import fr.insee.rmes.service.export.XDocReport;

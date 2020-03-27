@@ -52,7 +52,7 @@ import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.operations.documentations.DocumentsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.DateParser;
 
 @Component
@@ -192,7 +192,7 @@ public class DocumentsUtils {
 		}
 
 		String url = createFileUrl(documentName);
-		logger.info("URL CREATED : {0}", url);
+		logger.info("URL CREATED : {}", url);
 		document.setUrl(url);
 
 		// upload file in storage folder
@@ -235,7 +235,7 @@ public class DocumentsUtils {
 		}
 
 		URI docUri = SesameUtils.toURI(document.getUri());
-		logger.info("Update document : {0} - {1} / {2}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
+		logger.info("Update document : {} - {} / {}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
 		writeRdfDocument(document, docUri);
 	}
 

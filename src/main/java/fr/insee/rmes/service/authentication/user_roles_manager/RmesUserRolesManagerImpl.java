@@ -52,7 +52,6 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	private static final String ROLE_PERSONS_XPATH = "personnes/personne";
 	private static final String ROLE_PERSON_STAMP_XPATH = "ou";
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
-	private static final String ROLE_PERSON_LABEL_XPATH = "cn";
 	
 	@Override
 	public String getAuth(String body) {
@@ -80,13 +79,13 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			for (Element e : l) {
 				JSONObject jsonO = new JSONObject();
 				jsonO.put(Constants.ID, XPath.newInstance(ROLE_ID_XPATH).valueOf(e));
-				jsonO.put("label", XPath.newInstance(ROLE_LABEL_XPATH).valueOf(e));
+				jsonO.put(Constants.LABEL, XPath.newInstance(ROLE_LABEL_XPATH).valueOf(e));
 				List<Element> p = (XPath.selectNodes(e, ROLE_PERSONS_XPATH));
 				JSONArray persons = new JSONArray();
 				for (Element person : p) {
 					JSONObject jsonOO = new JSONObject();
 					jsonOO.put(Constants.ID, XPath.newInstance(ROLE_PERSON_IDEP_XPATH).valueOf(person));
-					jsonOO.put("label", XPath.newInstance(ROLE_PERSON_LABEL_XPATH).valueOf(person));
+					jsonOO.put(Constants.LABEL, XPath.newInstance(ROLE_ID_XPATH).valueOf(person));
 					jsonOO.put("stamp", XPath.newInstance(ROLE_PERSON_STAMP_XPATH).valueOf(person));
 					persons.put(jsonOO);
 				}
@@ -101,11 +100,11 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Override
 	public String getAgents() throws RmesException {
-		TreeSet<JSONObject> agents = new TreeSet<JSONObject>(new JSONComparator("label"));
-		logger.info("Connection to LDAP : " + Config.LDAP_URL);
+		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
+		logger.info("Connection to LDAP : {0}", Config.LDAP_URL);
 		try {
 			// Connexion à la racine de l'annuaire
-			Hashtable<String, String> environment = new Hashtable<String, String>();
+			Hashtable<String, String> environment = new Hashtable<>();
 			environment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 			environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
 			environment.put(Context.SECURITY_AUTHENTICATION, "none");
@@ -116,7 +115,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			// Spécification des critères pour la recherche des unités
 			SearchControls controls = new SearchControls();
 			controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			controls.setReturningAttributes(new String[] { "cn", "uid" });
+			controls.setReturningAttributes(new String[] { ROLE_ID_XPATH,ROLE_PERSON_IDEP_XPATH });
 			String filter = "(&(objectClass=inseePerson)(!(inseeFonction=Enqueteur de l'INSEE*)))";
 
 			// Exécution de la recherche et parcours des résultats
@@ -124,14 +123,14 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			while (results.hasMore()) {
 				SearchResult entree = results.next();
 				JSONObject jsonO = new JSONObject();
-				jsonO.put("label", entree.getAttributes().get("cn").get().toString());
-				jsonO.put(Constants.ID, entree.getAttributes().get("uid").get().toString());
+				jsonO.put(Constants.LABEL, entree.getAttributes().get(ROLE_ID_XPATH).get().toString());
+				jsonO.put(Constants.ID, entree.getAttributes().get(ROLE_PERSON_IDEP_XPATH).get().toString());
 				agents.add(jsonO);
 			}
 			context.close();
 			logger.info("Get agents succeed");
 		} catch (NamingException e) {
-			logger.error("Get agents failed : " + e.getMessage());
+			logger.error("Get agents failed : {0}", e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents failed");
 		}
 		return agents.toString();
@@ -139,14 +138,14 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Override
 	public void setAddRole(String role, String user) {
-		String URL = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
-		Igesa.post(URL);
+		String url = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
+		Igesa.post(url);
 	}
 
 	@Override
 	public void setDeleteRole(String role, String user) {
-		String URL = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
-		Igesa.post(URL);
+		String url = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
+		Igesa.post(url);
 	}
 
 }

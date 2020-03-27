@@ -14,7 +14,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import fr.insee.rmes.config.Config;
-
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.integration.SwaggerConfiguration;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -35,9 +34,9 @@ public class SwaggerConfig extends ResourceConfig   {
 
 		Server server = new Server();
 		logger.info("______________________________________________________________________");
-		logger.info("____________________SWAGGER HOST : "+Config.SWAGGER_HOST+"_________________________________________________");
-		logger.info("____________________SWAGGER BASEPATH : "+Config.SWAGGER_BASEPATH+"_________________________________________________");
-		logger.info("____________________SWAGGER CONFIG : "+Config.SWAGGER_URL+"_________________________________________________");
+		logger.info("____________________SWAGGER HOST : {0}_________________________________________________", Config.SWAGGER_HOST);
+		logger.info("____________________SWAGGER BASEPATH : {0} _________________________________________________", Config.SWAGGER_BASEPATH);
+		logger.info("____________________SWAGGER CONFIG : {0} _________________________________________________", Config.SWAGGER_URL);
 		logger.info("______________________________________________________________________");
 		server.url(Config.SWAGGER_URL);
 		openApi.addServersItem(server);

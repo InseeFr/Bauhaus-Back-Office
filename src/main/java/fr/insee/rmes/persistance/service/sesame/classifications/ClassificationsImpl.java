@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.ClassificationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.ClassificationsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.CorrespondencesQueries;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.FamiliesQueries;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.ItemsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.LevelsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.classifications.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.CorrespondencesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.LevelsQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.SeriesQueries;
 
 @Service
 public class ClassificationsImpl implements ClassificationsService {
@@ -98,7 +98,9 @@ public class ClassificationsImpl implements ClassificationsService {
 		logger.info("Starting to get classification item");
 		JSONObject item = RepositoryGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
 		JSONArray altLabels = RepositoryGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
-		if(altLabels.length() != 0) item.put("altLabels", altLabels);
+		if(altLabels.length() != 0) {
+			item.put("altLabels", altLabels);
+		}
 		return item.toString();
 	}
 	

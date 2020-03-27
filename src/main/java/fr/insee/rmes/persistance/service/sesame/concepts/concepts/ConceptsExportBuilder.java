@@ -14,14 +14,15 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.CollectionsQueries;
-import fr.insee.rmes.persistance.sparqlQueries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.StringComparator;
 
 @Component
 public class ConceptsExportBuilder {
 	
+
 
 	@Autowired 
 	ConceptsUtils conceptsUtils;
@@ -39,9 +40,9 @@ public class ConceptsExportBuilder {
 		} else {
 			general.remove(Constants.ALT_LABEL_LG2);
 		}
-		data.put("prefLabelLg1", general.getString("prefLabelLg1"));
-		if (general.has("prefLabelLg2")) {
-			data.put("prefLabelLg2", general.getString("prefLabelLg2"));
+		data.put(Constants.PREF_LABEL_LG1, general.getString(Constants.PREF_LABEL_LG1));
+		if (general.has(Constants.PREF_LABEL_LG2)) {
+			data.put(Constants.PREF_LABEL_LG2, general.getString(Constants.PREF_LABEL_LG2));
 		}
 		data.put("general", editGeneral(general, "concepts"));
 		JSONArray links = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
@@ -56,22 +57,22 @@ public class ConceptsExportBuilder {
 	public JSONObject getCollectionData(String id)  throws RmesException{
 		JSONObject data = new JSONObject();
 		JSONObject json = RepositoryGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
-		data.put("prefLabelLg1", json.getString("prefLabelLg1"));
-		if (json.has("prefLabelLg2")) {
-			data.put("prefLabelLg2", json.getString("prefLabelLg2"));
+		data.put(Constants.PREF_LABEL_LG1, json.getString(Constants.PREF_LABEL_LG1));
+		if (json.has(Constants.PREF_LABEL_LG2)) {
+			data.put(Constants.PREF_LABEL_LG2, json.getString(Constants.PREF_LABEL_LG2));
 		}
 		data.put("general", editGeneral(json, "collections"));
-		if (json.has("descriptionLg1")) {
-			data.put("descriptionLg1", json.getString("descriptionLg1") + "<p></p>");
+		if (json.has(Constants.DESCRIPTION_LG1)) {
+			data.put(Constants.DESCRIPTION_LG1, json.getString(Constants.DESCRIPTION_LG1) + Constants.PARAGRAPH);
 		}
-		if (json.has("descriptionLg2")) {
-			data.put("descriptionLg2", json.getString("descriptionLg2") + "<p></p>");
+		if (json.has(Constants.DESCRIPTION_LG2)) {
+			data.put(Constants.DESCRIPTION_LG2, json.getString(Constants.DESCRIPTION_LG2) + Constants.PARAGRAPH);
 		}
 		JSONArray members = RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
-		String membersLg1 = extractMembers(members, "prefLabelLg1");
+		String membersLg1 = extractMembers(members, Constants.PREF_LABEL_LG1);
 		if (!membersLg1.equals("")) {
 			data.put("membersLg1", membersLg1);
-			data.put("membersLg2", extractMembers(members, "prefLabelLg2"));
+			data.put("membersLg2", extractMembers(members, Constants.PREF_LABEL_LG2));
 		}
 		return data;
 	}
@@ -152,19 +153,19 @@ public class ConceptsExportBuilder {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			String typeOfLink = jsonO.getString("typeOfLink");
 			if (typeOfLink.equals("narrower")) {
-				listParents.add(jsonO.getString("prefLabelLg" + language));
+				listParents.add(jsonO.getString(Constants.PREF_LABEL_LG + language));
 			}
 			if (typeOfLink.equals("broader")) {
-				listEnfants.add(jsonO.getString("prefLabelLg" + language));
+				listEnfants.add(jsonO.getString(Constants.PREF_LABEL_LG + language));
 			}
 			if (typeOfLink.equals("references")) {
-				listReferences.add(jsonO.getString("prefLabelLg" + language));
+				listReferences.add(jsonO.getString(Constants.PREF_LABEL_LG + language));
 			}
 			if (typeOfLink.equals("succeed")) {
-				listSucceed.add(jsonO.getString("prefLabelLg" + language));
+				listSucceed.add(jsonO.getString(Constants.PREF_LABEL_LG + language));
 			}
 			if (typeOfLink.equals("related")) {
-				listReplaces.add(jsonO.getString("prefLabelLg" + language));
+				listReplaces.add(jsonO.getString(Constants.PREF_LABEL_LG + language));
 			}
 		}
 		if (listParents.isEmpty() && listEnfants.isEmpty() && listReferences.isEmpty() && listSucceed.isEmpty()
@@ -191,7 +192,7 @@ public class ConceptsExportBuilder {
 				break;
 		}
 
-		xhtml.append("<p></p>");
+		xhtml.append(Constants.PARAGRAPH);
 		return xhtml.toString();
 	}
 
@@ -214,7 +215,7 @@ public class ConceptsExportBuilder {
 				"editorialNoteLg1", "editorialNoteLg2");
 		noteTypes.forEach(noteType -> {
 			if (notes.has(noteType)) {
-				data.put(noteType, notes.getString(noteType) + "<p></p>");
+				data.put(noteType, notes.getString(noteType) + Constants.PARAGRAPH);
 			}
 		});
 	}

@@ -12,7 +12,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.operations.Operations
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.operations.famOpeSerUtils.FamOpeSerQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 
 @Component
 public class FamOpeSerUtils {

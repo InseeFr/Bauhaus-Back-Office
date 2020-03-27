@@ -34,7 +34,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component

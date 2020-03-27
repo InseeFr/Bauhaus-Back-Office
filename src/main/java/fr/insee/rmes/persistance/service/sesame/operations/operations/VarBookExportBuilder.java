@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -28,6 +27,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.service.sesame.utils.DocumentBuilders;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
@@ -65,7 +65,11 @@ public class VarBookExportBuilder {
 		Node root = alls.item(0);
 		Document xmlOutput = null;
 		try {
-			xmlOutput = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			DocumentBuilder builder = DocumentBuilders.createSaferDocumentBuilder(factory -> {
+			    factory.isIgnoringElementContentWhitespace();
+			});
+			xmlOutput = builder.newDocument();
+			
 		} catch (ParserConfigurationException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					"ParserConfigurationException");
@@ -177,8 +181,9 @@ public class VarBookExportBuilder {
 
 		try {
 			stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			db = dbf.newDocumentBuilder();
+			db = DocumentBuilders.createSaferDocumentBuilder(factory -> {
+			    factory.isIgnoringElementContentWhitespace();
+			});
 			xmlInitial = db.parse(stream);
 			stream.close();
 		} catch (ParserConfigurationException | SAXException | IOException e) {

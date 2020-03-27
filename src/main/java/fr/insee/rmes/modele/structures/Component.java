@@ -14,7 +14,7 @@ public class Component {
 	private String attachment;
 	
 	public Component() throws RmesException {
-
+		//nothing to do
 	}
 
 	public String getId() {

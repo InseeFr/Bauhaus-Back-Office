@@ -33,7 +33,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
-import fr.insee.rmes.persistance.sparqlQueries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 
 @Component
 public class OperationsUtils {

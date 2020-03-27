@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
-import fr.insee.rmes.persistance.sparqlQueries.organizations.OrganizationQueries;
+import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 
 @Component
 public class OrganizationUtils {
