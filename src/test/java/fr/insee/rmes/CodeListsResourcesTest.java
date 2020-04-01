@@ -2,51 +2,68 @@ package fr.insee.rmes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResultHandlerException;
+import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.webservice.CodeListsResources;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest( RepositoryUtils.class )
 public class CodeListsResourcesTest {
 
     private final static String NOTATION = "213";
     
-    private CodeListsResources codeListResource;
+    private static CodeListsResources codeListResource;
     
- 	@Before
- 	public void setUp() {
- 		codeListResource = new CodeListsResources();
- 	}
+ 	@Mock
+ 	TupleQuery tq;
 
-
-//    @Before
-//    public void init() {
-//    	
-//        MockitoAnnotations.initMocks(this);
-//    }
+    @BeforeEach
+    public void init() {
+  	 	codeListResource = new CodeListsResources();
+        MockitoAnnotations.initMocks(this);
+    }
 
     //getCodeListByNotation//
+ 	
+ 	//tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
+	//tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
     
     @Test
-    @Ignore
-    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException {
-    	PowerMockito.mockStatic(RepositoryUtils.class);		
-    when(RepositoryUtils.executeQuery(any(),anyString())).thenReturn("toto");
+    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException, TupleQueryResultHandlerException, QueryEvaluationException {
+    	
+    	Mockito.doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				SPARQLResultsJSONWriter result = (SPARQLResultsJSONWriter) invocation.getArguments()[0];
+				
+	    		return null;
+			}
+    	}).when(tq).evaluate(any());
+    	
+    	
+    	
+//    	try {
+//			Mockito.doNothing().when(tq).evaluate(any());
+//		} catch (TupleQueryResultHandlerException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (QueryEvaluationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	        Response response = codeListResource.getCodeListByNotation(NOTATION);
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
         assertEquals("EXPECTED_RESPONSE_GET_JSON", response.getEntity());
