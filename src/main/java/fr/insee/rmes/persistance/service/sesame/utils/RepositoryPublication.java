@@ -112,10 +112,10 @@ public class RepositoryPublication {
 			conn.remove(concept, null, null);
 			conn.add(model);
 			conn.close();
-			logger.info("Publication of concept : " + concept);
+			logger.info("Publication of concept : {}", concept);
 		} catch (OpenRDFException e) {
-			logger.error("Publication of concept : " + concept + " failed : " + e.getMessage());
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
+			logger.error("{} {} {}", CONNECTION_TO , Config.SESAME_SERVER_PUBLICATION, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 		}
 	}
@@ -126,10 +126,10 @@ public class RepositoryPublication {
 			conn.remove(resource, null, null);
 			conn.add(model);
 			conn.close();
-			logger.info("Publication of "+type+" : " + resource);
+			logger.info("Publication of {} : {}" ,type, resource);
 		} catch (OpenRDFException e) {
-			logger.error("Publication of "+type+" : " + resource + FAILED);
-			logger.error(CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			logger.error("Publication of {} : {} {}" ,type, resource, FAILED);
+			logger.error("{} {} {}", CONNECTION_TO, Config.SESAME_SERVER_PUBLICATION, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
 
 		}

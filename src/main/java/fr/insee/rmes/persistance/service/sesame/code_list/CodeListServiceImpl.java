@@ -15,7 +15,7 @@ import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 @Service
 public class CodeListServiceImpl implements CodeListService {
 
-	final static Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
+	static final Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
 
 
 	@Override

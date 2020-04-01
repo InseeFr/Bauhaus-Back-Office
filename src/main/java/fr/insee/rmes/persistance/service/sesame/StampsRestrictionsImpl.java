@@ -270,20 +270,23 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
 	public boolean canCreateFamily() throws RmesException {
+		return canCreateFamilySeriesOrIndicator();
+	}
+	
+
+	private boolean canCreateFamilySeriesOrIndicator() {
 		User user = getUser();
 		return (isAdmin(user));
 	}
 
 	@Override
 	public boolean canCreateSeries() throws RmesException {
-		User user = getUser();
-		return (isAdmin(user));
+		return canCreateFamilySeriesOrIndicator();
 	}
 
 	@Override
 	public boolean canCreateIndicator() throws RmesException {
-		User user = getUser();
-		return (isAdmin(user));
+		return canCreateFamilySeriesOrIndicator();
 	}
 
 	@Override
@@ -309,7 +312,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 	@Override
 	public boolean canModifyConcept(URI uri) throws RmesException {
 		User user = getUser();
-		List<URI> uris = new ArrayList<URI>();
+		List<URI> uris = new ArrayList<>();
 		uris.add(uri);
 		return (isAdmin(user) || isConceptsContributor(user) || (isConceptManager(uris) && isConceptContributor(user))
 				|| (isConceptOwner(uris)) && isConceptCreator(user));
@@ -329,9 +332,8 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
 	public boolean canModifyOperation(URI seriesURI) throws RmesException {
-		User user = getUser();
-		return (isAdmin(user) || isCnis(user) || (isSeriesManager(seriesURI) && isSeriesContributor(user)));
-	};
+		return canModifySeries(seriesURI);
+	}
 
 	@Override
 	public boolean canValidateSeries(URI uri) throws RmesException {
@@ -347,8 +349,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 
 	@Override
 	public boolean canValidateOperation(URI seriesURI) throws RmesException {
-		User user = getUser();
-		return (isAdmin(user) || (isSeriesManager(seriesURI) && isSeriesContributor(user)));
+		return canValidateSeries(seriesURI);
 	}
 
 	@Override

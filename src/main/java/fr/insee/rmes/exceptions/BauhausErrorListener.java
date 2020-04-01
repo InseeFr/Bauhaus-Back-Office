@@ -11,8 +11,8 @@ import org.slf4j.MarkerFactory;
 
 public class BauhausErrorListener implements ErrorListener {
 
-	private final static Marker fatal = MarkerFactory.getMarker("FATAL");
-    private final static Logger logger = LoggerFactory.getLogger(BauhausErrorListener.class);
+	private static final  Marker fatal = MarkerFactory.getMarker("FATAL");
+    private static final  Logger logger = LoggerFactory.getLogger(BauhausErrorListener.class);
 
     @Override
     public void warning(TransformerException e) throws TransformerException {

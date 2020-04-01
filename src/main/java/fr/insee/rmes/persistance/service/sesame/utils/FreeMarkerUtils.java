@@ -14,17 +14,21 @@ import freemarker.template.TemplateException;
 
 public class FreeMarkerUtils {
 
-	
-	public static String buildRequest(String root, String fileName, Map<String, Object> params) throws RmesException  {
+	private FreeMarkerUtils() {
+		throw new IllegalStateException("Utility class");
+	}
+
+	public static String buildRequest(String root, String fileName, Map<String, Object> params) throws RmesException {
 		Template temp;
 		Writer out = new StringWriter();
 		try {
-			temp = FreemarkerConfig.getCfg().getTemplate(root+fileName);
-	        temp.process(params, out);
+			temp = FreemarkerConfig.getCfg().getTemplate(root + fileName);
+			temp.process(params, out);
 		} catch (IOException | TemplateException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Can't read query "+fileName)	;	
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					"Can't read query " + fileName);
 		}
-        return out.toString();
+		return out.toString();
 	}
-	
+
 }

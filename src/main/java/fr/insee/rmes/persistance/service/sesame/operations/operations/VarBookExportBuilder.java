@@ -27,7 +27,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.utils.DocumentBuilders;
+import fr.insee.rmes.utils.DocumentBuilders;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component

@@ -37,7 +37,7 @@ public class RepositoryUtils {
 		try {
 			repo.initialize();
 		} catch (Exception e) {
-			logger.error("Initialisation de la connection à la base sesame " + sesameServer + " impossible");
+			logger.error("Initialisation de la connection à la base sesame {} impossible", sesameServer);
 			logger.error(e.getMessage());
 		}
 		return repo;
@@ -48,7 +48,7 @@ public class RepositoryUtils {
 		try {
 			con = repository.getConnection();
 		} catch (RepositoryException e) {
-			logger.error("Connection au repository impossible : " + repository.getDataDir());
+			logger.error("Connection au repository impossible : {}", repository.getDataDir());
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Connection au repository impossible : " + repository.getDataDir());		}
 		return con;
@@ -70,7 +70,7 @@ public class RepositoryUtils {
 			update.execute();
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error(EXECUTE_QUERY_FAILED + updateQuery,repository);
+			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
 		}
@@ -91,7 +91,7 @@ public class RepositoryUtils {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
 		} catch (OpenRDFException e) {
-			logger.error(EXECUTE_QUERY_FAILED + query);
+			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
@@ -113,7 +113,7 @@ public class RepositoryUtils {
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error(EXECUTE_QUERY_FAILED + query);
+			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}

@@ -7,7 +7,7 @@ public class DSDQueries {
 
 	public static String getDSDs() {
 		return "SELECT ?id ?label \n"
-				+ "WHERE { GRAPH <" + SesameUtils.DSDGraph() + "> { \n"
+				+ "WHERE { GRAPH <" + SesameUtils.dsdGraph() + "> { \n"
 				+ "?dsd a qb:DataStructureDefinition . \n"
 				+ "?dsd dcterms:identifier ?id . \n"
 				+ "?dsd rdfs:label ?label . \n"
@@ -17,7 +17,7 @@ public class DSDQueries {
 	
 	public static String getDSDById(String dsdId) {
 		return "SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 \n"
-				+ "WHERE { GRAPH <" + SesameUtils.DSDGraph() + "> { \n"
+				+ "WHERE { GRAPH <" + SesameUtils.dsdGraph() + "> { \n"
 				+ "?dsd a qb:DataStructureDefinition . \n"
 				+ "?dsd dcterms:identifier '" + dsdId + "' . \n"
 				+ "BIND('" + dsdId + "' as ?id) . \n"
@@ -34,7 +34,7 @@ public class DSDQueries {
 	
 	public static String getDSDComponents(String dsdId) {
 		return "SELECT ?id ?label ?type \n"
-				+ "WHERE { GRAPH <" + SesameUtils.DSDGraph() + "> { \n"
+				+ "WHERE { GRAPH <" + SesameUtils.dsdGraph() + "> { \n"
 				+ "?dsd dcterms:identifier '" + dsdId + "' . \n"
 				+ "?dsd qb:component ?node . \n"
 				+ "?node ?type ?component . \n"

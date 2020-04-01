@@ -73,34 +73,34 @@ public class DSDUtils {
 		String dsdId = dsd.getId().replaceAll(" ", "-").toLowerCase();
 		URI DSDURI = SesameUtils.dsdIRI(dsdId);
 		/*Const*/
-		model.add(DSDURI, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, SesameUtils.DSDGraph());
+		model.add(DSDURI, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, SesameUtils.dsdGraph());
 		/*Required*/
-		model.add(DSDURI, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(dsdId), SesameUtils.DSDGraph());
-		model.add(DSDURI, RDFS.LABEL, SesameUtils.setLiteralString(dsd.getLabelLg1(), Config.LG1), SesameUtils.DSDGraph());
+		model.add(DSDURI, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(dsdId), SesameUtils.dsdGraph());
+		model.add(DSDURI, RDFS.LABEL, SesameUtils.setLiteralString(dsd.getLabelLg1(), Config.LG1), SesameUtils.dsdGraph());
 		/*Optional*/
-		SesameUtils.addTripleString(DSDURI, RDFS.LABEL, dsd.getLabelLg2(), Config.LG2, model, SesameUtils.DSDGraph());
-		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg1(), Config.LG1, model, SesameUtils.DSDGraph());
-		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg2(), Config.LG2, model, SesameUtils.DSDGraph());
+		SesameUtils.addTripleString(DSDURI, RDFS.LABEL, dsd.getLabelLg2(), Config.LG2, model, SesameUtils.dsdGraph());
+		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg1(), Config.LG1, model, SesameUtils.dsdGraph());
+		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg2(), Config.LG2, model, SesameUtils.dsdGraph());
 		
 		dsd.getComponents().forEach(component->{
 			URI componentIRI = SesameUtils.componentIRI(component.getId(), component.getType());
 			Resource BNode = SesameUtils.blankNode();
 			/* BNode */
-		    model.add(DSDURI, QB.COMPONENT, BNode, SesameUtils.DSDGraph());
-		    model.add(BNode, RDF.TYPE, QB.COMPONENT_SPECIFICATION, SesameUtils.DSDGraph());
-		    SesameUtils.addTripleUri(BNode, QB.COMPONENT_ATTACHMENT, component.getAttachment(), model, SesameUtils.DSDGraph());
-		    model.add(BNode, SesameUtils.toURI(component.getType()), componentIRI, SesameUtils.DSDGraph());
+		    model.add(DSDURI, QB.COMPONENT, BNode, SesameUtils.dsdGraph());
+		    model.add(BNode, RDF.TYPE, QB.COMPONENT_SPECIFICATION, SesameUtils.dsdGraph());
+		    SesameUtils.addTripleUri(BNode, QB.COMPONENT_ATTACHMENT, component.getAttachment(), model, SesameUtils.dsdGraph());
+		    model.add(BNode, SesameUtils.toURI(component.getType()), componentIRI, SesameUtils.dsdGraph());
 		    /* Component */
-		    model.add(componentIRI, RDF.TYPE, SesameUtils.componentTypeIRI(component.getType()), SesameUtils.DSDGraph());
+		    model.add(componentIRI, RDF.TYPE, SesameUtils.componentTypeIRI(component.getType()), SesameUtils.dsdGraph());
 		    if (component.getCodeList() != null) {
-				model.add(componentIRI, RDF.TYPE, QB.CODED_PROPERTY, SesameUtils.DSDGraph());
+				model.add(componentIRI, RDF.TYPE, QB.CODED_PROPERTY, SesameUtils.dsdGraph());
 			}
-		    model.add(componentIRI, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(component.getId()), SesameUtils.DSDGraph());
-		    model.add(componentIRI, RDFS.LABEL, SesameUtils.setLiteralString(component.getLabelLg1(), Config.LG1), SesameUtils.DSDGraph());
-		    SesameUtils.addTripleString(componentIRI, RDFS.LABEL, component.getLabelLg2(), Config.LG2, model, SesameUtils.DSDGraph());
-		    SesameUtils.addTripleUri(componentIRI, QB.CODE_LIST, component.getCodeList(), model, SesameUtils.DSDGraph());
-		    SesameUtils.addTripleUri(componentIRI, RDFS.RANGE, component.getRange(), model, SesameUtils.DSDGraph());
-		    SesameUtils.addTripleUri(componentIRI, QB.CONCEPT, component.getConcept(), model, SesameUtils.DSDGraph());
+		    model.add(componentIRI, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(component.getId()), SesameUtils.dsdGraph());
+		    model.add(componentIRI, RDFS.LABEL, SesameUtils.setLiteralString(component.getLabelLg1(), Config.LG1), SesameUtils.dsdGraph());
+		    SesameUtils.addTripleString(componentIRI, RDFS.LABEL, component.getLabelLg2(), Config.LG2, model, SesameUtils.dsdGraph());
+		    SesameUtils.addTripleUri(componentIRI, QB.CODE_LIST, component.getCodeList(), model, SesameUtils.dsdGraph());
+		    SesameUtils.addTripleUri(componentIRI, RDFS.RANGE, component.getRange(), model, SesameUtils.dsdGraph());
+		    SesameUtils.addTripleUri(componentIRI, QB.CONCEPT, component.getConcept(), model, SesameUtils.dsdGraph());
 		    
 		});
 		

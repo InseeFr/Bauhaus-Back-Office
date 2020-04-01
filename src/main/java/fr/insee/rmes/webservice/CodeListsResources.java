@@ -38,7 +38,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class CodeListsResources {
 
-	final static Logger logger = LogManager.getLogger(CodeListsResources.class);
+	static final Logger logger = LogManager.getLogger(CodeListsResources.class);
 
 	@Autowired
 	CodeListService codeListService;

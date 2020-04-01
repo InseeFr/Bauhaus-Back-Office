@@ -62,7 +62,7 @@ public class RepositoryGestion {
 	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
 		return RepositoryUtils.executeUpdate(updateQuery, REPOSITORY_GESTION);
 	}
-	
+
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
@@ -77,12 +77,11 @@ public class RepositoryGestion {
 	public static JSONArray getResponseAsArray(String query) throws RmesException {
 		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_GESTION);
 	}
-	
+
 	public static JSONArray getResponseAsJSONList(String query) throws RmesException {
 		return RepositoryUtils.getResponseAsJSONList(query, REPOSITORY_GESTION);
 	}
-	
-	
+
 	/**
 	 * Method which aims to produce response from a sparql ASK query
 	 * 
@@ -116,10 +115,9 @@ public class RepositoryGestion {
 		}
 		return statements;
 	}
-	
 
-	public static RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object, Resource context)
-			throws RmesException {
+	public static RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object,
+			Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
 			statements = con.getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
@@ -128,8 +126,7 @@ public class RepositoryGestion {
 		}
 		return statements;
 	}
-	
-	
+
 	public static void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
 		try {
 			statements.close();
@@ -138,7 +135,6 @@ public class RepositoryGestion {
 		}
 	}
 
-	
 	public static void loadConcept(URI concept, Model model, List<List<URI>> notesToDeleteAndUpdate)
 			throws RmesException {
 		try {
@@ -160,7 +156,7 @@ public class RepositoryGestion {
 
 		}
 	}
-	
+
 	/**
 	 * @param object
 	 * @param model
@@ -176,13 +172,13 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error(FAILURE_LOAD_OBJECT + object);
+			logger.error(FAILURE_LOAD_OBJECT , object);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_LOAD_OBJECT + object);
 
 		}
 	}
-	
+
 	/**
 	 * @param graph
 	 * @param model
@@ -198,7 +194,7 @@ public class RepositoryGestion {
 			conn.add(model);
 			conn.close();
 		} catch (OpenRDFException e) {
-			logger.error(FAILURE_REPLACE_GRAPH + graph);
+			logger.error(FAILURE_REPLACE_GRAPH, graph);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
 
@@ -238,8 +234,7 @@ public class RepositoryGestion {
 			throwsRmesException(e, "Failure validation : " + ressourceURI);
 		}
 	}
-	
-	
+
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
 		getStatementsAndRemove(concept, conn, typeOfLink);
@@ -257,55 +252,54 @@ public class RepositoryGestion {
 			try {
 				statements = conn.getStatements(null, predicat, object, false);
 			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure get "+predicat +" links from " + object);
+				throwsRmesException(e, "Failure get " + predicat + " links from " + object);
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure remove "+predicat +" links from " + object);
+				throwsRmesException(e, "Failure remove " + predicat + " links from " + object);
 
 			}
 		}
 	}
-	
+
 	public static void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
-		List<Resource> toRemove = new ArrayList<Resource>();
+		List<Resource> toRemove = new ArrayList<>();
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
-			try {
-				RepositoryResult<Statement> nodes = null, measures = null, dimensions = null, attributes = null;
-				nodes = conn.getStatements(dsd, QB.COMPONENT, null, false);
-				while (nodes.hasNext()) {
-					Resource node = (Resource) nodes.next().getObject();
-					toRemove.add(node);
-					measures = conn.getStatements(node, QB.MEASURE, null, false);
-					while (measures.hasNext()) {
-						toRemove.add((Resource) measures.next().getObject());
-					}
-					measures.close();
-					dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
-					while (dimensions.hasNext()) {
-						toRemove.add((Resource) dimensions.next().getObject());
-					}
-					dimensions.close();
-					attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
-					while (attributes.hasNext()) {
-						toRemove.add((Resource) attributes.next().getObject());
-					}
-					attributes.close();
+			RepositoryResult<Statement> nodes = null;
+			RepositoryResult<Statement> measures = null;
+			RepositoryResult<Statement> dimensions = null;
+			RepositoryResult<Statement> attributes = null;
+			nodes = conn.getStatements(dsd, QB.COMPONENT, null, false);
+			while (nodes.hasNext()) {
+				Resource node = (Resource) nodes.next().getObject();
+				toRemove.add(node);
+				measures = conn.getStatements(node, QB.MEASURE, null, false);
+				while (measures.hasNext()) {
+					toRemove.add((Resource) measures.next().getObject());
 				}
-				nodes.close();
-				toRemove.forEach(res -> {
-					try {
-						RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
-						conn.remove(statements);
-					} catch (RepositoryException e) {
-						e.printStackTrace();
-					}
-				});
-			} catch (RepositoryException e) {
-				throwsRmesException(e, "");
-			}		
+				measures.close();
+				dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
+				while (dimensions.hasNext()) {
+					toRemove.add((Resource) dimensions.next().getObject());
+				}
+				dimensions.close();
+				attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
+				while (attributes.hasNext()) {
+					toRemove.add((Resource) attributes.next().getObject());
+				}
+				attributes.close();
+			}
+			nodes.close();
+			toRemove.forEach(res -> {
+				try {
+					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
+					conn.remove(statements);
+				} catch (RepositoryException e) {
+					logger.error("RepositoryGestion Error {}", e.getMessage());
+				}
+			});
 		} catch (OpenRDFException e) {
 			throwsRmesException(e, "Failure deletion : " + dsd);
 		}
@@ -320,11 +314,10 @@ public class RepositoryGestion {
 		} catch (RmesException e) {
 			throw e;
 		} catch (Exception e) {
-			throwsRmesException(e, "Failure keepHierarchicalOperationLinks : "+ object);
+			throwsRmesException(e, "Failure keepHierarchicalOperationLinks : " + object);
 		}
 
 	}
-	
 
 	private static void getHierarchicalOperationLinksModel(Resource object, Model model, List<URI> typeOfLink,
 			RepositoryConnection conn) throws RmesException {
@@ -339,7 +332,7 @@ public class RepositoryGestion {
 				addStatementToModel(model, statements);
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : "+ object);
+				throwsRmesException(e, "Failure getHierarchicalOperationLinksModel : " + object);
 			}
 		}
 
@@ -352,18 +345,15 @@ public class RepositoryGestion {
 			model.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 		}
 	}
-	
+
 	private static void throwsRmesException(Exception e, String details) throws RmesException {
 		logger.error(details);
 		logger.error(e.getMessage());
 		throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), details);
 	}
 
-    private RepositoryGestion() {
-    	throw new IllegalStateException("Utility class");
-    }
-
-	
-
+	private RepositoryGestion() {
+		throw new IllegalStateException("Utility class");
+	}
 
 }

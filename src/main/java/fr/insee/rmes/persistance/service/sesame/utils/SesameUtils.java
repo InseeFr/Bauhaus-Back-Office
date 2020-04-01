@@ -51,7 +51,7 @@ public class SesameUtils {
 		return factory.createURI(Config.DOCUMENTATIONS_BASE_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
 	}
 	
-	public static Resource DSDGraph(){
+	public static Resource dsdGraph(){
 		return factory.createURI(Config.DSDS_GRAPH);
 	}
 	
@@ -99,13 +99,13 @@ public class SesameUtils {
 		return objectIRI(ObjectType.DSD, id);
 	}
 	
-	public static URI componentIRI(String id, String URItype) {
-		URI uri = factory.createURI(URItype);
+	public static URI componentIRI(String id, String uriType) {
+		URI uri = factory.createURI(uriType);
 		return objectIRI(ObjectType.getEnum(uri), id);
 	}
 	
-	public static URI componentTypeIRI(String URItype) {
-		URI uri = factory.createURI(URItype);
+	public static URI componentTypeIRI(String uriType) {
+		URI uri = factory.createURI(uriType);
 		if (uri.equals(QB.ATTRIBUTE)) {
 			return QB.ATTRIBUTE_PROPERTY;
 		} else if (uri.equals(QB.DIMENSION)) {
@@ -194,7 +194,7 @@ public class SesameUtils {
 	}
 	public static void addTripleStringMdToXhtml(URI objectURI, URI predicat, String value, String lang, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	;
+			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	
 		}
 	}
 	public static void addTripleDateTime(URI objectURI, URI predicat, String value, Model model, Resource graph) {
@@ -232,10 +232,8 @@ public class SesameUtils {
 	}
 	
 	public static void addTripleBNode(BNode bnode, URI predicat, String value,String lang, Model model,Resource graph) {
-		if (value != null) {
-			if (value != null && !value.isEmpty()) {
+		if (value != null  && !value.isEmpty()) {
 				model.add(bnode, predicat, SesameUtils.setLiteralString(value, lang), graph);
-			}
 		}
 	}
 
