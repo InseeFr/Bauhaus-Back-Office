@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -38,15 +37,16 @@ import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
-public class IndicatorsUtils {
+public class IndicatorsUtils  extends SesameService {
 
 
-	final static Logger logger = LogManager.getLogger(IndicatorsUtils.class);
+	static final Logger logger = LogManager.getLogger(IndicatorsUtils.class);
 
 	@Autowired
 	CodeListService codeListService;
@@ -54,14 +54,12 @@ public class IndicatorsUtils {
 	@Autowired
 	OrganizationsService organizationsService;
 
-	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
 
 	public JSONObject getIndicatorById(String id) throws RmesException{
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
 			}
-		JSONObject indicator = RepositoryGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
+		JSONObject indicator = repoGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
@@ -72,7 +70,7 @@ public class IndicatorsUtils {
 
 
 	private void addIndicatorGestionnaires(String id, JSONObject indicator) throws RmesException {
-		JSONArray gestionnaires = RepositoryGestion.getResponseAsJSONList(IndicatorsQueries.getGestionnaires(id));
+		JSONArray gestionnaires = repoGestion.getResponseAsJSONList(IndicatorsQueries.getGestionnaires(id));
 		indicator.put("gestionnaires", gestionnaires);
 	}
 
@@ -86,7 +84,7 @@ public class IndicatorsUtils {
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) throws RmesException {
-		JSONArray links = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
+		JSONArray links = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
@@ -94,7 +92,7 @@ public class IndicatorsUtils {
 	}
 
 	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) throws RmesException {
-		JSONArray organizations = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
+		JSONArray organizations = repoGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
@@ -127,7 +125,7 @@ public class IndicatorsUtils {
 			logger.error(e.getMessage());
 		}
 		createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
-		logger.info("Create indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
+		logger.info("Create indicator : {} - {}" , indicator.getId() , indicator.getPrefLabelLg1());
 		return indicator.getId();
 	}
 
@@ -159,14 +157,14 @@ public class IndicatorsUtils {
 			createRdfIndicator(indicator,ValidationStatus.MODIFIED);
 		}
 
-		logger.info("Update indicator : " + indicator.getId() + " - " + indicator.getPrefLabelLg1());
+		logger.info("Update indicator : {} - {}" , indicator.getId() , indicator.getPrefLabelLg1());
 
 	}
 
 	public String getIndicatorsForSearch() throws RmesException {
 		logger.info("Starting to get indicators list");
     
-		JSONArray resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch());
+		JSONArray resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch());
 		
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
@@ -227,13 +225,13 @@ public class IndicatorsUtils {
 			}
 		}
 
-		RepositoryGestion.keepHierarchicalOperationLinks(indicURI,model);
+		repoGestion.keepHierarchicalOperationLinks(indicURI,model);
 
-		RepositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
+		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
 	
-	public String setIndicatorValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+	public String setIndicatorValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
 		if(!stampsRestrictionsService.canValidateIndicator(SesameUtils.objectIRI(ObjectType.INDICATOR, id))) {
@@ -246,7 +244,7 @@ public class IndicatorsUtils {
 		model.add(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.productsGraph());
-		logger.info("Validate indicator : " + indicatorURI);
+		logger.info("Validate indicator : {}" , indicatorURI);
 
 		RepositoryGestion.objectValidation(indicatorURI, model);
 
@@ -267,22 +265,22 @@ public class IndicatorsUtils {
 
 	public String createID() throws RmesException {
 		logger.info("Generate indicator id");
-		JSONObject json = RepositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
-		logger.debug("JSON for indicator id : " + json);
+		JSONObject json = repoGestion.getResponseAsObject(IndicatorsQueries.lastID());
+		logger.debug("JSON for indicator id : {}" , json);
 		if (json.length()==0) {return null;}
 		String id = json.getString(Constants.ID);
 		if (id.equals("undefined")) {return null;}
-		int ID = Integer.parseInt(id.substring(1))+1;
-		return "p" + ID;
+		int idInt = Integer.parseInt(id.substring(1))+1;
+		return "p" + idInt;
 	}
 
-	public static Boolean checkIfIndicatorExists(String id) throws RmesException {
-		return RepositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
+	public boolean checkIfIndicatorExists(String id) throws RmesException {
+		return repoGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
 	}
 
-	public static String getValidationStatus(String id) throws RmesException{
+	public String getValidationStatus(String id) throws RmesException{
 		try {
-			return RepositoryGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
+			return repoGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
 		}
 		catch (JSONException e) {
 			return Constants.UNDEFINED;

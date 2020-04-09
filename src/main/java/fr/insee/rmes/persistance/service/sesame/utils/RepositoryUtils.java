@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.service.sesame.utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -20,10 +21,12 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.http.HTTPRepository;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
 
-public class RepositoryUtils {
+@Component
+public abstract class RepositoryUtils {
 	
 	private static final String VALUE = "value";
 	private static final String BINDINGS = "bindings";
@@ -43,7 +46,7 @@ public class RepositoryUtils {
 		return repo;
 	}
 	
-	public static RepositoryConnection getConnection(Repository repository) throws RmesException {
+	public RepositoryConnection getConnection(Repository repository) throws RmesException {
 		RepositoryConnection con = null;
 		try {
 			con = repository.getConnection();
@@ -86,7 +89,7 @@ public class RepositoryUtils {
 	 */
 	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
 		TupleQuery tupleQuery = null;
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		OutputStream stream = new ByteArrayOutputStream();
 		try {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
@@ -177,7 +180,7 @@ public class RepositoryUtils {
 	 * @throws RmesException 
 	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query, Repository repository) throws RmesException {
+	public static boolean getResponseAsBoolean(String query, Repository repository) throws RmesException {
 		JSONObject res = new JSONObject(getResponse(query, repository));
 		return res.getBoolean("boolean");
 	}
@@ -221,7 +224,7 @@ public class RepositoryUtils {
 	}
 	
 	
-	public static JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
+	public JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
 		if (jsonSparql.get(RESULTS) == null) {
 			return null;
 		}
@@ -233,10 +236,6 @@ public class RepositoryUtils {
 		Set<String> set = json.keySet();
 		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(VALUE)));
 		return jsonResults;
-	}
-	
-	private RepositoryUtils() {
-		throw new IllegalStateException("Utility class");
 	}
 	
 

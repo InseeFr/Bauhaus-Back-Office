@@ -15,6 +15,7 @@ import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.XKOS;
@@ -22,17 +23,19 @@ import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.service.notifications.NotificationsContract;
 import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
-public class ConceptsPublication {
+@Component
+public class ConceptsPublication extends SesameService{
+
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	public static void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
+	public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
 			String conceptId = conceptsToPublish.getString(i);
 			//TODO uncomment when we can notify...
@@ -43,7 +46,7 @@ public class ConceptsPublication {
 			checkTopConceptOf(conceptId, model);
 			Resource concept = SesameUtils.conceptIRI(conceptId);
 
-			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+			RepositoryConnection con =PublicationUtils.getRepositoryConnectionGestion();
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
@@ -51,8 +54,9 @@ public class ConceptsPublication {
 			String[] ignoredAttrs = {"isValidated","changeNote","creator","contributor"};
 
 			try {
-				Boolean hasBroader = false;
-				Resource subject = null, graph = null;
+				boolean hasBroader = false;
+				Resource subject = null;
+				Resource graph = null;
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
@@ -116,11 +120,11 @@ public class ConceptsPublication {
 	
 
 
-	public static void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
+	public void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
 		JSONArray conceptsToCheck = RepositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
-			if (!RepositoryGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
+			if (!repoGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
 				model.add(PublicationUtils.tranformBaseURIToPublish(SesameUtils.conceptIRI(id)),
 						SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(SesameUtils.conceptScheme()),
 						SesameUtils.conceptGraph());
@@ -131,8 +135,10 @@ public class ConceptsPublication {
 	public static void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, note);
 		try {
-			String lg = "", xhtml = "";
-			Resource subject = null, graph = null;
+			String lg = "";
+			String xhtml = "";
+			Resource subject = null; 
+			Resource graph = null;
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				String predicat = st.getPredicate().toString();
@@ -190,7 +196,7 @@ public class ConceptsPublication {
 			Resource collection = SesameUtils.collectionIRI(collectionId);
 			//TODO uncomment when we can notify...
 			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
-			RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+			RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
 			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, collection);
 
 			try {

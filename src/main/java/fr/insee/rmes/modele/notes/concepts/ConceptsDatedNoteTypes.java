@@ -33,6 +33,7 @@ public enum ConceptsDatedNoteTypes {
 		this.text = text;
 	}
 
+	@Override
 	public String toString() {
 		return this.text;
 	}

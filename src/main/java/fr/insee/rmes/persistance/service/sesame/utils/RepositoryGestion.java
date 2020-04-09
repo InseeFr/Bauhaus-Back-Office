@@ -23,6 +23,7 @@ import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -31,14 +32,16 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
-public class RepositoryGestion {
+@Component
+public class RepositoryGestion extends RepositoryUtils {
+
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
-	public static final Repository REPOSITORY_GESTION = RepositoryUtils.initRepository(Config.SESAME_SERVER_GESTION,
+	public static final Repository REPOSITORY_GESTION = initRepository(Config.SESAME_SERVER_GESTION,
 			Config.REPOSITORY_ID_GESTION);
 
 	/**
@@ -49,7 +52,7 @@ public class RepositoryGestion {
 	 * @throws RmesException 
 	 */
 	public static String getResponse(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, REPOSITORY_GESTION);
+		return getResponse(query, REPOSITORY_GESTION);
 	}
 
 	/**
@@ -59,8 +62,8 @@ public class RepositoryGestion {
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
-		return RepositoryUtils.executeUpdate(updateQuery, REPOSITORY_GESTION);
+	public Response.Status executeUpdate(String updateQuery) throws RmesException {
+		return executeUpdate(updateQuery, REPOSITORY_GESTION);
 	}
 
 	/**
@@ -70,16 +73,16 @@ public class RepositoryGestion {
 	 * @return JSONObject
 	 * @throws RmesException 
 	 */
-	public static JSONObject getResponseAsObject(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsObject(query, REPOSITORY_GESTION);
+	public JSONObject getResponseAsObject(String query) throws RmesException {
+		return getResponseAsObject(query, REPOSITORY_GESTION);
 	}
 
-	public static JSONArray getResponseAsArray(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_GESTION);
+	public JSONArray getResponseAsArray(String query) throws RmesException {
+		return getResponseAsArray(query, REPOSITORY_GESTION);
 	}
 
-	public static JSONArray getResponseAsJSONList(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsJSONList(query, REPOSITORY_GESTION);
+	public JSONArray getResponseAsJSONList(String query) throws RmesException {
+		return getResponseAsJSONList(query, REPOSITORY_GESTION);
 	}
 
 	/**
@@ -90,8 +93,8 @@ public class RepositoryGestion {
 	 * @throws RmesException 
 	 * @throws JSONException 
 	 */
-	public static Boolean getResponseAsBoolean(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_GESTION);
+	public boolean getResponseAsBoolean(String query) throws RmesException {
+		return getResponseAsBoolean(query, REPOSITORY_GESTION);
 	}
 
 	public static RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
@@ -135,7 +138,7 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void loadConcept(URI concept, Model model, List<List<URI>> notesToDeleteAndUpdate)
+	public void loadConcept(URI concept, Model model, List<List<URI>> notesToDeleteAndUpdate)
 			throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
@@ -163,7 +166,7 @@ public class RepositoryGestion {
 	 * @param conn : can be null - initialized by the method
 	 * @throws RmesException
 	 */
-	public static void loadSimpleObject(URI object, Model model, RepositoryConnection conn) throws RmesException {
+	public void loadSimpleObject(URI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
 				conn = REPOSITORY_GESTION.getConnection();
@@ -201,7 +204,7 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void loadObjectWithReplaceLinks(URI object, Model model) throws RmesException {
+	public void loadObjectWithReplaceLinks(URI object, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			clearReplaceLinks(object, conn);
@@ -266,7 +269,7 @@ public class RepositoryGestion {
 	public static void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try {
-			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			RepositoryResult<Statement> nodes = null;
 			RepositoryResult<Statement> measures = null;
 			RepositoryResult<Statement> dimensions = null;
@@ -305,11 +308,11 @@ public class RepositoryGestion {
 		}
 	}
 
-	public static void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
+	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
 		RepositoryConnection conn = null;
 		try {
-			conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			conn = REPOSITORY_GESTION.getConnection();
 			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
 		} catch (RmesException e) {
 			throw e;
@@ -350,10 +353,6 @@ public class RepositoryGestion {
 		logger.error(details);
 		logger.error(e.getMessage());
 		throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), details);
-	}
-
-	private RepositoryGestion() {
-		throw new IllegalStateException("Utility class");
 	}
 
 }

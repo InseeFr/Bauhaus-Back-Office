@@ -30,7 +30,7 @@ import fr.insee.rmes.persistance.service.sesame.operations.operations.Operations
 import fr.insee.rmes.persistance.service.sesame.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -42,7 +42,11 @@ import fr.insee.rmes.service.export.XDocReport;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
-public class OperationsImpl implements OperationsService {
+public class OperationsImpl  extends SesameService implements OperationsService {
+
+	private static final String ATTACHMENT = "attachment";
+
+	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
 	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
 
@@ -82,7 +86,7 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -94,7 +98,7 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		String resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 	
@@ -112,7 +116,7 @@ public class OperationsImpl implements OperationsService {
 
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
-		JSONArray resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
 		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -120,8 +124,7 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String createSeries(String body) throws RmesException {
 		// TODO: check if there is already a series with the same name ?
-		String id = seriesUtils.createSeries(body);
-		return id;
+		return seriesUtils.createSeries(body);
 	}
 
 	@Override
@@ -138,7 +141,7 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
-		String resQuery = RepositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -149,8 +152,8 @@ public class OperationsImpl implements OperationsService {
 		String xmlForJasper = varBookExport.getData(id);
 		InputStream is = jasper.exportVariableBook(xmlForJasper, acceptHeader);
 		String fileName = "Dico" + id + jasper.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
 	}
 
 	@Override
@@ -164,8 +167,8 @@ public class OperationsImpl implements OperationsService {
 
 		InputStream is = transformFileOutputStreamInInputStream(os);
 		String fileName = "Codebook"+ExportUtils.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, acceptHeader).header("Content-Disposition", content).build();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
 	}
 
 	private InputStream transformFileOutputStreamInInputStream(OutputStream os)
@@ -212,14 +215,14 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
-		String resQuery = RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
 		logger.info("Starting to get families list for search");
-		String resQuery = RepositoryGestion.getResponseAsArray(FamiliesQueries.familiesSearchQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesSearchQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -244,8 +247,7 @@ public class OperationsImpl implements OperationsService {
 	 */
 	@Override
 	public String createFamily(String body) throws RmesException {
-		String id = familiesUtils.createFamily(body);
-		return id;
+		return familiesUtils.createFamily(body);
 	}
 
 	/***************************************************************************************************
@@ -257,14 +259,14 @@ public class OperationsImpl implements OperationsService {
 	@Override
 	public String getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
-		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public String getIndicatorsForSearch() throws RmesException {
 		logger.info("Starting to get indicators list");
-		String resQuery = RepositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch()).toString();
+		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -305,7 +307,7 @@ public class OperationsImpl implements OperationsService {
 
 	@Override
 	public String getMSD() throws RmesException {
-		String resQuery = RepositoryGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -368,8 +370,8 @@ public class OperationsImpl implements OperationsService {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
 		}
 		String fileName = output.getName();
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header("Content-Disposition", content).build();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
 
 

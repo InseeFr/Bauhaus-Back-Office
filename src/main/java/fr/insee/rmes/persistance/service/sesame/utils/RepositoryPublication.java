@@ -27,7 +27,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.Constants;
 
-public class RepositoryPublication {
+public class RepositoryPublication extends RepositoryUtils{
 
 	private static final String CONNECTION_TO = "Connection to ";
 
@@ -35,8 +35,7 @@ public class RepositoryPublication {
 
 	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
 
-	public static final Repository REPOSITORY_PUBLICATION = RepositoryUtils
-			.initRepository(Config.SESAME_SERVER_PUBLICATION, Config.REPOSITORY_ID_PUBLICATION);
+	public static final Repository REPOSITORY_PUBLICATION = initRepository(Config.SESAME_SERVER_PUBLICATION, Config.REPOSITORY_ID_PUBLICATION);
 
 	/**
 	 * Method which aims to produce response from a sparql query
@@ -46,7 +45,7 @@ public class RepositoryPublication {
 	 * @throws RmesException 
 	 */
 	public static String getResponse(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, REPOSITORY_PUBLICATION);
+		return getResponse(query, REPOSITORY_PUBLICATION);
 	}
 
 	/**
@@ -57,7 +56,7 @@ public class RepositoryPublication {
 	 * @throws RmesException 
 	 */
 	public static JSONArray getResponseAsArray(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsArray(query, REPOSITORY_PUBLICATION);
+		return getResponseAsArray(query, REPOSITORY_PUBLICATION);
 	}
 
 	/**
@@ -68,7 +67,7 @@ public class RepositoryPublication {
 	 * @throws RmesException 
 	 */
 	public static JSONObject getResponseAsObject(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsObject(query, REPOSITORY_PUBLICATION);
+		return getResponseAsObject(query, REPOSITORY_PUBLICATION);
 	}
 
 	/**
@@ -80,7 +79,7 @@ public class RepositoryPublication {
 	 * @throws JSONException 
 	 */
 	public static Boolean getResponseAsBoolean(String query) throws  RmesException {
-		return RepositoryUtils.getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
+		return getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
 	}
 	
 	/**
@@ -91,7 +90,7 @@ public class RepositoryPublication {
 	 * @throws RmesException 
 	 */
 	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
-		return RepositoryUtils.executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
+		return executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
 	}
 
 	public static void publishConcept(Resource concept, Model model, List<Resource> noteToClear,

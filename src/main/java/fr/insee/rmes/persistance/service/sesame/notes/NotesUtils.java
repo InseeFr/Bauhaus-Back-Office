@@ -18,13 +18,14 @@ import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.XKOS;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.notes.NotesQueries;
 
-public class NotesUtils {
+public class NotesUtils  extends SesameService {
 	
-	private static final String _ONE_ = "1";
+	private static final String ONE = "1";
+	
 
 	public void createRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model) {
 		URI note = SesameUtils.versionableNoteIRI(conceptId, versionableNote);
@@ -39,9 +40,9 @@ public class NotesUtils {
 	
 	public void closeRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		URI noteURIPreviousVersion = SesameUtils.previousVersionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = RepositoryGestion.getResponseAsBoolean(NotesQueries.isExist(noteURIPreviousVersion));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURIPreviousVersion));
 		if (isNoteExist) {
-			Boolean isNoteClosed = RepositoryGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURIPreviousVersion));
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURIPreviousVersion));
 			if (!isNoteClosed) {
 				model.add(noteURIPreviousVersion, INSEE.VALIDUNTIL, SesameUtils.setLiteralDateTime(LocalDateTime.now().toString()), SesameUtils.conceptGraph());
 			}
@@ -51,14 +52,14 @@ public class NotesUtils {
 	public void keepNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		URI conceptURI = SesameUtils.conceptIRI(conceptId);
 		URI noteURI = SesameUtils.versionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = RepositoryGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
 		if (isNoteExist) {
 			model.add(conceptURI, versionableNote.getPredicat(), noteURI, SesameUtils.conceptGraph());
 		}
 	}
 	
 	public void keepHistoricalNotes(String conceptId, String conceptVersion, Model model)  throws RmesException{
-		JSONArray notes = RepositoryGestion.getResponseAsArray(
+		JSONArray notes = repoGestion.getResponseAsArray(
 				NotesQueries.getHistoricalNotes(conceptId, conceptVersion));
 		for (int i = 0; i < notes.length(); i++) {
 			JSONObject note = (JSONObject) notes.get(i);
@@ -70,9 +71,9 @@ public class NotesUtils {
 	
 	public void updateNoteConceptVersion(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
 		URI noteURI = SesameUtils.versionableNoteIRI(conceptId, versionableNote);
-		Boolean isNoteExist = RepositoryGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
+		Boolean isNoteExist = repoGestion.getResponseAsBoolean(NotesQueries.isExist(noteURI));
 		if (isNoteExist) {
-			Boolean isNoteClosed = RepositoryGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURI));
+			Boolean isNoteClosed = repoGestion.getResponseAsBoolean(NotesQueries.isClosed(noteURI));
 			if (!isNoteClosed) {
 				String newConceptVersion = String.valueOf(Integer.parseInt(versionableNote.getConceptVersion()) + 1);
 				model.add(noteURI, INSEE.CONCEPT_VERSION, SesameUtils.setLiteralInt(newConceptVersion), SesameUtils.conceptGraph());
@@ -91,7 +92,7 @@ public class NotesUtils {
 	}
 	
 	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<URI> notesToDelete)  throws RmesException{
-		JSONObject noteToDelete = RepositoryGestion.getResponseAsObject(NotesQueries.getChangeNoteToDelete(conceptId, datableNote));
+		JSONObject noteToDelete = repoGestion.getResponseAsObject(NotesQueries.getChangeNoteToDelete(conceptId, datableNote));
 		if (noteToDelete.length() != 0) {
 			notesToDelete.add(SesameUtils.toURI(noteToDelete.getString("changeNoteURI")));
 		}
@@ -99,7 +100,7 @@ public class NotesUtils {
 	
 	public String getVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException {
 		if (concept.getCreation()) {
-			return _ONE_;
+			return ONE;
 		} else {
 			String version = getLastVersion(concept,note,defaultVersion);
 			if (!concept.getVersioning()) {
@@ -111,9 +112,9 @@ public class NotesUtils {
 	
 	public String getLastVersion(Concept concept, VersionableNote note, String defaultVersion)  throws RmesException{
 		if (concept.getCreation()) {
-			return _ONE_;
+			return ONE;
 		} else {
-			JSONObject jsonVersion = RepositoryGestion.getResponseAsObject(
+			JSONObject jsonVersion = repoGestion.getResponseAsObject(
 					NotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
 			if (jsonVersion.length() == 0) {
 				return defaultVersion;
@@ -124,8 +125,8 @@ public class NotesUtils {
 	}
 	
 	public String getConceptVersion(Concept concept)  throws RmesException{
-		String conceptVersion = _ONE_;
-		JSONObject jsonConceptVersion = RepositoryGestion.getResponseAsObject(NotesQueries.getConceptVersion(concept.getId()));
+		String conceptVersion = ONE;
+		JSONObject jsonConceptVersion = repoGestion.getResponseAsObject(NotesQueries.getConceptVersion(concept.getId()));
 		if (jsonConceptVersion.length() == 0) {
 			return conceptVersion;
 		}

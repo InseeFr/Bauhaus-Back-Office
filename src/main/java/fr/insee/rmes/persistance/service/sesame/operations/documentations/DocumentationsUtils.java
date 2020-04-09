@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -49,14 +48,17 @@ import fr.insee.rmes.persistance.service.sesame.organizations.OrganizationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateParser;
 
 @Component
-public class DocumentationsUtils {
+public class DocumentationsUtils extends SesameService {
 
-	final static Logger logger = LogManager.getLogger(DocumentationsUtils.class);
+	private static final String HAS_DOC = "hasDoc";
+
+	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
@@ -68,10 +70,19 @@ public class DocumentationsUtils {
 	SeriesUtils seriesUtils;
 
 	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
-	
-	@Autowired
 	DocumentationExport docExport;
+
+	@Autowired
+	FamOpeSerUtils famOpeSerUtils;
+
+	@Autowired
+	OrganizationUtils organizationUtils;
+
+	@Autowired
+	IndicatorsUtils indicatorsUtils;
+
+	@Autowired
+	CodeListUtils codeListUtils;
 
 	/**
 	 * GETTER
@@ -79,22 +90,25 @@ public class DocumentationsUtils {
 	 * @return
 	 * @throws RmesException
 	 */
-	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException{
-		//Get general informations
-		JSONObject doc = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
-		if (doc.length()==0) {throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Documentation not found", "");}
+	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
+		// Get general informations
+		JSONObject doc = repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
+		if (doc.length() == 0) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", "");
+		}
 		doc.put(Constants.ID, idSims);
 
-		//Get all rubrics
-		JSONArray docRubrics = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
+		// Get all rubrics
+		JSONArray docRubrics = repoGestion
+				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		if (docRubrics.length() != 0) {
 			for (int i = 0; i < docRubrics.length(); i++) {
 				JSONObject rubric = docRubrics.getJSONObject(i);
-				if (rubric.has("hasDoc") && rubric.getBoolean("hasDoc")) {
+				if (rubric.has(HAS_DOC) && rubric.getBoolean(HAS_DOC)) {
 					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
 					rubric.put("documents", listDoc);
 				}
-				rubric.remove("hasDoc");
+				rubric.remove(HAS_DOC);
 				if (rubric.get("rangeType").equals("DATE")) {
 					rubric.put("value", DateParser.getDate(rubric.getString("value")));
 				}
@@ -103,7 +117,6 @@ public class DocumentationsUtils {
 		doc.put("rubrics", docRubrics);
 		return doc;
 	}
-
 
 	/**
 	 * CREATE or UPDATE
@@ -119,48 +132,49 @@ public class DocumentationsUtils {
 			sims = mapper.readValue(body, Documentation.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_METHOD_FAILURE, e.getMessage(), "IOException")	;	
+			throw new RmesException(HttpStatus.SC_METHOD_FAILURE, e.getMessage(), "IOException");
 		}
-		//Check idOperation/idSerie/IdIndicator and Init or check id sims
+		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
-			id=prepareCreation(idTarget);
+			id = prepareCreation(idTarget);
 			sims.setId(id);
 			checkIfTargetIsASeriesWithOperations(idTarget);
-		}else {
+		} else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
 		URI targetUri = getTarget(sims);
 
-		//Update rubrics
+		// Update rubrics
 		if (create) {
-			if(!stampsRestrictionsService.canCreateSims(targetUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+			if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
+						"Only an admin or a manager can create a new sims.");
 			}
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if(!stampsRestrictionsService.canModifySims(targetUri)) {
-				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED, "Only an admin, CNIS, or a manager can modify this sims.", id);
+			if (!stampsRestrictionsService.canModifySims(targetUri)) {
+				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
+						"Only an admin, CNIS, or a manager can modify this sims.", id);
 			}
 			String status = getValidationStatus(id);
-			if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+			if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 			} else {
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
 			}
 		}
-		logger.info("Create or update sims : " + sims.getId() + " - " + sims.getLabelLg1());
+		logger.info("Create or update sims : {} - {}", sims.getId(), sims.getLabelLg1());
 		return sims.getId();
 	}
 
-	private String getValidationStatus(String id) throws RmesException{
-		try {		return RepositoryGestion.getResponseAsObject(DocumentationsQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
+	private String getValidationStatus(String id) throws RmesException {
+		try {
+			return repoGestion.getResponseAsObject(DocumentationsQueries.getPublicationState(id)).getString("state");
+		} catch (JSONException e) {
 			return Constants.UNDEFINED;
 		}
 	}
-
-
 
 	/**
 	 * PUBLISH
@@ -176,59 +190,56 @@ public class DocumentationsUtils {
 		// Find target
 		String targetId = null;
 		URI targetUri = null;
-		try{
+		try {
 			targetId = simsJson.getString("idIndicator");
-			if(!targetId.isEmpty()) {
+			if (!targetId.isEmpty()) {
 				targetUri = SesameUtils.objectIRI(ObjectType.INDICATOR, targetId);
 			} else {
 				targetId = simsJson.getString("idOperation");
-				if(!targetId.isEmpty()) {
+				if (!targetId.isEmpty()) {
 					targetUri = SesameUtils.objectIRI(ObjectType.OPERATION, targetId);
 				} else {
 					targetId = simsJson.getString("idSeries");
 					targetUri = SesameUtils.objectIRI(ObjectType.SERIES, targetId);
 				}
 			}
+		} catch (JSONException e) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
-		catch(JSONException e) {
-			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
-		}
-		if(targetId.isEmpty()) {
-			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"target not found for this Sims", id);
+		if (targetId.isEmpty()) {
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
 		/* Check rights */
-		if(!stampsRestrictionsService.canCreateSims(targetUri)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new sims.");
+		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
+					"Only an admin or a manager can create a new sims.");
 		}
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status=FamOpeSerUtils.getValidationStatus(targetId);
-		if(status.equals(Constants.UNDEFINED)) {
-			status=IndicatorsUtils.getValidationStatus(targetId);
-		}			
-		if(PublicationUtils.isPublished(status)) {
-			throw new RmesUnauthorizedException(
-					ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
-					"This metadataReport cannot be published before its target is published. ", 
-					"MetadataReport: "+id+" ; Indicator/Series/Operation: "+targetId);
+		String status = famOpeSerUtils.getValidationStatus(targetId);
+		if (status.equals(Constants.UNDEFINED)) {
+			status = indicatorsUtils.getValidationStatus(targetId);
 		}
-
+		if (PublicationUtils.isPublished(status)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
+					"This metadataReport cannot be published before its target is published. ",
+					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
+		}
 
 		DocumentationPublication.publishSims(id);
 
 		URI simsURI = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, id);
 		model.add(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
-		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
+				graph);
 		model.remove(simsURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
-		logger.info("Validate sims : " + simsURI);
+		logger.info("Validate sims : {}", simsURI);
 
 		RepositoryGestion.objectValidation(simsURI, model);
 
 		return id;
 	}
-
-
 
 	/**
 	 * get Operation URI to create or update SIMS
@@ -239,32 +250,33 @@ public class DocumentationsUtils {
 	private URI getTarget(Documentation sims) throws RmesException {
 		URI target = null;
 
-		if (StringUtils.isNotEmpty(sims.getIdOperation()) && FamOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION,sims.getIdTarget())){
-			target= SesameUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
+		if (StringUtils.isNotEmpty(sims.getIdOperation())
+				&& famOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION, sims.getIdTarget())) {
+			target = SesameUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
 		}
-		if (StringUtils.isNotEmpty(sims.getIdSeries()) && FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,sims.getIdTarget())){
-			target= SesameUtils.objectIRI(ObjectType.SERIES, sims.getIdTarget());
+		if (StringUtils.isNotEmpty(sims.getIdSeries())
+				&& famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES, sims.getIdTarget())) {
+			target = SesameUtils.objectIRI(ObjectType.SERIES, sims.getIdTarget());
 		}
-		if (StringUtils.isNotEmpty(sims.getIdIndicator()) && IndicatorsUtils.checkIfIndicatorExists(sims.getIdTarget())) {
-			target= SesameUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
+		if (StringUtils.isNotEmpty(sims.getIdIndicator())
+				&& indicatorsUtils.checkIfIndicatorExists(sims.getIdTarget())) {
+			target = SesameUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
-		if (target==null) {
+		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator doesn't exist", "id Operation/Series/Indicator doesn't match with an existing Operation/Series/Indicator")	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
+					"id Operation/Series/Indicator doesn't match with an existing Operation/Series/Indicator");
 		}
 		return target;
 	}
 
 	private void checkIfTargetIsASeriesWithOperations(String idTarget) throws RmesException {
-		if(FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idTarget)) {
-			if (seriesUtils.hasOperations(idTarget)) {
-				throw new RmesNotAcceptableException(
-						ErrorCodes.SERIES_OPERATION_OR_SIMS, 
-						"Cannot create Sims for a series which already has operations", idTarget);
-			}
+		if (famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES, idTarget) && seriesUtils.hasOperations(idTarget)) {
+			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
+					"Cannot create Sims for a series which already has operations", idTarget);
 		}
-	}
 
+	}
 
 	/**
 	 * Check the existing id is the same that the id to set
@@ -275,19 +287,21 @@ public class DocumentationsUtils {
 	 * @throws RmesException
 	 */
 	private void checkIdsBeforeUpdate(String idRequest, String idSims, String idTarget) throws RmesException {
-		//Check idSims
-		if (idRequest==null || idSims == null || !idRequest.equals(idSims)) {
+		// Check idSims
+		if (idRequest == null || idSims == null || !idRequest.equals(idSims)) {
 			logger.error("Can't update a documentation if idSims or id don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request", "idSims in param : "+idRequest+" /id in body : "+idSims)	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request",
+					"idSims in param : " + idRequest + " /id in body : " + idSims);
 		}
-		//Check id Operation/Serie/Indicator
-		if (idTarget==null) {
+		// Check id Operation/Serie/Indicator
+		if (idTarget == null) {
 			logger.error("Can't update a documentation if id Operation/Serie/Indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null", "id Operation/Serie/Indicator or id is null")	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
+					"id Operation/Serie/Indicator or id is null");
 		}
-		JSONObject existingIdTarget =  RepositoryGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
-		if (existingIdTarget != null ) {
+		if (existingIdTarget != null) {
 			idDatabase = (String) existingIdTarget.get("idOperation");
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
 				idDatabase = (String) existingIdTarget.get("idSeries");
@@ -298,11 +312,13 @@ public class DocumentationsUtils {
 		}
 		if (existingIdTarget == null || idDatabase == null) {
 			logger.error("Can't find Operation/Serie/Indicator linked to the documentation");
-			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET,"Operation/Serie/Indicator not found", "Maybe this is a creation")	;	
+			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "Operation/Serie/Indicator not found",
+					"Maybe this is a creation");
 		}
 		if (!idTarget.equals(idDatabase)) {
 			logger.error("id Operation/Serie/Indicator and idSims don't match");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match", "Documentation linked to Operation/Serie/Indicator : " + existingIdTarget)	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match",
+					"Documentation linked to Operation/Serie/Indicator : " + existingIdTarget);
 		}
 	}
 
@@ -314,14 +330,16 @@ public class DocumentationsUtils {
 	 * @throws RmesException
 	 */
 	private String prepareCreation(String idTarget) throws RmesException {
-		if (idTarget==null) {
+		if (idTarget == null) {
 			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null", "id is null")	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null",
+					"id is null");
 		}
-		JSONObject existingIdSims = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
+		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has("idSims")) {
 			logger.error("Documentation already exists");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation", "Maybe this is an update")	;	
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
+					"Maybe this is an update");
 		}
 		return createSimsID();
 	}
@@ -334,7 +352,7 @@ public class DocumentationsUtils {
 	 */
 	private void saveRdfMetadataReport(Documentation sims, URI target, ValidationStatus state) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,sims.getId());
+		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
 		Resource graph = SesameUtils.simsGraph(sims.getId());
 		/*Const*/
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
@@ -358,9 +376,10 @@ public class DocumentationsUtils {
 	 * @param rubrics
 	 * @throws RmesException
 	 */
-	private void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics) throws RmesException {
+	private void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
+			throws RmesException {
 		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
-		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION,simsId);
+		URI simsUri = SesameUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
 
 		for (DocumentationRubric rubric : rubrics) {
 			RangeType type = getRangeType(rubric);
@@ -369,11 +388,11 @@ public class DocumentationsUtils {
 			try {
 				String predicate = attributesUriList.get(rubric.getIdAttribute());
 				predicateUri = SesameUtils.toURI(predicate);
-				attributeUri = getAttributeUri(simsId,predicate);
-			}catch (Exception e) {
+				attributeUri = getAttributeUri(simsId, predicate);
+			} catch (Exception e) {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idAttribute not found", rubric.getIdAttribute());
 			}
-			SesameUtils.addTripleUri(attributeUri,SDMX_MM.METADATA_REPORT_PREDICATE,simsUri, model, graph);
+			SesameUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
 			addRubricByRangeType(model, graph, rubric, type, predicateUri, attributeUri);
 		}
 	}
@@ -391,61 +410,70 @@ public class DocumentationsUtils {
 	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
 			URI predicateUri, URI attributeUri) throws RmesException {
 		switch (type) {
-		case DATE:
-			SesameUtils.addTripleDateTime(attributeUri,predicateUri, rubric.getValue(), model, graph);
-			break;
-		case CODELIST :
-			String codeUri = CodeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
-			if (codeUri != null) { 
-				SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(codeUri), model, graph);
-			}
-			break; 
-		case RICHTEXT :
-			if (rubric.isEmpty()) {
+			case DATE:
+				SesameUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getValue(), model, graph);
 				break;
-			}
-			URI textUri =SesameUtils.toURI( attributeUri.stringValue().concat("/texte"));
-			SesameUtils.addTripleUri(attributeUri,predicateUri , textUri, model, graph);
-			SesameUtils.addTripleUri(textUri,RDF.TYPE , DCMITYPE.TEXT, model, graph);
-			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(),Config.LG1, model, graph);
-			}
-			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				SesameUtils.addTripleStringMdToXhtml(textUri,RDF.VALUE, rubric.getLabelLg2(),Config.LG2, model, graph);
-			}
-			docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
-			break; 
-		case ORGANIZATION :
-			String orgaUri = OrganizationUtils.getUri(rubric.getValue());
-			if (orgaUri != null) { 
-				SesameUtils.addTripleUri(attributeUri,predicateUri , SesameUtils.toURI(orgaUri), model, graph);
-			}
-			break; 
-		case STRING :
-			if (rubric.isEmpty()) {
+			case CODELIST:
+				String codeUri = codeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
+				if (codeUri != null) {
+					SesameUtils.addTripleUri(attributeUri, predicateUri, SesameUtils.toURI(codeUri), model, graph);
+				}
 				break;
-			}
-			SesameUtils.addTripleUri(attributeUri,RDF.TYPE,SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
-			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg1(),Config.LG1, model, graph);
-			}	
-			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				SesameUtils.addTripleString(attributeUri,predicateUri , rubric.getLabelLg2(),Config.LG2, model, graph);
-			}
-			break; 
-		default:
-			break;
+			case RICHTEXT:
+				if (rubric.isEmpty()) {
+					break;
+				}
+				addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
+				break;
+			case ORGANIZATION:
+				String orgaUri = organizationUtils.getUri(rubric.getValue());
+				if (orgaUri != null) {
+					SesameUtils.addTripleUri(attributeUri, predicateUri, SesameUtils.toURI(orgaUri), model, graph);
+				}
+				break;
+			case STRING:
+				if (rubric.isEmpty()) {
+					break;
+				}
+				addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
+				break;
+			default:
+				break;
 		}
 	}
 
+	private void addSimpleTextToModel(Model model, Resource graph, DocumentationRubric rubric, URI predicateUri,
+			URI attributeUri) {
+		SesameUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
+		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+			SesameUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+			SesameUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), Config.LG2, model, graph);
+		}
+	}
+
+	private void addRichTextToModel(Model model, Resource graph, DocumentationRubric rubric, URI predicateUri,
+			URI attributeUri) throws RmesException {
+		URI textUri = SesameUtils.toURI(attributeUri.stringValue().concat("/texte"));
+		SesameUtils.addTripleUri(attributeUri, predicateUri, textUri, model, graph);
+		SesameUtils.addTripleUri(textUri, RDF.TYPE, DCMITYPE.TEXT, model, graph);
+		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
+			SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(), Config.LG1, model, graph);
+		}
+		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
+			SesameUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg2(), Config.LG2, model, graph);
+		}
+		docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
+	}
 
 	private RangeType getRangeType(DocumentationRubric rubric) throws RmesException {
 		if (rubric.getRangeType() == null) {
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "At least one rubric doesn't have rangeType", "Rubric :"+rubric.getIdAttribute());
+			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "At least one rubric doesn't have rangeType",
+					"Rubric :" + rubric.getIdAttribute());
 		}
-		RangeType type = RangeType.getEnumByJsonType(rubric.getRangeType());
-		return type;
-	}	
+		return RangeType.getEnumByJsonType(rubric.getRangeType());
+	}
 
 	/**
 	 * Get attribute uri for a metadata report and the associated attribute definition
@@ -454,10 +482,9 @@ public class DocumentationsUtils {
 	 * @return
 	 */
 	private URI getAttributeUri(String simsId, String predicate) {
-		String newUri = predicate.replace("/simsv2fr/attribut/", "/attribut/"+simsId+"/");
+		String newUri = predicate.replace("/simsv2fr/attribut/", "/attribut/" + simsId + "/");
 		return SesameUtils.toURI(newUri);
 	}
-
 
 	/**
 	 * Generate a new ID
@@ -467,15 +494,18 @@ public class DocumentationsUtils {
 	 */
 	private String createSimsID() throws RmesException {
 		logger.info("Generate documentation id");
-		JSONObject json = RepositoryGestion.getResponseAsObject(DocumentationsQueries.lastID());
-		logger.debug("JSON for documentation id : " + json);
-		if (json.length()==0) {return "1000";}
+		JSONObject json = repoGestion.getResponseAsObject(DocumentationsQueries.lastID());
+		logger.debug("JSON for documentation id : {}", json);
+		if (json.length() == 0) {
+			return "1000";
+		}
 		String id = json.getString("idSims");
-		if (id.equals("undefined")) {return "1000";}
-		int newId = Integer.parseInt(id)+1;
+		if (id.equals("undefined")) {
+			return "1000";
+		}
+		int newId = Integer.parseInt(id) + 1;
 		return String.valueOf(newId);
 	}
-
 
 	public File exportMetadataReport(String id) throws Exception {
 		InputStream test = getClass().getClassLoader().getResourceAsStream("testXML.xml");

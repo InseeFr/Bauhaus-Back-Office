@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -32,25 +31,26 @@ import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.service.sesame.operations.series.SeriesUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 
 @Component
-public class OperationsUtils {
+public class OperationsUtils  extends SesameService {
 
-	final static Logger logger = LogManager.getLogger(OperationsUtils.class);
-
+	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
+	
 	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
+	static FamOpeSerUtils famOpeSerUtils;
 
 	public JSONObject getOperationById(String id) throws RmesException {
-		JSONObject operation = RepositoryGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
+		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
 		return operation;
 	}
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
-		JSONObject series = RepositoryGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
+		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
 		operation.put("series", series);
 	}
 
@@ -64,7 +64,8 @@ public class OperationsUtils {
 		SeriesUtils seriesUtils= new SeriesUtils();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Operation operation = new Operation();
+		String id = famOpeSerUtils.createId();
+		Operation operation = new Operation(id);
 		try {
 			operation = mapper.readValue(body, Operation.class);
 		} catch (IOException e) {
@@ -72,7 +73,7 @@ public class OperationsUtils {
 		}
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
+		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries);
 		}
 		// Tester que la série n'a pas de Sims
@@ -86,7 +87,7 @@ public class OperationsUtils {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
 		}
 		createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
-		logger.info("Create operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
+		logger.info("Create operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
 
 		return operation.getId();
 	}
@@ -114,13 +115,13 @@ public class OperationsUtils {
 			logger.error(e.getMessage());
 		}
 
-		String status=FamOpeSerUtils.getValidationStatus(id);
+		String status= famOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
 		} else {
 			createRdfOperation(operation,null,ValidationStatus.MODIFIED);
 		}
-		logger.info("Update operation : " + operation.getId() + " - " + operation.getPrefLabelLg1());
+		logger.info("Update operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
 		return operation.getId();
 	}
 
@@ -143,12 +144,12 @@ public class OperationsUtils {
 			SesameUtils.addTripleUri(serieUri, DCTERMS.HAS_PART, operationURI, model, SesameUtils.operationsGraph());
 		}
 
-		RepositoryGestion.keepHierarchicalOperationLinks(operationURI,model);
-		RepositoryGestion.loadSimpleObject(operationURI, model, null);
+		repoGestion.keepHierarchicalOperationLinks(operationURI,model);
+		repoGestion.loadSimpleObject(operationURI, model, null);
 	}
 
 
-	public String setOperationValidation(String id)  throws RmesUnauthorizedException, RmesException  {
+	public String setOperationValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
 		URI seriesURI = getSeriesUri(id);
@@ -164,16 +165,17 @@ public class OperationsUtils {
 		model.add(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
-		logger.info("Validate operation : " + operationURI);
+		logger.info("Validate operation : {}", operationURI);
 		RepositoryGestion.objectValidation(operationURI, model);
 
 		return id;
 	}
 
-	private URI getSeriesUri(String id) throws RmesException {
-		JSONObject jsonOperation = getOperationById(id);
-		URI seriesURI = SesameUtils.objectIRI(ObjectType.SERIES,jsonOperation.getJSONObject("series").getString(Constants.ID));
-		return seriesURI;
+	private URI getSeriesUri(String id){
+		//FIXME check not needed
+		/*JSONObject jsonOperation = getOperationById(id);
+		FIXME check not needed String idJson = jsonOperation.getJSONObject("series").getString(Constants.ID);*/
+		return SesameUtils.objectIRI(ObjectType.SERIES, id);
 	}
 
 }

@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -40,24 +39,25 @@ import fr.insee.rmes.persistance.service.sesame.notes.NoteManager;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 
 @Component
-public class ConceptsUtils {
+public class ConceptsUtils  extends SesameService {
 
 	static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
 	
 	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
+	ConceptsPublication conceptsPublication;
 
 	/**
 	 * Concepts
 	 */
 
 	public String createID()  throws RmesException{
-		JSONObject json = RepositoryGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
+		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
 		String notation = json.getString("notation");
 		int id = Integer.parseInt(notation.substring(1))+1;
 		return "c" + id;
@@ -67,9 +67,9 @@ public class ConceptsUtils {
 		if (!checkIfConceptExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		}
-		JSONObject concept = RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
-		JSONArray altLabelLg2 = RepositoryGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
+		JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
+		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
+		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
 		if(altLabelLg1.length() != 0) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
@@ -86,7 +86,6 @@ public class ConceptsUtils {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		//Concept concept = new Concept();
 		Concept concept = null;
 		try {
 			concept = mapper.readValue(body, Concept.class);
@@ -94,7 +93,7 @@ public class ConceptsUtils {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
-		logger.info("Create concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
+		logger.info("Create concept : {} - {}", concept.getId() , concept.getPrefLabelLg1());
 		return concept.getId();
 	}
 
@@ -112,10 +111,10 @@ public class ConceptsUtils {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
-		logger.info("Update concept : " + concept.getId() + " - " + concept.getPrefLabelLg1());
+		logger.info("Update concept : {} - {}" , concept.getId() , concept.getPrefLabelLg1());
 	}
 
-	public void conceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
+	public void conceptsValidation(String body) throws RmesException  {
 		JSONArray conceptsToValidate = new JSONArray(body);
 		conceptsValidation(conceptsToValidate);
 	}
@@ -163,17 +162,17 @@ public class ConceptsUtils {
 		// Add links to model and save member links
 		new LinksUtils().createRdfLinks(conceptURI, concept.getLinks(), model);
 
-		RepositoryGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
+		repoGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
 
-	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesUnauthorizedException, RmesException  {
+	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
 		Model model = new LinkedHashModel();
 		List<URI> conceptsToValidateList = new ArrayList<>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
 			URI conceptURI = SesameUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.IS_VALIDATED, SesameUtils.setLiteralBoolean(true), SesameUtils.conceptGraph());
-			logger.info("Validate concept : " + conceptURI);
+			logger.info("Validate concept : {}" , conceptURI);
 		}
 		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(conceptsToValidateList)) {
 			throw new RmesUnauthorizedException(
@@ -181,19 +180,19 @@ public class ConceptsUtils {
 					conceptsToValidate);
 		}
 		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
-		ConceptsPublication.publishConcepts(conceptsToValidate);
+		conceptsPublication.publishConcepts(conceptsToValidate);
 	}
 
 	public JSONArray getGraphsWithConcept(String id) throws RmesException {
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery(id));
+		return repoGestion.getResponseAsArray(ConceptsQueries.getGraphWithConceptQuery(id));
 	}
 
 	public JSONArray getRelatedConcepts(String id)  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
+		return repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
 	public Response.Status deleteConcept(String id) throws RmesException{
-		Response.Status result =  RepositoryGestion.executeUpdate(ConceptsQueries.deleteConcept(SesameUtils.objectIRI(ObjectType.CONCEPT,id).toString(),SesameUtils.conceptGraph().toString()));
+		Response.Status result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(SesameUtils.objectIRI(ObjectType.CONCEPT,id).toString(),SesameUtils.conceptGraph().toString()));
 		if (result.equals(Status.OK)) {
 			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(SesameUtils.objectIRIPublication(ObjectType.CONCEPT,id).toString(),SesameUtils.conceptGraph().toString()));
 		}
@@ -201,11 +200,11 @@ public class ConceptsUtils {
 	}
 
 	public JSONArray getConceptVersions(String uriConcept) throws RmesException{
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.getConceptVersions(uriConcept));
+		return repoGestion.getResponseAsArray(ConceptsQueries.getConceptVersions(uriConcept));
 	}
 
-	public static Boolean checkIfConceptExists(String id) throws RmesException {
-		return RepositoryGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id));
+	public boolean checkIfConceptExists(String id) throws RmesException {
+		return repoGestion.getResponseAsBoolean(ConceptsQueries.checkIfExists(id));
 	}
 
 

@@ -13,17 +13,16 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.StringComparator;
 
 @Component
-public class ConceptsExportBuilder {
-	
+public class ConceptsExportBuilder  extends SesameService {
 
-
+	private static final String CONCEPT_VERSION = "conceptVersion";
 	@Autowired 
 	ConceptsUtils conceptsUtils;
 
@@ -45,18 +44,18 @@ public class ConceptsExportBuilder {
 			data.put(Constants.PREF_LABEL_LG2, general.getString(Constants.PREF_LABEL_LG2));
 		}
 		data.put("general", editGeneral(general, "concepts"));
-		JSONArray links = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
+		JSONArray links = repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
 		data.put("linksLg1", editLinks(links, 1));
 		data.put("linksLg2", editLinks(links, 2));
-		JSONObject notes = RepositoryGestion.getResponseAsObject(
-				ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString("conceptVersion"))));
+		JSONObject notes = repoGestion.getResponseAsObject(
+				ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
 		editNotes(notes, data);
 		return data;
 	}
 
 	public JSONObject getCollectionData(String id)  throws RmesException{
 		JSONObject data = new JSONObject();
-		JSONObject json = RepositoryGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
+		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		data.put(Constants.PREF_LABEL_LG1, json.getString(Constants.PREF_LABEL_LG1));
 		if (json.has(Constants.PREF_LABEL_LG2)) {
 			data.put(Constants.PREF_LABEL_LG2, json.getString(Constants.PREF_LABEL_LG2));
@@ -68,7 +67,7 @@ public class ConceptsExportBuilder {
 		if (json.has(Constants.DESCRIPTION_LG2)) {
 			data.put(Constants.DESCRIPTION_LG2, json.getString(Constants.DESCRIPTION_LG2) + Constants.PARAGRAPH);
 		}
-		JSONArray members = RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
+		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
 		String membersLg1 = extractMembers(members, Constants.PREF_LABEL_LG1);
 		if (!membersLg1.equals("")) {
 			data.put("membersLg1", membersLg1);
@@ -109,8 +108,8 @@ public class ConceptsExportBuilder {
 		if (json.has("isValidated")) {
 			xhtml.append("<li>Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) + "</li>");
 		}
-		if (json.has("conceptVersion")) {
-			xhtml.append("<li>Version : " + json.getString("conceptVersion") + "</li>");
+		if (json.has(CONCEPT_VERSION)) {
+			xhtml.append("<li>Version : " + json.getString(CONCEPT_VERSION) + "</li>");
 		}
 
 		xhtml.append("</ul><p></p>");
@@ -118,7 +117,7 @@ public class ConceptsExportBuilder {
 	}
 
 	private String extractMembers(JSONArray array, String attr) {
-		TreeSet<String> list = new TreeSet<String>(new StringComparator());
+		TreeSet<String> list = new TreeSet<>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			if (jsonO.has(attr)) {
@@ -131,7 +130,6 @@ public class ConceptsExportBuilder {
 		StringBuilder xhtml = new StringBuilder("<ul>");
 		for (String member : list) {
 			xhtml.append("<li>" + member + "</li>");
-			;
 		}
 		xhtml.append("</ul><p></p>");
 		return xhtml.toString();
@@ -144,11 +142,11 @@ public class ConceptsExportBuilder {
 	 * @return
 	 */
 	private String editLinks(JSONArray array, int language) {
-		TreeSet<String> listParents = new TreeSet<String>(new StringComparator());
-		TreeSet<String> listEnfants = new TreeSet<String>(new StringComparator());
-		TreeSet<String> listReferences = new TreeSet<String>(new StringComparator());
-		TreeSet<String> listSucceed = new TreeSet<String>(new StringComparator());
-		TreeSet<String> listReplaces = new TreeSet<String>(new StringComparator());
+		TreeSet<String> listParents = new TreeSet<>(new StringComparator());
+		TreeSet<String> listEnfants = new TreeSet<>(new StringComparator());
+		TreeSet<String> listReferences = new TreeSet<>(new StringComparator());
+		TreeSet<String> listSucceed = new TreeSet<>(new StringComparator());
+		TreeSet<String> listReplaces = new TreeSet<>(new StringComparator());
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject jsonO = (JSONObject) array.get(i);
 			String typeOfLink = jsonO.getString("typeOfLink");
@@ -204,7 +202,6 @@ public class ConceptsExportBuilder {
 		xhtml.append("<ul>");
 		for (String item : list) {
 			xhtml.append("<li>" + item + "</li>");
-			;
 		}
 		xhtml.append("</ul><p></p>");
 		return xhtml;
@@ -225,8 +222,7 @@ public class ConceptsExportBuilder {
 	}
 
 	private String toDate(String dateTime) {
-		String dateString = dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
-		return dateString;
+		return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
 	}
 	
 	private String toValidationStatus(String boolStatus, String context) {

@@ -3,12 +3,21 @@ package fr.insee.rmes.persistance.service.sesame.utils;
 import java.util.Arrays;
 
 import org.openrdf.model.Resource;
+import org.openrdf.repository.RepositoryConnection;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.ValidationStatus;
 import fr.insee.rmes.persistance.service.Constants;
 
-public class PublicationUtils {
+public abstract class PublicationUtils {
+	
+	@Autowired
+	static RepositoryUtils repoUtils;
+	
+	@Autowired
+	protected static RepositoryGestion repoGestion;
 
 	private PublicationUtils() {
 		throw new IllegalStateException("Utility class");
@@ -25,5 +34,9 @@ public class PublicationUtils {
 
 	public static boolean isPublished(String status) {
 		return status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED);
+	}
+	
+	public static RepositoryConnection getRepositoryConnectionGestion() throws RmesException {
+		return repoUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 	}
 }

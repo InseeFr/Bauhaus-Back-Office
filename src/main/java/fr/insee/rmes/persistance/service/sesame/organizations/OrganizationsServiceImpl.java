@@ -10,18 +10,18 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.OrganizationsService;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 
 @Service
-public class OrganizationsServiceImpl implements OrganizationsService {
+public class OrganizationsServiceImpl  extends SesameService implements OrganizationsService {
 
-	final static Logger logger = LogManager.getLogger(OrganizationsServiceImpl.class);
+	static final Logger logger = LogManager.getLogger(OrganizationsServiceImpl.class);
 
 
 	@Override
 	public String getOrganization(String organizationIdentifier) throws RmesException {
-		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.organizationQuery(organizationIdentifier));
+		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.organizationQuery(organizationIdentifier));
 		orga.put(Constants.ID, organizationIdentifier);
 		return QueryUtils.correctEmptyGroupConcat(orga.toString());
 	}
@@ -30,14 +30,14 @@ public class OrganizationsServiceImpl implements OrganizationsService {
 	@Override
 	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
 		if (StringUtils.isEmpty(organizationIdentifier)) {return null;}
-		JSONObject orga = RepositoryGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
+		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
 		return QueryUtils.correctEmptyGroupConcat(orga.getString("uri"));
 	}
 
 	@Override
 	public String getOrganizations() throws RmesException {
 		logger.info("Starting to get organizations list");
-		String resQuery = RepositoryGestion.getResponseAsArray(OrganizationQueries.organizationsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OrganizationQueries.organizationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 

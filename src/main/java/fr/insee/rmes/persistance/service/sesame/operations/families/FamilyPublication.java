@@ -16,7 +16,6 @@ import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.service.notifications.NotificationsContract;
 import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
@@ -30,7 +29,7 @@ public class FamilyPublication {
 		Model model = new LinkedHashModel();
 		Resource family = SesameUtils.familyIRI(familyId);
 		//TODO notify...
-		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, family);
 
 		try {	

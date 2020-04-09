@@ -9,6 +9,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -20,12 +21,14 @@ import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.service.sesame.utils.PublicationUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryPublication;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.service.notifications.NotificationsContract;
 import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class OperationPublication {
+	
+	@Autowired
+	static FamOpeSerUtils famOpeSerUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
@@ -41,7 +44,7 @@ public class OperationPublication {
 		
 		checkSeriesIsPublished(operationId, operationJson);
 
-		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, operation);
 
 		try {
@@ -76,9 +79,9 @@ public class OperationPublication {
 	}
 
 	private static void checkSeriesIsPublished(String operationId, JSONObject operationJson)
-			throws RmesException, RmesUnauthorizedException {
+			throws RmesException {
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
-		String status = FamOpeSerUtils.getValidationStatus(seriesId);
+		String status = famOpeSerUtils.getValidationStatus(seriesId);
 
 		if (PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,

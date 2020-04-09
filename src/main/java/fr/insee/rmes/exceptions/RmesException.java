@@ -7,7 +7,7 @@ public class RmesException extends Exception {
 
 	private static final String CODE = "code";
 
-	private static final String DETAILS = "details";
+	private static final String DETAILS_STRING = "details";
 
 	private static final String MESSAGE = "message";
 
@@ -23,31 +23,28 @@ public class RmesException extends Exception {
 	 * @param details
 	 */
 	public RmesException(int status, String message, String details) {
-		//super(message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
 		this.details.put(MESSAGE, message);
-		this.details.put(DETAILS,	details);		
+		this.details.put(DETAILS_STRING,	details);		
 	}
 
 	public RmesException(int status, String message, JSONArray details) {
-		//super(message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
 		this.details.put(MESSAGE, message);
-		this.details.put(DETAILS, details.toString());
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 
 	public RmesException(int status, int errorCode, String message, String details) {
-		//super(errorCode+":"+message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
 		this.details.put(CODE, errorCode);
 		this.details.put(MESSAGE, message);
-		this.details.put(DETAILS, details);
+		this.details.put(DETAILS_STRING, details);
 	}
 
 	public RmesException(int status, int errorCode, String details) {
@@ -55,7 +52,7 @@ public class RmesException extends Exception {
 		this.status = status;
 		this.details = new JSONObject();
 		this.details.put(CODE, errorCode);
-		this.details.put(DETAILS, details.toString());
+		this.details.put(DETAILS_STRING, details);
 	}
 		
 	public RmesException(int status, int errorCode, JSONArray details) {
@@ -63,7 +60,7 @@ public class RmesException extends Exception {
 		this.status = status;
 		this.details = new JSONObject();
 		this.details.put(CODE, errorCode);
-		this.details.put(DETAILS, details.toString());
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 
 	public RmesException(int status, int errorCode, String message, JSONArray details) {
@@ -72,7 +69,7 @@ public class RmesException extends Exception {
 		this.details = new JSONObject();
 		this.details.put(CODE, errorCode);
 		this.details.put(MESSAGE, message);
-		this.details.put(DETAILS, details.toString());
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 	
 	public RmesException(int status, int errorCode, String message, JSONObject details) {

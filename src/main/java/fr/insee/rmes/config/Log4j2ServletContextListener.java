@@ -1,7 +1,6 @@
 package fr.insee.rmes.config;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -62,7 +61,7 @@ public class Log4j2ServletContextListener implements ServletContextListener {
         return props;
     }
 
-	private void loadPropertiesIfExist(Properties props, String fileName) throws FileNotFoundException, IOException {
+	private void loadPropertiesIfExist(Properties props, String fileName) throws IOException{
 		File f = new File(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), fileName));
         if(f.exists() && !f.isDirectory()) {
             FileReader r = new FileReader(f);

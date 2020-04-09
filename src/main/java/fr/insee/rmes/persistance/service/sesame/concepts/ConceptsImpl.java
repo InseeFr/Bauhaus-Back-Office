@@ -24,17 +24,21 @@ import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsExport
 import fr.insee.rmes.persistance.service.sesame.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.service.export.Jasper;
 
 @Service
-public class ConceptsImpl implements ConceptsService {
+public class ConceptsImpl  extends SesameService implements ConceptsService {
 
-	final static Logger logger = LogManager.getLogger(ConceptsImpl.class);
+	private static final String THE_CONCEPT = "The concept ";
 
+
+	static final Logger logger = LogManager.getLogger(ConceptsImpl.class);
+
+	
 	@Autowired 
 	ConceptsUtils conceptsUtils;
 
@@ -53,20 +57,20 @@ public class ConceptsImpl implements ConceptsService {
 	@Override
 	public String getConcepts()  throws RmesException{
 		logger.info("Starting to get concepts list");
-		String resQuery = RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public String getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
+		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
 	}
 
 	@Override
 	public String getConceptsToValidate()  throws RmesException{
 		logger.info("Starting to get provisionals concepts list");
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptsToValidateQuery()).toString();
+		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsToValidateQuery()).toString();
 	}
 	
 	@Override
@@ -102,14 +106,14 @@ public class ConceptsImpl implements ConceptsService {
 				listGraphs = listGraphs.concat(currentGraph.getString("src"));
 				listGraphs = listGraphs.concat("-");
 			}
-			{ 
+			 
 			JSONObject details = new JSONObject();
 			details.put("idConcept", id);
 			details.put("graphs", graphArray);
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
-					"The concept "+id+" cannot be deleted because it is used in several graphs.",
+					THE_CONCEPT+id+" cannot be deleted because it is used in several graphs.",
 					details);
-			}
+			
 		}
 		/* Check concept has no link */
 		String listConcepts=getRelatedConcepts(id);
@@ -119,12 +123,12 @@ public class ConceptsImpl implements ConceptsService {
 			details.put("linkedConcepts", listConcepts);
 			throw new RmesUnauthorizedException(
 					ErrorCodes.CONCEPT_DELETION_LINKED,
-					"The concept "+id+" cannot be deleted because it is linked to other concepts.",
+					THE_CONCEPT+id+" cannot be deleted because it is linked to other concepts.",
 					details);
 		}
 		/* deletion */
 		Response.Status result= conceptsUtils.deleteConcept(id);
-		String successMessage="The concept "+id+" has been deleted from graph "+SesameUtils.conceptGraph();
+		String successMessage=THE_CONCEPT+id+" has been deleted from graph "+SesameUtils.conceptGraph();
 		if (result!= Status.OK) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Unexpected return message: ",result.toString());
 		} else { 
@@ -134,37 +138,37 @@ public class ConceptsImpl implements ConceptsService {
 
 	@Override
 	public String getConceptLinksByID(String id)  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id)).toString();
+		return repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id)).toString();
 	}
 
 	@Override
 	public String getConceptNotesByID(String id, int conceptVersion)  throws RmesException{
-		return RepositoryGestion.getResponseAsObject(ConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
+		return repoGestion.getResponseAsObject(ConceptsQueries.conceptNotesQuery(id, conceptVersion)).toString();
 	}
 
 	@Override
 	public String getCollections()  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
+		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
 	}
 
 	@Override
 	public String getCollectionsDashboard()  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
+		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
 	}
 
 	@Override
 	public String getCollectionsToValidate()  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
+		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
 	}
 
 	@Override
 	public String getCollectionByID(String id)  throws RmesException{
-		return RepositoryGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
+		return repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
 	}
 
 	@Override
 	public String getCollectionMembersByID(String id)  throws RmesException{
-		return RepositoryGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
 	}
 
 
@@ -205,7 +209,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws Exception 
 	 */
 	@Override
-	public void setCollection(String id, String body) throws RmesUnauthorizedException, RmesException {
+	public void setCollection(String id, String body) throws RmesException {
 		collectionsUtils.setCollection(id, body);
 	}
 
@@ -215,7 +219,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesUnauthorizedException 
 	 */
 	@Override
-	public void setConceptsValidation(String body) throws RmesUnauthorizedException, RmesException  {
+	public void setConceptsValidation(String body) throws  RmesException  {
 		conceptsUtils.conceptsValidation(body);
 	}
 
@@ -245,7 +249,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws Exception 
 	 */
 	@Override
-	public void setCollectionsValidation(String body) throws RmesUnauthorizedException, RmesException   {
+	public void setCollectionsValidation(String body) throws  RmesException   {
 		collectionsUtils.collectionsValidation(body);
 	}
 
@@ -274,7 +278,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesUnauthorizedException 
 	 */
 	@Override
-	public boolean setConceptSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
+	public boolean setConceptSend(String id, String body) throws  RmesException  {
 		return mailSender.sendMailConcept(id, body);
 	}
 
@@ -284,7 +288,7 @@ public class ConceptsImpl implements ConceptsService {
 	 * @throws RmesUnauthorizedException 
 	 */
 	@Override
-	public boolean setCollectionSend(String id, String body) throws RmesUnauthorizedException, RmesException  {
+	public boolean setCollectionSend(String id, String body) throws  RmesException  {
 		return mailSender.sendMailCollection(id, body);
 	}
 

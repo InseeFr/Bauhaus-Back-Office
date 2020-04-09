@@ -23,10 +23,11 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.structures.DSD;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 @Component
-public class DSDUtils {
+public class DSDUtils extends SesameService {
 	
 	static final Logger logger = LogManager.getLogger(DSDUtils.class);
 	
@@ -41,8 +42,8 @@ public class DSDUtils {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfDSD(dsd);
-		logger.info("Create DSD : " + dsd.getId() + " - " + dsd.getLabelLg1());
-		return dsd.getId().replaceAll(" ", "-").toLowerCase();
+		logger.info("Create DSD : {} - {}" , dsd.getId() , dsd.getLabelLg1());
+		return dsd.getId().replace(" ", "-").toLowerCase();
 	}
 	
 	public String setDSD(String id, String body) throws RmesException {
@@ -55,11 +56,11 @@ public class DSDUtils {
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
-		String dsdId = dsd.getId().replaceAll(" ", "-").toLowerCase();
-		URI DSDURI = SesameUtils.dsdIRI(dsdId);
-		RepositoryGestion.clearDSDNodeAndComponents(DSDURI);
+		String dsdId = dsd.getId().replace(" ", "-").toLowerCase();
+		URI dsdUri = SesameUtils.dsdIRI(dsdId);
+		RepositoryGestion.clearDSDNodeAndComponents(dsdUri);
 		createRdfDSD(dsd);
-		logger.info("Update DSD : " + dsd.getId() + " - " + dsd.getLabelLg1());
+		logger.info("Update DSD : {} - {}" , dsd.getId() , dsd.getLabelLg1());
 		return dsdId;
 	}
 	
@@ -70,26 +71,26 @@ public class DSDUtils {
 
 	public void createRdfDSD(DSD dsd) throws RmesException {
 		Model model = new LinkedHashModel();
-		String dsdId = dsd.getId().replaceAll(" ", "-").toLowerCase();
-		URI DSDURI = SesameUtils.dsdIRI(dsdId);
+		String dsdId = dsd.getId().replace(" ", "-").toLowerCase();
+		URI dsdUri = SesameUtils.dsdIRI(dsdId);
 		/*Const*/
-		model.add(DSDURI, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, SesameUtils.dsdGraph());
+		model.add(dsdUri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, SesameUtils.dsdGraph());
 		/*Required*/
-		model.add(DSDURI, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(dsdId), SesameUtils.dsdGraph());
-		model.add(DSDURI, RDFS.LABEL, SesameUtils.setLiteralString(dsd.getLabelLg1(), Config.LG1), SesameUtils.dsdGraph());
+		model.add(dsdUri, DCTERMS.IDENTIFIER, SesameUtils.setLiteralString(dsdId), SesameUtils.dsdGraph());
+		model.add(dsdUri, RDFS.LABEL, SesameUtils.setLiteralString(dsd.getLabelLg1(), Config.LG1), SesameUtils.dsdGraph());
 		/*Optional*/
-		SesameUtils.addTripleString(DSDURI, RDFS.LABEL, dsd.getLabelLg2(), Config.LG2, model, SesameUtils.dsdGraph());
-		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg1(), Config.LG1, model, SesameUtils.dsdGraph());
-		SesameUtils.addTripleString(DSDURI, DC.DESCRIPTION, dsd.getDescriptionLg2(), Config.LG2, model, SesameUtils.dsdGraph());
+		SesameUtils.addTripleString(dsdUri, RDFS.LABEL, dsd.getLabelLg2(), Config.LG2, model, SesameUtils.dsdGraph());
+		SesameUtils.addTripleString(dsdUri, DC.DESCRIPTION, dsd.getDescriptionLg1(), Config.LG1, model, SesameUtils.dsdGraph());
+		SesameUtils.addTripleString(dsdUri, DC.DESCRIPTION, dsd.getDescriptionLg2(), Config.LG2, model, SesameUtils.dsdGraph());
 		
 		dsd.getComponents().forEach(component->{
 			URI componentIRI = SesameUtils.componentIRI(component.getId(), component.getType());
-			Resource BNode = SesameUtils.blankNode();
+			Resource blankNode = SesameUtils.blankNode();
 			/* BNode */
-		    model.add(DSDURI, QB.COMPONENT, BNode, SesameUtils.dsdGraph());
-		    model.add(BNode, RDF.TYPE, QB.COMPONENT_SPECIFICATION, SesameUtils.dsdGraph());
-		    SesameUtils.addTripleUri(BNode, QB.COMPONENT_ATTACHMENT, component.getAttachment(), model, SesameUtils.dsdGraph());
-		    model.add(BNode, SesameUtils.toURI(component.getType()), componentIRI, SesameUtils.dsdGraph());
+		    model.add(dsdUri, QB.COMPONENT, blankNode, SesameUtils.dsdGraph());
+		    model.add(blankNode, RDF.TYPE, QB.COMPONENT_SPECIFICATION, SesameUtils.dsdGraph());
+		    SesameUtils.addTripleUri(blankNode, QB.COMPONENT_ATTACHMENT, component.getAttachment(), model, SesameUtils.dsdGraph());
+		    model.add(blankNode, SesameUtils.toURI(component.getType()), componentIRI, SesameUtils.dsdGraph());
 		    /* Component */
 		    model.add(componentIRI, RDF.TYPE, SesameUtils.componentTypeIRI(component.getType()), SesameUtils.dsdGraph());
 		    if (component.getCodeList() != null) {
@@ -104,7 +105,7 @@ public class DSDUtils {
 		    
 		});
 		
-		RepositoryGestion.loadSimpleObject(DSDURI, model, null);
+		repoGestion.loadSimpleObject(dsdUri, model, null);
 	}
 
 }

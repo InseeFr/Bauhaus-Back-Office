@@ -8,35 +8,33 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.sesame.operations.operations.OperationsUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 
 @Component
-public class FamOpeSerUtils {
+public class FamOpeSerUtils  extends SesameService {
 
-	final static Logger logger = LogManager.getLogger(OperationsUtils.class);
+	static final Logger logger = LogManager.getLogger(FamOpeSerUtils.class);
 
-	public static String createId() throws RmesException {
+	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");
-		JSONObject json = RepositoryGestion.getResponseAsObject(FamOpeSerQueries.lastId());
-		logger.debug("JSON for famOpeSer id : " + json);
+		JSONObject json = repoGestion.getResponseAsObject(FamOpeSerQueries.lastId());
+		logger.debug("JSON for famOpeSer id : {}", json);
 		if (json.length()==0) {return "1000";}
 		String id = json.getString(Constants.ID);
 		if (id.equals("undefined")) {return "1000";}
-		int ID = Integer.parseInt(id)+1;
-		return "s" + ID;
+		return "s" + (Integer.parseInt(id)+1);
 	}
 
-	public static boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-		return RepositoryGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfOperationExists(SesameUtils.objectIRI(type, id).toString()));
+	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
+		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfOperationExists(SesameUtils.objectIRI(type, id).toString()));
 	}
 	
-	public static String getValidationStatus(String id) throws RmesException{
+	public String getValidationStatus(String id) throws RmesException{
 		try {		
-			return RepositoryGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
+			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
 		catch (JSONException e) {
 			return Constants.UNDEFINED;
 		}

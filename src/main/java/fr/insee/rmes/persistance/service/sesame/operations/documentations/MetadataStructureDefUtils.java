@@ -14,19 +14,19 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 
 @Component
-public class MetadataStructureDefUtils {
+public class MetadataStructureDefUtils  extends SesameService {
 	
 		final static Logger logger = LogManager.getLogger(MetadataStructureDefUtils.class);
 
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
-		JSONObject mas = RepositoryGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
+		JSONObject mas = repoGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
 		if (mas.length()==0) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
 		transformRangeType(mas);
 		mas.put(Constants.ID, id);
@@ -43,7 +43,7 @@ public class MetadataStructureDefUtils {
 
 		switch (type) {
 			case CODELIST:
-				JSONObject codeList = RepositoryGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
+				JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
 				if (codeList != null && !codeList.isNull("notation")) {
 					String codeListNotation = codeList.getString("notation");
 					mas.put("codeList", codeListNotation);
@@ -56,7 +56,7 @@ public class MetadataStructureDefUtils {
 	}
 
 	public JSONArray getMetadataAttributes() throws RmesException {
-		JSONArray attributesList = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery());
+		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery());
 		if (attributesList.length() != 0) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);
@@ -68,7 +68,7 @@ public class MetadataStructureDefUtils {
 	
 	public Map<String,String> getMetadataAttributesUri() throws RmesException {
 		Map<String,String> attributes = new HashMap<>();
-		JSONArray attributesList = RepositoryGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery());
+		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery());
 		if (attributesList.length() != 0) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);

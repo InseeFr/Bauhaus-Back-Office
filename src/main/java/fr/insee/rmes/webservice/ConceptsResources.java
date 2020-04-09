@@ -294,7 +294,7 @@ public class ConceptsResources   {
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
-		logger.info("Update concept : " + id);
+		logger.info("Update concept : {}" , id);
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
@@ -334,7 +334,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
-			logger.info("Send concept : " + id);
+			logger.info("Send concept : {}" , id);
 			return Response.status(Status.OK).entity(isSent).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -366,7 +366,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Collection", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollection(id, body);
-			logger.info("Update collection : " + id);
+			logger.info("Update collection : {}" , id);
 			return Response.status(Status.NO_CONTENT).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -383,7 +383,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Collection id array to validate", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollectionsValidation(body);
-			logger.info("Validated concepts : " + body);
+			logger.info("Validated concepts : {}" , body);
 			return Response.status(Status.NO_CONTENT).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -411,7 +411,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
-			logger.info("Send concept : " + id);
+			logger.info("Send concept : {}" , id);
 			return Response.status(Status.OK).entity(isSent).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);

@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.modele.links.OperationsLink;
-import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Series {
@@ -84,15 +82,12 @@ public class Series {
 	@Schema(description = "List of resources replaced by the series")
 	public List<OperationsLink> isReplacedBy;
 	
+	@Schema(description= "SIMS id")
 	public String idSims;
 	
 	/*
 	 * Constructors
 	 */
-	
-	public Series() throws RmesException {
-		this.id=  FamOpeSerUtils.createId();
-}	
 	
 	public Series(String id) {
 		this.id=id;

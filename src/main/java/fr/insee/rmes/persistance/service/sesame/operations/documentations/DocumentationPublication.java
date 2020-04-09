@@ -8,6 +8,7 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -23,6 +24,9 @@ import fr.insee.rmes.service.notifications.NotificationsContract;
 import fr.insee.rmes.service.notifications.RmesNotificationsImpl;
 
 public class DocumentationPublication {
+	
+	@Autowired
+	static RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
@@ -33,7 +37,7 @@ public class DocumentationPublication {
 		Resource graph = SesameUtils.simsGraph(simsId);
 	
 		//TODO notify...
-		RepositoryConnection con = RepositoryUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+		RepositoryConnection con = repoUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
 		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, sims);
 
 		RepositoryResult<Statement> metadataReportStatements = RepositoryGestion.getMetadataReportStatements(con, sims, graph);

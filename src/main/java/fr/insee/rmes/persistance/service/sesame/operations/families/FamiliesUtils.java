@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -33,20 +32,24 @@ import fr.insee.rmes.persistance.service.Constants;
 import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
-public class FamiliesUtils {
+public class FamiliesUtils  extends SesameService {
 
-	final static Logger logger = LogManager.getLogger(FamiliesUtils.class);
+	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
+
+	static final Logger logger = LogManager.getLogger(FamiliesUtils.class);
+
 	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
+	static FamOpeSerUtils famOpeSerUtils;
 
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
-		JSONObject family = RepositoryGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
+		JSONObject family = repoGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
 		if (family.length()==0) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		}
@@ -58,14 +61,14 @@ public class FamiliesUtils {
 
 
 	private void addFamilySeries(String idFamily, JSONObject family) throws RmesException {
-		JSONArray series = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSeries(idFamily));
+		JSONArray series = repoGestion.getResponseAsArray(FamiliesQueries.getSeries(idFamily));
 		if (series.length() != 0) {
 			family.put("series", series);
 		}
 	}
 
 	private void addSubjects(String idFamily, JSONObject family) throws RmesException {
-		JSONArray subjects = RepositoryGestion.getResponseAsArray(FamiliesQueries.getSubjects(idFamily));
+		JSONArray subjects = repoGestion.getResponseAsArray(FamiliesQueries.getSubjects(idFamily));
 		if (subjects.length() != 0) {
 			family.put("subjects", subjects);
 		}
@@ -84,30 +87,30 @@ public class FamiliesUtils {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, e.getMessage(), "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, e.getMessage(), CAN_T_READ_REQUEST_BODY);
 		}
-		boolean familyExists = FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
+		boolean familyExists = famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
 		if (!familyExists) {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 
-		String status=FamOpeSerUtils.getValidationStatus(id);
+		String status= famOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		} else {
 			createRdfFamily(family,ValidationStatus.MODIFIED);
 		}
-		logger.info("Update family : " + family.getId() + " - " + family.getPrefLabelLg1());
+		logger.info("Update family : {} - {}" , family.getId() , family.getPrefLabelLg1());
 		
 	}
 
 	public void createRdfFamily(Family family, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (family == null || StringUtils.isEmpty(family.id)) {
-			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "No id found", "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "No id found", CAN_T_READ_REQUEST_BODY);
 		}
 		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
-			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, "prefLabelLg1 not found", "Can't read request body");
+			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, "prefLabelLg1 not found", CAN_T_READ_REQUEST_BODY);
 		}
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
@@ -120,9 +123,9 @@ public class FamiliesUtils {
 		SesameUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, SesameUtils.operationsGraph());
 		SesameUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, SesameUtils.operationsGraph());
 
-		RepositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
+		repoGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
-		RepositoryGestion.loadSimpleObject(familyURI, model, null);
+		repoGestion.loadSimpleObject(familyURI, model, null);
 	}
 
 
@@ -132,8 +135,8 @@ public class FamiliesUtils {
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Family family = new Family();
-		String id = family.getId();
+		String id = famOpeSerUtils.createId();
+		Family family = new Family(id);
 		try {
 			family = mapper.readValue(body,Family.class);
 			family.id = id;
@@ -141,13 +144,13 @@ public class FamiliesUtils {
 			logger.error(e.getMessage());
 		}
 		createRdfFamily(family,ValidationStatus.UNPUBLISHED);
-		logger.info("Create family : " + id + " - " + family.getPrefLabelLg1());
+		logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
 		return id;
 
 	}
 
 
-	public String setFamilyValidation(String id) throws RmesUnauthorizedException, RmesException  {
+	public String setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
 		
 		if(!stampsRestrictionsService.canCreateFamily()) {
@@ -160,7 +163,7 @@ public class FamiliesUtils {
 			model.add(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 			model.remove(familyURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
-			logger.info("Validate family : " + familyURI);
+			logger.info("Validate family : {}", familyURI);
 
 			RepositoryGestion.objectValidation(familyURI, model);
 			

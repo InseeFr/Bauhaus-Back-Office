@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -40,29 +39,30 @@ import fr.insee.rmes.persistance.service.sesame.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.service.sesame.utils.ObjectType;
 import fr.insee.rmes.persistance.service.sesame.utils.QueryUtils;
 import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
-public class SeriesUtils {
+public class SeriesUtils  extends SesameService {
 
 	@Autowired
 	CodeListService codeListService;
 
 	@Autowired
 	OrganizationsService organizationsService;
-
+	
 	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
+	FamOpeSerUtils famOpeSerUtils;
 
 	static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
 
 	public JSONObject getSeriesById(String id) throws RmesException{
-		JSONObject series = RepositoryGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
+		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		//check that the series exist
 		if (JSONUtils.isEmpty(series)) {
 			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found","The series "+id+" cannot be found.");
@@ -78,7 +78,7 @@ public class SeriesUtils {
 	}
 
 	public String getSeriesForSearch() throws RmesException {
-		JSONArray resQuery = RepositoryGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
+		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
@@ -89,14 +89,14 @@ public class SeriesUtils {
 	}
 
 	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
-		JSONArray operations = RepositoryGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
+		JSONArray operations = repoGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
 		if (operations.length() != 0) {
 			series.put("operations", operations);
 		}
 	}
 
 	private void addGeneratedWith(String idSeries, JSONObject series) throws RmesException {
-		JSONArray generated = RepositoryGestion.getResponseAsArray(SeriesQueries.getGeneratedWith(idSeries));
+		JSONArray generated = repoGestion.getResponseAsArray(SeriesQueries.getGeneratedWith(idSeries));
 		if (generated.length() != 0) {
 			generated = QueryUtils.transformRdfTypeInString(generated);
 			series.put("generate", generated);
@@ -104,7 +104,7 @@ public class SeriesUtils {
 	}
 
 	private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
-		JSONObject family = RepositoryGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
+		JSONObject family = repoGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
 		series.put("family", family);
 	}
 
@@ -117,7 +117,7 @@ public class SeriesUtils {
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) throws RmesException {
-		JSONArray links = RepositoryGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
+		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			series.put(predicate.getLocalName(), links);
@@ -125,7 +125,7 @@ public class SeriesUtils {
 	}
 
 	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) throws RmesException {
-		JSONArray organizations = RepositoryGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
+		JSONArray organizations = repoGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
@@ -136,7 +136,7 @@ public class SeriesUtils {
 	}
 
 	private void addSeriesGestionnaires(String id, JSONObject series) throws RmesException {
-		JSONArray gestionnaires = RepositoryGestion.getResponseAsJSONList(SeriesQueries.getGestionnaires(id));
+		JSONArray gestionnaires = repoGestion.getResponseAsJSONList(SeriesQueries.getGestionnaires(id));
 		series.put("gestionnaires", gestionnaires);
 	}
 	
@@ -178,10 +178,10 @@ public class SeriesUtils {
 		}
 	
 		//partenaires
-		addOperationLinksOrganization(series.getContributor(),DCTERMS.CONTRIBUTOR,series, model, seriesURI);
+		addOperationLinksOrganization(series.getContributor(),DCTERMS.CONTRIBUTOR, model, seriesURI);
 		
 		//Data_collector
-		addOperationLinksOrganization(series.getDataCollector(),INSEE.DATA_COLLECTOR,series, model, seriesURI);
+		addOperationLinksOrganization(series.getDataCollector(),INSEE.DATA_COLLECTOR, model, seriesURI);
 	
 		//Type
 		addCodeList(series.getTypeList(), series.getTypeCode(), DCTERMS.TYPE, model, seriesURI);		
@@ -209,9 +209,9 @@ public class SeriesUtils {
 			SesameUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, SesameUtils.operationsGraph());
 		}
 	
-		RepositoryGestion.keepHierarchicalOperationLinks(seriesURI,model);
+		repoGestion.keepHierarchicalOperationLinks(seriesURI,model);
 	
-		RepositoryGestion.loadObjectWithReplaceLinks(seriesURI, model);
+		repoGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 	
 	private void addOperationLinks(List<OperationsLink> links, URI predicate, Model model, URI seriesURI) {
@@ -232,7 +232,7 @@ public class SeriesUtils {
 		}
 	}
 
-	private void addOperationLinksOrganization(List<OperationsLink> data, URI predicate, Series series, Model model, URI seriesURI) throws RmesException {
+	private void addOperationLinksOrganization(List<OperationsLink> data, URI predicate, Model model, URI seriesURI) throws RmesException {
 		if (data != null) {
 			for (OperationsLink d : data) {
 				if(!d.isEmpty()) {
@@ -249,8 +249,8 @@ public class SeriesUtils {
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Series series = new Series();
-		String id = series.getId();
+		String id = famOpeSerUtils.createId();
+		Series series = new Series(id);
 		try {
 			series = mapper.readValue(body,Series.class);
 			series.id = id;
@@ -261,13 +261,13 @@ public class SeriesUtils {
 		
 		// Tester l'existence de la famille
 		String idFamily= series.getFamily().getId();
-		if (! FamOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) {
+		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) {
 			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY,"Unknown family: ",idFamily);
 		}
 
 		URI familyURI = SesameUtils.objectIRI(ObjectType.FAMILY,idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-		logger.info("Create series : {0} - {1}",id, series.getPrefLabelLg1());
+		logger.info("Create series : {} - {}",id, series.getPrefLabelLg1());
 
 		return id;
 
@@ -303,13 +303,13 @@ public class SeriesUtils {
 
 		checkSimsWithOperations(series);
 
-		String status=FamOpeSerUtils.getValidationStatus(id);
+		String status=famOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
 		} else {
 			createRdfSeries(series,null,ValidationStatus.MODIFIED);
 		}
-		logger.info("Update series : {0} - {1}", series.getId(), series.getPrefLabelLg1());
+		logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
 	}
 
 	public boolean hasSims(String seriesId) throws RmesException {
@@ -349,7 +349,7 @@ public class SeriesUtils {
 		model.add(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.VALIDATED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.UNPUBLISHED), SesameUtils.operationsGraph());
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, SesameUtils.setLiteralString(ValidationStatus.MODIFIED), SesameUtils.operationsGraph());
-		logger.info("Validate series : {0}", seriesURI);
+		logger.info("Validate series : {}", seriesURI);
 
 		RepositoryGestion.objectValidation(seriesURI, model);
 

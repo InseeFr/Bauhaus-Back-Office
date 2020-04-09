@@ -15,13 +15,13 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
+import fr.insee.rmes.persistance.service.sesame.utils.SesameService;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
 @Service
-public class StampsRestrictionsImpl implements StampsRestrictionsService {
+public class StampsRestrictionsImpl  extends SesameService implements StampsRestrictionsService {
 
 	private static final String MANAGER = "manager";
 	private static final String OWNER = "owner";
@@ -33,7 +33,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 			return true;
 		}
 		String uriAsString = "<" + uri.toString() + ">";
-		JSONObject owner = RepositoryGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
+		JSONObject owner = repoGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		if (!owner.getString(OWNER).equals(user.getStamp())) {
 			isConceptOwner = false;
@@ -50,7 +50,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
+		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
 			if (!owners.getJSONObject(i).getString(OWNER).equals(user.getStamp())) {
@@ -158,7 +158,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray owners = RepositoryGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
+		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
 			if (!owners.getJSONObject(i).getString(OWNER).equals(user.getStamp())) {
@@ -173,7 +173,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray managers = RepositoryGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
 		for (int i = 0; i < managers.length(); i++) {
 			if (!managers.getJSONObject(i).getString(MANAGER).equals(user.getStamp())) {
@@ -197,7 +197,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + uri.toString() + "> ");
 		String uriAsString = sb.toString();
-		JSONArray managers = RepositoryGestion.getResponseAsArray(SeriesQueries.getManagers(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getManagers(uriAsString));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
 			if (!managers.getJSONObject(i).getString(MANAGER).equals(user.getStamp())) {
@@ -212,7 +212,7 @@ public class StampsRestrictionsImpl implements StampsRestrictionsService {
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray managers = RepositoryGestion.getResponseAsArray(IndicatorsQueries.getManagers(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(IndicatorsQueries.getManagers(uriAsString));
 		Boolean isIndicatorManager = false;
 		if (managers.length() > 0) {
 			for (int i = 0; i < managers.length(); i++) {
