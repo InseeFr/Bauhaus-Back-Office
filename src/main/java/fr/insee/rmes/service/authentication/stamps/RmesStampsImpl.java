@@ -22,15 +22,15 @@ import fr.insee.rmes.exceptions.RmesException;
 @Service
 public class RmesStampsImpl implements StampsService {
 	
-	final static Logger logger = LogManager.getLogger(RmesStampsImpl.class);
+	static final Logger logger = LogManager.getLogger(RmesStampsImpl.class);
 
 	@Override
 	public String getStamps() throws RmesException {
-		TreeSet<String> stamps = new TreeSet<String>();
-		logger.info("Connection to LDAP : " + Config.LDAP_URL);
+		TreeSet<String> stamps = new TreeSet<>();
+		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 		try {
 			// Connexion à la racine de l'annuaire
-			Hashtable<String, String> environment = new Hashtable<String, String>();
+			Hashtable<String, String> environment = new Hashtable<>();
 			environment.put(Context.INITIAL_CONTEXT_FACTORY,
 					"com.sun.jndi.ldap.LdapCtxFactory");
 			environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
