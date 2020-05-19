@@ -13,11 +13,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.ClassificationsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.ClassificationsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -73,7 +74,7 @@ public class ClassificationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getFamily", summary = "Classification family", 
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
-	public Response getFamily(@PathParam("id") String id)  {
+	public Response getFamily(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getFamily(id);
@@ -88,7 +89,7 @@ public class ClassificationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getFamilyMembers", summary = "Members of family", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
-	public Response getFamilyMembers(@PathParam("id") String id)  {
+	public Response getFamilyMembers(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getFamilyMembers(id);
@@ -116,7 +117,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getOneSeries(@PathParam("id") String id)  {
+	public Response getOneSeries(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getOneSeries(id);
@@ -131,7 +132,7 @@ public class ClassificationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getSeriesMembers", summary = "Members of series", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
-	public Response getSeriesMembers(@PathParam("id") String id)  {
+	public Response getSeriesMembers(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getSeriesMembers(id);
@@ -158,7 +159,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/classification/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassification(@PathParam("id") String id)  {
+	public Response getClassification(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassification(id);
@@ -171,7 +172,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/classification/{id}/items")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationItems(@PathParam("id") String id)  {
+	public Response getClassificationItems(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationItems(id);
@@ -184,7 +185,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/classification/{id}/levels")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevels(@PathParam("id") String id)  {
+	public Response getClassificationLevels(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationLevels(id);
@@ -197,7 +198,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/classification/{id}/level/{levelId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevel(@PathParam("id") String id, @PathParam("levelId") String levelId)  {
+	public Response getClassificationLevel(@PathParam(Constants.ID) String id, @PathParam("levelId") String levelId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationLevel(id, levelId);
@@ -276,7 +277,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/correspondence/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondence(@PathParam("id") String id)  {
+	public Response getCorrespondence(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondence(id);
@@ -289,7 +290,7 @@ public class ClassificationsResources {
 	@GET
 	@Path("/correspondence/{id}/associations")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondenceAssociations(@PathParam("id") String id)  {
+	public Response getCorrespondenceAssociations(@PathParam(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociations(id);

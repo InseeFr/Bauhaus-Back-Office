@@ -12,7 +12,7 @@ import fr.insee.rmes.config.auth.security.conditions.NoOpenIDConnectAuthConditio
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled=false)
+@EnableGlobalMethodSecurity(securedEnabled = false)
 @Conditional(value = NoOpenIDConnectAuthCondition.class)
 public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 
@@ -20,7 +20,9 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.authorizeRequests().anyRequest().permitAll();
-		if (Config.REQUIRES_SSL) http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+		if (Config.REQUIRES_SSL) {
+			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+		}
 	}
 
 }

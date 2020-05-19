@@ -13,10 +13,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.CodeListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,7 +38,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class CodeListsResources {
 
-	final static Logger logger = LogManager.getLogger(CodeListsResources.class);
+	static final Logger logger = LogManager.getLogger(CodeListsResources.class);
 
 	@Autowired
 	CodeListService codeListService;

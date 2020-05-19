@@ -20,7 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.auth.roles.Constants;
+import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.CollectionById;
@@ -32,7 +34,6 @@ import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.ConceptsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -90,7 +91,7 @@ public class ConceptsResources   {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getRelatedConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
-	public Response getRelatedConcepts(@PathParam("id") String id) {
+	public Response getRelatedConcepts(@PathParam(Constants.ID) String id) {
 		String resultat;
 		try {
 			resultat = conceptsService.getRelatedConcepts(id);
@@ -106,7 +107,7 @@ public class ConceptsResources   {
 	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
-	public Response deleteConcept(@PathParam("id") String id) {
+	public Response deleteConcept(@PathParam(Constants.ID) String id) {
 		try {
 			conceptsService.deleteConcept(id);
 		} catch (RmesException e) {
@@ -135,7 +136,7 @@ public class ConceptsResources   {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptByID", summary = "Concept", 
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
-	public Response getConceptByID(@PathParam("id") String id) {
+	public Response getConceptByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptByID(id);
@@ -165,7 +166,7 @@ public class ConceptsResources   {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptLinksByID", summary = "List of linked concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
-	public Response getConceptLinksByID(@PathParam("id") String id) {
+	public Response getConceptLinksByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptLinksByID(id);
@@ -180,7 +181,7 @@ public class ConceptsResources   {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptNotesByID", summary = "Last notes of the concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
-	public Response getConceptNotesByID(@PathParam("id") String id, @PathParam("conceptVersion") int conceptVersion) {
+	public Response getConceptNotesByID(@PathParam(Constants.ID) String id, @PathParam("conceptVersion") int conceptVersion) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
@@ -240,7 +241,7 @@ public class ConceptsResources   {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCollectionByID", summary = "Collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
-	public Response getCollectionByID(@PathParam("id") String id) {
+	public Response getCollectionByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getCollectionByID(id);
@@ -255,7 +256,7 @@ public class ConceptsResources   {
 	@Operation(operationId = "getCollectionMembersByID", summary = "List of collection member concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCollectionMembersByID(@PathParam("id") String id) {
+	public Response getCollectionMembersByID(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getCollectionMembersByID(id);
@@ -265,7 +266,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -280,7 +281,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@PUT
 	@Path("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -293,11 +294,11 @@ public class ConceptsResources   {
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
-		logger.info("Update concept : " + id);
+		logger.info("Update concept : {}" , id);
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPT_CREATOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPT_CREATOR })
 	@PUT
 	@Path("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -317,11 +318,11 @@ public class ConceptsResources   {
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
-	public Response getConceptExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
 			return conceptsService.getConceptExport(id, acceptHeader);
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_CONCEPT_CREATOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_CONCEPT_CREATOR })
 	@POST
 	@Path("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -333,7 +334,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
-			logger.info("Send concept : " + id);
+			logger.info("Send concept : {}" , id);
 			return Response.status(Status.OK).entity(isSent).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -341,7 +342,7 @@ public class ConceptsResources   {
 		}
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
 	@POST
 	@Path("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -355,17 +356,17 @@ public class ConceptsResources   {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTION_CREATOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
 	@PUT
 	@Path("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public Response setCollection(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
 			@RequestBody(description = "Collection", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollection(id, body);
-			logger.info("Update collection : " + id);
+			logger.info("Update collection : {}" , id);
 			return Response.status(Status.NO_CONTENT).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -373,7 +374,7 @@ public class ConceptsResources   {
 		}
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_COLLECTION_CREATOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_COLLECTION_CREATOR })
 	@PUT
 	@Path("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -382,7 +383,7 @@ public class ConceptsResources   {
 			@RequestBody(description = "Collection id array to validate", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollectionsValidation(body);
-			logger.info("Validated concepts : " + body);
+			logger.info("Validated concepts : {}" , body);
 			return Response.status(Status.NO_CONTENT).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
@@ -394,11 +395,11 @@ public class ConceptsResources   {
 	@Path("/collection/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public Response getCollectionExport(@PathParam("id") String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getCollectionExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 
-	@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTION_CREATOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
 	@POST
 	@Path("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -406,11 +407,11 @@ public class ConceptsResources   {
 	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setCollectionSend(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
-			logger.info("Send concept : " + id);
+			logger.info("Send concept : {}" , id);
 			return Response.status(Status.OK).entity(isSent).build();
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);

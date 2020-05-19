@@ -8,47 +8,47 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface StampsRestrictionsService {
 	
-	Boolean isConceptOrCollectionOwner(URI uri) throws RmesException;
+	boolean isConceptOrCollectionOwner(URI uri) throws RmesException;
 
-	Boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException;
+	boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException;
 
-	Boolean canModifyIndicator(List<URI> uris) throws RmesException;
+	boolean canModifyIndicator(List<URI> uris) throws RmesException;
 	
-	Boolean canValidateIndicator(List<URI> uris) throws RmesException;
+	boolean canValidateIndicator(List<URI> uris) throws RmesException;
 
-	Boolean canModifySims(URI targetUri) throws RmesException;
+	boolean canModifySims(URI targetUri) throws RmesException;
 
-	Boolean canCreateOperation(URI seriesURI) throws RmesException;
+	boolean canCreateOperation(URI seriesURI) throws RmesException;
 	
-	Boolean canCreateSims(List<URI> uris) throws RmesException;
+	boolean canCreateSims(List<URI> uris) throws RmesException;
 	
-	Boolean canModifySeries(List<URI> uris) throws RmesException;
+	boolean canModifySeries(List<URI> uris) throws RmesException;
 
-	Boolean canValidateSeries(List<URI> uris) throws RmesException;
+	boolean canValidateSeries(List<URI> uris) throws RmesException;
 
-	Boolean canCreateConcept() throws RmesException;
+	boolean canCreateConcept() throws RmesException;
 
-	Boolean canModifyConcept(URI uri) throws RmesException;
+	boolean canModifyConcept(URI uri) throws RmesException;
 
-	Boolean canCreateFamily() throws RmesException;
+	boolean canCreateFamily() throws RmesException;
 
-	Boolean canCreateSeries() throws RmesException;
+	boolean canCreateSeries() throws RmesException;
 
-	Boolean canCreateIndicator() throws RmesException;
+	boolean canCreateIndicator() throws RmesException;
 
-	Boolean canCreateSims(URI targetURI) throws RmesException;
+	boolean canCreateSims(URI targetURI) throws RmesException;
 
-	Boolean canModifySeries(URI uri) throws RmesException;
+	boolean canModifySeries(URI uri) throws RmesException;
 
-	Boolean canValidateSeries(URI uri) throws RmesException;
+	boolean canValidateSeries(URI uri) throws RmesException;
 
-	Boolean canModifyOperation(URI seriesURI) throws RmesException;
+	boolean canModifyOperation(URI seriesURI) throws RmesException;
 
-	Boolean canValidateOperation(URI seriesURI) throws RmesException;
+	boolean canValidateOperation(URI seriesURI) throws RmesException;
 
-	Boolean canModifyIndicator(URI uri) throws RmesException;
+	boolean canModifyIndicator(URI uri) throws RmesException;
 
-	Boolean canValidateIndicator(URI uri) throws RmesException;
+	boolean canValidateIndicator(URI uri) throws RmesException;
 
-	Boolean canManageDocumentsAndLinks() throws RmesException;
+	boolean canManageDocumentsAndLinks() throws RmesException;
 }

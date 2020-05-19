@@ -5,6 +5,12 @@ import org.json.JSONObject;
 
 public class RmesException extends Exception {
 
+	private static final String CODE = "code";
+
+	private static final String DETAILS_STRING = "details";
+
+	private static final String MESSAGE = "message";
+
 	private static final long serialVersionUID = -7959158367542389147L;
 
 	private final int status;
@@ -17,64 +23,61 @@ public class RmesException extends Exception {
 	 * @param details
 	 */
 	public RmesException(int status, String message, String details) {
-		//super(message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("message", message);
-		this.details.put("details",	details);		
+		this.details.put(MESSAGE, message);
+		this.details.put(DETAILS_STRING,	details);		
 	}
 
 	public RmesException(int status, String message, JSONArray details) {
-		//super(message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("message", message);
-		this.details.put("details", details.toString());
+		this.details.put(MESSAGE, message);
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 
 	public RmesException(int status, int errorCode, String message, String details) {
-		//super(errorCode+":"+message);
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("code", errorCode);
-		this.details.put("message", message);
-		this.details.put("details", details);
+		this.details.put(CODE, errorCode);
+		this.details.put(MESSAGE, message);
+		this.details.put(DETAILS_STRING, details);
 	}
 
 	public RmesException(int status, int errorCode, String details) {
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("code", errorCode);
-		this.details.put("details", details.toString());
+		this.details.put(CODE, errorCode);
+		this.details.put(DETAILS_STRING, details);
 	}
 		
 	public RmesException(int status, int errorCode, JSONArray details) {
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("code", errorCode);
-		this.details.put("details", details.toString());
+		this.details.put(CODE, errorCode);
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 
 	public RmesException(int status, int errorCode, String message, JSONArray details) {
 		super();
 		this.status = status;
 		this.details = new JSONObject();
-		this.details.put("code", errorCode);
-		this.details.put("message", message);
-		this.details.put("details", details.toString());
+		this.details.put(CODE, errorCode);
+		this.details.put(MESSAGE, message);
+		this.details.put(DETAILS_STRING, details.toString());
 	}
 	
 	public RmesException(int status, int errorCode, String message, JSONObject details) {
 		super();
 		this.status = status;
 		this.details = details;
-		this.details.put("code", errorCode);
-		this.details.put("message", message);
+		this.details.put(CODE, errorCode);
+		this.details.put(MESSAGE, message);
 	}
 
 	public RestMessage toRestMessage(){
