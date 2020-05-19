@@ -124,5 +124,7 @@ public interface OperationsService {
 	
 	Response exportMetadataReport(String id) throws RmesException;
 
+	String getMetadataReportOwner(String id) throws RmesException;
+
 
 }
