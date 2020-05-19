@@ -7,3 +7,4 @@ node_modules
 .project
 .idea
 graphdb
+src/main/java/fr/insee/rmes/persistance/service/sesame/operations/documentations/DocumentationsUtils.java
