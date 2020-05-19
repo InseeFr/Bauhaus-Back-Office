@@ -3,9 +3,9 @@ package fr.insee.rmes.persistance.sparql_queries.concepts;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.sesame.utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class ConceptsQueries {
 	

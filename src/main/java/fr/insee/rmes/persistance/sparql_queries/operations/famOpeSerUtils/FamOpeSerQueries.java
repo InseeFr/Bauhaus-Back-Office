@@ -5,10 +5,10 @@ import java.util.Map;
 
 import org.openrdf.model.URI;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.sesame.utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
 
 public class FamOpeSerQueries {
 

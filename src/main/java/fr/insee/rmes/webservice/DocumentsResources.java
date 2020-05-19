@@ -24,11 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.modele.operations.documentations.Document;
-import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.DocumentsService;
+import fr.insee.rmes.model.operations.documentations.Document;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

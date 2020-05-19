@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
@@ -32,8 +34,6 @@ import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
 import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.ConceptsService;
-import fr.insee.rmes.persistance.service.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

@@ -16,13 +16,13 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.DSDService;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.dsd.DSDById;
 import fr.insee.rmes.config.swagger.model.dsd.DSDComponentById;
 import fr.insee.rmes.config.swagger.model.dsd.IdLabelType;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.DSDService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;

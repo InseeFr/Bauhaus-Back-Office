@@ -3,11 +3,11 @@ package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.sesame.utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.modele.operations.documentations.RangeType;
-import fr.insee.rmes.persistance.service.Constants;
-import fr.insee.rmes.persistance.service.sesame.utils.FreeMarkerUtils;
+import fr.insee.rmes.model.operations.documentations.RangeType;
 
 public class DocumentationsQueries {
 	

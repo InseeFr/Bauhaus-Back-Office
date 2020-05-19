@@ -1,7 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import fr.insee.rmes.bauhaus_services.sesame.utils.SesameUtils;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.service.sesame.utils.SesameUtils;
 
 public class DSDQueries {
 

@@ -18,10 +18,10 @@ import org.mockito.MockitoAnnotations;
 import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.TupleQueryResultHandlerException;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.sesame.code_list.CodeListServiceImpl;
+import fr.insee.rmes.bauhaus_services.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.service.CodeListService;
-import fr.insee.rmes.persistance.service.sesame.code_list.CodeListServiceImpl;
-import fr.insee.rmes.persistance.service.sesame.utils.RepositoryGestion;
 import fr.insee.rmes.webservice.CodeListsResources;
 
 

@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.notes;
 
 import org.openrdf.model.URI;
 
-import fr.insee.rmes.modele.notes.DatableNote;
+import fr.insee.rmes.model.notes.DatableNote;
 
 public class NotesQueries {
 
