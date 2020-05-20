@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
-import fr.insee.rmes.bauhaus_services.sesame.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;

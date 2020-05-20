@@ -3,7 +3,7 @@ package fr.insee.rmes.model.concepts;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import fr.insee.rmes.bauhaus_services.sesame.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.Link;
 import fr.insee.rmes.model.notes.DatableNote;

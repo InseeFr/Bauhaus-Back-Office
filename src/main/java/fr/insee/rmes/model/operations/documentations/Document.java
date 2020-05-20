@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import fr.insee.rmes.bauhaus_services.sesame.utils.SesameUtils;
+import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
 import fr.insee.rmes.utils.DateParser;
 
 public class Document {
@@ -22,12 +22,12 @@ public class Document {
 	}
 	
 	public Document(String id) {
-		this.uri = SesameUtils.documentIRI(id).toString();
+		this.uri = RdfUtils.documentIRI(id).toString();
 	}
 
 	public Document(String id, boolean isLink) {
-		if (isLink) {this.uri = SesameUtils.linkIRI(id).toString();}
-		else {this.uri = SesameUtils.documentIRI(id).toString();}
+		if (isLink) {this.uri = RdfUtils.linkIRI(id).toString();}
+		else {this.uri = RdfUtils.documentIRI(id).toString();}
 	}
 	
 	public String getLabelLg1() {

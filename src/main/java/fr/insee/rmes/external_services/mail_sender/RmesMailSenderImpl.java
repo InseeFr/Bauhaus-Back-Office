@@ -26,8 +26,8 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.bauhaus_services.sesame.concepts.concepts.ConceptsExportBuilder;
-import fr.insee.rmes.bauhaus_services.sesame.utils.SesameUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
+import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -50,20 +50,24 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 		
+	@Override
 	public boolean sendMailConcept(String id, String body) throws  RmesException  {
-		URI conceptURI = SesameUtils.conceptIRI(id);
-		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI))
+		URI conceptURI = RdfUtils.conceptIRI(id);
+		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
+		}
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getConceptData(id);
 		InputStream is = jasper.exportConcept(json, "Mail");
 		return sendMail(mail, is, json);
 	}
 	
+	@Override
 	public boolean sendMailCollection(String id, String body) throws  RmesException  {
-		URI collectionURI = SesameUtils.collectionIRI(id);
-		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI))
+		URI collectionURI = RdfUtils.collectionIRI(id);
+		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
+		}
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(json, "Mail");
@@ -148,7 +152,8 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			JSONArray reportItem = (JSONArray) response.get("ReportItem");
 			JSONObject firstReportItem = (JSONObject) reportItem.get(0);
 			return firstReportItem.getBoolean("sent");
+		} else {
+			return false;
 		}
-		else return false;
 	}
 }

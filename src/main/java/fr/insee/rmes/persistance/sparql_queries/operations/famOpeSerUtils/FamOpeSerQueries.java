@@ -6,7 +6,7 @@ import java.util.Map;
 import org.openrdf.model.URI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.sesame.utils.FreeMarkerUtils;
+import fr.insee.rmes.bauhaus_services.rdfUtils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 
