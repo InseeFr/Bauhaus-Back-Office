@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.utils.DateParser;
 
 public class Document {

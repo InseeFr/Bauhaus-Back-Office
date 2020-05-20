@@ -11,12 +11,12 @@ import org.openrdf.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdfUtils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdfUtils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RepositoryUtils;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;

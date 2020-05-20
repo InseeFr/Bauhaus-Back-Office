@@ -7,9 +7,9 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdfUtils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 

@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.rdfUtils;
+package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.io.IOException;
 import java.io.StringWriter;

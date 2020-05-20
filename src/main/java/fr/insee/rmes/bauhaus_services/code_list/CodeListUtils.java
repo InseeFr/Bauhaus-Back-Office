@@ -4,8 +4,8 @@ import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.bauhaus_services.rdfUtils.QueryUtils;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 

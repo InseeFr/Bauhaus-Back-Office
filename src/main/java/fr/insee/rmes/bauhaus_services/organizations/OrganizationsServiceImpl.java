@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.rdfUtils.QueryUtils;
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 

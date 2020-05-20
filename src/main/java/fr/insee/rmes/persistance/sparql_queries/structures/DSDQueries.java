@@ -1,6 +1,6 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 
 public class DSDQueries {

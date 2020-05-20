@@ -8,7 +8,7 @@ import java.util.Set;
 import org.openrdf.model.Model;
 import org.openrdf.model.URI;
 
-import fr.insee.rmes.bauhaus_services.rdfUtils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.Concept;
 import fr.insee.rmes.model.notes.DatableNote;

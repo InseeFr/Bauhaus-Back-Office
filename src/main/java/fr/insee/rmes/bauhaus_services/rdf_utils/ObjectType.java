@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.rdfUtils;
+package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.util.HashMap;
 import java.util.Map;
