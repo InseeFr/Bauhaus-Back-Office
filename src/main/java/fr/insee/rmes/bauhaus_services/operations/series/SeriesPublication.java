@@ -10,12 +10,13 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -25,14 +26,15 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
-public class SeriesPublication {
+@Repository
+public class SeriesPublication extends RdfService {
 	
 	@Autowired
 	static 	FamOpeSerUtils famOpeSerUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
-	public static void publishSeries(String seriesId) throws RmesException {
+	public void publishSeries(String seriesId) throws RmesException {
 		SeriesUtils seriesUtils= new SeriesUtils();
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
@@ -48,9 +50,9 @@ public class SeriesPublication {
 		}
 		
 		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, series);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, series);
 		
-		RepositoryResult<Statement> hasPartStatements = RepositoryGestion.getHasPartStatements(con, series);
+		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, series);
 		
 		try {	
 			try {
@@ -97,8 +99,8 @@ public class SeriesPublication {
 			}
 		
 		} finally {
-			RepositoryGestion.closeStatements(statements);
-			RepositoryGestion.closeStatements(hasPartStatements);
+			repoGestion.closeStatements(statements);
+			repoGestion.closeStatements(hasPartStatements);
 		}
 		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
 		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");

@@ -32,7 +32,6 @@ import fr.insee.rmes.bauhaus_services.notes.NoteManager;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -179,7 +178,7 @@ public class ConceptsUtils  extends RdfService {
 					ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,
 					conceptsToValidate);
 		}
-		RepositoryGestion.objectsValidation(conceptsToValidateList, model);
+		repoGestion.objectsValidation(conceptsToValidateList, model);
 		conceptsPublication.publishConcepts(conceptsToValidate);
 	}
 

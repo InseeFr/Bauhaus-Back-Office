@@ -10,12 +10,13 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -25,7 +26,9 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
-public class OperationPublication {
+
+@Repository
+public class OperationPublication extends RdfService{
 	
 	@Autowired
 	static FamOpeSerUtils famOpeSerUtils;
@@ -34,7 +37,7 @@ public class OperationPublication {
 
 	String[] ignoredAttrs = { "isValidated", "changeNote", "creator", "contributor" };
 
-	public static void publishOperation(String operationId) throws RmesException {
+	public void publishOperation(String operationId) throws RmesException {
 		OperationsUtils operationsUtils = new OperationsUtils();
 		Model model = new LinkedHashModel();
 		String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
@@ -45,7 +48,7 @@ public class OperationPublication {
 		checkSeriesIsPublished(operationId, operationJson);
 
 		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, operation);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation);
 
 		try {
 			if (!statements.hasNext()) {
@@ -71,7 +74,7 @@ public class OperationPublication {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Config.REPOSITORY_EXCEPTION);
 		}
 		finally {
-			RepositoryGestion.closeStatements(statements);
+			repoGestion.closeStatements(statements);
 		}
 		Resource operationToPublishRessource = PublicationUtils.tranformBaseURIToPublish(operation);
 		RepositoryPublication.publishResource(operationToPublishRessource, model, "operation");
@@ -90,9 +93,9 @@ public class OperationPublication {
 		}
 	}
 
-	private static void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
+	private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
 			throws RmesException, RepositoryException {
-		RepositoryResult<Statement> hasPartStatements = RepositoryGestion.getHasPartStatements(con, operation);
+		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation);
 
 		while (hasPartStatements.hasNext()) {
 			Statement hpst = hasPartStatements.next();

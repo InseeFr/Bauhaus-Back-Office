@@ -37,7 +37,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -87,6 +86,9 @@ public class DocumentationsUtils extends RdfService {
 
 	@Autowired
 	CodeListUtils codeListUtils;
+	
+	@Autowired
+	DocumentationPublication documentationPublication;
 
 	/**
 	 * GETTER
@@ -231,7 +233,7 @@ public class DocumentationsUtils extends RdfService {
 					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
 		}
 
-		DocumentationPublication.publishSims(id);
+		documentationPublication.publishSims(id);
 
 		URI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, id);
 		model.add(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
@@ -240,7 +242,7 @@ public class DocumentationsUtils extends RdfService {
 		model.remove(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
 		logger.info("Validate sims : {}", simsURI);
 
-		RepositoryGestion.objectValidation(simsURI, model);
+		repoGestion.objectValidation(simsURI, model);
 
 		return id;
 	}
@@ -369,7 +371,7 @@ public class DocumentationsUtils extends RdfService {
 
 		addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 
-		RepositoryGestion.replaceGraph(graph, model, null);
+		repoGestion.replaceGraph(graph, model, null);
 	}
 
 	/**

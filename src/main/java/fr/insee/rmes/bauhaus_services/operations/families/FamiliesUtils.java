@@ -25,7 +25,6 @@ import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -46,6 +45,9 @@ public class FamiliesUtils  extends RdfService {
 
 	@Autowired
 	static FamOpeSerUtils famOpeSerUtils;
+	
+	@Autowired
+	FamilyPublication familyPublication;
 
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
@@ -157,7 +159,7 @@ public class FamiliesUtils  extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
 		}
 
-			FamilyPublication.publishFamily(id);
+			familyPublication.publishFamily(id);
 		
 			URI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
 			model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
@@ -165,7 +167,7 @@ public class FamiliesUtils  extends RdfService {
 			model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
 			logger.info("Validate family : {}", familyURI);
 
-			RepositoryGestion.objectValidation(familyURI, model);
+			repoGestion.objectValidation(familyURI, model);
 			
 		return id;
 	}

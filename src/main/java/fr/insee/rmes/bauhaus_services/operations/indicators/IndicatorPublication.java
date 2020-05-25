@@ -8,12 +8,13 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -21,18 +22,19 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
-public class IndicatorPublication {
+@Repository
+public class IndicatorPublication extends RdfService {
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	public static void publishIndicator(String indicatorId) throws RmesException {
+	public void publishIndicator(String indicatorId) throws RmesException {
 		
 		Model model = new LinkedHashModel();
 		Resource indicator= RdfUtils.objectIRI(ObjectType.INDICATOR,indicatorId);
 	
 		//TODO notify...
 		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, indicator);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator);
 
 		try {	
 			try {
@@ -62,7 +64,7 @@ public class IndicatorPublication {
 			}
 		
 		} finally {
-			RepositoryGestion.closeStatements(statements);
+			repoGestion.closeStatements(statements);
 		}
 		Resource indicatorToPublishRessource = PublicationUtils.tranformBaseURIToPublish(indicator);
 		RepositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");

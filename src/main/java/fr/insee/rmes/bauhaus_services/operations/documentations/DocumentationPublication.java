@@ -9,10 +9,12 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -23,14 +25,15 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
-public class DocumentationPublication {
+@Repository
+public class DocumentationPublication extends RdfService {
 	
 	@Autowired
 	static RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	public static void publishSims(String simsId) throws RmesException {
+	public void publishSims(String simsId) throws RmesException {
 		
 		Model model = new LinkedHashModel();
 		Resource sims= RdfUtils.objectIRI(ObjectType.DOCUMENTATION,simsId);
@@ -38,9 +41,9 @@ public class DocumentationPublication {
 	
 		//TODO notify...
 		RepositoryConnection con = repoUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, sims);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, sims);
 
-		RepositoryResult<Statement> metadataReportStatements = RepositoryGestion.getMetadataReportStatements(con, sims, graph);
+		RepositoryResult<Statement> metadataReportStatements = repoGestion.getMetadataReportStatements(con, sims, graph);
 
 		
 		try {	
@@ -87,7 +90,7 @@ public class DocumentationPublication {
 			}
 		
 		} finally {
-			RepositoryGestion.closeStatements(statements);
+			repoGestion.closeStatements(statements);
 		}
 		
 		Resource simsToPublishRessource = PublicationUtils.tranformBaseURIToPublish(sims);

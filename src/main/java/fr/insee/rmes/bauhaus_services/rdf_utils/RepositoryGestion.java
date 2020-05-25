@@ -51,7 +51,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public static String getResponse(String query) throws RmesException {
+	public String getResponse(String query) throws RmesException {
 		return getResponse(query, REPOSITORY_GESTION);
 	}
 
@@ -97,7 +97,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		return getResponseAsBoolean(query, REPOSITORY_GESTION);
 	}
 
-	public static RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
+	public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
 			throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
@@ -108,7 +108,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public static RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
+	public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
@@ -119,7 +119,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public static RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object,
+	public RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object,
 			Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
@@ -130,7 +130,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public static void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
+	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
 		try {
 			statements.close();
 		} catch (RepositoryException e) {
@@ -188,7 +188,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @param conn : can be null - initialized by the method
 	 * @throws RmesException
 	 */
-	public static void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
+	public void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
 				conn = REPOSITORY_GESTION.getConnection();
@@ -214,7 +214,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public static void objectsValidation(List<URI> itemToValidateList, Model model) throws RmesException {
+	public void objectsValidation(List<URI> itemToValidateList, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			for (URI item : itemToValidateList) {
@@ -227,7 +227,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public static void objectValidation(URI ressourceURI, Model model) throws RmesException {
+	public void objectValidation(URI ressourceURI, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
@@ -238,12 +238,12 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
+	public void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
 		getStatementsAndRemove(concept, conn, typeOfLink);
 	}
 
-	public static void clearReplaceLinks(Resource object, RepositoryConnection conn) throws RmesException {
+	public void clearReplaceLinks(Resource object, RepositoryConnection conn) throws RmesException {
 		List<URI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
 		getStatementsAndRemove(object, conn, typeOfLink);
 	}
@@ -266,7 +266,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public static void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
+	public void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
