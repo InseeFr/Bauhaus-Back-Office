@@ -21,11 +21,15 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 
+@Component
+@DependsOn("AppContext")
 public class RepositoryPublication extends RepositoryUtils{
 
 	private static final String CONNECTION_TO = "Connection to ";

@@ -20,11 +20,10 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
 
-@Component
+
 public abstract class RepositoryUtils {
 	
 	private static final String VALUE = "value";
