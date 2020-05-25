@@ -7,18 +7,18 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -125,7 +125,7 @@ public class ConceptsUtils  extends RdfService {
 
 	public void createRdfConcept(Concept concept) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI conceptURI = RdfUtils.conceptIRI(concept.getId());
+		IRI conceptURI = RdfUtils.conceptIRI(concept.getId());
 		/*Const*/
 		model.add(conceptURI, RDF.TYPE, SKOS.CONCEPT, RdfUtils.conceptGraph());
 		model.add(conceptURI, SKOS.IN_SCHEME, RdfUtils.conceptScheme(), RdfUtils.conceptGraph());
@@ -156,7 +156,7 @@ public class ConceptsUtils  extends RdfService {
 		RdfUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, RdfUtils.conceptGraph());
 
 		// Add notes to model, delete some notes and updates some other notes
-		List<List<URI>> notesToDeleteAndUpdate = new NoteManager().setNotes(concept, model);
+		List<List<IRI>> notesToDeleteAndUpdate = new NoteManager().setNotes(concept, model);
 
 		// Add links to model and save member links
 		new LinksUtils().createRdfLinks(conceptURI, concept.getLinks(), model);
@@ -166,9 +166,9 @@ public class ConceptsUtils  extends RdfService {
 
 	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
 		Model model = new LinkedHashModel();
-		List<URI> conceptsToValidateList = new ArrayList<>();
+		List<IRI> conceptsToValidateList = new ArrayList<>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
-			URI conceptURI = RdfUtils.conceptIRI(conceptsToValidate.getString(i));
+			IRI conceptURI = RdfUtils.conceptIRI(conceptsToValidate.getString(i));
 			conceptsToValidateList.add(conceptURI);
 			model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate concept : {}" , conceptURI);

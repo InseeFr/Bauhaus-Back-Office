@@ -5,23 +5,22 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.SKOS;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
@@ -112,7 +111,7 @@ public class RepositoryPublication extends RepositoryUtils{
 			conn.add(model);
 			conn.close();
 			logger.info("Publication of concept : {}", concept);
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
 			logger.error("{} {} {}", CONNECTION_TO , Config.SESAME_SERVER_PUBLICATION, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
@@ -126,7 +125,7 @@ public class RepositoryPublication extends RepositoryUtils{
 			conn.add(model);
 			conn.close();
 			logger.info("Publication of {} : {}" ,type, resource);
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error("Publication of {} : {} {}" ,type, resource, FAILED);
 			logger.error("{} {} {}", CONNECTION_TO, Config.SESAME_SERVER_PUBLICATION, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
@@ -138,10 +137,10 @@ public class RepositoryPublication extends RepositoryUtils{
 	
 	
 	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
-		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
+		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
 				DCTERMS.REPLACES, SKOS.RELATED);
 
-		for (URI predicat : typeOfLink) {
+		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements = null;
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);

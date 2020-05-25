@@ -2,17 +2,17 @@ package fr.insee.rmes.bauhaus_services.structures;
 
 import java.io.IOException;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -56,7 +56,7 @@ public class DSDUtils extends RdfService {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		String dsdId = dsd.getId().replace(" ", "-").toLowerCase();
-		URI dsdUri = RdfUtils.dsdIRI(dsdId);
+		IRI dsdUri = RdfUtils.dsdIRI(dsdId);
 		repoGestion.clearDSDNodeAndComponents(dsdUri);
 		createRdfDSD(dsd);
 		logger.info("Update DSD : {} - {}" , dsd.getId() , dsd.getLabelLg1());
@@ -71,7 +71,7 @@ public class DSDUtils extends RdfService {
 	public void createRdfDSD(DSD dsd) throws RmesException {
 		Model model = new LinkedHashModel();
 		String dsdId = dsd.getId().replace(" ", "-").toLowerCase();
-		URI dsdUri = RdfUtils.dsdIRI(dsdId);
+		IRI dsdUri = RdfUtils.dsdIRI(dsdId);
 		/*Const*/
 		model.add(dsdUri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, RdfUtils.dsdGraph());
 		/*Required*/
@@ -83,7 +83,7 @@ public class DSDUtils extends RdfService {
 		RdfUtils.addTripleString(dsdUri, DC.DESCRIPTION, dsd.getDescriptionLg2(), Config.LG2, model, RdfUtils.dsdGraph());
 		
 		dsd.getComponents().forEach(component->{
-			URI componentIRI = RdfUtils.componentIRI(component.getId(), component.getType());
+			IRI componentIRI = RdfUtils.componentIRI(component.getId(), component.getType());
 			Resource blankNode = RdfUtils.blankNode();
 			/* BNode */
 		    model.add(dsdUri, QB.COMPONENT, blankNode, RdfUtils.dsdGraph());

@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -18,7 +18,7 @@ import fr.insee.rmes.model.notes.concepts.ConceptsVersionnedNoteTypes;
 
 public class NoteManager {
 
-	public List<List<URI>> setNotes(Concept concept, Model model) throws RmesException {
+	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
 
 		NotesUtils noteUtils = new NotesUtils();
 		// TODO : see extreme cases to close notes
@@ -29,8 +29,8 @@ public class NoteManager {
 		String conceptId = concept.getId();
 		String conceptVersion = noteUtils.getConceptVersion(concept);
 
-		List<URI> notesToDelete = new ArrayList<URI>();
-		List<URI> notesToUpdate = new ArrayList<URI>();
+		List<IRI> notesToDelete = new ArrayList<IRI>();
+		List<IRI> notesToUpdate = new ArrayList<IRI>();
 		
 		Set<String> versionableNoteTypesInConcept = new HashSet<String>();
 
@@ -101,7 +101,7 @@ public class NoteManager {
 		// Keep historical notes
 		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
 
-		List<List<URI>> notesToDeleteAndUpdate = new ArrayList<List<URI>>();
+		List<List<IRI>> notesToDeleteAndUpdate = new ArrayList<List<IRI>>();
 		notesToDeleteAndUpdate.add(notesToDelete);
 		notesToDeleteAndUpdate.add(notesToUpdate);
 

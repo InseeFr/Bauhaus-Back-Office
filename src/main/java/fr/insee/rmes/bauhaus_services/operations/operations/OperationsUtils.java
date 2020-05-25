@@ -4,13 +4,13 @@ import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -83,7 +83,7 @@ public class OperationsUtils  extends RdfService {
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 					seriesUtils.getSeriesById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
 		}
-		URI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
+		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits
 		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
@@ -103,7 +103,7 @@ public class OperationsUtils  extends RdfService {
 	 */
 	public String setOperation(String id, String body) throws RmesException {
 
-		URI seriesURI=getSeriesUri(id);
+		IRI seriesURI=getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
@@ -127,9 +127,9 @@ public class OperationsUtils  extends RdfService {
 		return operation.getId();
 	}
 
-	private void createRdfOperation(Operation operation, URI serieUri, ValidationStatus newStatus) throws RmesException {
+	private void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION,operation.getId());
+		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
 		/*Required*/
@@ -154,7 +154,7 @@ public class OperationsUtils  extends RdfService {
 	public String setOperationValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
-		URI seriesURI = getSeriesUri(id);
+		IRI seriesURI = getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
@@ -163,7 +163,7 @@ public class OperationsUtils  extends RdfService {
 		operationPublication.publishOperation(id);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
-		URI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, id);
+		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, id);
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
@@ -173,7 +173,7 @@ public class OperationsUtils  extends RdfService {
 		return id;
 	}
 
-	private URI getSeriesUri(String id){
+	private IRI getSeriesUri(String id){
 		//FIXME check not needed
 		/*JSONObject jsonOperation = getOperationById(id);
 		FIXME check not needed String idJson = jsonOperation.getJSONObject("series").getString(Constants.ID);*/

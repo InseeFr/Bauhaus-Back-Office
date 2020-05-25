@@ -4,8 +4,8 @@ package fr.insee.rmes.model.notes.concepts;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 
@@ -19,7 +19,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG1;}
 		@Override
-		public URI owlProperty() {return SKOS.SCOPE_NOTE;}
+		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
 	},
 	SCOPENOTELG2("scopeNoteLg2") {
@@ -28,7 +28,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG2;}
 		@Override
-		public URI owlProperty() {return SKOS.SCOPE_NOTE;}
+		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
 	},
 	DEFINITIONLG1("definitionLg1") {
@@ -37,7 +37,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG1;}
 		@Override
-		public URI owlProperty() {return SKOS.DEFINITION;}
+		public IRI owlProperty() {return SKOS.DEFINITION;}
 
 	},
 	DEFINITIONLG2("definitionLg2") {
@@ -46,7 +46,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG2;}
 		@Override
-		public URI owlProperty() {return SKOS.DEFINITION;}
+		public IRI owlProperty() {return SKOS.DEFINITION;}
 
 	},
 	EDITORIALNOTELG1("editorialNoteLg1") {
@@ -55,7 +55,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG1;}
 		@Override
-		public URI owlProperty() {return SKOS.EDITORIAL_NOTE;}
+		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
 	},
 	EDITORIALNOTELG2("editorialNoteLg2") {
@@ -64,7 +64,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String lang() {return Config.LG2;}
 		@Override
-		public URI owlProperty() {return SKOS.EDITORIAL_NOTE;}
+		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
 	};
 		
@@ -76,6 +76,7 @@ public enum ConceptsVersionnedNoteTypes {
 		this.text = text;
 	}
 
+	@Override
 	public String toString() {
 		return this.text;
 	}
@@ -84,7 +85,7 @@ public enum ConceptsVersionnedNoteTypes {
 	
 	public abstract String lang();
 	
-	public abstract URI owlProperty();
+	public abstract IRI owlProperty();
 	
     public static ConceptsVersionnedNoteTypes getByName(String name) {
         return map.get(name);

@@ -18,17 +18,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.FOAF;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -62,12 +62,12 @@ public class DocumentsUtils  extends RdfService  {
 	private static final String SCHEME_FILE = "file://";
 	static final Logger logger = LogManager.getLogger(DocumentsUtils.class);
 
-	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, URI textUri)
+	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, IRI textUri)
 			throws RmesException {
 		if (rubric.getDocuments() != null && !rubric.getDocuments().isEmpty()) {
 			for (Document doc : rubric.getDocuments()) {
-				URI url = RdfUtils.toURI(doc.getUrl());
-				URI docUri = getDocumentUri(url);
+				IRI url = RdfUtils.toURI(doc.getUrl());
+				IRI docUri = getDocumentUri(url);
 				RdfUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
 			}
 		}
@@ -189,7 +189,7 @@ public class DocumentsUtils  extends RdfService  {
 		// upload file in storage folder
 		uploadFile(documentFile, documentName, url, false);
 		try {
-			URI docUri = RdfUtils.toURI(document.getUri());
+			IRI docUri = RdfUtils.toURI(document.getUri());
 			writeRdfDocument(document, docUri);
 		} catch (RmesException e) {
 			deleteDocument(id);
@@ -225,7 +225,7 @@ public class DocumentsUtils  extends RdfService  {
 			logger.error(e.getMessage());
 		}
 
-		URI docUri = RdfUtils.toURI(document.getUri());
+		IRI docUri = RdfUtils.toURI(document.getUri());
 		logger.info("Update document : {} - {} / {}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
 		writeRdfDocument(document, docUri);
 	}
@@ -259,7 +259,7 @@ public class DocumentsUtils  extends RdfService  {
 		JSONObject jsonDoc = getDocument(docId);
 		String uri = jsonDoc.getString(Constants.URI);
 		String url = getDocumentUrlFromDocument(jsonDoc);
-		URI docUri = RdfUtils.toURI(uri);
+		IRI docUri = RdfUtils.toURI(uri);
 
 		// Check that the document is not referred to by any sims
 		checkDocumentReference(docId, uri);
@@ -268,7 +268,7 @@ public class DocumentsUtils  extends RdfService  {
 			deleteFile(url);
 		}
 		// delete the Document in the rdf base
-		return repoGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri, (URI) graph));
+		return repoGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri, (IRI) graph));
 	}
 
 	private void checkDocumentReference(String docId, String uri) throws RmesException {
@@ -374,7 +374,7 @@ public class DocumentsUtils  extends RdfService  {
 		}
 
 		// Check if the url is already used by a link
-		URI uriUrl = RdfUtils.toURI(url);
+		IRI uriUrl = RdfUtils.toURI(url);
 		JSONObject uri = repoGestion
 				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl, RdfUtils.documentsGraph()));
 		if (uri.length() > 0) {
@@ -382,7 +382,7 @@ public class DocumentsUtils  extends RdfService  {
 					"This url is already referenced by another link.", uri.getString(DOCUMENT));
 		}
 
-		URI docUri = RdfUtils.toURI(link.getUri());
+		IRI docUri = RdfUtils.toURI(link.getUri());
 
 		writeRdfDocument(link, docUri);
 	}
@@ -394,7 +394,7 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 
-	private void writeRdfDocument(Document document, URI docUri) throws RmesException {
+	private void writeRdfDocument(Document document, IRI docUri) throws RmesException {
 
 		Resource graph = RdfUtils.documentsGraph();
 		Model model = new LinkedHashModel();
@@ -458,7 +458,7 @@ public class DocumentsUtils  extends RdfService  {
 	 * @return
 	 * @throws RmesException
 	 */
-	private URI getDocumentUri(URI url) throws RmesException {
+	private IRI getDocumentUri(IRI url) throws RmesException {
 		JSONObject uri = repoGestion
 				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url, RdfUtils.documentsGraph()));
 		if (uri.length() == 0 || !uri.has(DOCUMENT)) {

@@ -4,17 +4,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -59,7 +59,7 @@ public class CollectionsUtils extends RdfService{
 	}
 	
 	public void setCollection(String id, String body) throws RmesException  {
-		URI collectionURI = RdfUtils.collectionIRI(id);
+		IRI collectionURI = RdfUtils.collectionIRI(id);
 		ObjectMapper mapper = new ObjectMapper();
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MODIFICATION_RIGHTS_DENIED,"rights denied",id);
@@ -89,7 +89,7 @@ public class CollectionsUtils extends RdfService{
 	
 	public void setRdfCollection(Collection collection) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI collectionURI = RdfUtils.collectionIRI(collection.getId().replace(" ", "-").toLowerCase());
+		IRI collectionURI = RdfUtils.collectionIRI(collection.getId().replace(" ", "-").toLowerCase());
 		/*Required*/
 		model.add(collectionURI, RDF.TYPE, SKOS.COLLECTION, RdfUtils.conceptGraph());	
 		model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(collection.getIsValidated()), RdfUtils.conceptGraph());
@@ -105,7 +105,7 @@ public class CollectionsUtils extends RdfService{
 		
 		/*Members*/
 		collection.getMembers().forEach(member->{
-			URI memberIRI = RdfUtils.conceptIRI(member);
+			IRI memberIRI = RdfUtils.conceptIRI(member);
 		    model.add(collectionURI, SKOS.MEMBER, memberIRI, RdfUtils.conceptGraph());
 		});
 		
@@ -114,9 +114,9 @@ public class CollectionsUtils extends RdfService{
 	
 	public void collectionsValidation(JSONArray collectionsToValidate) throws  RmesException  {
 		Model model = new LinkedHashModel();
-		List<URI> collectionsToValidateList = new ArrayList<>();
+		List<IRI> collectionsToValidateList = new ArrayList<>();
 		for (int i = 0; i < collectionsToValidate.length(); i++) {
-			URI collectionURI = RdfUtils.collectionIRI(collectionsToValidate.getString(i).replace(" ", "").toLowerCase());
+			IRI collectionURI = RdfUtils.collectionIRI(collectionsToValidate.getString(i).replace(" ", "").toLowerCase());
 			collectionsToValidateList.add(collectionURI);
 			model.add(collectionURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(true), RdfUtils.conceptGraph());
 			logger.info("Validate collection : {}" , collectionURI);

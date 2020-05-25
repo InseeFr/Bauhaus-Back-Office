@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.config.Config;
 
@@ -59,7 +59,7 @@ public class SeriesQueries {
 		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
 	}
 
-	public static String seriesLinks(String idSeries, URI linkPredicate) {
+	public static String seriesLinks(String idSeries, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n" + "WHERE { \n" + "?series <" + linkPredicate
 				+ "> ?uriLinked . \n" + "?uriLinked skos:prefLabel ?labelLg1 . \n" + "FILTER (lang(?labelLg1) = '"
 				+ Config.LG1 + "') . \n" + "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
@@ -94,7 +94,7 @@ public class SeriesQueries {
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n" + "}" + " ORDER BY ?id";
 	}
 
-	public static String getMultipleOrganizations(String idSeries, URI linkPredicate) {
+	public static String getMultipleOrganizations(String idSeries, IRI linkPredicate) {
 		return "SELECT ?id ?labelLg1 ?labelLg2\n" + "WHERE { \n" + "?series <" + linkPredicate + "> ?uri . \n"
 				+ "?uri dcterms:identifier  ?id . \n" + "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"

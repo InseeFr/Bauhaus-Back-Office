@@ -38,7 +38,7 @@
 		
 		<jersey.version>2.19</jersey.version>
 		<jackson.version>2.9.7</jackson.version>
-		<sesame.version>2.7.16</sesame.version>
+		<rdf4j.version>3.2.1</rdf4j.version>
 		<swagger.core.version>2.0.9</swagger.core.version>
 		<spring.version>4.3.25.RELEASE</spring.version>
 		<spring.security.version>4.2.13.RELEASE</spring.security.version>
@@ -279,34 +279,14 @@
 
 		<!-- RDF -->
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-runtime</artifactId>
-			<version>${sesame.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-			</exclusions>
+ 			<groupId>org.eclipse.rdf4j</groupId>
+  			<artifactId>rdf4j-repository-http</artifactId>
+  			 <version>${rdf4j.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.openrdf.sesame</groupId>
-			<artifactId>sesame-queryresultio-sparqljson</artifactId>
-			<version>${sesame.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-			</exclusions>
+   			<groupId>org.eclipse.rdf4j</groupId>
+    		<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
+    		<version>${rdf4j.version}</version>
 		</dependency>
 
 		<dependency>

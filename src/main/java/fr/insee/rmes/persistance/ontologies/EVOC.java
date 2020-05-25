@@ -1,9 +1,9 @@
 package fr.insee.rmes.persistance.ontologies;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 
 public class EVOC {
@@ -15,14 +15,14 @@ public class EVOC {
 	 */
 	public static final String PREFIX = "evoc";
 	
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 	
-	public static final URI NOTE_LITERAL;
+	public static final IRI NOTE_LITERAL;
 	
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		NOTE_LITERAL = f.createURI(NAMESPACE, "noteLiteral");
+		NOTE_LITERAL = f.createIRI(NAMESPACE, "noteLiteral");
 	
 	}
 	

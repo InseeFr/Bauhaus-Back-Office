@@ -10,15 +10,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -149,7 +149,7 @@ public class DocumentationsUtils extends RdfService {
 		} else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
-		URI targetUri = getTarget(sims);
+		IRI targetUri = getTarget(sims);
 
 		// Update rubrics
 		if (create) {
@@ -195,7 +195,7 @@ public class DocumentationsUtils extends RdfService {
 
 		// Find target
 		String targetId = null;
-		URI targetUri = null;
+		IRI targetUri = null;
 		try {
 			targetId = simsJson.getString("idIndicator");
 			if (!targetId.isEmpty()) {
@@ -235,7 +235,7 @@ public class DocumentationsUtils extends RdfService {
 
 		documentationPublication.publishSims(id);
 
-		URI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, id);
+		IRI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, id);
 		model.add(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
 		model.remove(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
 				graph);
@@ -253,8 +253,8 @@ public class DocumentationsUtils extends RdfService {
 	 * @return URItarget
 	 * @throws RmesException
 	 */
-	private URI getTarget(Documentation sims) throws RmesException {
-		URI target = null;
+	private IRI getTarget(Documentation sims) throws RmesException {
+		IRI target = null;
 
 		if (StringUtils.isNotEmpty(sims.getIdOperation())
 				&& famOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION, sims.getIdTarget())) {
@@ -356,9 +356,9 @@ public class DocumentationsUtils extends RdfService {
 	 * @param target
 	 * @throws RmesException
 	 */
-	private void saveRdfMetadataReport(Documentation sims, URI target, ValidationStatus state) throws RmesException {
+	private void saveRdfMetadataReport(Documentation sims, IRI target, ValidationStatus state) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
+		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, sims.getId());
 		Resource graph = RdfUtils.simsGraph(sims.getId());
 		/*Const*/
 		model.add(simsUri, RDF.TYPE, SDMX_MM.METADATA_REPORT, graph);
@@ -385,12 +385,12 @@ public class DocumentationsUtils extends RdfService {
 	private void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
 			throws RmesException {
 		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
-		URI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
+		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
 
 		for (DocumentationRubric rubric : rubrics) {
 			RangeType type = getRangeType(rubric);
-			URI predicateUri;
-			URI attributeUri;
+			IRI predicateUri;
+			IRI attributeUri;
 			try {
 				String predicate = attributesUriList.get(rubric.getIdAttribute());
 				predicateUri = RdfUtils.toURI(predicate);
@@ -414,7 +414,7 @@ public class DocumentationsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
-			URI predicateUri, URI attributeUri) throws RmesException {
+			IRI predicateUri, IRI attributeUri) throws RmesException {
 		switch (type) {
 			case DATE:
 				RdfUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getValue(), model, graph);
@@ -448,8 +448,8 @@ public class DocumentationsUtils extends RdfService {
 		}
 	}
 
-	private void addSimpleTextToModel(Model model, Resource graph, DocumentationRubric rubric, URI predicateUri,
-			URI attributeUri) {
+	private void addSimpleTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
+			IRI attributeUri) {
 		RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
 		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), Config.LG1, model, graph);
@@ -459,9 +459,9 @@ public class DocumentationsUtils extends RdfService {
 		}
 	}
 
-	private void addRichTextToModel(Model model, Resource graph, DocumentationRubric rubric, URI predicateUri,
-			URI attributeUri) throws RmesException {
-		URI textUri = RdfUtils.toURI(attributeUri.stringValue().concat("/texte"));
+	private void addRichTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
+			IRI attributeUri) throws RmesException {
+		IRI textUri = RdfUtils.toURI(attributeUri.stringValue().concat("/texte"));
 		RdfUtils.addTripleUri(attributeUri, predicateUri, textUri, model, graph);
 		RdfUtils.addTripleUri(textUri, RDF.TYPE, DCMITYPE.TEXT, model, graph);
 		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
@@ -487,7 +487,7 @@ public class DocumentationsUtils extends RdfService {
 	 * @param predicate
 	 * @return
 	 */
-	private URI getAttributeUri(String simsId, String predicate) {
+	private IRI getAttributeUri(String simsId, String predicate) {
 		String newUri = predicate.replace("/simsv2fr/attribut/", "/attribut/" + simsId + "/");
 		return RdfUtils.toURI(newUri);
 	}

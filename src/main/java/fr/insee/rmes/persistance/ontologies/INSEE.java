@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class INSEE {
 	
@@ -15,58 +15,58 @@ public class INSEE {
 	 */
 	public static final String PREFIX = "insee";
 	
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 	
-	public static final URI DISSEMINATIONSTATUS;
+	public static final IRI DISSEMINATIONSTATUS;
 	
-	public static final URI ADDITIONALMATERIAL;
-	public static final URI LEGALMATERIAL;
-	public static final URI VALIDFROM;
-	public static final URI VALIDUNTIL;
-	public static final URI SIMILARITY_NOTE;
-	public static final URI DIFFERENCE_NOTE;
+	public static final IRI ADDITIONALMATERIAL;
+	public static final IRI LEGALMATERIAL;
+	public static final IRI VALIDFROM;
+	public static final IRI VALIDUNTIL;
+	public static final IRI SIMILARITY_NOTE;
+	public static final IRI DIFFERENCE_NOTE;
 	
-	public static final URI FAMILY;
-	public static final URI OPERATION;
-	public static final URI SERIES;
-	public static final URI INDICATOR;
-	public static final URI DOCUMENT ;
+	public static final IRI FAMILY;
+	public static final IRI OPERATION;
+	public static final IRI SERIES;
+	public static final IRI INDICATOR;
+	public static final IRI DOCUMENT ;
 	
-	public static final URI DATA_COLLECTOR;
-	public static final URI GESTIONNAIRE;
+	public static final IRI DATA_COLLECTOR;
+	public static final IRI GESTIONNAIRE;
 	
 	
 	/*TEST REACT*/
-	public static final URI CONCEPT_VERSION;
-	public static final URI IS_VALIDATED;
-	public static final URI VALIDATION_STATE;
+	public static final IRI CONCEPT_VERSION;
+	public static final IRI IS_VALIDATED;
+	public static final IRI VALIDATION_STATE;
 
 	
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		DISSEMINATIONSTATUS = f.createURI(NAMESPACE, "disseminationStatus");
+		DISSEMINATIONSTATUS = f.createIRI(NAMESPACE, "disseminationStatus");
 		
-		ADDITIONALMATERIAL = f.createURI(NAMESPACE, "additionalMaterial");
-		LEGALMATERIAL = f.createURI(NAMESPACE, "legalMaterial");
-		VALIDFROM = f.createURI(NAMESPACE, "validFrom");
-		VALIDUNTIL = f.createURI(NAMESPACE, "validUntil");
-		SIMILARITY_NOTE = f.createURI(NAMESPACE, "similarityNote");
-		DIFFERENCE_NOTE = f.createURI(NAMESPACE, "differenceNote");
+		ADDITIONALMATERIAL = f.createIRI(NAMESPACE, "additionalMaterial");
+		LEGALMATERIAL = f.createIRI(NAMESPACE, "legalMaterial");
+		VALIDFROM = f.createIRI(NAMESPACE, "validFrom");
+		VALIDUNTIL = f.createIRI(NAMESPACE, "validUntil");
+		SIMILARITY_NOTE = f.createIRI(NAMESPACE, "similarityNote");
+		DIFFERENCE_NOTE = f.createIRI(NAMESPACE, "differenceNote");
 		
-		CONCEPT_VERSION = f.createURI(NAMESPACE, "conceptVersion");
-		IS_VALIDATED = f.createURI(NAMESPACE, "isValidated");
+		CONCEPT_VERSION = f.createIRI(NAMESPACE, "conceptVersion");
+		IS_VALIDATED = f.createIRI(NAMESPACE, "isValidated");
 
-		VALIDATION_STATE = f.createURI(NAMESPACE, "validationState");
+		VALIDATION_STATE = f.createIRI(NAMESPACE, "validationState");
 
-		FAMILY = f.createURI(NAMESPACE,"StatisticalOperationFamily");
-		OPERATION = f.createURI(NAMESPACE,"StatisticalOperation");
-		SERIES = f.createURI(NAMESPACE,"StatisticalOperationSeries");
-		DOCUMENT = f.createURI(NAMESPACE,"document");
-		INDICATOR = f.createURI(NAMESPACE,"StatisticalIndicator");
+		FAMILY = f.createIRI(NAMESPACE,"StatisticalOperationFamily");
+		OPERATION = f.createIRI(NAMESPACE,"StatisticalOperation");
+		SERIES = f.createIRI(NAMESPACE,"StatisticalOperationSeries");
+		DOCUMENT = f.createIRI(NAMESPACE,"document");
+		INDICATOR = f.createIRI(NAMESPACE,"StatisticalIndicator");
 
-		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");
-		GESTIONNAIRE = f.createURI(NAMESPACE,"gestionnaire");
+		DATA_COLLECTOR = f.createIRI(NAMESPACE,"dataCollector");
+		GESTIONNAIRE = f.createIRI(NAMESPACE,"gestionnaire");
 	}
 	
 

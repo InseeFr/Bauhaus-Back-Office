@@ -6,23 +6,22 @@ import java.util.List;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.SKOS;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
@@ -123,7 +122,7 @@ public class RepositoryGestion extends RepositoryUtils {
 			Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
-			statements = con.getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
+			statements = con. getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
 		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure get MetadataReport statements : " + object);
 		}
@@ -138,23 +137,23 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public void loadConcept(URI concept, Model model, List<List<URI>> notesToDeleteAndUpdate)
+	public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate)
 			throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			// notes to delete
-			for (URI note : notesToDeleteAndUpdate.get(0)) {
+			for (IRI note : notesToDeleteAndUpdate.get(0)) {
 				conn.remove(note, null, null);
 			}
 			// notes to update
-			for (URI note : notesToDeleteAndUpdate.get(1)) {
+			for (IRI note : notesToDeleteAndUpdate.get(1)) {
 				conn.remove(note, EVOC.NOTE_LITERAL, null);
 			}
 			// links to delete
 			clearConceptLinks(concept, conn);
 
 			loadSimpleObject(concept, model, conn);
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure load concept : " + concept);
 
 		}
@@ -166,7 +165,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @param conn : can be null - initialized by the method
 	 * @throws RmesException
 	 */
-	public void loadSimpleObject(URI object, Model model, RepositoryConnection conn) throws RmesException {
+	public void loadSimpleObject(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
 				conn = REPOSITORY_GESTION.getConnection();
@@ -174,7 +173,7 @@ public class RepositoryGestion extends RepositoryUtils {
 			conn.remove(object, null, null);
 			conn.add(model);
 			conn.close();
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error(FAILURE_LOAD_OBJECT , object);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_LOAD_OBJECT + object);
@@ -196,7 +195,7 @@ public class RepositoryGestion extends RepositoryUtils {
 			conn.clear(graph);
 			conn.add(model);
 			conn.close();
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error(FAILURE_REPLACE_GRAPH, graph);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
@@ -204,53 +203,53 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public void loadObjectWithReplaceLinks(URI object, Model model) throws RmesException {
+	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			clearReplaceLinks(object, conn);
 			loadSimpleObject(object, model, conn);
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			throwsRmesException(e, FAILURE_LOAD_OBJECT + object);
 		}
 	}
 
-	public void objectsValidation(List<URI> itemToValidateList, Model model) throws RmesException {
+	public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
-			for (URI item : itemToValidateList) {
+			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
 			}
 			conn.add(model);
 			conn.close();
-		} catch (OpenRDFException e) {
-			throwsRmesException(e, "Failure validation : " + itemToValidateList);
+		} catch (RepositoryException e) {
+			throwsRmesException(e, "Failure validation : " + collectionsToValidateList);
 		}
 	}
 
-	public void objectValidation(URI ressourceURI, Model model) throws RmesException {
+	public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
 			conn.add(model);
 			conn.close();
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure validation : " + ressourceURI);
 		}
 	}
 
 	public void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
-		List<URI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
+		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER);
 		getStatementsAndRemove(concept, conn, typeOfLink);
 	}
 
 	public void clearReplaceLinks(Resource object, RepositoryConnection conn) throws RmesException {
-		List<URI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
+		List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
 		getStatementsAndRemove(object, conn, typeOfLink);
 	}
 
-	private static void getStatementsAndRemove(Resource object, RepositoryConnection conn, List<URI> typeOfLink)
+	private static void getStatementsAndRemove(Resource object, RepositoryConnection conn, List<IRI> typeOfLink)
 			throws RmesException {
-		for (URI predicat : typeOfLink) {
+		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements = null;
 			try {
 				statements = conn.getStatements(null, predicat, object, false);
@@ -303,13 +302,13 @@ public class RepositoryGestion extends RepositoryUtils {
 					logger.error("RepositoryGestion Error {}", e.getMessage());
 				}
 			});
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure deletion : " + dsd);
 		}
 	}
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
-		List<URI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
+		List<IRI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
 		RepositoryConnection conn = null;
 		try {
 			conn = REPOSITORY_GESTION.getConnection();
@@ -322,9 +321,9 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	}
 
-	private static void getHierarchicalOperationLinksModel(Resource object, Model model, List<URI> typeOfLink,
+	private static void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink,
 			RepositoryConnection conn) throws RmesException {
-		for (URI predicat : typeOfLink) {
+		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements;
 			try {
 				statements = conn.getStatements(null, predicat, object, false);
@@ -341,8 +340,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	}
 
-	private static void addStatementToModel(Model model, RepositoryResult<Statement> statements)
-			throws RepositoryException {
+	private static void addStatementToModel(Model model, RepositoryResult<Statement> statements) {
 		while (statements.hasNext()) {
 			Statement st = statements.next();
 			model.add(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());

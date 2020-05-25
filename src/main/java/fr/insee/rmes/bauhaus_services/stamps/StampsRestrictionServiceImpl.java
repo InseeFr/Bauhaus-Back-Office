@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services.stamps;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.URI;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private static final String OWNER = "owner";
 
 	@Override
-	public boolean isConceptOrCollectionOwner(URI uri) throws RmesException {
+	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
 		User user = getUser();
 		if (isAdmin(user)) {
 			return true;
@@ -42,7 +42,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	@Override
-	public boolean isConceptsOrCollectionsOwner(List<URI> uris) throws RmesException {
+	public boolean isConceptsOrCollectionsOwner(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		if (isAdmin(user)) {
 			return true;
@@ -153,7 +153,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isCnis;
 	}
 
-	private boolean isConceptOwner(List<URI> uris) throws RmesException {
+	private boolean isConceptOwner(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
@@ -168,7 +168,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isConceptOwner;
 	}
 
-	private boolean isConceptManager(List<URI> uris) throws RmesException {
+	private boolean isConceptManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
@@ -183,8 +183,8 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isConceptManager;
 	}
 
-	private boolean isSeriesManager(List<URI> uris) throws RmesException {
-		for (URI uri : uris) {
+	private boolean isSeriesManager(List<IRI> uris) throws RmesException {
+		for (IRI uri : uris) {
 			if (!isSeriesManager(uri)) {
 				return false;
 			}
@@ -192,7 +192,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return true;
 	}
 
-	private boolean isSeriesManager(URI uri) throws RmesException {
+	private boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + uri.toString() + "> ");
@@ -207,7 +207,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isSeriesManager;
 	}
 
-	private boolean isIndicatorManager(List<URI> uris) throws RmesException {
+	private boolean isIndicatorManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
@@ -224,39 +224,39 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isIndicatorManager;
 	}
 
-	private boolean canModifyOrValidateIndicator(List<URI> uris) throws RmesException {
+	private boolean canModifyOrValidateIndicator(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || (isIndicatorManager(uris) && isIndicatorContributor(user)));
 	}
 
 	@Override
-	public boolean canModifyIndicator(List<URI> uris) throws RmesException {
+	public boolean canModifyIndicator(List<IRI> uris) throws RmesException {
 		return canModifyOrValidateIndicator(uris);
 	}
 
 	@Override
-	public boolean canValidateIndicator(List<URI> uris) throws RmesException {
+	public boolean canValidateIndicator(List<IRI> uris) throws RmesException {
 		return canModifyOrValidateIndicator(uris);
 	}
 
 	@Override
-	public boolean canModifyIndicator(URI uri) throws RmesException {
-		List<URI> uris = new ArrayList<>();
+	public boolean canModifyIndicator(IRI uri) throws RmesException {
+		List<IRI> uris = new ArrayList<>();
 		uris.add(uri);
 		return canModifyIndicator(uris);
 	}
 
 	@Override
-	public boolean canValidateIndicator(URI uri) throws RmesException {
-		List<URI> uris = new ArrayList<>();
+	public boolean canValidateIndicator(IRI uri) throws RmesException {
+		List<IRI> uris = new ArrayList<>();
 		uris.add(uri);
 		return canValidateIndicator(uris);
 	}
 
 	@Override
-	public boolean canModifySims(URI targetURI) throws RmesException {
+	public boolean canModifySims(IRI targetURI) throws RmesException {
 		User user = getUser();
-		List<URI> uris = new ArrayList<>();
+		List<IRI> uris = new ArrayList<>();
 		uris.add(targetURI);
 		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uris) && isSeriesContributor(user))
 				|| (isIndicatorManager(uris) && isIndicatorContributor(user)));
@@ -289,65 +289,65 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	@Override
-	public boolean canCreateOperation(URI seriesURI) throws RmesException {
+	public boolean canCreateOperation(IRI seriesURI) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || (isSeriesManager(seriesURI) && isSeriesContributor(user)));
 	}
 
 	@Override
-	public boolean canCreateSims(URI targetURI) throws RmesException {
-		List<URI> uris = new ArrayList<>();
+	public boolean canCreateSims(IRI targetURI) throws RmesException {
+		List<IRI> uris = new ArrayList<>();
 		uris.add(targetURI);
 		return canCreateSims(uris);
 	}
 
 	@Override
-	public boolean canCreateSims(List<URI> uris) throws RmesException {
+	public boolean canCreateSims(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user))
 				|| (isIndicatorManager(uris) && isIndicatorContributor(user)));
 	}
 
 	@Override
-	public boolean canModifyConcept(URI uri) throws RmesException {
+	public boolean canModifyConcept(IRI uri) throws RmesException {
 		User user = getUser();
-		List<URI> uris = new ArrayList<>();
+		List<IRI> uris = new ArrayList<>();
 		uris.add(uri);
 		return (isAdmin(user) || isConceptsContributor(user) || (isConceptManager(uris) && isConceptContributor(user))
 				|| (isConceptOwner(uris)) && isConceptCreator(user));
 	}
 
 	@Override
-	public boolean canModifySeries(URI uri) throws RmesException {
+	public boolean canModifySeries(IRI uri) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uri) && isSeriesContributor(user)));
 	}
 
 	@Override
-	public boolean canModifySeries(List<URI> uris) throws RmesException {
+	public boolean canModifySeries(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
 	}
 
 	@Override
-	public boolean canModifyOperation(URI seriesURI) throws RmesException {
+	public boolean canModifyOperation(IRI seriesURI) throws RmesException {
 		return canModifySeries(seriesURI);
 	}
 
 	@Override
-	public boolean canValidateSeries(URI uri) throws RmesException {
+	public boolean canValidateSeries(IRI uri) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || (isSeriesManager(uri) && isSeriesContributor(user)));
 	}
 
 	@Override
-	public boolean canValidateSeries(List<URI> uris) throws RmesException {
+	public boolean canValidateSeries(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
 	}
 
 	@Override
-	public boolean canValidateOperation(URI seriesURI) throws RmesException {
+	public boolean canValidateOperation(IRI seriesURI) throws RmesException {
 		return canValidateSeries(seriesURI);
 	}
 
