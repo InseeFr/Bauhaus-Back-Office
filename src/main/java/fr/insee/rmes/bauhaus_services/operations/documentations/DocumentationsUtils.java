@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +58,8 @@ import fr.insee.rmes.utils.DateParser;
 @Component
 public class DocumentationsUtils extends RdfService {
 
+	private static final String VALUE = "value";
+
 	private static final String HAS_DOC = "hasDoc";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
@@ -97,6 +101,8 @@ public class DocumentationsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 	public JSONObject getDocumentationByIdSims(String idSims) throws RmesException {
+		
+		
 		// Get general informations
 		JSONObject doc = repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
 		if (doc.length() == 0) {
@@ -108,20 +114,60 @@ public class DocumentationsUtils extends RdfService {
 		JSONArray docRubrics = repoGestion
 				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		if (docRubrics.length() != 0) {
-			for (int i = 0; i < docRubrics.length(); i++) {
-				JSONObject rubric = docRubrics.getJSONObject(i);
-				if (rubric.has(HAS_DOC) && rubric.getBoolean(HAS_DOC)) {
-					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-					rubric.put("documents", listDoc);
-				}
+			docRubrics = clearRubrics(idSims,  docRubrics);
+			doc.put("rubrics", docRubrics);
+		}
+		return doc;
+	}
+
+	/**
+	 * Get documents if exist, format date and format list of values for codelist
+	 * @param idSims
+	 * @param docRubrics
+	 * @return
+	 * @throws RmesException
+	 */
+	private JSONArray clearRubrics(String idSims,  JSONArray docRubrics) throws RmesException {
+		Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
+
+		for (int i = docRubrics.length()-1; i >= 0 ; i--) {
+			JSONObject rubric = docRubrics.getJSONObject(i);
+			
+			//Get documents
+			if (rubric.has(HAS_DOC) ) {
+					if (rubric.getBoolean(HAS_DOC)) {
+						JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
+						rubric.put("documents", listDoc);
+					}
 				rubric.remove(HAS_DOC);
-				if (rubric.get("rangeType").equals("DATE")) {
-					rubric.put("value", DateParser.getDate(rubric.getString("value")));
+			}
+			
+			//Format date
+			else if (rubric.get("rangeType").equals(RangeType.DATE)) {
+				rubric.put(VALUE, DateParser.getDate(rubric.getString(VALUE)));
+			}
+			
+			//Format codelist with multiple value
+			else if (rubric.has("maxOccurs")) {
+				String newValue = rubric.getString(VALUE);
+				String attribute = rubric.getString("idAttribute");
+				
+				if (tempMultipleCodeList.containsKey(attribute)) {
+					JSONObject tempObject = tempMultipleCodeList.get(attribute);
+					tempObject.accumulate(VALUE, newValue);
+					tempMultipleCodeList.replace(attribute, tempObject);
+				}else {
+					List<String> listValue = new ArrayList<>();
+					listValue.add(newValue);
+					tempMultipleCodeList.put(attribute, rubric);
 				}
+				docRubrics.remove(i);		
 			}
 		}
-		doc.put("rubrics", docRubrics);
-		return doc;
+		if (tempMultipleCodeList.size() != 0) {
+			tempMultipleCodeList.forEach((k,v) -> docRubrics.put(v));
+		}
+		return docRubrics;
 	}
 
 	/**
@@ -131,6 +177,7 @@ public class DocumentationsUtils extends RdfService {
 	 * @throws RmesException 
 	 */
 	public String setMetadataReport(String id, String body, boolean create) throws RmesException {
+		//TODO maxOccurs
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Documentation sims = new Documentation();
@@ -422,7 +469,7 @@ public class DocumentationsUtils extends RdfService {
 			case CODELIST:
 				String codeUri = codeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
 				if (codeUri != null) {
-					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(codeUri), model, graph);
+					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(codeUri), model, graph);//TODO
 				}
 				break;
 			case RICHTEXT:

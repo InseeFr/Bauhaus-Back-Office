@@ -55,15 +55,21 @@ public class XhtmlToMarkdownUtils {
 		jsonObj.keySet().forEach(keyStr ->
 		{
 			Object keyvalue = jsonObj.get(keyStr);
-			if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
-			else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
-			else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+			if (keyvalue instanceof JSONObject  ) {
+				convertJSONObject((JSONObject)keyvalue);
+			} else if (keyvalue instanceof JSONArray ) {
+				convertJSONArray((JSONArray)keyvalue);
+			} else {
+				jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+			}
 		});
 	}
 
 	public static void convertJSONArray(JSONArray jsonArr) {
 		for (int i = 0; i < jsonArr.length(); i++) {
-			convertJSONObject(jsonArr.getJSONObject(i));
+			if (jsonArr.get(i) instanceof JSONObject) {
+				convertJSONObject(jsonArr.getJSONObject(i));
+			}
 		}
 	}
 
