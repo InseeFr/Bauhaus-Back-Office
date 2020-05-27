@@ -85,15 +85,12 @@ public class VarBookExportBuilder {
 	}
 
 	private Map<String, Node> listReferenceTargets(Document xmlInput) {
-		Map<String, Node> references = new HashMap<>();// TODO remove unused
 		Map<String, Node> targets = new HashMap<>();
 		NodeList ids = xmlInput.getElementsByTagName("r:ID");
 		for (int i = 0; i < ids.getLength(); i++) {
 			Node idNode = ids.item(i);
 			Node parentNode = idNode.getParentNode();
-			if (parentNode.getNodeName().endsWith("Reference")) {
-				references.put(idNode.getTextContent(), parentNode);
-			} else {
+			if (!parentNode.getNodeName().endsWith("Reference")) {
 				targets.put(idNode.getTextContent(), parentNode);
 			}
 		}

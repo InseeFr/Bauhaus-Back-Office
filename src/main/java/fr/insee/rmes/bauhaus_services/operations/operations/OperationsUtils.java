@@ -174,9 +174,6 @@ public class OperationsUtils  extends RdfService {
 	}
 
 	private IRI getSeriesUri(String id){
-		//FIXME check not needed
-		/*JSONObject jsonOperation = getOperationById(id);
-		FIXME check not needed String idJson = jsonOperation.getJSONObject("series").getString(Constants.ID);*/
 		return RdfUtils.objectIRI(ObjectType.SERIES, id);
 	}
 

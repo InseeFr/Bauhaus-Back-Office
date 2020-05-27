@@ -22,7 +22,8 @@ import fr.insee.rmes.persistance.sparql_queries.operations.documentations.Docume
 @Component
 public class MetadataStructureDefUtils  extends RdfService {
 	
-		final static Logger logger = LogManager.getLogger(MetadataStructureDefUtils.class);
+		private static final String RANGE = "range";
+		static final Logger logger = LogManager.getLogger(MetadataStructureDefUtils.class);
 
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
@@ -35,11 +36,11 @@ public class MetadataStructureDefUtils  extends RdfService {
 	
 
 	public void transformRangeType(JSONObject mas) throws RmesException {
-		if (!mas.has("range")) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", "");}
-		String rangeUri = mas.getString("range");
+		if (!mas.has(RANGE)) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", "");}
+		String rangeUri = mas.getString(RANGE);
 		RangeType type = RangeType.getEnumByRdfType(RdfUtils.toURI(rangeUri));
 		mas.put("rangeType", type.getJsonType());
-		mas.remove("range");
+		mas.remove(RANGE);
 
 		switch (type) {
 			case CODELIST:
