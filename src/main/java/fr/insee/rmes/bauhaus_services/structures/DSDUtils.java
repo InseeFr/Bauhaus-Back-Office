@@ -2,9 +2,16 @@ package fr.insee.rmes.bauhaus_services.structures;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.model.structures.StructureComponent;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.XSD;
+import fr.insee.rmes.persistance.sparql_queries.structures.DSDQueries;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.openrdf.model.Model;
 import org.openrdf.model.Resource;
 import org.openrdf.model.URI;
@@ -30,8 +37,27 @@ import fr.insee.rmes.persistance.ontologies.QB;
 public class DSDUtils extends RdfService {
 	
 	static final Logger logger = LogManager.getLogger(DSDUtils.class);
-	
-	public String setDSD(String body) throws RmesException {
+
+    public static String formatComponent(RepositoryGestion repoGestion, String id, JSONObject response) throws RmesException {
+    	response.put("id", id);
+		addCodeListRange(response);
+		addStructures(response, id, repoGestion);
+    	return response.toString();
+
+    }
+
+	private static void addStructures(JSONObject response, String id, RepositoryGestion repoGestion) throws RmesException {
+		JSONArray structures = repoGestion.getResponseAsArray(DSDQueries.getStructuresForComponent(id));
+		response.put("structures", structures);
+	}
+
+	private static void addCodeListRange(JSONObject response) {
+    	if(response.has("codeList")){
+    		response.put("range", INSEE.CODELIST.toString());
+		}
+	}
+
+    public String setDSD(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

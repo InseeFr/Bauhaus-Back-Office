@@ -1,5 +1,4 @@
 package fr.insee.rmes.bauhaus_services;
-
 import fr.insee.rmes.exceptions.RmesException;
 
 public interface DSDService {
@@ -17,5 +16,11 @@ public interface DSDService {
 	public String setDSD(String body) throws RmesException;
 	
 	public String setDSD(String id, String body) throws RmesException;
-	
+
+	public String getComponentsForSearch() throws RmesException;
+
+    public String getComponents() throws RmesException;
+
+	public String getComponent(String id) throws RmesException;
+
 }

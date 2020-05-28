@@ -30,7 +30,7 @@ public class XSD {
 	public static final URI STRING;
 	
 	public static final URI DATETIME;
-	
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 

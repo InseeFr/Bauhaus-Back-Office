@@ -41,7 +41,10 @@ public class INSEE {
 	public static final URI IS_VALIDATED;
 	public static final URI VALIDATION_STATE;
 
-	
+
+	public static final URI IDENTIFIANT_METIER;
+	public static final URI CODELIST;
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
@@ -67,7 +70,9 @@ public class INSEE {
 
 		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");
 		GESTIONNAIRE = f.createURI(NAMESPACE,"gestionnaire");
-	}
-	
 
+		// Structures
+		IDENTIFIANT_METIER = f.createURI(NAMESPACE,"identifiantMetier");
+		CODELIST = f.createURI(NAMESPACE, "codeList");
+	}
 }
