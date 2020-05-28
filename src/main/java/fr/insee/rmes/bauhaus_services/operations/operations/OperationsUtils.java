@@ -23,7 +23,6 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -43,6 +42,9 @@ public class OperationsUtils  extends RdfService {
 	@Autowired
 	static FamOpeSerUtils famOpeSerUtils;
 
+	@Autowired
+	OperationPublication operationPublication;
+	
 	public JSONObject getOperationById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
@@ -158,7 +160,7 @@ public class OperationsUtils  extends RdfService {
 		}
 
 		//PUBLISH
-		OperationPublication.publishOperation(id);
+		operationPublication.publishOperation(id);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
 		URI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, id);
@@ -166,7 +168,7 @@ public class OperationsUtils  extends RdfService {
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
 		logger.info("Validate operation : {}", operationURI);
-		RepositoryGestion.objectValidation(operationURI, model);
+		repoGestion.objectValidation(operationURI, model);
 
 		return id;
 	}

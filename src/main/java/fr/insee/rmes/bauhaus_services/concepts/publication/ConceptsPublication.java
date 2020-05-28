@@ -15,13 +15,12 @@ import org.openrdf.model.vocabulary.SKOS;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
@@ -29,7 +28,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 
-@Component
+@Repository
 public class ConceptsPublication extends RdfService{
 
 
@@ -47,7 +46,7 @@ public class ConceptsPublication extends RdfService{
 			Resource concept = RdfUtils.conceptIRI(conceptId);
 
 			RepositoryConnection con =PublicationUtils.getRepositoryConnectionGestion();
-			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, concept);
+			RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
 			String[] links = {"inScheme","disseminationStatus","references","replaces","related"};
@@ -103,7 +102,7 @@ public class ConceptsPublication extends RdfService{
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 			
-			RepositoryGestion.closeStatements(statements);
+			repoGestion.closeStatements(statements);
 			publishMemberLinks(concept, model, con);
 			
 			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
@@ -132,8 +131,8 @@ public class ConceptsPublication extends RdfService{
 		}
 	}
 
-	public static void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, note);
+	public void publishExplanatoryNotes(RepositoryConnection con, Resource note, Model model) throws RmesException {
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, note);
 		try {
 			String lg = "";
 			String xhtml = "";
@@ -170,7 +169,7 @@ public class ConceptsPublication extends RdfService{
 		}
 	}
 
-	public static void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
+	public void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
@@ -188,7 +187,7 @@ public class ConceptsPublication extends RdfService{
 		}
 	}
 
-	public static void publishCollection(JSONArray collectionsToValidate) throws RmesException {
+	public void publishCollection(JSONArray collectionsToValidate) throws RmesException {
 
 		for (int i = 0; i < collectionsToValidate.length(); ++i) {
 			String collectionId = collectionsToValidate.getString(i);
@@ -197,7 +196,7 @@ public class ConceptsPublication extends RdfService{
 			//TODO uncomment when we can notify...
 			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
 			RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
-			RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, collection);
+			RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection);
 
 			try {
 				try {
@@ -222,7 +221,7 @@ public class ConceptsPublication extends RdfService{
 					throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 				}
 			} finally {
-				RepositoryGestion.closeStatements(statements);
+				repoGestion.closeStatements(statements);
 			}
 			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
 			RepositoryPublication.publishResource(collectionToPublish, model, "collection");

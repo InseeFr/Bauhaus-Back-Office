@@ -28,7 +28,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -53,6 +52,9 @@ public class IndicatorsUtils  extends RdfService {
 
 	@Autowired
 	OrganizationsService organizationsService;
+	
+	@Autowired
+	IndicatorPublication indicatorPublication;
 
 
 	public JSONObject getIndicatorById(String id) throws RmesException{
@@ -238,7 +240,7 @@ public class IndicatorsUtils  extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
 		}
 
-		IndicatorPublication.publishIndicator(id);
+		indicatorPublication.publishIndicator(id);
 
 		URI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
 		model.add(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.productsGraph());
@@ -246,7 +248,7 @@ public class IndicatorsUtils  extends RdfService {
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.productsGraph());
 		logger.info("Validate indicator : {}" , indicatorURI);
 
-		RepositoryGestion.objectValidation(indicatorURI, model);
+		repoGestion.objectValidation(indicatorURI, model);
 
 		return id;
 	}

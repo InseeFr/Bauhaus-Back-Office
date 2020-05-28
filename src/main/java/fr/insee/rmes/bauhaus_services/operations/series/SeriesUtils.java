@@ -30,7 +30,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -56,6 +55,9 @@ public class SeriesUtils  extends RdfService {
 	
 	@Autowired
 	FamOpeSerUtils famOpeSerUtils;
+	
+	@Autowired
+	SeriesPublication seriesPublication;
 
 	static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
@@ -337,8 +339,7 @@ public class SeriesUtils  extends RdfService {
 
 	public String setSeriesValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
-
-		SeriesPublication.publishSeries(id);
+		seriesPublication.publishSeries(id);
 
 		URI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
 		if(!stampsRestrictionsService.canValidateSeries(seriesURI)) {
@@ -351,7 +352,7 @@ public class SeriesUtils  extends RdfService {
 		model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
 		logger.info("Validate series : {}", seriesURI);
 
-		RepositoryGestion.objectValidation(seriesURI, model);
+		repoGestion.objectValidation(seriesURI, model);
 
 		return id;
 	}

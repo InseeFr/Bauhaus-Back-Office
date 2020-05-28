@@ -32,7 +32,7 @@ public class KeycloakUserDetailsAuthenticationProvider extends KeycloakAuthentic
         user.setStamp((String) otherClaims.getOrDefault("timbre", "default stamp"));
         
         String userId = token.getAccount().getKeycloakSecurityContext().getToken().getPreferredUsername();
-        log.info(String.format("User %s connected", userId));
+        log.info("User {} connected", userId);
         
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 		user.getRoles().forEach(r -> authorities.add(new SimpleGrantedAuthority((String) r)));

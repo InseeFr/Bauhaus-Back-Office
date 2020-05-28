@@ -15,6 +15,7 @@ import org.openrdf.model.vocabulary.DC;
 import org.openrdf.model.vocabulary.DCTERMS;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -35,6 +35,9 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 public class CollectionsUtils extends RdfService{
 	
 	static final Logger logger = LogManager.getLogger(CollectionsUtils.class);
+	
+	@Autowired
+	ConceptsPublication conceptsPublication;
 	
 	/**
 	 * Collections
@@ -121,8 +124,8 @@ public class CollectionsUtils extends RdfService{
 		if (!stampsRestrictionsService.isConceptsOrCollectionsOwner(collectionsToValidateList)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_VALIDATION_RIGHTS_DENIED,collectionsToValidate);
 		}
-		RepositoryGestion.objectsValidation(collectionsToValidateList, model);
-		ConceptsPublication.publishCollection(collectionsToValidate);
+		repoGestion.objectsValidation(collectionsToValidateList, model);
+		conceptsPublication.publishCollection(collectionsToValidate);
 	}
 
 }

@@ -49,7 +49,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @ApiResponse(responseCode = "500", description = "Internal server error") })
 public class ClassificationsResources {
 
-	final static Logger logger = LogManager.getLogger(ClassificationsResources.class);
+	static final Logger logger = LogManager.getLogger(ClassificationsResources.class);
 
 	@Autowired
 	ClassificationsService classificationsService;

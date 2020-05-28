@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.DSD;
@@ -84,7 +83,7 @@ public class DSDUtils extends RdfService {
 		}
 		String dsdId = dsd.getId().replace(" ", "-").toLowerCase();
 		URI dsdUri = RdfUtils.dsdIRI(dsdId);
-		RepositoryGestion.clearDSDNodeAndComponents(dsdUri);
+		repoGestion.clearDSDNodeAndComponents(dsdUri);
 		createRdfDSD(dsd);
 		logger.info("Update DSD : {} - {}" , dsd.getId() , dsd.getLabelLg1());
 		return dsdId;

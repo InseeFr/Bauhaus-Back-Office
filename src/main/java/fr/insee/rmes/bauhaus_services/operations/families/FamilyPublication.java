@@ -8,11 +8,12 @@ import org.openrdf.model.impl.LinkedHashModel;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
+import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -20,17 +21,18 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
-public class FamilyPublication {
+@Repository
+public class FamilyPublication extends RdfService {
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	public static void publishFamily(String familyId) throws RmesException {
+	public void publishFamily(String familyId) throws RmesException {
 		
 		Model model = new LinkedHashModel();
 		Resource family = RdfUtils.familyIRI(familyId);
 		//TODO notify...
 		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
-		RepositoryResult<Statement> statements = RepositoryGestion.getStatements(con, family);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, family);
 
 		try {	
 			try {
@@ -61,7 +63,7 @@ public class FamilyPublication {
 			}
 		
 		} finally {
-			RepositoryGestion.closeStatements(statements);
+			repoGestion.closeStatements(statements);
 		}
 		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
 		RepositoryPublication.publishResource(familyToPublishRessource, model, "family");
