@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.structures;
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.model.structures.StructureComponent;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.XSD;
