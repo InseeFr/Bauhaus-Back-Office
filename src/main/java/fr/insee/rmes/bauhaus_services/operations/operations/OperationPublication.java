@@ -32,15 +32,16 @@ public class OperationPublication extends RdfService{
 	
 	@Autowired
 	static FamOpeSerUtils famOpeSerUtils;
+	
+	@Autowired
+	static OperationsUtils operationsUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
-	String[] ignoredAttrs = { "isValidated", "changeNote", "creator", "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
 
 	public void publishOperation(String operationId) throws RmesException {
-		OperationsUtils operationsUtils = new OperationsUtils();
 		Model model = new LinkedHashModel();
-		String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
 
 		Resource operation = RdfUtils.operationIRI(operationId);
 		JSONObject operationJson = operationsUtils.getOperationById(operationId);
@@ -94,7 +95,7 @@ public class OperationPublication extends RdfService{
 	}
 
 	private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
-			throws RmesException, RepositoryException {
+			throws RmesException {
 		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation);
 
 		while (hasPartStatements.hasNext()) {
