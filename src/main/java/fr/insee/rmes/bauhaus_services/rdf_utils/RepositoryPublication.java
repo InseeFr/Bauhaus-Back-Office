@@ -79,7 +79,7 @@ public class RepositoryPublication extends RepositoryUtils{
 	 * @throws JSONException 
 	 */
 	public static Boolean getResponseAsBoolean(String query) throws  RmesException {
-		return getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
+		return getResponseForAskQuery(query, REPOSITORY_PUBLICATION);
 	}
 	
 	/**

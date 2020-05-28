@@ -95,7 +95,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws JSONException 
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
-		return getResponseAsBoolean(query, REPOSITORY_GESTION);
+		return getResponseForAskQuery(query, REPOSITORY_GESTION);
 	}
 
 	public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
