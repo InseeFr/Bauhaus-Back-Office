@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class SCHEMA {
 	
@@ -15,14 +15,14 @@ public class SCHEMA {
 	 */
 	public static final String PREFIX = "schema";
 	
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 	
-	public static final URI URL;
+	public static final IRI URL;
 		
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		URL = f.createURI(NAMESPACE, "url");
+		URL = f.createIRI(NAMESPACE, "url");
 	}
 	
 

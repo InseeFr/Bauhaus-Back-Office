@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class ORG {
 	/**
@@ -20,7 +20,7 @@ public class ORG {
 	/**
 	 * An immutable {@link Namespace} constant that represents the XKOS namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 
 	/* OWL classes */
@@ -28,36 +28,36 @@ public class ORG {
 	/**
 	 * The org:unitOf class
 	 */
-	public static final URI UNIT_OF;
+	public static final IRI UNIT_OF;
 
 	/**
 	 * The org:hasUnit class
 	 */
-	public static final URI HAS_UNIT;
+	public static final IRI HAS_UNIT;
 
 	/**
 	 * The org:reportsTo class
 	 */
-	public static final URI REPORTS_TO;
+	public static final IRI REPORTS_TO;
 
 	/**
 	 * The org:linkedTo class
 	 */
-	public static final URI LINKED_TO;
+	public static final IRI LINKED_TO;
 
-	public static final URI ORGANIZATION;
-	public static final URI ORGANIZATION_UNIT;
+	public static final IRI ORGANIZATION;
+	public static final IRI ORGANIZATION_UNIT;
 
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		UNIT_OF = f.createURI(NAMESPACE, "unitOf");
-		HAS_UNIT = f.createURI(NAMESPACE, "hasUnit");
-		REPORTS_TO = f.createURI(NAMESPACE, "reportsTo");
-		LINKED_TO = f.createURI(NAMESPACE, "linkedTo");
+		UNIT_OF = f.createIRI(NAMESPACE, "unitOf");
+		HAS_UNIT = f.createIRI(NAMESPACE, "hasUnit");
+		REPORTS_TO = f.createIRI(NAMESPACE, "reportsTo");
+		LINKED_TO = f.createIRI(NAMESPACE, "linkedTo");
 		 
-		ORGANIZATION = f.createURI(NAMESPACE, "Organization");
-		ORGANIZATION_UNIT = f.createURI(NAMESPACE, "OrganizationUnit");
+		ORGANIZATION = f.createIRI(NAMESPACE, "Organization");
+		ORGANIZATION_UNIT = f.createIRI(NAMESPACE, "OrganizationUnit");
 	}
 
 }
