@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
@@ -28,10 +29,13 @@ import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.DocumentBuilders;
+import fr.insee.rmes.utils.StringUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
 public class VarBookExportBuilder {
+
+	private static final String REFERENCE = "Reference";
 
 	static final Logger logger = LogManager.getLogger(VarBookExportBuilder.class);
 
@@ -65,9 +69,7 @@ public class VarBookExportBuilder {
 		Node root = alls.item(0);
 		Document xmlOutput = null;
 		try {
-			DocumentBuilder builder = DocumentBuilders.createSaferDocumentBuilder(factory -> {
-			    factory.isIgnoringElementContentWhitespace();
-			});
+			DocumentBuilder builder = DocumentBuilders.createSaferDocumentBuilder(DocumentBuilderFactory::isIgnoringElementContentWhitespace);
 			xmlOutput = builder.newDocument();
 			
 		} catch (ParserConfigurationException e) {
@@ -90,7 +92,7 @@ public class VarBookExportBuilder {
 		for (int i = 0; i < ids.getLength(); i++) {
 			Node idNode = ids.item(i);
 			Node parentNode = idNode.getParentNode();
-			if (!parentNode.getNodeName().endsWith("Reference")) {
+			if (!parentNode.getNodeName().endsWith(REFERENCE)) {
 				targets.put(idNode.getTextContent(), parentNode);
 			}
 		}
@@ -103,35 +105,44 @@ public class VarBookExportBuilder {
 		if (node.getNodeName().contains("BasedOnObject")) {
 			node.getParentNode().removeChild(node);
 		} else {// Only for Node != BasedOnObject
-			if (node.getNodeName().contains(":")) {
-				document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
-			}
-			int nbAtt = 0;
-			while (node.getAttributes().getLength() > nbAtt) {
-				Node att = node.getAttributes().item(nbAtt);
-				if (att.getNodeName().contains("lang") || att.getNodeName().contains("Length")
-						|| att.getNodeName().contains("regExp") || att.getNodeName().contains("blank")
-						|| att.getNodeName().contains("scale")) {
-					document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
-					nbAtt++;
-				} else {
-					node.getAttributes().removeNamedItem(att.getNodeName());
-				}
-			}
+			removeNamespaces(node, document);
+			rename(node, document);
+			dereference(node, targets, document);
+		}
+	}
 
-			// Dereference
-			NodeList nodeList = node.getChildNodes();
-			for (int i = 0; i < nodeList.getLength(); i++) {
-				Node childNode = nodeList.item(i);
-				if (node.getNodeName().endsWith("Reference") && childNode.getNodeName().endsWith("ID")) {
-					Node targetNode = document.importNode(targets.get(childNode.getTextContent()), true);
-					node.getParentNode().replaceChild(targetNode, node);
-					renameAndDereference(targetNode, targets);
-				} else if (!node.getNodeName().endsWith("Reference") && childNode.getNodeType() == Node.ELEMENT_NODE) {
-					// calls this method for all the children which is Element
-					renameAndDereference(childNode, targets);
-				}
+	private static void rename(Node node, Document document) {
+		int nbAtt = 0;
+		while (node.getAttributes().getLength() > nbAtt) {
+			Node att = node.getAttributes().item(nbAtt);
+			
+			if (StringUtils.stringContainsItemFromList(att.getNodeName(), new String[] {"lang","Length", "regExp", "blank", "scale"})) {
+				document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
+				nbAtt++;
+			} else {
+				node.getAttributes().removeNamedItem(att.getNodeName());
 			}
+		}
+	}
+
+	private static void dereference(Node node, Map<String, Node> targets, Document document) {
+		NodeList nodeList = node.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node childNode = nodeList.item(i);
+			if (node.getNodeName().endsWith(REFERENCE) && childNode.getNodeName().endsWith("ID")) {
+				Node targetNode = document.importNode(targets.get(childNode.getTextContent()), true);
+				node.getParentNode().replaceChild(targetNode, node);
+				renameAndDereference(targetNode, targets);
+			} else if (!node.getNodeName().endsWith(REFERENCE) && childNode.getNodeType() == Node.ELEMENT_NODE) {
+				// calls this method for all the children which is Element
+				renameAndDereference(childNode, targets);
+			}
+		}
+	}
+
+	private static void removeNamespaces(Node node, Document document) {
+		if (node.getNodeName().contains(":")) {
+			document.renameNode(node, null, node.getNodeName().replaceFirst("[a-z]*:", ""));
 		}
 	}
 
@@ -145,7 +156,7 @@ public class VarBookExportBuilder {
 	 * @return
 	 * @throws RmesException 
 	 */
-	private static Document addSortedVariableList(Document xmlInput) throws RmesException {
+	private static Document addSortedVariableList(Document xmlInput) {
 		if (xmlInput == null) {
 			return null;
 		}
@@ -178,9 +189,7 @@ public class VarBookExportBuilder {
 
 		try {
 			stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-			db = DocumentBuilders.createSaferDocumentBuilder(factory -> {
-			    factory.isIgnoringElementContentWhitespace();
-			});
+			db = DocumentBuilders.createSaferDocumentBuilder(DocumentBuilderFactory::isIgnoringElementContentWhitespace);
 			xmlInitial = db.parse(stream);
 			stream.close();
 		} catch (ParserConfigurationException | SAXException | IOException e) {

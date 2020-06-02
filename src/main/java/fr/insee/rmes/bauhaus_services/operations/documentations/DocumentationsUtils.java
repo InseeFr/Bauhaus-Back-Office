@@ -58,6 +58,12 @@ import fr.insee.rmes.utils.DateParser;
 @Component
 public class DocumentationsUtils extends RdfService{
 
+	private static final String ID_INDICATOR = "idIndicator";
+
+	private static final String ID_OPERATION = "idOperation";
+
+	private static final String ID_SERIES = "idSeries";
+
 	private static final String CREATOR = "creator";
 
 	private static final String VALUE = "value";
@@ -118,7 +124,7 @@ public class DocumentationsUtils extends RdfService{
 		JSONArray docRubrics = repoGestion
 				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims));
 		if (docRubrics.length() != 0) {
-			docRubrics = clearRubrics(idSims, docRubrics);
+			clearRubrics(idSims, docRubrics);
 			doc.put("rubrics", docRubrics);
 		}
 		return doc;
@@ -248,15 +254,15 @@ public class DocumentationsUtils extends RdfService{
 		String targetId = null;
 		IRI targetUri = null;
 		try {
-			targetId = simsJson.getString("idIndicator");
+			targetId = simsJson.getString(ID_INDICATOR);
 			if (!targetId.isEmpty()) {
 				targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId);
 			} else {
-				targetId = simsJson.getString("idOperation");
+				targetId = simsJson.getString(ID_OPERATION);
 				if (!targetId.isEmpty()) {
 					targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId);
 				} else {
-					targetId = simsJson.getString("idSeries");
+					targetId = simsJson.getString(ID_SERIES);
 					targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId);
 				}
 			}
@@ -357,12 +363,12 @@ public class DocumentationsUtils extends RdfService{
 		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		if (existingIdTarget != null) {
-			idDatabase = (String) existingIdTarget.get("idOperation");
+			idDatabase = (String) existingIdTarget.get(ID_OPERATION);
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idSeries");
+				idDatabase = (String) existingIdTarget.get(ID_SERIES);
 			}
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idIndicator");
+				idDatabase = (String) existingIdTarget.get(ID_INDICATOR);
 			}
 		}
 		if (existingIdTarget == null || idDatabase == null) {
@@ -575,48 +581,26 @@ public class DocumentationsUtils extends RdfService{
 
 	public String getDocumentationOwnerByIdSims(String idSims) throws RmesException {
 		logger.info("Search Sims Owner's Stamp");
-
-		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
-		String idDatabase = null;
-		String targetType = null;
-		if (existingIdTarget != null) {
-			idDatabase = (String) existingIdTarget.get("idOperation");
-			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idSeries");
-			} else {
-				targetType = "OPERATION";
-			}
-			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idIndicator");
-				targetType = "INDICATOR";
-			} else {
-				targetType = "SERIES";
-			}
-		}
-
 		String stamp = null;
-		if (targetType == null) {
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Dcoumentation has no target",
-					"Check your documentation creation");
-		}
-		switch (targetType) {
-			case "OPERATION":
+		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
+		if (target != null) {
+			String idOperation = target.getString(ID_OPERATION);
+			String idSerie = target.getString(ID_SERIES);
+			String idIndicator = target.getString(ID_INDICATOR);
+			
+			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesById(
-						operationsUtils.getOperationById(idDatabase).getJSONObject("series").getString("idSeries"))
+						operationsUtils.getOperationById(idOperation).getJSONObject("series").getString(ID_SERIES))
 						.getString(CREATOR);
-				break;
-			case "SERIES":
-				stamp = seriesUtils.getSeriesById(idDatabase).getString(CREATOR);
-				break;
-
-			case "INDICATOR":
-				stamp = indicatorsUtils.getIndicatorById(idDatabase).getString(CREATOR);
-				break;
-			default:
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Dcoumentation has no target",
+			} else if (idSerie != null && !idSerie.isEmpty()) {
+				stamp = seriesUtils.getSeriesById(idSerie).getString(CREATOR);
+			} else if (idIndicator != null && !idIndicator.isEmpty()) {
+				stamp = indicatorsUtils.getIndicatorById(idIndicator).getString(CREATOR);
+			} else {
+				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
+			}
 		}
-
 		return stamp;
 	}
 

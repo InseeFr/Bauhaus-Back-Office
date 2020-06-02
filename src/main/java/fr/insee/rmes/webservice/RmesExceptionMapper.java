@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -28,11 +29,11 @@ public class RmesExceptionMapper implements ExceptionMapper<Exception> {
 
     	if (e.getClass().equals(RmesException.class)) {
     		RmesException re = (RmesException) e;
-            return Response.status(re.getStatus()).entity(re.getDetails()).type("text/plain")
+            return Response.status(re.getStatus()).entity(re.getDetails()).type(MediaType.TEXT_PLAIN)
                     .build();
     	}
     	
-        return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(e.getMessage()).type("text/plain")
+        return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(e.getMessage()).type(MediaType.TEXT_PLAIN)
                 .build();
     }
 }
