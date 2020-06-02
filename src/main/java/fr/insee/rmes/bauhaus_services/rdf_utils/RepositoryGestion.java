@@ -22,6 +22,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
@@ -32,6 +33,7 @@ import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 @Component
+@DependsOn("AppContext")
 public class RepositoryGestion extends RepositoryUtils {
 
 
@@ -93,7 +95,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws JSONException 
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
-		return getResponseAsBoolean(query, REPOSITORY_GESTION);
+		return getResponseForAskQuery(query, REPOSITORY_GESTION);
 	}
 
 	public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)

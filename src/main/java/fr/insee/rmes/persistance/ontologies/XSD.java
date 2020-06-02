@@ -28,7 +28,7 @@ public class XSD {
 	 * The xsd:string class
 	 */
 	public static final IRI STRING;
-	
+
 	public static final IRI DATETIME;
 	
 	static {

@@ -26,6 +26,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 
+
 public class RepositoryPublication extends RepositoryUtils{
 
 	private static final String CONNECTION_TO = "Connection to ";
@@ -78,7 +79,7 @@ public class RepositoryPublication extends RepositoryUtils{
 	 * @throws JSONException 
 	 */
 	public static Boolean getResponseAsBoolean(String query) throws  RmesException {
-		return getResponseAsBoolean(query, REPOSITORY_PUBLICATION);
+		return getResponseForAskQuery(query, REPOSITORY_PUBLICATION);
 	}
 	
 	/**

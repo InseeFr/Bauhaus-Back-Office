@@ -10,6 +10,8 @@ public class DocumentationRubric {
 
 	private String idAttribute;
 	private String value;
+	private List<String> valueList;
+
 	private String labelLg1;
 	private String labelLg2;
 	private String codeList;
@@ -67,6 +69,15 @@ public class DocumentationRubric {
 		StringUtils.isEmpty(labelLg2) &&
 		StringUtils.isEmpty(codeList) &&
 		(documents == null || documents.isEmpty());
+	}
+	public List<String> getValueList() {
+		return valueList;
+	}
+	public void setValueList(List<String> valueList) {
+		this.valueList = valueList;
+	}
+	public void setValue(List<String> valueList) {
+		setValueList(valueList);
 	}
 }
 

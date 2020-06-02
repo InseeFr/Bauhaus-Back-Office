@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -35,15 +35,18 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 
 @Component
-public class OperationsUtils  extends RdfService {
+public class OperationsUtils extends RdfService{
 
 	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
-	
-	@Autowired
-	static FamOpeSerUtils famOpeSerUtils;
 
 	@Autowired
-	OperationPublication operationPublication;
+	private FamOpeSerUtils famOpeSerUtils;
+	
+	@Autowired
+	private SeriesUtils seriesUtils;
+	
+	@Autowired
+	private OperationPublication operationPublication;
 	
 	public JSONObject getOperationById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
@@ -63,7 +66,6 @@ public class OperationsUtils  extends RdfService {
 	 * @throws RmesException
 	 */
 	public String setOperation(String body) throws RmesException {
-		SeriesUtils seriesUtils= new SeriesUtils();
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
@@ -76,7 +78,7 @@ public class OperationsUtils  extends RdfService {
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
 		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
-			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries);
+			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
@@ -174,9 +176,6 @@ public class OperationsUtils  extends RdfService {
 	}
 
 	private IRI getSeriesUri(String id){
-		//FIXME check not needed
-		/*JSONObject jsonOperation = getOperationById(id);
-		FIXME check not needed String idJson = jsonOperation.getJSONObject("series").getString(Constants.ID);*/
 		return RdfUtils.objectIRI(ObjectType.SERIES, id);
 	}
 

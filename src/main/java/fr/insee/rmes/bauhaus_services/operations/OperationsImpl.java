@@ -332,9 +332,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
-//		JSONObject owner = documentationsUtils.getDocumentationOwnerByIdSims(id);
-//		XhtmlToMarkdownUtils.convertJSONObject(owner);
-//		return owner.toString();
 		return documentationsUtils.getDocumentationOwnerByIdSims(id);
 	}
 

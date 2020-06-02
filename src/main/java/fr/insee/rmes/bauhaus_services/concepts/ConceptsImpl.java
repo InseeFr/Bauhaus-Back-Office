@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.concepts;
 
 import java.io.InputStream;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -232,7 +233,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
 		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
@@ -262,7 +263,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		try {
 			collection = conceptsExport.getCollectionData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
 		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);

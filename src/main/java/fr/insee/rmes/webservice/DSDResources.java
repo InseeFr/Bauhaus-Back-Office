@@ -46,10 +46,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class DSDResources {
-	
-	private static final String TEXT_PLAIN = "text/plain";
 
-	final static Logger logger = LogManager.getLogger(DSDResources.class);
+	static final Logger logger = LogManager.getLogger(DSDResources.class);
 
 	@Autowired
 	DSDService DSDService;
@@ -138,7 +136,7 @@ public class DSDResources {
 		try {
 			id = DSDService.setDSD(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -152,7 +150,7 @@ public class DSDResources {
 		try {
 			id = DSDService.setDSD(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}

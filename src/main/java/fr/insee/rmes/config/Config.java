@@ -1,6 +1,8 @@
 package fr.insee.rmes.config;
 
 import org.springframework.core.env.Environment;
+
+
 public class Config {
 
 

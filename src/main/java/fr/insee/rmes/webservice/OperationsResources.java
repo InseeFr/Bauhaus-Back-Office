@@ -62,8 +62,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class OperationsResources {
 
-	private static final String TEXT_PLAIN = "text/plain";
-
 	static final Logger logger = LogManager.getLogger(OperationsResources.class);
 
 	@Autowired
@@ -122,7 +120,7 @@ public class OperationsResources {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -145,7 +143,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createFamily(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -198,7 +196,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getSeriesByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -212,7 +210,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getSeriesForSearch();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -229,7 +227,7 @@ public class OperationsResources {
 		try {
 			operationsService.setSeries(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -243,7 +241,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getOperationsWithoutReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -266,7 +264,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createSeries(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -320,7 +318,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getOperationByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -373,7 +371,7 @@ public class OperationsResources {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -395,7 +393,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createOperation(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
@@ -457,7 +455,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getIndicatorByID(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -480,7 +478,7 @@ public class OperationsResources {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -515,7 +513,7 @@ public class OperationsResources {
 	@Path("/indicator")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
-	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
+	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN))})
 	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
             content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
@@ -523,7 +521,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.setIndicator(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
@@ -545,7 +543,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMSD();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -560,7 +558,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttribute(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -575,7 +573,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataAttributes();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -592,7 +590,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -614,7 +612,7 @@ public class OperationsResources {
 		try {
 			jsonResultat = operationsService.getMetadataReportOwner(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -630,7 +628,7 @@ public class OperationsResources {
 	@Path("/metadataReport")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
-	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
+	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN))})
 	public Response setMetadataReport(@RequestBody(description = "Metadata report to create", required = true,
             content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		logger.info("POST Metadata report");
@@ -638,7 +636,7 @@ public class OperationsResources {
 		try {
 			id = operationsService.createMetadataReport(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
@@ -662,7 +660,7 @@ public class OperationsResources {
 		try {
 			operationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -698,7 +696,7 @@ public class OperationsResources {
 	
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);
-		return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 	}
 	
 }
