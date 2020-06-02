@@ -10,7 +10,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -164,7 +163,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getComponentsForSearch();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -178,7 +177,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getComponents();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -192,7 +191,7 @@ public class DSDResources {
 		try {
 			jsonResultat = DSDService.getComponent(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
