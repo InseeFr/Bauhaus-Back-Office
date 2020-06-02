@@ -68,7 +68,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class PublicResources {
 
-	final static Logger logger = LogManager.getLogger(PublicResources.class);
+	static final Logger logger = LogManager.getLogger(PublicResources.class);
 
 	@Autowired
 	UserRolesManagerService userRolesManagerService;
@@ -106,7 +106,7 @@ public class PublicResources {
 			try {
 				entity = stampsService.getStamps();
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
 			return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
@@ -116,7 +116,7 @@ public class PublicResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})
 	public Response getDisseminationStatus() {
-		TreeSet<String> dsList = new TreeSet<String>();
+		TreeSet<String> dsList = new TreeSet<>();
 		for (DisseminationStatus ds : DisseminationStatus.values()) {
 			try {
 				dsList.add(new ObjectMapper().writeValueAsString(ds));
@@ -136,7 +136,7 @@ public class PublicResources {
 		try {
 			entity = userRolesManagerService.getRoles();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
@@ -150,7 +150,7 @@ public class PublicResources {
 		try {
 			entity = userRolesManagerService.getAgents();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}

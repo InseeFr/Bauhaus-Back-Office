@@ -68,7 +68,7 @@ public enum ConceptsVersionnedNoteTypes {
 
 	};
 		
-	private static final Map<String, ConceptsVersionnedNoteTypes> map = new HashMap<String, ConceptsVersionnedNoteTypes>();
+	private static final Map<String, ConceptsVersionnedNoteTypes> map = new HashMap<>();
 	
 	private String text;
 

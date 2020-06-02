@@ -64,7 +64,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getFamilies();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -79,7 +79,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getFamily(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -94,7 +94,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getFamilyMembers(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -109,7 +109,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getSeries();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -122,7 +122,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getOneSeries(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -137,7 +137,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getSeriesMembers(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -151,7 +151,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassifications();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -164,7 +164,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassification(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -177,7 +177,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItems(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -190,7 +190,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevels(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -203,7 +203,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevel(id, levelId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -216,7 +216,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -229,7 +229,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItem(classificationId, itemId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -243,7 +243,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItemNotes(classificationId, itemId, conceptVersion);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -256,7 +256,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -269,7 +269,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondences();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -282,7 +282,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondence(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -295,7 +295,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociations(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -309,7 +309,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociation(correspondenceId, associationId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
