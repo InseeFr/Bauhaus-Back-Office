@@ -11,7 +11,7 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 
 public class XhtmlToMarkdownUtils {
 	
-	static MutableDataSet optionsXhtmlToMd;
+	private static MutableDataSet optionsXhtmlToMd;
 	
 	private static void init(){
 		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().size()==0) {
@@ -32,19 +32,12 @@ public class XhtmlToMarkdownUtils {
     public static String markdownToXhtml(String md) {
         MutableDataSet options = new MutableDataSet();
 
-        // uncomment to set optional extensions
-        //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
-
-        // uncomment to convert soft-breaks to hard breaks
-     //   options.set(HtmlRenderer.SOFT_BREAK, "<br />");
-
         Parser parser = Parser.builder(options).build();
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();
 
         // You can re-use parser and renderer instances
         Node document = parser.parse(md);
-        String xhtml = renderer.render(document); 
-        return xhtml;
+        return renderer.render(document); 
     }
     
     private XhtmlToMarkdownUtils() {
@@ -55,15 +48,21 @@ public class XhtmlToMarkdownUtils {
 		jsonObj.keySet().forEach(keyStr ->
 		{
 			Object keyvalue = jsonObj.get(keyStr);
-			if (keyvalue instanceof JSONObject  ) convertJSONObject((JSONObject)keyvalue);
-			else if (keyvalue instanceof JSONArray ) convertJSONArray((JSONArray)keyvalue);
-			else jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+			if (keyvalue instanceof JSONObject  ) {
+				convertJSONObject((JSONObject)keyvalue);
+			} else if (keyvalue instanceof JSONArray ) {
+				convertJSONArray((JSONArray)keyvalue);
+			} else {
+				jsonObj.put(keyStr, XhtmlToMarkdownUtils.xhtmlToMarkdown((String) keyvalue));
+			}
 		});
 	}
 
 	public static void convertJSONArray(JSONArray jsonArr) {
 		for (int i = 0; i < jsonArr.length(); i++) {
-			convertJSONObject(jsonArr.getJSONObject(i));
+			if (jsonArr.get(i) instanceof JSONObject) {
+				convertJSONObject(jsonArr.getJSONObject(i));
+			}
 		}
 	}
 

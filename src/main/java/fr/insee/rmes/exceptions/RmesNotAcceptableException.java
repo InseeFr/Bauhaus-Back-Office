@@ -1,6 +1,6 @@
 package fr.insee.rmes.exceptions;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 
 public class RmesNotAcceptableException extends RmesException {

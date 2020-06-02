@@ -3,7 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.indicators;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
@@ -109,14 +109,13 @@ public class IndicatorsQueries {
 		getSimsId();
 		getValidationState();
 
-		String query =  "SELECT "
+		return   "SELECT "
 				+ variables.toString()
 				+ " WHERE {  \n"
 				+ whereClause.toString()
 				+ "} \n"
 				+ (withLimit ? "LIMIT 1" : "");
 
-		return query;
 	}
 
 	public static String getGestionnaires(String id) {
@@ -129,7 +128,7 @@ public class IndicatorsQueries {
 				;
 	}
 	
-	public static String indicatorLinks(String id, URI linkPredicate) {
+	public static String indicatorLinks(String id, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
 				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
@@ -146,7 +145,7 @@ public class IndicatorsQueries {
 				+ "ORDER BY ?labelLg1";
 	}
 	
-	public static String getMultipleOrganizations(String idIndicator, URI linkPredicate) {
+	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) {
 		return "SELECT ?id ?labelLg1 ?labelLg2\n"
 				+ "WHERE { \n" 
 				+"?indicator <"+linkPredicate+"> ?uri . \n"
@@ -270,17 +269,17 @@ public class IndicatorsQueries {
 		  	
 	}
 
-	public static String getOwner(String URIs) {
+	public static String getOwner(String uris) {
 		return "SELECT ?owner { \n"
 				+ "?indic dcterms:creator ?owner . \n" 
-				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}
 
-	public static String getManagers(String URIs) {
+	public static String getManagers(String uris) {
 		return "SELECT ?manager { \n"
 				+ "?indic insee:gestionnaire ?manager . \n" 
-				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}
 

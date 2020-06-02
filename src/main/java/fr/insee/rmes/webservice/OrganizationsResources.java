@@ -39,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class OrganizationsResources {
 
-	final static Logger logger = LogManager.getLogger(OrganizationsResources.class);
+	static final Logger logger = LogManager.getLogger(OrganizationsResources.class);
 
 	@Autowired
 	OrganizationsService organizationsService;
@@ -54,7 +54,7 @@ public class OrganizationsResources {
 		try {
 			jsonResultat = organizationsService.getOrganization(identifier);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -67,7 +67,7 @@ public class OrganizationsResources {
 		try {
 			jsonResultat = organizationsService.getOrganizations();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}

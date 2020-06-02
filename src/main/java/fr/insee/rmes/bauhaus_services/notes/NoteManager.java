@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -18,7 +18,7 @@ import fr.insee.rmes.model.notes.concepts.ConceptsVersionnedNoteTypes;
 
 public class NoteManager {
 
-	public List<List<URI>> setNotes(Concept concept, Model model) throws RmesException {
+	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
 
 		NotesUtils noteUtils = new NotesUtils();
 		// TODO : see extreme cases to close notes
@@ -29,11 +29,37 @@ public class NoteManager {
 		String conceptId = concept.getId();
 		String conceptVersion = noteUtils.getConceptVersion(concept);
 
-		List<URI> notesToDelete = new ArrayList<URI>();
-		List<URI> notesToUpdate = new ArrayList<URI>();
+		List<IRI> notesToDelete = new ArrayList<>();
+		List<IRI> notesToUpdate = new ArrayList<>();
 		
-		Set<String> versionableNoteTypesInConcept = new HashSet<String>();
+		Set<String> versionableNoteTypesInConcept = new HashSet<>();
 
+		setVersionableNotes(concept, model, noteUtils, versionableNotes, conceptId, conceptVersion, notesToDelete,
+				versionableNoteTypesInConcept);
+		
+		Set<String> versionableNoteTypes = new HashSet<>();
+		for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
+			versionableNoteTypes.add(c.toString());
+		}
+		versionableNoteTypes.removeAll(versionableNoteTypesInConcept);
+		setVersionableNoteTypes(concept, model, noteUtils, conceptId, conceptVersion, versionableNoteTypes);
+		
+		setDatableNotes(concept, model, noteUtils, datableNotes, conceptId, notesToDelete);
+		
+		// Keep historical notes
+		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
+
+		List<List<IRI>> notesToDeleteAndUpdate = new ArrayList<>();
+		notesToDeleteAndUpdate.add(notesToDelete);
+		notesToDeleteAndUpdate.add(notesToUpdate);
+
+		return notesToDeleteAndUpdate;
+
+	}
+
+	private void setVersionableNotes(Concept concept, Model model, NotesUtils noteUtils,
+			List<VersionableNote> versionableNotes, String conceptId, String conceptVersion, List<IRI> notesToDelete,
+			Set<String> versionableNoteTypesInConcept) throws RmesException {
 		for (VersionableNote versionableNote : versionableNotes) {
 			versionableNoteTypesInConcept.add(versionableNote.getNoteType());
 			for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
@@ -43,11 +69,10 @@ public class NoteManager {
 					versionableNote.setLang(c.lang());
 					versionableNote.setConceptVersion(conceptVersion);
 					versionableNote.setVersion(noteUtils.getVersion(concept, versionableNote, "1"));
-					if (concept.getCreation()) {}
-					else if (concept.getVersioning()) {
+					if (Boolean.TRUE.equals(concept.getVersioning())) {
 						// Close previous note
 						noteUtils.closeRdfVersionableNote(conceptId, versionableNote, model);
-					} else {
+					} else if (Boolean.FALSE.equals(concept.getCreation())){
 						// Delete note in the current conceptVersion
 						notesToDelete.add(RdfUtils.versionableNoteIRI(conceptId, versionableNote));
 					}
@@ -58,33 +83,10 @@ public class NoteManager {
 				noteUtils.createRdfVersionableNote(conceptId, versionableNote, model);
 			}
 		}
-		
-		Set<String> versionableNoteTypes = new HashSet<String>();
-		for (ConceptsVersionnedNoteTypes c : ConceptsVersionnedNoteTypes.values()) {
-			versionableNoteTypes.add(c.toString());
-		}
-		versionableNoteTypes.removeAll(versionableNoteTypesInConcept);
-		
-		for (String noteType : versionableNoteTypes) {
-			ConceptsVersionnedNoteTypes versionnedNoteType = ConceptsVersionnedNoteTypes.getByName(noteType);
-			VersionableNote versionableNote = new VersionableNote();
-			versionableNote.setPath(versionnedNoteType.pathComponent());
-			versionableNote.setConceptVersion(conceptVersion);
-			versionableNote.setLang(versionnedNoteType.lang());
-			versionableNote.setPredicat(versionnedNoteType.owlProperty());
-			versionableNote.setVersion(noteUtils.getLastVersion(concept, versionableNote, "0"));
-			// Update concept version of unchanged versionable notes
-			if (concept.getVersioning()) {
-			String previousConceptVersion = String.valueOf(Integer.parseInt(conceptVersion) - 1);
-			versionableNote.setConceptVersion(previousConceptVersion);
-			noteUtils.updateNoteConceptVersion(conceptId, versionableNote, model);
-			}
-			// Keep link with unchanged notes of this concept version
-			else if (!concept.getCreation()) {
-				noteUtils.keepNote(conceptId, versionableNote, model);
-			}
-		}
-		
+	}
+
+	private void setDatableNotes(Concept concept, Model model, NotesUtils noteUtils, List<DatableNote> datableNotes,
+			String conceptId, List<IRI> notesToDelete) throws RmesException {
 		for (DatableNote datableNote : datableNotes) {
 			for (ConceptsDatedNoteTypes c : ConceptsDatedNoteTypes.values()) {
 				if (c.toString().equals(datableNote.getNoteType())) {
@@ -97,15 +99,28 @@ public class NoteManager {
 			noteUtils.deleteDatableNote(conceptId, datableNote, notesToDelete);
 			noteUtils.createRdfDatableNote(conceptId, datableNote, model);
 		}
-		
-		// Keep historical notes
-		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
+	}
 
-		List<List<URI>> notesToDeleteAndUpdate = new ArrayList<List<URI>>();
-		notesToDeleteAndUpdate.add(notesToDelete);
-		notesToDeleteAndUpdate.add(notesToUpdate);
-
-		return notesToDeleteAndUpdate;
-
+	private void setVersionableNoteTypes(Concept concept, Model model, NotesUtils noteUtils, String conceptId,
+			String conceptVersion, Set<String> versionableNoteTypes) throws RmesException {
+		for (String noteType : versionableNoteTypes) {
+			ConceptsVersionnedNoteTypes versionnedNoteType = ConceptsVersionnedNoteTypes.getByName(noteType);
+			VersionableNote versionableNote = new VersionableNote();
+			versionableNote.setPath(versionnedNoteType.pathComponent());
+			versionableNote.setConceptVersion(conceptVersion);
+			versionableNote.setLang(versionnedNoteType.lang());
+			versionableNote.setPredicat(versionnedNoteType.owlProperty());
+			versionableNote.setVersion(noteUtils.getLastVersion(concept, versionableNote, "0"));
+			// Update concept version of unchanged versionable notes
+			if (Boolean.TRUE.equals(concept.getVersioning())) {
+				String previousConceptVersion = String.valueOf(Integer.parseInt(conceptVersion) - 1);
+				versionableNote.setConceptVersion(previousConceptVersion);
+				noteUtils.updateNoteConceptVersion(conceptId, versionableNote, model);
+			}
+			// Keep link with unchanged notes of this concept version
+			else if (Boolean.FALSE.equals(concept.getCreation())) {
+				noteUtils.keepNote(conceptId, versionableNote, model);
+			}
+		}
 	}
 }

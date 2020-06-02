@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.FOAF;
-import org.openrdf.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -34,16 +34,16 @@ public enum ObjectType {
 
 	
 	private String labelType;
-	private URI uri;
+	private IRI uri;
 	private String baseUri;
 
-	ObjectType(String labelType, URI uri, String baseUri){
+	ObjectType(String labelType, IRI uri, String baseUri){
 		this.labelType=labelType;
 		this.uri=uri;
 		this.baseUri=baseUri;
 	}
 
-	public URI getUri() {
+	public IRI getUri() {
 		return this.uri;
 	}
 	
@@ -61,7 +61,7 @@ public enum ObjectType {
 	
 	
 	private static Map<String, ObjectType> lookupLabel = new HashMap<>();
-	private static Map<URI, ObjectType> lookupUri = new HashMap<>();
+	private static Map<IRI, ObjectType> lookupUri = new HashMap<>();
 
 	static {
 		// Populate out lookup when enum is created
@@ -85,7 +85,7 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static URI getUri(String labelType) {
+	public static IRI getUri(String labelType) {
 		return getEnum(labelType).uri;
 	}
 	
@@ -103,7 +103,7 @@ public enum ObjectType {
 	 * @param labelType
 	 * @return
 	 */
-	public static ObjectType getEnum(URI uri) {
+	public static ObjectType getEnum(IRI uri) {
 		return lookupUri.get(uri)!=null ? lookupUri.get(uri): UNDEFINED;
 	}
 	
@@ -112,7 +112,7 @@ public enum ObjectType {
 	 * @param labelType
 	 * @return
 	 */
-	public static String getLabelType(URI uri) {
+	public static String getLabelType(IRI uri) {
 		return getEnum(uri).labelType;
 	}
 
