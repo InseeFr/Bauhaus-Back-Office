@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -32,10 +32,13 @@ public class SeriesPublication extends RdfService {
 	@Autowired
 	static 	FamOpeSerUtils famOpeSerUtils;
 
+	@Autowired
+	private SeriesUtils seriesUtils;
+	
+
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
 	public void publishSeries(String seriesId) throws RmesException {
-		SeriesUtils seriesUtils= new SeriesUtils();
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
 		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);
