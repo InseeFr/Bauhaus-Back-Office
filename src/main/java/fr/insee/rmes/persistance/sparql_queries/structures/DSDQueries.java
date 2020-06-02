@@ -1,7 +1,11 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+
+import java.util.HashMap;
 
 public class DSDQueries {
 
@@ -92,5 +96,43 @@ public class DSDQueries {
 				+ "OPTIONAL{?component qb:codeList ?codeList} \n"
 				+ "}";
 	}
+
+	public static String getComponentsForSearch() throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("SEARCH", true);
+		return buildRequest("getMutualizedComponents.ftlh", params);
+	}
+
+	public static String getComponents() throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("SEARCH", false);
+		return buildRequest("getMutualizedComponents.ftlh", params);
+	}
+
+	public static String getComponent(String id) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("ID", id);
+		return buildRequest("getMutualizedComponent.ftlh", params);
+	}
+
+	public static String getStructuresForComponent(String id) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("ID", id);
+		return buildRequest("getStructuresForMutualizedComponent.ftlh", params);
+	}
+
+	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("structures/", fileName, params);
+	}
+
+	private static HashMap<String, Object> initParams() {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+
+		return params;
+	}
+
 
 }

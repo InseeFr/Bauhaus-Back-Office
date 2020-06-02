@@ -1,7 +1,16 @@
 package fr.insee.rmes.bauhaus_services.structures;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.model.structures.DSD;
+import fr.insee.rmes.model.structures.StructureComponent;
+import fr.insee.rmes.persistance.ontologies.XSD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +18,9 @@ import fr.insee.rmes.bauhaus_services.DSDService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.structures.DSDQueries;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 @Service
 public class DSDImpl  extends RdfService implements DSDService {
@@ -64,5 +76,31 @@ public class DSDImpl  extends RdfService implements DSDService {
 	@Override
 	public String setDSD(String id, String body) throws RmesException {
 		return dsdUtils.setDSD(id, body);
+	}
+
+	/**
+	 * Return all mutualized components
+	 * @return
+	 */
+	@Override
+	public String getComponentsForSearch() throws RmesException {
+		logger.info("Starting to get all mutualized components");
+		return repoGestion.getResponseAsArray(DSDQueries.getComponentsForSearch()).toString();
+	}
+
+	@Override
+	public String getComponents() throws RmesException {
+
+		logger.info("Starting to get all mutualized components");
+		return repoGestion.getResponseAsArray(DSDQueries.getComponents()).toString();
+	}
+
+	@Override
+	public String getComponent(String id) throws RmesException {
+
+		logger.info("Starting to get all mutualized components");
+		JSONObject response = repoGestion.getResponseAsObject(DSDQueries.getComponent(id));
+
+		return DSDUtils.formatComponent(repoGestion, id, response);
 	}
 }
