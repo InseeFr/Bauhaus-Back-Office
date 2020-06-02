@@ -38,17 +38,15 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 public class OperationsUtils extends RdfService{
 
 	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
-	
-	
+
 	@Autowired
 	private FamOpeSerUtils famOpeSerUtils;
 	
 	@Autowired
 	private SeriesUtils seriesUtils;
 	
-
 	@Autowired
-	OperationPublication operationPublication;
+	private OperationPublication operationPublication;
 	
 	public JSONObject getOperationById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
