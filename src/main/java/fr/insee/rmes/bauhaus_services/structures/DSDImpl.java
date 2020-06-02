@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.structures;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,5 +65,31 @@ public class DSDImpl  extends RdfService implements DSDService {
 	@Override
 	public String setDSD(String id, String body) throws RmesException {
 		return dsdUtils.setDSD(id, body);
+	}
+
+	/**
+	 * Return all mutualized components
+	 * @return
+	 */
+	@Override
+	public String getComponentsForSearch() throws RmesException {
+		logger.info("Starting to get all mutualized components");
+		return repoGestion.getResponseAsArray(DSDQueries.getComponentsForSearch()).toString();
+	}
+
+	@Override
+	public String getComponents() throws RmesException {
+
+		logger.info("Starting to get all mutualized components");
+		return repoGestion.getResponseAsArray(DSDQueries.getComponents()).toString();
+	}
+
+	@Override
+	public String getComponent(String id) throws RmesException {
+
+		logger.info("Starting to get all mutualized components");
+		JSONObject response = repoGestion.getResponseAsObject(DSDQueries.getComponent(id));
+
+		return DSDUtils.formatComponent(repoGestion, id, response);
 	}
 }

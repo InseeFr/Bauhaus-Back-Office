@@ -13,6 +13,8 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -20,17 +22,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.DSD;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.structures.DSDQueries;
 
 @Component
 public class DSDUtils extends RdfService {
 	
 	static final Logger logger = LogManager.getLogger(DSDUtils.class);
-	
-	public String setDSD(String body) throws RmesException {
+
+    public static String formatComponent(RepositoryGestion repoGestion, String id, JSONObject response) throws RmesException {
+    	response.put("id", id);
+		addCodeListRange(response);
+		addStructures(response, id, repoGestion);
+    	return response.toString();
+
+    }
+
+	private static void addStructures(JSONObject response, String id, RepositoryGestion repoGestion) throws RmesException {
+		JSONArray structures = repoGestion.getResponseAsArray(DSDQueries.getStructuresForComponent(id));
+		response.put("structures", structures);
+	}
+
+	private static void addCodeListRange(JSONObject response) {
+    	if(response.has("codeList")){
+    		response.put("range", INSEE.CODELIST.toString());
+		}
+	}
+
+    public String setDSD(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
