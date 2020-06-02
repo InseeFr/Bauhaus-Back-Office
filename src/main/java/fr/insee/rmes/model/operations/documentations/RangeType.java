@@ -3,7 +3,7 @@ package fr.insee.rmes.model.operations.documentations;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.ORG;
@@ -23,16 +23,16 @@ public enum RangeType {
 	
 	
 
-	private URI rdfType;
+	private IRI rdfType;
 	private String jsonType;
 	
 	
-	private RangeType(URI rdfType, String jsonType) {
+	private RangeType(IRI rdfType, String jsonType) {
 		this.rdfType = rdfType;
 		this.jsonType = jsonType;
 	}
 	
-	public URI getRdfType() {
+	public IRI getRdfType() {
 		return rdfType;
 	}
 
@@ -41,7 +41,7 @@ public enum RangeType {
 	}
 	
 	
-	private static Map<URI, RangeType> lookupRdfType = new HashMap<>();
+	private static Map<IRI, RangeType> lookupRdfType = new HashMap<>();
 	private static Map<String, RangeType> lookupJsonType = new HashMap<>();
 
 
@@ -58,7 +58,7 @@ public enum RangeType {
 	 * @param rdfType
 	 * @return
 	 */
-	public static RangeType getEnumByRdfType(URI rdfType) {
+	public static RangeType getEnumByRdfType(IRI rdfType) {
 		if (rdfType.getNamespace().contains("/code")){
 			return RangeType.CODELIST;
 		}

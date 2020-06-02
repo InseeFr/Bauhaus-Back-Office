@@ -2,8 +2,8 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.util.Arrays;
 
-import org.openrdf.model.Resource;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.bauhaus_services.Constants;

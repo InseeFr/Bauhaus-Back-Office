@@ -6,26 +6,24 @@ import java.util.Set;
 
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.query.BooleanQuery;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.OpenRDFException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.Update;
-import org.openrdf.query.resultio.sparqljson.SPARQLResultsJSONWriter;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.http.HTTPRepository;
-import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.exceptions.RmesException;
 
-@Component
+
 public abstract class RepositoryUtils {
 	
 	private static final String VALUE = "value";
@@ -38,7 +36,7 @@ public abstract class RepositoryUtils {
 	public static Repository initRepository(String sesameServer, String repositoryID) {
 		Repository repo = new HTTPRepository(sesameServer, repositoryID);
 		try {
-			repo.initialize();
+			repo.init();
 		} catch (Exception e) {
 			logger.error("Initialisation de la connection à la base sesame {} impossible", sesameServer);
 			logger.error(e.getMessage());
@@ -72,7 +70,7 @@ public abstract class RepositoryUtils {
 			update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
 			update.execute();
 			conn.close();
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + updateQuery);		
@@ -93,12 +91,31 @@ public abstract class RepositoryUtils {
 		try {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
 			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
 		}
 		return stream.toString();
+	}
+	
+	/**
+	 * Method which aims to execute a sparql ASK query
+	 * 
+	 * @param query
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static boolean executeAskQuery(RepositoryConnection conn, String query) throws RmesException {
+		BooleanQuery tupleQuery = null;
+		try {
+			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
+			return tupleQuery.evaluate();
+		} catch (RepositoryException e) {
+			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+		}
 	}
 	
 	/**
@@ -115,7 +132,29 @@ public abstract class RepositoryUtils {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
-		} catch (OpenRDFException e) {
+		} catch (RepositoryException e) {
+			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+		}
+		return response;
+	}
+	
+	/**
+	 * Method which aims to produce response from a sparql query
+	 * 
+	 * @param query
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static boolean getResponseForAskQuery(String query, Repository repository) throws RmesException {
+		boolean response = false;
+		try {
+			RepositoryConnection conn = repository.getConnection();
+			String queryWithPrefixes = QueryUtils.PREFIXES + query;
+			response = executeAskQuery(conn, queryWithPrefixes);
+			conn.close();
+		} catch (RepositoryException e) {
 			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
@@ -171,20 +210,6 @@ public abstract class RepositoryUtils {
 		return (JSONObject) resArray.get(0);
 	}
 	
-	
-	/**
-	 * Method which aims to produce response from a sparql ASK query
-	 * 
-	 * @param query
-	 * @return String
-	 * @throws RmesException 
-	 * @throws JSONException 
-	 */
-	public static boolean getResponseAsBoolean(String query, Repository repository) throws RmesException {
-		JSONObject res = new JSONObject(getResponse(query, repository));
-		return res.getBoolean("boolean");
-	}
-
 	
 	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
 		JSONArray arrayRes = new JSONArray();

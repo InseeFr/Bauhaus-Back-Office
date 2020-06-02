@@ -5,16 +5,16 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -85,7 +85,7 @@ public class IndicatorsUtils  extends RdfService {
 		addOneOrganizationLink(idIndic,indicator, DCTERMS.CONTRIBUTOR);
 	}
 
-	private void addOneTypeOfLink(String id, JSONObject object, URI predicate) throws RmesException {
+	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray links = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
@@ -93,7 +93,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 	}
 
-	private void addOneOrganizationLink(String id, JSONObject object, URI predicate) throws RmesException {
+	private void addOneOrganizationLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray organizations = repoGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
@@ -179,7 +179,7 @@ public class IndicatorsUtils  extends RdfService {
 	
 	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
-		URI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
+		IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/
 		model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, RdfUtils.productsGraph());
 		/*Required*/
@@ -242,7 +242,7 @@ public class IndicatorsUtils  extends RdfService {
 
 		indicatorPublication.publishIndicator(id);
 
-		URI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
+		IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
 		model.add(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.productsGraph());
@@ -255,7 +255,7 @@ public class IndicatorsUtils  extends RdfService {
 
 
 
-	private void addOneWayLink(Model model, URI indicURI, List<OperationsLink> links, URI linkPredicate) {
+	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
 		if (links != null) {
 			for (OperationsLink oneLink : links) {
 				String linkedObjectUri = ObjectType.getCompleteUriGestion(oneLink.getType(), oneLink.getId());

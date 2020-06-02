@@ -1,4 +1,4 @@
-SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational 
+SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs
  FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
  FROM <http://rdf.insee.fr/graphes/concepts/qualite>
  WHERE { 
@@ -8,6 +8,7 @@ SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational
 		BIND(REPLACE( STR(?parent) , '(.*/)(\\w.+$)', '$2' ) AS ?idParent) . 
 		
    		OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
+   		OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
 		
 		FILTER(STRENDS(STR(?reportStructure),'/qualite/simsv2fr/reportStructure')) . 
 		BIND(REPLACE( STR(?mas) , '(.*/)(\\w.+$)', '$2' ) AS ?idMas) . 

@@ -3,8 +3,8 @@ package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
@@ -16,7 +16,7 @@ public class DocumentsQueries {
 	static Map<String,Object> params ;
 	
 
-	public static String deleteDocumentQuery(URI uri, URI graph) throws RmesException {
+	public static String deleteDocumentQuery(IRI uri, IRI graph) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uri", uri);
 		params.put("graph", graph);
@@ -30,7 +30,7 @@ public class DocumentsQueries {
 		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
 	}
 	
-	public static String getDocumentUriQuery(URI url, Resource graph) throws RmesException {
+	public static String getDocumentUriQuery(IRI url, Resource graph) throws RmesException {
 		Map<String, Object> root = new HashMap<>();
 		root.put("url", url);
 		root.put("graph", graph);

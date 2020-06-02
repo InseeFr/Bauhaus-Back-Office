@@ -2,7 +2,7 @@ package fr.insee.rmes.model.notes;
 
 import java.time.LocalDateTime;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 public class DatableNote {
 	
@@ -12,7 +12,7 @@ public class DatableNote {
 	private String issued;
 	private String conceptVersion;
 	private String path;
-	private URI predicat;
+	private IRI predicat;
 	
 	public DatableNote() {
 		issued = LocalDateTime.now().toString();
@@ -38,10 +38,10 @@ public class DatableNote {
 	public void setPath(String path) {
 		this.path = path;
 	}
-	public URI getPredicat() {
+	public IRI getPredicat() {
 		return predicat;
 	}
-	public void setPredicat(URI predicat) {
+	public void setPredicat(IRI predicat) {
 		this.predicat = predicat;
 	}
 	public String getNoteType() {

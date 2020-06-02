@@ -9,7 +9,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,23 +26,27 @@ public class RmesNotificationsImpl implements NotificationsContract {
 
     static final Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
 	
+	@Override
 	public void notifyConceptCreation(String id, String uri) throws RmesException {
-		logger.info("Notification : concept creation, id : " + id);
+		logger.info("Notification : concept creation, id : {}", id);
 		sendMessageToBrocker(RmesNotificationsMessages.conceptCreation(id, uri));
 	}
 	
+	@Override
 	public void notifyConceptUpdate(String id, String uri) throws RmesException {
-		logger.info("Notification : concept update, id : " + id);
+		logger.info("Notification : concept update, id : {}", id);
 		sendMessageToBrocker(RmesNotificationsMessages.conceptUpdate(id, uri));
 	}
 	
+	@Override
 	public void notifyCollectionCreation(String id, String uri) throws RmesException {
-		logger.info("Notification : collection creation, id : " + id);
+		logger.info("Notification : collection creation, id : {}", id);
 		sendMessageToBrocker(RmesNotificationsMessages.collectionCreation(id, uri));
 	}
 	
+	@Override
 	public void notifyCollectionUpdate(String id, String uri) throws RmesException {
-		logger.info("Notification : collection update, id : " + id);
+		logger.info("Notification : collection update, id : {}", id);
 		sendMessageToBrocker(RmesNotificationsMessages.collectionUpdate(id, uri));
 	}    
 	

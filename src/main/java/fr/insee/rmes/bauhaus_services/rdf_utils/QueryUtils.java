@@ -1,8 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.impl.ValueFactoryImpl;
 
 public class QueryUtils {
 
@@ -43,7 +43,7 @@ public class QueryUtils {
         for (int i = 0; i < jArray.length(); i++) {
             JSONObject jsonObject = jArray.getJSONObject(i);
             String typeOfObject = jsonObject.getString("typeOfObject");
-            String type = ObjectType.getLabelType(ValueFactoryImpl.getInstance().createURI(typeOfObject));
+            String type = ObjectType.getLabelType(SimpleValueFactory.getInstance().createIRI(typeOfObject));
             jsonObject.put("type", type);
             jsonObject.remove("typeOfObject");
         }

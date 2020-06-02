@@ -2,18 +2,18 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import java.io.IOException;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -114,7 +114,7 @@ public class FamiliesUtils  extends RdfService {
 		if (StringUtils.isEmpty(family.getPrefLabelLg1())) {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, "prefLabelLg1 not found", CAN_T_READ_REQUEST_BODY);
 		}
-		URI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY,family.getId());
+		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY,family.getId());
 		/*Const*/
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, RdfUtils.operationsGraph());
 		/*Required*/
@@ -161,7 +161,7 @@ public class FamiliesUtils  extends RdfService {
 
 			familyPublication.publishFamily(id);
 		
-			URI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
+			IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
 			model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
 			model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
 			model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());

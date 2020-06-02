@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class PROV {
 	
@@ -15,14 +15,14 @@ public class PROV {
 	 */
 	public static final String PREFIX = "prov";
 	
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 	
-	public static final URI WAS_GENERATED_BY;
+	public static final IRI WAS_GENERATED_BY;
 		
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		WAS_GENERATED_BY = f.createURI(NAMESPACE, "wasGeneratedBy");
+		WAS_GENERATED_BY = f.createIRI(NAMESPACE, "wasGeneratedBy");
 		
 	}
 	

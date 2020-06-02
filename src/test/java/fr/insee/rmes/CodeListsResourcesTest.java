@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,8 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResultHandlerException;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;

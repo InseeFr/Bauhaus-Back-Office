@@ -1,19 +1,19 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -23,24 +23,21 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 
-@Repository
+@Component
 public class OperationPublication extends RdfService{
 	
 	@Autowired
-	static FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerUtils famOpeSerUtils;
+	
+	@Autowired
+	private OperationsUtils operationsUtils;
 
-	static NotificationsContract notification = new RmesNotificationsImpl();
-
-	String[] ignoredAttrs = { "isValidated", "changeNote", "creator", "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
 
 	public void publishOperation(String operationId) throws RmesException {
-		OperationsUtils operationsUtils = new OperationsUtils();
 		Model model = new LinkedHashModel();
-		String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
 
 		Resource operation = RdfUtils.operationIRI(operationId);
 		JSONObject operationJson = operationsUtils.getOperationById(operationId);
@@ -81,7 +78,7 @@ public class OperationPublication extends RdfService{
 
 	}
 
-	private static void checkSeriesIsPublished(String operationId, JSONObject operationJson)
+	private void checkSeriesIsPublished(String operationId, JSONObject operationJson)
 			throws RmesException {
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
 		String status = famOpeSerUtils.getValidationStatus(seriesId);
@@ -94,7 +91,7 @@ public class OperationPublication extends RdfService{
 	}
 
 	private void addHasPartStatements(Model model, Resource operation, RepositoryConnection con)
-			throws RmesException, RepositoryException {
+			throws RmesException {
 		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, operation);
 
 		while (hasPartStatements.hasNext()) {
