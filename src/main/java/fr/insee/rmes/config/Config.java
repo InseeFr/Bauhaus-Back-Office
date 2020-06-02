@@ -4,7 +4,7 @@ import org.springframework.core.env.Environment;
 
 
 public class Config {
-	
+
 
 	public static String APP_HOST = "";
 	
@@ -44,6 +44,7 @@ public class Config {
 	
 	public static String DSDS_GRAPH = "";
 	public static String DSDS_BASE_URI = "";
+	public static String STRUCTURES_COMPONENTS_GRAPH = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";
@@ -79,6 +80,7 @@ public class Config {
 	}
 	
 	public static void setConfig(Environment env) {
+		System.out.println(env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer"));
 		Config.APP_HOST = env.getProperty("fr.insee.rmes.bauhaus.concepts.appHost");
 		
 		Config.ENV = env.getProperty("fr.insee.rmes.bauhaus.env");
@@ -114,11 +116,9 @@ public class Config {
 		
 		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");
 		Config.INDICATORS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.indicators.baseURI");
-		
-		
-		Config.DSDS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.dsds.graph");
-		Config.DSDS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.dsds.baseURI");
 
+
+		readConfigForStructures(env);
 
 		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
 		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.repository");
@@ -148,5 +148,11 @@ public class Config {
 		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");
 		Config.SWAGGER_BASEPATH = env.getProperty("fr.insee.rmes.bauhaus.api.basepath");
 		Config.SWAGGER_URL=(Config.REQUIRES_SSL ? "https" : "http") + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
+	}
+
+	private static void readConfigForStructures(Environment env) {
+		Config.DSDS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.dsds.graph");
+		Config.DSDS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.dsds.baseURI");
+		Config.STRUCTURES_COMPONENTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
 	}
 }

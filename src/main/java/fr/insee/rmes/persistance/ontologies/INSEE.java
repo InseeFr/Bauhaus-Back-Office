@@ -41,7 +41,10 @@ public class INSEE {
 	public static final IRI IS_VALIDATED;
 	public static final IRI VALIDATION_STATE;
 
-	
+
+	public static final IRI IDENTIFIANT_METIER;
+	public static final IRI CODELIST;
+
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
 
@@ -65,9 +68,12 @@ public class INSEE {
 		DOCUMENT = f.createIRI(NAMESPACE,"document");
 		INDICATOR = f.createIRI(NAMESPACE,"StatisticalIndicator");
 
+
 		DATA_COLLECTOR = f.createIRI(NAMESPACE,"dataCollector");
 		GESTIONNAIRE = f.createIRI(NAMESPACE,"gestionnaire");
-	}
-	
 
+		// Structures
+		IDENTIFIANT_METIER = f.createIRI(NAMESPACE,"identifiantMetier");
+		CODELIST = f.createIRI(NAMESPACE, "codeList");
+	}
 }

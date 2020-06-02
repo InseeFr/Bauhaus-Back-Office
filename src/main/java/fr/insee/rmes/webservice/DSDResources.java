@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -152,5 +153,47 @@ public class DSDResources {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@GET
+	@Path("/components/search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getComponentsForSearch", summary = "Get all mutualized components for advanced search" )
+	public Response getComponentsForSearch() {
+		String jsonResultat;
+		try {
+			jsonResultat = DSDService.getComponentsForSearch();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/components")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getComponents", summary = "Get all mutualized components" )
+	public Response getComponents() {
+		String jsonResultat;
+		try {
+			jsonResultat = DSDService.getComponents();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/components/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getComponentById", summary = "Get all mutualized components" )
+	public Response getComponentById(@PathParam(Constants.ID) String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = DSDService.getComponent(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 }
