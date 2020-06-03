@@ -4,13 +4,16 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class DocumentationRubric {
 
 	private String idAttribute;
-	private String value;
-	private List<String> valueList;
+	
+	@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
+	private List<String> value;
 
 	private String labelLg1;
 	private String labelLg2;
@@ -25,12 +28,7 @@ public class DocumentationRubric {
 	public void setIdAttribute(String idAttribute) {
 		this.idAttribute = idAttribute;
 	}
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String value) {
-		this.value = value;
-	}
+
 	public String getLabelLg1() {
 		return labelLg1;
 	}
@@ -64,20 +62,23 @@ public class DocumentationRubric {
 	
 	public boolean isEmpty() {
 		return 
-		 StringUtils.isEmpty(value) &&
+		(value == null || value.isEmpty()) &&
 		StringUtils.isEmpty(labelLg1) &&
 		StringUtils.isEmpty(labelLg2) &&
 		StringUtils.isEmpty(codeList) &&
 		(documents == null || documents.isEmpty());
 	}
-	public List<String> getValueList() {
-		return valueList;
+	public List<String> getValue() {
+		return value;
 	}
-	public void setValueList(List<String> valueList) {
-		this.valueList = valueList;
+	public void setValue(List<String> value) {
+		this.value = value;
 	}
-	public void setValue(List<String> valueList) {
-		setValueList(valueList);
+	public String getSimpleValue() {
+		if (value == null || value.isEmpty()) {
+			return null;
+		}
+		return value.get(0);
 	}
 }
 

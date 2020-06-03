@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -167,8 +166,6 @@ public class DocumentationsUtils extends RdfService{
 					tempObject.accumulate(VALUE, newValue);
 					tempMultipleCodeList.replace(attribute, tempObject);
 				} else {
-					List<String> listValue = new ArrayList<>();
-					listValue.add(newValue);
 					tempMultipleCodeList.put(attribute, rubric);
 				}
 				docRubrics.remove(i);
@@ -187,7 +184,6 @@ public class DocumentationsUtils extends RdfService{
 	 * @throws RmesException 
 	 */
 	public String setMetadataReport(String id, String body, boolean create) throws RmesException {
-		// TODO maxOccurs
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Documentation sims = new Documentation();
@@ -472,15 +468,13 @@ public class DocumentationsUtils extends RdfService{
 			IRI predicateUri, IRI attributeUri) throws RmesException {
 		switch (type) {
 			case DATE:
-				RdfUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getValue(), model, graph);
+				RdfUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
 				break;
 			case CODELIST:
-				if (rubric.getValueList() != null) {
-					for (String code : rubric.getValueList()) {
+				if (rubric.getValue() != null) {
+					for (String code : rubric.getValue()) {
 						getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, code);
 					}
-				} else {
-					getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, rubric.getValue());
 				}
 				break;
 			case RICHTEXT:
@@ -490,7 +484,7 @@ public class DocumentationsUtils extends RdfService{
 				addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
 				break;
 			case ORGANIZATION:
-				String orgaUri = organizationUtils.getUri(rubric.getValue());
+				String orgaUri = organizationUtils.getUri(rubric.getSimpleValue());
 				if (orgaUri != null) {
 					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(orgaUri), model, graph);
 				}

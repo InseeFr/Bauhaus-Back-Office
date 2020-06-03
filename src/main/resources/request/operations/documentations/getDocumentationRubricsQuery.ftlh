@@ -2,7 +2,7 @@ SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?max
 	FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
 	FROM <http://rdf.insee.fr/graphes/codes> 
 	FROM <http://rdf.insee.fr/graphes/organisations>
-    FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
+    FROM NAMED <http://rdf.insee.fr/graphes/def/simsv2fr> 
 
  
 WHERE { 
@@ -51,17 +51,19 @@ WHERE {
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
-			
-			?mas sdmx-mm:metadataAttributeProperty ?attr . 
-	  		OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
-
-			
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			?reportAttr ?attr ?codeUri . 
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .
 			BIND('${CODELIST.jsonType}' AS ?rangeType) .
+						
+			OPTIONAL {
+				GRAPH <http://rdf.insee.fr/graphes/def/simsv2fr> {
+					?mas sdmx-mm:metadataAttributeProperty ?attr . 
+					?mas sdmx-mm:maxOccurs ?maxOccurs
+				}
+			} .
 		} 
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
