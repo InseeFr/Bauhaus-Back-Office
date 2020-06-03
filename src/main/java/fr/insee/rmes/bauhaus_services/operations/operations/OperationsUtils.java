@@ -69,12 +69,13 @@ public class OperationsUtils extends RdfService{
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
-		Operation operation = new Operation(id);
+		Operation operation = new Operation();
 		try {
 			operation = mapper.readValue(body, Operation.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		operation.setId(id);
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
 		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
