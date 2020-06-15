@@ -468,7 +468,7 @@ public class DocumentationsUtils extends RdfService{
 			IRI predicateUri, IRI attributeUri) throws RmesException {
 		switch (type) {
 			case DATE:
-				RdfUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
+				RdfUtils.addTripleDate(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
 				break;
 			case CODELIST:
 				if (rubric.getValue() != null) {

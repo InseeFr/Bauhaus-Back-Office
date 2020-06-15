@@ -4,19 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.ORG;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.ontologies.XSD;
 
 
 public enum RangeType {
 	
-	STRING(XSD.STRING, "TEXT"),
+	STRING(XMLSchema.STRING, "TEXT"),
 	RICHTEXT(DCMITYPE.TEXT, "RICH_TEXT"),
 	ATTRIBUTE(SDMX_MM.REPORTED_ATTRIBUTE, "REPORTED_ATTRIBUTE"),
-	DATE(XSD.DATETIME, "DATE"),
+	DATE(XMLSchema.DATE, "DATE"),
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),
 	CODELIST(null,"CODE_LIST"),
 	UNDEFINED(null,"undefined");

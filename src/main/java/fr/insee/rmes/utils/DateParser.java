@@ -2,9 +2,11 @@ package fr.insee.rmes.utils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +19,7 @@ public class DateParser {
 	 private static List<String> dateFormats ;
 
 	    private static void init(){
-	    	if (dateFormats==null||dateFormats.size()==0) {
+	    	if (dateFormats==null||dateFormats.isEmpty()) {
 	    		dateFormats = new ArrayList<String>();
 	    		dateFormats.add("yyyy-MM-dd HH:mm:ssxx");
 	    		dateFormats.add("yyyy-MM-dd");
@@ -26,7 +28,7 @@ public class DateParser {
 	    	}
 	    }
 
-	    public static LocalDateTime parseDate(String dateStr) {
+	    public static LocalDateTime parseDateTime(String dateStr) {
 	    	init();
 	    	try {
         		return ZonedDateTime.parse(dateStr).toLocalDateTime();
@@ -50,6 +52,15 @@ public class DateParser {
 	        return LocalDateTime.parse(dateStr);
 	    }     
 	    
+	    public static Date parseDate(String dateStr) {
+	    	return convertDateTimeToDate(parseDateTime(dateStr));
+	    }     
+	    
+	    public static Date convertDateTimeToDate(LocalDateTime dateTime) {
+	        return Date
+	          .from(dateTime.atZone(ZoneId.systemDefault())
+	          .toInstant());
+	    }
 	    
 	    /**
 	     * 
@@ -61,7 +72,7 @@ public class DateParser {
 	    		LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
 	    		return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
 	    	}catch (Exception e) {
-	    		logger.warn("Date can't be parse : "+dateStr + e.getMessage());
+	    		logger.warn("Date {} can't be parse : {}",dateStr , e.getMessage());
 	    		return dateStr;
 	    	}
 	    }

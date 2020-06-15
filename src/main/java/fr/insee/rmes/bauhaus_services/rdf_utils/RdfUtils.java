@@ -1,8 +1,11 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -22,6 +25,10 @@ import fr.insee.rmes.utils.DateParser;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class RdfUtils {
+	
+	private static final String DATE_FORMAT = "yyyy-MM-dd";
+
+	static final Logger logger = LogManager.getLogger(RdfUtils.class);
 	
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
@@ -162,8 +169,13 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
-        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateParser.parseDate(date));	
+        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateParser.parseDateTime(date));	
 		return factory.createLiteral(parsedDate, XMLSchema.DATETIME);
+	}
+	
+	public static Literal setLiteralDate(String date) {
+		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateParser.parseDate(date));
+		return factory.createLiteral(parsedDate, XMLSchema.DATE);
 	}
 	
 	public static Literal setLiteralXML(String string) {
@@ -200,6 +212,11 @@ public class RdfUtils {
 	public static void addTripleDateTime(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralDateTime(value), graph);
+		}
+	}
+	public static void addTripleDate(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			model.add(objectURI, predicat, RdfUtils.setLiteralDate(value), graph);
 		}
 	}
 	public static void addTripleInt(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
