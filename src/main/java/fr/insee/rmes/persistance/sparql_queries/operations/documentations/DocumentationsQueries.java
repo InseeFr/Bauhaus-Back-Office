@@ -53,7 +53,8 @@ public class DocumentationsQueries {
 	 * @throws RmesException
 	 */
 	public static String getAttributesUriQuery() throws RmesException {
-        return buildRequest("getAttributesUriQuery.ftlh", null);
+		if (params==null) {initParams();}
+        return buildRequest("getAttributesUriQuery.ftlh", params);
 	}
 	
 	
