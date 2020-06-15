@@ -1,5 +1,5 @@
 SELECT ?idOperation ?idSeries ?idIndicator
-FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
+FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
 WHERE { 
  ?report rdf:type sdmx-mm:MetadataReport .
  ?report sdmx-mm:target ?target . 

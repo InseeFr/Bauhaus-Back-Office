@@ -1,5 +1,5 @@
 SELECT ?state 
-  FROM <http://rdf.insee.fr/graphes/produits>
+  FROM <${PRODUCTS_GRAPH}>
   WHERE {  
 	?indic insee:validationState ?state . 
 	 FILTER(STRENDS(STR(?indic), '${id}'))

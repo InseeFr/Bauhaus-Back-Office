@@ -6,7 +6,7 @@ public class OperationsQueries {
 
 	public static String operationsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?operation a insee:StatisticalOperation . \n" 
 				+ "?operation skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
@@ -21,7 +21,7 @@ public class OperationsQueries {
 	public static String operationQuery(String id){
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims ?validationState \n"
 				+ "WHERE { "
-					+ "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+					+ "GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 					+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
 					+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + id+ "')) . \n" 
 					+ "BIND(STRAFTER(STR(?operation),'/operation/') AS ?id) . \n" 
@@ -49,7 +49,7 @@ public class OperationsQueries {
 	
 	public static String seriesQuery(String idOperation) {
 		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 		+ "FILTER(STRENDS(STR(?operation),'/operations/operation/" + idOperation+ "')) . \n" 
 
 		+ "?seriesUri dcterms:hasPart ?operation . \n"

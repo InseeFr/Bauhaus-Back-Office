@@ -1,12 +1,12 @@
 SELECT DISTINCT ?id ?labelLg1
 WHERE {
-	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}/graphes/structures> {
+	GRAPH <${STRUCTURES_GRAPH}> {
         ?structure dcterms:identifier ?id ;
         		   rdfs:label ?labelLg1 ;
                    qb:component ?componentSpecification .
 
         ?componentSpecification (qb:dimension|qb:measure|qb:attribute) ?component .
-        GRAPH <${STRUCTURES_COMPONENTS_GRAPH}/graphes/components> {
+    GRAPH <${STRUCTURES_COMPONENTS_GRAPH}> {
 			?component dcterms:identifier '${ID}' .
         } .
 

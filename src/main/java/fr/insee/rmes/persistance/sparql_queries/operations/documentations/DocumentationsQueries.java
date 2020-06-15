@@ -32,6 +32,9 @@ public class DocumentationsQueries {
 		if (params==null) {initParams();}
 		params.put("idMas", idMas);
 		params.put("uniqueAttr","true");
+		params.put("MSD_GRAPH",Config.MSD_GRAPH);
+		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
+		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
@@ -101,6 +104,7 @@ public class DocumentationsQueries {
 		params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
 		params.put("CODELIST", RangeType.CODELIST);
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
+		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	
@@ -124,6 +128,10 @@ public class DocumentationsQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
+		params.put("MSD_GRAPH",Config.MSD_GRAPH);
+		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
+		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
 	}
 	
 	

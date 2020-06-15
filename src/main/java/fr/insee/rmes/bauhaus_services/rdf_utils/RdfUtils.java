@@ -48,11 +48,11 @@ public class RdfUtils {
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(Config.DOCUMENTATIONS_BASE_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
+		return factory.createIRI(Config.DOCUMENTATIONS_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
 	}
 	
 	public static Resource dsdGraph(){
-		return factory.createIRI(Config.DSDS_GRAPH);
+		return factory.createIRI(Config.STRUCTURES_GRAPH);
 	}
 	
 	public static Resource conceptScheme(){

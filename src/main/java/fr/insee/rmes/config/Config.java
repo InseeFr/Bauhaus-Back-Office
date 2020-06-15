@@ -20,6 +20,9 @@ public class Config {
 	public static String LG1 = "";
 	public static String LG2 = "";
 	
+	public static String BASE_GRAPH = "";
+
+	
 	public static String PASSWORD_GESTIONNAIRE = "";
 	public static String PASSWORD_PRODUCTEUR = "";
 	
@@ -28,23 +31,31 @@ public class Config {
 	public static String CONCEPTS_BASE_URI = "";
 	public static String COLLECTIONS_BASE_URI = "";
 	
+	public static String CLASSIF_FAMILIES_GRAPH = "";
+	
 	public static String OPERATIONS_GRAPH = "";
 	public static String OPERATIONS_BASE_URI = "";
-	public static String SERIES_BASE_URI = "";
-	public static String FAMILIES_BASE_URI = "";
+	public static String OP_SERIES_BASE_URI = "";
+	public static String OP_FAMILIES_BASE_URI = "";
 	public static String DOCUMENTATIONS_BASE_URI = "";
-	public static String DOCUMENTATIONS_BASE_GRAPH = "";
+	public static String DOCUMENTATIONS_GRAPH = "";
 	public static String DOCUMENTS_BASE_URI = "";
+	public static String MSD_GRAPH= "";
+	public static String MSD_CONCEPTS_GRAPH= "";
 	public static String LINKS_BASE_URI = "";
 	public static String DOCUMENTS_GRAPH = "";
 	public static String DOCUMENTS_STORAGE = "";
 	
 	public static String PRODUCTS_GRAPH = "";
-	public static String INDICATORS_BASE_URI = "";
+	public static String PRODUCTS_BASE_URI = "";
 	
-	public static String DSDS_GRAPH = "";
-	public static String DSDS_BASE_URI = "";
+	public static String STRUCTURES_GRAPH = "";
+	public static String STRUCTURES_BASE_URI = "";
 	public static String STRUCTURES_COMPONENTS_GRAPH = "";
+	
+	public static String CODELIST_GRAPH = "";
+	
+	public static String ORGANIZATIONS_GRAPH = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";
@@ -75,50 +86,27 @@ public class Config {
 	public static String SWAGGER_BASEPATH = "";
 	public static String SWAGGER_URL = "";
 
+
+
 	private Config() {
 		throw new IllegalStateException("Utility class");
 	}
 	
 	public static void setConfig(Environment env) {
-		System.out.println(env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer"));
-		Config.APP_HOST = env.getProperty("fr.insee.rmes.bauhaus.concepts.appHost");
+	
+		//Initialize general configurations
+		Config.APP_HOST = env.getProperty("fr.insee.rmes.bauhaus.appHost");
 		
 		Config.ENV = env.getProperty("fr.insee.rmes.bauhaus.env");
-
 		Config.REQUIRES_SSL = Boolean.valueOf(env.getProperty("fr.insee.rmes.bauhaus.force.ssl"));
-
-		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultContributor");
-		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultMailSender");
-		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote");
 
 		Config.LG1 = env.getProperty("fr.insee.rmes.bauhaus.lg1");
 		Config.LG2 = env.getProperty("fr.insee.rmes.bauhaus.lg2");
 
+		Config.BASE_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.baseGraph");
+		
 		Config.PASSWORD_GESTIONNAIRE = env.getProperty("fr.insee.rmes.bauhaus.gestionnaire.password");
 		Config.PASSWORD_PRODUCTEUR = env.getProperty("fr.insee.rmes.bauhaus.producteur.password");
-
-		Config.CONCEPTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.concepts.graph");
-		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.bauhaus.concepts.scheme");
-		Config.CONCEPTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.concepts.baseURI");
-		Config.COLLECTIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.collections.baseURI");
-		
-		Config.OPERATIONS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.operations.graph");
-		Config.OPERATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.baseURI");
-		Config.SERIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.series.baseURI");
-		Config.FAMILIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.families.baseURI");
-		Config.DOCUMENTATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseURI");
-		Config.DOCUMENTATIONS_BASE_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseGraph");
-		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
-		Config.LINKS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.links.baseURI");
-		Config.DOCUMENTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.documents.baseGraph");
-		Config.DOCUMENTS_STORAGE=env.getProperty("fr.insee.rmes.bauhaus.storage.document");
-
-		
-		Config.PRODUCTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.products.graph");
-		Config.INDICATORS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.indicators.baseURI");
-
-
-		readConfigForStructures(env);
 
 		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
 		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.repository");
@@ -128,6 +116,26 @@ public class Config {
 		Config.REPOSITORY_ID_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.repository");
 		Config.BASE_URI_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.baseURI");
 
+		
+		//Initialize concepts configuration
+		readConfigForConcepts(env);
+		
+		//Initialize Classifications
+		Config.CLASSIF_FAMILIES_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.classifications.families.graph");
+		
+		//Initialize Operations
+		readConfigForOperations(env);
+
+		//Initialize Structures
+		readConfigForStructures(env);
+		
+		//Initialize Code lists
+		Config.CODELIST_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.codelists.graph");
+		
+		//Initialize Organizations
+		Config.ORGANIZATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.organisations.graph");
+
+		//Initialize other services
 		Config.BASE_URI_METADATA_API = env.getProperty("fr.insee.rmes.bauhaus.metadata.api.baseURI");
 
 		Config.SPOC_SERVICE_URL = env.getProperty("fr.insee.rmes.bauhaus.spoc.url");
@@ -150,9 +158,42 @@ public class Config {
 		Config.SWAGGER_URL=(Config.REQUIRES_SSL ? "https" : "http") + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
 	}
 
+	private static void readConfigForConcepts(Environment env) {
+		Config.DEFAULT_CONTRIBUTOR = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultContributor");
+		Config.DEFAULT_MAIL_SENDER = env.getProperty("fr.insee.rmes.bauhaus.concepts.defaultMailSender");
+		Config.MAX_LENGTH_SCOPE_NOTE = env.getProperty("fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote");
+
+
+		Config.CONCEPTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.concepts.graph");
+		Config.CONCEPTS_SCHEME = env.getProperty("fr.insee.rmes.bauhaus.concepts.scheme");
+		Config.CONCEPTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.concepts.baseURI");
+		Config.COLLECTIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.collections.baseURI");
+	}
+
+	private static void readConfigForOperations(Environment env) {
+		Config.OPERATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.operations.graph");
+		Config.OPERATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.baseURI");
+		Config.OP_SERIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.series.baseURI");
+		Config.OP_FAMILIES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.operations.families.baseURI");
+		
+		Config.DOCUMENTATIONS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentations.baseURI");
+		Config.DOCUMENTATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.graph");
+		Config.MSD_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.msd.graph");
+		Config.MSD_CONCEPTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.concepts.graph");
+		
+		
+		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
+		Config.LINKS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.links.baseURI");
+		Config.DOCUMENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documents.graph");
+		Config.DOCUMENTS_STORAGE=env.getProperty("fr.insee.rmes.bauhaus.storage.document");
+
+		Config.PRODUCTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.products.graph");
+		Config.PRODUCTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.products.baseURI");
+	}
+
 	private static void readConfigForStructures(Environment env) {
-		Config.DSDS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.dsds.graph");
-		Config.DSDS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.dsds.baseURI");
-		Config.STRUCTURES_COMPONENTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
+		Config.STRUCTURES_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.graph");
+		Config.STRUCTURES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.baseURI");
+		Config.STRUCTURES_COMPONENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
 	}
 }

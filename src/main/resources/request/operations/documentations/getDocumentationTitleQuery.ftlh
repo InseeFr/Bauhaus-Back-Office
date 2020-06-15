@@ -1,5 +1,5 @@
 SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator ?validationState
-FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>  
+FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>  
 WHERE {  
 	?report rdf:type sdmx-mm:MetadataReport . 				
 		

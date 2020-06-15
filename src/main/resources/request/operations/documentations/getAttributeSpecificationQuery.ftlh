@@ -1,7 +1,7 @@
 SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs
-  FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
-  FROM <http://rdf.insee.fr/graphes/codes> 
-  FROM <http://rdf.insee.fr/graphes/concepts/qualite>
+  FROM <${MSD_GRAPH}> 
+  FROM <${CODELIST_GRAPH}> 
+  FROM <${MSD_CONCEPTS_GRAPH}>
   WHERE { 
 	  ?mas rdf:type sdmx-mm:MetadataAttributeSpecification
 	  OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 

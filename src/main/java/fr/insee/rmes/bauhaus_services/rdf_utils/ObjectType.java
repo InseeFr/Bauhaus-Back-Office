@@ -16,18 +16,18 @@ import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
 	COLLECTION("collection", SKOS.COLLECTION,  Config.COLLECTIONS_BASE_URI),
-	FAMILY("family", INSEE.FAMILY, Config.FAMILIES_BASE_URI),
-	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
+	FAMILY("family", INSEE.FAMILY, Config.OP_FAMILIES_BASE_URI),
+	SERIES("series", INSEE.SERIES, Config.OP_SERIES_BASE_URI),
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
-	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
+	INDICATOR("indicator", INSEE.INDICATOR, Config.PRODUCTS_BASE_URI),
 	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
-	DSD("dsd", QB.DATA_STRUCTURE_DEFINITION, Config.DSDS_BASE_URI),
-	MEASURE("measure", QB.MEASURE, Config.DSDS_BASE_URI + "/measure"),
-	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.DSDS_BASE_URI + "/attribute"),
-	DIMENSION("dimension", QB.DIMENSION, Config.DSDS_BASE_URI + "/dimension"),
+	DSD("dsd", QB.DATA_STRUCTURE_DEFINITION, Config.STRUCTURES_BASE_URI),
+	MEASURE("measure", QB.MEASURE, Config.STRUCTURES_BASE_URI + "/measure"),
+	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.STRUCTURES_BASE_URI + "/attribute"),
+	DIMENSION("dimension", QB.DIMENSION, Config.STRUCTURES_BASE_URI + "/dimension"),
 	UNDEFINED("undefined",null, "");
 	
 	

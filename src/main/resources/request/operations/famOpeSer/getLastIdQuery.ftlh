@@ -1,9 +1,9 @@
 
 SELECT ?id 
   where 
-  {graph <http://rdf.insee.fr/graphes/operations>   {   
+  {graph <${OPERATIONS_GRAPH}>   {   
   ?s a ?o
-      BIND (xsd:integer(REPLACE(str(?s), "^http://bauhaus/operations/(.*)/(.)", "")) AS ?id)
+      BIND (xsd:integer(REPLACE(str(?s), "^http://(.*)/operations/(.*)/(.)", "")) AS ?id)
  } 
 }
 	ORDER BY DESC(?id)

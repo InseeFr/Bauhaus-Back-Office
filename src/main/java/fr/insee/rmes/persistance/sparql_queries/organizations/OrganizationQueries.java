@@ -6,7 +6,7 @@ public class OrganizationQueries {
 
 	public static String organizationQuery(String identifier) {
 		return "SELECT  ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/organisations> { \n"
+				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
 				//id
 				+ "?organization dcterms:identifier '"+ identifier +"' . \n"
 
@@ -35,7 +35,7 @@ public class OrganizationQueries {
 
 	public static String organizationsQuery() {
 		return "SELECT DISTINCT ?id ?label ?altLabel \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/organisations> { \n"
+				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
 				//id
 				+ "?organization dcterms:identifier ?id . \n"
 
@@ -51,7 +51,7 @@ public class OrganizationQueries {
 	
 	public static String getUriById(String identifier) {
 		return "SELECT  ?uri \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/organisations> { \n"
+				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
 				+ "?uri dcterms:identifier '"+ identifier +"' . \n"
 
 				+ "}} \n" ;

@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2
 WHERE {
-	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}/graphes/components> {
+	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}> {
         ?component dcterms:identifier '${ID}' ;
                    insee:identifiantMetier ?identifiant ;
                    rdf:type ?type ;

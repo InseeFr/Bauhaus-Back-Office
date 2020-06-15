@@ -1,4 +1,4 @@
-WITH <http://rdf.insee.fr/graphes/operations>
+WITH <${OPERATIONS_GRAPH}>
 
 DELETE {
 	<${famopeserURI}> insee:validationState ?oldState 
@@ -6,7 +6,7 @@ DELETE {
 
 ;
 
-WITH <http://rdf.insee.fr/graphes/operations>
+WITH <${OPERATIONS_GRAPH}>
 
 INSERT {
 	<${famopeserURI}>  insee:validationState <${newState}>

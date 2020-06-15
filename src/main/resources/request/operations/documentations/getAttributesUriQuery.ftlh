@@ -1,5 +1,5 @@
 SELECT ?id ?uri 
-  FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
+  FROM <${MSD_GRAPH}> 
   WHERE { 
 	  ?uri rdf:type sdmx-mm:MetadataAttributeProperty ;
 	  	   dc:identifier ?id

@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?labelLg1 <#if SEARCH> ?concept </#if> ?type
 WHERE {
-	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}/graphes/components> {
+	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}> {
         ?component dcterms:identifier ?id ;
                    rdf:type ?type ;
                    rdfs:label ?labelLg1 .

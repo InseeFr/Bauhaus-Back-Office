@@ -6,7 +6,7 @@ public class CodeListQueries {
 
 	public static String getCodeListItemsByNotation(String notation) {
 		return "SELECT ?code ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
@@ -20,7 +20,7 @@ public class CodeListQueries {
 
 	public static String getCodeListLabelByNotation(String notation) {
 		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?codeList skos:prefLabel ?codeListLabelLg1 . \n"
@@ -32,7 +32,7 @@ public class CodeListQueries {
 
 	public static String getCodeByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?labelLg1 ?labelLg2  \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
@@ -46,7 +46,7 @@ public class CodeListQueries {
 	
 	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?uri skos:inScheme ?codeList . \n"
@@ -56,7 +56,7 @@ public class CodeListQueries {
 	
 	public static String getCodeListNotationByUri(String uri) {
 		return "SELECT ?notation \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes> { \n"
+				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
 						
 				+ "    OPTIONAL {<"+uri+"> rdfs:seeAlso ?codeListCS . \n" 
 				+ "      ?codeListCS rdf:type skos:ConceptScheme . \n"
