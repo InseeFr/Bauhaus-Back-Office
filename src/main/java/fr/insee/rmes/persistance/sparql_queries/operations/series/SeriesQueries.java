@@ -43,7 +43,6 @@ public class SeriesQueries {
 		whereClause = null;
 		getSimpleAttr(id);
 		getCodesLists();
-		getSingleOrganizations();
 		getValidationState();
 
 		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
@@ -54,7 +53,6 @@ public class SeriesQueries {
 		whereClause = null;
 		getSimpleAttr(null);
 		getCodesLists();
-		getSingleOrganizations();
 
 		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
 	}
@@ -124,7 +122,9 @@ public class SeriesQueries {
 	}
 
 	public static String getOwner(String uris) {
-		return "SELECT ?owner { \n" + "?series dcterms:creator ?owner . \n" + "VALUES ?series { " + uris + " } \n"
+		return "SELECT ?owner { \n" 
+				+ "?series dcterms:creator ?owner . \n" 
+				+ "VALUES ?series { " + uris + " } \n"
 				+ "}";
 	}
 
@@ -139,7 +139,26 @@ public class SeriesQueries {
 				+ "?series a insee:StatisticalOperationSeries . \n" + " FILTER(STRENDS(STR(?series),'/operations/serie/"
 				+ id + "')) . \n" + "?series insee:gestionnaire ?gestionnaire  . \n" + "} }";
 	}
-
+	
+	/**
+	 * return creators id (creators are organizations)
+	 * @param id
+	 * @return
+	 */
+	public static String getCreators(String id) {
+		return "SELECT ?creators\n" 
+				
+				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
+				+ "WHERE { \n"
+					+ "?series a insee:StatisticalOperationSeries . \n" 
+					+ "?series dcterms:creator ?uri  . \n" 
+					+ "?uri dcterms:identifier  ?creators . \n" 
+					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
+				+ "} ";
+	}
+	
+	
 	private static void getSimpleAttr(String id) {
 
 		if (id != null) {
@@ -193,11 +212,6 @@ public class SeriesQueries {
 				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n" + "}   \n");
 	}
 
-	private static void getSingleOrganizations() {
-		addVariableToList(" ?creator ");
-		addClauseToWhereClause("OPTIONAL {?series dcterms:creator ?uriCreator . \n"
-				+ "?uriCreator dcterms:identifier  ?creator . \n" + "}   \n");
-	}
 
 	private static void getValidationState() {
 		addVariableToList(" ?validationState ");
