@@ -42,6 +42,8 @@ public class Config {
 	public static String DOCUMENTS_BASE_URI = "";
 	public static String MSD_GRAPH= "";
 	public static String MSD_CONCEPTS_GRAPH= "";
+	public static String DOCUMENTATIONS_GEO_GRAPH = "";
+	public static String DOCUMENTATIONS_GEO_BASE_URI = "";
 	public static String LINKS_BASE_URI = "";
 	public static String DOCUMENTS_GRAPH = "";
 	public static String DOCUMENTS_STORAGE = "";
@@ -63,6 +65,10 @@ public class Config {
 	
 	public static String SESAME_SERVER_PUBLICATION = "";
 	public static String REPOSITORY_ID_PUBLICATION = "";
+	
+	public static String SESAME_SERVER_PUBLICATION_INTERNE = "";
+	public static String REPOSITORY_ID_PUBLICATION_INTERNE = "";
+	
 	public static String BASE_URI_PUBLICATION = "";
 	
 	public static String BASE_URI_METADATA_API = "";
@@ -114,6 +120,10 @@ public class Config {
 
 		Config.SESAME_SERVER_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.sesameServer");
 		Config.REPOSITORY_ID_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.repository");
+		
+		Config.SESAME_SERVER_PUBLICATION_INTERNE = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer");
+		Config.REPOSITORY_ID_PUBLICATION_INTERNE = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.interne.repository");
+
 		Config.BASE_URI_PUBLICATION = env.getProperty("fr.insee.rmes.bauhaus.sesame.publication.baseURI");
 
 		
@@ -180,7 +190,9 @@ public class Config {
 		Config.DOCUMENTATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.graph");
 		Config.MSD_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.msd.graph");
 		Config.MSD_CONCEPTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documentations.concepts.graph");
-		
+		Config.DOCUMENTATIONS_GEO_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentation.geographie.baseURI");
+		Config.DOCUMENTATIONS_GEO_GRAPH = BASE_GRAPH +  env.getProperty("fr.insee.rmes.bauhaus.documentation.geographie.graph");
+
 		
 		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
 		Config.LINKS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.links.baseURI");

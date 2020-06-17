@@ -34,6 +34,7 @@ public abstract class RepositoryUtils {
 
 
 	public static Repository initRepository(String sesameServer, String repositoryID) {
+		if (sesameServer==null||sesameServer.equals("")) {return null;}
 		Repository repo = new HTTPRepository(sesameServer, repositoryID);
 		try {
 			repo.init();
@@ -63,6 +64,7 @@ public abstract class RepositoryUtils {
 	 * @throws RmesException 
 	 */
 	public static Response.Status executeUpdate(String updateQuery,Repository repository) throws RmesException {
+		if (repository == null) {return Response.Status.EXPECTATION_FAILED;}
 		Update update = null;
 		String queryWithPrefixes = QueryUtils.PREFIXES + updateQuery;
 		try {

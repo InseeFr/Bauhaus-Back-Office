@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -26,7 +28,12 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 
-
+/**
+ * Getters only get on publication base
+ * Setters (publish methods and execute methods) operate on publication and internal publication base
+ * @author rco0ck
+ *
+ */
 public class RepositoryPublication extends RepositoryUtils{
 
 	private static final String CONNECTION_TO = "Connection to ";
@@ -36,7 +43,10 @@ public class RepositoryPublication extends RepositoryUtils{
 	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
 
 	public static final Repository REPOSITORY_PUBLICATION = initRepository(Config.SESAME_SERVER_PUBLICATION, Config.REPOSITORY_ID_PUBLICATION);
+	public static final Repository REPOSITORY_PUBLICATION_INTERNE = initRepository(Config.SESAME_SERVER_PUBLICATION_INTERNE, Config.REPOSITORY_ID_PUBLICATION_INTERNE);
 
+	
+	
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
@@ -90,13 +100,25 @@ public class RepositoryPublication extends RepositoryUtils{
 	 * @throws RmesException 
 	 */
 	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
-		return executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
+		Status status = executeUpdate(updateQuery, REPOSITORY_PUBLICATION_INTERNE);
+		if (status.getFamily()==Family.SUCCESSFUL || status==Status.EXPECTATION_FAILED) {
+			status = executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
+		}
+		return status;
 	}
 
 	public static void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
 			List<Resource> topConceptOfToDelete) throws RmesException {
+		publishConcept(concept, model, noteToClear,topConceptOfToDelete, REPOSITORY_PUBLICATION_INTERNE);
+		publishConcept(concept, model, noteToClear,topConceptOfToDelete, REPOSITORY_PUBLICATION);
+	}
+	
+	private static void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
+			List<Resource> topConceptOfToDelete, Repository repo) throws RmesException {
+		if (repo == null) {return ;}
+
 		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
+			RepositoryConnection conn = repo.getConnection();
 			// notes to delete
 			for (Resource note : noteToClear) {
 				conn.remove(note, null, null);
@@ -114,30 +136,35 @@ public class RepositoryPublication extends RepositoryUtils{
 			logger.info("Publication of concept : {}", concept);
 		} catch (RepositoryException e) {
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
-			logger.error("{} {} {}", CONNECTION_TO , Config.SESAME_SERVER_PUBLICATION, FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
+			logger.error("{} {} {}", CONNECTION_TO , repo, FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
 
 	public static void publishResource(Resource resource, Model model, String type) throws RmesException {
+		publishResource(resource, model, type, REPOSITORY_PUBLICATION_INTERNE);
+		publishResource(resource, model, type, REPOSITORY_PUBLICATION);
+	}
+
+	private static void publishResource(Resource resource, Model model, String type, Repository repo) throws RmesException {
+		if (repo == null) {return ;}
+
 		try {
-			RepositoryConnection conn = REPOSITORY_PUBLICATION.getConnection();
+			RepositoryConnection conn = repo.getConnection();
 			conn.remove(resource, null, null);
 			conn.add(model);
 			conn.close();
 			logger.info("Publication of {} : {}" ,type, resource);
 		} catch (RepositoryException e) {
 			logger.error("Publication of {} : {} {}" ,type, resource, FAILED);
-			logger.error("{} {} {}", CONNECTION_TO, Config.SESAME_SERVER_PUBLICATION, FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + Config.SESAME_SERVER_PUBLICATION + FAILED);
-
+			logger.error("{} {} {}", CONNECTION_TO, repo, FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
 
-
 	
 	
-	public static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
+	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
 				DCTERMS.REPLACES, SKOS.RELATED);
 
