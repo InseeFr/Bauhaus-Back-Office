@@ -5,6 +5,7 @@ import java.io.File;
 import javax.ws.rs.core.Response;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.documentations.Documentation;
 
 public interface OperationsService {
 
@@ -115,6 +116,8 @@ public interface OperationsService {
 	
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
+
+	Documentation getFullSims(String id) throws RmesException;
 
 	String createMetadataReport(String body) throws RmesException;
 

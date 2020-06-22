@@ -11,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -38,6 +40,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -87,7 +90,7 @@ public class OperationsResources {
 	@Path("/families/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
+	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
 	public Response getFamiliesForSearch() throws RmesException {
 		String jsonResultat = operationsService.getFamiliesForSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -97,19 +100,19 @@ public class OperationsResources {
 	@Path("/family/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
-		responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
-	)
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
+			)
 	public Response getFamilyByID(@PathParam(Constants.ID) String id) throws RmesException {
 		String jsonResultat = operationsService.getFamilyByID(id);
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
 	/**
 	 * UPDATE
 	 * @param id, body
 	 * @return response
 	 */
-	
+
 	@Secured({ Roles.SPRING_ADMIN })
 	@PUT
 	@Path("/family/{id}")
@@ -118,7 +121,7 @@ public class OperationsResources {
 	public Response setFamilyById(
 			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Family to update", required = true,
-            content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
@@ -140,7 +143,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
 	public Response createFamily(
 			@RequestBody(description = "Family to create", required = true, 
-            content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
 		String id = null;
 		try {
 			id = operationsService.createFamily(body);
@@ -149,7 +152,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	@Secured({ Roles.SPRING_ADMIN })
 	@PUT
 	@Path("/family/validate/{id}")
@@ -166,8 +169,8 @@ public class OperationsResources {
 	}
 
 
-	
-	
+
+
 	/***************************************************************************************************
 	 * SERIES
 	 ******************************************************************************************************/
@@ -188,7 +191,7 @@ public class OperationsResources {
 		String jsonResultat = operationsService.getSeriesWithSims();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
 	@GET
 	@Path("/series/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -225,7 +228,7 @@ public class OperationsResources {
 	public Response setSeriesById(
 			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Series to update", required = true,
-            content = @Content(schema = @Schema(implementation = Series.class)))String body) {
+			content = @Content(schema = @Schema(implementation = Series.class)))String body) {
 		try {
 			operationsService.setSeries(id, body);
 		} catch (RmesException e) {
@@ -233,7 +236,7 @@ public class OperationsResources {
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
-	
+
 	@GET
 	@Path("/series/{id}/operationsWithoutReport")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -261,7 +264,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
 	public Response createSeries(
 			@RequestBody(description = "Series to create", required = true, 
-            content = @Content(schema = @Schema(implementation = Series.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Series.class))) String body) {
 		String id = null;
 		try {
 			id = operationsService.createSeries(body);
@@ -270,7 +273,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	/**
 	 * PUBLISH
 	 * @param id
@@ -290,14 +293,14 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
-	
+
+
 	/***************************************************************************************************
 	 * OPERATIONS
 	 ******************************************************************************************************/
-	
 
-	
+
+
 	@GET
 	@Path("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -326,10 +329,10 @@ public class OperationsResources {
 	}
 
 
-	  /**
-	    * Wait for an efficient service using xslt
-	    * @deprecated (can't parse ddi files)
-	    */
+	/**
+	 * Wait for an efficient service using xslt
+	 * @deprecated (can't parse ddi files)
+	 */
 	@GET
 	@Deprecated
 	@Path("/operation/{id}/variableBook")
@@ -337,16 +340,16 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
 	public Response getVarBookExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader)
 			throws RmesException{
-			return operationsService.getVarBookExport(id, acceptHeader);
+		return operationsService.getVarBookExport(id, acceptHeader);
 	}
-	
+
 	@POST
 	@Path("/operation/codebook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
-	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 1"))
+			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 1"))
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
@@ -354,7 +357,7 @@ public class OperationsResources {
 		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
 		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
 	}
-	
+
 	/**
 	 * UPDATE
 	 * @param id
@@ -369,7 +372,7 @@ public class OperationsResources {
 	public Response setOperationById(
 			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Operation to update", required = true, 
-            content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
@@ -390,7 +393,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public Response createOperation(
 			@RequestBody(description = "Operation to create", required = true, 
-            content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		String id = null;
 		try {
 			id = operationsService.createOperation(body);
@@ -399,7 +402,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	/**
 	 * PUBLISH
 	 * @param id
@@ -419,9 +422,9 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
-	
-	
+
+
+
 	/***************************************************************************************************
 	 * INDICATORS
 	 ******************************************************************************************************/
@@ -440,7 +443,7 @@ public class OperationsResources {
 	@Path("/indicators/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
-			responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
+	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
 	public Response getIndicatorsForSearch() throws RmesException {
 		String jsonResultat = operationsService.getIndicatorsForSearch();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
@@ -476,7 +479,7 @@ public class OperationsResources {
 	public Response setIndicatorById(
 			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Indicator to update", required = true,
-            content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
@@ -484,7 +487,7 @@ public class OperationsResources {
 		}
 		return Response.status(Status.NO_CONTENT).build();
 	}
-	
+
 	/**
 	 * PUBLISH
 	 * @param id
@@ -504,7 +507,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	/**
 	 * CREATE
 	 * @param body
@@ -517,7 +520,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
 	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
 	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
-            content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
+	content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
 		String id = null;
 		try {
@@ -529,9 +532,9 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-	
-	
-	
+
+
+
 	/***************************************************************************************************
 	 * DOCUMENTATION
 	 ******************************************************************************************************/
@@ -549,7 +552,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
 	@GET
 	@Path("/metadataAttribute/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -564,7 +567,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
 	@GET
 	@Path("/metadataAttributes")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -579,14 +582,14 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
-	
+
+
 	@GET
 	@Path("/metadataReport/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Metadata report for an id", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-	))})
+			))})
 	public Response getMetadataReport(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
@@ -596,19 +599,43 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
+
+	@GET
+	@Path("/metadataReport/fullSims/{id}")
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getFullSims", summary = "Full sims for an id", 
+	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json" ,*/ schema = @Schema(implementation = Documentation.class)
+			))})
+	public Response getFullSims(
+			@Parameter(
+					description = "Identifiant de la documentation (format : [0-9]{4})",
+					required = true,
+					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam("id") String id,
+			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
+			) {
+		Documentation fullsims;
+		try {
+			fullsims = operationsService.getFullSims(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+
+		return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
+	}
+
+
 	/**
 	 * GET
 	 * @param id
 	 * @return
 	 */
-	
+
 	@GET
 	@Path("/metadataReport/Owner/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-	))})
+			))})
 	public Response getMetadataReportOwner(@PathParam("id") String id) {
 		String jsonResultat;
 		try {
@@ -618,8 +645,8 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
-	
-	
+
+
 	/**
 	 * CREATE
 	 * @param body
@@ -632,7 +659,7 @@ public class OperationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = TEXT_PLAIN))})
 	public Response setMetadataReport(@RequestBody(description = "Metadata report to create", required = true,
-            content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+	content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		logger.info("POST Metadata report");
 		String id = null;
 		try {
@@ -643,7 +670,7 @@ public class OperationsResources {
 		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	/**
 	 * UPDATE
 	 * @param id
@@ -658,7 +685,7 @@ public class OperationsResources {
 	public Response setMetadataReportById(
 			@PathParam(Constants.ID) String id, 
 			@RequestBody(description = "Report to update", required = true,
-            content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		try {
 			operationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {
@@ -687,7 +714,7 @@ public class OperationsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
+
 	@POST
 	@Path("/metadataReport/export")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
@@ -695,10 +722,10 @@ public class OperationsResources {
 	public Response getSimsExport() throws RmesException {
 		return operationsService.exportMetadataReport("toto");	
 	}
-	
+
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);
 		return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 	}
-	
+
 }

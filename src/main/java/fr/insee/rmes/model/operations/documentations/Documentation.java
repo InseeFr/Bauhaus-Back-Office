@@ -68,4 +68,8 @@ public class Documentation {
 	public String getIdOperation() {
 		return idOperation;
 	}
+	public void setIdOperation(String idOperation) {
+		this.idOperation = idOperation;
+	}
+
 }

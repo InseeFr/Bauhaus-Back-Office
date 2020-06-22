@@ -10,6 +10,11 @@ import java.lang.reflect.Field;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.MarshalException;
+import javax.xml.bind.Marshaller;
+import javax.xml.validation.Schema;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +39,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -328,6 +334,27 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
 		XhtmlToMarkdownUtils.convertJSONObject(documentation);
 		return documentation.toString();
+	}
+	
+	@Override
+	public Documentation getFullSims(String id) throws RmesException {
+//		Documentation documentation = documentationsUtils.getFullSims(id);
+//		
+////		try {
+////			  JAXBContext context = JAXBContext.newInstance("com.acme.foo");
+////			  Marshaller marshaller = context.createMarshaller();
+////			  Schema schema ; 
+////			Marshaller.setSchema(schema = @Schema(implementation = DocumentationSims.class);
+////			  String documentationXml = Marshaller.marshal(documentation, Documentation.class);
+////			} catch (MarshalException ex) {
+////			  ex.printStackTrace();
+////			} catch (JAXBException ex) {
+////			  ex.printStackTrace();
+////			}
+//		
+//		return documentation.toString();
+		
+		return  documentationsUtils.getFullSims(id);
 	}
 
 	@Override
