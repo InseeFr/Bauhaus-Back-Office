@@ -30,7 +30,7 @@ public class DocumentationExport {
 		File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
-		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/test.xsl");
+		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		saxonService.transform(isInputFile, XSL_FILE, osOutputFile);
 		isInputFile.close();

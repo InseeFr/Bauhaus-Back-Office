@@ -149,9 +149,9 @@ public class DocumentationsUtils extends RdfService {
 		String idDatabase = target[1];
 
 		switch(targetType) {
-		case "OPERATION" : sims.setIdOperation(idDatabase);
-		case "SERIES" : sims.setIdSeries(idDatabase);
-		case "INDICATOR" : sims.setIdIndicator(idDatabase);
+		case "OPERATION" : sims.setIdOperation(idDatabase); break;
+		case "SERIES" : sims.setIdSeries(idDatabase); break;
+		case "INDICATOR" : sims.setIdIndicator(idDatabase); break;
 		}
 
 		List<DocumentationRubric> rubrics = new ArrayList<DocumentationRubric>();
@@ -668,16 +668,18 @@ public class DocumentationsUtils extends RdfService {
 		String targetType = null;
 		if (existingIdTarget != null ) {
 			idDatabase = (String) existingIdTarget.get("idOperation");
+			
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
 				idDatabase = (String) existingIdTarget.get("idSeries");
+
+				if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+					idDatabase = (String) existingIdTarget.get("idIndicator");
+					targetType = "INDICATOR";
+				} else {
+					targetType = "SERIES";
+				}
 			} else {
 				targetType = "OPERATION";
-			}
-			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idIndicator");
-				targetType = "INDICATOR";
-			} else {
-				targetType = "SERIES";
 			}
 		}
 		return new String[] { targetType, idDatabase };	}
@@ -699,7 +701,7 @@ public class DocumentationsUtils extends RdfService {
 	}
 
 	public File exportMetadataReport(String id) throws Exception {
-		InputStream test = getClass().getClassLoader().getResourceAsStream("testXML.xml");
+		InputStream test = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
 		return docExport.export(test);
 	}
 
