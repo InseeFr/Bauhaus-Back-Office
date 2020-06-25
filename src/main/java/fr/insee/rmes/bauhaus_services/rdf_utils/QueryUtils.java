@@ -14,6 +14,7 @@ public class QueryUtils {
 					+ "PREFIX skosxl:<http://www.w3.org/2008/05/skos-xl#> \n"
 					+ "PREFIX dc:<http://purl.org/dc/elements/1.1/> \n"
 					+ "PREFIX insee:<http://rdf.insee.fr/def/base#> \n"
+					+ "PREFIX insee2:<http://test.id.insee.fr/> \n"
 					+ "PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#> \n"
 					+ "PREFIX pav:<http://purl.org/pav/> \n"
 					+ "PREFIX foaf:<http://xmlns.com/foaf/0.1/> \n"

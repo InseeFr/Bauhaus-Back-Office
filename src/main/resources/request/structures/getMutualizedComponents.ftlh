@@ -1,19 +1,23 @@
 SELECT DISTINCT ?id ?labelLg1 <#if SEARCH> ?concept </#if> ?type
+FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
-	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}/graphes/components> {
-        ?component dcterms:identifier ?id ;
-                   rdf:type ?type ;
-                   rdfs:label ?labelLg1 .
+    ?component dcterms:identifier ?id ;
+               rdf:type ?type ;
+               rdfs:label ?labelLg1 .
 
-        FILTER (lang(?labelLg1) = '${LG1}') .
+#    { ?component insee:validationState 'Modified' }
+#    UNION
+#    { ?component insee:validationState 'Published' }
+
+    FILTER (lang(?labelLg1) = '${LG1}') .
 
 <#if SEARCH>
-        OPTIONAL {
-            ?component qb:concept ?conceptObject
-        } .
+    OPTIONAL {
+        ?component qb:concept ?conceptObject
+    } .
 
-        BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
+    BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
 </#if>
-    }
+
 }
 ORDER BY ?labelLg1

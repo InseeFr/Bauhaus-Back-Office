@@ -31,10 +31,21 @@ public class XSD {
 	
 	public static final URI DATETIME;
 
+	public static final URI INTEGER;
+
+	public static final URI DECIMAL;
+
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
 
 		STRING = f.createURI(NAMESPACE, "string");
+		INTEGER = f.createURI(NAMESPACE, "integer");
+		DECIMAL = f.createURI(NAMESPACE, "decimal");
 		DATETIME = f.createURI(NAMESPACE, "dateTime");
 	}
+
+	public static String[] getURIForRange(){
+		return new String[]{STRING.toString(), INTEGER.toString(), DECIMAL.toString(), DATETIME.toString()};
+	}
+
 }

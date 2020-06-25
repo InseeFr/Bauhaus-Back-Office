@@ -1,0 +1,9 @@
+SELECT ?id ?idp
+FROM <${STRUCTURES_GRAPH}>
+WHERE {
+	?s dcterms:identifier ?idp ;
+       rdf:type qb:DataStructureDefinition .
+    BIND (xsd:integer(REPLACE(str(?idp), "^dsd", "")) AS ?id)
+}
+ORDER BY DESC(?id)
+LIMIT 1

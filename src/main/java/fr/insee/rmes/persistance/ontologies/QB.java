@@ -20,6 +20,8 @@ public class QB {
 	public static final URI DATA_STRUCTURE_DEFINITION;
 	
 	public static final URI COMPONENT;
+	public static final URI COMPONENT_REQUIRED;
+
 	public static final URI COMPONENT_SPECIFICATION;
 	public static final URI COMPONENT_ATTACHMENT;
 	public static final URI MEASURE;
@@ -33,6 +35,7 @@ public class QB {
 	public static final URI CODED_PROPERTY;
 	
 	public static final URI CONCEPT;
+	public static final URI ORDER;
 
 	
 	static {
@@ -43,6 +46,8 @@ public class QB {
 		COMPONENT = f.createURI(NAMESPACE, "component");
 		COMPONENT_SPECIFICATION = f.createURI(NAMESPACE, "ComponentSpecification"); 
 		COMPONENT_ATTACHMENT = f.createURI(NAMESPACE, "componentAttachment");
+		COMPONENT_REQUIRED = f.createURI(NAMESPACE, "componentRequired");
+
 		MEASURE = f.createURI(NAMESPACE, "measure");
 		MEASURE_PROPERTY = f.createURI(NAMESPACE, "MeasureProperty");
 		ATTRIBUTE = f.createURI(NAMESPACE, "attribute");
@@ -54,8 +59,12 @@ public class QB {
 		CODED_PROPERTY = f.createURI(NAMESPACE, "CodedProperty");
 		
 		CONCEPT = f.createURI(NAMESPACE, "concept");
-		
+		ORDER = f.createURI(NAMESPACE, "order");
+
 	}
-	
+
+	public static String[] getURIForComponent(){
+		return new String[]{MEASURE_PROPERTY.toString(), ATTRIBUTE_PROPERTY.toString(), DIMENSION_PROPERTY.toString()};
+	}
 
 }

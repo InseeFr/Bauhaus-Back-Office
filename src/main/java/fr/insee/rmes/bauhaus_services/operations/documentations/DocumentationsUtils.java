@@ -51,7 +51,7 @@ import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class DocumentationsUtils extends RdfService {
@@ -116,7 +116,7 @@ public class DocumentationsUtils extends RdfService {
 				}
 				rubric.remove(HAS_DOC);
 				if (rubric.get("rangeType").equals("DATE")) {
-					rubric.put("value", DateParser.getDate(rubric.getString("value")));
+					rubric.put("value", DateUtils.getDate(rubric.getString("value")));
 				}
 			}
 		}

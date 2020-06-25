@@ -24,10 +24,16 @@ public enum ObjectType {
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
-	DSD("dsd", QB.DATA_STRUCTURE_DEFINITION, Config.DSDS_BASE_URI),
-	MEASURE("measure", QB.MEASURE, Config.DSDS_BASE_URI + "/measure"),
-	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.DSDS_BASE_URI + "/attribute"),
-	DIMENSION("dimension", QB.DIMENSION, Config.DSDS_BASE_URI + "/dimension"),
+	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, "/" + Config.STRUCTURE_COMPONENT_GRAPH_OTHER),
+	MEASURE("measure", QB.MEASURE, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/measure"),
+	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/attribute"),
+	DIMENSION("dimension", QB.DIMENSION, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/dimension"),
+
+	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, Config.BASE_URI_GESTION + "/mesures"),
+	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, Config.BASE_URI_GESTION + "/attributs"),
+	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.BASE_URI_GESTION + "/dimensions"),
+
+
 	UNDEFINED("undefined",null, "");
 	
 	

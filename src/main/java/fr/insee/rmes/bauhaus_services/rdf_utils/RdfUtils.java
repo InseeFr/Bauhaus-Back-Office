@@ -18,10 +18,12 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
-public class RdfUtils {
+public class
+
+RdfUtils {
 	
 	static ValueFactory factory = ValueFactoryImpl.getInstance();
 
@@ -42,7 +44,11 @@ public class RdfUtils {
 	public static Resource operationsGraph(){
 		return factory.createURI(Config.OPERATIONS_GRAPH);
 	}
-	
+
+	public static Resource structuresComponentsGraph(){
+		return factory.createURI(Config.STRUCTURE_GRAPH+ "/" + Config.STRUCTURE_COMPONENT_BASE_URI);
+	}
+
 	public static Resource productsGraph(){
 		return factory.createURI(Config.PRODUCTS_GRAPH);
 	}
@@ -51,8 +57,8 @@ public class RdfUtils {
 		return factory.createURI(Config.DOCUMENTATIONS_BASE_GRAPH +Config.DOCUMENTATIONS_BASE_URI+"/"+ id);
 	}
 	
-	public static Resource dsdGraph(){
-		return factory.createURI(Config.DSDS_GRAPH);
+	public static Resource structureGraph(){
+		return factory.createURI(Config.STRUCTURE_GRAPH + "/" + Config.STRUCTURE_BASE_URI);
 	}
 	
 	public static Resource conceptScheme(){
@@ -66,7 +72,22 @@ public class RdfUtils {
 	public static URI objectIRIPublication(ObjectType objType, String id) {
 		return factory.createURI(objType.getBaseUriPublication() + "/" + id);
 	}
-	
+
+	public static URI structureComponentAttributeIRI(String id) {
+		return factory.createURI(ObjectType.getBaseUri("attributeProperty") + "/", id);
+	}
+	public static URI structureComponentDimensionIRI(String id) {
+		return factory.createURI(ObjectType.getBaseUri("dimensionProperty") + "/", id);
+	}
+
+	public static URI structureComponentMeasureIRI(String id) {
+		return factory.createURI(ObjectType.getBaseUri("measureProperty") + "/", id);
+	}
+	public static URI structureComponentDefinitionIRI(String structureIRI, String componentDefinitionID) {
+		return factory.createURI(structureIRI + "/components/", componentDefinitionID);
+	}
+
+
 	public static URI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
@@ -95,10 +116,13 @@ public class RdfUtils {
 		return objectIRI(ObjectType.LINK, id);
 	}
 	
-	public static URI dsdIRI(String id) {
-		return objectIRI(ObjectType.DSD, id);
+	public static URI structureIRI(String id) {
+		return objectIRI(ObjectType.STRUCTURE, id);
 	}
-	
+
+	public static URI createIRI(String uri){
+		return factory.createURI(uri);
+	}
 	public static URI componentIRI(String id, String uriType) {
 		URI uri = factory.createURI(uriType);
 		return objectIRI(ObjectType.getEnum(uri), id);
@@ -162,7 +186,7 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
-        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateParser.parseDate(date));	
+        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDate(date));
 		return factory.createLiteral(parsedDate, XMLSchema.DATETIME);
 	}
 	

@@ -4,6 +4,7 @@ import org.springframework.core.env.Environment;
 public class Config {
 
 
+	public static Object CODE_LIST_BASE_URI = "";
 	public static String APP_HOST = "";
 	
 	public static String ENV = "";
@@ -39,10 +40,12 @@ public class Config {
 	
 	public static String PRODUCTS_GRAPH = "";
 	public static String INDICATORS_BASE_URI = "";
-	
-	public static String DSDS_GRAPH = "";
-	public static String DSDS_BASE_URI = "";
-	public static String STRUCTURES_COMPONENTS_GRAPH = "";
+
+	// STRUCTURE
+	public static String STRUCTURE_GRAPH = "";
+	public static String STRUCTURE_COMPONENT_BASE_URI = "";
+	public static String STRUCTURE_BASE_URI = "";
+	public static String STRUCTURE_COMPONENT_GRAPH_OTHER = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";
@@ -78,7 +81,6 @@ public class Config {
 	}
 	
 	public static void setConfig(Environment env) {
-		System.out.println(env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer"));
 		Config.APP_HOST = env.getProperty("fr.insee.rmes.bauhaus.concepts.appHost");
 		
 		Config.ENV = env.getProperty("fr.insee.rmes.bauhaus.env");
@@ -117,6 +119,7 @@ public class Config {
 
 
 		readConfigForStructures(env);
+		readConfigForCodeLists(env);
 
 		Config.SESAME_SERVER_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer");
 		Config.REPOSITORY_ID_GESTION = env.getProperty("fr.insee.rmes.bauhaus.sesame.gestion.repository");
@@ -148,9 +151,14 @@ public class Config {
 		Config.SWAGGER_URL=(Config.REQUIRES_SSL ? "https" : "http") + "://" + Config.SWAGGER_HOST + "/" + Config.SWAGGER_BASEPATH;
 	}
 
+	private static void readConfigForCodeLists(Environment env) {
+		Config.CODE_LIST_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.codeList.baseURI");
+	}
+
 	private static void readConfigForStructures(Environment env) {
-		Config.DSDS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.dsds.graph");
-		Config.DSDS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.dsds.baseURI");
-		Config.STRUCTURES_COMPONENTS_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
+		Config.STRUCTURE_GRAPH = env.getProperty("fr.insee.rmes.bauhaus.structures.graph");
+		Config.STRUCTURE_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.baseURI");
+		Config.STRUCTURE_COMPONENT_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.component.baseURI");
+		Config.STRUCTURE_COMPONENT_GRAPH_OTHER = env.getProperty("fr.insee.rmes.bauhaus.structures.baseURIOther");
 	}
 }
