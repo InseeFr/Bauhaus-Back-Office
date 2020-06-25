@@ -716,12 +716,25 @@ public class OperationsResources {
 	}
 
 	@POST
-	@Path("/metadataReport/export")
+	@Path("/metadataReport/exportTest")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public Response getSimsExport() throws RmesException {
 		return operationsService.exportMetadataReport("toto");	
 	}
+	
+	@POST
+	@Path("/metadataReport/export/{id}")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	public Response getSimsExport(@Parameter(
+			description = "Identifiant de la documentation (format : [0-9]{4})",
+			required = true,
+			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam("id") String id
+	) throws RmesException {
+		return operationsService.exportMetadataReport(id);	
+	}
+	
 
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);

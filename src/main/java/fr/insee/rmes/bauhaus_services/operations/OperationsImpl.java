@@ -338,22 +338,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	
 	@Override
 	public Documentation getFullSims(String id) throws RmesException {
-//		Documentation documentation = documentationsUtils.getFullSims(id);
-//		
-////		try {
-////			  JAXBContext context = JAXBContext.newInstance("com.acme.foo");
-////			  Marshaller marshaller = context.createMarshaller();
-////			  Schema schema ; 
-////			Marshaller.setSchema(schema = @Schema(implementation = DocumentationSims.class);
-////			  String documentationXml = Marshaller.marshal(documentation, Documentation.class);
-////			} catch (MarshalException ex) {
-////			  ex.printStackTrace();
-////			} catch (JAXBException ex) {
-////			  ex.printStackTrace();
-////			}
-//		
-//		return documentation.toString();
-		
+
 		return  documentationsUtils.getFullSims(id);
 	}
 

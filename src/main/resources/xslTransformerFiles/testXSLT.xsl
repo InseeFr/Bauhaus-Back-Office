@@ -28,6 +28,9 @@
 			<xsl:if test="rangeType != ''">
 				rangeType :	<xsl:value-of select="rangeType" />
 			</xsl:if>
+			<xsl:if test="value != ''">
+				Valeur :	<xsl:value-of select="value" />
+			</xsl:if>
 			<xsl:text>&#13;</xsl:text>
 			<!-- <xsl:value-of select="." /> -->
 		</xsl:for-each>

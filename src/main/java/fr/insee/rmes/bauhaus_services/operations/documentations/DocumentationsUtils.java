@@ -55,6 +55,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.XMLUtils;
 
 @Component
 public class DocumentationsUtils extends RdfService {
@@ -92,8 +93,8 @@ public class DocumentationsUtils extends RdfService {
 	@Autowired
 	CodeListUtils codeListUtils;
 
-	//private DocumentationsRubricsUtils docRubricsUtils;
-
+	@Autowired
+	DocumentationsUtils operationsService;
 
 	@Autowired
 	DocumentationPublication documentationPublication;
@@ -668,7 +669,7 @@ public class DocumentationsUtils extends RdfService {
 		String targetType = null;
 		if (existingIdTarget != null ) {
 			idDatabase = (String) existingIdTarget.get("idOperation");
-			
+
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
 				idDatabase = (String) existingIdTarget.get("idSeries");
 
@@ -701,7 +702,13 @@ public class DocumentationsUtils extends RdfService {
 	}
 
 	public File exportMetadataReport(String id) throws Exception {
-		InputStream test = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
+		InputStream test;
+		if(id=="toto") {
+			test = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
+		}
+		else {
+			test = getClass().getClassLoader().getResourceAsStream(XMLUtils.produceResponse(operationsService.getFullSims(id), "application/xml"));
+		}
 		return docExport.export(test);
 	}
 
