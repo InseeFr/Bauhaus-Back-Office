@@ -3,7 +3,6 @@ package fr.insee.rmes.utils;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -18,8 +17,6 @@ public class XMLUtils {
 
 	public static final String toString(Document xml) throws TransformerFactoryConfigurationError, TransformerException  {
 		TransformerFactory tf = TransformerFactory.newInstance();
-		tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
