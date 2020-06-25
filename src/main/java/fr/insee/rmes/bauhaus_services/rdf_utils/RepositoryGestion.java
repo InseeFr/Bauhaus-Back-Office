@@ -44,6 +44,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	public static final Repository REPOSITORY_GESTION = initRepository(Config.SESAME_SERVER_GESTION,
 			Config.REPOSITORY_ID_GESTION);
 
+
 	/**
 	 * Method which aims to produce response from a sparql query
 	 * 
@@ -266,33 +267,22 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
+	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			RepositoryResult<Statement> nodes = null;
-			RepositoryResult<Statement> measures = null;
-			RepositoryResult<Statement> dimensions = null;
-			RepositoryResult<Statement> attributes = null;
-			nodes = conn.getStatements(dsd, QB.COMPONENT, null, false);
+			RepositoryResult<Statement> specifications = null;
+			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
 			while (nodes.hasNext()) {
 				Resource node = (Resource) nodes.next().getObject();
 				toRemove.add(node);
-				measures = conn.getStatements(node, QB.MEASURE, null, false);
-				while (measures.hasNext()) {
-					toRemove.add((Resource) measures.next().getObject());
+				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
+				while (specifications.hasNext()) {
+					toRemove.add((Resource) specifications.next().getObject());
 				}
-				measures.close();
-				dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
-				while (dimensions.hasNext()) {
-					toRemove.add((Resource) dimensions.next().getObject());
-				}
-				dimensions.close();
-				attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
-				while (attributes.hasNext()) {
-					toRemove.add((Resource) attributes.next().getObject());
-				}
-				attributes.close();
+				specifications.close();
+
 			}
 			nodes.close();
 			toRemove.forEach(res -> {
@@ -304,7 +294,7 @@ public class RepositoryGestion extends RepositoryUtils {
 				}
 			});
 		} catch (OpenRDFException e) {
-			throwsRmesException(e, "Failure deletion : " + dsd);
+			throwsRmesException(e, "Failure deletion : " + structure);
 		}
 	}
 

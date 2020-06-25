@@ -44,6 +44,9 @@ public class INSEE {
 
 	public static final URI IDENTIFIANT_METIER;
 	public static final URI CODELIST;
+	public static final URI STRUCTURE_IS_VALIDATED;
+
+	public static final URI STRUCTURE_CONCEPT ;
 
 	static {
 		final ValueFactory f = ValueFactoryImpl.getInstance();
@@ -71,8 +74,11 @@ public class INSEE {
 		DATA_COLLECTOR = f.createURI(NAMESPACE,"dataCollector");
 		GESTIONNAIRE = f.createURI(NAMESPACE,"gestionnaire");
 
-		// Structures
-		IDENTIFIANT_METIER = f.createURI(NAMESPACE,"identifiantMetier");
+		// TODO Manu Should be removed !!!
+		IDENTIFIANT_METIER = f.createURI("http://test.id.insee.fr/","identifiantMetier");
+		STRUCTURE_IS_VALIDATED = f.createURI("http://test.id.insee.fr/","isValidated");
+		STRUCTURE_CONCEPT = f.createURI("http://id.insee.fr/concepts/definition/");
+
 		CODELIST = f.createURI(NAMESPACE, "codeList");
 	}
 }
