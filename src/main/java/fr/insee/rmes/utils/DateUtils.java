@@ -30,6 +30,30 @@ public class DateUtils {
         return LocalDateTime.now().toString();
     }
 
+    public static LocalDateTime parseDateTime(String dateStr) {
+        init();
+        try {
+            return ZonedDateTime.parse(dateStr).toLocalDateTime();
+        } catch (Exception e) {
+            logger.debug(e.getMessage());
+        }
+        for (String format : dateFormats) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+            try {//keep the time
+                return LocalDateTime.parse(dateStr, formatter);
+            } catch (Exception e) {
+                logger.debug(e.getMessage());
+            }
+            try {//time is set to 00:00.000
+                return LocalDate.parse(dateStr, formatter).atStartOfDay();
+            } catch (Exception e) {
+                logger.debug(e.getMessage());
+            }
+        }
+        // All parsers failed
+        return LocalDateTime.parse(dateStr);
+    }
+
     public static LocalDateTime parseDate(String dateStr) {
         init();
         try {

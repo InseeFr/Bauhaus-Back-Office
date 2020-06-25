@@ -82,8 +82,8 @@ public class StructureQueries {
 
 	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURE_GRAPH + "/" + Config.STRUCTURE_COMPONENT_BASE_URI);
-		params.put("STRUCTURES_GRAPH", Config.STRUCTURE_GRAPH + "/" + Config.STRUCTURE_BASE_URI);
+		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.BASE_GRAPH + Config.STRUCTURE_COMPONENT_BASE_URI);
+		params.put("STRUCTURES_GRAPH", Config.BASE_GRAPH + Config.STRUCTURE_BASE_URI);
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 

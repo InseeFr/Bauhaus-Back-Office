@@ -3,7 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.indicators;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
@@ -25,6 +25,7 @@ public class IndicatorsQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("PRODUCTS_GRAPH",Config.PRODUCTS_GRAPH);
 	}
 	
 	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException  {
@@ -43,11 +44,11 @@ public class IndicatorsQueries {
 	
 	public static String indicatorsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
+				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n" 
 				+ "?indic skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
-				+ "BIND(STRAFTER(STR(?indic),'/produits/indicateur/') AS ?id) . \n"
+				+ "BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . \n"
 				+ "OPTIONAL{?indic skos:altLabel ?altLabelLg1 . "
 				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "') } \n "
 				+ "}} \n" 
@@ -59,7 +60,7 @@ public class IndicatorsQueries {
 	return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?altLabelLang1;separator=' || ') as ?altLabelLg1) ?altLabelLg2  ?abstractLg1 ?abstractLg2  "
 			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?creator ?gestionnaire  ?idSims  ?validationState  "
 			+ "WHERE {  \r\n" 
-			+ "?indic a insee:StatisticalIndicator .BIND(STRAFTER(STR(?indic),'/produits/indicateur/') AS ?id) . ?indic skos:prefLabel ?prefLabelLg1 \r\n" 
+			+ "?indic a insee:StatisticalIndicator .BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . ?indic skos:prefLabel ?prefLabelLg1 \r\n" 
 			+ "FILTER (lang(?prefLabelLg1) = 'fr') \r\n" 
 			+ " OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \r\n" 
 			+ "FILTER (lang(?prefLabelLg2) = 'en') } \r\n" 
@@ -109,27 +110,26 @@ public class IndicatorsQueries {
 		getSimsId();
 		getValidationState();
 
-		String query =  "SELECT "
+		return   "SELECT "
 				+ variables.toString()
 				+ " WHERE {  \n"
 				+ whereClause.toString()
 				+ "} \n"
 				+ (withLimit ? "LIMIT 1" : "");
 
-		return query;
 	}
 
 	public static String getGestionnaires(String id) {
 		return "SELECT ?gestionnaire\n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
+				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
-				+" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" 
+				+" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" 
 				+"?indic insee:gestionnaire ?gestionnaire  . \n"
 				+ "} }"
 				;
 	}
 	
-	public static String indicatorLinks(String id, URI linkPredicate) {
+	public static String indicatorLinks(String id, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
 				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
@@ -140,13 +140,13 @@ public class IndicatorsQueries {
 				+ "?uriLinked rdf:type ?typeOfObject . \n"
 				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 				
-				+ "FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id + "')) . \n"
+				+ "FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id + "')) . \n"
 
 				+ "} \n"
 				+ "ORDER BY ?labelLg1";
 	}
 	
-	public static String getMultipleOrganizations(String idIndicator, URI linkPredicate) {
+	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) {
 		return "SELECT ?id ?labelLg1 ?labelLg2\n"
 				+ "WHERE { \n" 
 				+"?indicator <"+linkPredicate+"> ?uri . \n"
@@ -156,7 +156,7 @@ public class IndicatorsQueries {
 				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
 				
-				+ "FILTER(STRENDS(STR(?indicator),'/produits/indicateur/" + idIndicator + "')) . \n"
+				+ "FILTER(STRENDS(STR(?indicator),'/"+Config.PRODUCTS_BASE_URI+"/" + idIndicator + "')) . \n"
 
 				+ "} \n"
 				+ "ORDER BY ?id";
@@ -164,10 +164,10 @@ public class IndicatorsQueries {
 
 	private static void getSimpleAttr(String id) {
 		if(id != null) {
-			addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/produits/indicateur/" + id+ "')) . \n" );
+			addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" );
 		} else {
 			addClauseToWhereClause("?indic a insee:StatisticalIndicator .");
-			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/produits/indicateur/') AS ?id) . ");
+			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . ");
 		}
 
 		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ");
@@ -250,11 +250,11 @@ public class IndicatorsQueries {
 	
 	public static String lastID() {
 		return "SELECT ?id \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/produits> { \n"
+				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?uri ?b ?c .\n "
 				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 				+ "BIND(SUBSTR( ?id , 2 ) AS ?intid) . \n"
-				+ "FILTER regex(STR(?uri),'/produits/indicateur/') . \n"
+				+ "FILTER regex(STR(?uri),'/"+Config.PRODUCTS_BASE_URI+"/') . \n"
 				+ "}} \n"
 				+ "ORDER BY DESC(xsd:integer(?intid)) \n"
 				+ "LIMIT 1";
@@ -263,24 +263,24 @@ public class IndicatorsQueries {
 	public static String checkIfExists(String id) {
 		return "ASK \n"
 				+ "WHERE  \n"
-				+ "{ graph <http://rdf.insee.fr/graphes/produits>    \n"
+				+ "{ graph <"+Config.PRODUCTS_GRAPH+">    \n"
 				+ "{?uri ?b ?c .\n "
-				+ "FILTER(STRENDS(STR(?uri),'/produits/indicateur/" + id + "')) . }\n"
+				+ "FILTER(STRENDS(STR(?uri),'/"+Config.PRODUCTS_BASE_URI+"/" + id + "')) . }\n"
 				+ "}";
 		  	
 	}
 
-	public static String getOwner(String URIs) {
+	public static String getOwner(String uris) {
 		return "SELECT ?owner { \n"
 				+ "?indic dcterms:creator ?owner . \n" 
-				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}
 
-	public static String getManagers(String URIs) {
+	public static String getManagers(String uris) {
 		return "SELECT ?manager { \n"
 				+ "?indic insee:gestionnaire ?manager . \n" 
-				+ "VALUES ?indic { " + URIs + " } \n"
+				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}
 

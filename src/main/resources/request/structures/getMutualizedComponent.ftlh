@@ -2,7 +2,7 @@ SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?r
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
-               insee2:identifiantMetier ?identifiant ;
+               insee:identifiantMetier ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 

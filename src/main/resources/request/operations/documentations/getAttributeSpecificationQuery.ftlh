@@ -1,10 +1,11 @@
-SELECT ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational 
-  FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
-  FROM <http://rdf.insee.fr/graphes/codes> 
-  FROM <http://rdf.insee.fr/graphes/concepts/qualite>
+SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs
+  FROM <${MSD_GRAPH}> 
+  FROM <${CODELIST_GRAPH}> 
+  FROM <${MSD_CONCEPTS_GRAPH}>
   WHERE { 
 	  ?mas rdf:type sdmx-mm:MetadataAttributeSpecification
 	  OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
+	  OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
 									
 	  ?mas sdmx-mm:metadataAttributeProperty ?map . 
 	  OPTIONAL {?map rdfs:range ?range } 
@@ -15,7 +16,10 @@ SELECT ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational
 	  FILTER(lang(?masLabelLg1) = '${LG1}') 
 	  FILTER(lang(?masLabelLg2) = '${LG2}') 
 									
+<#if uniqueAttr = "true">
 	FILTER(STRENDS(STR(?mas), '${idMas}')) 
-
+<#else>
+	?mas  dc:identifier ?id .
+</#if>	
   } 
   ORDER BY ?mas

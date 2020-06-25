@@ -1,7 +1,9 @@
-SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc
-	FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
-	FROM <http://rdf.insee.fr/graphes/codes> 
-	FROM <http://rdf.insee.fr/graphes/organisations>
+SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?maxOccurs
+	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
+	FROM <${CODELIST_GRAPH}> 
+	FROM <${ORGANIZATIONS_GRAPH}>
+    FROM NAMED  <${MSD_GRAPH}> 
+
  
 WHERE { 
  		<#-- RangeType.DATE : value -->
@@ -55,6 +57,13 @@ WHERE {
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .
 			BIND('${CODELIST.jsonType}' AS ?rangeType) .
+						
+			OPTIONAL {
+				GRAPH  <${MSD_GRAPH}>  {
+					?mas sdmx-mm:metadataAttributeProperty ?attr . 
+					?mas sdmx-mm:maxOccurs ?maxOccurs
+				}
+			} .
 		} 
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .

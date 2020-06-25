@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.FOAF;
-import org.openrdf.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -16,22 +16,22 @@ import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 public enum ObjectType {
 	CONCEPT("concept", SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
 	COLLECTION("collection", SKOS.COLLECTION,  Config.COLLECTIONS_BASE_URI),
-	FAMILY("family", INSEE.FAMILY, Config.FAMILIES_BASE_URI),
-	SERIES("series", INSEE.SERIES, Config.SERIES_BASE_URI),
+	FAMILY("family", INSEE.FAMILY, Config.OP_FAMILIES_BASE_URI),
+	SERIES("series", INSEE.SERIES, Config.OP_SERIES_BASE_URI),
 	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
-	INDICATOR("indicator", INSEE.INDICATOR, Config.INDICATORS_BASE_URI),
+	INDICATOR("indicator", INSEE.INDICATOR, Config.PRODUCTS_BASE_URI),
 	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
-	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, "/" + Config.STRUCTURE_COMPONENT_GRAPH_OTHER),
+	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, Config.STRUCTURE_COMPONENT_GRAPH_OTHER),
 	MEASURE("measure", QB.MEASURE, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/measure"),
 	ATTRIBUTE("attribute", QB.ATTRIBUTE, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/attribute"),
 	DIMENSION("dimension", QB.DIMENSION, Config.STRUCTURE_COMPONENT_GRAPH_OTHER + "/dimension"),
 
-	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, Config.BASE_URI_GESTION + "/mesures"),
-	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, Config.BASE_URI_GESTION + "/attributs"),
-	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.BASE_URI_GESTION + "/dimensions"),
+	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, Config.BASE_URI_GESTION + "mesures"),
+	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, Config.BASE_URI_GESTION + "attributs"),
+	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.BASE_URI_GESTION + "dimensions"),
 
 
 	UNDEFINED("undefined",null, "");
@@ -40,16 +40,16 @@ public enum ObjectType {
 
 	
 	private String labelType;
-	private URI uri;
+	private IRI uri;
 	private String baseUri;
 
-	ObjectType(String labelType, URI uri, String baseUri){
+	ObjectType(String labelType, IRI uri, String baseUri){
 		this.labelType=labelType;
 		this.uri=uri;
 		this.baseUri=baseUri;
 	}
 
-	public URI getUri() {
+	public IRI getUri() {
 		return this.uri;
 	}
 	
@@ -67,7 +67,7 @@ public enum ObjectType {
 	
 	
 	private static Map<String, ObjectType> lookupLabel = new HashMap<>();
-	private static Map<URI, ObjectType> lookupUri = new HashMap<>();
+	private static Map<IRI, ObjectType> lookupUri = new HashMap<>();
 
 	static {
 		// Populate out lookup when enum is created
@@ -91,7 +91,7 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static URI getUri(String labelType) {
+	public static IRI getUri(String labelType) {
 		return getEnum(labelType).uri;
 	}
 	
@@ -109,7 +109,7 @@ public enum ObjectType {
 	 * @param labelType
 	 * @return
 	 */
-	public static ObjectType getEnum(URI uri) {
+	public static ObjectType getEnum(IRI uri) {
 		return lookupUri.get(uri)!=null ? lookupUri.get(uri): UNDEFINED;
 	}
 	
@@ -118,7 +118,7 @@ public enum ObjectType {
 	 * @param labelType
 	 * @return
 	 */
-	public static String getLabelType(URI uri) {
+	public static String getLabelType(IRI uri) {
 		return getEnum(uri).labelType;
 	}
 

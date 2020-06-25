@@ -11,6 +11,7 @@ import fr.insee.rmes.model.operations.documentations.RangeType;
 
 public class DocumentationsQueries {
 	
+	private static final String ID_SIMS = "idSims";
 	static Map<String,Object> params ;
 	
 	/**
@@ -30,6 +31,10 @@ public class DocumentationsQueries {
 	public static String getAttributeSpecificationQuery(String idMas) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("idMas", idMas);
+		params.put("uniqueAttr","true");
+		params.put("MSD_GRAPH",Config.MSD_GRAPH);
+		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
+		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
@@ -39,7 +44,8 @@ public class DocumentationsQueries {
 	 */
 	public static String getAttributesQuery() throws RmesException {
 		if (params==null) {initParams();}
-        return buildRequest("getAttributesQuery.ftlh", params);
+		params.put("uniqueAttr","false");
+        return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
 	/**
@@ -47,7 +53,8 @@ public class DocumentationsQueries {
 	 * @throws RmesException
 	 */
 	public static String getAttributesUriQuery() throws RmesException {
-        return buildRequest("getAttributesUriQuery.ftlh", null);
+		if (params==null) {initParams();}
+        return buildRequest("getAttributesUriQuery.ftlh", params);
 	}
 	
 	
@@ -58,7 +65,7 @@ public class DocumentationsQueries {
 	 */
 	public static String getDocumentationTitleQuery(String idSims) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("idSims", idSims);
+		params.put(ID_SIMS, idSims);
         return buildRequest("getDocumentationTitleQuery.ftlh", params);
 	}
 	
@@ -68,10 +75,8 @@ public class DocumentationsQueries {
 	 * @throws RmesException
 	 */
 	public static String getTargetByIdSims(String idSims) throws RmesException {
-//		Map<String, Object> root = new HashMap<>();
-//		root.put("idSims", idSims);
 		if (params==null) {initParams();}
-		params.put("idSims", idSims);
+		params.put(ID_SIMS, idSims);
 		return buildRequest("getTargetByIdSimsQuery.ftlh", params);	
 	}
 
@@ -81,8 +86,6 @@ public class DocumentationsQueries {
 	 * @throws RmesException 
 	 */
 	public static String getSimsByTarget(String idTarget) throws RmesException {
-//		Map<String, Object> root = new HashMap<>();
-//		root.put("idTarget", idTarget);
 		if (params==null) {initParams();}
 		params.put("idTarget", idTarget);
 		return buildRequest("getSimsByIdTargetQuery.ftlh", params);
@@ -95,13 +98,14 @@ public class DocumentationsQueries {
 	 */
 	public static String getDocumentationRubricsQuery(String idSims) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("idSims", idSims);
+		params.put(ID_SIMS, idSims);
 		params.put("DATE", RangeType.DATE);
 		params.put("STRING", RangeType.STRING);
 		params.put("RICHTEXT", RangeType.RICHTEXT);
 		params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
 		params.put("CODELIST", RangeType.CODELIST);
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
+		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	
@@ -125,6 +129,10 @@ public class DocumentationsQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
+		params.put("MSD_GRAPH",Config.MSD_GRAPH);
+		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
+		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
 	}
 	
 	

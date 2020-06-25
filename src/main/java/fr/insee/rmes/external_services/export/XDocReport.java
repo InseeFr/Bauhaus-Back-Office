@@ -3,7 +3,6 @@ package fr.insee.rmes.external_services.export;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,11 +100,10 @@ public class XDocReport {
 	}
 
 
-	private OutputStream createOutputFile(boolean isPdf) throws IOException, FileNotFoundException {
+	private OutputStream createOutputFile(boolean isPdf) throws IOException {
 		//TODO pass acceptHeader to manage more than pdf/odt
 		File outFile = File.createTempFile("Codebook", (isPdf?".pdf":".odt"));
-        OutputStream oFile = new FileOutputStream(outFile);
-		return oFile;
+        return new FileOutputStream(outFile);
 	}
 	
 
@@ -113,14 +111,13 @@ public class XDocReport {
 	//TODO use this for default value when template is ok
 	private IXDocReport getReportTemplate(String odtTemplate) throws IOException, XDocReportException {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("xdocreport/"+odtTemplate);
-		IXDocReport report = XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
-		return report;
+		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
 	}
 	
 	private IXDocReport getReportTemplate(File odtTemplate) throws IOException, XDocReportException {
 		InputStream is = new FileInputStream(odtTemplate);
-		IXDocReport report = XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
-		return report;
+		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
+
 	}
 
 }

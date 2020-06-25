@@ -6,7 +6,7 @@ public class FamiliesQueries {
 	
 	public static String familiesQuery() {
 		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { GRAPH<http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
+			+ "WHERE { GRAPH <"+ Config.CLASSIF_FAMILIES_GRAPH + "> { \n"
 			+ "?families skos:prefLabel ?label . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 			+ "FILTER(REGEX(STR(?families),'/familleDeNomenclatures/')) . \n"
@@ -17,7 +17,7 @@ public class FamiliesQueries {
 	
 	public static String familyQuery(String id) {
 		return "SELECT ?prefLabelLg1 \n"
-			+ "WHERE { GRAPH<http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
+			+ "WHERE { GRAPH<"+ Config.CLASSIF_FAMILIES_GRAPH + "> { \n"
 			+ "?family skos:prefLabel ?prefLabelLg1 . \n"
 			+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n"
 			+ "FILTER(REGEX(STR(?family),'/familleDeNomenclatures/" + id + "')) } \n"

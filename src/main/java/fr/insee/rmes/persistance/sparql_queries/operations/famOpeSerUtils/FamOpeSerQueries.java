@@ -3,7 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
@@ -23,6 +23,7 @@ public class FamOpeSerQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("OPERATIONS_GRAPH",Config.OPERATIONS_GRAPH);
 	}
 	
 	/**
@@ -43,7 +44,7 @@ public class FamOpeSerQueries {
 		return buildOperationRequest("getPublicationStatusQuery.ftlh", params);	
 	}
 	
-	public static String setPublicationState(URI familyURI, String newState) throws RmesException{
+	public static String setPublicationState(IRI familyURI, String newState) throws RmesException{
 		if (params==null) {initParams();}
 		params.put(Constants.ID, familyURI);
 		params.put("newState", newState);

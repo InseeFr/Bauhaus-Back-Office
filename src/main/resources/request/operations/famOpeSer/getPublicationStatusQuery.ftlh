@@ -1,5 +1,5 @@
 SELECT ?state 
-  FROM <http://rdf.insee.fr/graphes/operations>
+  FROM <${OPERATIONS_GRAPH}>
   WHERE {  
 	?famopeser insee:validationState ?state . 
 	 FILTER(STRENDS(STR(?famopeser), '${id}'))

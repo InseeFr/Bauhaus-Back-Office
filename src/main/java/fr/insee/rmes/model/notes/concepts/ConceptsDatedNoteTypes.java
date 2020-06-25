@@ -1,7 +1,7 @@
 package fr.insee.rmes.model.notes.concepts;
 
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import fr.insee.rmes.config.Config;
 
@@ -14,7 +14,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String lang() {return Config.LG1;}
 		@Override
-		public URI owlProperty() {return SKOS.CHANGE_NOTE;}
+		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
 	},
 	CHANGENOTELG2("changeNoteLg2") {
@@ -23,7 +23,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String lang() {return Config.LG2;}
 		@Override
-		public URI owlProperty() {return SKOS.CHANGE_NOTE;}
+		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
 	};
 
@@ -42,5 +42,5 @@ public enum ConceptsDatedNoteTypes {
 	
 	public abstract String lang();
 		
-	public abstract URI owlProperty();
+	public abstract IRI owlProperty();
 }

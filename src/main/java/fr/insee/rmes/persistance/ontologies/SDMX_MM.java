@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.ontologies;
 
-import org.openrdf.model.Namespace;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.NamespaceImpl;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class SDMX_MM {
 	/**
@@ -20,23 +20,23 @@ public class SDMX_MM {
 	/**
 	 * An immutable {@link Namespace} constant that represents the namespace.
 	 */
-	public static final Namespace NS = new NamespaceImpl(PREFIX, NAMESPACE);
+	public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
 
 	/*  classes */
 
-	public static final URI REPORTED_ATTRIBUTE;
-	public static final URI METADATA_REPORT;
-	public static final URI METADATA_REPORT_PREDICATE;
-	public static final URI TARGET;
+	public static final IRI REPORTED_ATTRIBUTE;
+	public static final IRI METADATA_REPORT;
+	public static final IRI METADATA_REPORT_PREDICATE;
+	public static final IRI TARGET;
 
 	
 	
 	static {
-		final ValueFactory f = ValueFactoryImpl.getInstance();
+		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		REPORTED_ATTRIBUTE = f.createURI(NAMESPACE, "ReportedAttribute");
-		METADATA_REPORT = f.createURI(NAMESPACE,"MetadataReport");
-		METADATA_REPORT_PREDICATE = f.createURI(NAMESPACE,"metadataReport");
-		TARGET = f.createURI(NAMESPACE,"target");
+		REPORTED_ATTRIBUTE = f.createIRI(NAMESPACE, "ReportedAttribute");
+		METADATA_REPORT = f.createIRI(NAMESPACE,"MetadataReport");
+		METADATA_REPORT_PREDICATE = f.createIRI(NAMESPACE,"metadataReport");
+		TARGET = f.createIRI(NAMESPACE,"target");
 	}
 }

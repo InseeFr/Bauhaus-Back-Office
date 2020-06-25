@@ -11,7 +11,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -20,7 +21,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.URI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +52,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 	@Override
 	public boolean sendMailConcept(String id, String body) throws  RmesException  {
-		URI conceptURI = RdfUtils.conceptIRI(id);
+		IRI conceptURI = RdfUtils.conceptIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
@@ -64,7 +64,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Override
 	public boolean sendMailCollection(String id, String body) throws  RmesException  {
-		URI collectionURI = RdfUtils.collectionIRI(id);
+		IRI collectionURI = RdfUtils.collectionIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}

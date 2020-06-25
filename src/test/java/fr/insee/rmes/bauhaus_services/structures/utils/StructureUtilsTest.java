@@ -6,17 +6,19 @@ import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.utils.DateUtils;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.impl.ValueFactoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.impl.ValueFactoryImpl;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +49,7 @@ public class StructureUtilsTest {
         doNothing().when(repoGestion).loadSimpleObject(any(), any(), any());
         doReturn(1).when(structureUtils).getNextComponentSpecificationID();
 
-        URI structureIRI = ValueFactoryImpl.getInstance().createURI("http://structure");
+        IRI structureIRI = SimpleValueFactory.getInstance().createIRI("http://structure");
 
         Structure structure = new Structure();
         structure.setId("id");
@@ -68,7 +70,7 @@ public class StructureUtilsTest {
         doReturn(1).when(structureUtils).getNextComponentSpecificationID();
 
         Model model = new LinkedHashModel();
-        URI structureIRI = ValueFactoryImpl.getInstance().createURI("http://structure");
+        IRI structureIRI = SimpleValueFactory.getInstance().createIRI("http://structure");
 
         List<ComponentDefinition> components = new ArrayList<>();
 

@@ -23,7 +23,7 @@ WHERE {
 
 
     OPTIONAL {
-        ?component insee2:identifiantMetier ?identifiant .
+        ?component insee:identifiantMetier ?identifiant .
     } .
 
     OPTIONAL {

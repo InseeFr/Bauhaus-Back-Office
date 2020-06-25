@@ -11,21 +11,20 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.ontologies.XSD;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
@@ -120,7 +119,7 @@ public class StructureComponentUtils extends RdfService {
         }
     }
 
-    private void createRDFForComponent(MutualizedComponent component, Resource resource, URI componentURI, ValidationStatus status) throws RmesException {
+    private void createRDFForComponent(MutualizedComponent component, Resource resource, IRI componentURI, ValidationStatus status) throws RmesException {
         Model model = new LinkedHashModel();
         Resource graph = RdfUtils.structuresComponentsGraph();
 
@@ -140,12 +139,12 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
 
         if (component.getRange() != null && component.getRange().equals(INSEE.CODELIST.toString())) {
-            RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.BASE_URI_GESTION + "/" + Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
+            RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
         } else {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
         }
 
-        RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, Config.BASE_URI_GESTION + "/" + Config.CODE_LIST_BASE_URI + "/" + component.getCodeList(), model, graph);
+        RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, component.getCodeList(), model, graph);
         RdfUtils.addTripleStringMdToXhtml(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), Config.LG1, model, graph);
         RdfUtils.addTripleStringMdToXhtml(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), Config.LG2, model, graph);
 
@@ -164,7 +163,7 @@ public class StructureComponentUtils extends RdfService {
     }
 
 
-    private String generateNextId(String prefix, String namespaceSuffix, URI type) throws RmesException {
+    private String generateNextId(String prefix, String namespaceSuffix, IRI type) throws RmesException {
         logger.info("Generate id for component");
         JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, type.toString()));
         logger.debug("JSON when generating the id of a component : {}", json);
@@ -195,12 +194,14 @@ public class StructureComponentUtils extends RdfService {
         if (!Arrays.asList(QB.getURIForComponent()).contains(component.getType())) {
             throw new BadRequestException("The property type is not valid");
         }
-        if (component.getRange() != null &&
+        /*if (component.getRange() != null &&
                 !(component.getRange().equals(INSEE.CODELIST.toString()) || Arrays.asList(XSD.getURIForRange()).contains(component.getRange()))) {
             throw new BadRequestException("The range is not valid");
-        }
+        }*/
 
     }
+
+
 
     private MutualizedComponent deserializeBody(String body) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

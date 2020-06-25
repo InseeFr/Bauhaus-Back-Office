@@ -12,7 +12,7 @@ public class FamiliesQueries {
 
 		return "SELECT DISTINCT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?abstractL1;separator=' || ') as ?abstractLg1) ?abstractLg2 \n"
 				+ "WHERE { \n"
-				+ "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "   GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"				
 				+ "?family a insee:StatisticalOperationFamily . \n"
 				+ "?family skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n"
@@ -33,7 +33,7 @@ public class FamiliesQueries {
 
 	public static String familiesQuery() {
 		return "SELECT DISTINCT ?id ?label  \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?family a insee:StatisticalOperationFamily . \n" 
 				+ "?family skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
@@ -45,7 +45,7 @@ public class FamiliesQueries {
 
 	public static String familyQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState\n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
 				+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
@@ -65,7 +65,7 @@ public class FamiliesQueries {
 
 	public static String getSeries(String idFamily) {
 		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
-				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+				+ " FROM <"+Config.OPERATIONS_GRAPH+"> \n"
 				+ "WHERE { \n" 
 
 				+ "?family dcterms:hasPart ?uri . \n"
@@ -84,7 +84,7 @@ public class FamiliesQueries {
 
 	public static String getSubjects(String idFamily) {
 		return "SELECT  ?id ?labelLg1 ?labelLg2 \n"
-				+ " FROM <http://rdf.insee.fr/graphes/operations> \n"
+				+ " FROM <"+Config.OPERATIONS_GRAPH+"> \n"
 				+ "WHERE { \n" 
 
 				+ "?family dcterms:subject ?subjectUri . \n"

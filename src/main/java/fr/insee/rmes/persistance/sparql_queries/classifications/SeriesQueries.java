@@ -6,7 +6,7 @@ public class SeriesQueries {
 	
 	public static String seriesQuery() {
 		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { GRAPH<http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
+			+ "WHERE { GRAPH<"+ Config.CLASSIF_FAMILIES_GRAPH + "> { \n"
 			+ "?series skos:prefLabel ?label . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 			+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/')) . \n"
@@ -18,8 +18,7 @@ public class SeriesQueries {
 	public static String oneSeriesQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 \n"
 				+ "?scopeNoteLg1 ?scopeNoteLg2 ?subject ?publisher ?covers ?familyLg1 ?familyLg2 ?idFamily \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/codes/nomenclatures> { \n"
-				+ "?series skos:prefLabel ?prefLabelLg1 . \n"
+				+ "WHERE { GRAPH<"+ Config.CLASSIF_FAMILIES_GRAPH + "> { \n"				+ "?series skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) . \n"
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"

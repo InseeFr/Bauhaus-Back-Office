@@ -4,18 +4,19 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -45,17 +46,17 @@ import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
-public class SeriesUtils  extends RdfService {
+public class SeriesUtils extends RdfService {
 
 	@Autowired
 	CodeListService codeListService;
 
 	@Autowired
 	OrganizationsService organizationsService;
-	
+
 	@Autowired
 	FamOpeSerUtils famOpeSerUtils;
-	
+
 	@Autowired
 	SeriesPublication seriesPublication;
 
@@ -63,18 +64,21 @@ public class SeriesUtils  extends RdfService {
 
 	/*READ*/
 
-	public JSONObject getSeriesById(String id) throws RmesException{
+	public JSONObject getSeriesById(String id) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
-		//check that the series exist
+		// check that the series exist
 		if (JSONUtils.isEmpty(series)) {
-			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found","The series "+id+" cannot be found.");
-		}		
+			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
+					"The series " + id + " cannot be found.");
+		}
 		XhtmlToMarkdownUtils.convertJSONObject(series);
 		series.put(Constants.ID, id);
 		addSeriesOperations(id, series);
-		addSeriesFamily(id,series);
+		addSeriesFamily(id, series);
 		addSeriesLinks(id, series);
 		addSeriesGestionnaires(id, series);
+		addSeriesCreators(id, series);
+
 		addGeneratedWith(id, series);
 		return series;
 	}
@@ -84,7 +88,7 @@ public class SeriesUtils  extends RdfService {
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
-			addOneOrganizationLink(series.get(Constants.ID).toString(),series, INSEE.DATA_COLLECTOR);
+			addOneOrganizationLink(series.get(Constants.ID).toString(), series, INSEE.DATA_COLLECTOR);
 			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -111,14 +115,14 @@ public class SeriesUtils  extends RdfService {
 	}
 
 	private void addSeriesLinks(String idSeries, JSONObject series) throws RmesException {
-		addOneTypeOfLink(idSeries,series,DCTERMS.REPLACES);
-		addOneTypeOfLink(idSeries,series,DCTERMS.IS_REPLACED_BY);
-		addOneTypeOfLink(idSeries,series,RDFS.SEEALSO);
-		addOneOrganizationLink(idSeries,series, DCTERMS.CONTRIBUTOR);
-		addOneOrganizationLink(idSeries,series, INSEE.DATA_COLLECTOR);
+		addOneTypeOfLink(idSeries, series, DCTERMS.REPLACES);
+		addOneTypeOfLink(idSeries, series, DCTERMS.IS_REPLACED_BY);
+		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
+		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
 	}
 
-	private void addOneTypeOfLink(String id, JSONObject series, URI predicate) throws RmesException {
+	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
 		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
@@ -126,7 +130,7 @@ public class SeriesUtils  extends RdfService {
 		}
 	}
 
-	private void addOneOrganizationLink(String id, JSONObject series, URI predicate) throws RmesException {
+	private void addOneOrganizationLink(String id, JSONObject series, IRI predicate) throws RmesException {
 		JSONArray organizations = repoGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
@@ -142,15 +146,24 @@ public class SeriesUtils  extends RdfService {
 		series.put("gestionnaires", gestionnaires);
 	}
 	
+	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
+		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreators(id));
+		if (creators.length()==1) {
+			series.put("creator", creators.get(0));
+		}else {
+			series.put("creator", creators);
+		}
+	}
+
 	/*WRITE*/
 
 	/*
 	 * CREATE OR UPDATE
 	 */
-	private void createRdfSeries(Series series, URI familyURI, ValidationStatus newStatus) throws RmesException {
+	private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
 	
 		Model model = new LinkedHashModel();
-		URI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,series.getId());
+		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
 		model.add(seriesURI, RDF.TYPE, INSEE.SERIES, RdfUtils.operationsGraph());
 		/*Required*/
@@ -167,9 +180,11 @@ public class SeriesUtils  extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 	
-		String creator=series.getCreator();
-		if (!StringUtils.isEmpty(creator)) {
-			RdfUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creator), model, RdfUtils.operationsGraph());
+		List<String> creator=series.getCreator();
+		if (creator!= null) {
+			for(String creat : creator) {
+				RdfUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creat), model, RdfUtils.operationsGraph());
+			}
 		}
 		
 		List<String> gestionnaires=series.getGestionnaires();
@@ -215,61 +230,65 @@ public class SeriesUtils  extends RdfService {
 	
 		repoGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
-	
-	private void addOperationLinks(List<OperationsLink> links, URI predicate, Model model, URI seriesURI) {
+
+	private void addOperationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI seriesURI) {
 		if (links != null) {
 			for (OperationsLink link : links) {
-				if(!link.isEmpty()) {
+				if (!link.isEmpty()) {
 					String linkUri = ObjectType.getCompleteUriGestion(link.getType(), link.getId());
-					RdfUtils.addTripleUri(seriesURI, predicate ,linkUri, model, RdfUtils.operationsGraph());
+					RdfUtils.addTripleUri(seriesURI, predicate, linkUri, model, RdfUtils.operationsGraph());
 				}
 			}
 		}
 	}
 
-	private void addCodeList(String list, String code, URI predicate, Model model, URI seriesURI) throws RmesException {
+	private void addCodeList(String list, String code, IRI predicate, Model model, IRI seriesURI) throws RmesException {
 		if (!StringUtils.isEmpty(list) && !StringUtils.isEmpty(code)) {
 			String uri = codeListService.getCodeUri(list, code);
 			RdfUtils.addTripleUri(seriesURI, predicate, uri, model, RdfUtils.operationsGraph());
 		}
 	}
 
-	private void addOperationLinksOrganization(List<OperationsLink> data, URI predicate, Model model, URI seriesURI) throws RmesException {
+	private void addOperationLinksOrganization(List<OperationsLink> data, IRI predicate, Model model, IRI seriesURI)
+			throws RmesException {
 		if (data != null) {
 			for (OperationsLink d : data) {
-				if(!d.isEmpty()) {
-					RdfUtils.addTripleUri(seriesURI, predicate,organizationsService.getOrganizationUriById(d.getId()),model, RdfUtils.operationsGraph());
-				}		
+				if (!d.isEmpty()) {
+					RdfUtils.addTripleUri(seriesURI, predicate, organizationsService.getOrganizationUriById(d.getId()),
+							model, RdfUtils.operationsGraph());
+				}
 			}
 		}
 	}
 
 	public String createSeries(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateSeries()) {
-			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED, 
+		if (!stampsRestrictionsService.canCreateSeries()) {
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
 		String id = famOpeSerUtils.createId();
-		Series series = new Series(id);
+		Series series = new Series();
 		try {
-			series = mapper.readValue(body,Series.class);
+			series = mapper.readValue(body, Series.class);
 			series.id = id;
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
 		checkSimsWithOperations(series);
-		
+
 		// Tester l'existence de la famille
-		String idFamily= series.getFamily().getId();
-		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,idFamily)) {
-			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY,"Unknown family: ",idFamily);
+		String idFamily = series.getFamily().getId();
+		if (!famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
+			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: ", idFamily);
 		}
 
-		URI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY,idFamily);
+		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-		logger.info("Create series : {} - {}",id, series.getPrefLabelLg1());
+		logger.info("Create series : {} - {}", id, series.getPrefLabelLg1());
 
 		return id;
 
@@ -281,9 +300,11 @@ public class SeriesUtils  extends RdfService {
 	 * @throws RmesNotAcceptableException
 	 */
 	private void checkSimsWithOperations(Series series) throws RmesNotAcceptableException {
-		if (series.getIdSims()!=null && !series.getIdSims().isEmpty() && series.getOperations()!=null  && !series.getOperations().isEmpty()) {
-				throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-						series.getPrefLabelLg1()+" "+series.getPrefLabelLg2());
+		if (series.getIdSims() != null && !series.getIdSims().isEmpty() && series.getOperations() != null
+				&& !series.getOperations().isEmpty()) {
+			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
+					"A series cannot have both a Sims and Operation(s)",
+					series.getPrefLabelLg1() + " " + series.getPrefLabelLg2());
 		}
 	}
 
@@ -291,65 +312,71 @@ public class SeriesUtils  extends RdfService {
 	public void setSeries(String id, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Series series = new Series(id);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
+		Series series = new Series();
 		try {
 			series = mapper.readerForUpdating(series).readValue(body);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't parse series", e.getMessage());
 		}
 
-		URI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,id);
-		if(!stampsRestrictionsService.canModifySeries(seriesURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify series.");
+		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
+		if (!stampsRestrictionsService.canModifySeries(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_MODIFICATION_RIGHTS_DENIED,
+					"Only authorized users can modify series.");
 		}
 
 		checkSimsWithOperations(series);
 
-		String status=famOpeSerUtils.getValidationStatus(id);
-		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
-			createRdfSeries(series,null,ValidationStatus.UNPUBLISHED);
+		String status = famOpeSerUtils.getValidationStatus(id);
+		if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+			createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 		} else {
-			createRdfSeries(series,null,ValidationStatus.MODIFIED);
+			createRdfSeries(series, null, ValidationStatus.MODIFIED);
 		}
 		logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
 	}
 
 	public boolean hasSims(String seriesId) throws RmesException {
-		JSONObject series = getSeriesById(seriesId); 
+		JSONObject series = getSeriesById(seriesId);
 		String idSims;
-		try {	
-			idSims=series.getString("idSims"); 
+		try {
+			idSims = series.getString("idSims");
 		} catch (JSONException e) {
 			return false;
 		}
-		return idSims!=null && !idSims.isEmpty();
+		return idSims != null && !idSims.isEmpty();
 	}
 
 	public boolean hasOperations(String seriesId) throws RmesException {
-		JSONObject series= getSeriesById(seriesId);
+		JSONObject series = getSeriesById(seriesId);
 		JSONArray operations;
-		try {	
-			operations=series.getJSONArray("operations");
+		try {
+			operations = series.getJSONArray("operations");
 		} catch (JSONException e) {
 			return false;
 		}
-		return operations!=null && operations.length()>0;
+		return operations != null && operations.length() > 0;
 	}
 
-
-	public String setSeriesValidation(String id)  throws RmesException  {
+	public String setSeriesValidation(String id) throws RmesException {
 		Model model = new LinkedHashModel();
 		seriesPublication.publishSeries(id);
 
-		URI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
-		if(!stampsRestrictionsService.canValidateSeries(seriesURI)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED, 
+		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
+		if (!stampsRestrictionsService.canValidateSeries(seriesURI)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED,
 					"Only authorized users can publish series.");
 		}
 
-		model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
-		model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
-		model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
+		model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
+				RdfUtils.operationsGraph());
+		model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED),
+				RdfUtils.operationsGraph());
+		model.remove(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED),
+				RdfUtils.operationsGraph());
 		logger.info("Validate series : {}", seriesURI);
 
 		repoGestion.objectValidation(seriesURI, model);
@@ -358,5 +385,3 @@ public class SeriesUtils  extends RdfService {
 	}
 
 }
-
-

@@ -2,7 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
 import java.util.Map;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.config.Config;
 
@@ -18,7 +18,7 @@ public class SeriesQueries {
 
 	public static String seriesQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" + "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
@@ -28,7 +28,7 @@ public class SeriesQueries {
 
 	public static String seriesWithSimsQuery() {
 		return "SELECT DISTINCT ?id ?label ?idSims (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { \n" + "GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+				+ "WHERE { \n" + "GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" + "?series skos:prefLabel ?label . \n"
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 				+ "BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . \n"
@@ -43,7 +43,6 @@ public class SeriesQueries {
 		whereClause = null;
 		getSimpleAttr(id);
 		getCodesLists();
-		getSingleOrganizations();
 		getValidationState();
 
 		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
@@ -54,15 +53,15 @@ public class SeriesQueries {
 		whereClause = null;
 		getSimpleAttr(null);
 		getCodesLists();
-		getSingleOrganizations();
 
 		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
 	}
 
-	public static String seriesLinks(String idSeries, URI linkPredicate) {
+	public static String seriesLinks(String idSeries, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n" + "WHERE { \n" + "?series <" + linkPredicate
-				+ "> ?uriLinked . \n" + "?uriLinked skos:prefLabel ?labelLg1 . \n" + "FILTER (lang(?labelLg1) = '"
-				+ Config.LG1 + "') . \n" + "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
+				+ "> ?uriLinked . \n" + "?uriLinked skos:prefLabel ?labelLg1 . \n" 
+				+ "FILTER (lang(?labelLg1) = '"+ Config.LG1 + "') . \n" 
+				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n" + "?uriLinked rdf:type ?typeOfObject . \n"
 				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 
@@ -72,8 +71,9 @@ public class SeriesQueries {
 	}
 
 	public static String getOperations(String idSeries) {
-		return "SELECT ?id ?labelLg1 ?labelLg2 \n" + " FROM <http://rdf.insee.fr/graphes/operations> \n" + "WHERE { \n"
-
+		return "SELECT ?id ?labelLg1 ?labelLg2 \n" 
+				+ " FROM <"+Config.OPERATIONS_GRAPH+"> \n" 
+				+ "WHERE { \n"
 				+ "?series dcterms:hasPart ?uri . \n" + "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n" + "?uri skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
@@ -83,7 +83,8 @@ public class SeriesQueries {
 	}
 
 	public static String getGeneratedWith(String idSeries) {
-		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n" + "WHERE { \n"
+		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n" 
+				+ "WHERE { \n"
 
 				+ "?uri prov:wasGeneratedBy ?series . \n" + "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n" + "?uri skos:prefLabel ?labelLg2 . \n"
@@ -94,7 +95,7 @@ public class SeriesQueries {
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n" + "}" + " ORDER BY ?id";
 	}
 
-	public static String getMultipleOrganizations(String idSeries, URI linkPredicate) {
+	public static String getMultipleOrganizations(String idSeries, IRI linkPredicate) {
 		return "SELECT ?id ?labelLg1 ?labelLg2\n" + "WHERE { \n" + "?series <" + linkPredicate + "> ?uri . \n"
 				+ "?uri dcterms:identifier  ?id . \n" + "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
@@ -108,7 +109,7 @@ public class SeriesQueries {
 
 	public static String getFamily(String idSeries) {
 
-		return "SELECT ?id ?labelLg1 ?labelLg2 \n" + " FROM <http://rdf.insee.fr/graphes/operations> \n" + "WHERE { \n"
+		return "SELECT ?id ?labelLg1 ?labelLg2 \n" + " FROM <"+Config.OPERATIONS_GRAPH+"> \n" + "WHERE { \n"
 
 				+ "?family dcterms:hasPart ?series . \n" + "?family skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n" + "?family skos:prefLabel ?labelLg2 . \n"
@@ -121,7 +122,9 @@ public class SeriesQueries {
 	}
 
 	public static String getOwner(String uris) {
-		return "SELECT ?owner { \n" + "?series dcterms:creator ?owner . \n" + "VALUES ?series { " + uris + " } \n"
+		return "SELECT ?owner { \n" 
+				+ "?series dcterms:creator ?owner . \n" 
+				+ "VALUES ?series { " + uris + " } \n"
 				+ "}";
 	}
 
@@ -131,11 +134,31 @@ public class SeriesQueries {
 	}
 
 	public static String getGestionnaires(String id) {
-		return "SELECT ?gestionnaire\n" + "WHERE { GRAPH <http://rdf.insee.fr/graphes/operations> { \n"
+		return "SELECT ?gestionnaire\n" 
+				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" + " FILTER(STRENDS(STR(?series),'/operations/serie/"
 				+ id + "')) . \n" + "?series insee:gestionnaire ?gestionnaire  . \n" + "} }";
 	}
-
+	
+	/**
+	 * return creators id (creators are organizations)
+	 * @param id
+	 * @return
+	 */
+	public static String getCreators(String id) {
+		return "SELECT ?creators\n" 
+				
+				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
+				+ "WHERE { \n"
+					+ "?series a insee:StatisticalOperationSeries . \n" 
+					+ "?series dcterms:creator ?uri  . \n" 
+					+ "?uri dcterms:identifier  ?creators . \n" 
+					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
+				+ "} ";
+	}
+	
+	
 	private static void getSimpleAttr(String id) {
 
 		if (id != null) {
@@ -189,11 +212,6 @@ public class SeriesQueries {
 				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n" + "}   \n");
 	}
 
-	private static void getSingleOrganizations() {
-		addVariableToList(" ?creator ");
-		addClauseToWhereClause("OPTIONAL {?series dcterms:creator ?uriCreator . \n"
-				+ "?uriCreator dcterms:identifier  ?creator . \n" + "}   \n");
-	}
 
 	private static void getValidationState() {
 		addVariableToList(" ?validationState ");

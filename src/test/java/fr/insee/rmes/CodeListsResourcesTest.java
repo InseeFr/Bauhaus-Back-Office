@@ -15,8 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.TupleQueryResultHandlerException;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
@@ -50,7 +48,7 @@ public class CodeListsResourcesTest {
     //getCodeListByNotation//
 
     @Test
-    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException, TupleQueryResultHandlerException, QueryEvaluationException {
+    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException {
     	when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
     	when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
     	

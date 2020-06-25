@@ -1,12 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.notes;
 
-import org.openrdf.model.URI;
+import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.notes.DatableNote;
 
 public class NotesQueries {
 
-	public static String getLastVersionnableNoteVersion(String conceptId, URI predicat) {
+	public static String getLastVersionnableNoteVersion(String conceptId, IRI predicat) {
 		return "select ?version where { \n"
 				+ "?concept <" + predicat + "> ?note . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + conceptId + "')) . \n"
@@ -34,7 +35,7 @@ public class NotesQueries {
 		
 	public static String getHistoricalNotes(String conceptId, String maxVersion) {
 		return "SELECT ?note ?predicat \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				+ "?concept skos:notation '" + conceptId + "' . \n"
 				+ "?concept ?predicat ?note . \n"
 				+ "?note insee:conceptVersion ?conceptVersion \n"
@@ -42,13 +43,13 @@ public class NotesQueries {
 				+ "}}";
 	}
 	
-	public static String isExist(URI note) {
+	public static String isExist(IRI note) {
 		return "ASK { \n"
 				+ "<" + note + "> ?b ?c \n"
 				+ "}";
 	}
 	
-	public static String isClosed(URI note) {
+	public static String isClosed(IRI note) {
 		return "ASK { \n"
 				+ "<" + note + "> insee:validUntil ?c \n"
 				+ "}";

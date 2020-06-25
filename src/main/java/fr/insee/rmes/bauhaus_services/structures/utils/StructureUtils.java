@@ -13,19 +13,19 @@ import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.openrdf.model.Model;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
-import org.openrdf.model.impl.LinkedHashModel;
-import org.openrdf.model.vocabulary.DC;
-import org.openrdf.model.vocabulary.DCTERMS;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -142,8 +142,8 @@ public class StructureUtils extends RdfService {
 
         structure.setUpdated(DateUtils.getCurrentDate());
         String structureId = structure.getId().replace(" ", "-").toLowerCase();
-        URI structureUri = RdfUtils.structureIRI(structureId);
-        repoGestion.clearStructureNodeAndComponents(structureUri);
+        IRI structureIri = RdfUtils.structureIRI(structureId);
+        repoGestion.clearStructureNodeAndComponents(structureIri);
         createRdfStructure(structure);
         logger.info("Update Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structureId;
@@ -157,35 +157,35 @@ public class StructureUtils extends RdfService {
 
     public void createRdfStructure(Structure structure) throws RmesException {
         String structureId = structure.getId().replace(" ", "-").toLowerCase();
-        URI structureUri = RdfUtils.structureIRI(structureId);
+        IRI structureIri = RdfUtils.structureIRI(structureId);
         Resource graph = RdfUtils.structureGraph();
 
-        createRdfStructure(structure, structureId, structureUri, graph);
+        createRdfStructure(structure, structureId, structureIri, graph);
     }
 
-    public void createRdfStructure(Structure structure, String structureId, URI structureUri, Resource graph) throws RmesException {
+    public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph) throws RmesException {
         Model model = new LinkedHashModel();
 
-        model.add(structureUri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
+        model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
         /*Required*/
-        model.add(structureUri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
-        model.add(structureUri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
+        model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
+        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
 
         /*Optional*/
-        RdfUtils.addTripleDateTime(structureUri, DCTERMS.CREATED, structure.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(structureUri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
+        RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
+        RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(structureUri, RDFS.LABEL, structure.getLabelLg2(), Config.LG2, model, graph);
-        RdfUtils.addTripleString(structureUri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleString(structureUri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
+        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
 
-        createRdfComponentSpecifications(structureUri, structure.getComponentDefinitions(), model, graph);
+        createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
 
-        repoGestion.loadSimpleObject(structureUri, model, null);
+        repoGestion.loadSimpleObject(structureIri, model, null);
     }
 
-    public void createRdfComponentSpecifications(URI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
+    public void createRdfComponentSpecifications(IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
         int nextID = getNextComponentSpecificationID();
         for (int i = 0; i < componentList.size(); i++) {
             ComponentDefinition componentDefinition = componentList.get(i);
@@ -215,9 +215,9 @@ public class StructureUtils extends RdfService {
         component.setId(id);
     }
 
-    public void createRdfComponentSpecification(URI structureIRI, Model model, ComponentDefinition componentDefinition, Resource graph) throws RmesException {
+    public void createRdfComponentSpecification(IRI structureIRI, Model model, ComponentDefinition componentDefinition, Resource graph) throws RmesException {
 
-        URI componentSpecificationIRI;
+        IRI componentSpecificationIRI;
 
         componentSpecificationIRI = getComponentDefinitionIRI(structureIRI.toString(), componentDefinition.getId());
 
@@ -240,14 +240,14 @@ public class StructureUtils extends RdfService {
         model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
 
         for(String attachment : componentDefinition.getAttachment()){
-            URI attachmentURI ;
+            IRI attachmentIRI ;
             try {
-                attachmentURI = RdfUtils.createIRI(attachment);
+                attachmentIRI = RdfUtils.createIRI(attachment);
             } catch (Exception e){
-                attachmentURI = RdfUtils.structureComponentMeasureIRI(attachment);
+                attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
             }
 
-            model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentURI, graph);
+            model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentIRI, graph);
         }
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(QB.DIMENSION_PROPERTY.toString())) {
@@ -277,19 +277,19 @@ public class StructureUtils extends RdfService {
         return (Integer.parseInt(id) + 1);
     }
 
-    public URI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {
+    public IRI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {
         return RdfUtils.structureComponentDefinitionIRI(structureIRI, componentDefinitionId);
     }
 
-    public URI getDimensionIRI(String id) {
+    public IRI getDimensionIRI(String id) {
         return RdfUtils.structureComponentDimensionIRI(id);
     }
 
-    public URI getMeasureIRI(String id) {
+    public IRI getMeasureIRI(String id) {
         return RdfUtils.structureComponentMeasureIRI(id);
     }
 
-    public URI getAttributeIRI(String id) {
+    public IRI getAttributeIRI(String id) {
         return RdfUtils.structureComponentAttributeIRI(id);
     }
 

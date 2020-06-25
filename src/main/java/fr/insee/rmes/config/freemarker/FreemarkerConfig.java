@@ -44,15 +44,12 @@ public class FreemarkerConfig {
 			if (mtl == null) {
 				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
 			}
-			logger.info("Init freemarker templateloader "+ FreemarkerConfig.class.getClassLoader().getResource("request")+", "+ FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
+			logger.info("Init freemarker templateloader {} , {}", FreemarkerConfig.class.getClassLoader().getResource("request"), FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
 			cfg.setTemplateLoader(mtl);
 
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		} catch (URISyntaxException e) {
+		} catch (IOException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
-		
 
 		// Set the preferred charset template files are stored in. UTF-8 is
 		// a good choice in most applications:
