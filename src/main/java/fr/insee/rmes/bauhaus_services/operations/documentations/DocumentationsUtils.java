@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -702,14 +703,14 @@ public class DocumentationsUtils extends RdfService {
 	}
 
 	public File exportMetadataReport(String id) throws Exception {
-		InputStream test;
+		InputStream is;
 		if(id=="toto") {
-			test = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
+			is = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
 		}
 		else {
-			test = getClass().getClassLoader().getResourceAsStream(XMLUtils.produceResponse(operationsService.getFullSims(id), "application/xml"));
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(operationsService.getFullSims(id), "application/xml"), "UTF-8");
 		}
-		return docExport.export(test);
+		return docExport.export(is);
 	}
 
 }

@@ -723,7 +723,7 @@ public class OperationsResources {
 		return operationsService.exportMetadataReport("toto");	
 	}
 	
-	@POST
+	@GET
 	@Path("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
