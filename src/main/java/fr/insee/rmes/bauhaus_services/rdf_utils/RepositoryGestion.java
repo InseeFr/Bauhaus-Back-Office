@@ -39,6 +39,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
+	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
@@ -48,10 +49,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to produce response from a sparql query
-	 * 
+	 *
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public String getResponse(String query) throws RmesException {
 		return getResponse(query, REPOSITORY_GESTION);
@@ -59,10 +60,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to execute sparql update
-	 * 
+	 *
 	 * @param updateQuery
 	 * @return String
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public Response.Status executeUpdate(String updateQuery) throws RmesException {
 		return executeUpdate(updateQuery, REPOSITORY_GESTION);
@@ -70,10 +71,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to produce response from a sparql query
-	 * 
+	 *
 	 * @param query
 	 * @return JSONObject
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
 		return getResponseAsObject(query, REPOSITORY_GESTION);
@@ -89,11 +90,11 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to produce response from a sparql ASK query
-	 * 
+	 *
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 * @throws JSONException 
+	 * @throws RmesException
+	 * @throws JSONException
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
 		return getResponseForAskQuery(query, REPOSITORY_GESTION);
@@ -180,6 +181,21 @@ public class RepositoryGestion extends RepositoryUtils {
 			logger.error(FAILURE_LOAD_OBJECT , object);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
+	}
+
+	public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = REPOSITORY_GESTION.getConnection();
+			}
+			conn.remove(object, null, null);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_DELETE_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_DELETE_OBJECT + object);
 
 		}
 	}

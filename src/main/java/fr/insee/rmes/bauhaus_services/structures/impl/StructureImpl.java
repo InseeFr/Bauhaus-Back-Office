@@ -60,4 +60,9 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public String setStructure(String id, String body) throws RmesException {
 		return structureUtils.setStructure(id, body);
 	}
+
+	@Override
+	public void deleteStructure(String structureId) throws RmesException {
+		structureUtils.deleteStructure(structureId);
+	}
 }

@@ -119,6 +119,18 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(id).build();
     }
 
+    @DELETE
+    @Path("/structure/{structureId}")
+    @Operation(operationId = "deleteStructure", summary = "Delete a structure")
+    public Response deleteStructure(@PathParam("structureId") String structureId) {
+        try {
+            structureService.deleteStructure(structureId);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(structureId).build();
+    }
+
     @GET
     @Path("/components/search")
     @Produces(MediaType.APPLICATION_JSON)

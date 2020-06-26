@@ -310,4 +310,10 @@ public class StructureUtils extends RdfService {
             throw new BadRequestException("The property labelLg2 is required");
         }
     }
+
+    public void deleteStructure(String structureId) throws RmesException {
+        IRI structureIri = RdfUtils.structureIRI(structureId);
+        repoGestion.clearStructureNodeAndComponents(structureIri);
+        repoGestion.deleteObject(structureIri, null);
+    }
 }
