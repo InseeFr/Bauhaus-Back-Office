@@ -43,7 +43,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     @Override
     public String getComponent(String id) throws RmesException {
 
-        logger.info("Starting to get all mutualized components");
+        logger.info("Starting to get one mutualized component");
         JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
         if(response.keySet().isEmpty()){
             throw new NotFoundException("This component do not exist");

@@ -1,11 +1,11 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.config.swagger.model.IdLabel;
+import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.structures.Structure;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,27 +38,25 @@ import javax.ws.rs.core.Response;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class StructureResources {
 
+    private static final Logger logger = LogManager.getLogger(StructureResources.class);
     private static final String TEXT_PLAIN = "text/plain";
-
-    final static Logger logger = LogManager.getLogger(StructureResources.class);
-
     @Autowired
     StructureService structureService;
 
     @Autowired
-    StructureComponent StructureComponentService;
+    StructureComponent structureComponentService;
 
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructures", summary = "List of Structures",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public Response getStructures() {
         String jsonResultat;
         try {
             jsonResultat = structureService.getStructures();
         } catch (RmesException e) {
-            return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
         }
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
@@ -67,13 +65,13 @@ public class StructureResources {
     @Path("/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructuresForSearch", summary = "List of Structures for advanced search",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public Response getStructuresForSearch() {
         String jsonResultat;
         try {
             jsonResultat = structureService.getStructuresForSearch();
         } catch (RmesException e) {
-            return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
         }
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
@@ -88,7 +86,7 @@ public class StructureResources {
         try {
             jsonResultat = structureService.getStructureById(id);
         } catch (RmesException e) {
-            return Response.status(e.getStatus()).entity(e.getDetails()).type("text/plain").build();
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
         }
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
@@ -128,7 +126,7 @@ public class StructureResources {
     public Response getComponentsForSearch() {
         String jsonResultat;
         try {
-            jsonResultat = StructureComponentService.getComponentsForSearch();
+            jsonResultat = structureComponentService.getComponentsForSearch();
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }
@@ -142,7 +140,7 @@ public class StructureResources {
     public Response getComponents() {
         String jsonResultat;
         try {
-            jsonResultat = StructureComponentService.getComponents();
+            jsonResultat = structureComponentService.getComponents();
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }
@@ -156,7 +154,7 @@ public class StructureResources {
     public Response getComponentById(@PathParam(Constants.ID) String id) {
         String jsonResultat;
         try {
-            jsonResultat = StructureComponentService.getComponent(id);
+            jsonResultat = structureComponentService.getComponent(id);
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }
@@ -170,7 +168,7 @@ public class StructureResources {
     public Response updateComponentById(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Component", required = true) String body) {
         String id = null;
         try {
-            id = StructureComponentService.updateComponent(componentId, body);
+            id = structureComponentService.updateComponent(componentId, body);
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }
@@ -184,7 +182,7 @@ public class StructureResources {
     public Response createComponent(@RequestBody(description = "Component", required = true) String body) {
         String id = null;
         try {
-            id = StructureComponentService.createComponent(body);
+            id = structureComponentService.createComponent(body);
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }

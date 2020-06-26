@@ -131,23 +131,7 @@ RdfUtils {
 	public static IRI createIRI(String uri){
 		return factory.createIRI(uri);
 	}
-	public static IRI componentIRI(String id, String uriType) {
-		IRI uri = factory.createIRI(uriType);
-		return objectIRI(ObjectType.getEnum(uri), id);
-	}
-	
-	public static IRI componentTypeIRI(String uriType) {
-		IRI uri = factory.createIRI(uriType);
-		if (uri.equals(QB.ATTRIBUTE)) {
-			return QB.ATTRIBUTE_PROPERTY;
-		} else if (uri.equals(QB.DIMENSION)) {
-			return QB.DIMENSION_PROPERTY;
-		} else if (uri.equals(QB.MEASURE)) {
-			return QB.MEASURE_PROPERTY;
-		}
-		return null;
-	}
-	
+
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
 				ObjectType.CONCEPT.getBaseUri() 

@@ -38,6 +38,12 @@ import java.util.List;
 public class StructureUtils extends RdfService {
 
     static final Logger logger = LogManager.getLogger(StructureUtils.class);
+    public static final String ATTACHMENT = "attachment";
+    public static final String REQUIRED = "required";
+    public static final String ORDER = "order";
+    public static final String COMPONENT_DEFINITION_CREATED = "componentDefinitionCreated";
+    public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
+    public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
 
     @Autowired
     StructureComponentUtils structureComponentUtils;
@@ -61,44 +67,44 @@ public class StructureUtils extends RdfService {
 
         for (int i = 0; i < componentDefinitionsFlat.length(); i++) {
             JSONObject componentDefinitionFlat = componentDefinitionsFlat.getJSONObject(i);
-            JSONArray attachmentsArray = repoGestion.getResponseAsArray(StructureQueries.getStructuresAttachments(componentDefinitionFlat.getString("componentDefinitionId")));
+            JSONArray attachmentsArray = repoGestion.getResponseAsArray(StructureQueries.getStructuresAttachments(componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
 
-            List<String> attachments = new ArrayList<String>();
+            List<String> attachments = new ArrayList<>();
             for(int j = 0; j < attachmentsArray.length(); j++){
-                attachments.add(attachmentsArray.getJSONObject(j).getString("attachment"));
+                attachments.add(attachmentsArray.getJSONObject(j).getString(ATTACHMENT));
             }
 
 
             JSONObject componentDefinition= new JSONObject();
 
-             componentDefinition.put("attachment", attachments);
+             componentDefinition.put(ATTACHMENT, attachments);
 
 
-            if(componentDefinitionFlat.has("required")){
-                componentDefinition.put("required", Boolean.parseBoolean(componentDefinitionFlat.getString("required")));
+            if(componentDefinitionFlat.has(REQUIRED)){
+                componentDefinition.put(REQUIRED, Boolean.parseBoolean(componentDefinitionFlat.getString(REQUIRED)));
             }
 
 
-            if(componentDefinitionFlat.has("order")){
-                componentDefinition.put("order", componentDefinitionFlat.getString("order"));
+            if(componentDefinitionFlat.has(ORDER)){
+                componentDefinition.put(ORDER, componentDefinitionFlat.getString(ORDER));
             }
-            if(componentDefinitionFlat.has("componentDefinitionCreated")){
-                componentDefinition.put("created", componentDefinitionFlat.getString("componentDefinitionCreated"));
+            if(componentDefinitionFlat.has(COMPONENT_DEFINITION_CREATED)){
+                componentDefinition.put("created", componentDefinitionFlat.getString(COMPONENT_DEFINITION_CREATED));
 
             }
-            if(componentDefinitionFlat.has("componentDefinitionModified")){
-                componentDefinition.put("modified", componentDefinitionFlat.getString("componentDefinitionModified"));
+            if(componentDefinitionFlat.has(COMPONENT_DEFINITION_MODIFIED)){
+                componentDefinition.put("modified", componentDefinitionFlat.getString(COMPONENT_DEFINITION_MODIFIED));
 
             }
-            if(componentDefinitionFlat.has("componentDefinitionId")){
-                componentDefinition.put("id", componentDefinitionFlat.getString("componentDefinitionId"));
+            if(componentDefinitionFlat.has(COMPONENT_DEFINITION_ID)){
+                componentDefinition.put("id", componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID));
 
             }
-            componentDefinitionFlat.remove("required");
-            componentDefinitionFlat.remove("order");
-            componentDefinitionFlat.remove("componentDefinitionCreated");
-            componentDefinitionFlat.remove("componentDefinitionModified");
-            componentDefinitionFlat.remove("componentDefinitionId");
+            componentDefinitionFlat.remove(REQUIRED);
+            componentDefinitionFlat.remove(ORDER);
+            componentDefinitionFlat.remove(COMPONENT_DEFINITION_CREATED);
+            componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
+            componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
             componentDefinition.put("component", componentDefinitionFlat);
 
             componentDefinitions.put(componentDefinition);
@@ -215,7 +221,7 @@ public class StructureUtils extends RdfService {
         component.setId(id);
     }
 
-    public void createRdfComponentSpecification(IRI structureIRI, Model model, ComponentDefinition componentDefinition, Resource graph) throws RmesException {
+    public void createRdfComponentSpecification(IRI structureIRI, Model model, ComponentDefinition componentDefinition, Resource graph) {
 
         IRI componentSpecificationIRI;
 

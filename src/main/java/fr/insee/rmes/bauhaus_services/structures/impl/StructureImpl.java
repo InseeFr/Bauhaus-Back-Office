@@ -32,7 +32,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	@Override
 	public String getStructuresForSearch() throws RmesException {
 		logger.info("Starting to get Structures for advanced Search");
-		JSONArray structures = repoGestion.getResponseAsArray(StructureQueries.getStructuresForSearch());
+		JSONArray structures = repoGestion.getResponseAsArray(StructureQueries.getStructures());
 		return structureUtils.formatStructuresForSearch(structures).toString();
 	}
 	

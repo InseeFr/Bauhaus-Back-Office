@@ -10,10 +10,6 @@ WHERE {
         ?component qb:codeList ?codeList
     } .
 
-#    { ?component insee:validationState 'Modified' }
-#    UNION
-#    { ?component insee:validationState 'Published' }
-
     FILTER (lang(?labelLg1) = '${LG1}') .
 
     OPTIONAL {

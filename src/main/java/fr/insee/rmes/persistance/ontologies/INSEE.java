@@ -75,7 +75,6 @@ public class INSEE {
 		GESTIONNAIRE = f.createIRI(NAMESPACE,"gestionnaire");
 
 		IDENTIFIANT_METIER = f.createIRI(NAMESPACE,"identifiantMetier");
-		// TODO Manu Should be removed !!!
 
 		STRUCTURE_CONCEPT = f.createIRI("http://id.insee.fr/concepts/definition/");
 

@@ -13,8 +13,8 @@ public class MutualizedComponent {
     private String labelLg2;
 
 
-    public String descriptionLg1;
-    public String descriptionLg2;
+    private String descriptionLg1;
+    private String descriptionLg2;
 
     private String type;
     private String concept;

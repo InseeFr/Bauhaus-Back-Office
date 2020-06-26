@@ -132,7 +132,7 @@ public class Config {
 		readConfigForStructures(env);
 
 		//Initialize Code lists
-		Config.CODELIST_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.codelists.graph");
+		readConfigForCodeLists(env);
 
 		//Initialize Organizations
 		Config.ORGANIZATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.organisations.graph");
@@ -162,6 +162,7 @@ public class Config {
 
 	private static void readConfigForCodeLists(Environment env) {
 		Config.CODE_LIST_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.codeList.baseURI");
+		Config.CODELIST_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.codelists.graph");
 	}
 
 	private static void readConfigForConcepts(Environment env) {

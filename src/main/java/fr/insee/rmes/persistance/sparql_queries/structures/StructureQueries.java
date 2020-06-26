@@ -14,10 +14,6 @@ public class StructureQueries {
 		return buildRequest("getStructures.ftlh", params);
 	}
 
-	public static String getStructuresForSearch() throws RmesException {
-		HashMap<String, Object> params = initParams();
-		return buildRequest("getStructures.ftlh", params);
-	}
 	public static String getStructuresAttachments(String id) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put("COMPONENT_SPECIFICATION_ID", id);
@@ -70,10 +66,6 @@ public class StructureQueries {
 	public static String lastIdForComponentDefinition() throws RmesException {
 		HashMap<String, Object> params = initParams();
 		return buildRequest("getLastIdByComponentDefinition.ftlh", params);
-	}
-	public static String lastIdForStructure() throws RmesException {
-		HashMap<String, Object> params = initParams();
-		return buildRequest("getLastIdByStructure.ftlh", params);
 	}
 
 	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {

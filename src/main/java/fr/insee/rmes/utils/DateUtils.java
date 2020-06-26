@@ -5,20 +5,22 @@ import org.apache.logging.log4j.Logger;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class DateUtils {
 
-    final static Logger logger = LogManager.getLogger(DateUtils.class);
+    private static final Logger logger = LogManager.getLogger(DateUtils.class);
 
     private static List<String> dateFormats;
 
     private static void init() {
         if (dateFormats == null || dateFormats.size() == 0) {
-            dateFormats = new ArrayList<String>();
+            dateFormats = new ArrayList<>();
             dateFormats.add("yyyy-MM-dd HH:mm:ssxx");
             dateFormats.add("yyyy-MM-dd");
             dateFormats.add("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -54,28 +56,14 @@ public class DateUtils {
         return LocalDateTime.parse(dateStr);
     }
 
-    public static LocalDateTime parseDate(String dateStr) {
-        init();
-        try {
-            return ZonedDateTime.parse(dateStr).toLocalDateTime();
-        } catch (Exception e) {
-            logger.debug(e.getMessage());
-        }
-        for (String format : dateFormats) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-            try {//keep the time
-                return LocalDateTime.parse(dateStr, formatter);
-            } catch (Exception e) {
-                logger.debug(e.getMessage());
-            }
-            try {//time is set to 00:00.000
-                return LocalDate.parse(dateStr, formatter).atStartOfDay();
-            } catch (Exception e) {
-                logger.debug(e.getMessage());
-            }
-        }
-        // All parsers failed
-        return LocalDateTime.parse(dateStr);
+    public static Date parseDate(String dateStr) {
+        return convertDateTimeToDate(parseDateTime(dateStr));
+    }
+
+    public static Date convertDateTimeToDate(LocalDateTime dateTime) {
+        return Date
+                .from(dateTime.atZone(ZoneId.systemDefault())
+                        .toInstant());
     }
 
 
