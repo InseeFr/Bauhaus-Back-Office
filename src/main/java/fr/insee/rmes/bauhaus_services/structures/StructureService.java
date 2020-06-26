@@ -12,4 +12,6 @@ public interface StructureService {
 	String setStructure(String body) throws RmesException;
 	
 	String setStructure(String id, String body) throws RmesException;
+
+    void deleteStructure(String structureId) throws RmesException;
 }
