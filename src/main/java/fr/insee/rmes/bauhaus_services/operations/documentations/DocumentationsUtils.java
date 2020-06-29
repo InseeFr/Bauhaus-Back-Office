@@ -56,6 +56,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
@@ -182,7 +183,16 @@ public class DocumentationsUtils extends RdfService {
 	private DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
-		if (rubric.has("value"))		documentationRubric.setValue(rubric.getString("value"));
+		if (rubric.has("value")) {
+			try{
+				documentationRubric.setValue(rubric.getString("value"));
+			}
+			catch(JSONException e) {
+				/* value is not a string but an array */
+				JSONArray JsonArrayValue =rubric.getJSONArray("value");
+				documentationRubric.setValue(JSONUtils.jsonArrayOfStringToString(JsonArrayValue));
+			}
+		}
 		if (rubric.has("labelLg1"))		documentationRubric.setLabelLg1(rubric.getString("labelLg1"));
 		if (rubric.has("labelLg2"))		documentationRubric.setLabelLg2(rubric.getString("labelLg2"));
 		if (rubric.has("codeList"))		documentationRubric.setCodeList(rubric.getString("codeList"));
