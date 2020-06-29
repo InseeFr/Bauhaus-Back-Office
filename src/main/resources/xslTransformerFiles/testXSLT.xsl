@@ -2,7 +2,7 @@
 
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="xml" encoding="UTF-8" indent="yes" />
+	<xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:strip-space elements="*" />
 	<xsl:template match="/">
 		<xsl:text>&#13;</xsl:text>
@@ -19,6 +19,7 @@
 			Indicateur	<xsl:value-of select="Documentation/idIndicator" />
 		</xsl:if>
 		<xsl:for-each select="Documentation/rubrics/rubrics">
+		<xsl:sort select="idAttribute" order="ascending"/>
 			Rubrique:
 			<xsl:value-of select="idAttribute" />
 			<xsl:value-of select="labelLg1" />
@@ -26,7 +27,7 @@
 				Code list :	<xsl:value-of select="codeList" />
 			</xsl:if>
 			<xsl:if test="rangeType != ''">
-				rangeType :	<xsl:value-of select="rangeType" />
+				RangeType :	<xsl:value-of select="rangeType" />
 			</xsl:if>
 			<xsl:if test="value != ''">
 				Valeur :	<xsl:value-of select="value" />
