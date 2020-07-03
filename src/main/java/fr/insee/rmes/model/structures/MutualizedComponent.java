@@ -1,20 +1,32 @@
 package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.exceptions.RmesException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-public class StructureComponent {
+import java.sql.Struct;
+
+public class MutualizedComponent {
 
     private String identifiant;
     private String id;
     private String labelLg1;
     private String labelLg2;
+
+
+    private String descriptionLg1;
+    private String descriptionLg2;
+
     private String type;
     private String concept;
     private String codeList;
     private String range;
-    private DSD[] structures;
+    private Structure[] structures;
 
-    public StructureComponent() throws RmesException {
+    private String created;
+    private String updated;
+
+
+    public MutualizedComponent() throws RmesException {
         //nothing to do
     }
 
@@ -82,11 +94,43 @@ public class StructureComponent {
         this.identifiant = identifiant;
     }
 
-    public DSD[] getStructures() {
+    public Structure[] getStructures() {
         return structures;
     }
 
-    public void setStructures(DSD[] structures) {
+    public void setStructures(Structure[] structures) {
         this.structures = structures;
+    }
+
+    public String getDescriptionLg1() {
+        return descriptionLg1;
+    }
+
+    public void setDescriptionLg1(String descriptionLg1) {
+        this.descriptionLg1 = descriptionLg1;
+    }
+
+    public String getDescriptionLg2() {
+        return descriptionLg2;
+    }
+
+    public void setDescriptionLg2(String descriptionLg2) {
+        this.descriptionLg2 = descriptionLg2;
+    }
+
+    public String getCreated() {
+        return created;
+    }
+
+    public void setCreated(String created) {
+        this.created = created;
+    }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
     }
 }

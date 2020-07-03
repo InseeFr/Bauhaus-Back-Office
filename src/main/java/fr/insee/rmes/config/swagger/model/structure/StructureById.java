@@ -1,8 +1,8 @@
-package fr.insee.rmes.config.swagger.model.dsd;
+package fr.insee.rmes.config.swagger.model.structure;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public class DSDById {
+public class StructureById {
 	
 	@Schema(description = "Label lg1", required = true)
 	public String labelLg1;

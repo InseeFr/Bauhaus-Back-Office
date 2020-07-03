@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import freemarker.template.utility.DateUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.BNode;
@@ -21,10 +22,12 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
-public class RdfUtils {
+public class
+
+RdfUtils {
 	
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
@@ -49,7 +52,11 @@ public class RdfUtils {
 	public static Resource operationsGraph(){
 		return factory.createIRI(Config.OPERATIONS_GRAPH);
 	}
-	
+
+	public static Resource structuresComponentsGraph(){
+		return factory.createIRI(Config.BASE_GRAPH + Config.STRUCTURE_COMPONENT_BASE_URI);
+	}
+
 	public static Resource productsGraph(){
 		return factory.createIRI(Config.PRODUCTS_GRAPH);
 	}
@@ -58,8 +65,8 @@ public class RdfUtils {
 		return factory.createIRI(Config.DOCUMENTATIONS_GRAPH +"/"+ id);
 	}
 	
-	public static Resource dsdGraph(){
-		return factory.createIRI(Config.STRUCTURES_GRAPH);
+	public static Resource structureGraph(){
+		return factory.createIRI(Config.BASE_GRAPH + Config.STRUCTURE_BASE_URI);
 	}
 	
 	public static Resource conceptScheme(){
@@ -73,7 +80,22 @@ public class RdfUtils {
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
 		return factory.createIRI(objType.getBaseUriPublication() + "/" + id);
 	}
-	
+
+	public static IRI structureComponentAttributeIRI(String id) {
+		return factory.createIRI(ObjectType.getBaseUri("attributeProperty") + "/", id);
+	}
+	public static IRI structureComponentDimensionIRI(String id) {
+		return factory.createIRI(ObjectType.getBaseUri("dimensionProperty") + "/", id);
+	}
+
+	public static IRI structureComponentMeasureIRI(String id) {
+		return factory.createIRI(ObjectType.getBaseUri("measureProperty") + "/", id);
+	}
+	public static IRI structureComponentDefinitionIRI(String structureIRI, String componentDefinitionID) {
+		return factory.createIRI(structureIRI + "/components/", componentDefinitionID);
+	}
+
+
 	public static IRI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
@@ -102,27 +124,14 @@ public class RdfUtils {
 		return objectIRI(ObjectType.LINK, id);
 	}
 	
-	public static IRI dsdIRI(String id) {
-		return objectIRI(ObjectType.DSD, id);
+	public static IRI structureIRI(String id) {
+		return objectIRI(ObjectType.STRUCTURE, id);
 	}
-	
-	public static IRI componentIRI(String id, String uriType) {
-		IRI uri = factory.createIRI(uriType);
-		return objectIRI(ObjectType.getEnum(uri), id);
+
+	public static IRI createIRI(String uri){
+		return factory.createIRI(uri);
 	}
-	
-	public static IRI componentTypeIRI(String uriType) {
-		IRI uri = factory.createIRI(uriType);
-		if (uri.equals(QB.ATTRIBUTE)) {
-			return QB.ATTRIBUTE_PROPERTY;
-		} else if (uri.equals(QB.DIMENSION)) {
-			return QB.DIMENSION_PROPERTY;
-		} else if (uri.equals(QB.MEASURE)) {
-			return QB.MEASURE_PROPERTY;
-		}
-		return null;
-	}
-	
+
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
 				ObjectType.CONCEPT.getBaseUri() 
@@ -169,12 +178,12 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
-        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateParser.parseDateTime(date));	
+        String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDateTime(date));
 		return factory.createLiteral(parsedDate, XMLSchema.DATETIME);
 	}
 	
 	public static Literal setLiteralDate(String date) {
-		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateParser.parseDate(date));
+		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
 		return factory.createLiteral(parsedDate, XMLSchema.DATE);
 	}
 	

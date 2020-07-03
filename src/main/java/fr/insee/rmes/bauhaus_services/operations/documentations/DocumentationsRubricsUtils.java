@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -30,7 +31,6 @@ import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.utils.DateParser;
 
 @Component
 public class DocumentationsRubricsUtils extends RdfService {
@@ -94,7 +94,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			// Format date
 			else if (rubric.get("rangeType").equals(RangeType.DATE)) {
-				rubric.put(VALUE, DateParser.getDate(rubric.getString(VALUE)));
+				rubric.put(VALUE, DateUtils.getDate(rubric.getString(VALUE)));
 			}
 
 			// Format codelist with multiple value

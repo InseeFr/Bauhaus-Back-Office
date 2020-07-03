@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.DateUtils;
 
 public class Document {
 	
@@ -57,7 +57,7 @@ public class Document {
 	
 	@JsonProperty("updatedDate")
 	public String getDateMiseAJour() {
-		return DateParser.getDate(dateMiseAJour);
+		return DateUtils.getDate(dateMiseAJour);
 	}
 	public void setDateMiseAJour(String dateMiseAJour) {
 		this.dateMiseAJour = dateMiseAJour;
