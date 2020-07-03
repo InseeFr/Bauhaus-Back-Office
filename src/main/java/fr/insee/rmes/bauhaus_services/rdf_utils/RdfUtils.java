@@ -58,6 +58,10 @@ public class RdfUtils {
 		return factory.createIRI(Config.DOCUMENTATIONS_GRAPH +"/"+ id);
 	}
 	
+	public static Resource simsGeographyGraph(){
+		return factory.createIRI(Config.DOCUMENTATIONS_GEO_GRAPH);
+	}
+	
 	public static Resource dsdGraph(){
 		return factory.createIRI(Config.STRUCTURES_GRAPH);
 	}

@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
+import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.ORG;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
@@ -19,6 +20,7 @@ public enum RangeType {
 	DATE(XMLSchema.DATE, "DATE"),
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),
 	CODELIST(null,"CODE_LIST"),
+	GEOGRAPHY(GEO.FEATURE,"GEOGRAPHY"),
 	UNDEFINED(null,"undefined");
 	
 	

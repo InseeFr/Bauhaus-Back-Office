@@ -105,6 +105,7 @@ public class DocumentationsQueries {
 		params.put("ATTRIBUTE", RangeType.ATTRIBUTE);
 		params.put("CODELIST", RangeType.CODELIST);
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
+		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
 		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}

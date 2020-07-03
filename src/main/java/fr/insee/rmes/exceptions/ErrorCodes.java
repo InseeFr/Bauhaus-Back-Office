@@ -97,6 +97,13 @@ public class ErrorCodes {
 	public static final int SIMS_UNKNOWN_ID = 841;
 	public static final int SIMS_UNKNOWN_TARGET = 844;
 	
+	//GEOFEATURES
+	public static final int GEOFEATURE_UNKNOWN = 845;
+	public static final int GEOFEATURE_INCORRECT_BODY = 846;
+
+
+	
+	
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
 	 */

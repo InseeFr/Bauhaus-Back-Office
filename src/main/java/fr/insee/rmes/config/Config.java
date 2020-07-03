@@ -58,6 +58,8 @@ public class Config {
 	public static String CODELIST_GRAPH = "";
 	
 	public static String ORGANIZATIONS_GRAPH = "";
+	
+	public static String GEOGRAPHY_GRAPH = "";
 
 	public static String SESAME_SERVER_GESTION = "";
 	public static String REPOSITORY_ID_GESTION = "";
@@ -145,6 +147,10 @@ public class Config {
 		//Initialize Organizations
 		Config.ORGANIZATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.organisations.graph");
 
+		//Initialize Geography
+		Config.GEOGRAPHY_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.geographie.graph");
+		
+		
 		//Initialize other services
 		Config.BASE_URI_METADATA_API = env.getProperty("fr.insee.rmes.bauhaus.metadata.api.baseURI");
 

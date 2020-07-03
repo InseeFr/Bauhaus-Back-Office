@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
@@ -52,13 +53,17 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 	@Autowired
 	private CodeListUtils codeListUtils;
+	
+	@Autowired
+	private GeographyService geoService;
+
 
 	
 
 	/**
 	 * GETTER
 	 * @param idSims, jsonObject containing the sims
-	 * @return
+	 * @return void : the jsonObject is updated
 	 * @throws RmesException
 	 */
 	public void getAllRubricsJson(String idSims, JSONObject jsonObject) throws RmesException {
@@ -71,6 +76,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	}
 
 	/**
+	 * From JSON to JSON
 	 * Get documents if exist, format date and format list of values for codelist
 	 * @param idSims
 	 * @param docRubrics
@@ -111,6 +117,11 @@ public class DocumentationsRubricsUtils extends RdfService {
 				}
 				docRubrics.remove(i);
 			}
+			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY)) {
+				String geoUri = rubric.getString(VALUE);
+				JSONObject feature = geoService.getGeoFeature(geoUri);
+				feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+			}
 		}
 		if (tempMultipleCodeList.size() != 0) {
 			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
@@ -120,6 +131,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 
 	/**
+	 * From Object to RDF
 	 * Add all rubrics to the specified metadata report
 	 * @param model
 	 * @param simsId
@@ -172,10 +184,9 @@ public class DocumentationsRubricsUtils extends RdfService {
 				}
 				break;
 			case RICHTEXT:
-				if (rubric.isEmpty()) {
-					break;
+				if (!rubric.isEmpty()) {
+					addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
 				}
-				addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
 				break;
 			case ORGANIZATION:
 				String orgaUri = organizationUtils.getUri(rubric.getSimpleValue());
@@ -184,10 +195,15 @@ public class DocumentationsRubricsUtils extends RdfService {
 				}
 				break;
 			case STRING:
-				if (rubric.isEmpty()) {
-					break;
+				if (!rubric.isEmpty()) {
+					addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
 				}
-				addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
+				break;
+			case GEOGRAPHY:
+				String featureUri = rubric.getSimpleValue();
+				if (featureUri != null) {
+					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
+				}
 				break;
 			default:
 				break;
