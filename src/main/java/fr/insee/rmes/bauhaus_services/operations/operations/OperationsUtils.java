@@ -150,7 +150,7 @@ public class OperationsUtils extends RdfService{
 		}
 
 		repoGestion.keepHierarchicalOperationLinks(operationURI,model);
-		repoGestion.loadSimpleObject(operationURI, model, null);
+		repoGestion.loadSimpleObject(operationURI, model);
 	}
 
 

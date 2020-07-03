@@ -128,7 +128,7 @@ public class DSDUtils extends RdfService {
 		    
 		});
 		
-		repoGestion.loadSimpleObject(dsdUri, model, null);
+		repoGestion.loadSimpleObject(dsdUri, model);
 	}
 
 }

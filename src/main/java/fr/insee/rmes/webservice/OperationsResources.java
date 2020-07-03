@@ -344,7 +344,7 @@ public class OperationsResources {
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
-	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 1"))
+	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {

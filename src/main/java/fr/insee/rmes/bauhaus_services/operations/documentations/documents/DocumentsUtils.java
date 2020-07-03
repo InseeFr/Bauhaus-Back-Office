@@ -421,7 +421,7 @@ public class DocumentsUtils  extends RdfService  {
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
 			RdfUtils.addTripleDateTime(docUri, PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
-		repoGestion.loadSimpleObject(docUri, model, null);
+		repoGestion.loadSimpleObject(docUri, model);
 	}
 
 	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {

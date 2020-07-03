@@ -127,7 +127,7 @@ public class FamiliesUtils  extends RdfService {
 
 		repoGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
-		repoGestion.loadSimpleObject(familyURI, model, null);
+		repoGestion.loadSimpleObject(familyURI, model);
 	}
 
 

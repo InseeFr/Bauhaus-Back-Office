@@ -355,4 +355,8 @@ public class RepositoryGestion extends RepositoryUtils {
 		throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), details);
 	}
 
+	public void loadSimpleObject(IRI geoIRI, Model model) throws RmesException {
+		loadSimpleObject(geoIRI, model, null);		
+	}
+
 }

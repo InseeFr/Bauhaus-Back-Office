@@ -18,12 +18,13 @@ import fr.insee.rmes.exceptions.RmesException;
 @Service
 public class DocumentsImpl implements DocumentsService {
 
-	final static Logger logger = LogManager.getLogger(DocumentsImpl.class);
+	private static final  Logger logger = LogManager.getLogger(DocumentsImpl.class);
 
 	@Autowired 
 	DocumentsUtils documentsUtils;
 	
 	public DocumentsImpl() {
+		//Utility class
 	}
 
 	/*
@@ -32,12 +33,12 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String getDocuments() throws RmesException {
 		logger.debug("Starting to get documents list");
-		return documentsUtils.getAllDocuments().toString(); //TODO JsonArrayToString in JSONUtils ?
+		return documentsUtils.getAllDocuments().toString();
 	}
 
 	@Override
 	public JSONObject getDocument(String id) throws RmesException {
-		logger.debug("Starting to get document " + id);
+		logger.debug("Starting to get document {} ", id);
 		return documentsUtils.getDocument(id);
 	}
 
@@ -49,7 +50,7 @@ public class DocumentsImpl implements DocumentsService {
 	public String setDocument(String body, InputStream documentFile,String documentName) throws RmesException {
 		documentsUtils.checkFileNameValidity(documentName);
 		String id=documentsUtils.createDocumentID();
-		logger.debug("Create document : "+ id);
+		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,documentFile,documentName);
 		return id;
 	}
@@ -92,7 +93,7 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public String setLink(String body) throws RmesException {
 		String id=documentsUtils.createDocumentID();
-		logger.debug("Create document : "+ id);
+		logger.debug("Create document : {}", id);
 		documentsUtils.createLink(id,body);
 		return id;
 	}
