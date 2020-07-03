@@ -3,6 +3,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
+
+import javax.xml.transform.OutputKeys;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -32,10 +35,14 @@ public class DocumentationExport {
 
 		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		saxonService.transform(isInputFile, XSL_FILE, osOutputFile);
+
+		final PrintStream printStream = new PrintStream(osOutputFile);
+		
+		saxonService.transform(isInputFile, XSL_FILE, printStream);
 		isInputFile.close();
 		XSL_FILE.close();
-		osOutputFile.close();
+		//osOutputFile.close();
+		printStream.close();
 		
 		logger.debug("End To export documentation");
 		return output;

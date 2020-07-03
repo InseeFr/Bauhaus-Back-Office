@@ -3,6 +3,7 @@ package fr.insee.rmes.external_services.export;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -32,6 +33,9 @@ public class XsltTransformer {
 	 */
 	public void xslTransform(Transformer transformer, InputStream xmlInput, OutputStream xmlOutput) throws Exception {
 		logger.debug("Starting xsl transformation -Input : " + xmlInput + " -Output : " + xmlOutput);
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+		transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 		transformer.transform(new StreamSource(xmlInput), new StreamResult(xmlOutput));
 	}
 
