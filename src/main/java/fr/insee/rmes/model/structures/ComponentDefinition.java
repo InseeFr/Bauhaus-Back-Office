@@ -2,9 +2,6 @@ package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.exceptions.RmesException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class ComponentDefinition {
 
     private String id;

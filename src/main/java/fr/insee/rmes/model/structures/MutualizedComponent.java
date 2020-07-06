@@ -1,9 +1,6 @@
 package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.exceptions.RmesException;
-import io.swagger.v3.oas.annotations.media.Schema;
-
-import java.sql.Struct;
 
 public class MutualizedComponent {
 

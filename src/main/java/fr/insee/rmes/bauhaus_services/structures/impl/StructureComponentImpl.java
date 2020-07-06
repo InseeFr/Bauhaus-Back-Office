@@ -1,20 +1,18 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
-import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import javax.ws.rs.NotFoundException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.NotFoundException;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 
 @Service
 public class StructureComponentImpl extends RdfService implements StructureComponent {

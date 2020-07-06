@@ -1,11 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import java.util.HashMap;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-
-import java.util.HashMap;
 
 public class StructureQueries {
 
@@ -74,8 +73,8 @@ public class StructureQueries {
 
 	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.BASE_GRAPH + Config.STRUCTURE_COMPONENT_BASE_URI);
-		params.put("STRUCTURES_GRAPH", Config.BASE_GRAPH + Config.STRUCTURE_BASE_URI);
+		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+		params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 

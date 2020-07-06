@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -10,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.structures.StructureService;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-
-import javax.ws.rs.NotFoundException;
 
 @Service
 public class StructureImpl  extends RdfService implements StructureService {

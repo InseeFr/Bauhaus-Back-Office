@@ -3,19 +3,18 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
-import javax.annotation.Resource;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.omg.CORBA.portable.ValueFactory;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
@@ -52,9 +51,6 @@ RdfUtils {
 		return factory.createIRI(Config.OPERATIONS_GRAPH);
 	}
 
-	public static Resource structuresComponentsGraph(){
-		return factory.createIRI(Config.BASE_GRAPH + Config.STRUCTURE_COMPONENT_BASE_URI);
-	}
 
 	public static Resource productsGraph(){
 		return factory.createIRI(Config.PRODUCTS_GRAPH);
@@ -69,8 +65,12 @@ RdfUtils {
 		return factory.createIRI(Config.DOCUMENTATIONS_GEO_GRAPH);
 	}
 	
-	public static Resource dsdGraph(){
+	public static Resource structureGraph(){
 		return factory.createIRI(Config.STRUCTURES_GRAPH);
+	}
+	
+	public static Resource structureComponentGraph(){
+		return factory.createIRI(Config.STRUCTURES_COMPONENTS_GRAPH);
 	}
 	
 	public static Resource conceptScheme(){
@@ -98,7 +98,6 @@ RdfUtils {
 	public static IRI structureComponentDefinitionIRI(String structureIRI, String componentDefinitionID) {
 		return factory.createIRI(structureIRI + "/components/", componentDefinitionID);
 	}
-
 
 	public static IRI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);

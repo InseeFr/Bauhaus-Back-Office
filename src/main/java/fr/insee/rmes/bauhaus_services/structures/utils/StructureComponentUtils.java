@@ -1,18 +1,10 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.structures.MutualizedComponent;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.utils.DateUtils;
+import java.io.IOException;
+import java.util.Arrays;
+
+import javax.ws.rs.BadRequestException;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,9 +19,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BadRequestException;
-import java.io.IOException;
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.structures.MutualizedComponent;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class StructureComponentUtils extends RdfService {
@@ -121,7 +124,7 @@ public class StructureComponentUtils extends RdfService {
 
     private void createRDFForComponent(MutualizedComponent component, Resource resource, IRI componentURI, ValidationStatus status) throws RmesException {
         Model model = new LinkedHashModel();
-        Resource graph = RdfUtils.structuresComponentsGraph();
+        Resource graph = RdfUtils.structureComponentGraph();
 
         /*Const*/
         model.add(componentURI, RDF.TYPE, resource, graph);
