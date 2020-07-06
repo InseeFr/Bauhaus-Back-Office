@@ -4,20 +4,25 @@ import java.util.List;
 
 import fr.insee.rmes.exceptions.RmesException;
 
-public class DSD {
-	
+public class Structure {
+
 	private String id;
 	private String labelLg1;
 	private String labelLg2;
 	private String descriptionLg1;
 	private String descriptionLg2;
-	private List<Component> components;
-	
-	public DSD() throws RmesException {
+	private List<ComponentDefinition> componentDefinitions;
+	private String created;
+
+
+
+	private String updated;
+
+	public Structure() throws RmesException {
 
 	}
-	
-	public DSD(String id) throws RmesException {
+
+	public Structure(String id) throws RmesException {
 		this.id = id;
 	}
 
@@ -61,12 +66,28 @@ public class DSD {
 		this.descriptionLg2 = descriptionLg2;
 	}
 
-	public List<Component> getComponents() {
-		return components;
+	public List<ComponentDefinition> getComponentDefinitions() {
+		return componentDefinitions;
 	}
 
-	public void setComponents(List<Component> components) {
-		this.components = components;
+	public void setComponentDefinitions(List<ComponentDefinition> componentDefinitions) {
+		this.componentDefinitions = componentDefinitions;
+	}
+
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
 	}
 
 }

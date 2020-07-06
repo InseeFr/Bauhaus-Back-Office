@@ -39,18 +39,20 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
+	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
 	public static final Repository REPOSITORY_GESTION = initRepository(Config.SESAME_SERVER_GESTION,
 			Config.REPOSITORY_ID_GESTION);
 
+
 	/**
 	 * Method which aims to produce response from a sparql query
-	 * 
+	 *
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public String getResponse(String query) throws RmesException {
 		return getResponse(query, REPOSITORY_GESTION);
@@ -58,10 +60,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to execute sparql update
-	 * 
+	 *
 	 * @param updateQuery
 	 * @return String
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public Response.Status executeUpdate(String updateQuery) throws RmesException {
 		return executeUpdate(updateQuery, REPOSITORY_GESTION);
@@ -69,10 +71,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to produce response from a sparql query
-	 * 
+	 *
 	 * @param query
 	 * @return JSONObject
-	 * @throws RmesException 
+	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
 		return getResponseAsObject(query, REPOSITORY_GESTION);
@@ -88,11 +90,11 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	/**
 	 * Method which aims to produce response from a sparql ASK query
-	 * 
+	 *
 	 * @param query
 	 * @return String
-	 * @throws RmesException 
-	 * @throws JSONException 
+	 * @throws RmesException
+	 * @throws JSONException
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
 		return getResponseForAskQuery(query, REPOSITORY_GESTION);
@@ -183,6 +185,21 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
+	public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = REPOSITORY_GESTION.getConnection();
+			}
+			conn.remove(object, null, null);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_DELETE_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_DELETE_OBJECT + object);
+
+		}
+	}
+
 	/**
 	 * @param graph
 	 * @param model
@@ -267,33 +284,22 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
-	public void clearDSDNodeAndComponents(Resource dsd) throws RmesException {
+	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
 		try {
 			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
 			RepositoryResult<Statement> nodes = null;
-			RepositoryResult<Statement> measures = null;
-			RepositoryResult<Statement> dimensions = null;
-			RepositoryResult<Statement> attributes = null;
-			nodes = conn.getStatements(dsd, QB.COMPONENT, null, false);
+			RepositoryResult<Statement> specifications = null;
+			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
 			while (nodes.hasNext()) {
 				Resource node = (Resource) nodes.next().getObject();
 				toRemove.add(node);
-				measures = conn.getStatements(node, QB.MEASURE, null, false);
-				while (measures.hasNext()) {
-					toRemove.add((Resource) measures.next().getObject());
+				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
+				while (specifications.hasNext()) {
+					toRemove.add((Resource) specifications.next().getObject());
 				}
-				measures.close();
-				dimensions = conn.getStatements(node, QB.DIMENSION, null, false);
-				while (dimensions.hasNext()) {
-					toRemove.add((Resource) dimensions.next().getObject());
-				}
-				dimensions.close();
-				attributes = conn.getStatements(node, QB.ATTRIBUTE, null, false);
-				while (attributes.hasNext()) {
-					toRemove.add((Resource) attributes.next().getObject());
-				}
-				attributes.close();
+				specifications.close();
+
 			}
 			nodes.close();
 			toRemove.forEach(res -> {
@@ -305,7 +311,7 @@ public class RepositoryGestion extends RepositoryUtils {
 				}
 			});
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure deletion : " + dsd);
+			throwsRmesException(e, "Failure deletion : " + structure);
 		}
 	}
 

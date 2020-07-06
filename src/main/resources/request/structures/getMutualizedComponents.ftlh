@@ -1,19 +1,22 @@
-SELECT DISTINCT ?id ?labelLg1 <#if SEARCH> ?concept </#if> ?type
+SELECT DISTINCT ?id ?labelLg1 ?concept ?type ?codeList
+FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
-	GRAPH <${STRUCTURES_COMPONENTS_GRAPH}> {
-        ?component dcterms:identifier ?id ;
-                   rdf:type ?type ;
-                   rdfs:label ?labelLg1 .
+    ?component dcterms:identifier ?id ;
+               rdf:type ?type ;
+               rdfs:label ?labelLg1 .
 
-        FILTER (lang(?labelLg1) = '${LG1}') .
 
-<#if SEARCH>
-        OPTIONAL {
-            ?component qb:concept ?conceptObject
-        } .
+    OPTIONAL {
+        ?component qb:codeList ?codeList
+    } .
 
-        BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
-</#if>
-    }
+    FILTER (lang(?labelLg1) = '${LG1}') .
+
+    OPTIONAL {
+        ?component qb:concept ?conceptObject
+    } .
+
+    BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
+
 }
 ORDER BY ?labelLg1
