@@ -8,6 +8,8 @@ public class ExportUtils {
 		} else if (acceptHeader.equals("application/octet-stream")) {
 			return ".pdf";
 			// default --> Odt
+		} else if (acceptHeader.equals("flatODT")) {
+			return ".fodt";
 		} else {
 			return ".odt";
 		}

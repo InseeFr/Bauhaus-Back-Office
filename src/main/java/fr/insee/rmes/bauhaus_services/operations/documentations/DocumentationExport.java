@@ -30,7 +30,9 @@ public class DocumentationExport {
 		public File export(InputStream isInputFile) throws Exception {
 		logger.debug("Begin To export documentation");
 
-		File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
+		File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
+
 		output.deleteOnExit();
 
 		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
@@ -45,6 +47,7 @@ public class DocumentationExport {
 		printStream.close();
 		
 		logger.debug("End To export documentation");
+		//return fr.insee.rmes.utils.FileUtils.zipFile(output);
 		return output;
 	}
 }

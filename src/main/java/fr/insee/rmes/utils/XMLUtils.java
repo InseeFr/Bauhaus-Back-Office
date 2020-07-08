@@ -56,7 +56,6 @@ public class XMLUtils {
 
         if (header != null && header.equals(MediaType.APPLICATION_XML)) {
             mapper = new XmlMapper();
-        //    mapper.addMixIn(StringWithLang.class, StringXmlMixIn.class);
         }
         else {
             mapper = new ObjectMapper();
