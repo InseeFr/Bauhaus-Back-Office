@@ -50,6 +50,7 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.model.operations.documentations.ExtensiveSims;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -132,6 +133,22 @@ public class DocumentationsUtils extends RdfService {
 		return buildDocumentationFromJson(getDocumentationByIdSims(id));
 	}
 
+
+	/**
+	 * Java Object	Builder
+	 * @param JsonSims
+	 * @return ExtensiveSims
+	 * @throws RmesException
+	 */
+
+	public ExtensiveSims buildExtendedDocumentationFromJson(JSONObject JsonSims) throws RmesException {
+		Documentation sims = buildDocumentationFromJson(JsonSims);
+		ExtensiveSims extensiveSims = new ExtensiveSims(sims);
+
+		return extensiveSims;
+	}
+	
+	
 	/**
 	 * Java Object	Builder
 	 * @param JsonSims
@@ -707,7 +724,7 @@ public class DocumentationsUtils extends RdfService {
 		switch(targetType) {
 		case "OPERATION" : stamp=seriesUtils.getSeriesById(operationsUtils.getOperationById(idDatabase).getJSONObject("series").getString("idSeries")).getString("creator");
 		case "SERIES" : stamp=seriesUtils.getSeriesById(idDatabase).getString("creator");
-		case "INDICATOR" : stamp=indicatorsUtils.getIndicatorById(idDatabase).getString("creator");
+		case "INDICATOR" : stamp=indicatorsUtils.getIndicatorJsonById(idDatabase).getString("creator");
 		}
 		return stamp;
 	}

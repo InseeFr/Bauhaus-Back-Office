@@ -59,7 +59,7 @@
 					<style:paragraph-properties
 						fo:text-align="left" fo:margin-top="1cm"
 						style:justify-single-word="false" />
-					<style:text-properties fo:font-size="15pt"
+					<style:text-properties fo:font-size="14pt"
 						fo:font-weight="bold" fo:color="blue" />
 				</style:style>
 

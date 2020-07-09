@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +20,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,7 +60,25 @@ public class IndicatorsUtils  extends RdfService {
 	IndicatorPublication indicatorPublication;
 
 
-	public JSONObject getIndicatorById(String id) throws RmesException{
+	public Indicator getIndicatorById(String id) throws RmesException{
+		return buildIndicatorFromJson(getIndicatorJsonById(id));
+		
+	}
+	
+	private Indicator buildIndicatorFromJson(JSONObject indicatorJson) throws RmesException {
+		 ObjectMapper mapper = new ObjectMapper();
+		  
+		 Indicator indicator = new Indicator();
+		try {
+			indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
+		} catch (JsonProcessingException e) {
+			logger.error("Json cannot be parsed");
+			e.printStackTrace();
+		}
+		 return indicator;
+	}
+
+	public JSONObject getIndicatorJsonById(String id) throws RmesException{
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
 			}

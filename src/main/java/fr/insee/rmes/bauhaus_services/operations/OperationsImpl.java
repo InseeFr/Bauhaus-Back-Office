@@ -278,7 +278,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getIndicatorByID(String id) throws RmesException {
-		JSONObject indic = indicatorsUtils.getIndicatorById(id);
+		JSONObject indic = indicatorsUtils.getIndicatorJsonById(id);
 		return indic.toString();
 	}
 
