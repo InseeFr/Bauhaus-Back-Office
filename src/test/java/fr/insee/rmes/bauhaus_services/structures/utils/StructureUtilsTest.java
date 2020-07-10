@@ -1,17 +1,20 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.structures.ComponentDefinition;
-import fr.insee.rmes.model.structures.MutualizedComponent;
-import fr.insee.rmes.model.structures.Structure;
-import fr.insee.rmes.utils.DateUtils;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.impl.ValueFactoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -19,14 +22,14 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.structures.ComponentDefinition;
+import fr.insee.rmes.model.structures.MutualizedComponent;
+import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.utils.DateUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-public class StructureUtilsTest {
+class StructureUtilsTest {
 
     @InjectMocks
     @Spy
@@ -41,8 +44,7 @@ public class StructureUtilsTest {
     }
 
     @Test
-    public void shouldCallCreateRdfComponentSpecifications() throws RmesException {
-        Resource graph = null;
+    void shouldCallCreateRdfComponentSpecifications() throws RmesException {
 
         String currentDate = DateUtils.getCurrentDate();
         doNothing().when(structureUtils).createRdfComponentSpecifications(any(), anyList(), any(), any());
@@ -65,7 +67,7 @@ public class StructureUtilsTest {
     }
 
     @Test
-    public void shouldCallCreateComponentSpecificationForEachComponents() throws RmesException {
+    void shouldCallCreateComponentSpecificationForEachComponents() throws RmesException {
         Resource graph = null;
         doReturn(1).when(structureUtils).getNextComponentSpecificationID();
 

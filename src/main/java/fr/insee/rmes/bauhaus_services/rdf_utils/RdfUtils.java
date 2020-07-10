@@ -23,9 +23,7 @@ import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
-public class
-
-RdfUtils {
+public class RdfUtils {
 	
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
