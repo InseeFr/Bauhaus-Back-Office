@@ -1,6 +1,6 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -58,7 +58,7 @@ public class Series {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
+	@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of creator")
 	public List<String> creator;
 
@@ -254,13 +254,8 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setCreator(List<String> creator) {
-		this.creator = creator;
-	}
-	
-	public void setCreator(String creator) {
-		if (this.creator == null) {this.creator = new ArrayList<>();};
-		this.creator.add(creator);
+	public void setCreator(String[] creator) {
+		this.creator = Arrays.asList(creator);
 	}
 
 	public void setContributor(List<OperationsLink> contributor) {
