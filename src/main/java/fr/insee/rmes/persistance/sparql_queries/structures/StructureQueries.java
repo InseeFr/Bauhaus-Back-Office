@@ -8,7 +8,7 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class StructureQueries {
 
-	public static String getStructures() throws RmesException {
+	public static String 	getStructures() throws RmesException {
 		HashMap<String, Object> params = initParams();
 		return buildRequest("getStructures.ftlh", params);
 	}

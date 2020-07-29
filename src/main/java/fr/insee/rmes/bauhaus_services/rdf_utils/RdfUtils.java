@@ -84,17 +84,18 @@ public class RdfUtils {
 	}
 
 	public static IRI structureComponentAttributeIRI(String id) {
-		return factory.createIRI(ObjectType.getBaseUri("attributeProperty") + "/", id);
+		return objectIRI(ObjectType.ATTRIBUTE_PROPERTY, id);
 	}
 	public static IRI structureComponentDimensionIRI(String id) {
-		return factory.createIRI(ObjectType.getBaseUri("dimensionProperty") + "/", id);
+		return objectIRI(ObjectType.DIMENSION_PROPERTY, id);
 	}
 
 	public static IRI structureComponentMeasureIRI(String id) {
-		return factory.createIRI(ObjectType.getBaseUri("measureProperty") + "/", id);
+		return objectIRI(ObjectType.MEASURE_PROPERTY, id);
 	}
+
 	public static IRI structureComponentDefinitionIRI(String structureIRI, String componentDefinitionID) {
-		return factory.createIRI(structureIRI + "/components/", componentDefinitionID);
+		return factory.createIRI(structureIRI + "/composants/", componentDefinitionID);
 	}
 
 	public static IRI conceptIRI(String id) {

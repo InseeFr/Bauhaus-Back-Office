@@ -58,8 +58,9 @@ public class Config {
 	public static String STRUCTURES_GRAPH = "";
 	public static String STRUCTURES_BASE_URI = "";
 	public static String STRUCTURES_COMPONENTS_GRAPH = "";
-	
-	
+	public static String STRUCTURES_COMPONENTS_BASE_URI = "";
+
+
 	public static String CODELIST_GRAPH = "";
 
 	public static String ORGANIZATIONS_GRAPH = "";
@@ -222,5 +223,6 @@ public class Config {
 		Config.STRUCTURES_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.graph");
 		Config.STRUCTURES_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.baseURI");
 		Config.STRUCTURES_COMPONENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
+		Config.STRUCTURES_COMPONENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.components.baseURI");
 	}
 }
