@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.insee.rmes.config.Config;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -17,10 +18,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.mockito.*;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
@@ -28,6 +26,7 @@ import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
 import fr.insee.rmes.utils.DateUtils;
+import org.springframework.core.env.Environment;
 
 class StructureUtilsTest {
 
@@ -41,29 +40,6 @@ class StructureUtilsTest {
     @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    void shouldCallCreateRdfComponentSpecifications() throws RmesException {
-
-        String currentDate = DateUtils.getCurrentDate();
-        doNothing().when(structureUtils).createRdfComponentSpecifications(any(), anyList(), any(), any());
-        doNothing().when(repoGestion).loadSimpleObject(any(), any(), any());
-        doReturn(1).when(structureUtils).getNextComponentSpecificationID();
-
-        IRI structureIRI = SimpleValueFactory.getInstance().createIRI("http://structure");
-
-        Structure structure = new Structure();
-        structure.setId("id");
-        structure.setLabelLg1("labelLg1");
-        structure.setLabelLg2("labelLg2");
-        structure.setUpdated(currentDate);
-        structure.setCreated(currentDate);
-        structure.setComponentDefinitions(new ArrayList<>());
-
-        structureUtils.createRdfStructure(structure, "id", structureIRI, null);
-        verify(structureUtils, times(1)).createRdfComponentSpecifications(any(), anyList(), any(), any());
-
     }
 
     @Test

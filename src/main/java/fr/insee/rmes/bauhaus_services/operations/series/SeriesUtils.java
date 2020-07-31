@@ -10,10 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -89,6 +86,7 @@ public class SeriesUtils extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
 			addOneOrganizationLink(series.get(Constants.ID).toString(), series, INSEE.DATA_COLLECTOR);
+			addOneOrganizationLink(series.get(Constants.ID).toString(), series, DCTERMS.CREATOR);
 			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
