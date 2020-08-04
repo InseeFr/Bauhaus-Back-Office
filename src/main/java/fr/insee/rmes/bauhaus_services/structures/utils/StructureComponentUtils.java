@@ -156,12 +156,12 @@ public class StructureComponentUtils extends RdfService {
 
     private String generateNextId(String type) throws RmesException {
         if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
-            return generateNextId("a", "attributs", QB.ATTRIBUTE_PROPERTY);
+            return generateNextId("a", "attribut", QB.ATTRIBUTE_PROPERTY);
         }
         if (type.equals(QB.MEASURE_PROPERTY.toString())) {
-            return generateNextId("m", "mesures", QB.MEASURE_PROPERTY);
+            return generateNextId("m", "mesure", QB.MEASURE_PROPERTY);
         }
-        return generateNextId("d", "dimensions", QB.DIMENSION_PROPERTY);
+        return generateNextId("d", "dimension", QB.DIMENSION_PROPERTY);
 
     }
 
