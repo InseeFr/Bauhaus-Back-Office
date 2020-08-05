@@ -29,6 +29,7 @@ import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -44,6 +45,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  *
  */
+@Hidden
 @Component
 @Path("/documents")
 @Tag(name="Document", description="Document API")
