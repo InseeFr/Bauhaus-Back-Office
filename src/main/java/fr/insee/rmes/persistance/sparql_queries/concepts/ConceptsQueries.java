@@ -125,8 +125,9 @@ public class ConceptsQueries {
 	public static String conceptNotesQuery(String id, int conceptVersion) { 
 		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
 				+ "?editorialNoteLg1 ?editorialNoteLg2 ?changeNoteLg1 ?changeNoteLg2 \n"
-				+ "WHERE { \n" 
-				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n" 
 				// Def Lg1
 				+ "OPTIONAL {?concept skos:definition ?defLg1 . \n"
@@ -174,7 +175,7 @@ public class ConceptsQueries {
 				+ "?noteChangeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
 				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
 				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
-				+ "} \n";
+				+ "}} \n";
 	}
 	
 	public static String conceptLinks(String id) {
