@@ -365,4 +365,8 @@ public class RepositoryGestion extends RepositoryUtils {
 		loadSimpleObject(geoIRI, model, null);		
 	}
 
+	public RepositoryConnection getConnection() throws RmesException {
+		return getConnection(RepositoryGestion.REPOSITORY_GESTION);
+	}
+
 }

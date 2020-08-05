@@ -33,7 +33,7 @@ public class IndicatorPublication extends RdfService {
 		Resource indicator= RdfUtils.objectIRI(ObjectType.INDICATOR,indicatorId);
 	
 		//TODO notify...
-		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
+		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator);
 
 		try {	

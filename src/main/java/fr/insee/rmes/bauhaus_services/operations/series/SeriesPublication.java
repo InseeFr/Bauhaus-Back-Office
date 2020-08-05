@@ -52,7 +52,7 @@ public class SeriesPublication extends RdfService {
 					"Series: "+seriesId+" ; Family: "+familyId);
 		}
 		
-		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
+		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, series);
 		
 		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, series);

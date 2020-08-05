@@ -30,6 +30,7 @@ public abstract class RepositoryUtils {
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
+	
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
 
 

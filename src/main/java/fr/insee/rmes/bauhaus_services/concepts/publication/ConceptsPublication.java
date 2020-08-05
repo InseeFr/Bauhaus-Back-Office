@@ -45,7 +45,7 @@ public class ConceptsPublication extends RdfService{
 			checkTopConceptOf(conceptId, model);
 			Resource concept = RdfUtils.conceptIRI(conceptId);
 
-			RepositoryConnection con =PublicationUtils.getRepositoryConnectionGestion();
+			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
@@ -195,7 +195,7 @@ public class ConceptsPublication extends RdfService{
 			Resource collection = RdfUtils.collectionIRI(collectionId);
 			//TODO uncomment when we can notify...
 			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
-			RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
+			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection);
 
 			try {
