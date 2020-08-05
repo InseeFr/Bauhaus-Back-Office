@@ -44,18 +44,22 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 
 @Component
-public class ConceptsUtils  extends RdfService {
+public class ConceptsUtils extends RdfService {
 
-	static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
+	private static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
 	
 	@Autowired
 	ConceptsPublication conceptsPublication;
+	
+	@Autowired
+	NoteManager noteManager;
 
 	/**
 	 * Concepts
+	 * @throws RmesException 
 	 */
 
-	public String createID()  throws RmesException{
+	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
 		String notation = json.getString("notation");
 		int id = Integer.parseInt(notation.substring(1))+1;
@@ -85,7 +89,7 @@ public class ConceptsUtils  extends RdfService {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Concept concept = null;
+		Concept concept = new Concept();
 		try {
 			concept = mapper.readValue(body, Concept.class);
 		} catch (IOException e) {
@@ -156,7 +160,7 @@ public class ConceptsUtils  extends RdfService {
 		RdfUtils.addTripleDateTime(conceptURI, DCTERMS.MODIFIED, concept.getModified(), model, RdfUtils.conceptGraph());
 
 		// Add notes to model, delete some notes and updates some other notes
-		List<List<IRI>> notesToDeleteAndUpdate = new NoteManager().setNotes(concept, model);
+		List<List<IRI>> notesToDeleteAndUpdate = noteManager.setNotes(concept, model);
 
 		// Add links to model and save member links
 		new LinksUtils().createRdfLinks(conceptURI, concept.getLinks(), model);

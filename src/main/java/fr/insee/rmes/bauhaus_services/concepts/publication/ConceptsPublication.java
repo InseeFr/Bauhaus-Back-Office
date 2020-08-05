@@ -15,7 +15,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.jsoup.Jsoup;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -28,7 +28,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 
-@Repository
+@Component
 public class ConceptsPublication extends RdfService{
 
 
