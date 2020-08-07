@@ -3,6 +3,10 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,7 +101,7 @@ public class DocumentationsUtils extends RdfService {
 	CodeListUtils codeListUtils;
 
 	@Autowired
-	DocumentationsUtils operationsService;
+	DocumentationsUtils documentationsUtils;
 
 	@Autowired
 	DocumentationPublication documentationPublication;
@@ -147,8 +151,8 @@ public class DocumentationsUtils extends RdfService {
 
 		return extensiveSims;
 	}
-	
-	
+
+
 	/**
 	 * Java Object	Builder
 	 * @param JsonSims
@@ -731,13 +735,36 @@ public class DocumentationsUtils extends RdfService {
 
 	public File exportMetadataReport(String id) throws Exception {
 		InputStream is;
-		if(id=="toto") {
-			is = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
+		Path tempDir= Files.createTempDirectory("forExport");
+		//		if(id=="toto") {
+		//			is = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
+		//		}
+
+		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
+		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
+
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+		
+		if (targetType=="OPERATION") {
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(operationsUtils.getOperationById(idDatabase), "application/xml"), "UTF-8");
+			Files.copy(is, tempFile, options);
 		}
-		else {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(operationsService.getFullSims(id), "application/xml"), "UTF-8");
+
+		if (targetType=="SERIES") {
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(seriesUtils.getSeriesById(idDatabase), "application/xml"), "UTF-8");
+			Files.copy(is, tempFile, options);
 		}
-		return docExport.export(is);
+
+		if (targetType=="INDICATOR") {
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(indicatorsUtils.getIndicatorById(idDatabase), "application/xml"), "UTF-8");
+			Files.copy(is, tempFile, options);
+		}
+
+		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
+
+		return docExport.export(simsInputStream,tempDir);
 	}
 
 }

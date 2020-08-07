@@ -4,13 +4,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class DocumentationRubric {
 
 	private String idAttribute;
+//	@JsonRawValue
 	private String value;
+//	private String arrayValue;
+//	@JsonRawValue
 	private String labelLg1;
+//	@JsonRawValue
 	private String labelLg2;
 	private String codeList;
 	private String rangeType;
@@ -68,5 +74,11 @@ public class DocumentationRubric {
 		StringUtils.isEmpty(codeList) &&
 		(documents == null || documents.isEmpty());
 	}
+//	public String getArrayValue() {
+//		return arrayValue;
+//	}
+//	public void setArrayValue(String string) {
+//		this.arrayValue = string;
+//	}
 }
 

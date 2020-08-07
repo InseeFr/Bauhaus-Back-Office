@@ -7,6 +7,7 @@
 
 	<xsl:output method="xml" encoding="UTF-8" indent="yes" />
 	<!-- omit-xml-declaration="yes" -->
+	<xsl:param name="tempDir" />
 	<xsl:strip-space elements="*" />
 	<xsl:template match="/">
 		<office:document office:version="1.2"
@@ -76,28 +77,30 @@
 			<office:body>
 				<office:text>
 					<text:p text:style-name="Title">
+						<xsl:value-of select="$tempDir" />
 						<xsl:value-of select="Documentation/labelLg1" />
 					</text:p>
-					<text:p text:style-name="P1">
-						Sims
-						<xsl:value-of select="Documentation/id" />
-					</text:p>
-					<text:p text:style-name="P1">
-						<xsl:text>&#13;</xsl:text>
-						<xsl:if test="Documentation/idOperation != ''">
-							Opération
-							<xsl:value-of select="Documentation/idOperation" />
-						</xsl:if>
-						<xsl:if test="Documentation/idSeries != ''">
-							Série
-							<xsl:value-of select="Documentation/idSeries" />
-						</xsl:if>
-						<xsl:if test="Documentation/idIndicator != ''">
-							Indicateur
-							<xsl:value-of select="Documentation/idIndicator" />
-						</xsl:if>
-					</text:p>
-
+					<table>
+						<text:p text:style-name="P1">
+							Sims
+							<xsl:value-of select="Documentation/id" />
+						</text:p>
+						<text:p text:style-name="P1">
+							<xsl:text>&#13;</xsl:text>
+							<xsl:if test="Documentation/idOperation != ''">
+								Opération
+								<xsl:value-of select="Documentation/idOperation" />
+							</xsl:if>
+							<xsl:if test="Documentation/idSeries != ''">
+								Série
+								<xsl:value-of select="Documentation/idSeries" />
+							</xsl:if>
+							<xsl:if test="Documentation/idIndicator != ''">
+								Indicateur
+								<xsl:value-of select="Documentation/idIndicator" />
+							</xsl:if>
+						</text:p>
+					</table>
 					<xsl:for-each select="Documentation/rubrics/rubrics">
 						<xsl:sort data-type="number"
 							select="substring-before(concat(substring-after(idAttribute,'.'),'.'),'.')"
@@ -111,11 +114,11 @@
 							<xsl:value-of select="idAttribute" />
 							<xsl:text> </xsl:text>
 						</text:p>
-						
+
 						<text:p text:style-name="Rubric">
 							<xsl:value-of select="labelLg1" />
 						</text:p>
-						
+
 						<xsl:if test="codeList != ''">
 							<text:p text:style-name="RubricItem">
 								Code list :
