@@ -180,14 +180,18 @@ public class ConceptsQueries {
 	
 	public static String conceptLinks(String id) {
 		return "SELECT ?id ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 \n"
-				+ "WHERE { \n" 
-				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				
+				+ "?concept rdf:type skos:Concept . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				
+			//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore ???
+
 				+ "{?concept skos:narrower ?conceptlinked . \n"
-				+ "BIND('broader' AS ?typeOfLink)} \n"
+				+ "BIND('narrower' AS ?typeOfLink)} \n"
 				+ "UNION"
 				+ "{?concept skos:broader ?conceptlinked . \n"
-				+ "BIND('narrower' AS ?typeOfLink)} \n"
+				+ "BIND('broader' AS ?typeOfLink)} \n"
 				+ "UNION"
 				+ "{?concept dcterms:references ?conceptlinked . \n"
 				+ "BIND('references' AS ?typeOfLink)} \n"
@@ -203,7 +207,7 @@ public class ConceptsQueries {
 				+ "OPTIONAL {?conceptlinked skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
 				+ "BIND(STRAFTER(STR(?conceptlinked),'/definition/') AS ?id) . \n"				
-				+ "} \n"
+				+ "}} \n"
 				+ "ORDER BY ?typeOfLink";
 	}
 	

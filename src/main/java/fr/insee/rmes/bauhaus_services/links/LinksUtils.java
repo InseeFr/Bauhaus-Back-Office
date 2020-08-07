@@ -22,16 +22,16 @@ public class LinksUtils {
 			if (link.getTypeOfLink().equals("narrower")) {
 				addTripleNarrower(conceptURI, link.getIds(), model);
 			}
-			if (link.getTypeOfLink().equals("broader")) {
+			else if (link.getTypeOfLink().equals("broader")) {
 				addTripleBroader(conceptURI, link.getIds(), model);
 			}
-			if (link.getTypeOfLink().equals("references")) {
+			else if (link.getTypeOfLink().equals("references")) {
 				addTripleReferences(conceptURI, link.getIds(), model);
 			}
-			if (link.getTypeOfLink().equals("succeed")) {
+			else if (link.getTypeOfLink().equals("succeed")) {
 				addTripleSucceed(conceptURI, link.getIds(), model);
 			}
-			if (link.getTypeOfLink().equals("related")) {
+			else if (link.getTypeOfLink().equals("related")) {
 				addTripleRelated(conceptURI, link.getIds(), model);
 			}
 		});
