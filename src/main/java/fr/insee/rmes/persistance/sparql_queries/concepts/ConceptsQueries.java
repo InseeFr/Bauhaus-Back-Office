@@ -76,14 +76,14 @@ public class ConceptsQueries {
 		
 	public static String conceptsToValidateQuery() {
 		return "SELECT DISTINCT ?id ?label ?creator ?valid \n"
-			+ "WHERE { \n"
+			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 			+ "?concept rdf:type skos:Concept . \n"
 			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "?concept dc:creator ?creator . \n"
 			+ "?concept insee:isValidated 'false'^^xsd:boolean . \n"
 			+ "OPTIONAL {?concept dcterms:valid ?valid .} \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') } \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') }} \n"
 			+ "ORDER BY ?label";	
 	}
 		
