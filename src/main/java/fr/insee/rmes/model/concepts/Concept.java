@@ -36,6 +36,7 @@ public class Concept {
 	public Concept() throws RmesException {
 		this.id = new ConceptsUtils().createID();
 		this.created = LocalDateTime.now().toString();
+		this.modified = LocalDateTime.now().toString();
 		this.isValidated = "false";
 		this.creation = true;
 		this.versioning = false;

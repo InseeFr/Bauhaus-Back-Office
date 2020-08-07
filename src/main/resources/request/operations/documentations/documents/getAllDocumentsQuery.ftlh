@@ -1,5 +1,5 @@
 SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
-FROM <http://rdf.insee.fr/graphes/qualite/documents>
+FROM <${DOCUMENTS_GRAPH}>
 WHERE { 
 
 	 ?uri rdf:type foaf:Document .

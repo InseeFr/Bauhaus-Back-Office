@@ -19,7 +19,7 @@ public class ConceptsQueries {
 	
 	public static String lastConceptID() {
 		return "SELECT ?notation \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				+ "?concept skos:notation ?notation  .\n"
 				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
 				+ "ORDER BY DESC(xsd:integer(?id)) \n"
@@ -29,8 +29,8 @@ public class ConceptsQueries {
 	
 	public static String conceptsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
-			+ "?concept skos:notation ?id . \n"
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
@@ -44,7 +44,7 @@ public class ConceptsQueries {
 		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
 			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
 			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-			+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 			+ "?concept skos:notation ?id . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
@@ -90,7 +90,7 @@ public class ConceptsQueries {
 	public static String conceptQuery(String id) { 
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
 				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n"

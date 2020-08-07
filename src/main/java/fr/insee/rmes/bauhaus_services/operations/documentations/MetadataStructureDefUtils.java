@@ -42,16 +42,12 @@ public class MetadataStructureDefUtils  extends RdfService {
 		mas.put("rangeType", type.getJsonType());
 		mas.remove(RANGE);
 
-		switch (type) {
-			case CODELIST:
-				JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
-				if (codeList != null && !codeList.isNull("notation")) {
-					String codeListNotation = codeList.getString("notation");
-					mas.put("codeList", codeListNotation);
-				}
-				break;
-			default:
-				break;
+		if (type.equals(RangeType.CODELIST)) {
+			JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
+			if (codeList != null && !codeList.isNull("notation")) {
+				String codeListNotation = codeList.getString("notation");
+				mas.put("codeList", codeListNotation);
+			}
 		}
 
 	}

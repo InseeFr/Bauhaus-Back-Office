@@ -1,5 +1,6 @@
 package fr.insee.rmes.model.operations;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -57,8 +58,9 @@ public class Series {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
+	@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of creator")
-	public String creator;
+	public List<String> creator;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributor;
@@ -86,17 +88,11 @@ public class Series {
 	public String idSims;
 	
 	/*
-	 * Constructors
-	 */
-	
-	public Series(String id) {
-		this.id=id;
-	}
-
-	/*
 	 * Getters
 	 */
 	
+
+
 	public String getId() {
 		return id;
 	}
@@ -158,10 +154,6 @@ public class Series {
 		return accrualPeriodicityList;
 	}
 
-	public String getCreator() {
-		return creator;
-	}
-
 	public List<OperationsLink> getContributor() {
 		return contributor;
 	}
@@ -188,6 +180,110 @@ public class Series {
 
 	public String getIdSims() {
 		return idSims;
+	}
+
+	public List<String> getCreator() {
+		return creator;
+	}
+
+	public List<OperationsLink> getGenerates() {
+		return generates;
+	}
+
+	public void setGenerates(List<OperationsLink> generates) {
+		this.generates = generates;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public void setPrefLabelLg1(String prefLabelLg1) {
+		this.prefLabelLg1 = prefLabelLg1;
+	}
+
+	public void setPrefLabelLg2(String prefLabelLg2) {
+		this.prefLabelLg2 = prefLabelLg2;
+	}
+
+	public void setAltLabelLg1(String altLabelLg1) {
+		this.altLabelLg1 = altLabelLg1;
+	}
+
+	public void setAltLabelLg2(String altLabelLg2) {
+		this.altLabelLg2 = altLabelLg2;
+	}
+
+	public void setAbstractLg1(String abstractLg1) {
+		this.abstractLg1 = abstractLg1;
+	}
+
+	public void setAbstractLg2(String abstractLg2) {
+		this.abstractLg2 = abstractLg2;
+	}
+
+	public void setHistoryNoteLg1(String historyNoteLg1) {
+		this.historyNoteLg1 = historyNoteLg1;
+	}
+
+	public void setHistoryNoteLg2(String historyNoteLg2) {
+		this.historyNoteLg2 = historyNoteLg2;
+	}
+
+	public void setFamily(IdLabelTwoLangs family) {
+		this.family = family;
+	}
+
+	public void setOperations(List<IdLabelTwoLangs> operations) {
+		this.operations = operations;
+	}
+
+	public void setTypeCode(String typeCode) {
+		this.typeCode = typeCode;
+	}
+
+	public void setTypeList(String typeList) {
+		this.typeList = typeList;
+	}
+
+	public void setAccrualPeriodicityCode(String accrualPeriodicityCode) {
+		this.accrualPeriodicityCode = accrualPeriodicityCode;
+	}
+
+	public void setAccrualPeriodicityList(String accrualPeriodicityList) {
+		this.accrualPeriodicityList = accrualPeriodicityList;
+	}
+
+	public void setCreator(String[] creator) {
+		this.creator = Arrays.asList(creator);
+	}
+
+	public void setContributor(List<OperationsLink> contributor) {
+		this.contributor = contributor;
+	}
+
+	public void setDataCollector(List<OperationsLink> dataCollector) {
+		this.dataCollector = dataCollector;
+	}
+
+	public void setGestionnaires(List<String> gestionnaires) {
+		this.gestionnaires = gestionnaires;
+	}
+
+	public void setSeeAlso(List<OperationsLink> seeAlso) {
+		this.seeAlso = seeAlso;
+	}
+
+	public void setReplaces(List<OperationsLink> replaces) {
+		this.replaces = replaces;
+	}
+
+	public void setIsReplacedBy(List<OperationsLink> isReplacedBy) {
+		this.isReplacedBy = isReplacedBy;
+	}
+
+	public void setIdSims(String idSims) {
+		this.idSims = idSims;
 	}
 
 

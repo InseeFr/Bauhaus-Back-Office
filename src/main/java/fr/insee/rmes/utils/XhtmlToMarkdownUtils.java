@@ -11,7 +11,7 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 
 public class XhtmlToMarkdownUtils {
 	
-	static MutableDataSet optionsXhtmlToMd;
+	private static MutableDataSet optionsXhtmlToMd;
 	
 	private static void init(){
 		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().size()==0) {
@@ -32,19 +32,12 @@ public class XhtmlToMarkdownUtils {
     public static String markdownToXhtml(String md) {
         MutableDataSet options = new MutableDataSet();
 
-        // uncomment to set optional extensions
-        //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
-
-        // uncomment to convert soft-breaks to hard breaks
-     //   options.set(HtmlRenderer.SOFT_BREAK, "<br />");
-
         Parser parser = Parser.builder(options).build();
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();
 
         // You can re-use parser and renderer instances
         Node document = parser.parse(md);
-        String xhtml = renderer.render(document); 
-        return xhtml;
+        return renderer.render(document); 
     }
     
     private XhtmlToMarkdownUtils() {

@@ -50,7 +50,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
-import fr.insee.rmes.utils.DateParser;
+import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class DocumentsUtils  extends RdfService  {
@@ -119,7 +119,7 @@ public class DocumentsUtils  extends RdfService  {
 			for (int i = 0; i < allDocs.length(); i++) {
 				JSONObject doc = allDocs.getJSONObject(i);
 				if (doc.has(UPDATED_DATE)) {
-					String formatedDate = DateParser.getDate(doc.getString(UPDATED_DATE));
+					String formatedDate = DateUtils.getDate(doc.getString(UPDATED_DATE));
 					doc.remove(UPDATED_DATE);
 					doc.put(UPDATED_DATE, formatedDate);
 				}
@@ -248,7 +248,7 @@ public class DocumentsUtils  extends RdfService  {
 			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find Document with id: ", id);
 		}
 		if (jsonDocs.has(UPDATED_DATE)) {
-			jsonDocs.put(UPDATED_DATE, DateParser.getDate(jsonDocs.getString(UPDATED_DATE)));
+			jsonDocs.put(UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(UPDATED_DATE)));
 		}
 
 		return jsonDocs;
@@ -421,7 +421,7 @@ public class DocumentsUtils  extends RdfService  {
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
 			RdfUtils.addTripleDateTime(docUri, PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
-		repoGestion.loadSimpleObject(docUri, model, null);
+		repoGestion.loadSimpleObject(docUri, model);
 	}
 
 	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {

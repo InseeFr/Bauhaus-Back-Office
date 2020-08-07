@@ -1,6 +1,6 @@
 SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs
- FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
- FROM <http://rdf.insee.fr/graphes/concepts/qualite>
+ FROM <${MSD_GRAPH}> 
+ FROM <${MSD_CONCEPTS_GRAPH}>
  WHERE { 
 	 	?reportStructure sdmx-mm:metadataAttributeSpecification ?mas . 
 

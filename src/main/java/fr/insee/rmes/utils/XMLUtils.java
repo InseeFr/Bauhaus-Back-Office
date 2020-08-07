@@ -2,10 +2,8 @@ package fr.insee.rmes.utils;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.core.MediaType;
-import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -23,7 +21,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.webservice.OperationsResources;
 
 
 
@@ -33,8 +30,6 @@ public class XMLUtils {
 	
 	public static final String toString(Document xml) throws TransformerFactoryConfigurationError, TransformerException  {
 		TransformerFactory tf = TransformerFactory.newInstance();
-		tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));

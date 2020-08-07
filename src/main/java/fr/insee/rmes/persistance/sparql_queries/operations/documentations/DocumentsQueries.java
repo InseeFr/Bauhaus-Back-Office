@@ -27,6 +27,7 @@ public class DocumentsQueries {
 		if (params==null) {initParams();}
 		params.put("idSims", idSims);
 		params.put("idRubric", idRubric);
+		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
 		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
 	}
 	
@@ -77,6 +78,8 @@ public class DocumentsQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("DOCUMENTS_GRAPH", Config.DOCUMENTS_GRAPH);
+
 	}
 	
 	

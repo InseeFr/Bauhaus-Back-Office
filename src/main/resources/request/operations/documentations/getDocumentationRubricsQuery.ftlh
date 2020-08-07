@@ -1,8 +1,8 @@
 SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?maxOccurs
-	FROM <http://rdf.insee.fr/graphes/qualite/rapport/${idSims}>
-	FROM <http://rdf.insee.fr/graphes/codes> 
-	FROM <http://rdf.insee.fr/graphes/organisations>
-    FROM <http://rdf.insee.fr/graphes/def/simsv2fr> 
+	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
+	FROM <${CODELIST_GRAPH}> 
+	FROM <${ORGANIZATIONS_GRAPH}>
+    FROM NAMED  <${MSD_GRAPH}> 
 
  
 WHERE { 
@@ -16,7 +16,7 @@ WHERE {
 			BIND('${DATE.jsonType}' AS ?rangeType) .
 		} 
 			
-		<#-- RangeType.RICHTEXT : label -->
+		<#-- RangeType.RICHTEXT : label, hasDoc -->
 		UNION {
 			 ?report rdf:type sdmx-mm:MetadataReport .
 			 ?reportAttr sdmx-mm:metadataReport ?report .
@@ -47,22 +47,25 @@ WHERE {
 			 BIND('${STRING.jsonType}' AS ?rangeType) . 
 		} 
 			
-		<#-- RangeType.CODELIST : value -->
+		<#-- RangeType.CODELIST : value, codelist, maxoccurs -->
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
-			
-			?mas sdmx-mm:metadataAttributeProperty ?attr . 
-	  		OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
-
-			
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			?reportAttr ?attr ?codeUri . 
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
 			?listUri skos:notation ?codeList .
 			BIND('${CODELIST.jsonType}' AS ?rangeType) .
+						
+			OPTIONAL {
+				GRAPH  <${MSD_GRAPH}>  {
+					?mas sdmx-mm:metadataAttributeProperty ?attr . 
+					?mas sdmx-mm:maxOccurs ?maxOccurs
+				}
+			} .
 		} 
+		<#-- RangeType.ORGANIZATION : value -->
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
@@ -70,6 +73,20 @@ WHERE {
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			?organisationUri dcterms:identifier ?value .
 			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
+		} 
+		
+		<#-- RangeType.GEOGRAPHY : value (uri), label -->
+		UNION {
+			?report rdf:type sdmx-mm:MetadataReport .
+			?reportAttr sdmx-mm:metadataReport ?report .
+			?reportAttr ?attr ?value . 
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			?value rdfs:label  ?labelLg1 .
+			 FILTER(lang(?labelLg1) = '${LG1}') 
+			 OPTIONAL{?value rdfs:label ?labelLg2 .
+			 FILTER(lang(?labelLg2) = '${LG2}') } 
+
+			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} 
 			
 }

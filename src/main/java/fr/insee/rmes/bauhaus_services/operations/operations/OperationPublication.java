@@ -10,10 +10,10 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famOpeSerUtils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -23,20 +23,16 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 
-@Repository
+@Component
 public class OperationPublication extends RdfService{
 	
 	@Autowired
-	static FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerUtils famOpeSerUtils;
 	
 	@Autowired
-	static OperationsUtils operationsUtils;
-
-	static NotificationsContract notification = new RmesNotificationsImpl();
+	private OperationsUtils operationsUtils;
 
 	String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
 
@@ -82,7 +78,7 @@ public class OperationPublication extends RdfService{
 
 	}
 
-	private static void checkSeriesIsPublished(String operationId, JSONObject operationJson)
+	private void checkSeriesIsPublished(String operationId, JSONObject operationJson)
 			throws RmesException {
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
 		String status = famOpeSerUtils.getValidationStatus(seriesId);

@@ -13,8 +13,20 @@ public class IdLabelTwoLangs {
 	@Schema(description = "Label lg2")
 	public String labelLg2;
 
+	public IdLabelTwoLangs(String id, String labelLg1, String labelLg2) {
+		super();
+		this.id = id;
+		this.labelLg1 = labelLg1;
+		this.labelLg2 = labelLg2;
+	}
+
+	public IdLabelTwoLangs() {
+		super();
+	}
+	
 	public String getId() {
 		return this.id;
 	}
+
 
 }

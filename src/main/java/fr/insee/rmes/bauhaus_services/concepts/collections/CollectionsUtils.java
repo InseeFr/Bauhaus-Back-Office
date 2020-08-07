@@ -109,7 +109,7 @@ public class CollectionsUtils extends RdfService{
 		    model.add(collectionURI, SKOS.MEMBER, memberIRI, RdfUtils.conceptGraph());
 		});
 		
-		repoGestion.loadSimpleObject(collectionURI, model, null);
+		repoGestion.loadSimpleObject(collectionURI, model);
 	}
 	
 	public void collectionsValidation(JSONArray collectionsToValidate) throws  RmesException  {

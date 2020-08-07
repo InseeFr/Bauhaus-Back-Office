@@ -2,11 +2,13 @@ package fr.insee.rmes.persistance.sparql_queries.links;
 
 import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.config.Config;
+
 public class LinksQueries {
 	
 	public static String getLinksToDelete(IRI conceptURI) {
 		return "SELECT ?concept \n"
-				+ "WHERE { GRAPH <http://rdf.insee.fr/graphes/concepts/definitions> { \n"
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				+ "?concept ?b <" + conceptURI.toString() + "> \n"
 				+ " }}";
 	}

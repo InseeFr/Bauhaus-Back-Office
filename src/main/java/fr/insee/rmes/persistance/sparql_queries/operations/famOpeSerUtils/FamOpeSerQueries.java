@@ -23,6 +23,7 @@ public class FamOpeSerQueries {
 		params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("OPERATIONS_GRAPH",Config.OPERATIONS_GRAPH);
 	}
 	
 	/**

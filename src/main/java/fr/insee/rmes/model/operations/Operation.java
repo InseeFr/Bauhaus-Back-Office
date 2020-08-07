@@ -12,6 +12,22 @@ public class Operation {
 	@Schema(description = "Label lg1", required = true)
 	public String prefLabelLg1;
 
+	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
+			IdLabelTwoLangs series, String idSims) {
+		super();
+		this.id = id;
+		this.prefLabelLg1 = prefLabelLg1;
+		this.prefLabelLg2 = prefLabelLg2;
+		this.altLabelLg1 = altLabelLg1;
+		this.altLabelLg2 = altLabelLg2;
+		this.series = series;
+		this.idSims = idSims;
+	}
+
+	public Operation() {
+		super();
+	}
+
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
@@ -69,6 +85,30 @@ public class Operation {
 
 	public String getIdSims() {
 		return idSims;
+	}
+
+	public void setPrefLabelLg1(String prefLabelLg1) {
+		this.prefLabelLg1 = prefLabelLg1;
+	}
+
+	public void setPrefLabelLg2(String prefLabelLg2) {
+		this.prefLabelLg2 = prefLabelLg2;
+	}
+
+	public void setAltLabelLg1(String altLabelLg1) {
+		this.altLabelLg1 = altLabelLg1;
+	}
+
+	public void setAltLabelLg2(String altLabelLg2) {
+		this.altLabelLg2 = altLabelLg2;
+	}
+
+	public void setSeries(IdLabelTwoLangs series) {
+		this.series = series;
+	}
+
+	public void setIdSims(String idSims) {
+		this.idSims = idSims;
 	}
 
 

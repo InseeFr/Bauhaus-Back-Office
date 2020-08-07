@@ -41,9 +41,10 @@
 		<rdf4j.version>3.2.1</rdf4j.version>
 		<swagger.core.version>2.0.9</swagger.core.version>
 		<spring.version>4.3.25.RELEASE</spring.version>
-		<spring.security.version>4.2.13.RELEASE</spring.security.version>
-		<log4j2.version>2.8.2</log4j2.version>
+		<spring.security.version>4.2.17.RELEASE</spring.security.version>
+		<log4j2.version>2.13.3</log4j2.version>
 		<junit.version>5.5.2</junit.version>
+
 		<maven-surefire-plugin.version>2.20.1</maven-surefire-plugin.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -450,7 +451,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>2.4</version>
+				<version>3.3.0</version>
 				<configuration>
 					<warSourceDirectory>WebContent</warSourceDirectory>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
@@ -458,17 +459,17 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
+				<version>3.8.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-
-			<!-- Plugin lancement des tests -->
-			<plugin>
+	
+				<!-- Plugin lancement des tests -->
+		 	<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin.version}</version>
+				<version>2.22.2</version>
 				<configuration>
 					<includes>
 						<include>**/*Test.java</include>
@@ -478,7 +479,7 @@
 					<dependency>
 						<groupId>org.junit.platform</groupId>
 						<artifactId>junit-platform-surefire-provider</artifactId>
-						<version>1.2.0</version>
+						<version>1.3.2</version>
 					</dependency>
 				</dependencies>
 			</plugin>

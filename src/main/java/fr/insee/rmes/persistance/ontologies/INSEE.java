@@ -41,7 +41,12 @@ public class INSEE {
 	public static final IRI IS_VALIDATED;
 	public static final IRI VALIDATION_STATE;
 
-	
+
+	public static final IRI IDENTIFIANT_METIER;
+	public static final IRI CODELIST;
+
+	public static final IRI STRUCTURE_CONCEPT ;
+
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
 
@@ -65,9 +70,14 @@ public class INSEE {
 		DOCUMENT = f.createIRI(NAMESPACE,"document");
 		INDICATOR = f.createIRI(NAMESPACE,"StatisticalIndicator");
 
+
 		DATA_COLLECTOR = f.createIRI(NAMESPACE,"dataCollector");
 		GESTIONNAIRE = f.createIRI(NAMESPACE,"gestionnaire");
-	}
-	
 
+		IDENTIFIANT_METIER = f.createIRI(NAMESPACE,"identifiantMetier");
+
+		STRUCTURE_CONCEPT = f.createIRI("http://id.insee.fr/concepts/definition/");
+
+		CODELIST = f.createIRI(NAMESPACE, "codeList");
+	}
 }

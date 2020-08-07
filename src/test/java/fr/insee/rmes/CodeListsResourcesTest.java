@@ -7,8 +7,6 @@ import static org.mockito.Mockito.when;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +48,7 @@ public class CodeListsResourcesTest {
     //getCodeListByNotation//
 
     @Test
-    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException, TupleQueryResultHandlerException, QueryEvaluationException {
+    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException {
     	when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
     	when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
     	
