@@ -1,10 +1,13 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.JSONUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -27,6 +30,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
@@ -262,4 +266,46 @@ public class DocumentationsRubricsUtils extends RdfService {
 		return RdfUtils.toURI(newUri);
 	}
 
+	/**
+	 * Java Object	Builder
+	 * @param JsonRubric
+	 * @return documentationRubric
+	 * @throws RmesException
+	 */
+
+	private DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
+		DocumentationRubric documentationRubric = new DocumentationRubric();
+		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
+		if (rubric.has("value")) {
+			try{
+				documentationRubric.setValue(rubric.getString("value"));
+			}
+			catch(JSONException e) {
+				/* value is not a string but an array */
+				JSONArray JsonArrayValue =rubric.getJSONArray("value");
+				documentationRubric.setValue(JSONUtils.jsonArrayOfStringToString(JsonArrayValue));
+			}
+		}
+		if (rubric.has("labelLg1"))		documentationRubric.setLabelLg1(rubric.getString("labelLg1"));
+		if (rubric.has("labelLg2"))		documentationRubric.setLabelLg2(rubric.getString("labelLg2"));
+		if (rubric.has("codeList"))		documentationRubric.setCodeList(rubric.getString("codeList"));
+		if (rubric.has("rangeType"))		documentationRubric.setRangeType(rubric.getString("rangeType"));
+
+
+		if (rubric.has("documents")) {	
+			List<Document> docs = new ArrayList<Document>();
+
+			JSONArray documents = rubric.getJSONArray("documents");
+			Document currentDoc = new Document();
+
+			for (int i = 0; i < documents.length(); i++) {
+				JSONObject doc = documents.getJSONObject(i);
+				currentDoc = buildDocumentFromJson(doc);
+				docs.add(currentDoc);
+			}	
+			documentationRubric.setDocuments(docs);
+		}
+		return documentationRubric;
+	}
+	
 }
