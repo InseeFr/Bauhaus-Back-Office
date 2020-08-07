@@ -49,15 +49,11 @@ public class ConceptsUtils extends RdfService {
 	private static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
 	
 	@Autowired
-	ConceptsPublication conceptsPublication;
+	private ConceptsPublication conceptsPublication;
 	
 	@Autowired
-	NoteManager noteManager;
+	private NoteManager noteManager;
 
-	/**
-	 * Concepts
-	 * @throws RmesException 
-	 */
 
 	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
@@ -82,39 +78,47 @@ public class ConceptsUtils extends RdfService {
 		return concept;
 	}
 
+	/**
+	 * CREATION
+	 * @param body
+	 * @return
+	 * @throws RmesException
+	 */
 	public String setConcept(String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateConcept()) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_CREATION_RIGHTS_DENIED, "Only an admin or concepts manager can create a new concept.");
 		}
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(
-				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Concept concept = new Concept();
-		try {
-			concept = mapper.readValue(body, Concept.class);
-		} catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
-		createRdfConcept(concept);
+		Concept concept = setConcept(createID(), true, body);
 		logger.info("Create concept : {} - {}", concept.getId() , concept.getPrefLabelLg1());
 		return concept.getId();
 	}
 
+	/**
+	 * UPDATE
+	 * @param id
+	 * @param body
+	 * @throws RmesException
+	 */
 	public void setConcept(String id, String body) throws RmesException {
 		if(!stampsRestrictionsService.canModifyConcept(RdfUtils.conceptIRI(id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MODIFICATION_RIGHTS_DENIED, "");
 		}
+		Concept concept = setConcept(id, false, body);
+		logger.info("Update concept : {} - {}" , concept.getId() , concept.getPrefLabelLg1());
+	}
+	
+	private Concept setConcept(String id, boolean isNewConcept, String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Concept concept = new Concept(id);
+		Concept concept = new Concept(id, isNewConcept);
 		try {
-			concept = mapper.readerForUpdating(concept).readValue(body);
+			concept =  mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
-		logger.info("Update concept : {} - {}" , concept.getId() , concept.getPrefLabelLg1());
+		return concept;
 	}
 
 	public void conceptsValidation(String body) throws RmesException  {
