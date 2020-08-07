@@ -23,7 +23,7 @@ public class ConceptsQueries {
 				+ "?concept skos:notation ?notation  .\n"
 				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
 				+ "ORDER BY DESC(xsd:integer(?id)) \n"
-				+ "LIMIT1";
+				+ "LIMIT 1";
 	}	
 	
 	
