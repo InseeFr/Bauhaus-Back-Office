@@ -1,11 +1,11 @@
 package fr.insee.rmes.model.operations.documentations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -82,6 +82,11 @@ public class DocumentationRubric {
 			return null;
 		}
 		return value.get(0);
+	}
+	public void setValue(String value) {
+		List<String >val = new ArrayList<String>();
+		val.add(value);
+		this.value = val;
 	}
 
 }

@@ -24,6 +24,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
@@ -58,7 +60,6 @@ import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.utils.DateParser;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
@@ -90,7 +91,7 @@ public class DocumentationsUtils extends RdfService{
 	private DocumentationExport docExport;
 
 	@Autowired
-	private DocumentationsRubricsUtils documentationsRubricsUtils
+	private DocumentationsRubricsUtils documentationsRubricsUtils;
 	
 	@Autowired
 	private IndicatorsUtils indicatorsUtils;
@@ -126,7 +127,7 @@ public class DocumentationsUtils extends RdfService{
 		doc.put(Constants.ID, idSims);
 
 		// Get all rubrics
-		docRubricsUtils.getAllRubricsJson(idSims, doc);
+		documentationsRubricsUtils.getAllRubricsJson(idSims, doc);
 		return doc;
 	}
 
@@ -204,57 +205,6 @@ public class DocumentationsUtils extends RdfService{
 		}
 		return(doc);
 	}
-
-	/**
-	 * Get documents if exist, format date and format list of values for codelist
-	 * @param idSims
-	 * @param docRubrics
-	 * @return
-	 * @throws RmesException
-	 */
-	private JSONArray clearRubrics(String idSims,  JSONArray docRubrics) throws RmesException {
-		Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
-
-		for (int i = docRubrics.length()-1; i >= 0 ; i--) {
-			JSONObject rubric = docRubrics.getJSONObject(i);
-
-			//Get documents
-			if (rubric.has(HAS_DOC) ) {
-				if (rubric.getBoolean(HAS_DOC)) {
-					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-					rubric.put("documents", listDoc);
-				}
-				rubric.remove(HAS_DOC);
-			}
-
-			//Format date
-			else if (rubric.get("rangeType").equals(RangeType.DATE)) {
-				rubric.put(VALUE, DateParser.getDate(rubric.getString(VALUE)));
-			}
-
-			//Format codelist with multiple value
-			else if (rubric.has("maxOccurs")) {
-				String newValue = rubric.getString(VALUE);
-				String attribute = rubric.getString("idAttribute");
-
-				if (tempMultipleCodeList.containsKey(attribute)) {
-					JSONObject tempObject = tempMultipleCodeList.get(attribute);
-					tempObject.accumulate(VALUE, newValue);
-					tempMultipleCodeList.replace(attribute, tempObject);
-				}else {
-					List<String> listValue = new ArrayList<>();
-					listValue.add(newValue);
-					tempMultipleCodeList.put(attribute, rubric);
-				}
-				docRubrics.remove(i);		
-			}
-		}
-		if (tempMultipleCodeList.size() != 0) {
-			tempMultipleCodeList.forEach((k,v) -> docRubrics.put(v));
-		}
-		return docRubrics;
-	}
-
 
 	/**
 	 * CREATE or UPDATE
@@ -508,105 +458,6 @@ public class DocumentationsUtils extends RdfService{
 	}
 
 	/**
-	 * Add all rubrics to the specified metadata report
-	 * @param model
-	 * @param simsId
-	 * @param graph
-	 * @param rubrics
-	 * @throws RmesException
-	 */
-	private void addRubricsToModel(Model model, String simsId, Resource graph, List<DocumentationRubric> rubrics)
-			throws RmesException {
-		Map<String, String> attributesUriList = msdUtils.getMetadataAttributesUri();
-		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
-
-		for (DocumentationRubric rubric : rubrics) {
-			RangeType type = getRangeType(rubric);
-			IRI predicateUri;
-			IRI attributeUri;
-			try {
-				String predicate = attributesUriList.get(rubric.getIdAttribute());
-				predicateUri = RdfUtils.toURI(predicate);
-				attributeUri = getAttributeUri(simsId, predicate);
-			} catch (Exception e) {
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idAttribute not found", rubric.getIdAttribute());
-			}
-			RdfUtils.addTripleUri(attributeUri, SDMX_MM.METADATA_REPORT_PREDICATE, simsUri, model, graph);
-			addRubricByRangeType(model, graph, rubric, type, predicateUri, attributeUri);
-		}
-	}
-
-	/**
-	 * Add one rubric to the model
-	 * @param model
-	 * @param graph
-	 * @param rubric
-	 * @param type
-	 * @param predicateUri
-	 * @param attributeUri
-	 * @throws RmesException
-	 */
-	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
-			IRI predicateUri, IRI attributeUri) throws RmesException {
-		switch (type) {
-		case DATE:
-			RdfUtils.addTripleDateTime(attributeUri, predicateUri, rubric.getValue(), model, graph);
-			break;
-		case CODELIST:
-			String codeUri = codeListUtils.getCodeUri(rubric.getCodeList(), rubric.getValue());
-			if (codeUri != null) {
-				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(codeUri), model, graph);//TODO
-			}
-			break;
-		case RICHTEXT:
-			if (rubric.isEmpty()) {
-				break;
-			}
-			addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
-			break;
-		case ORGANIZATION:
-			String orgaUri = organizationUtils.getUri(rubric.getValue());
-			if (orgaUri != null) {
-				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(orgaUri), model, graph);
-			}
-			break;
-		case STRING:
-			if (rubric.isEmpty()) {
-				break;
-			}
-			addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
-			break;
-		default:
-			break;
-		}
-	}
-
-	private void addSimpleTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
-			IRI attributeUri) {
-		RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
-		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), Config.LG1, model, graph);
-		}
-		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), Config.LG2, model, graph);
-		}
-	}
-
-	private void addRichTextToModel(Model model, Resource graph, DocumentationRubric rubric, IRI predicateUri,
-			IRI attributeUri) throws RmesException {
-		IRI textUri = RdfUtils.toURI(attributeUri.stringValue().concat("/texte"));
-		RdfUtils.addTripleUri(attributeUri, predicateUri, textUri, model, graph);
-		RdfUtils.addTripleUri(textUri, RDF.TYPE, DCMITYPE.TEXT, model, graph);
-		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-			RdfUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg1(), Config.LG1, model, graph);
-		}
-		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-			RdfUtils.addTripleStringMdToXhtml(textUri, RDF.VALUE, rubric.getLabelLg2(), Config.LG2, model, graph);
-		}
-		docUtils.addDocumentsToRubric(model, graph, rubric, textUri);
-	}
-
-	/**
 	 * Generate a new ID
 	 * Prefer to call prepareCreation instead
 	 * @return
@@ -668,7 +519,7 @@ public class DocumentationsUtils extends RdfService{
 			} else if (idSerie != null && !idSerie.isEmpty()) {
 				stamp = seriesUtils.getSeriesById(idSerie).getString(CREATOR);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorById(idIndicator).getString(CREATOR);
+				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(CREATOR);
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");

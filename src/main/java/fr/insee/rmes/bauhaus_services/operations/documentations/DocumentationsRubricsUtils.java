@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -60,8 +61,6 @@ public class DocumentationsRubricsUtils extends RdfService {
 	
 	@Autowired
 	private GeographyService geoService;
-
-
 	
 
 	/**
@@ -273,7 +272,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 
-	private DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
+	DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
 		if (rubric.has("value")) {
@@ -283,14 +282,13 @@ public class DocumentationsRubricsUtils extends RdfService {
 			catch(JSONException e) {
 				/* value is not a string but an array */
 				JSONArray JsonArrayValue =rubric.getJSONArray("value");
-				documentationRubric.setValue(JSONUtils.jsonArrayOfStringToString(JsonArrayValue));
+				documentationRubric.setValue(JSONUtils.jsonArrayToList(JsonArrayValue));
 			}
 		}
 		if (rubric.has("labelLg1"))		documentationRubric.setLabelLg1(rubric.getString("labelLg1"));
 		if (rubric.has("labelLg2"))		documentationRubric.setLabelLg2(rubric.getString("labelLg2"));
 		if (rubric.has("codeList"))		documentationRubric.setCodeList(rubric.getString("codeList"));
 		if (rubric.has("rangeType"))		documentationRubric.setRangeType(rubric.getString("rangeType"));
-
 
 		if (rubric.has("documents")) {	
 			List<Document> docs = new ArrayList<Document>();
@@ -300,7 +298,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			for (int i = 0; i < documents.length(); i++) {
 				JSONObject doc = documents.getJSONObject(i);
-				currentDoc = buildDocumentFromJson(doc);
+				currentDoc = docUtils.buildDocumentFromJson(doc);
 				docs.add(currentDoc);
 			}	
 			documentationRubric.setDocuments(docs);
