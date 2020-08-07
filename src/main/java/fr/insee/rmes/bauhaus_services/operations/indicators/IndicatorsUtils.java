@@ -62,7 +62,6 @@ public class IndicatorsUtils  extends RdfService {
 
 	public Indicator getIndicatorById(String id) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id));
-		
 	}
 	
 	private Indicator buildIndicatorFromJson(JSONObject indicatorJson) throws RmesException {
