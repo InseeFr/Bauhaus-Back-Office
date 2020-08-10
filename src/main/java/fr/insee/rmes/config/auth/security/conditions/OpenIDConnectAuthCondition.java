@@ -38,6 +38,7 @@ public class OpenIDConnectAuthCondition implements Condition {
                 .getResourceAsStream("bauhaus-dev.properties"));
         loadPropertiesIfExist(props, "bauhaus-dev.properties");
         loadPropertiesIfExist(props, "bauhaus-qf.properties");
+        loadPropertiesIfExist(props, "bauhaus-production.properties");
         loadPropertiesIfExist(props, "production.properties");
         return props.getProperty("fr.insee.rmes.bauhaus.env");
     }

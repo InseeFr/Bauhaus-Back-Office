@@ -57,6 +57,7 @@ public class Log4j2ServletContextListener implements ServletContextListener {
         props.load(getClass().getClassLoader().getResourceAsStream("bauhaus-dev.properties"));
         loadPropertiesIfExist(props, "bauhaus-dev.properties");
         loadPropertiesIfExist(props, "bauhaus-qf.properties");
+        loadPropertiesIfExist(props, "bauhaus-production.properties");
         loadPropertiesIfExist(props, "production.properties");
         return props;
     }

@@ -25,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Configuration("AppContext")
 @PropertySource(value = { "classpath:bauhaus-core.properties", "classpath:bauhaus-dev.properties",
-		"file:${catalina.base}/webapps/bauhaus-dev.properties", "file:${catalina.base}/webapps/bauhaus-qf.properties",
+		"file:${catalina.base}/webapps/bauhaus-dev.properties", "file:${catalina.base}/webapps/bauhaus-qf.properties","file:${catalina.base}/webapps/bauhaus-production.properties",
 		"file:${catalina.base}/webapps/production.properties", }, ignoreResourceNotFound = true)
 public class ApplicationContext {
 
