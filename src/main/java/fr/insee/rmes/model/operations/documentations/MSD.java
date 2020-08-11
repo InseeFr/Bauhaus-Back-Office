@@ -3,7 +3,13 @@ package fr.insee.rmes.model.operations.documentations;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+
 public class MSD {
+
+    @JacksonXmlProperty(localName = "mas")
+    @JacksonXmlElementWrapper(useWrapping = false)
 	private List<MAS> masList;
 
 	public MSD() {

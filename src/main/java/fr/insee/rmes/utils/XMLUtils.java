@@ -60,7 +60,6 @@ public class XMLUtils {
 
         try {
             response = mapper.writeValueAsString(obj);
-
         }
         catch (Exception e) {
             logger.error(e.getMessage());
