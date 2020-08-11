@@ -30,7 +30,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 public class SeriesPublication extends RdfService {
 	
 	@Autowired
-	static 	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerUtils famOpeSerUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;
