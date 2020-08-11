@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -22,6 +23,7 @@ import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.notes.NotesQueries;
 
+@Component
 public class NotesUtils  extends RdfService {
 	
 	private static final String ONE = "1";

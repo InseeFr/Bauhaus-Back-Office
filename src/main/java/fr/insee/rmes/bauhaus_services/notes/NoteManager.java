@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -16,11 +18,13 @@ import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.model.notes.concepts.ConceptsDatedNoteTypes;
 import fr.insee.rmes.model.notes.concepts.ConceptsVersionnedNoteTypes;
 
+@Component
 public class NoteManager {
+	
+	@Autowired
+	NotesUtils noteUtils;
 
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
-
-		NotesUtils noteUtils = new NotesUtils();
 		// TODO : see extreme cases to close notes
 
 		List<VersionableNote> versionableNotes = concept.getVersionableNotes();
@@ -34,7 +38,7 @@ public class NoteManager {
 		
 		Set<String> versionableNoteTypesInConcept = new HashSet<>();
 
-		setVersionableNotes(concept, model, noteUtils, versionableNotes, conceptId, conceptVersion, notesToDelete,
+		setVersionableNotes(concept, model, versionableNotes, conceptId, conceptVersion, notesToDelete,
 				versionableNoteTypesInConcept);
 		
 		Set<String> versionableNoteTypes = new HashSet<>();
@@ -42,9 +46,9 @@ public class NoteManager {
 			versionableNoteTypes.add(c.toString());
 		}
 		versionableNoteTypes.removeAll(versionableNoteTypesInConcept);
-		setVersionableNoteTypes(concept, model, noteUtils, conceptId, conceptVersion, versionableNoteTypes);
+		setVersionableNoteTypes(concept, model, conceptId, conceptVersion, versionableNoteTypes);
 		
-		setDatableNotes(concept, model, noteUtils, datableNotes, conceptId, notesToDelete);
+		setDatableNotes(concept, model, datableNotes, conceptId, notesToDelete);
 		
 		// Keep historical notes
 		noteUtils.keepHistoricalNotes(conceptId, conceptVersion, model);
@@ -57,8 +61,7 @@ public class NoteManager {
 
 	}
 
-	private void setVersionableNotes(Concept concept, Model model, NotesUtils noteUtils,
-			List<VersionableNote> versionableNotes, String conceptId, String conceptVersion, List<IRI> notesToDelete,
+	private void setVersionableNotes(Concept concept, Model model, List<VersionableNote> versionableNotes, String conceptId, String conceptVersion, List<IRI> notesToDelete,
 			Set<String> versionableNoteTypesInConcept) throws RmesException {
 		for (VersionableNote versionableNote : versionableNotes) {
 			versionableNoteTypesInConcept.add(versionableNote.getNoteType());
@@ -85,7 +88,7 @@ public class NoteManager {
 		}
 	}
 
-	private void setDatableNotes(Concept concept, Model model, NotesUtils noteUtils, List<DatableNote> datableNotes,
+	private void setDatableNotes(Concept concept, Model model, List<DatableNote> datableNotes,
 			String conceptId, List<IRI> notesToDelete) throws RmesException {
 		for (DatableNote datableNote : datableNotes) {
 			for (ConceptsDatedNoteTypes c : ConceptsDatedNoteTypes.values()) {
@@ -101,7 +104,7 @@ public class NoteManager {
 		}
 	}
 
-	private void setVersionableNoteTypes(Concept concept, Model model, NotesUtils noteUtils, String conceptId,
+	private void setVersionableNoteTypes(Concept concept, Model model, String conceptId,
 			String conceptVersion, Set<String> versionableNoteTypes) throws RmesException {
 		for (String noteType : versionableNoteTypes) {
 			ConceptsVersionnedNoteTypes versionnedNoteType = ConceptsVersionnedNoteTypes.getByName(noteType);

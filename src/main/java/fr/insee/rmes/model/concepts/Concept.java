@@ -3,8 +3,6 @@ package fr.insee.rmes.model.concepts;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
-import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.Link;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
@@ -31,23 +29,23 @@ public class Concept {
 	private Boolean versioning;
 
 	
-	// create empty lists for altLabels and Notes in the constructors ?
-	
-	public Concept() throws RmesException {
-		this.id = new ConceptsUtils().createID();
-		this.created = LocalDateTime.now().toString();
-		this.modified = LocalDateTime.now().toString();
-		this.isValidated = "false";
-		this.creation = true;
-		this.versioning = false;
-	}
-	
-	public Concept(String id) {
+	public Concept(String id, boolean isNew) {
 		this.id = id;
 		this.modified = LocalDateTime.now().toString();
 		this.isValidated = "false";
-		this.creation = false;
+		
+		if (isNew) {
+			this.created = LocalDateTime.now().toString();
+			this.isValidated = "false";
+			this.creation = true;
+			this.versioning = false;
+		}else {
+			this.creation = false;
+
+		}
 	}
+	
+	
 	
 
 	public String getCreated() {
@@ -125,4 +123,6 @@ public class Concept {
 	public Boolean getVersioning() {
 		return versioning;
 	}
+
+
 }

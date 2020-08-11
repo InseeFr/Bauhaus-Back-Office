@@ -15,7 +15,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.jsoup.Jsoup;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -28,7 +28,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 
-@Repository
+@Component
 public class ConceptsPublication extends RdfService{
 
 
@@ -45,7 +45,7 @@ public class ConceptsPublication extends RdfService{
 			checkTopConceptOf(conceptId, model);
 			Resource concept = RdfUtils.conceptIRI(conceptId);
 
-			RepositoryConnection con =PublicationUtils.getRepositoryConnectionGestion();
+			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
@@ -195,7 +195,7 @@ public class ConceptsPublication extends RdfService{
 			Resource collection = RdfUtils.collectionIRI(collectionId);
 			//TODO uncomment when we can notify...
 			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
-			RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
+			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection);
 
 			try {
