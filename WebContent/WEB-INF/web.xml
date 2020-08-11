@@ -20,7 +20,6 @@
 		<param-value>/WEB-INF/applicationContext*.xml</param-value>
 	</context-param>
 
-
 	<listener>
 		<listener-class>fr.insee.rmes.config.Log4j2ServletContextListener</listener-class>
 	</listener>

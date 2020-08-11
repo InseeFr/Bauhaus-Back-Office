@@ -54,6 +54,7 @@ public class XMLUtils {
         }
         else {
             mapper = new ObjectMapper();
+            // TODO : make it generic for all classes or change to 'produceXmlResponse'
             mapper.addMixIn(Documentation.class, DocumentationJsonMixIn.class);
         }
 

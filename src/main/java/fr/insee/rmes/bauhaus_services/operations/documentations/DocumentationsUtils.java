@@ -3,15 +3,12 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,22 +47,15 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.Documentation;
-
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.ExtensiveSims;
-import fr.insee.rmes.model.operations.documentations.RangeType;
-import fr.insee.rmes.persistance.ontologies.DCMITYPE;
+import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
-
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 
 
 @Component
@@ -188,22 +178,6 @@ public class DocumentationsUtils extends RdfService{
 		sims.setRubrics(rubrics);
 
 		return sims;
-	}
-
-	//TODO move to DocumentsUtils
-	private Document buildDocumentFromJson(JSONObject jsonDoc) {
-
-		Document doc= new Document();
-		if (jsonDoc.has("url")) {	
-			doc.setUrl(jsonDoc.getString("url"));
-		}
-		if (jsonDoc.has("labelLg1")) {	
-			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
-		}
-		if (jsonDoc.has("labelLg2")) {	
-			doc.setLabelLg1(jsonDoc.getString("labelLg2"));
-		}
-		return(doc);
 	}
 
 	/**
@@ -533,9 +507,6 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream is;
 		Path tempDir= Files.createTempDirectory("forExport");
-		//		if(id=="toto") {
-		//			is = getClass().getClassLoader().getResourceAsStream("Sims1908XML.xml");
-		//		}
 
 		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
@@ -564,5 +535,29 @@ public class DocumentationsUtils extends RdfService{
 		return docExport.export(simsInputStream,tempDir);
 
 	}
+	
+	public MSD buildMSDFromJson(JSONArray jsonMsd) {
+		List<MAS> msd = new ArrayList<MAS>();
+		MAS currentRubric = new MAS();
 
+		for (int i = 0; i < jsonMsd.length(); i++) {
+			JSONObject rubric = jsonMsd.getJSONObject(i);
+			currentRubric = buildMSDRubricFromJson(rubric);
+			msd.add(currentRubric);
+		}	
+		return new MSD(msd) ;
+	}
+	
+	public MAS buildMSDRubricFromJson(JSONObject jsonMsdRubric) {
+		MAS msd = new MAS();
+		if (jsonMsdRubric.has("idMas"))		msd.setIdMas(jsonMsdRubric.getString("idMas"));
+		if (jsonMsdRubric.has("masLabelLg1"))		msd.setMasLabelLg1(jsonMsdRubric.getString("masLabelLg1"));
+		if (jsonMsdRubric.has("masLabelLg2"))		msd.setMasLabelLg2(jsonMsdRubric.getString("masLabelLg2"));
+		if (jsonMsdRubric.has("idParent"))		msd.setIdParent(jsonMsdRubric.getString("idParent"));
+		if (jsonMsdRubric.has("isPresentational"))		msd.setIsPresentational(jsonMsdRubric.getBoolean("isPresentational"));
+	
+		return msd ;
+	}
+	
+	
 }

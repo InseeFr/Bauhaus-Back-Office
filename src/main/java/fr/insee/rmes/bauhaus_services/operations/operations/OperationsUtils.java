@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
@@ -31,7 +32,9 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 
 @Component
@@ -44,6 +47,9 @@ public class OperationsUtils extends RdfService{
 	
 	@Autowired
 	private SeriesUtils seriesUtils;
+
+	@Autowired
+	private DocumentationsUtils documentationsUtils;
 	
 	@Autowired
 	private OperationPublication operationPublication;
@@ -178,6 +184,12 @@ public class OperationsUtils extends RdfService{
 
 	private IRI getSeriesUri(String id){
 		return RdfUtils.objectIRI(ObjectType.SERIES, id);
+	}
+
+	public MSD getMSD() throws RmesException {
+//		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();		
+		return documentationsUtils.buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
+		
 	}
 
 }

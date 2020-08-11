@@ -32,13 +32,14 @@ import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
-import fr.insee.rmes.config.swagger.model.operations.documentation.MSD;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -346,7 +347,7 @@ public class OperationsResources {
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
-	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
+			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
@@ -535,19 +536,35 @@ public class OperationsResources {
 	/***************************************************************************************************
 	 * DOCUMENTATION
 	 ******************************************************************************************************/
+
 	@GET
 	@Path("/metadataStructureDefinition")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMsd", summary = "Metadata structure definition", 
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = MSD.class)))})
-	public Response getMSD() {
-		String jsonResultat;
-		try {
-			jsonResultat = operationsService.getMSD();
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json",*/ schema = @Schema(implementation = MAS.class)))})
+	public Response getMSD(
+			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
+			) {
+		MSD msd = new MSD();
+		String jsonResultat = null ;
+		
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				msd = operationsService.getMSD();
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.ok(XMLUtils.produceResponse(msd, header)).build();
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		
+		else {
+			try {
+				jsonResultat = operationsService.getMSDJson();
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		}
 	}
 
 	@GET
@@ -712,14 +729,6 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-	@POST
-	@Path("/metadataReport/exportTest")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public Response getSimsExport() throws RmesException {
-		return operationsService.exportMetadataReport("toto");	
-	}
-	
 	@GET
 	@Path("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
@@ -728,10 +737,10 @@ public class OperationsResources {
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam("id") String id
-	) throws RmesException {
+			) throws RmesException {
 		return operationsService.exportMetadataReport(id);	
 	}
-	
+
 
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);

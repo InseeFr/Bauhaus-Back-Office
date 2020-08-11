@@ -497,10 +497,8 @@ public class DocumentsUtils  extends RdfService  {
 
 	}
 
-	//TODO : use Mapper instead ?
 	public Document buildDocumentFromJson(JSONObject jsonDoc) {
 		Document doc = new Document();
-
 		if (jsonDoc.has("labelLg1"))		doc.setLabelLg1(jsonDoc.getString("labelLg1"));
 		if (jsonDoc.has("labelLg2"))		doc.setLabelLg2(jsonDoc.getString("labelLg2"));
 		if (jsonDoc.has("descriptionLg1"))		doc.setLabelLg1(jsonDoc.getString("descriptionLg1"));
@@ -512,6 +510,22 @@ public class DocumentsUtils  extends RdfService  {
 		
 		return doc ;
 	}
+	
+	public Document buildDocumentHeadFromJson(JSONObject jsonDoc) {
+		Document doc= new Document();
+		if (jsonDoc.has("url")) {	
+			doc.setUrl(jsonDoc.getString("url"));
+		}
+		if (jsonDoc.has("labelLg1")) {	
+			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
+		}
+		if (jsonDoc.has("labelLg2")) {	
+			doc.setLabelLg1(jsonDoc.getString("labelLg2"));
+		}
+		return(doc);
+	}
+	
+	
 	
 	public Response downloadDocument(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id);
@@ -531,4 +545,6 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
+	
+	
 }

@@ -6,6 +6,8 @@ import javax.ws.rs.core.Response;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.MSD;
 
 public interface OperationsService {
 
@@ -107,8 +109,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 	
-	//MSD
-	String getMSD() throws RmesException;
+	MSD getMSD() throws RmesException;
 
 	String getMetadataAttribute(String id) throws RmesException;
 
@@ -128,6 +129,8 @@ public interface OperationsService {
 	Response exportMetadataReport(String id) throws RmesException;
 
 	String getMetadataReportOwner(String id) throws RmesException;
+
+	String getMSDJson() throws RmesException;
 
 
 }

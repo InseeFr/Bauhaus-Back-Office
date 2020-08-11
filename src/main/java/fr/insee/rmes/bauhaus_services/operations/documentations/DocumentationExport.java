@@ -27,12 +27,12 @@ public class DocumentationExport {
 
 	private XsltTransformer saxonService = new XsltTransformer();
 
-		public File export(File inputFile) throws Exception {
+	public File export(File inputFile) throws Exception {
 		InputStream isInputFile = FileUtils.openInputStream(inputFile);
 		return export(isInputFile);
 	}
-		
-		public File export(InputStream inputFile) throws Exception {
+
+	public File export(InputStream inputFile) throws Exception {
 		logger.debug("Begin To export documentation");
 
 		File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
@@ -44,46 +44,47 @@ public class DocumentationExport {
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		final PrintStream printStream = new PrintStream(osOutputFile);
-		
+
 		saxonService.transform(inputFile, XSL_FILE, printStream);
 		inputFile.close();
 		XSL_FILE.close();
 		//osOutputFile.close();
 		printStream.close();
-		
+
 		logger.debug("End To export documentation");
 		return output;
 	}
 
 
-		public File export(InputStream inputFile, Path tempDir) throws Exception {
-			logger.debug("Begin To export documentation");
-			
-			File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
-			//File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
+	public File export(InputStream inputFile, Path tempDir) throws Exception {
+		logger.debug("Begin To export documentation");
 
-			output.deleteOnExit();
+		File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 
-			InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-			OutputStream osOutputFile = FileUtils.openOutputStream(output);
+		output.deleteOnExit();
 
-			final PrintStream printStream = new PrintStream(osOutputFile);
-			
-			StreamSource xsrc = new StreamSource(XSL_FILE);
-			TransformerFactory transformerFactory = TransformerFactoryImpl.newInstance();
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-			xsltTransformer.setParameter("tempDir", tempDir);
-			
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-			
+		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+
+		final PrintStream printStream = new PrintStream(osOutputFile);
+
+		// Todo : externalise to class XsltTransformer
+		StreamSource xsrc = new StreamSource(XSL_FILE);
+		TransformerFactory transformerFactory = TransformerFactoryImpl.newInstance();
+		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+		xsltTransformer.setParameter("tempDir", tempDir);
+
+		xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
+
 		//	saxonService.transform(inputFile, XSL_FILE, printStream);
-			inputFile.close();
-			XSL_FILE.close();
-			//osOutputFile.close();
-			printStream.close();
-			
-			logger.debug("End To export documentation");
-			return output;
-		}
-		
+		inputFile.close();
+		XSL_FILE.close();
+		//osOutputFile.close();
+		printStream.close();
+
+		logger.debug("End To export documentation");
+		return output;
+	}
+
 }
