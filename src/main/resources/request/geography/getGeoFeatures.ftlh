@@ -1,9 +1,8 @@
-SELECT DISTINCT ?uri ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?typeTerritory ?dateCreation ?dateSuppression ?hasComposition
+SELECT DISTINCT ?id ?uri ?labelLg1 ?labelLg2 ?code ?typeTerritory ?dateCreation ?dateSuppression ?hasComposition
 FROM <${COG_GRAPH}>
 FROM <${GEO_SIMS_GRAPH}>
  WHERE { 
-			?uri a ?typeTerritory ;
-				 igeo:nom ?labelLg1 ;
+		{	?uri igeo:nom ?labelLg1 ;
 				 igeo:codeINSEE ?code .
 
 			OPTIONAL {
@@ -15,10 +14,30 @@ FROM <${GEO_SIMS_GRAPH}>
 					                  igeo:date ?dateSuppression.
 			}
 
-			BIND(EXISTS{?uri geo:union ?unionFeat} AS ?hasComposition)
+			OPTIONAL {
+				?uri a ?typeTerritoryUri .
+				BIND(STRAFTER(str(?typeTerritoryUri),"geo#") AS ?typeTerritory)
+			}
+			FILTER (!BOUND(?typeTerritory) || ?typeTerritory IN ("Region","Departement","Etat"))
+
+	} 
+	UNION
+	
+	{
+			?uri skos:prefLabel ?labelLg1 .
+			?uri a 	igeo:TerritoireStatistique .
+			BIND("Territoire Statistique" AS ?typeTerritory)
+
+	}	
+			
+			BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id)
+
+			BIND(EXISTS{?uri geo:union ?unionFeat}||EXISTS{?uri geo:difference ?diffFeat} AS ?hasComposition)
+			
 <#if uriFeature != "">
-			   FILTER (?uri = ${uriFeature})
+			   FILTER (?uri = <${uriFeature}>)
 </#if>
+		
 		}
 ORDER BY ?code
 		

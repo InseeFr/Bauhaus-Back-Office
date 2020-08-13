@@ -11,7 +11,20 @@ public class GeoQueries {
 	
 	static Map<String,Object> params ;
 	
-
+	
+	/**
+	 * 
+	 * @param id
+	 * @return uri in COG if exists
+	 * @throws RmesException
+	 */
+	public static String getGeoUriIfExists(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("id", id);
+		return  buildRequest("getGeoUriIfExists.ftlh", params);
+	}
+	
+	
 	public static String getFeaturesQuery() throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uriFeature", "");
@@ -26,9 +39,15 @@ public class GeoQueries {
 		return getUnionOrDifferenceForFeature(uriFeature, false);
 	}
 	
-	public static String getFeatureQuery(String id) throws RmesException {
+	/**
+	 * 
+	 * @param uri = uri of geofeature
+	 * @return
+	 * @throws RmesException
+	 */
+	public static String getFeatureQuery(String uri) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriFeature", id);
+		params.put("uriFeature", uri);
 		return  buildRequest("getGeoFeatures.ftlh", params);
 	}
 

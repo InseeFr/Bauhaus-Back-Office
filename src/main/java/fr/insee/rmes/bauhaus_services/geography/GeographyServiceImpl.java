@@ -57,13 +57,15 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 				}
 			}
 		}
+		logger.info("Get geo features is done");
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
 	@Override
-	public JSONObject getGeoFeature(String id) throws RmesException {
+	public JSONObject getGeoFeature(IRI uri) throws RmesException {
 		logger.info("Starting to get geo feature");
-		JSONObject feature = repoGestion.getResponseAsObject(GeoQueries.getFeatureQuery(id));
+
+		JSONObject feature = repoGestion.getResponseAsObject(GeoQueries.getFeatureQuery(uri.stringValue()));
 		if (feature.has(HAS_COMPOSITION)) {
 			if (feature.getBoolean(HAS_COMPOSITION)) {
 				addUnionsAndDifferenceToJsonObject(feature);
@@ -71,6 +73,28 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 			feature.remove(HAS_COMPOSITION);
 		}
 		return feature;
+	}
+	
+	@Override
+	public JSONObject getGeoFeatureById(String id) throws RmesException {
+		return getGeoFeature(getGeoUriFromId(id));
+	}
+
+	/**
+	 * Get in COG and in geo statistical territories (for sims)
+	 * @param id
+	 * @return
+	 * @throws RmesException
+	 */
+	private IRI getGeoUriFromId(String id) throws RmesException {
+		IRI uri ;
+		JSONObject uriInCog = repoGestion.getResponseAsObject(GeoQueries.getGeoUriIfExists(id));
+		if (uriInCog.get("uri")!= null && StringUtils.isNotBlank(uriInCog.get("uri").toString())) {
+			uri = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, id);
+		}else {
+			uri = RdfUtils.createIRI(uriInCog.get("uri").toString());
+		}
+		return uri;
 	}
 
 	private void addUnionsAndDifferenceToJsonObject(JSONObject feature) throws RmesException {
@@ -92,7 +116,10 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		GeoFeature geoFeature = new GeoFeature();
 		try {
 			geoFeature = mapper.readValue(body,GeoFeature.class);
-			geoFeature.setCode(id.toString());
+			geoFeature.setId(id.toString());
+			if (geoFeature.getCode()==null) {
+				geoFeature.setCode(id.toString());
+			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -103,13 +130,13 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	
 	public void createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
 		Model model = new LinkedHashModel();
-		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getCode())) {
+		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getId())) {
 			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
 		}
 		if (StringUtils.isEmpty(geoFeature.getLabelLg1())) {
 			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 not found", CAN_T_READ_REQUEST_BODY);
 		}
-		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEOFEATURE, geoFeature.getCode());
+		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, GEO.FEATURE, RdfUtils.simsGeographyGraph());
 		/*Required*/

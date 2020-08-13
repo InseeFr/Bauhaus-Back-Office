@@ -4,6 +4,7 @@ import java.util.List;
 
 public class GeoFeature {
 	
+	private String id;
 	private String labelLg1;
 	private String labelLg2;
 	private List<GeoFeature> unions;
@@ -73,6 +74,14 @@ public class GeoFeature {
 	}
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 	

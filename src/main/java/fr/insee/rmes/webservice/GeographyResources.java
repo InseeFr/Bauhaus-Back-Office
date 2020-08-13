@@ -68,7 +68,7 @@ public class GeographyResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getGeoFeature", summary = "Geofeature", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public Response getGeoFeature(@PathParam(Constants.ID) String id) throws RmesException {
-		String jsonResultat = geoService.getGeoFeature(id).toString();
+		String jsonResultat = geoService.getGeoFeatureById(id).toString();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	

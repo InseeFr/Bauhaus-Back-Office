@@ -117,10 +117,13 @@ public class DocumentationsRubricsUtils extends RdfService {
 				}
 				docRubrics.remove(i);
 			}
-			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY)) {
-				String geoUri = rubric.getString(VALUE);
-				JSONObject feature = geoService.getGeoFeature(geoUri);
-				feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY.name())) {
+				String value = rubric.getString(VALUE);
+				if (StringUtils.isNotEmpty(value)) {
+					IRI geoUri = RdfUtils.createIRI(value);
+					JSONObject feature = geoService.getGeoFeature(geoUri);
+					feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+				}
 			}
 		}
 		if (tempMultipleCodeList.size() != 0) {
