@@ -1,10 +1,19 @@
 SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
+	FROM <${DOCUMENTS_GRAPH}>
+
+<#if idSims != "">
+	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
+</#if>	
 
 WHERE { 
 
-	 ?uri rdf:type foaf:Document .
+<#if idSims != "">
+	 ?text rdf:type dcmitype:Text .
+	 ?text insee:additionalMaterial ?uri . 
+</#if>	
 
-	 ?uri <http://schema.org/url> ?url
+	 ?uri rdf:type foaf:Document .
+	 ?uri <http://schema.org/url> ?url .
  
  	 OPTIONAL{ ?uri rdfs:label ?labelLg1 . 
 		FILTER(lang(?labelLg1) = '${LG1}') 
@@ -21,9 +30,18 @@ WHERE {
 	 }
 	 
 	 OPTIONAL{ ?uri pav:lastRefreshedOn ?updatedDate .  }
-	 
 	 OPTIONAL{ ?uri dc:language ?lang .  }
 	 
-	 FILTER(STRENDS(STR(?uri), '${id}'))
+	 
+<#if id != "">
+		FILTER(STRENDS(STR(?uri), '${id}'))
+</#if>	 
+
+<#if idSims != "">
+	FILTER(REGEX(STR(?text), '${idRubric}')) 
+</#if>	
+<#if type != "">
+	FILTER(REGEX(STR(?uri), '${type}')) 
+</#if>	
 
  }

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
@@ -16,33 +15,56 @@ public class DocumentsQueries {
 	static Map<String,Object> params ;
 	
 
-	public static String deleteDocumentQuery(IRI uri, IRI graph) throws RmesException {
+	/**
+	 * Can delete both document and link because the delete query is based on URI (not only id)
+	 * @param uri
+	 * @return
+	 * @throws RmesException
+	 */
+	public static String deleteDocumentQuery(IRI uri) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uri", uri);
-		params.put("graph", graph);
+		params.put(Constants.URI, uri);
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
+
 	
-	public static String getDocumentsQuery(String idSims, String idRubric) throws RmesException {
+	public static String getDocumentUriQuery(IRI url) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("idSims", idSims);
-		params.put("idRubric", idRubric);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
-		return  buildRequest("getAllDocumentsByIdSimsIdRubricQuery.ftlh", params);
+		params.put(Constants.URL, url);
+		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	
-	public static String getDocumentUriQuery(IRI url, Resource graph) throws RmesException {
-		Map<String, Object> root = new HashMap<>();
-		root.put("url", url);
-		root.put("graph", graph);
-		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", root);
+	public static String getDocumentsForSimsQuery(String idSims, String idRubric) throws RmesException {
+		return getDocuments("",idSims,idRubric,null) ;
 	}
 	
-	public static String getDocumentQuery(String id) throws RmesException {
+	public static String getDocumentQuery(String id, boolean isLink) throws RmesException {
+		return getDocuments(id,"","", isLink) ;
+	}
+
+	public static String getAllDocumentsQuery() throws RmesException {
+		return getDocuments("","","", null) ;
+	}
+	
+	private static String getDocuments(String id, String idSims, String idRubric, Boolean isLink) throws RmesException {
+		String docType = getDocType(isLink) ;
 		if (params==null) {initParams();}
 		params.put(Constants.ID, id);
+		params.put("idSims", idSims);
+		params.put("idRubric", idRubric);
+		params.put("type", docType );
+		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
+
+
+	private static String getDocType(Boolean isLink) {
+		if (isLink == null) {
+			return "";
+		}
+		return (Boolean.TRUE.equals(isLink) ? "/page/" :"/document/");
+	}
+	
 	
 	public static String getLinksToDocumentQuery(String id) throws RmesException {
 		if (params==null) {initParams();}
@@ -51,14 +73,8 @@ public class DocumentsQueries {
 	}
 
 
-	public static String getAllDocumentsQuery() throws RmesException {
+	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl) throws RmesException {
 		if (params==null) {initParams();}
-		return  buildRequest("getAllDocumentsQuery.ftlh", params);
-	}
-
-	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl, Resource graph) throws RmesException {
-		if (params==null) {initParams();}
-		params.put("uriGraph", graph.toString());
 		params.put(Constants.ID, docId);
 		params.put("oldUrl", oldUrl);
 		params.put("newUrl", newUrl);
