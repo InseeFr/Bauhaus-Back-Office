@@ -3,8 +3,8 @@ SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?max
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
     FROM NAMED  <${MSD_GRAPH}> 
-
- 
+ 	FROM NAMED  <${COG_GRAPH}>
+	FROM NAMED  <${GEO_SIMS_GRAPH}>
 WHERE { 
  		<#-- RangeType.DATE : value -->
 		{
@@ -80,12 +80,10 @@ WHERE {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
 			?reportAttr ?attr ?value . 
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
-			?value rdfs:label  ?labelLg1 .
-			 FILTER(lang(?labelLg1) = '${LG1}') 
-			 OPTIONAL{?value rdfs:label ?labelLg2 .
-			 FILTER(lang(?labelLg2) = '${LG2}') } 
-
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) .
+			GRAPH  ?g {
+				?value skos:prefLabel|igeo:name ?labelLg1 .
+			}
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} 
 			
