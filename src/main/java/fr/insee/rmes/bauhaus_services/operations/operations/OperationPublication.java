@@ -44,7 +44,7 @@ public class OperationPublication extends RdfService{
 		
 		checkSeriesIsPublished(operationId, operationJson);
 
-		RepositoryConnection con = PublicationUtils.getRepositoryConnectionGestion();
+		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation);
 
 		try {

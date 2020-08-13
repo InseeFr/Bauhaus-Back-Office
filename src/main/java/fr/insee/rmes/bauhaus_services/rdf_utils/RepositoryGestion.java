@@ -237,6 +237,7 @@ public class RepositoryGestion extends RepositoryUtils {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
+				conn.remove(item, INSEE.IS_VALIDATED, null);
 			}
 			conn.add(model);
 			conn.close();
@@ -249,6 +250,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		try {
 			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
+			conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
 			conn.add(model);
 			conn.close();
 		} catch (RepositoryException e) {
@@ -363,6 +365,10 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void loadSimpleObject(IRI geoIRI, Model model) throws RmesException {
 		loadSimpleObject(geoIRI, model, null);		
+	}
+
+	public RepositoryConnection getConnection() throws RmesException {
+		return getConnection(RepositoryGestion.REPOSITORY_GESTION);
 	}
 
 }

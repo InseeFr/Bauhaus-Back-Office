@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.JSONUtils;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +34,8 @@ import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class DocumentationsRubricsUtils extends RdfService {
@@ -204,7 +203,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 				break;
 			case GEOGRAPHY:
 				String featureUri = rubric.getSimpleValue();
-				if (featureUri != null) {
+				if (StringUtils.isNotEmpty(featureUri)) {
 					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
 				}
 				break;
@@ -272,7 +271,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 
-	DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
+	public DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
 		if (rubric.has("value")) {

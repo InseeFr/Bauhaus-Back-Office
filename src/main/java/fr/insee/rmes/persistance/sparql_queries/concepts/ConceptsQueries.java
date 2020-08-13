@@ -23,7 +23,7 @@ public class ConceptsQueries {
 				+ "?concept skos:notation ?notation  .\n"
 				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
 				+ "ORDER BY DESC(xsd:integer(?id)) \n"
-				+ "LIMIT1";
+				+ "LIMIT 1";
 	}	
 	
 	
@@ -76,14 +76,14 @@ public class ConceptsQueries {
 		
 	public static String conceptsToValidateQuery() {
 		return "SELECT DISTINCT ?id ?label ?creator ?valid \n"
-			+ "WHERE { \n"
+			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 			+ "?concept rdf:type skos:Concept . \n"
 			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "?concept dc:creator ?creator . \n"
 			+ "?concept insee:isValidated 'false'^^xsd:boolean . \n"
 			+ "OPTIONAL {?concept dcterms:valid ?valid .} \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') } \n"
+			+ "FILTER (lang(?label) = '" + Config.LG1 + "') }} \n"
 			+ "ORDER BY ?label";	
 	}
 		
@@ -125,8 +125,9 @@ public class ConceptsQueries {
 	public static String conceptNotesQuery(String id, int conceptVersion) { 
 		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
 				+ "?editorialNoteLg1 ?editorialNoteLg2 ?changeNoteLg1 ?changeNoteLg2 \n"
-				+ "WHERE { \n" 
-				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n" 
 				// Def Lg1
 				+ "OPTIONAL {?concept skos:definition ?defLg1 . \n"
@@ -174,19 +175,23 @@ public class ConceptsQueries {
 				+ "?noteChangeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
 				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
 				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
-				+ "} \n";
+				+ "}} \n";
 	}
 	
 	public static String conceptLinks(String id) {
 		return "SELECT ?id ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 \n"
-				+ "WHERE { \n" 
-				+ "?concept skos:notation '" + id + "' . \n" 
+				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
 				
+				+ "?concept rdf:type skos:Concept . \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+				
+			//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore ???
+
 				+ "{?concept skos:narrower ?conceptlinked . \n"
-				+ "BIND('broader' AS ?typeOfLink)} \n"
+				+ "BIND('narrower' AS ?typeOfLink)} \n"
 				+ "UNION"
 				+ "{?concept skos:broader ?conceptlinked . \n"
-				+ "BIND('narrower' AS ?typeOfLink)} \n"
+				+ "BIND('broader' AS ?typeOfLink)} \n"
 				+ "UNION"
 				+ "{?concept dcterms:references ?conceptlinked . \n"
 				+ "BIND('references' AS ?typeOfLink)} \n"
@@ -202,7 +207,7 @@ public class ConceptsQueries {
 				+ "OPTIONAL {?conceptlinked skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
 				+ "BIND(STRAFTER(STR(?conceptlinked),'/definition/') AS ?id) . \n"				
-				+ "} \n"
+				+ "}} \n"
 				+ "ORDER BY ?typeOfLink";
 	}
 	
