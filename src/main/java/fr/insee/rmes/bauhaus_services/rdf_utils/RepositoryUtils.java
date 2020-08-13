@@ -95,9 +95,7 @@ public abstract class RepositoryUtils {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
 		} catch (RepositoryException e) {
-			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			logAndThrowError(query, e);		
 		}
 		return stream.toString();
 	}
@@ -115,10 +113,9 @@ public abstract class RepositoryUtils {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
 			return tupleQuery.evaluate();
 		} catch (RepositoryException e) {
-			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			logAndThrowError(query, e);		
 		}
+		return false;
 	}
 	
 	/**
@@ -136,11 +133,15 @@ public abstract class RepositoryUtils {
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
 		} catch (RepositoryException e) {
-			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			logAndThrowError(query, e);		
 		}
 		return response;
+	}
+
+	private static void logAndThrowError(String query, RepositoryException e) throws RmesException {
+		logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
+		logger.error(e.getMessage());
+		throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);
 	}
 	
 	/**
@@ -158,9 +159,7 @@ public abstract class RepositoryUtils {
 			response = executeAskQuery(conn, queryWithPrefixes);
 			conn.close();
 		} catch (RepositoryException e) {
-			logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), EXECUTE_QUERY_FAILED + query);		
+			logAndThrowError(query, e);		
 		}
 		return response;
 	}

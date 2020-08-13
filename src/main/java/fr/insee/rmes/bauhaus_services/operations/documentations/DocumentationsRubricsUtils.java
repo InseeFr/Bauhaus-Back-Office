@@ -91,11 +91,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			// Get documents
 			if (rubric.has(HAS_DOC)) {
-				if (rubric.getBoolean(HAS_DOC)) {
-					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-					rubric.put("documents", listDoc);
-				}
-				rubric.remove(HAS_DOC);
+				clearDocuments(idSims, rubric);
 			}
 
 			// Format date
@@ -105,31 +101,50 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			// Format codelist with multiple value
 			else if (rubric.has("maxOccurs")) {
-				String newValue = rubric.getString(VALUE);
-				String attribute = rubric.getString("idAttribute");
-
-				if (tempMultipleCodeList.containsKey(attribute)) {
-					JSONObject tempObject = tempMultipleCodeList.get(attribute);
-					tempObject.accumulate(VALUE, newValue);
-					tempMultipleCodeList.replace(attribute, tempObject);
-				} else {
-					tempMultipleCodeList.put(attribute, rubric);
-				}
-				docRubrics.remove(i);
+				putMultipleValueInList(docRubrics, tempMultipleCodeList, i, rubric);
 			}
+			
+			//Format Geo features
 			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY.name())) {
-				String value = rubric.getString(VALUE);
-				if (StringUtils.isNotEmpty(value)) {
-					IRI geoUri = RdfUtils.createIRI(value);
-					JSONObject feature = geoService.getGeoFeature(geoUri);
-					feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
-				}
+				clearGeographyRubric(rubric);
 			}
 		}
 		if (tempMultipleCodeList.size() != 0) {
 			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
 		}
 		return docRubrics;
+	}
+
+	private void clearGeographyRubric(JSONObject rubric) throws RmesException {
+		String value = rubric.getString(VALUE);
+		if (StringUtils.isNotEmpty(value)) {
+			IRI geoUri = RdfUtils.createIRI(value);
+			JSONObject feature = geoService.getGeoFeature(geoUri);
+			feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+		}
+	}
+
+	private void putMultipleValueInList(JSONArray docRubrics, Map<String, JSONObject> tempMultipleCodeList, int i,
+			JSONObject rubric) {
+		String newValue = rubric.getString(VALUE);
+		String attribute = rubric.getString("idAttribute");
+
+		if (tempMultipleCodeList.containsKey(attribute)) {
+			JSONObject tempObject = tempMultipleCodeList.get(attribute);
+			tempObject.accumulate(VALUE, newValue);
+			tempMultipleCodeList.replace(attribute, tempObject);
+		} else {
+			tempMultipleCodeList.put(attribute, rubric);
+		}
+		docRubrics.remove(i);
+	}
+
+	private void clearDocuments(String idSims, JSONObject rubric) throws RmesException {
+		if (rubric.getBoolean(HAS_DOC)) {
+			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
+			rubric.put("documents", listDoc);
+		}
+		rubric.remove(HAS_DOC);
 	}
 
 

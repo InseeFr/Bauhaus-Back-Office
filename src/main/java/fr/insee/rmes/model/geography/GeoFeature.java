@@ -17,7 +17,7 @@ public class GeoFeature {
 	
 	
 	public GeoFeature() {
-		
+		super();
 	}
 	
 	public String getLabelLg1() {
