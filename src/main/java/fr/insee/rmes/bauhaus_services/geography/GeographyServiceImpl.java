@@ -89,10 +89,10 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	private IRI getGeoUriFromId(String id) throws RmesException {
 		IRI uri ;
 		JSONObject uriInCog = repoGestion.getResponseAsObject(GeoQueries.getGeoUriIfExists(id));
-		if (uriInCog.get("uri")!= null && StringUtils.isNotBlank(uriInCog.get("uri").toString())) {
-			uri = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, id);
-		}else {
+		if (uriInCog.has("uri") && StringUtils.isNotBlank(uriInCog.get("uri").toString())) {
 			uri = RdfUtils.createIRI(uriInCog.get("uri").toString());
+		}else {
+			uri = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, id);
 		}
 		return uri;
 	}
