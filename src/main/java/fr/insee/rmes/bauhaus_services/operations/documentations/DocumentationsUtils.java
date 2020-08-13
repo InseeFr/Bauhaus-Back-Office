@@ -371,7 +371,7 @@ public class DocumentationsUtils extends RdfService{
 			return "1000";
 		}
 		String id = json.getString("idSims");
-		if (id.equals("undefined")) {
+		if (id.equals(Constants.UNDEFINED)) {
 			return "1000";
 		}
 		int newId = Integer.parseInt(id) + 1;

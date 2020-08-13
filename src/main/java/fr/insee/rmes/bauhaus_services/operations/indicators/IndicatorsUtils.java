@@ -271,7 +271,7 @@ public class IndicatorsUtils  extends RdfService {
 		logger.debug("JSON for indicator id : {}" , json);
 		if (json.length()==0) {return null;}
 		String id = json.getString(Constants.ID);
-		if (id.equals("undefined")) {return null;}
+		if (id.equals(Constants.UNDEFINED)) {return null;}
 		int idInt = Integer.parseInt(id.substring(1))+1;
 		return "p" + idInt;
 	}
