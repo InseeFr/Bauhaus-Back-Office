@@ -10,6 +10,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.core.MediaType;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -26,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -487,11 +490,11 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(ID_INDICATOR);
 			
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamp = seriesUtils.getSeriesById(
-						operationsUtils.getOperationById(idOperation).getJSONObject("series").getString(ID_SERIES))
+				stamp = seriesUtils.getSeriesJsonById(
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
 						.getString(CREATOR);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesById(idSerie).getString(CREATOR);
+				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(CREATOR);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
 				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(CREATOR);
 			} else {
@@ -509,6 +512,8 @@ public class DocumentationsUtils extends RdfService{
 		Path tempDir= Files.createTempDirectory("forExport");
 
 		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
+		String absolutePath = tempFile.toFile().getAbsolutePath();
+		
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
 		String[] target = getDocumentationTargetTypeAndId(id);
@@ -516,12 +521,16 @@ public class DocumentationsUtils extends RdfService{
 		String idDatabase = target[1];
 		
 		if (targetType=="OPERATION") {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(operationsUtils.getOperationById(idDatabase), "application/xml"), "UTF-8");
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(
+					operationsUtils.getOperationById(idDatabase)
+					, "application/xml"), "UTF-8");
 			Files.copy(is, tempFile, options);
 		}
 
 		if (targetType=="SERIES") {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(seriesUtils.getSeriesById(idDatabase), "application/xml"), "UTF-8");
+			is = IOUtils.toInputStream(XMLUtils.produceResponse(
+					seriesUtils.getSeriesJsonById(idDatabase)
+					, "application/xml"), "UTF-8");
 			Files.copy(is, tempFile, options);
 		}
 
@@ -532,7 +541,7 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
 
-		return docExport.export(simsInputStream,tempDir);
+		return docExport.export(simsInputStream,absolutePath,targetType);
 
 	}
 	
@@ -559,5 +568,11 @@ public class DocumentationsUtils extends RdfService{
 		return msd ;
 	}
 	
+	public String buildShellSims() throws RmesException {
+		MSD msd= operationsUtils.getMSD();
+		String msdXml = XMLUtils.produceResponse(msd, MediaType.APPLICATION_XML);
+		Document msdDoc = XMLUtils.convertStringToDocument(msdXml);
+		return msdXml;
+	}
 	
 }

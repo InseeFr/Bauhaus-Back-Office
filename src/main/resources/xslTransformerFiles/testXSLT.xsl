@@ -7,7 +7,12 @@
 
 	<xsl:output method="xml" encoding="UTF-8" indent="yes" />
 	<!-- omit-xml-declaration="yes" -->
-	<xsl:param name="tempDir" />
+	<xsl:param name="tempFile" />
+	<xsl:param name="fileTarget" select="document($tempFile)" />
+	<xsl:param name="msd" />
+	<xsl:param name="fileMsd" select="document($msd)" />
+	<xsl:param name="targetType" />
+
 	<xsl:strip-space elements="*" />
 	<xsl:template match="/">
 		<office:document office:version="1.2"
@@ -37,12 +42,40 @@
 						fo:font-weight="normal" fo:color="black" />
 				</style:style>
 
-				<style:style style:name="Title" style:family="paragraph"
+
+				<style:style style:name="HeaderFr" style:family="paragraph"
+					style:class="chapter">
+					<style:paragraph-properties
+						fo:text-align="center" fo:margin-top="1cm"
+						style:justify-single-word="false" fo:background-color="blue" />
+					<style:text-properties fo:font-size="24pt"
+						fo:font-weight="bold" fo:color="white" />
+				</style:style>
+
+				<style:style style:name="HeaderEn" style:family="paragraph"
+					style:class="chapter">
+					<style:paragraph-properties
+						fo:text-align="center" fo:margin-top="1cm"
+						style:justify-single-word="false" fo:background-color="blue" />
+					<style:text-properties fo:font-size="20pt"
+						fo:font-weight="bold" fo:color="white" />
+				</style:style>
+
+				<style:style style:name="TitleFr" style:family="paragraph"
 					style:class="chapter">
 					<style:paragraph-properties
 						fo:text-align="center" fo:margin-top="1cm"
 						style:justify-single-word="false" />
-					<style:text-properties fo:font-size="24pt"
+					<style:text-properties fo:font-size="20pt"
+						fo:font-weight="bold" fo:color="#7b7c7c" />
+				</style:style>
+
+				<style:style style:name="TitleEn" style:family="paragraph"
+					style:class="chapter">
+					<style:paragraph-properties
+						fo:text-align="center" fo:margin-top="1cm"
+						style:justify-single-word="false" />
+					<style:text-properties fo:font-size="16pt"
 						fo:font-weight="bold" fo:color="#7b7c7c" />
 				</style:style>
 
@@ -76,31 +109,75 @@
 
 			<office:body>
 				<office:text>
-					<text:p text:style-name="Title">
-						<xsl:value-of select="$tempDir" />
+					<!-- Header -->
+					<text:p text:style-name="HeaderFr">
+						<xsl:value-of select="$fileTarget//prefLabelLg1" />
+					</text:p>
+
+					<text:p text:style-name="HeaderEn">
+						<xsl:value-of select="$fileTarget//prefLabelLg2" />
+					</text:p>
+					<!-- Title -->
+					<text:p text:style-name="TitleFr">
+						<xsl:choose>
+							<xsl:when test="$targetType='SERIES'">
+								Informations sur la série:
+							</xsl:when>
+							<xsl:when test="$targetType='OPERATION'">
+								Informations sur l'opération:
+							</xsl:when>
+							<xsl:otherwise>
+								Informations sur l'indicateur:
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:value-of select="$fileTarget//prefLabelLg1" />
+					</text:p>
+					<text:p text:style-name="TitleEn">
+						<xsl:choose>
+							<xsl:when test="$targetType='SERIES'">
+								Informations about the series:
+							</xsl:when>
+							<xsl:when test="$targetType='OPERATION'">
+								Informations about the operation:
+							</xsl:when>
+							<xsl:otherwise>
+								Informations about the indicator:
+							</xsl:otherwise>
+						</xsl:choose>
+						<xsl:value-of select="$fileTarget//prefLabelLg2" />
+					</text:p>
+
+
+					<!-- Sims -->
+
+					<text:p text:style-name="TitleFr">
+						Informations sur le Sims
 						<xsl:value-of select="Documentation/labelLg1" />
 					</text:p>
-					<table>
-						<text:p text:style-name="P1">
-							Sims
-							<xsl:value-of select="Documentation/id" />
-						</text:p>
-						<text:p text:style-name="P1">
-							<xsl:text>&#13;</xsl:text>
-							<xsl:if test="Documentation/idOperation != ''">
-								Opération
-								<xsl:value-of select="Documentation/idOperation" />
-							</xsl:if>
-							<xsl:if test="Documentation/idSeries != ''">
-								Série
-								<xsl:value-of select="Documentation/idSeries" />
-							</xsl:if>
-							<xsl:if test="Documentation/idIndicator != ''">
-								Indicateur
-								<xsl:value-of select="Documentation/idIndicator" />
-							</xsl:if>
-						</text:p>
-					</table>
+					<!-- <table> -->
+					<!-- <text:p text:style-name="P1"> -->
+					<!-- Sims -->
+					<!-- <xsl:value-of select="Documentation/id" /> -->
+					<!-- </text:p> -->
+					<!-- <text:p text:style-name="P1"> -->
+					<!-- <xsl:text>&#13;</xsl:text> -->
+					<!-- <xsl:if test="Documentation/idOperation != ''"> -->
+					<!-- Opération -->
+					<!-- <xsl:value-of select="Documentation/idOperation" /> -->
+					<!-- </xsl:if> -->
+					<!-- <xsl:if test="Documentation/idSeries != ''"> -->
+					<!-- Série -->
+					<!-- <xsl:value-of select="Documentation/idSeries" /> -->
+					<!-- </xsl:if> -->
+					<!-- <xsl:if test="Documentation/idIndicator != ''"> -->
+					<!-- Indicateur -->
+					<!-- <xsl:value-of select="Documentation/idIndicator" /> -->
+					<!-- </xsl:if> -->
+					<!-- </text:p> -->
+					<!-- </table> -->
+
+
+
 					<xsl:for-each select="Documentation/rubrics/rubrics">
 						<xsl:sort data-type="number"
 							select="substring-before(concat(substring-after(idAttribute,'.'),'.'),'.')"
@@ -142,9 +219,29 @@
 						<xsl:text> </xsl:text>
 
 					</xsl:for-each>
+
+<!-- 					<text:p text:style-name="RubricItem"> -->
+<!-- 						<xsl:value-of select="$fileMsd//mas" /> -->
+<!-- 					</text:p> -->
+
+					<xsl:for-each select="$fileMsd//mas">
+						<text:p text:style-name="RubricHead">
+							<xsl:value-of select="masLabelLg1" />
+							<xsl:text> </xsl:text>
+						</text:p>
+					</xsl:for-each>
+
+
+
 				</office:text>
 			</office:body>
 		</office:document>
 	</xsl:template>
+
+	<!-- <xsl:template match="$fileMsd"> -->
+	<!-- <xsl:copy> -->
+	<!-- <xsl:apply-templates select="$fileMsd//mas" /> -->
+	<!-- </xsl:copy> -->
+	<!-- </xsl:template> -->
 
 </xsl:stylesheet>

@@ -566,7 +566,7 @@ public class OperationsResources {
 			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 		}
 	}
-
+	
 	@GET
 	@Path("/metadataAttribute/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
