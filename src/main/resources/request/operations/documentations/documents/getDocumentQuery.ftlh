@@ -34,7 +34,7 @@ WHERE {
 	 
 	 
 <#if id != "">
-		FILTER(STRENDS(STR(?uri), '${id}'))
+		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = '${id}')
 </#if>	 
 
 <#if idSims != "">
