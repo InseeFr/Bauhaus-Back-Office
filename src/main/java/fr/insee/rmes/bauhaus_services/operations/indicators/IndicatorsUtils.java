@@ -196,7 +196,7 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.productsGraph());
 
-		RdfUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(indicator.getPublisher()), model, RdfUtils.productsGraph());
 		List<OperationsLink> contributors = indicator.getContributor();
 		if (contributors != null){//partenaires
 			for (OperationsLink contributor : contributors) {

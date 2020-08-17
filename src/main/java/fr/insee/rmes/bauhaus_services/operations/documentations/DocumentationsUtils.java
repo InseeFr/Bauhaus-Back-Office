@@ -52,7 +52,7 @@ public class DocumentationsUtils extends RdfService{
 
 	private static final String ID_SERIES = "idSeries";
 
-	private static final String CREATOR = "creator";
+	private static final String PUBLISHER = "publisher";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
@@ -390,11 +390,11 @@ public class DocumentationsUtils extends RdfService{
 			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesById(
 						operationsUtils.getOperationById(idOperation).getJSONObject("series").getString(ID_SERIES))
-						.getString(CREATOR);
+						.getString(PUBLISHER);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesById(idSerie).getString(CREATOR);
+				stamp = seriesUtils.getSeriesById(idSerie).getString(PUBLISHER);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorById(idIndicator).getString(CREATOR);
+				stamp = indicatorsUtils.getIndicatorById(idIndicator).getString(PUBLISHER);
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");

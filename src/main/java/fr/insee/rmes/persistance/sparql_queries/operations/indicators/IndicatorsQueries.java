@@ -58,7 +58,7 @@ public class IndicatorsQueries {
 
 	public static String indicatorsQueryForSearch() {
 	return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?altLabelLang1;separator=' || ') as ?altLabelLg1) ?altLabelLg2  ?abstractLg1 ?abstractLg2  "
-			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?creator ?gestionnaire  ?idSims  ?validationState  "
+			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher ?gestionnaire  ?idSims  ?validationState  "
 			+ "WHERE {  \r\n" 
 			+ "?indic a insee:StatisticalIndicator .BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . ?indic skos:prefLabel ?prefLabelLg1 \r\n" 
 			+ "FILTER (lang(?prefLabelLg1) = 'fr') \r\n" 
@@ -81,8 +81,8 @@ public class IndicatorsQueries {
 			+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \r\n" 
 			+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \r\n" 
 			+ "}   \r\n" 
-			+ "OPTIONAL {?indic dcterms:creator ?uriCreator . \r\n" 
-			+ "?uriCreator dcterms:identifier  ?creator . \r\n" 
+			+ "OPTIONAL {?indic dcterms:publisher ?uriPublisher . \r\n" 
+			+ "?uriPublisher dcterms:identifier  ?publisher . \r\n" 
 			+ "}   \r\n" 
 			+ "OPTIONAL {?indic insee:gestionnaire ?gestionnaire . \r\n" 
 			+ "}   \r\n" 
@@ -92,7 +92,7 @@ public class IndicatorsQueries {
 			+ "}   \r\n" 
 			+ "} \r\n" 
 			+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLang1 ?altLabelLg2 ?abstractLg1 ?abstractLg2 ?historyNoteLg1 ?historyNoteLg2  "
-			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?creator ?gestionnaire  ?idSims  ?validationState \n";	
+			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher ?gestionnaire  ?idSims  ?validationState \n";	
 		
 	}
 
@@ -208,10 +208,10 @@ public class IndicatorsQueries {
 	}
 
 	private static void getOrganizations() {
-		addVariableToList(" ?creator ?gestionnaire ");
+		addVariableToList(" ?publisher ?gestionnaire ");
 		addClauseToWhereClause(
-				"OPTIONAL {?indic dcterms:creator ?uriCreator . \n"
-						+ "?uriCreator dcterms:identifier  ?creator . \n"
+				"OPTIONAL {?indic dcterms:publisher ?uriPublisher . \n"
+						+ "?uriPublisher dcterms:identifier  ?publisher . \n"
 						+ "}   \n");
 		addClauseToWhereClause(  
 				"OPTIONAL {?indic insee:gestionnaire ?gestionnaire . \n"
@@ -272,7 +272,7 @@ public class IndicatorsQueries {
 
 	public static String getOwner(String uris) {
 		return "SELECT ?owner { \n"
-				+ "?indic dcterms:creator ?owner . \n" 
+				+ "?indic dcterms:publisher ?owner . \n" 
 				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}

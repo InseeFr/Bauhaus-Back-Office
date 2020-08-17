@@ -123,7 +123,7 @@ public class SeriesQueries {
 
 	public static String getOwner(String uris) {
 		return "SELECT ?owner { \n" 
-				+ "?series dcterms:creator ?owner . \n" 
+				+ "?series dcterms:publisher ?owner . \n" 
 				+ "VALUES ?series { " + uris + " } \n"
 				+ "}";
 	}
@@ -141,20 +141,20 @@ public class SeriesQueries {
 	}
 	
 	/**
-	 * return creators id (creators are organizations)
+	 * return publishers id (publishers are organizations)
 	 * @param id
 	 * @return
 	 */
-	public static String getCreators(String id) {
-		return "SELECT ?creators\n" 
+	public static String getPublishers(String id) {
+		return "SELECT ?publishers\n" 
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> "
 				+ "WHERE { \n"
 					+ "?series a insee:StatisticalOperationSeries . \n" 
-					+ "?series dcterms:creator ?uri  . \n" 
-					+ "?uri dcterms:identifier  ?creators . \n" 
+					+ "?series dcterms:publisher ?uri  . \n" 
+					+ "?uri dcterms:identifier  ?publishers . \n" 
 					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
 				+ "} ";
 	}

@@ -48,8 +48,8 @@ public class Indicator {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@Schema(description = "Identifier of creator")
-	public String creator;
+	@Schema(description = "Identifier of publisher")
+	public String publisher;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributor;
@@ -136,8 +136,8 @@ public class Indicator {
 	}
 
 
-	public String getCreator() {
-		return creator;
+	public String getPublisher() {
+		return publisher;
 	}
 
 

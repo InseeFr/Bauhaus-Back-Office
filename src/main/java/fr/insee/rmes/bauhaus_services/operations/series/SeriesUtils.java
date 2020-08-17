@@ -10,7 +10,10 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.*;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,7 +77,7 @@ public class SeriesUtils extends RdfService {
 		addSeriesFamily(id, series);
 		addSeriesLinks(id, series);
 		addSeriesGestionnaires(id, series);
-		addSeriesCreators(id, series);
+		addSeriesPublishers(id, series);
 
 		addGeneratedWith(id, series);
 		return series;
@@ -86,7 +89,7 @@ public class SeriesUtils extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
 			addOneOrganizationLink(series.get(Constants.ID).toString(), series, INSEE.DATA_COLLECTOR);
-			addOneOrganizationLink(series.get(Constants.ID).toString(), series, DCTERMS.CREATOR);
+			addOneOrganizationLink(series.get(Constants.ID).toString(), series, DCTERMS.PUBLISHER);
 			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -144,12 +147,12 @@ public class SeriesUtils extends RdfService {
 		series.put("gestionnaires", gestionnaires);
 	}
 	
-	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
-		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreators(id));
-		if (creators.length()==1) {
-			series.put("creator", creators.get(0));
+	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
+		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
+		if (publishers.length()==1) {
+			series.put("publisher", publishers.get(0));
 		}else {
-			series.put("creator", creators);
+			series.put("publisher", publishers);
 		}
 	}
 
@@ -178,10 +181,10 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 	
-		List<String> creator=series.getCreator();
-		if (creator!= null) {
-			for(String creat : creator) {
-				RdfUtils.addTripleUri(seriesURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(creat), model, RdfUtils.operationsGraph());
+		List<String> publisher=series.getPublisher();
+		if (publisher!= null) {
+			for(String publ : publisher) {
+				RdfUtils.addTripleUri(seriesURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publ), model, RdfUtils.operationsGraph());
 			}
 		}
 		
