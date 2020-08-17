@@ -150,6 +150,7 @@ public class SeriesQueries {
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> "
 				+ "WHERE { \n"
 					+ "?series a insee:StatisticalOperationSeries . \n" 
 					+ "?series dcterms:creator ?uri  . \n" 

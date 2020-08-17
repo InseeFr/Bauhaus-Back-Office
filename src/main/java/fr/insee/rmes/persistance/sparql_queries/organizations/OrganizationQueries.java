@@ -6,7 +6,10 @@ public class OrganizationQueries {
 
 	public static String organizationQuery(String identifier) {
 		return "SELECT  ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso \n"
-				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> \n "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> \n "
+
+				+ "WHERE { \n"
 				//id
 				+ "?organization dcterms:identifier '"+ identifier +"' . \n"
 
@@ -30,12 +33,15 @@ public class OrganizationQueries {
 				//seeAlso
 				+ "OPTIONAL {?organization rdfs:seeAlso ?seeAlso .} \n"
 
-				+ "}} \n" ;
+				+ "} \n" ;
 	}
 
 	public static String organizationsQuery() {
 		return "SELECT DISTINCT ?id ?label ?altLabel \n"
-				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> \n "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> \n "
+
+				+ "WHERE { \n"
 				//id
 				+ "?organization dcterms:identifier ?id . \n"
 
@@ -44,17 +50,20 @@ public class OrganizationQueries {
 				+ "FILTER (lang(?label) = '" + Config.LG1 + "')} \n"
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
-				+ "}} \n" 
+				+ "} \n" 
 				+ "GROUP BY ?id ?label ?altLabel \n"
 				+ "ORDER BY ?label ";
 	}
 	
 	public static String getUriById(String identifier) {
 		return "SELECT  ?uri \n"
-				+ "WHERE { GRAPH <"+Config.ORGANIZATIONS_GRAPH+"> { \n"
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> \n "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> \n "
+
+				+ "WHERE { \n"
 				+ "?uri dcterms:identifier '"+ identifier +"' . \n"
 
-				+ "}} \n" ;
+				+ "} \n" ;
 	}
 	
 
