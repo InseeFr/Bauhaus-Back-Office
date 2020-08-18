@@ -313,17 +313,25 @@ public class OperationsResources {
 
 	@GET
 	@Path("/operation/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
-	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Operation.class)))})
-	public Response getOperationByID(@PathParam(Constants.ID) String id) {
-		String jsonResultat;
-		try {
-			jsonResultat = operationsService.getOperationByID(id);
+	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json",*/ schema = @Schema(implementation = Operation.class)))})
+	public Response getOperationByID(@PathParam(Constants.ID) String id,
+			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
+		String resultat;
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				resultat=XMLUtils.produceXMLResponse(operationsService.getOperationById(id));
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+		}
+		else try {
+			resultat = operationsService.getOperationJsonByID(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
 
 

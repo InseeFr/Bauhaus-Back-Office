@@ -34,6 +34,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -181,9 +182,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return new FileInputStream(path);
 	}
 
-
 	@Override
-	public String getOperationByID(String id) throws RmesException {
+	public Operation getOperationById(String id) throws RmesException {
+		return operationsUtils.getOperationById(id);
+	}
+	
+	@Override
+	public String getOperationJsonByID(String id) throws RmesException {
 		JSONObject operation = operationsUtils.getOperationJsonById(id);
 		return operation.toString();
 	}

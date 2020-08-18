@@ -5,6 +5,7 @@ import java.io.File;
 import javax.ws.rs.core.Response;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
@@ -57,7 +58,9 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
-	String getOperationByID(String id) throws RmesException;
+	String getOperationJsonByID(String id) throws RmesException;
+	
+	Operation getOperationById(String id) throws RmesException ;
 
 	String getOperationsWithoutReport(String id) throws RmesException;
 

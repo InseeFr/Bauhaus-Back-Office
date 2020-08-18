@@ -72,6 +72,19 @@ public class XMLUtils {
         return response;
     }
 	
+	public static String produceXMLResponse(Object obj) {
+        ObjectMapper mapper = new XmlMapper();
+        String response = "";
+
+        try {
+            response = mapper.writeValueAsString(obj);
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+	
 	public static Document convertStringToDocument(String xmlStr) {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
         DocumentBuilder builder;  
