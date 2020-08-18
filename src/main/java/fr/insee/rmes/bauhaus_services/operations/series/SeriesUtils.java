@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -76,7 +77,7 @@ public class SeriesUtils extends RdfService {
 		addSeriesOperations(id, series);
 		addSeriesFamily(id, series);
 		addSeriesLinks(id, series);
-		addSeriesGestionnaires(id, series);
+		addSeriesCreators(id, series);
 		addSeriesPublishers(id, series);
 
 		addGeneratedWith(id, series);
@@ -142,9 +143,9 @@ public class SeriesUtils extends RdfService {
 		}
 	}
 
-	private void addSeriesGestionnaires(String id, JSONObject series) throws RmesException {
-		JSONArray gestionnaires = repoGestion.getResponseAsJSONList(SeriesQueries.getGestionnaires(id));
-		series.put("gestionnaires", gestionnaires);
+	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
+		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
+		series.put("proprietaires", creators);
 	}
 	
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
@@ -188,10 +189,10 @@ public class SeriesUtils extends RdfService {
 			}
 		}
 		
-		List<String> gestionnaires=series.getGestionnaires();
-		if (gestionnaires!=null) {
-			for (String gestionnaire : gestionnaires) {
-				RdfUtils.addTripleString(seriesURI, INSEE.GESTIONNAIRE, gestionnaire, model, RdfUtils.operationsGraph());
+		List<String> creators=series.getCreators();
+		if (creators!=null) {
+			for (String creator : creators) {
+				RdfUtils.addTripleString(seriesURI, DC.CREATOR, creator, model, RdfUtils.operationsGraph());
 			}
 		}
 	

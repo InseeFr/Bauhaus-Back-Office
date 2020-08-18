@@ -68,9 +68,9 @@ public class Series {
 	@Schema(description = "Identifiers of data collector")
 	public List<OperationsLink> dataCollector;
 
-	@Schema(description = "Identifier of gestionnaire")
+	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
-	public List<String> gestionnaires;
+	public List<String> creators;
 	
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -162,8 +162,8 @@ public class Series {
 		return dataCollector;
 	}
 
-	public List<String> getGestionnaires() {
-		return gestionnaires;
+	public List<String> getCreators() {
+		return creators;
 	}
 
 	public List<OperationsLink> getSeeAlso() {
@@ -266,8 +266,8 @@ public class Series {
 		this.dataCollector = dataCollector;
 	}
 
-	public void setGestionnaires(List<String> gestionnaires) {
-		this.gestionnaires = gestionnaires;
+	public void setCreators(List<String> creators) {
+		this.creators = creators;
 	}
 
 	public void setSeeAlso(List<OperationsLink> seeAlso) {

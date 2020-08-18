@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -65,15 +66,15 @@ public class IndicatorsUtils  extends RdfService {
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
-		addIndicatorGestionnaires(id, indicator);
+		addIndicatorCreators(id, indicator);
 
 		return indicator;
 	}
 
 
-	private void addIndicatorGestionnaires(String id, JSONObject indicator) throws RmesException {
-		JSONArray gestionnaires = repoGestion.getResponseAsJSONList(IndicatorsQueries.getGestionnaires(id));
-		indicator.put("gestionnaires", gestionnaires);
+	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
+		JSONArray creators = repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id));
+		indicator.put("proprietaires", creators);
 	}
 
 
@@ -204,10 +205,10 @@ public class IndicatorsUtils  extends RdfService {
 			}
 		}
 
-		List<String> gestionnaires=indicator.getGestionnaires();
-		if (gestionnaires!=null) {
-			for (String gestionnaire : gestionnaires) {
-				RdfUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, RdfUtils.productsGraph());
+		List<String> creators=indicator.getCreators();
+		if (creators!=null) {
+			for (String creator : creators) {
+				RdfUtils.addTripleString(indicURI, DC.CREATOR, creator, model, RdfUtils.productsGraph());
 			}
 		}
 		

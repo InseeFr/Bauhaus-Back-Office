@@ -54,9 +54,9 @@ public class Indicator {
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributor;
 	
-	@Schema(description = "Identifier of gestionnaire")
+	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
-	public List<String> gestionnaires;
+	public List<String> creators;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -169,12 +169,12 @@ public class Indicator {
 		return idSims;
 	}
 
-	public List<String> getGestionnaires() {
-		return gestionnaires;
+	public List<String> getCreators() {
+		return creators;
 	}
 
-	public void setGestionnaires(List<String> gestionnaires) {
-		this.gestionnaires = gestionnaires;
+	public void setCreators(List<String> creators) {
+		this.creators = creators;
 	}
 
 }

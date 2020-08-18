@@ -128,16 +128,18 @@ public class SeriesQueries {
 				+ "}";
 	}
 
-	public static String getManagers(String uris) {
-		return "SELECT ?manager { \n" + "?series insee:gestionnaire ?manager . \n" + "VALUES ?series { " + uris
+	public static String getCreatorsBySeriesUri(String uris) {
+		return "SELECT ?creator { \n" + "?series dc:creator ?creator . \n" 
+				+ "VALUES ?series { " + uris
 				+ " } \n" + "}";
 	}
 
-	public static String getGestionnaires(String id) {
-		return "SELECT ?gestionnaire\n" 
+	public static String getCreatorsById(String id) {
+		return "SELECT ?creator\n" 
 				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
-				+ "?series a insee:StatisticalOperationSeries . \n" + " FILTER(STRENDS(STR(?series),'/operations/serie/"
-				+ id + "')) . \n" + "?series insee:gestionnaire ?gestionnaire  . \n" + "} }";
+				+ "?series a insee:StatisticalOperationSeries . \n" 
+				+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
+				+ "?series dc:creator ?creator  . \n" + "} }";
 	}
 	
 	/**
