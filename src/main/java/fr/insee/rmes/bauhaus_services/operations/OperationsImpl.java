@@ -30,11 +30,14 @@ import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -104,10 +107,19 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
-	
+
+	@Override
+	public Series getSeriesByID(String id) throws RmesException {
+		return seriesUtils.getSeriesById(id);
+	}
+
+	@Override
+	public IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException {
+		return seriesUtils.getSeriesLabelById(id);
+	}
 	
 	@Override
-	public String getSeriesByID(String id) throws RmesException {
+	public String getSeriesJsonByID(String id) throws RmesException {
 		JSONObject series = seriesUtils.getSeriesJsonById(id);
 		return series.toString();
 	}
@@ -278,11 +290,16 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public String getIndicatorByID(String id) throws RmesException {
+	public String getIndicatorJsonByID(String id) throws RmesException {
 		JSONObject indic = indicatorsUtils.getIndicatorJsonById(id);
 		return indic.toString();
 	}
 
+	@Override
+	public Indicator getIndicatorById(String id) throws RmesException {
+		return indicatorsUtils.getIndicatorById(id);
+	}
+	
 	@Override
 	public void setIndicator(String id, String body) throws RmesException {
 		indicatorsUtils.setIndicator(id,body);

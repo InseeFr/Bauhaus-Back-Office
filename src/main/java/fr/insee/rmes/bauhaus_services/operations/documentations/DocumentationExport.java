@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import javax.xml.transform.Transformer;
@@ -67,7 +68,7 @@ public class DocumentationExport {
 	}
 
 
-	public File export(InputStream inputFile, String absolutePath, String targetType) throws Exception {
+	public File export(InputStream inputFile, String absolutePath, String accessoryAbsolutePath, String targetType) throws Exception {
 		logger.debug("Begin To export documentation");
 
 		String msdXml = documentationsUtils.buildShellSims();
@@ -94,6 +95,7 @@ public class DocumentationExport {
 		TransformerFactory transformerFactory = TransformerFactoryImpl.newInstance();
 		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 		xsltTransformer.setParameter("tempFile", absolutePath);
+		xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
 		xsltTransformer.setParameter("msd", msdPath);
 		xsltTransformer.setParameter("targetType", targetType);
 

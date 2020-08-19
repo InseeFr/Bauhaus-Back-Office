@@ -61,21 +61,18 @@ public class XMLUtils {
             // TODO : make it generic for all classes or change to 'produceXmlResponse'
             mapper.addMixIn(Documentation.class, DocumentationJsonMixIn.class);
         }
-
         try {
             response = mapper.writeValueAsString(obj);
         }
         catch (Exception e) {
             logger.error(e.getMessage());
         }
-
         return response;
     }
 	
 	public static String produceXMLResponse(Object obj) {
         ObjectMapper mapper = new XmlMapper();
         String response = "";
-
         try {
             response = mapper.writeValueAsString(obj);
         }

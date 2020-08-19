@@ -50,6 +50,8 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.ExtensiveSims;
@@ -85,23 +87,23 @@ public class DocumentationsUtils extends RdfService{
 
 	@Autowired
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
-	
+
 	@Autowired
 	private IndicatorsUtils indicatorsUtils;
 
 	@Autowired
 	private DocumentationPublication documentationPublication;
-	
+
 	@Autowired
 	CodeListUtils codeListUtils;
 
 	@Autowired
 	DocumentationsUtils documentationsUtils;
-	
+
 	@Autowired
 	private FamOpeSerUtils famOpeSerUtils;
-	
-	
+
+
 
 
 	/**
@@ -230,7 +232,7 @@ public class DocumentationsUtils extends RdfService{
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
 			}
 		}
-		
+
 		logger.info("Create or update sims : {} - {}", sims.getId(), sims.getLabelLg1());
 		return sims.getId();
 	}
@@ -488,7 +490,7 @@ public class DocumentationsUtils extends RdfService{
 			String idOperation = target.getString(ID_OPERATION);
 			String idSerie = target.getString(ID_SERIES);
 			String idIndicator = target.getString(ID_INDICATOR);
-			
+
 			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(
 						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
@@ -509,42 +511,51 @@ public class DocumentationsUtils extends RdfService{
 	public File exportMetadataReport(String id) throws Exception {
 
 		InputStream is;
+		InputStream is2;
 		Path tempDir= Files.createTempDirectory("forExport");
 
 		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
 		String absolutePath = tempFile.toFile().getAbsolutePath();
+
+		Path accessoryTempFile = Files.createTempFile(tempDir, "series",".xml");
+		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
 		
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
-		
+
 		if (targetType=="OPERATION") {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(
-					operationsUtils.getOperationById(idDatabase)
-					, "application/xml"), "UTF-8");
+			Operation operation=operationsUtils.getOperationById(idDatabase);
+			String idSeries=operation.getSeries().getId();
+			Series series=seriesUtils.getSeriesById(idSeries);
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(operation), "UTF-8");
 			Files.copy(is, tempFile, options);
+			is2 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(series), "UTF-8");
+			Files.copy(is2, accessoryTempFile, options);
 		}
 
 		if (targetType=="SERIES") {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(
-					seriesUtils.getSeriesJsonById(idDatabase)
-					, "application/xml"), "UTF-8");
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
+					seriesUtils.getSeriesById(idDatabase)), "UTF-8");
 			Files.copy(is, tempFile, options);
+			Files.copy(is, accessoryTempFile, options);
+
 		}
 
 		if (targetType=="INDICATOR") {
-			is = IOUtils.toInputStream(XMLUtils.produceResponse(indicatorsUtils.getIndicatorById(idDatabase), "application/xml"), "UTF-8");
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
+					indicatorsUtils.getIndicatorById(idDatabase)), "UTF-8");
 			Files.copy(is, tempFile, options);
 		}
 
 		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
 
-		return docExport.export(simsInputStream,absolutePath,targetType);
+		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
 
 	}
-	
+
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<MAS>();
 		MAS currentRubric = new MAS();
@@ -556,7 +567,7 @@ public class DocumentationsUtils extends RdfService{
 		}	
 		return new MSD(msd) ;
 	}
-	
+
 	public MAS buildMSDRubricFromJson(JSONObject jsonMsdRubric) {
 		MAS msd = new MAS();
 		if (jsonMsdRubric.has("idMas"))		msd.setIdMas(jsonMsdRubric.getString("idMas"));
@@ -564,15 +575,15 @@ public class DocumentationsUtils extends RdfService{
 		if (jsonMsdRubric.has("masLabelLg2"))		msd.setMasLabelLg2(jsonMsdRubric.getString("masLabelLg2"));
 		if (jsonMsdRubric.has("idParent"))		msd.setIdParent(jsonMsdRubric.getString("idParent"));
 		if (jsonMsdRubric.has("isPresentational"))		msd.setIsPresentational(jsonMsdRubric.getBoolean("isPresentational"));
-	
+
 		return msd ;
 	}
-	
+
 	public String buildShellSims() throws RmesException {
 		MSD msd= operationsUtils.getMSD();
-		String msdXml = XMLUtils.produceResponse(msd, MediaType.APPLICATION_XML);
-		Document msdDoc = XMLUtils.convertStringToDocument(msdXml);
+		String msdXml = XMLUtils.produceXMLResponse(msd);
+		//Document msdDoc = XMLUtils.convertStringToDocument(msdXml);
 		return msdXml;
 	}
-	
+
 }

@@ -4,10 +4,12 @@ import java.io.File;
 
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 
 public interface OperationsService {
@@ -35,8 +37,12 @@ public interface OperationsService {
 	String getSeries() throws RmesException;
 
 	String getSeriesForSearch() throws RmesException;
+	
+	Series getSeriesByID(String id) throws RmesException;
 
-	String getSeriesByID(String id) throws RmesException;
+	String getSeriesJsonByID(String id) throws RmesException;
+
+	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
 
 	String getSeriesWithSims() throws RmesException;
 	
@@ -79,7 +85,9 @@ public interface OperationsService {
 
 	String getIndicatorsForSearch() throws RmesException;
 
-	String getIndicatorByID(String id) throws RmesException;
+	String getIndicatorJsonByID(String id) throws RmesException;
+
+	Indicator getIndicatorById(String id) throws RmesException;
 
 	/**
 	 * UPDATE
@@ -134,6 +142,7 @@ public interface OperationsService {
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;
+
 
 
 }

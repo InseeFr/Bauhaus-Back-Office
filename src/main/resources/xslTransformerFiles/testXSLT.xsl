@@ -5,14 +5,20 @@
 	xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
 	xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
 	xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-	xmlns:fn="http://www.w3.org/2005/xpath-functions" 
+	xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+	xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
 	xmlns:officeooo="http://openoffice.org/2009/office">
 	<!-- <xsl:include href="../xslTransformerFiles/office-styles.xsl" /> -->
 
 	<xsl:output method="xml" encoding="UTF-8" indent="yes" />
 	<!-- omit-xml-declaration="yes" -->
+	<!--Sims target -->
 	<xsl:param name="tempFile" />
 	<xsl:param name="fileTarget" select="document($tempFile)" />
+	<!--Sims target's series -->
+	<xsl:param name="accessoryTempFile" />
+	<xsl:param name="fileSeries" select="document($accessoryTempFile)" />
 	<xsl:param name="msd" />
 	<xsl:param name="fileMsd" select="document($msd)" />
 	<xsl:param name="targetType" />
@@ -38,8 +44,12 @@
 			<!-- </xsl:function> -->
 			<!-- </office:automatic-styles> -->
 
-			<office:automatic-styles>
 
+			<office:automatic-styles>
+				<style:style style:name="separatingColumn" style:family="table-column">
+					<style:table-column-properties
+						style:column-width="0.381cm" />
+				</style:style>
 				<style:style style:name="framedCell" style:family="table-cell">
 					<style:table-cell-properties
 						fo:wrap-option="wrap" style:shrink-to-fit="false"
@@ -58,7 +68,7 @@
 					style:class="chapter">
 					<style:paragraph-properties
 						fo:text-align="center" fo:margin-top="1cm"
-						style:justify-single-word="false" fo:background-color="#234ca5"
+						style:justify-single-word="false" fo:background-color="#012a83"
 						font-family="Arial" />
 					<style:text-properties fo:font-size="24pt"
 						fo:font-weight="bold" fo:color="#ffffff" />
@@ -66,14 +76,27 @@
 				<style:style style:name="HeaderEn" style:family="paragraph"
 					style:class="chapter">
 					<style:paragraph-properties
-						fo:text-align="center" fo:margin-top="1cm"
-						style:justify-single-word="false" fo:background-color="#234ca5" />
+						fo:text-align="center" style:justify-single-word="false"
+						fo:background-color="#234ca5" />
 					<style:text-properties fo:font-size="20pt"
 						fo:font-weight="bold" fo:color="#ffffff" />
 				</style:style>
+				<style:style style:name="attribute" style:family="paragraph">
+					<style:paragraph-properties
+						style:vertical-align="top" style:justify-single-word="false"
+						fo:text-align="start" style:auto-text-indent="false"
+						fo:text-indent="0cm" fo:line-height="100%"
+						loext:contextual-spacing="false" fo:margin-bottom="0.33cm"
+						fo:margin-top="0.33cm" fo:margin-right="0.33cm" fo:margin-left="0.33cm" />
+					<style:text-properties
+						officeooo:paragraph-rsid="0004e715" style:text-rotation-scale="line-height"
+						style:text-rotation-angle="0" style:font-size-complex="10pt"
+						style:font-size-asian="10pt" fo:font-size="10pt" style:font-name="Arial"
+						style:text-underline-color="font-color"
+						style:text-underline-width="auto" style:text-underline-style="solid" />
+				</style:style>
 
-				<!-- <style:style style:name="HeaderEn" style:family="paragraph" -->
-				<!-- style:parent-style-name="Heading_20_1"> -->
+				<!-- <style:style style:name="HeaderEn" style:family="paragraph"> -->
 				<!-- <style:paragraph-properties -->
 				<!-- style:vertical-align="middle" style:justify-single-word="false" -->
 				<!-- fo:text-align="center" style:auto-text-indent="false" -->
@@ -87,8 +110,7 @@
 				<!-- fo:color="#ffffff" /> -->
 				<!-- </style:style> -->
 
-				<!-- <style:style style:name="HeaderFr" style:family="paragraph" -->
-				<!-- style:parent-style-name="Heading_20_1"> -->
+				<!-- <style:style style:name="HeaderFr" style:family="paragraph"> -->
 				<!-- <style:paragraph-properties -->
 				<!-- style:vertical-align="middle" style:justify-single-word="false" -->
 				<!-- fo:text-align="center" style:auto-text-indent="false" -->
@@ -104,21 +126,33 @@
 				<style:style style:name="Tableau1"
 					style:master-page-name="master_5f_0" style:family="table">
 					<style:table-properties style:page-number="auto"
-						style:width="20.98cm" fo:border-bottom-style="2pt solid #234ca5"/>
+						style:width="20.98cm" fo:border-bottom-style="2pt solid #234ca5" />
 				</style:style>
-				<style:style style:name="T2" style:family="text">
+				<style:style style:name="T2" style:family="paragraph">
+					<style:paragraph-properties
+						fo:text-align="center" fo:margin-top="1cm" />
 					<style:text-properties
 						style:text-rotation-scale="line-height" style:text-rotation-angle="0"
 						style:font-size-complex="14pt" style:font-size-asian="14pt"
 						fo:font-weight="bold" fo:font-size="14pt" style:font-name="Arial"
 						fo:color="#234ca5" />
 				</style:style>
-				<style:style style:name="T2En" style:family="text">
+				<style:style style:name="T2En" style:family="paragraph">
+					<style:paragraph-properties
+						fo:text-align="center" />
 					<style:text-properties
 						style:text-rotation-scale="line-height" style:text-rotation-angle="0"
 						style:font-size-complex="12pt" style:font-size-asian="12pt"
 						fo:font-weight="bold" fo:font-size="12pt" style:font-name="Arial"
 						fo:color="#234ca5" />
+				</style:style>
+				<style:style style:name="T3" style:family="paragraph">
+					<style:paragraph-properties
+						fo:text-align="center" fo:margin-top="1cm"
+						style:justify-single-word="false" fo:background-color="#012a83"
+						font-family="Arial" />
+					<style:text-properties fo:font-size="14pt"
+						fo:font-weight="bold" fo:color="#ffffff" />
 				</style:style>
 				<style:style style:name="TitleFr" style:family="paragraph"
 					style:class="chapter">
@@ -144,7 +178,7 @@
 					<style:text-properties fo:font-size="12pt"
 						fo:font-weight="normal" fo:color="black" />
 				</style:style>
-				<style:style style:name="RubricHead" style:family="text">
+				<style:style style:name="RubricHead" style:family="paragraph">
 					<style:paragraph-properties
 						fo:text-align="left" fo:margin-top="1cm"
 						style:justify-single-word="false" />
@@ -158,7 +192,7 @@
 						style:text-underline-width="auto" style:text-underline-style="solid"
 						text-decoration="underline" />
 				</style:style>
-				<style:style style:name="RubricItem" style:family="text">
+				<style:style style:name="RubricItem" style:family="paragraph">
 					<style:paragraph-properties
 						fo:text-align="left" style:justify-single-word="false" />
 					<style:text-properties fo:font-size="10pt"
@@ -171,8 +205,8 @@
 					<style:text-properties fo:font-size="12pt"
 						fo:font-weight="bold" fo:color="black" text-decoration="underline" />
 				</style:style>
-
 			</office:automatic-styles>
+
 
 			<office:body>
 				<office:text text:use-soft-page-breaks="true">
@@ -187,52 +221,31 @@
 							text:display-outline-level="0" />
 					</text:sequence-decls>
 
-					<table:table table:name="Tableau1" table:style-name="Tableau1">
-						<table:table-row>
-							<!-- <table:table-cell table:style-name="Tableau1" -->
-							<!-- office:value-type="string"> -->
-							<!-- <text:p text:style-name="Standard" /> -->
-							<!-- </table:table-cell> -->
-							<table:table-cell>
-								<!-- Header -->
-								<text:p text:style-name="HeaderFr">
-									<xsl:value-of select="$fileTarget//prefLabelLg1" />
-								</text:p>
-							</table:table-cell>
-						</table:table-row>
-						<table:table-row>
-							<table:table-cell>
-								<text:p text:style-name="HeaderEn">
-									<xsl:value-of select="$fileTarget//prefLabelLg2" />
-								</text:p>
-							</table:table-cell>
-						</table:table-row>
+					<!-- Essais -->
+					<text:p>
+						<xsl:value-of select="' Series: '" />
+						<xsl:value-of select="$fileSeries/Series/id" />
+						<xsl:value-of select="$fileSeries/Series/prefLabelLg1" />
+						<xsl:value-of select="$accessoryTempFile" />
+					</text:p>
+					<text:p>
+						<xsl:value-of select="' Operation: '" />
+						<xsl:value-of select="$fileTarget/Operation/id" />
+						<xsl:value-of select="$fileTarget/Operation/prefLabelLg1" />
+						<xsl:value-of select="$tempFile" />
+					</text:p>
 
-					</table:table>
+
+					<!-- Header -->
+					<xsl:call-template name="header"></xsl:call-template>
 
 					<!-- Title -->
 					<xsl:choose>
 						<xsl:when test="$targetType='SERIES'">
-							<text:p text:style-name="T2">
-								Informations sur la série:
-								<xsl:value-of select="$fileTarget//prefLabelLg1" />
-							</text:p>
-							<text:p text:style-name="T2En">
-								Informations about the series:
-								<xsl:value-of select="$fileTarget//prefLabelLg2" />
-							</text:p>
 							<xsl:call-template name="series"></xsl:call-template>
 						</xsl:when>
 						<xsl:when test="$targetType='OPERATION'">
-							<xsl:call-template name="seriesForOperation"></xsl:call-template>
-							<text:p text:style-name="T2">
-								Informations sur l'opération:
-								<xsl:value-of select="$fileTarget//prefLabelLg1" />
-							</text:p>
-							<text:p text:style-name="T2En">
-								Informations about the operation:
-								<xsl:value-of select="$fileTarget//prefLabelLg2" />
-							</text:p>
+							<xsl:call-template name="series"></xsl:call-template>
 							<xsl:call-template name="operation"></xsl:call-template>
 						</xsl:when>
 						<xsl:otherwise>
@@ -250,10 +263,68 @@
 
 					<!-- Sims -->
 
-					<text:p text:style-name="T2">
-						Informations sur le Sims
-						<xsl:value-of select="Documentation/labelLg1" />
+					<text:p text:style-name="T3">
+						<xsl:value-of select="'Informations sur le Sims : '" />
+						<xsl:value-of select="$fileTarget//prefLabelLg1" />
 					</text:p>
+
+
+					<!-- On parcourt la MSD -->
+					<xsl:for-each select="$fileMsd//mas">
+						<xsl:sort data-type="number"
+							select="substring-before(concat(substring-after(idMas,'.'),'.'),'.')"
+							order="ascending" />
+						<xsl:sort data-type="number"
+							select="substring-after(substring-after(idMas,'.'),'.')" order="ascending" />
+						<xsl:choose>
+							<xsl:when test="idParent != ''">
+								<table:table>
+									<table:table-column />
+									<table:table-column />
+									<table:table-row>
+										<table:table-cell table:style-name="framedCell">
+											<text:p text:style-name="RubricItem">
+												<xsl:variable name="mas" select="idMas" />
+												<xsl:value-of select="$mas" />
+												-
+												<xsl:value-of select="masLabelLg1" />
+												<!-- <xsl:param name="mas" select="idMas" /> -->
+												<!-- <xsl:apply-templates select="$rootVar//rubrics[@idAttribute 
+													= $mas]" /> -->
+												<xsl:text> </xsl:text>
+											</text:p>
+										</table:table-cell>
+										<table:table-cell table:style-name="framedCell">
+											<text:p text:style-name="RubricItem">
+												<xsl:value-of select="idMas" />
+												-
+												<xsl:value-of select="masLabelLg2" />
+												<xsl:text> </xsl:text>
+											</text:p>
+										</table:table-cell>
+									</table:table-row>
+								</table:table>
+							</xsl:when>
+							<xsl:otherwise>
+								<table:table>
+									<table:table-column />
+									<table:table-column />
+									<table:table-row>
+										<table:table-cell>
+											<text:p text:style-name="RubricHead">
+												<xsl:value-of select="idMas" />
+												-
+												<xsl:value-of select="masLabelLg1" />
+												<xsl:text> </xsl:text>
+											</text:p>
+										</table:table-cell>
+									</table:table-row>
+								</table:table>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:for-each>
+
+
 
 					<text:p text:style-name="P1">
 						Sims
@@ -274,9 +345,6 @@
 							<xsl:value-of select="Documentation/idIndicator" />
 						</xsl:if>
 					</text:p>
-
-
-
 
 					<xsl:for-each select="Documentation/rubrics/rubrics">
 						<xsl:sort data-type="number"
@@ -320,63 +388,31 @@
 					</xsl:for-each>
 
 
-					<!-- On parcourt la MSD -->
-					<xsl:for-each select="$fileMsd//mas">
-						<xsl:sort data-type="number"
-							select="substring-before(concat(substring-after(idMas,'.'),'.'),'.')"
-							order="ascending" />
-						<xsl:sort data-type="number"
-							select="substring-after(substring-after(idMas,'.'),'.')" order="ascending" />
-						<xsl:choose>
-							<xsl:when test="idParent != ''">
-								<table:table>
-									<table:table-column />
-									<table:table-column />
-									<table:table-row>
-										<table:table-cell table:style-name="framedCell">
-											<text:p text:style-name="RubricItem">
-												<xsl:variable name="mas" select="idMas" />
-												<xsl:value-of select="$mas" />
-												-
-												<xsl:value-of select="masLabelLg1" />
-												<!-- <xsl:param name="mas" select="idMas" /> -->
-<!-- 												<xsl:apply-templates select="$rootVar//rubrics[@idAttribute = $mas]" /> -->
-												<xsl:text> </xsl:text>
-											</text:p>
-										</table:table-cell>
-										<table:table-cell table:style-name="framedCell">
-											<text:p text:style-name="RubricItem">
-												<xsl:value-of select="idMas" />
-												-
-												<xsl:value-of select="masLabelLg2" />
-												<xsl:text> </xsl:text>
-											</text:p>
-										</table:table-cell>
-									</table:table-row>
-								</table:table>
-							</xsl:when>
-							<xsl:otherwise>
-								<table:table>
-									<table:table-column />
-									<table:table-column />
-									<table:table-row>
-										<table:table-cell>
-											<text:p text:style-name="RubricHead">
-												<xsl:value-of select="idMas" />
-												-
-												<xsl:value-of select="masLabelLg1" />
-												<xsl:text> </xsl:text>
-											</text:p>
-										</table:table-cell>
-									</table:table-row>
-								</table:table>
-							</xsl:otherwise>
-						</xsl:choose>
-					</xsl:for-each>
 				</office:text>
 			</office:body>
 		</office:document>
 	</xsl:template>
+
+
+	<xsl:template name="header">
+		<table:table table:name="Tableau1" table:style-name="Tableau1">
+			<table:table-row>
+				<table:table-cell>
+					<text:p text:style-name="HeaderFr">
+						<xsl:value-of select="$fileTarget//prefLabelLg1" />
+					</text:p>
+				</table:table-cell>
+			</table:table-row>
+			<table:table-row>
+				<table:table-cell>
+					<text:p text:style-name="HeaderEn">
+						<xsl:value-of select="$fileTarget//prefLabelLg2" />
+					</text:p>
+				</table:table-cell>
+			</table:table-row>
+		</table:table>
+	</xsl:template>
+
 
 	<xsl:template match="rubrics">
 		<xsl:value-of select="'coucou sims'" />
@@ -385,22 +421,154 @@
 	</xsl:template>
 
 	<xsl:template name="series">
-		<xsl:value-of select="'coucou series'" />
-		<xsl:value-of select="labelLg1"></xsl:value-of>
-		<xsl:value-of select="labelLg2"></xsl:value-of>
+		<table:table table:name="TableauSeriesHead"
+			table:style-name="Tableau1">
+			<!-- <table:table-column table:style-name="separatingColumn"/> -->
+			<!-- <table:table-column /> -->
+			<!-- <table:table-column table:style-name="separatingColumn"/> -->
+			<table:table-row>
+				<!-- <table:table-cell table:style-name="separatingColumn" /> -->
+				<table:table-cell>
+					<text:p text:style-name="T2">
+						Informations sur la série:
+						<xsl:value-of select="$fileSeries/Series/prefLabelLg1" />
+					</text:p>
+					<text:p text:style-name="T2En">
+						Informations about the series:
+						<xsl:value-of select="$fileSeries/Series/prefLabelLg2" />
+					</text:p>
+				</table:table-cell>
+				<!-- <table:table-cell table:style-name="separatingColumn" /> -->
+			</table:table-row>
+		</table:table>
+		<table:table table:name="TableauSeries" table:style-name="Tableau1">
+			<table:table-column />
+			<table:table-column table:style-name="separatingColumn" />
+			<table:table-column />
+			<table:table-row>
+				<!-- français -->
+				<table:table-cell table:style-name="framedCell">
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Nom court'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/altLabelLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Résumé'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/abstractLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Historique'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/historyNoteLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Type d opération'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Fréquence de collecte des données'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Organisme responsable'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Partenaires'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Services collecteurs'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Gestionnaire'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Succède à'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Remplacée par'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Indicateurs produits'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Famille parente'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/family/labelLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Opérations filles'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/operation/labelLg1"></xsl:value-of>
+					</text:p>
+				</table:table-cell>
+				<!-- séparation -->
+				<table:table-cell table:style-name="separatingColumn" />
+				<!-- english -->
+				<table:table-cell table:style-name="framedCell">
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Short name'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/altLabelLg2"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Summary'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/abstractLg2"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'History'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/historyNoteLg2"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Operation type'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Data collection frequency'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Replaces'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Replaced by'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Indicators produced'"></xsl:value-of>
+					</text:p>
 
-		<xsl:value-of select="prefLabelLg1"></xsl:value-of>
-		<xsl:value-of select="prefLabelLg2"></xsl:value-of>
-		<xsl:value-of select="altLabelLg1"></xsl:value-of>
-		<xsl:value-of select="altLabelLg2"></xsl:value-of>
-		<xsl:value-of select="abstractLg1"></xsl:value-of>
-		<xsl:value-of select="abstractLg2"></xsl:value-of>
-		<xsl:value-of select="family/labelLg1"></xsl:value-of>
-		<xsl:value-of select="family/labelLg2"></xsl:value-of>
-		<xsl:value-of select="accrualPeriodicityCode"></xsl:value-of>
-		<xsl:value-of select="creator"></xsl:value-of>
-		<xsl:value-of select="contributor"></xsl:value-of>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Parent Family'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries/Series/family/labelLg2"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Daughter operations'"></xsl:value-of>
+					</text:p>
+					<text:p>
+						<xsl:value-of select="$fileSeries//operation/labelLg2"></xsl:value-of>
+					</text:p>
+				</table:table-cell>
 
+				<xsl:value-of select="altLabelLg1"></xsl:value-of>
+				<xsl:value-of select="altLabelLg2"></xsl:value-of>
+				<xsl:value-of select="abstractLg1"></xsl:value-of>
+				<xsl:value-of select="abstractLg2"></xsl:value-of>
+				<xsl:value-of select="family/labelLg1"></xsl:value-of>
+				<xsl:value-of select="family/labelLg2"></xsl:value-of>
+				<xsl:value-of select="accrualPeriodicityCode"></xsl:value-of>
+				<xsl:value-of select="creator"></xsl:value-of>
+				<xsl:value-of select="contributor"></xsl:value-of>
+			</table:table-row>
+		</table:table>
 	</xsl:template>
 
 
@@ -435,7 +603,28 @@
 
 	<xsl:template name="operation">
 		<table:table>
+			<!-- <table:table-column /> -->
+			<!-- <table:table-column /> -->
+			<!-- <table:table-column /> -->
+
+			<table:table-row>
+				<!-- <table:table-cell /> -->
+				<table:table-cell>
+					<text:p text:style-name="T2">
+						Informations sur l'opération:
+						<xsl:value-of select="$fileTarget/Operation/prefLabelLg1" />
+					</text:p>
+					<text:p text:style-name="T2En">
+						Informations about the operation:
+						<xsl:value-of select="$fileTarget/Operation/prefLabelLg2" />
+					</text:p>
+				</table:table-cell>
+				<!-- <table:table-cell /> -->
+			</table:table-row>
+		</table:table>
+		<table:table>
 			<table:table-column />
+			<table:table-column fo:column-width="0.381cm" />
 			<table:table-column />
 			<table:table-row>
 				<table:table-cell table:style-name="framedCell">
@@ -443,7 +632,7 @@
 						Nom court
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:value-of select="$fileTarget//altLabelLg1"></xsl:value-of>
+						<xsl:value-of select="$fileTarget/Operation/altLabelLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="RubricHead">
 						Liens
@@ -454,15 +643,16 @@
 						Série parente
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:value-of select="$fileTarget/series/labelLg1"></xsl:value-of>
+						<xsl:value-of select="$fileTarget/Operation/series/labelLg1"></xsl:value-of>
 					</text:p>
 				</table:table-cell>
+				<table:table-cell />
 				<table:table-cell table:style-name="framedCell">
 					<text:p text:style-name="RubricHead">
 						Short name
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:value-of select="$fileTarget//altLabelLg2"></xsl:value-of>
+						<xsl:value-of select="$fileTarget/Operation/altLabelLg2"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="RubricHead">
 						Links
@@ -473,7 +663,7 @@
 						Parent series
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:value-of select="$fileTarget/series/labelLg2"></xsl:value-of>
+						<xsl:value-of select="$fileTarget/Operation/series/labelLg2"></xsl:value-of>
 					</text:p>
 				</table:table-cell>
 			</table:table-row>

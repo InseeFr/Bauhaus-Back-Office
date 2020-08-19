@@ -62,10 +62,62 @@ public class SeriesUtils extends RdfService {
 
 	/*READ*/
 
-	public IdLabelTwoLangs getSeriesById(String id) throws RmesException {
-		return buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
+	public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
+		return famOpeSerUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
 	}
-	
+
+	public Series getSeriesById(String id) throws RmesException {
+		return buildSeriesFromJson(getSeriesJsonById(id));	
+	}
+
+	private Series buildSeriesFromJson(JSONObject seriesJsonById) {
+		Series series=new Series();
+		series.setId(seriesJsonById.getString("id"));
+		if(seriesJsonById.has("prefLabelLg1")) {
+			series.setPrefLabelLg1(seriesJsonById.getString("prefLabelLg1"));
+		}
+		if(seriesJsonById.has("prefLabelLg2")) {
+			series.setPrefLabelLg2(seriesJsonById.getString("prefLabelLg2"));
+		}
+		if(seriesJsonById.has("altLabelLg1")) {
+			series.setAltLabelLg1(seriesJsonById.getString("altLabelLg1"));
+		}
+		if(seriesJsonById.has("altLabelLg2")) {
+			series.setAltLabelLg2(seriesJsonById.getString("altLabelLg2"));
+		}
+		if(seriesJsonById.has("abstractLg1")) {
+			series.setAbstractLg1(seriesJsonById.getString("abstractLg1"));
+		}
+		if(seriesJsonById.has("abstractLg2")) {
+			series.setAbstractLg2(seriesJsonById.getString("abstractLg2"));
+		}
+		if(seriesJsonById.has("historyNoteLg1")) {
+			series.setHistoryNoteLg1(seriesJsonById.getString("historyNoteLg1"));
+		}
+		if(seriesJsonById.has("historyNoteLg2")) {
+			series.setHistoryNoteLg2(seriesJsonById.getString("historyNoteLg2"));
+		}
+		if(seriesJsonById.has("typeCode")) {
+			series.setTypeCode(seriesJsonById.getString("typeCode"));
+		}
+		if(seriesJsonById.has("typeList")) {
+			series.setTypeList(seriesJsonById.getString("typeList"));
+		}
+		if(seriesJsonById.has("accrualPeriodicityCode")) {
+			series.setAccrualPeriodicityCode(seriesJsonById.getString("accrualPeriodicityCode"));
+		}
+		if(seriesJsonById.has("accrualPeriodicityList")) {
+			series.setAccrualPeriodicityList(seriesJsonById.getString("accrualPeriodicityList"));
+		}
+		if(seriesJsonById.has("idSims")) {
+			series.setIdSims(seriesJsonById.getString("idSims"));
+		}
+		if(seriesJsonById.has("family")) {
+			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJsonById.getJSONObject("family")));
+		}
+		return series;
+	}
+
 	public JSONObject getSeriesJsonById(String id) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		// check that the series exist
@@ -385,18 +437,6 @@ public class SeriesUtils extends RdfService {
 		repoGestion.objectValidation(seriesURI, model);
 
 		return id;
-	}
-
-	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonSeries) {
-		IdLabelTwoLangs series = new IdLabelTwoLangs();
-		series.setId(jsonSeries.getString("id"));
-		if(jsonSeries.has("labelLg1")) {
-			series.setLabelLg1(jsonSeries.getString("labelLg1"));
-		}
-		if(jsonSeries.has("labelLg2")) {
-			series.setLabelLg2(jsonSeries.getString("labelLg2"));
-		}
-		return series;
 	}
 
 }

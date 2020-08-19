@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -32,6 +33,7 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -73,7 +75,7 @@ public class OperationsUtils extends RdfService{
 	public Operation buildOperationFromJson(JSONObject jsonOperation) {
 
 		Operation operation = new Operation();
-		IdLabelTwoLangs series = seriesUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
+		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
 
 		operation.setId(jsonOperation.getString("id"));
 		if(jsonOperation.has("prefLabelLg1")) {
@@ -95,6 +97,20 @@ public class OperationsUtils extends RdfService{
 		return operation;
 	}
 
+	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
+		 ObjectMapper mapper = new ObjectMapper();
+		  
+		 Operation operation = new Operation();
+		try {
+			operation = mapper.readValue(operationJson.toString(), Operation.class);
+		} catch (JsonProcessingException e) {
+			logger.error("Json cannot be parsed");
+			e.printStackTrace();
+		}
+		 return operation;
+	}
+	
+	
 	/**
 	 * CREATE
 	 * @param body
