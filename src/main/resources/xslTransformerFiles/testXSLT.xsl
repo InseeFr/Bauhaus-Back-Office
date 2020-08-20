@@ -44,12 +44,34 @@
 			<!-- </xsl:function> -->
 			<!-- </office:automatic-styles> -->
 
-
 			<office:automatic-styles>
-				<style:style style:name="separatingColumn" style:family="table-column">
+				<!-- Mise en forme Tableaux -->
+
+				<style:style style:name="Tableau3.A" style:family="table-column">
 					<style:table-column-properties
-						style:column-width="0.381cm" />
+						style:column-width="8.0cm" />
 				</style:style>
+				<style:style style:name="Tableau3.B" style:family="table-column">
+					<style:table-column-properties
+						style:column-width="0.5cm" />
+				</style:style>
+				<style:style style:name="Tableau3.C" style:family="table-column">
+					<style:table-column-properties
+						style:column-width="8.0cm" />
+				</style:style>
+<!-- 				<style:style style:name="TableauMainColumn" -->
+<!-- 					style:family="table-column"> -->
+<!-- 					<style:table-column-properties -->
+<!-- 						style:rel-column-width="21845*" style:column-width="6.5cm" /> -->
+<!-- 				</style:style> -->
+<!-- 				<style:style style:name="TableauSepColumn" style:family="table-column"> -->
+<!-- 					<style:table-column-properties -->
+<!-- 						style:rel-column-width="21845*" style:column-width="1cm" /> -->
+<!-- 				</style:style> -->
+<!-- 				<style:style style:name="separatingColumn" style:family="table-column"> -->
+<!-- 					<style:table-column-properties -->
+<!-- 						style:column-width="0.381cm" /> -->
+<!-- 				</style:style> -->
 				<style:style style:name="framedCell" style:family="table-cell">
 					<style:table-cell-properties
 						fo:wrap-option="wrap" style:shrink-to-fit="false"
@@ -194,7 +216,9 @@
 				</style:style>
 				<style:style style:name="RubricItem" style:family="paragraph">
 					<style:paragraph-properties
-						fo:text-align="left" style:justify-single-word="false" />
+						fo:text-align="left" style:justify-single-word="false"
+						fo:margin-bottom="0.33cm" fo:margin-top="0.33cm" fo:margin-right="0.15cm"
+						fo:margin-left="0.15cm" />
 					<style:text-properties fo:font-size="10pt"
 						fo:font-weight="normal" fo:color="black" />
 				</style:style>
@@ -423,11 +447,7 @@
 	<xsl:template name="series">
 		<table:table table:name="TableauSeriesHead"
 			table:style-name="Tableau1">
-			<!-- <table:table-column table:style-name="separatingColumn"/> -->
-			<!-- <table:table-column /> -->
-			<!-- <table:table-column table:style-name="separatingColumn"/> -->
 			<table:table-row>
-				<!-- <table:table-cell table:style-name="separatingColumn" /> -->
 				<table:table-cell>
 					<text:p text:style-name="T2">
 						Informations sur la série:
@@ -438,32 +458,31 @@
 						<xsl:value-of select="$fileSeries/Series/prefLabelLg2" />
 					</text:p>
 				</table:table-cell>
-				<!-- <table:table-cell table:style-name="separatingColumn" /> -->
 			</table:table-row>
 		</table:table>
 		<table:table table:name="TableauSeries" table:style-name="Tableau1">
-			<table:table-column />
-			<table:table-column table:style-name="separatingColumn" />
-			<table:table-column />
+			<table:table-column table:style-name="Tableau3.A" />
+			<table:table-column table:style-name="Tableau3.B" />
+			<table:table-column table:style-name="Tableau3.C" />
 			<table:table-row>
 				<!-- français -->
 				<table:table-cell table:style-name="framedCell">
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Nom court'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/altLabelLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Résumé'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/abstractLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Historique'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/historyNoteLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
@@ -496,13 +515,13 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Famille parente'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/family/labelLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Opérations filles'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/operation/labelLg1"></xsl:value-of>
 					</text:p>
 				</table:table-cell>
@@ -513,19 +532,19 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Short name'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/altLabelLg2"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Summary'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/abstractLg2"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'History'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/historyNoteLg2"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
@@ -543,35 +562,24 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Indicators produced'"></xsl:value-of>
 					</text:p>
-
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Parent Family'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries/Series/family/labelLg2"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Daughter operations'"></xsl:value-of>
 					</text:p>
-					<text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileSeries//operation/labelLg2"></xsl:value-of>
 					</text:p>
 				</table:table-cell>
-
-				<xsl:value-of select="altLabelLg1"></xsl:value-of>
-				<xsl:value-of select="altLabelLg2"></xsl:value-of>
-				<xsl:value-of select="abstractLg1"></xsl:value-of>
-				<xsl:value-of select="abstractLg2"></xsl:value-of>
-				<xsl:value-of select="family/labelLg1"></xsl:value-of>
-				<xsl:value-of select="family/labelLg2"></xsl:value-of>
-				<xsl:value-of select="accrualPeriodicityCode"></xsl:value-of>
-				<xsl:value-of select="creator"></xsl:value-of>
-				<xsl:value-of select="contributor"></xsl:value-of>
 			</table:table-row>
 		</table:table>
 	</xsl:template>
 
-
+	<!-- Deprecated -->
 	<xsl:template name="seriesForOperation">
 		<text:p text:style-name="T2">
 			Informations sur la série:
@@ -623,23 +631,23 @@
 			</table:table-row>
 		</table:table>
 		<table:table>
-			<table:table-column />
-			<table:table-column fo:column-width="0.381cm" />
-			<table:table-column />
+			<table:table-column table:style-name="Tableau3.A" />
+			<table:table-column table:style-name="Tableau3.B" />
+			<table:table-column table:style-name="Tableau3.C" />
 			<table:table-row>
 				<table:table-cell table:style-name="framedCell">
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Nom court
 					</text:p>
 					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileTarget/Operation/altLabelLg1"></xsl:value-of>
 					</text:p>
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Liens
 					</text:p>
 					<text:p text:style-name="RubricItem">
 					</text:p>
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Série parente
 					</text:p>
 					<text:p text:style-name="RubricItem">
@@ -648,18 +656,18 @@
 				</table:table-cell>
 				<table:table-cell />
 				<table:table-cell table:style-name="framedCell">
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Short name
 					</text:p>
 					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="$fileTarget/Operation/altLabelLg2"></xsl:value-of>
 					</text:p>
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Links
 					</text:p>
 					<text:p text:style-name="RubricItem">
 					</text:p>
-					<text:p text:style-name="RubricHead">
+					<text:p text:style-name="attribute">
 						Parent series
 					</text:p>
 					<text:p text:style-name="RubricItem">
@@ -671,13 +679,128 @@
 	</xsl:template>
 
 	<xsl:template name="indicator">
-		<xsl:value-of select="'coucou indicator'" />
-		<xsl:value-of select="prefLabelLg1"></xsl:value-of>
-		<xsl:value-of select="prefLabelLg2"></xsl:value-of>
-		<xsl:value-of select="altLabelLg1"></xsl:value-of>
-		<xsl:value-of select="altLabelLg2"></xsl:value-of>
-		<xsl:value-of select="abstractLg1"></xsl:value-of>
-		<xsl:value-of select="abstractLg2"></xsl:value-of>
+		<table:table table:name="TableauIndicatorHead"
+			table:style-name="Tableau1">
+			<table:table-row>
+				<table:table-cell>
+					<text:p text:style-name="T2">
+						Informations sur l'indicateur:
+						<xsl:value-of select="$fileTarget/Indicator/prefLabelLg1" />
+					</text:p>
+					<text:p text:style-name="T2En">
+						Informations about the indicator:
+						<xsl:value-of select="$fileTarget/Indicator/prefLabelLg2" />
+					</text:p>
+				</table:table-cell>
+			</table:table-row>
+		</table:table>
+
+		<table:table table:name="TableauIndicator"
+			table:style-name="Tableau1">
+			<table:table-column table:style-name="Tableau3.A" />
+			<table:table-column table:style-name="Tableau3.B" />
+			<table:table-column table:style-name="Tableau3.C" />
+			<table:table-row>
+				<!-- français -->
+				<table:table-cell table:style-name="framedCell">
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Nom court'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/altLabelLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Résumé'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/abstractLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Historique'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/historyNoteLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Fréquence de diffusion'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Organisme responsable'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Propriétaire'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Partenaires'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Succède à'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Remplacée par'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Produit de'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Séries ou Indicateurs liés'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/operation/labelLg1"></xsl:value-of>
+					</text:p>
+				</table:table-cell>
+				<!-- séparation -->
+				<table:table-cell table:style-name="separatingColumn" />
+				<!-- english -->
+				<table:table-cell table:style-name="framedCell">
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Short name'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/altLabelLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Summary'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/abstractLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'History'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/historyNoteLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Frequency of dissemination'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Organisation in charge'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Owner'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Partners'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Replaces'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Remplaced by'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Produced from'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Related series or indicators'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/operation/labelLg1"></xsl:value-of>
+					</text:p>
+				</table:table-cell>
+			</table:table-row>
+		</table:table>
 	</xsl:template>
 
 
