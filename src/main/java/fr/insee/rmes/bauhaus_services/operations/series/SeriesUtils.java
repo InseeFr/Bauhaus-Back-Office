@@ -90,7 +90,8 @@ public class SeriesUtils extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
 			addOneOrganizationLink(series.get(Constants.ID).toString(), series, INSEE.DATA_COLLECTOR);
-			addOneOrganizationLink(series.get(Constants.ID).toString(), series, DCTERMS.PUBLISHER);
+			addSeriesCreators(series.get(Constants.ID).toString(), series);
+			addSeriesPublishers(series.get(Constants.ID).toString(), series);
 			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());

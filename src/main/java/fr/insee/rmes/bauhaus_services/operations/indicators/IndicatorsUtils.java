@@ -173,6 +173,7 @@ public class IndicatorsUtils  extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject indicator = resQuery.getJSONObject(i);
 			addOneOrganizationLink(indicator.get(Constants.ID).toString(),indicator, INSEE.DATA_COLLECTOR);
+			addIndicatorCreators(indicator.get(Constants.ID).toString(),indicator);
 			result.put(indicator);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());

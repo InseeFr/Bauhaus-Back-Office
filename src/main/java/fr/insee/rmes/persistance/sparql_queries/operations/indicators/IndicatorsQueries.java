@@ -58,9 +58,11 @@ public class IndicatorsQueries {
 
 	public static String indicatorsQueryForSearch() {
 	return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?altLabelLang1;separator=' || ') as ?altLabelLg1) ?altLabelLg2  ?abstractLg1 ?abstractLg2  "
-			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher ?creator  ?idSims  ?validationState  "
+			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher  ?idSims  ?validationState  "
 			+ "WHERE {  \r\n" 
-			+ "?indic a insee:StatisticalIndicator .BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . ?indic skos:prefLabel ?prefLabelLg1 \r\n" 
+			+ "?indic a insee:StatisticalIndicator ."
+			+ "BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . "
+					+ "?indic skos:prefLabel ?prefLabelLg1 \r\n" 
 			+ "FILTER (lang(?prefLabelLg1) = 'fr') \r\n" 
 			+ " OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \r\n" 
 			+ "FILTER (lang(?prefLabelLg2) = 'en') } \r\n" 
@@ -84,15 +86,13 @@ public class IndicatorsQueries {
 			+ "OPTIONAL {?indic dcterms:publisher ?uriPublisher . \r\n" 
 			+ "?uriPublisher dcterms:identifier  ?publisher . \r\n" 
 			+ "}   \r\n" 
-			+ "OPTIONAL {?indic dc:creator ?creator . \r\n" 
-			+ "}   \r\n" 
 			+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport . ?report sdmx-mm:target ?indic  BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \r\n" 
 			+ "} \r\n" 
 			+ "OPTIONAL {?indic insee:validationState ?validationState . \r\n" 
 			+ "}   \r\n" 
 			+ "} \r\n" 
 			+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLang1 ?altLabelLg2 ?abstractLg1 ?abstractLg2 ?historyNoteLg1 ?historyNoteLg2  "
-			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher ?creator  ?idSims  ?validationState \n";	
+			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher  ?idSims  ?validationState \n";	
 		
 	}
 

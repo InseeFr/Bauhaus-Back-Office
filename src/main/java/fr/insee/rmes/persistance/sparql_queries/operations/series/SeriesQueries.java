@@ -148,7 +148,7 @@ public class SeriesQueries {
 	 * @return
 	 */
 	public static String getPublishers(String id) {
-		return "SELECT ?publishers\n" 
+		return "SELECT distinct ?publisher \n" 
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
@@ -156,7 +156,7 @@ public class SeriesQueries {
 				+ "WHERE { \n"
 					+ "?series a insee:StatisticalOperationSeries . \n" 
 					+ "?series dcterms:publisher ?uri  . \n" 
-					+ "?uri dcterms:identifier  ?publishers . \n" 
+					+ "?uri dcterms:identifier  ?publisher . \n" 
 					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
 				+ "} ";
 	}
