@@ -537,11 +537,12 @@ public class DocumentationsUtils extends RdfService{
 		}
 
 		if (targetType=="SERIES") {
-			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase)), "UTF-8");
-			Files.copy(is, tempFile, options);
+			String response=XMLUtils.produceXMLResponse(
+					seriesUtils.getSeriesById(idDatabase));
+			is = IOUtils.toInputStream(response, "UTF-8");
 			Files.copy(is, accessoryTempFile, options);
-
+			is2 = IOUtils.toInputStream(response, "UTF-8");
+			Files.copy(is2, tempFile, options);
 		}
 
 		if (targetType=="INDICATOR") {
