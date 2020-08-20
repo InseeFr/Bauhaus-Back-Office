@@ -63,10 +63,10 @@ public class Series {
 	public List<String> creator;
 
 	@Schema(description = "Identifiers of contributors")
-	public List<OperationsLink> contributor;
+	public List<OperationsLink> contributors;
 
 	@Schema(description = "Identifiers of data collector")
-	public List<OperationsLink> dataCollector;
+	public List<OperationsLink> dataCollectors;
 
 	@Schema(description = "Identifier of gestionnaire")
 	@JsonFormat(shape = Shape.ARRAY)
@@ -154,12 +154,12 @@ public class Series {
 		return accrualPeriodicityList;
 	}
 
-	public List<OperationsLink> getContributor() {
-		return contributor;
+	public List<OperationsLink> getContributors() {
+		return contributors;
 	}
 
-	public List<OperationsLink> getDataCollector() {
-		return dataCollector;
+	public List<OperationsLink> getDataCollectors() {
+		return dataCollectors;
 	}
 
 	public List<String> getGestionnaires() {
@@ -258,12 +258,12 @@ public class Series {
 		this.creator = Arrays.asList(creator);
 	}
 
-	public void setContributor(List<OperationsLink> contributor) {
-		this.contributor = contributor;
+	public void setContributors(List<OperationsLink> contributor) {
+		this.contributors = contributor;
 	}
 
-	public void setDataCollector(List<OperationsLink> dataCollector) {
-		this.dataCollector = dataCollector;
+	public void setDataCollectors(List<OperationsLink> dataCollectors) {
+		this.dataCollectors = dataCollectors;
 	}
 
 	public void setGestionnaires(List<String> gestionnaires) {

@@ -1,8 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -27,12 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -40,7 +39,6 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
-import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PROV;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -57,32 +55,128 @@ public class IndicatorsUtils  extends RdfService {
 
 	@Autowired
 	OrganizationsService organizationsService;
-	
+
 	@Autowired
 	IndicatorPublication indicatorPublication;
 
+	@Autowired
+	FamOpeSerUtils famOpeSerUtils;
 
 	public Indicator getIndicatorById(String id) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id));
 	}
-	
-	private Indicator buildIndicatorFromJson(JSONObject indicatorJson) throws RmesException {
-		 ObjectMapper mapper = new ObjectMapper();
-		  
-		 Indicator indicator = new Indicator();
+
+	private Indicator buildIndicatorFromJson2(JSONObject indicatorJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		String id= indicatorJson.getString("id");
+		Indicator indicator = new Indicator(id);
 		try {
 			indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed");
 			e.printStackTrace();
 		}
-		 return indicator;
+		return indicator;
 	}
+
+	private Indicator buildIndicatorFromJson(JSONObject jsonIndicator) throws RmesException, JSONException {
+		String id= jsonIndicator.getString("id");
+		Indicator indicator = new Indicator(id);
+		if(jsonIndicator.has("prefLabelLg1")) {
+			indicator.setPrefLabelLg1(jsonIndicator.getString("prefLabelLg1"));
+		}
+		if(jsonIndicator.has("prefLabelLg2")) {
+			indicator.setPrefLabelLg2(jsonIndicator.getString("prefLabelLg2")); 
+		}
+		if(jsonIndicator.has("altLabelLg1")) {
+			indicator.setAltLabelLg1(jsonIndicator.getString("altLabelLg1"));
+		}
+		if(jsonIndicator.has("altLabelLg2")) {
+			indicator.setAltLabelLg2(jsonIndicator.getString("altLabelLg2"));
+		}
+		if(jsonIndicator.has("abstractLg1")) {
+			indicator.setAbstractLg1(jsonIndicator.getString("abstractLg1"));
+		}
+		if(jsonIndicator.has("abstractLg2")) {
+			indicator.setAbstractLg2(jsonIndicator.getString("abstractLg2"));
+		}
+		if(jsonIndicator.has("historyNoteLg1")) {
+			indicator.setHistoryNoteLg1(jsonIndicator.getString("historyNoteLg1"));
+		}
+		if(jsonIndicator.has("historyNoteLg2")) {
+			indicator.setHistoryNoteLg2(jsonIndicator.getString("historyNoteLg2"));
+		}
+		if(jsonIndicator.has("accrualPeriodicityCode")) {
+			indicator.setAccrualPeriodicityCode(jsonIndicator.getString("accrualPeriodicityCode"));
+		}
+		if(jsonIndicator.has("accrualPeriodicityList")) {
+			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
+		}
+		if(jsonIndicator.has("gestionnaires")) {
+			indicator.setGestionnaires(famOpeSerUtils.buildStringListFromJson(
+					jsonIndicator.getJSONArray("gestionnaires")));
+		}
+		if(jsonIndicator.has("idSims")) {
+			indicator.setIdSims(jsonIndicator.getString("idSims"));
+		}
+		if(jsonIndicator.has("contributors")) {
+			List<OperationsLink> contributors = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray("contributors"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						contributors.add((OperationsLink) o);		
+					}
+					indicator.setContributors(contributors);
+		}
+		if(jsonIndicator.has("seeAlso")) {
+			List<OperationsLink> seeAlsoes = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray("seeAlso"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						seeAlsoes.add((OperationsLink) o);		
+					}
+					indicator.setSeeAlso(seeAlsoes);
+		}
+		if(jsonIndicator.has("replaces")) {
+			List<OperationsLink> replacesList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray("replaces"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						replacesList.add((OperationsLink) o);		
+					}
+					indicator.setReplaces(replacesList);
+		}
+		if(jsonIndicator.has("isReplacedBy")) {
+			List<OperationsLink> isReplacedByList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray("isReplacedBy"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						isReplacedByList.add((OperationsLink) o);		
+					}
+					indicator.setIsReplacedBy(isReplacedByList);
+		}
+		if(jsonIndicator.has("getWasGeneratedBy")) {
+			List<OperationsLink> getWasGeneratedByList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray("getWasGeneratedBy"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						getWasGeneratedByList.add((OperationsLink) o);		
+					}
+					indicator.setWasGeneratedBy(getWasGeneratedByList);
+		}
+		return indicator;
+	}
+
 
 	public JSONObject getIndicatorJsonById(String id) throws RmesException{
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
-			}
+		}
 		JSONObject indicator = repoGestion.getResponseAsObject(IndicatorsQueries.indicatorQuery(id));
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
@@ -187,9 +281,9 @@ public class IndicatorsUtils  extends RdfService {
 
 	public String getIndicatorsForSearch() throws RmesException {
 		logger.info("Starting to get indicators list");
-    
+
 		JSONArray resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch());
-		
+
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject indicator = resQuery.getJSONObject(i);
@@ -198,7 +292,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
 	}
-	
+
 	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
 		Model model = new LinkedHashModel();
 		IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
@@ -219,7 +313,7 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.productsGraph());
 
 		RdfUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, RdfUtils.productsGraph());
-		List<OperationsLink> contributors = indicator.getContributor();
+		List<OperationsLink> contributors = indicator.getContributors();
 		if (contributors != null){//partenaires
 			for (OperationsLink contributor : contributors) {
 				RdfUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, RdfUtils.productsGraph());
@@ -232,7 +326,7 @@ public class IndicatorsUtils  extends RdfService {
 				RdfUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, RdfUtils.productsGraph());
 			}
 		}
-		
+
 		String accPeriodicityUri = codeListService.getCodeUri(indicator.getAccrualPeriodicityList(), indicator.getAccrualPeriodicityCode());
 		RdfUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
 
@@ -254,7 +348,7 @@ public class IndicatorsUtils  extends RdfService {
 		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-	
+
 	public String setIndicatorValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
