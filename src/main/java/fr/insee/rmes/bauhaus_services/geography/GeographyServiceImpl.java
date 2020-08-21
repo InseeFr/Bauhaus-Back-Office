@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
@@ -89,8 +90,8 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	private IRI getGeoUriFromId(String id) throws RmesException {
 		IRI uri ;
 		JSONObject uriInCog = repoGestion.getResponseAsObject(GeoQueries.getGeoUriIfExists(id));
-		if (uriInCog.has("uri") && StringUtils.isNotBlank(uriInCog.get("uri").toString())) {
-			uri = RdfUtils.createIRI(uriInCog.get("uri").toString());
+		if (uriInCog.has(Constants.URI) && StringUtils.isNotBlank(uriInCog.get(Constants.URI).toString())) {
+			uri = RdfUtils.createIRI(uriInCog.get(Constants.URI).toString());
 		}else {
 			uri = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, id);
 		}
@@ -98,7 +99,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	}
 
 	private void addUnionsAndDifferenceToJsonObject(JSONObject feature) throws RmesException {
-		String uriFeature = feature.getString("uri");
+		String uriFeature = feature.getString(Constants.URI);
 		JSONArray unions = repoGestion.getResponseAsArray(GeoQueries.getUnionsForAFeatureQuery(uriFeature));
 		feature.put("unions", unions);
 		JSONObject diff = repoGestion.getResponseAsObject(GeoQueries.getDifferenceForAFeatureQuery(uriFeature));

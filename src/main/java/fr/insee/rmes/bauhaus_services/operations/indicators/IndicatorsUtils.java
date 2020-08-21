@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -113,7 +114,7 @@ public class IndicatorsUtils  extends RdfService {
 			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
 		}
 		if(jsonIndicator.has("gestionnaires")) {
-			indicator.setGestionnaires(famOpeSerUtils.buildStringListFromJson(
+			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
 					jsonIndicator.getJSONArray("gestionnaires")));
 		}
 		if(jsonIndicator.has("idSims")) {
@@ -181,15 +182,15 @@ public class IndicatorsUtils  extends RdfService {
 		XhtmlToMarkdownUtils.convertJSONObject(indicator);
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
-		addIndicatorGestionnaires(id, indicator);
+		addIndicatorCreators(id, indicator);
 
 		return indicator;
 	}
 
 
-	private void addIndicatorGestionnaires(String id, JSONObject indicator) throws RmesException {
-		JSONArray gestionnaires = repoGestion.getResponseAsJSONList(IndicatorsQueries.getGestionnaires(id));
-		indicator.put("gestionnaires", gestionnaires);
+	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
+		JSONArray creators = repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id));
+		indicator.put("proprietaires", creators);
 	}
 
 
@@ -288,6 +289,7 @@ public class IndicatorsUtils  extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject indicator = resQuery.getJSONObject(i);
 			addOneOrganizationLink(indicator.get(Constants.ID).toString(),indicator, INSEE.DATA_COLLECTOR);
+			addIndicatorCreators(indicator.get(Constants.ID).toString(),indicator);
 			result.put(indicator);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -312,18 +314,19 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.productsGraph());
 
-		RdfUtils.addTripleUri(indicURI, DCTERMS.CREATOR, organizationsService.getOrganizationUriById(indicator.getCreator()), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(indicator.getPublisher()), model, RdfUtils.productsGraph());
 		List<OperationsLink> contributors = indicator.getContributors();
+
 		if (contributors != null){//partenaires
 			for (OperationsLink contributor : contributors) {
 				RdfUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, RdfUtils.productsGraph());
 			}
 		}
 
-		List<String> gestionnaires=indicator.getGestionnaires();
-		if (gestionnaires!=null) {
-			for (String gestionnaire : gestionnaires) {
-				RdfUtils.addTripleString(indicURI, INSEE.GESTIONNAIRE, gestionnaire, model, RdfUtils.productsGraph());
+		List<String> creators=indicator.getCreators();
+		if (creators!=null) {
+			for (String creator : creators) {
+				RdfUtils.addTripleString(indicURI, DC.CREATOR, creator, model, RdfUtils.productsGraph());
 			}
 		}
 
@@ -348,7 +351,6 @@ public class IndicatorsUtils  extends RdfService {
 		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-
 	public String setIndicatorValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
@@ -369,8 +371,6 @@ public class IndicatorsUtils  extends RdfService {
 		return id;
 	}
 
-
-
 	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
 		if (links != null) {
 			for (OperationsLink oneLink : links) {
@@ -380,14 +380,13 @@ public class IndicatorsUtils  extends RdfService {
 		}
 	}
 
-
 	public String createID() throws RmesException {
 		logger.info("Generate indicator id");
 		JSONObject json = repoGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
 		if (json.length()==0) {return null;}
 		String id = json.getString(Constants.ID);
-		if (id.equals("undefined")) {return null;}
+		if (id.equals(Constants.UNDEFINED)) {return null;}
 		int idInt = Integer.parseInt(id.substring(1))+1;
 		return "p" + idInt;
 	}

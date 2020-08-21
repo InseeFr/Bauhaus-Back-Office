@@ -6,6 +6,7 @@ import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.ORG;
@@ -21,7 +22,7 @@ public enum RangeType {
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),
 	CODELIST(null,"CODE_LIST"),
 	GEOGRAPHY(GEO.FEATURE,"GEOGRAPHY"),
-	UNDEFINED(null,"undefined");
+	UNDEFINED(null,Constants.UNDEFINED);
 	
 	
 

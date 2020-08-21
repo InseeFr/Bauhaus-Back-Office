@@ -33,7 +33,6 @@ public class INSEE {
 	public static final IRI DOCUMENT ;
 	
 	public static final IRI DATA_COLLECTOR;
-	public static final IRI GESTIONNAIRE;
 	
 	
 	/*TEST REACT*/
@@ -72,7 +71,6 @@ public class INSEE {
 
 
 		DATA_COLLECTOR = f.createIRI(NAMESPACE,"dataCollector");
-		GESTIONNAIRE = f.createIRI(NAMESPACE,"gestionnaire");
 
 		IDENTIFIANT_METIER = f.createIRI(NAMESPACE,"identifiantMetier");
 

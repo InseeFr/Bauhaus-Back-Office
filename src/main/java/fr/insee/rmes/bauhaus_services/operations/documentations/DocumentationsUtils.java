@@ -72,7 +72,7 @@ public class DocumentationsUtils extends RdfService{
 
 	private static final String ID_SERIES = "idSeries";
 
-	private static final String CREATOR = "creator";
+	private static final String PUBLISHER = "publisher";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
@@ -450,7 +450,7 @@ public class DocumentationsUtils extends RdfService{
 			return "1000";
 		}
 		String id = json.getString("idSims");
-		if (id.equals("undefined")) {
+		if (id.equals(Constants.UNDEFINED)) {
 			return "1000";
 		}
 		int newId = Integer.parseInt(id) + 1;
@@ -492,13 +492,15 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
+
 				stamp = seriesUtils.getSeriesJsonById(
 						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
-						.getString(CREATOR);
+						.getString(PUBLISHER);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(CREATOR);
+				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(PUBLISHER);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(CREATOR);
+				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(PUBLISHER);
+
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
