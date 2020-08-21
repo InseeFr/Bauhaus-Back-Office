@@ -113,8 +113,8 @@ public class IndicatorsUtils  extends RdfService {
 		if(jsonIndicator.has("accrualPeriodicityList")) {
 			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
 		}
-		if(jsonIndicator.has("gestionnaires")) {
-			indicator.setGestionnaires(famOpeSerUtils.buildStringListFromJson(
+		if(jsonIndicator.has("proprietaires")) {
+			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
 					jsonIndicator.getJSONArray("gestionnaires")));
 		}
 		if(jsonIndicator.has("idSims")) {
@@ -315,7 +315,7 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.productsGraph());
 
 		RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(indicator.getPublisher()), model, RdfUtils.productsGraph());
-		List<OperationsLink> contributors = indicator.getContributor();
+		List<OperationsLink> contributors = indicator.getContributors();
 		if (contributors != null){//partenaires
 			for (OperationsLink contributor : contributors) {
 				RdfUtils.addTripleUri(indicURI, DCTERMS.CONTRIBUTOR,organizationsService.getOrganizationUriById(contributor.getId()),model, RdfUtils.productsGraph());

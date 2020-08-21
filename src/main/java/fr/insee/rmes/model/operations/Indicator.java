@@ -214,9 +214,6 @@ public class Indicator {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setCreator(String creator) {
-		this.creator = creator;
-	}
 
 	public void setContributors(List<OperationsLink> contributors) {
 		this.contributors = contributors;

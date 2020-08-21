@@ -10,8 +10,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -28,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -493,7 +490,7 @@ public class DocumentationsUtils extends RdfService{
 
 			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationById(idOperation).getJSONObject("series").getString(ID_SERIES))
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
 						.getString(PUBLISHER);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(PUBLISHER);
@@ -570,11 +567,21 @@ public class DocumentationsUtils extends RdfService{
 
 	public MAS buildMSDRubricFromJson(JSONObject jsonMsdRubric) {
 		MAS msd = new MAS();
-		if (jsonMsdRubric.has("idMas"))		msd.setIdMas(jsonMsdRubric.getString("idMas"));
-		if (jsonMsdRubric.has("masLabelLg1"))		msd.setMasLabelLg1(jsonMsdRubric.getString("masLabelLg1"));
-		if (jsonMsdRubric.has("masLabelLg2"))		msd.setMasLabelLg2(jsonMsdRubric.getString("masLabelLg2"));
-		if (jsonMsdRubric.has("idParent"))		msd.setIdParent(jsonMsdRubric.getString("idParent"));
-		if (jsonMsdRubric.has("isPresentational"))		msd.setIsPresentational(jsonMsdRubric.getBoolean("isPresentational"));
+		if (jsonMsdRubric.has("idMas")) {
+			msd.setIdMas(jsonMsdRubric.getString("idMas"));
+		}
+		if (jsonMsdRubric.has("masLabelLg1")) {
+			msd.setMasLabelLg1(jsonMsdRubric.getString("masLabelLg1"));
+		}
+		if (jsonMsdRubric.has("masLabelLg2")) {
+			msd.setMasLabelLg2(jsonMsdRubric.getString("masLabelLg2"));
+		}
+		if (jsonMsdRubric.has("idParent")) {
+			msd.setIdParent(jsonMsdRubric.getString("idParent"));
+		}
+		if (jsonMsdRubric.has("isPresentational")) {
+			msd.setIsPresentational(jsonMsdRubric.getBoolean("isPresentational"));
+		}
 
 		return msd ;
 	}
