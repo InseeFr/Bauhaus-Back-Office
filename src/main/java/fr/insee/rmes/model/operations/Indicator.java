@@ -45,15 +45,15 @@ public class Indicator {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@Schema(description = "Identifier of creator")
-	public String creator;
+	@Schema(description = "Identifier of publisher")
+	public String publisher;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
 	
-	@Schema(description = "Identifiers of gestionnaires")
+	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
-	public List<String> gestionnaires;
+	public List<String> creators;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -133,8 +133,8 @@ public class Indicator {
 	}
 
 
-	public String getCreator() {
-		return creator;
+	public String getPublisher() {
+		return publisher;
 	}
 
 
@@ -166,12 +166,12 @@ public class Indicator {
 		return idSims;
 	}
 
-	public List<String> getGestionnaires() {
-		return gestionnaires;
+	public List<String> getCreators() {
+		return creators;
 	}
 
-	public void setGestionnaires(List<String> gestionnaires) {
-		this.gestionnaires = gestionnaires;
+	public void setCreators(List<String> creators) {
+		this.creators = creators;
 	}
 
 	public void setPrefLabelLg1(String prefLabelLg1) {

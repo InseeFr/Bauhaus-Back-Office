@@ -1,4 +1,4 @@
-WITH <${graph}>
+WITH <${DOCUMENTS_GRAPH}>
 
 DELETE  {
 	 

@@ -39,7 +39,7 @@ public class StructureComponentUtils extends RdfService {
     static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
 
     public String formatComponent(String id, JSONObject response) throws RmesException {
-        response.put("id", id);
+        response.put(Constants.ID, id);
         addCodeListRange(response);
         addStructures(response, id);
         return response.toString();
@@ -174,7 +174,7 @@ public class StructureComponentUtils extends RdfService {
             return prefix + "1000";
         }
         String id = json.getString(Constants.ID);
-        if (id.equals("undefined")) {
+        if (id.equals(Constants.UNDEFINED)) {
             return prefix + "1000";
         }
         return prefix + (Integer.parseInt(id) + 1);

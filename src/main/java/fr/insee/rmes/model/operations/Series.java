@@ -59,8 +59,8 @@ public class Series {
 	public String accrualPeriodicityList;
 
 	@JsonFormat(shape = Shape.ARRAY)
-	@Schema(description = "Identifier of creator")
-	public List<String> creator;
+	@Schema(description = "Identifier of publisher")
+	public List<String> publisher;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
@@ -68,9 +68,9 @@ public class Series {
 	@Schema(description = "Identifiers of data collector")
 	public List<OperationsLink> dataCollectors;
 
-	@Schema(description = "Identifier of gestionnaire")
+	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
-	public List<String> gestionnaires;
+	public List<String> creators;
 	
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -162,8 +162,8 @@ public class Series {
 		return dataCollectors;
 	}
 
-	public List<String> getGestionnaires() {
-		return gestionnaires;
+	public List<String> getCreators() {
+		return creators;
 	}
 
 	public List<OperationsLink> getSeeAlso() {
@@ -182,8 +182,8 @@ public class Series {
 		return idSims;
 	}
 
-	public List<String> getCreator() {
-		return creator;
+	public List<String> getPublisher() {
+		return publisher;
 	}
 
 	public List<OperationsLink> getGenerates() {
@@ -254,8 +254,8 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setCreator(String[] creator) {
-		this.creator = Arrays.asList(creator);
+	public void setPublisher(String[] publisher) {
+		this.publisher = Arrays.asList(publisher);
 	}
 
 	public void setContributors(List<OperationsLink> contributor) {
@@ -266,8 +266,8 @@ public class Series {
 		this.dataCollectors = dataCollectors;
 	}
 
-	public void setGestionnaires(List<String> gestionnaires) {
-		this.gestionnaires = gestionnaires;
+	public void setCreators(List<String> creators) {
+		this.creators = creators;
 	}
 
 	public void setSeeAlso(List<OperationsLink> seeAlso) {

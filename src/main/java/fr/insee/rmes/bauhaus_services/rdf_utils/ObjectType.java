@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -34,7 +35,7 @@ public enum ObjectType {
 	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.STRUCTURES_COMPONENTS_BASE_URI + "dimension"),
 
 
-	UNDEFINED("undefined",null, "");
+	UNDEFINED(Constants.UNDEFINED,null, "");
 	
 	
 

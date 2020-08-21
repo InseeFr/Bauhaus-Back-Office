@@ -2,6 +2,8 @@ SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?max
 	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
+	FROM <${ORG_INSEE_GRAPH}>
+
     FROM NAMED  <${MSD_GRAPH}> 
  	FROM NAMED  <${COG_GRAPH}>
 	FROM NAMED  <${GEO_SIMS_GRAPH}>

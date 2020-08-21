@@ -284,9 +284,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getIndicatorsForSearch() throws RmesException {
-		logger.info("Starting to get indicators list");
-		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQueryForSearch()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+			return indicatorsUtils.getIndicatorsForSearch();
 	}
 
 	@Override

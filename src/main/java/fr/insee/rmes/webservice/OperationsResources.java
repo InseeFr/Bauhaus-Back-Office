@@ -674,8 +674,8 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-			))})
-	public Response getMetadataReportOwner(@PathParam("id") String id) {
+	))})
+	public Response getMetadataReportOwner(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getMetadataReportOwner(id);

@@ -1,8 +1,5 @@
 package fr.insee.rmes.utils;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,6 +8,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DateUtils {
 
@@ -60,7 +60,7 @@ public class DateUtils {
         return convertDateTimeToDate(parseDateTime(dateStr));
     }
 
-    public static Date convertDateTimeToDate(LocalDateTime dateTime) {
+    private static Date convertDateTimeToDate(LocalDateTime dateTime) {
         return Date
                 .from(dateTime.atZone(ZoneId.systemDefault())
                         .toInstant());
@@ -76,7 +76,7 @@ public class DateUtils {
             LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
             return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
-            logger.warn("Date can't be parse : " + dateStr + e.getMessage());
+            logger.warn("Date can't be parse : {} {}" , dateStr, e.getMessage());
             return dateStr;
         }
     }

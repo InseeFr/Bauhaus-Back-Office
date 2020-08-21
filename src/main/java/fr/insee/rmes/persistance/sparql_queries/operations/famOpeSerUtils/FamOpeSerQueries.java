@@ -34,7 +34,7 @@ public class FamOpeSerQueries {
 	 */
 	public static String checkIfOperationExists(String uri) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uri", uri);
+		params.put(Constants.URI, uri);
 		return buildOperationRequest("checkIfFamSerOpeExistsQuery.ftlh", params);	
 	}
 	

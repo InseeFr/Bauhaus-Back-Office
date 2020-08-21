@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.geography;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -20,7 +21,7 @@ public class GeoQueries {
 	 */
 	public static String getGeoUriIfExists(String id) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("id", id);
+		params.put(Constants.ID, id);
 		return  buildRequest("getGeoUriIfExists.ftlh", params);
 	}
 	
@@ -53,7 +54,7 @@ public class GeoQueries {
 
 	private static String getUnionOrDifferenceForFeature(String uriFeature, boolean getUnion) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uri", uriFeature);
+		params.put(Constants.URI, uriFeature);
 		params.put("union", getUnion);
 		return  buildRequest("getUnionOrDifferenceForUri.ftlh", params);
 	}
