@@ -114,9 +114,12 @@ public class SeriesUtils extends RdfService {
 		if(seriesJson.has("accrualPeriodicityList")) {
 			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
 		}
-		if(seriesJson.has("gestionnaires")) {
+//		if(seriesJson.has("gestionnaires")) {
+//			series.setCreators(famOpeSerUtils.buildStringListFromJson(
+//					seriesJson.getJSONArray("gestionnaires")));
+		if(seriesJson.has("proprietaires")) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("gestionnaires")));
+					seriesJson.getJSONArray("proprietaires")));
 		}
 		if(seriesJson.has("idSims")) {
 			series.setIdSims(seriesJson.getString("idSims"));
