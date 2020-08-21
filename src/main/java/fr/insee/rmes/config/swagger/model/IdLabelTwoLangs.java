@@ -48,5 +48,9 @@ public class IdLabelTwoLangs {
 		return this.id;
 	}
 
+	public static String getClassIdLabelTwoLangs() {
+		return "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
+	}
+
 
 }

@@ -70,9 +70,8 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public List<Object> buildObjectListFromJson(JSONArray jsonArray, String className) throws RmesException {
+	public List<Object> buildObjectListFromJson(JSONArray items, String className) throws RmesException {
 		List<Object> result = new ArrayList<Object>();
-		JSONArray items = jsonArray;
 		Class<?> cls = null;
 		try {
 			cls = Class.forName(className);

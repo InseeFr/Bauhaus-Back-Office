@@ -114,12 +114,17 @@ public class SeriesUtils extends RdfService {
 		if(seriesJson.has("accrualPeriodicityList")) {
 			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
 		}
-//		if(seriesJson.has("gestionnaires")) {
+//		if(seriesJson.has("proprietaires")) {
 //			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-//					seriesJson.getJSONArray("gestionnaires")));
-		if(seriesJson.has("proprietaires")) {
+//					seriesJson.getJSONArray("proprietaires")));
+//		}
+		if(seriesJson.has("creators")) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("proprietaires")));
+					seriesJson.getJSONArray("creators")));
+		}
+		if(seriesJson.has("publisher")) {
+			series.setCreators(famOpeSerUtils.buildStringListFromJson(
+					seriesJson.getJSONArray("publisher")));
 		}
 		if(seriesJson.has("idSims")) {
 			series.setIdSims(seriesJson.getString("idSims"));
@@ -127,11 +132,20 @@ public class SeriesUtils extends RdfService {
 		if(seriesJson.has("family")) {
 			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject("family")));
 		}
-
-		if(seriesJson.has("contributors")) {
+		if(seriesJson.has("operations")) {
+			List<IdLabelTwoLangs> operations = new ArrayList<IdLabelTwoLangs>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("operations"),
+					IdLabelTwoLangs.getClassIdLabelTwoLangs());
+					for (Object o:objects){
+						operations.add((IdLabelTwoLangs) o);		
+					}
+					series.setOperations(operations);
+		}
+		if(seriesJson.has("contributor")) {
 			List<OperationsLink> contributors = new ArrayList<OperationsLink>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("contributors"),
+					seriesJson.getJSONArray("contributor"),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						contributors.add((OperationsLink) o);		
@@ -168,16 +182,27 @@ public class SeriesUtils extends RdfService {
 					}
 					series.setIsReplacedBy(isReplacedByList);
 		}
-		if(seriesJson.has("dataCollectors")) {
+		if(seriesJson.has("generates")) {
+			List<OperationsLink> generatesList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("generates"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						generatesList.add((OperationsLink) o);		
+					}
+					series.setIsReplacedBy(generatesList);
+		}
+		if(seriesJson.has("dataCollector")) {
 			List<OperationsLink> dataCollectors = new ArrayList<OperationsLink>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("dataCollectors"),
+					seriesJson.getJSONArray("dataCollector"),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						dataCollectors.add((OperationsLink) o);		
 					}
 					series.setDataCollectors(dataCollectors);
-		}
+		}	
+		
 		return series;
 	}
 
@@ -237,8 +262,10 @@ public class SeriesUtils extends RdfService {
 		addOneTypeOfLink(idSeries, series, DCTERMS.REPLACES);
 		addOneTypeOfLink(idSeries, series, DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
-		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
-		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
+		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
+//		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+//		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
@@ -262,15 +289,15 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-		series.put("proprietaires", creators);
+		series.put("creators", creators);
 	}
 
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
 		if (publishers.length()==1) {
-			series.put("publisher", publishers.get(0));
+			series.put("publishers", publishers.get(0));
 		}else {
-			series.put("publisher", publishers);
+			series.put("publishers", publishers);
 		}
 	}
 

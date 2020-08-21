@@ -59,19 +59,19 @@
 					<style:table-column-properties
 						style:column-width="8.0cm" />
 				</style:style>
-<!-- 				<style:style style:name="TableauMainColumn" -->
-<!-- 					style:family="table-column"> -->
-<!-- 					<style:table-column-properties -->
-<!-- 						style:rel-column-width="21845*" style:column-width="6.5cm" /> -->
-<!-- 				</style:style> -->
-<!-- 				<style:style style:name="TableauSepColumn" style:family="table-column"> -->
-<!-- 					<style:table-column-properties -->
-<!-- 						style:rel-column-width="21845*" style:column-width="1cm" /> -->
-<!-- 				</style:style> -->
-<!-- 				<style:style style:name="separatingColumn" style:family="table-column"> -->
-<!-- 					<style:table-column-properties -->
-<!-- 						style:column-width="0.381cm" /> -->
-<!-- 				</style:style> -->
+				<!-- <style:style style:name="TableauMainColumn" -->
+				<!-- style:family="table-column"> -->
+				<!-- <style:table-column-properties -->
+				<!-- style:rel-column-width="21845*" style:column-width="6.5cm" /> -->
+				<!-- </style:style> -->
+				<!-- <style:style style:name="TableauSepColumn" style:family="table-column"> -->
+				<!-- <style:table-column-properties -->
+				<!-- style:rel-column-width="21845*" style:column-width="1cm" /> -->
+				<!-- </style:style> -->
+				<!-- <style:style style:name="separatingColumn" style:family="table-column"> -->
+				<!-- <style:table-column-properties -->
+				<!-- style:column-width="0.381cm" /> -->
+				<!-- </style:style> -->
 				<style:style style:name="framedCell" style:family="table-cell">
 					<style:table-cell-properties
 						fo:wrap-option="wrap" style:shrink-to-fit="false"
@@ -246,18 +246,18 @@
 					</text:sequence-decls>
 
 					<!-- Essais -->
-					<text:p>
-						<xsl:value-of select="' Series: '" />
-						<xsl:value-of select="$fileSeries/Series/id" />
-						<xsl:value-of select="$fileSeries/Series/prefLabelLg1" />
-						<xsl:value-of select="$accessoryTempFile" />
-					</text:p>
-					<text:p>
-						<xsl:value-of select="' Operation: '" />
-						<xsl:value-of select="$fileTarget/Operation/id" />
-						<xsl:value-of select="$fileTarget/Operation/prefLabelLg1" />
-						<xsl:value-of select="$tempFile" />
-					</text:p>
+					<!-- <text:p> -->
+					<!-- <xsl:value-of select="' Series: '" /> -->
+					<!-- <xsl:value-of select="$fileSeries/Series/id" /> -->
+					<!-- <xsl:value-of select="$fileSeries/Series/prefLabelLg1" /> -->
+					<!-- <xsl:value-of select="$accessoryTempFile" /> -->
+					<!-- </text:p> -->
+					<!-- <text:p> -->
+					<!-- <xsl:value-of select="' Operation: '" /> -->
+					<!-- <xsl:value-of select="$fileTarget/Operation/id" /> -->
+					<!-- <xsl:value-of select="$fileTarget/Operation/prefLabelLg1" /> -->
+					<!-- <xsl:value-of select="$tempFile" /> -->
+					<!-- </text:p> -->
 
 
 					<!-- Header -->
@@ -486,31 +486,117 @@
 						<xsl:value-of select="$fileSeries/Series/historyNoteLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Type d opération'"></xsl:value-of>
+						<xsl:value-of select="'Type d'"></xsl:value-of>
+						&apos;
+						<xsl:value-of select="'opération'" />
 					</text:p>
+					<xsl:if test="$fileSeries/Series/typeCode!=''">
+						<text:p text:style-name="RubricItem">
+							Modalité
+							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
+							de la liste de codes:
+							<xsl:value-of select="$fileSeries/Series/typeList"></xsl:value-of>
+						</text:p>
+					</xsl:if>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Fréquence de collecte des données'"></xsl:value-of>
 					</text:p>
+					<xsl:if test="$fileSeries/Series/accrualPeriodicityCode!=''">
+						<text:p text:style-name="RubricItem">
+							Modalité
+							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityCode"></xsl:value-of>
+							de la liste de codes:
+							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityList"></xsl:value-of>
+						</text:p>
+					</xsl:if>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Organisme responsable'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:for-each select="$fileSeries/Series/publisher/publisher">
+							<xsl:value-of select="labelLg1"></xsl:value-of>
+							<xsl:if test="position() != last()">
+								-
+							</xsl:if>
+						</xsl:for-each>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Partenaires'"></xsl:value-of>
 					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:for-each select="$fileSeries/Series/contributors/contributors">
+							<xsl:value-of select="labelLg1"></xsl:value-of>
+							<xsl:if test="position() != last()">
+								-
+							</xsl:if>
+						</xsl:for-each>
+					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Services collecteurs'"></xsl:value-of>
 					</text:p>
-					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Gestionnaire'"></xsl:value-of>
+					<text:p text:style-name="RubricItem">
+						<xsl:for-each select="$fileSeries/Series/dataCollectors/dataCollectors">
+							<xsl:value-of select="labelLg1"></xsl:value-of>
+							<xsl:if test="position() != last()">
+								-
+							</xsl:if>
+						</xsl:for-each>
 					</text:p>
 					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Propriétaire'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileSeries/Series/creators/creators"></xsl:value-of>
+					</text:p>
+					<!-- <text:p text:style-name="RubricItem"> -->
+					<!-- <xsl:for-each select="$fileSeries/Series/proprietaires/proprietaires"> -->
+					<!-- <xsl:value-of select="labelLg1"></xsl:value-of> -->
+					<!-- </xsl:for-each> -->
+					<!-- </text:p> -->
+					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Succède à'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<!-- Afficher toute la liste! -->
+						<xsl:value-of select="$fileSeries/Series/replaces//labelLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Remplacée par'"></xsl:value-of>
 					</text:p>
+					<text:p text:style-name="RubricItem">
+						<!-- Afficher toute la liste! -->
+						<xsl:value-of select="$fileSeries/Series/isReplacedBy//labelLg1"></xsl:value-of>
+					</text:p>
 					<text:p text:style-name="attribute">
+						<!-- Afficher toute la liste! -->
 						<xsl:value-of select="'Indicateurs produits'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<!-- Afficher toute la liste! -->
+						<xsl:value-of select="$fileSeries/Series/generates//labelLg1"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Séries ou Indicateurs liés'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						Séries:
+						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
+							<xsl:if test="type = 'series'">
+								<xsl:value-of select="labelLg1"></xsl:value-of>
+								<xsl:if test="position() != last()">
+									-
+								</xsl:if>
+							</xsl:if>
+						</xsl:for-each>
+						Indicateurs:
+						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
+							<xsl:if test="type = 'indicator'">
+								<xsl:value-of select="labelLg1"></xsl:value-of>
+								<xsl:if test="position() != last()">
+									-
+								</xsl:if>
+							</xsl:if>
+						</xsl:for-each>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Famille parente'"></xsl:value-of>
@@ -522,7 +608,10 @@
 						<xsl:value-of select="'Opérations filles'"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:value-of select="$fileSeries/Series/operation/labelLg1"></xsl:value-of>
+						<xsl:for-each select="$fileSeries/Series/operations/operations">
+							<xsl:value-of select="labelLg1"></xsl:value-of>
+							<xsl:if test="position() != last()"> - </xsl:if>
+						</xsl:for-each>
 					</text:p>
 				</table:table-cell>
 				<!-- séparation -->
@@ -725,13 +814,21 @@
 						<xsl:value-of select="'Fréquence de diffusion'"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
+						<xsl:value-of select="'Partenaires'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:for-each select="$fileTarget/Indicator/contributors/contributors">
+							<xsl:value-of select="labelLg1"></xsl:value-of>
+						</xsl:for-each>
+					</text:p>
+					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Organisme responsable'"></xsl:value-of>
+					</text:p>
+					<text:p text:style-name="RubricItem">
+						<xsl:value-of select="$fileTarget/Indicator/publisher"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Propriétaire'"></xsl:value-of>
-					</text:p>
-					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Partenaires'"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Succède à'"></xsl:value-of>

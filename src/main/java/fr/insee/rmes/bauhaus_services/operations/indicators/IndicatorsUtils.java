@@ -113,9 +113,13 @@ public class IndicatorsUtils  extends RdfService {
 		if(jsonIndicator.has("accrualPeriodicityList")) {
 			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
 		}
-		if(jsonIndicator.has("gestionnaires")) {
+//		if(jsonIndicator.has("gestionnaires")) {
+//			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
+//					jsonIndicator.getJSONArray("gestionnaires")));
+//		}
+		if(jsonIndicator.has("creators")) {
 			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
-					jsonIndicator.getJSONArray("gestionnaires")));
+					jsonIndicator.getJSONArray("creators")));
 		}
 		if(jsonIndicator.has("idSims")) {
 			indicator.setIdSims(jsonIndicator.getString("idSims"));
