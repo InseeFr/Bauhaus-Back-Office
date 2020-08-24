@@ -114,13 +114,9 @@ public class SeriesUtils extends RdfService {
 		if(seriesJson.has("accrualPeriodicityList")) {
 			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
 		}
-//		if(seriesJson.has("proprietaires")) {
-//			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-//					seriesJson.getJSONArray("proprietaires")));
-//		}
-		if(seriesJson.has("creators")) {
+		if(seriesJson.has("creator")) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("creators")));
+					seriesJson.getJSONArray("creator")));
 		}
 		if(seriesJson.has("publisher")) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
@@ -289,15 +285,15 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-		series.put("creators", creators);
+		series.put("creator", creators);
 	}
 
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
 		if (publishers.length()==1) {
-			series.put("publishers", publishers.get(0));
+			series.put("publisher", publishers.get(0));
 		}else {
-			series.put("publishers", publishers);
+			series.put("publisher", publishers);
 		}
 	}
 
@@ -326,7 +322,7 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 	
-		List<String> publisher=series.getPublisher();
+		List<String> publisher=series.getPublishers();
 		if (publisher!= null) {
 			for(String publ : publisher) {
 				RdfUtils.addTripleUri(seriesURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publ), model, RdfUtils.operationsGraph());

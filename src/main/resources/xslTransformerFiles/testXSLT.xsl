@@ -510,10 +510,10 @@
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Organisme responsable'"></xsl:value-of>
+						<xsl:value-of select="'Organismes responsables'"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						<xsl:for-each select="$fileSeries/Series/publisher/publisher">
+						<xsl:for-each select="$fileSeries/Series/publishers/publishers">
 							<xsl:value-of select="labelLg1"></xsl:value-of>
 							<xsl:if test="position() != last()">
 								-
