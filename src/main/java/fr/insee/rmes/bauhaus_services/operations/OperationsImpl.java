@@ -117,7 +117,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException {
 		return seriesUtils.getSeriesLabelById(id);
 	}
-	
+
 	@Override
 	public String getSeriesJsonByID(String id) throws RmesException {
 		JSONObject series = seriesUtils.getSeriesJsonById(id);
@@ -172,11 +172,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws Exception  {
+	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
 		OutputStream os;
 		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
 			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
-		}else {
+		} else {
 			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		}
 
@@ -186,19 +186,38 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
 	}
 
-	private InputStream transformFileOutputStreamInInputStream(OutputStream os)
-			throws NoSuchFieldException, IllegalAccessException, FileNotFoundException {
-		Field pathField = FileOutputStream.class.getDeclaredField("path");
-		pathField.setAccessible(true);
-		String path = (String) pathField.get(os);
-		return new FileInputStream(path);
+	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
+		Field pathField;
+		String path = null;
+		FileInputStream fis =null;
+		try {
+			pathField = FileOutputStream.class.getDeclaredField("path");
+
+			pathField.setAccessible(true);
+			path = (String) pathField.get(os);} catch (NoSuchFieldException | SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		try {
+			fis= new FileInputStream(path);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return(fis);
 	}
 
 	@Override
 	public Operation getOperationById(String id) throws RmesException {
 		return operationsUtils.getOperationById(id);
 	}
-	
+
 	@Override
 	public String getOperationJsonByID(String id) throws RmesException {
 		JSONObject operation = operationsUtils.getOperationJsonById(id);
@@ -220,7 +239,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String createOperation(String body) throws RmesException {
 		return operationsUtils.setOperation(body);				
 	}
-	
+
 	@Override
 	public String setOperationValidation(String id) throws RmesException{
 		return operationsUtils.setOperationValidation(id);
@@ -260,7 +279,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setFamilyValidation(String id) throws RmesException{
 		return familiesUtils.setFamilyValidation(id);
 	}
-	
+
 	/**
 	 * CREATE
 	 */
@@ -284,7 +303,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getIndicatorsForSearch() throws RmesException {
-			return indicatorsUtils.getIndicatorsForSearch();
+		return indicatorsUtils.getIndicatorsForSearch();
 	}
 
 	@Override
@@ -297,12 +316,12 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public Indicator getIndicatorById(String id) throws RmesException {
 		return indicatorsUtils.getIndicatorById(id);
 	}
-	
+
 	@Override
 	public void setIndicator(String id, String body) throws RmesException {
 		indicatorsUtils.setIndicator(id,body);
 	}
-	
+
 	/**
 	 * Publish indicator
 	 * @throws RmesException 
@@ -311,7 +330,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setIndicatorValidation(String id) throws RmesException{
 		return indicatorsUtils.setIndicatorValidation(id);
 	}
-	
+
 	/**
 	 * Create indicator
 	 * @throws RmesException 
@@ -332,7 +351,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
-	
+
 	@Override
 	public MSD getMSD() throws RmesException {
 		return operationsUtils.getMSD();
@@ -356,7 +375,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		XhtmlToMarkdownUtils.convertJSONObject(documentation);
 		return documentation.toString();
 	}
-	
+
 	@Override
 	public Documentation getFullSims(String id) throws RmesException {
 		return  documentationsUtils.getFullSims(id);
@@ -385,7 +404,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
-	
+
 	/**
 	 * PUBLISH
 	 */
@@ -394,7 +413,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.publishMetadataReport(id);
 	}
 
-	
+
 	@Override
 	public Response exportMetadataReport(String id) throws RmesException  {
 		File output;

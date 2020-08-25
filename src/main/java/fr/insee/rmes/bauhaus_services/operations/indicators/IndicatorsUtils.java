@@ -74,8 +74,7 @@ public class IndicatorsUtils  extends RdfService {
 		try {
 			indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
 		} catch (JsonProcessingException e) {
-			logger.error("Json cannot be parsed");
-			e.printStackTrace();
+			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
 		}
 		return indicator;
 	}

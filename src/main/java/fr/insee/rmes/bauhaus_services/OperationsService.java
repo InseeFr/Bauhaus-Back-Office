@@ -60,7 +60,7 @@ public interface OperationsService {
 	@Deprecated
 	Response getVarBookExport(String id, String acceptHeader) throws RmesException;
 	
-	Response getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException, Exception;
+	Response getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
 
 	String getOperations() throws RmesException ;
 

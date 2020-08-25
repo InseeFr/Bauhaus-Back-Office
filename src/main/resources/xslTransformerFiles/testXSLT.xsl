@@ -259,6 +259,10 @@
 					<!-- <xsl:value-of select="$tempFile" /> -->
 					<!-- </text:p> -->
 
+					<text:p>
+					<xsl:value-of select="system-property('xsl:version')"/>
+					</text:p>
+
 
 					<!-- Header -->
 					<xsl:call-template name="header"></xsl:call-template>
@@ -312,9 +316,8 @@
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg1" />
-												<!-- <xsl:param name="mas" select="idMas" /> -->
-												<!-- <xsl:apply-templates select="$rootVar//rubrics[@idAttribute 
-													= $mas]" /> -->
+												<xsl:param name="mas" select="idMas" />
+				<xsl:apply-templates select="$rootVar//rubrics[@idAttribute	= $mas]" /> 
 												<xsl:text> </xsl:text>
 											</text:p>
 										</table:table-cell>
@@ -408,6 +411,14 @@
 								<xsl:value-of select="value" />
 							</text:p>
 						</xsl:if>
+
+						<xsl:choose>
+							<xsl:when test="rangeType = 'GEOGRAPHY'"></xsl:when>
+							<xsl:when test="rangeType = 'RICH_TEXT'"></xsl:when>
+							<xsl:when test="rangeType = 'CODE_LIST'"></xsl:when>
+							<xsl:when test="rangeType = 'ORGANIZATION'"></xsl:when>
+							<xsl:when test="rangeType = 'TEXT'"></xsl:when>
+						</xsl:choose>
 						<xsl:text> </xsl:text>
 					</xsl:for-each>
 
@@ -610,7 +621,9 @@
 					<text:p text:style-name="RubricItem">
 						<xsl:for-each select="$fileSeries/Series/operations/operations">
 							<xsl:value-of select="labelLg1"></xsl:value-of>
-							<xsl:if test="position() != last()"> - </xsl:if>
+							<xsl:if test="position() != last()">
+								-
+							</xsl:if>
 						</xsl:for-each>
 					</text:p>
 				</table:table-cell>

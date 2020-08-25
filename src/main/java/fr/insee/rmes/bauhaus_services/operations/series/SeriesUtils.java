@@ -216,7 +216,6 @@ public class SeriesUtils extends RdfService {
 		addSeriesLinks(id, series);
 		addSeriesCreators(id, series);
 		addSeriesPublishers(id, series);
-
 		addGeneratedWith(id, series);
 		return series;
 	}
