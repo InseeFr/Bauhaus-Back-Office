@@ -23,6 +23,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
 
+	private static final String CREATOR = "creator";
 	private static final String MANAGER = "manager";
 	private static final String OWNER = "owner";
 
@@ -197,10 +198,10 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + uri.toString() + "> ");
 		String uriAsString = sb.toString();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getManagers(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uriAsString));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString(MANAGER).equals(user.getStamp())) {
+			if (!managers.getJSONObject(i).getString(CREATOR).equals(user.getStamp())) {
 				isSeriesManager = true;
 			}
 		}
@@ -212,11 +213,11 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		StringBuilder sb = new StringBuilder();
 		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
 		String uriAsString = sb.toString();
-		JSONArray managers = repoGestion.getResponseAsArray(IndicatorsQueries.getManagers(uriAsString));
+		JSONArray creators = repoGestion.getResponseAsArray(IndicatorsQueries.getCreatorsByIndicatorUri(uriAsString));
 		Boolean isIndicatorManager = false;
-		if (managers.length() > 0) {
-			for (int i = 0; i < managers.length(); i++) {
-				if (!managers.getJSONObject(i).getString(MANAGER).equals(user.getStamp())) {
+		if (creators.length() > 0) {
+			for (int i = 0; i < creators.length(); i++) {
+				if (!creators.getJSONObject(i).getString(CREATOR).equals(user.getStamp())) {
 					isIndicatorManager = true;
 				}
 			}

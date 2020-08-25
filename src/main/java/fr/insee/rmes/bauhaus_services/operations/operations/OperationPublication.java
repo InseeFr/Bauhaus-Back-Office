@@ -34,13 +34,13 @@ public class OperationPublication extends RdfService{
 	@Autowired
 	private OperationsUtils operationsUtils;
 
-	String[] ignoredAttrs = { "validationState", "hasPart", "creator", "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", "publisher", "contributor" };
 
 	public void publishOperation(String operationId) throws RmesException {
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		JSONObject operationJson = operationsUtils.getOperationById(operationId);
+		JSONObject operationJson = operationsUtils.getOperationJsonById(operationId);
 		
 		checkSeriesIsPublished(operationId, operationJson);
 

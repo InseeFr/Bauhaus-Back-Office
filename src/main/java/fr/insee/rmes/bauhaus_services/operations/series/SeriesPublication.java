@@ -30,7 +30,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 public class SeriesPublication extends RdfService {
 	
 	@Autowired
-	static 	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerUtils famOpeSerUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;
@@ -41,7 +41,7 @@ public class SeriesPublication extends RdfService {
 	public void publishSeries(String seriesId) throws RmesException {
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
-		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);
+		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId);
 		String familyId = serieJson.getJSONObject("family").getString(Constants.ID);
 		String status= famOpeSerUtils.getValidationStatus(familyId);
 		
@@ -76,7 +76,7 @@ public class SeriesPublication extends RdfService {
 					} else if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
 							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith("creator")
+							|| st.getPredicate().toString().endsWith("publisher")
 							|| st.getPredicate().toString().endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
 					}

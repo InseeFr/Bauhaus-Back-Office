@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -25,7 +26,7 @@ public enum ObjectType {
 	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
 	DOCUMENT("document", FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
 	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
-	GEOFEATURE("geoFeature", GEO.FEATURE, Config.DOCUMENTATIONS_GEO_BASE_URI),
+	GEO_STAT_TERRITORY("geoFeature", GEO.FEATURE, Config.DOCUMENTATIONS_GEO_BASE_URI),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
 	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, Config.STRUCTURES_BASE_URI),
 
@@ -34,7 +35,7 @@ public enum ObjectType {
 	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.STRUCTURES_COMPONENTS_BASE_URI + "dimension"),
 
 
-	UNDEFINED("undefined",null, "");
+	UNDEFINED(Constants.UNDEFINED,null, "");
 	
 	
 

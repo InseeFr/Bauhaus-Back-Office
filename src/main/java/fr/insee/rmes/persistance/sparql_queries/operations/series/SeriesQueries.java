@@ -123,37 +123,40 @@ public class SeriesQueries {
 
 	public static String getOwner(String uris) {
 		return "SELECT ?owner { \n" 
-				+ "?series dcterms:creator ?owner . \n" 
+				+ "?series dcterms:publisher ?owner . \n" 
 				+ "VALUES ?series { " + uris + " } \n"
 				+ "}";
 	}
 
-	public static String getManagers(String uris) {
-		return "SELECT ?manager { \n" + "?series insee:gestionnaire ?manager . \n" + "VALUES ?series { " + uris
+	public static String getCreatorsBySeriesUri(String uris) {
+		return "SELECT ?creator { \n" + "?series dc:creator ?creator . \n" 
+				+ "VALUES ?series { " + uris
 				+ " } \n" + "}";
 	}
 
-	public static String getGestionnaires(String id) {
-		return "SELECT ?gestionnaire\n" 
+	public static String getCreatorsById(String id) {
+		return "SELECT ?creator\n" 
 				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
-				+ "?series a insee:StatisticalOperationSeries . \n" + " FILTER(STRENDS(STR(?series),'/operations/serie/"
-				+ id + "')) . \n" + "?series insee:gestionnaire ?gestionnaire  . \n" + "} }";
+				+ "?series a insee:StatisticalOperationSeries . \n" 
+				+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
+				+ "?series dc:creator ?creator  . \n" + "} }";
 	}
 	
 	/**
-	 * return creators id (creators are organizations)
+	 * return publishers id (publishers are organizations)
 	 * @param id
 	 * @return
 	 */
-	public static String getCreators(String id) {
-		return "SELECT ?creators\n" 
+	public static String getPublishers(String id) {
+		return "SELECT distinct ?publisher \n" 
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> "
 				+ "WHERE { \n"
 					+ "?series a insee:StatisticalOperationSeries . \n" 
-					+ "?series dcterms:creator ?uri  . \n" 
-					+ "?uri dcterms:identifier  ?creators . \n" 
+					+ "?series dcterms:publisher ?uri  . \n" 
+					+ "?uri dcterms:identifier  ?publisher . \n" 
 					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
 				+ "} ";
 	}

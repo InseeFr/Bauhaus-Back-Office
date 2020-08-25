@@ -6,6 +6,8 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+
 public class SCHEMA {
 	
 	public static final String NAMESPACE = "http://schema.org/";
@@ -22,7 +24,7 @@ public class SCHEMA {
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
 
-		URL = f.createIRI(NAMESPACE, "url");
+		URL = f.createIRI(NAMESPACE, Constants.URL);
 	}
 	
 

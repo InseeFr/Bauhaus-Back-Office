@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,11 +28,14 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.JSONUtils;
 
 @Component
 public class DocumentationsRubricsUtils extends RdfService {
@@ -56,8 +60,6 @@ public class DocumentationsRubricsUtils extends RdfService {
 	
 	@Autowired
 	private GeographyService geoService;
-
-
 	
 
 	/**
@@ -91,11 +93,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			// Get documents
 			if (rubric.has(HAS_DOC)) {
-				if (rubric.getBoolean(HAS_DOC)) {
-					JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-					rubric.put("documents", listDoc);
-				}
-				rubric.remove(HAS_DOC);
+				clearDocuments(idSims, rubric);
 			}
 
 			// Format date
@@ -105,28 +103,50 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 			// Format codelist with multiple value
 			else if (rubric.has("maxOccurs")) {
-				String newValue = rubric.getString(VALUE);
-				String attribute = rubric.getString("idAttribute");
-
-				if (tempMultipleCodeList.containsKey(attribute)) {
-					JSONObject tempObject = tempMultipleCodeList.get(attribute);
-					tempObject.accumulate(VALUE, newValue);
-					tempMultipleCodeList.replace(attribute, tempObject);
-				} else {
-					tempMultipleCodeList.put(attribute, rubric);
-				}
-				docRubrics.remove(i);
+				putMultipleValueInList(docRubrics, tempMultipleCodeList, i, rubric);
 			}
-			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY)) {
-				String geoUri = rubric.getString(VALUE);
-				JSONObject feature = geoService.getGeoFeature(geoUri);
-				feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+			
+			//Format Geo features
+			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY.name())) {
+				clearGeographyRubric(rubric);
 			}
 		}
 		if (tempMultipleCodeList.size() != 0) {
 			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
 		}
 		return docRubrics;
+	}
+
+	private void clearGeographyRubric(JSONObject rubric) throws RmesException {
+		String value = rubric.getString(VALUE);
+		if (StringUtils.isNotEmpty(value)) {
+			IRI geoUri = RdfUtils.createIRI(value);
+			JSONObject feature = geoService.getGeoFeature(geoUri);
+			feature.keys().forEachRemaining(key -> rubric.put(key,feature.get(key)));
+		}
+	}
+
+	private void putMultipleValueInList(JSONArray docRubrics, Map<String, JSONObject> tempMultipleCodeList, int i,
+			JSONObject rubric) {
+		String newValue = rubric.getString(VALUE);
+		String attribute = rubric.getString("idAttribute");
+
+		if (tempMultipleCodeList.containsKey(attribute)) {
+			JSONObject tempObject = tempMultipleCodeList.get(attribute);
+			tempObject.accumulate(VALUE, newValue);
+			tempMultipleCodeList.replace(attribute, tempObject);
+		} else {
+			tempMultipleCodeList.put(attribute, rubric);
+		}
+		docRubrics.remove(i);
+	}
+
+	private void clearDocuments(String idSims, JSONObject rubric) throws RmesException {
+		if (rubric.getBoolean(HAS_DOC)) {
+			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
+			rubric.put("documents", listDoc);
+		}
+		rubric.remove(HAS_DOC);
 	}
 
 
@@ -201,7 +221,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 				break;
 			case GEOGRAPHY:
 				String featureUri = rubric.getSimpleValue();
-				if (featureUri != null) {
+				if (StringUtils.isNotEmpty(featureUri)) {
 					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
 				}
 				break;
@@ -262,4 +282,45 @@ public class DocumentationsRubricsUtils extends RdfService {
 		return RdfUtils.toURI(newUri);
 	}
 
+	/**
+	 * Java Object	Builder
+	 * @param JsonRubric
+	 * @return documentationRubric
+	 * @throws RmesException
+	 */
+
+	public DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
+		DocumentationRubric documentationRubric = new DocumentationRubric();
+		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
+		if (rubric.has("value")) {
+			try{
+				documentationRubric.setValue(rubric.getString("value"));
+			}
+			catch(JSONException e) {
+				/* value is not a string but an array */
+				JSONArray JsonArrayValue =rubric.getJSONArray("value");
+				documentationRubric.setValue(JSONUtils.jsonArrayToList(JsonArrayValue));
+			}
+		}
+		if (rubric.has("labelLg1"))		documentationRubric.setLabelLg1(rubric.getString("labelLg1"));
+		if (rubric.has("labelLg2"))		documentationRubric.setLabelLg2(rubric.getString("labelLg2"));
+		if (rubric.has("codeList"))		documentationRubric.setCodeList(rubric.getString("codeList"));
+		if (rubric.has("rangeType"))		documentationRubric.setRangeType(rubric.getString("rangeType"));
+
+		if (rubric.has("documents")) {	
+			List<Document> docs = new ArrayList<Document>();
+
+			JSONArray documents = rubric.getJSONArray("documents");
+			Document currentDoc = new Document();
+
+			for (int i = 0; i < documents.length(); i++) {
+				JSONObject doc = documents.getJSONObject(i);
+				currentDoc = docUtils.buildDocumentFromJson(doc);
+				docs.add(currentDoc);
+			}	
+			documentationRubric.setDocuments(docs);
+		}
+		return documentationRubric;
+	}
+	
 }

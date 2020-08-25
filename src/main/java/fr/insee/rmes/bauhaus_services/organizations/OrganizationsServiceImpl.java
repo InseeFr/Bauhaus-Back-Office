@@ -31,7 +31,7 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	public String getOrganizationUriById(String organizationIdentifier) throws RmesException {
 		if (StringUtils.isEmpty(organizationIdentifier)) {return null;}
 		JSONObject orga = repoGestion.getResponseAsObject(OrganizationQueries.getUriById(organizationIdentifier));
-		return QueryUtils.correctEmptyGroupConcat(orga.getString("uri"));
+		return QueryUtils.correctEmptyGroupConcat(orga.getString(Constants.URI));
 	}
 
 	@Override

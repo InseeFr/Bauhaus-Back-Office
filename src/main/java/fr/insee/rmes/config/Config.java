@@ -64,6 +64,7 @@ public class Config {
 	public static String CODELIST_GRAPH = "";
 
 	public static String ORGANIZATIONS_GRAPH = "";
+	public static String ORG_INSEE_GRAPH = "";
 	
 	public static String GEOGRAPHY_GRAPH = "";
 
@@ -151,7 +152,8 @@ public class Config {
 
 		//Initialize Organizations
 		Config.ORGANIZATIONS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.organisations.graph");
-
+		Config.ORG_INSEE_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.insee.graph");
+		
 		//Initialize Geography
 		Config.GEOGRAPHY_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.geographie.graph");
 		

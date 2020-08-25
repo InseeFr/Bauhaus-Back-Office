@@ -1,6 +1,9 @@
 package fr.insee.rmes.utils;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,4 +45,17 @@ public class JSONUtils {
 	    return true;
 	}
 
+	/**
+	 * Transform an array to a list of strings
+	 * @param jsonArray
+	 * @return
+	 */
+	public static List<String> jsonArrayToList(JSONArray jsonArray) {
+		List<String> result = IntStream.range(0, jsonArray.length())
+		        .mapToObj(jsonArray::get)
+		        .map(Object::toString)
+		        .collect(Collectors.toList());
+		return result;
+	}
+	
 }

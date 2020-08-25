@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.geography;
 import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -11,7 +12,20 @@ public class GeoQueries {
 	
 	static Map<String,Object> params ;
 	
-
+	
+	/**
+	 * 
+	 * @param id
+	 * @return uri in COG if exists
+	 * @throws RmesException
+	 */
+	public static String getGeoUriIfExists(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(Constants.ID, id);
+		return  buildRequest("getGeoUriIfExists.ftlh", params);
+	}
+	
+	
 	public static String getFeaturesQuery() throws RmesException {
 		if (params==null) {initParams();}
 		params.put("uriFeature", "");
@@ -26,15 +40,21 @@ public class GeoQueries {
 		return getUnionOrDifferenceForFeature(uriFeature, false);
 	}
 	
-	public static String getFeatureQuery(String id) throws RmesException {
+	/**
+	 * 
+	 * @param uri = uri of geofeature
+	 * @return
+	 * @throws RmesException
+	 */
+	public static String getFeatureQuery(String uri) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uriFeature", id);
+		params.put("uriFeature", uri);
 		return  buildRequest("getGeoFeatures.ftlh", params);
 	}
 
 	private static String getUnionOrDifferenceForFeature(String uriFeature, boolean getUnion) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("uri", uriFeature);
+		params.put(Constants.URI, uriFeature);
 		params.put("union", getUnion);
 		return  buildRequest("getUnionOrDifferenceForUri.ftlh", params);
 	}

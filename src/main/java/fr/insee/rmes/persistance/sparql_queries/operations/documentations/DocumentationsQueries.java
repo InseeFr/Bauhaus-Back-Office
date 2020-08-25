@@ -107,6 +107,10 @@ public class DocumentationsQueries {
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
 		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
+		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
+
+		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
+		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	

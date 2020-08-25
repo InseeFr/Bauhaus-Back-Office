@@ -46,7 +46,7 @@ public class IndicatorPublication extends RdfService {
 					// Triplets that don't get published
 					if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith("creator")
+							|| st.getPredicate().toString().endsWith("publisher")
 							|| st.getPredicate().toString().endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
 					}

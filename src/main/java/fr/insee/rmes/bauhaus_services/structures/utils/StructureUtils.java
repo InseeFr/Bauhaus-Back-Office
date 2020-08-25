@@ -1,18 +1,11 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.structures.ComponentDefinition;
-import fr.insee.rmes.model.structures.MutualizedComponent;
-import fr.insee.rmes.model.structures.Structure;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.utils.DateUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.BadRequestException;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,10 +22,20 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.BadRequestException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.structures.ComponentDefinition;
+import fr.insee.rmes.model.structures.MutualizedComponent;
+import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class StructureUtils extends RdfService {
@@ -57,7 +60,7 @@ public class StructureUtils extends RdfService {
     }
 
     public JSONObject formatStructure(JSONObject structure, String id) throws RmesException {
-        structure.put("id", id);
+        structure.put(Constants.ID, id);
 
 
         JSONArray componentDefinitions = new JSONArray();
@@ -97,7 +100,7 @@ public class StructureUtils extends RdfService {
 
             }
             if(componentDefinitionFlat.has(COMPONENT_DEFINITION_ID)){
-                componentDefinition.put("id", componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID));
+                componentDefinition.put(Constants.ID, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID));
 
             }
             componentDefinitionFlat.remove(REQUIRED);
@@ -277,7 +280,7 @@ public class StructureUtils extends RdfService {
             return 1000;
         }
         String id = json.getString(Constants.ID);
-        if (id.equals("undefined")) {
+        if (id.equals(Constants.UNDEFINED)) {
             return 1000;
         }
         return (Integer.parseInt(id) + 1);

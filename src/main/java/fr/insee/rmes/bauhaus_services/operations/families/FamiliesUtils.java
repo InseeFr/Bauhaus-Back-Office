@@ -44,7 +44,7 @@ public class FamiliesUtils  extends RdfService {
 	static final Logger logger = LogManager.getLogger(FamiliesUtils.class);
 
 	@Autowired
-	static FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerUtils famOpeSerUtils;
 	
 	@Autowired
 	FamilyPublication familyPublication;

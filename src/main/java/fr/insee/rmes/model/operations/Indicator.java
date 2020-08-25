@@ -30,14 +30,11 @@ public class Indicator {
 	@Schema(description = "Abstract Lg1")
 	public String abstractLg1;
 
-
 	@Schema(description = "Abstract lg2")
 	public String abstractLg2;
 
-
 	@Schema(description = "History note Lg1")
 	public String historyNoteLg1;
-
 
 	@Schema(description = "History note lg2")
 	public String historyNoteLg2;
@@ -48,15 +45,15 @@ public class Indicator {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@Schema(description = "Identifier of creator")
-	public String creator;
+	@Schema(description = "Identifier of publisher")
+	public String publisher;
 
 	@Schema(description = "Identifiers of contributors")
-	public List<OperationsLink> contributor;
+	public List<OperationsLink> contributors;
 	
-	@Schema(description = "Identifier of gestionnaire")
+	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
-	public List<String> gestionnaires;
+	public List<String> creators;
 
 	@Schema(description = "List of resources to see also")
 	public List<OperationsLink> seeAlso;
@@ -136,13 +133,13 @@ public class Indicator {
 	}
 
 
-	public String getCreator() {
-		return creator;
+	public String getPublisher() {
+		return publisher;
 	}
 
 
-	public List<OperationsLink> getContributor() {
-		return contributor;
+	public List<OperationsLink> getContributors() {
+		return contributors;
 	}
 
 
@@ -169,12 +166,76 @@ public class Indicator {
 		return idSims;
 	}
 
-	public List<String> getGestionnaires() {
-		return gestionnaires;
+	public List<String> getCreators() {
+		return creators;
 	}
 
-	public void setGestionnaires(List<String> gestionnaires) {
-		this.gestionnaires = gestionnaires;
+	public void setCreators(List<String> creators) {
+		this.creators = creators;
+	}
+
+	public void setPrefLabelLg1(String prefLabelLg1) {
+		this.prefLabelLg1 = prefLabelLg1;
+	}
+
+	public void setPrefLabelLg2(String prefLabelLg2) {
+		this.prefLabelLg2 = prefLabelLg2;
+	}
+
+	public void setAltLabelLg1(String altLabelLg1) {
+		this.altLabelLg1 = altLabelLg1;
+	}
+
+	public void setAltLabelLg2(String altLabelLg2) {
+		this.altLabelLg2 = altLabelLg2;
+	}
+
+	public void setAbstractLg1(String abstractLg1) {
+		this.abstractLg1 = abstractLg1;
+	}
+
+	public void setAbstractLg2(String abstractLg2) {
+		this.abstractLg2 = abstractLg2;
+	}
+
+	public void setHistoryNoteLg1(String historyNoteLg1) {
+		this.historyNoteLg1 = historyNoteLg1;
+	}
+
+	public void setHistoryNoteLg2(String historyNoteLg2) {
+		this.historyNoteLg2 = historyNoteLg2;
+	}
+
+	public void setAccrualPeriodicityCode(String accrualPeriodicityCode) {
+		this.accrualPeriodicityCode = accrualPeriodicityCode;
+	}
+
+	public void setAccrualPeriodicityList(String accrualPeriodicityList) {
+		this.accrualPeriodicityList = accrualPeriodicityList;
+	}
+
+	public void setContributors(List<OperationsLink> contributors) {
+		this.contributors = contributors;
+	}
+
+	public void setSeeAlso(List<OperationsLink> seeAlso) {
+		this.seeAlso = seeAlso;
+	}
+
+	public void setReplaces(List<OperationsLink> replaces) {
+		this.replaces = replaces;
+	}
+
+	public void setIsReplacedBy(List<OperationsLink> isReplacedBy) {
+		this.isReplacedBy = isReplacedBy;
+	}
+
+	public void setWasGeneratedBy(List<OperationsLink> wasGeneratedBy) {
+		this.wasGeneratedBy = wasGeneratedBy;
+	}
+
+	public void setIdSims(String idSims) {
+		this.idSims = idSims;
 	}
 
 }

@@ -3,7 +3,14 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -14,6 +21,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +31,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
@@ -38,10 +47,18 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.model.operations.documentations.ExtensiveSims;
+import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.XMLUtils;
+
 
 @Component
 public class DocumentationsUtils extends RdfService{
@@ -52,7 +69,7 @@ public class DocumentationsUtils extends RdfService{
 
 	private static final String ID_SERIES = "idSeries";
 
-	private static final String CREATOR = "creator";
+	private static final String PUBLISHER = "publisher";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
@@ -66,18 +83,24 @@ public class DocumentationsUtils extends RdfService{
 	private DocumentationExport docExport;
 
 	@Autowired
+	private DocumentationsRubricsUtils documentationsRubricsUtils;
+
+	@Autowired
 	private IndicatorsUtils indicatorsUtils;
 
 	@Autowired
 	private DocumentationPublication documentationPublication;
-	
+
 	@Autowired
-	private DocumentationsRubricsUtils docRubricsUtils;
-	
+	CodeListUtils codeListUtils;
+
+	@Autowired
+	DocumentationsUtils documentationsUtils;
+
 	@Autowired
 	private FamOpeSerUtils famOpeSerUtils;
-	
-	
+
+
 
 
 	/**
@@ -96,10 +119,68 @@ public class DocumentationsUtils extends RdfService{
 		doc.put(Constants.ID, idSims);
 
 		// Get all rubrics
-		docRubricsUtils.getAllRubricsJson(idSims, doc);
+		documentationsRubricsUtils.getAllRubricsJson(idSims, doc);
 		return doc;
 	}
 
+	public Documentation getFullSims(String id) throws RmesException {
+		return buildDocumentationFromJson(getDocumentationByIdSims(id));
+	}
+
+
+	/**
+	 * Java Object	Builder
+	 * @param JsonSims
+	 * @return ExtensiveSims
+	 * @throws RmesException
+	 */
+
+	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject JsonSims) throws RmesException {
+		Documentation sims = buildDocumentationFromJson(JsonSims);
+		ExtensiveSims extensiveSims = new ExtensiveSims(sims);
+
+		return extensiveSims;
+	}
+
+
+	/**
+	 * Java Object	Builder
+	 * @param JsonSims
+	 * @return Sims
+	 * @throws RmesException
+	 */
+
+	public Documentation buildDocumentationFromJson(JSONObject JsonSims) throws RmesException {
+
+		Documentation sims = new Documentation();
+		String idSims=JsonSims.getString(Constants.ID);
+		sims.setId(idSims);
+		sims.setLabelLg1(JsonSims.getString("labelLg1"));
+		sims.setLabelLg2(JsonSims.getString("labelLg2"));
+
+		String[] target = getDocumentationTargetTypeAndId(idSims);
+		String targetType = target[0];
+		String idDatabase = target[1];
+
+		switch(targetType) {
+		case "OPERATION" : sims.setIdOperation(idDatabase); break;
+		case "SERIES" : sims.setIdSeries(idDatabase); break;
+		case "INDICATOR" : sims.setIdIndicator(idDatabase); break;
+		}
+
+		List<DocumentationRubric> rubrics = new ArrayList<DocumentationRubric>();
+		JSONArray docRubrics = JsonSims.getJSONArray("rubrics");
+		DocumentationRubric currentRubric = new DocumentationRubric();
+
+		for (int i = 0; i < docRubrics.length(); i++) {
+			JSONObject rubric = docRubrics.getJSONObject(i);
+			currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric);
+			rubrics.add(currentRubric);
+		}	
+		sims.setRubrics(rubrics);
+
+		return sims;
+	}
 
 	/**
 	 * CREATE or UPDATE
@@ -148,7 +229,7 @@ public class DocumentationsUtils extends RdfService{
 				saveRdfMetadataReport(sims, targetUri, ValidationStatus.MODIFIED);
 			}
 		}
-		
+
 		logger.info("Create or update sims : {} - {}", sims.getId(), sims.getLabelLg1());
 		return sims.getId();
 	}
@@ -347,15 +428,10 @@ public class DocumentationsUtils extends RdfService{
 		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);
 		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.LG2, model, graph);
 
-		docRubricsUtils.addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
+		documentationsRubricsUtils.addRubricsToModel(model, sims.getId(), graph, sims.getRubrics());
 
 		repoGestion.replaceGraph(graph, model, null);
 	}
-
-	
-
-	
-
 
 	/**
 	 * Generate a new ID
@@ -371,11 +447,36 @@ public class DocumentationsUtils extends RdfService{
 			return "1000";
 		}
 		String id = json.getString("idSims");
-		if (id.equals("undefined")) {
+		if (id.equals(Constants.UNDEFINED)) {
 			return "1000";
 		}
 		int newId = Integer.parseInt(id) + 1;
 		return String.valueOf(newId);
+	}
+
+	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
+		logger.info("Search Sims Target Type and id");
+
+		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
+		String idDatabase = null;
+		String targetType = null;
+		if (existingIdTarget != null ) {
+			idDatabase = (String) existingIdTarget.get("idOperation");
+
+			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+				idDatabase = (String) existingIdTarget.get("idSeries");
+
+				if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
+					idDatabase = (String) existingIdTarget.get("idIndicator");
+					targetType = "INDICATOR";
+				} else {
+					targetType = "SERIES";
+				}
+			} else {
+				targetType = "OPERATION";
+			}
+		}
+		return new String[] { targetType, idDatabase };	
 	}
 
 	public String getDocumentationOwnerByIdSims(String idSims) throws RmesException {
@@ -386,15 +487,15 @@ public class DocumentationsUtils extends RdfService{
 			String idOperation = target.getString(ID_OPERATION);
 			String idSerie = target.getString(ID_SERIES);
 			String idIndicator = target.getString(ID_INDICATOR);
-			
+
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamp = seriesUtils.getSeriesById(
-						operationsUtils.getOperationById(idOperation).getJSONObject("series").getString(ID_SERIES))
-						.getString(CREATOR);
+				stamp = seriesUtils.getSeriesJsonById(
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
+						.getString(PUBLISHER);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesById(idSerie).getString(CREATOR);
+				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(PUBLISHER);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorById(idIndicator).getString(CREATOR);
+				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(PUBLISHER);
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
@@ -404,9 +505,92 @@ public class DocumentationsUtils extends RdfService{
 	}
 
 	public File exportMetadataReport(String id) throws Exception {
-		// TODO replace xml file by getting sims by id
-		InputStream test = getClass().getClassLoader().getResourceAsStream("testXML.xml");
-		return docExport.export(test);
+
+		InputStream is;
+		InputStream is2;
+		Path tempDir= Files.createTempDirectory("forExport");
+
+		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
+		String absolutePath = tempFile.toFile().getAbsolutePath();
+
+		Path accessoryTempFile = Files.createTempFile(tempDir, "series",".xml");
+		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
+		
+		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
+
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+
+		if (targetType=="OPERATION") {
+			Operation operation=operationsUtils.getOperationById(idDatabase);
+			String idSeries=operation.getSeries().getId();
+			Series series=seriesUtils.getSeriesById(idSeries);
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(operation), "UTF-8");
+			Files.copy(is, tempFile, options);
+			is2 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(series), "UTF-8");
+			Files.copy(is2, accessoryTempFile, options);
+		}
+
+		if (targetType=="SERIES") {
+			String response=XMLUtils.produceXMLResponse(
+					seriesUtils.getSeriesById(idDatabase));
+			is = IOUtils.toInputStream(response, "UTF-8");
+			Files.copy(is, accessoryTempFile, options);
+			is2 = IOUtils.toInputStream(response, "UTF-8");
+			Files.copy(is2, tempFile, options);
+		}
+
+		if (targetType=="INDICATOR") {
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
+					indicatorsUtils.getIndicatorById(idDatabase)), "UTF-8");
+			Files.copy(is, tempFile, options);
+		}
+
+		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
+
+		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
+
+	}
+
+	public MSD buildMSDFromJson(JSONArray jsonMsd) {
+		List<MAS> msd = new ArrayList<MAS>();
+		MAS currentRubric = new MAS();
+
+		for (int i = 0; i < jsonMsd.length(); i++) {
+			JSONObject rubric = jsonMsd.getJSONObject(i);
+			currentRubric = buildMSDRubricFromJson(rubric);
+			msd.add(currentRubric);
+		}	
+		return new MSD(msd) ;
+	}
+
+	public MAS buildMSDRubricFromJson(JSONObject jsonMsdRubric) {
+		MAS msd = new MAS();
+		if (jsonMsdRubric.has("idMas")) {
+			msd.setIdMas(jsonMsdRubric.getString("idMas"));
+		}
+		if (jsonMsdRubric.has("masLabelLg1")) {
+			msd.setMasLabelLg1(jsonMsdRubric.getString("masLabelLg1"));
+		}
+		if (jsonMsdRubric.has("masLabelLg2")) {
+			msd.setMasLabelLg2(jsonMsdRubric.getString("masLabelLg2"));
+		}
+		if (jsonMsdRubric.has("idParent")) {
+			msd.setIdParent(jsonMsdRubric.getString("idParent"));
+		}
+		if (jsonMsdRubric.has("isPresentational")) {
+			msd.setIsPresentational(jsonMsdRubric.getBoolean("isPresentational"));
+		}
+
+		return msd ;
+	}
+
+	public String buildShellSims() throws RmesException {
+		MSD msd= operationsUtils.getMSD();
+		String msdXml = XMLUtils.produceXMLResponse(msd);
+		//Document msdDoc = XMLUtils.convertStringToDocument(msdXml);
+		return msdXml;
 	}
 
 }

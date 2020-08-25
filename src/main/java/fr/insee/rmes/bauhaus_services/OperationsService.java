@@ -4,7 +4,13 @@ import java.io.File;
 
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.MSD;
 
 public interface OperationsService {
 
@@ -31,8 +37,12 @@ public interface OperationsService {
 	String getSeries() throws RmesException;
 
 	String getSeriesForSearch() throws RmesException;
+	
+	Series getSeriesByID(String id) throws RmesException;
 
-	String getSeriesByID(String id) throws RmesException;
+	String getSeriesJsonByID(String id) throws RmesException;
+
+	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
 
 	String getSeriesWithSims() throws RmesException;
 	
@@ -54,7 +64,9 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
-	String getOperationByID(String id) throws RmesException;
+	String getOperationJsonByID(String id) throws RmesException;
+	
+	Operation getOperationById(String id) throws RmesException ;
 
 	String getOperationsWithoutReport(String id) throws RmesException;
 
@@ -73,7 +85,9 @@ public interface OperationsService {
 
 	String getIndicatorsForSearch() throws RmesException;
 
-	String getIndicatorByID(String id) throws RmesException;
+	String getIndicatorJsonByID(String id) throws RmesException;
+
+	Indicator getIndicatorById(String id) throws RmesException;
 
 	/**
 	 * UPDATE
@@ -106,8 +120,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 	
-	//MSD
-	String getMSD() throws RmesException;
+	MSD getMSD() throws RmesException;
 
 	String getMetadataAttribute(String id) throws RmesException;
 
@@ -115,6 +128,8 @@ public interface OperationsService {
 	
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
+
+	Documentation getFullSims(String id) throws RmesException;
 
 	String createMetadataReport(String body) throws RmesException;
 
@@ -125,6 +140,9 @@ public interface OperationsService {
 	Response exportMetadataReport(String id) throws RmesException;
 
 	String getMetadataReportOwner(String id) throws RmesException;
+
+	String getMSDJson() throws RmesException;
+
 
 
 }
