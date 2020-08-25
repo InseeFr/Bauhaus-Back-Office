@@ -84,7 +84,7 @@ WHERE {
 			?reportAttr ?attr ?value . 
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) .
 			GRAPH  ?g {
-				?value skos:prefLabel|igeo:name ?labelLg1 .
+				?value skos:prefLabel|igeo:name|rdfs:label ?labelLg1 .
 			}
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} 
