@@ -82,6 +82,9 @@ WHERE {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
 			?reportAttr ?attr ?value . 
+			GRAPH  <${MSD_GRAPH}>  {
+					?attr rdfs:range geo:Feature .
+				}
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) .
 			GRAPH  ?g {
 				?value skos:prefLabel|igeo:name|rdfs:label ?labelLg1 .
