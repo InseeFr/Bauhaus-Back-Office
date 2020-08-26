@@ -93,8 +93,8 @@ public class DocumentationExport {
 		try{ printStream = new PrintStream(osOutputFile);
 
 		StreamSource xsrc = new StreamSource(xslFile);
-		TransformerFactory transformerFactory = TransformerFactoryImpl.newInstance();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();
+		//transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		
 		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 		xsltTransformer.setParameter("tempFile", absolutePath);
@@ -105,7 +105,7 @@ public class DocumentationExport {
 		xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
 		 } catch (TransformerException e) {
 			logger.error(e.getMessage());
-		}finally {
+		} finally {
 			inputFile.close();
 			xslFile.close();
 			osOutputFile.close();
