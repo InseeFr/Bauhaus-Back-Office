@@ -260,7 +260,8 @@
 					<!-- </text:p> -->
 
 					<text:p>
-					<xsl:value-of select="system-property('xsl:version')"/>
+						<xsl:value-of select="'xsl:version: '" />
+						<xsl:value-of select="system-property('xsl:version')" />
 					</text:p>
 
 
@@ -317,7 +318,7 @@
 												-
 												<xsl:value-of select="masLabelLg1" />
 												<xsl:param name="mas" select="idMas" />
-				<xsl:apply-templates select="$rootVar//rubrics[@idAttribute	= $mas]" /> 
+<!-- 												<xsl:apply-templates select="$rootVar/Documentation/rubrics/rubrics[@idAttribute = $mas]" /> -->
 												<xsl:text> </xsl:text>
 											</text:p>
 										</table:table-cell>
@@ -350,7 +351,6 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:for-each>
-
 
 
 					<text:p text:style-name="P1">
@@ -422,12 +422,10 @@
 						<xsl:text> </xsl:text>
 					</xsl:for-each>
 
-
 				</office:text>
 			</office:body>
 		</office:document>
 	</xsl:template>
-
 
 	<xsl:template name="header">
 		<table:table table:name="Tableau1" table:style-name="Tableau1">
@@ -448,11 +446,12 @@
 		</table:table>
 	</xsl:template>
 
-
 	<xsl:template match="rubrics">
-		<xsl:value-of select="'coucou sims'" />
-		<xsl:apply-templates select="*" />
-		<xsl:value-of select="labelLg1"></xsl:value-of>
+		<text:p>
+			<xsl:value-of select="'coucou sims'" />
+			<xsl:apply-templates select="*" />
+			<xsl:value-of select="labelLg1"></xsl:value-of>
+		</text:p>
 	</xsl:template>
 
 	<xsl:template name="series">
@@ -590,7 +589,7 @@
 						<xsl:value-of select="'Séries ou Indicateurs liés'"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="RubricItem">
-						Séries:
+						<xsl:value-of select="'Séries:'"/>
 						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
 							<xsl:if test="type = 'series'">
 								<xsl:value-of select="labelLg1"></xsl:value-of>
@@ -599,7 +598,7 @@
 								</xsl:if>
 							</xsl:if>
 						</xsl:for-each>
-						Indicateurs:
+						<xsl:value-of select="'Indicateurs:'"/>
 						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
 							<xsl:if test="type = 'indicator'">
 								<xsl:value-of select="labelLg1"></xsl:value-of>
