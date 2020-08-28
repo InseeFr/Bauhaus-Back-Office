@@ -317,8 +317,9 @@
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg1" />
-												<xsl:param name="mas" select="idMas" />
-<!-- 												<xsl:apply-templates select="$rootVar/Documentation/rubrics/rubrics[@idAttribute = $mas]" /> -->
+												<xsl:value-of select="$rootVar/Documentation/labelLg1" />
+												<xsl:value-of select="$rootVar/Documentation/rubrics/rubrics[@idAttribute = $mas]/labelLg1" />
+ 											<xsl:apply-templates select="$rootVar/Documentation/rubrics/rubrics[@idAttribute = $mas]" /> 
 												<xsl:text> </xsl:text>
 											</text:p>
 										</table:table-cell>
@@ -598,6 +599,8 @@
 								</xsl:if>
 							</xsl:if>
 						</xsl:for-each>
+					</text:p>
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="'Indicateurs:'"/>
 						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
 							<xsl:if test="type = 'indicator'">

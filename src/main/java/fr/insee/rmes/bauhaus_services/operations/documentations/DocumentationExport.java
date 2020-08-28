@@ -68,6 +68,26 @@ public class DocumentationExport {
 		return output;
 	}
 
+	public File transfoTest(InputStream inputFile) throws Exception  {
+		logger.debug("Begin transformation test");
+		File output =  File.createTempFile("output", ".xml");
+		output.deleteOnExit();
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/transfoXSLT.xsl");
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+		PrintStream printStream = new PrintStream(osOutputFile);
+		StreamSource xsrc = new StreamSource(xslFile);
+		//TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();	
+		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();	
+
+		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+		xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
+		inputFile.close();
+		xslFile.close();
+		osOutputFile.close();
+		printStream.close();
+		logger.debug("End transformation test");
+		return output;	
+	}
 
 	public File export(InputStream inputFile, String absolutePath, String accessoryAbsolutePath, String targetType) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
@@ -90,20 +110,26 @@ public class DocumentationExport {
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		PrintStream printStream= null;
 
-		try{ printStream = new PrintStream(osOutputFile);
+		try{
+			printStream = new PrintStream(osOutputFile);
+			StreamSource xsrc = new StreamSource(xslFile);
+			//TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();
+			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
-		StreamSource xsrc = new StreamSource(xslFile);
-		TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();
-		//transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		
-		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-		xsltTransformer.setParameter("tempFile", absolutePath);
-		xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
-		xsltTransformer.setParameter("msd", msdPath);
-		xsltTransformer.setParameter("targetType", targetType);
+			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 
-		xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		 } catch (TransformerException e) {
+			absolutePath = absolutePath.replace('\\', '/');
+			accessoryAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
+			msdPath = msdPath.replace('\\', '/');
+
+			xsltTransformer.setParameter("tempFile", absolutePath);
+			xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
+			xsltTransformer.setParameter("msd", msdPath);
+			xsltTransformer.setParameter("targetType", targetType);
+
+			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
+		} catch (TransformerException e) {
 			logger.error(e.getMessage());
 		} finally {
 			inputFile.close();

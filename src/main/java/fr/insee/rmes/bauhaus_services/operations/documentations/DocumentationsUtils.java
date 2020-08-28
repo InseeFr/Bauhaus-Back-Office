@@ -549,8 +549,8 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
 
-		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
-
+		 return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
+		 //	return docExport.transfoTest(simsInputStream);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {

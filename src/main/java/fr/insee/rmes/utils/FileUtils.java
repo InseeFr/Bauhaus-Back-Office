@@ -61,7 +61,7 @@ public class FileUtils {
 			Files.copy( source,pathInZipfile, 
 					StandardCopyOption.REPLACE_EXISTING ); 
 			return pathInZipfile.toFile();}
-		finally { zipfs.close();}
+		finally { if (zipfs != null) zipfs.close();}
 	}
 
 
