@@ -212,7 +212,11 @@ public abstract class RepositoryUtils {
 		return (JSONObject) resArray.get(0);
 	}
 	
-	
+	/**
+	 * Return a JsonArray containing a list of jsonobject (key value)
+	 * @param jsonSparql
+	 * @return
+	 */
 	public static JSONArray sparqlJSONToResultArrayValues(JSONObject jsonSparql) {
 		JSONArray arrayRes = new JSONArray();
 		if (jsonSparql.get(RESULTS) == null) {
@@ -233,6 +237,11 @@ public abstract class RepositoryUtils {
 		return arrayRes;
 	}
 	
+	/**
+	 * Return a JsonArray containing a list of string (without key)
+	 * @param jsonSparql
+	 * @return
+	 */
 	public static JSONArray sparqlJSONToResultListValues(JSONObject jsonSparql) {
 		JSONArray arrayRes = new JSONArray();
 		if (jsonSparql.get(RESULTS) == null) {

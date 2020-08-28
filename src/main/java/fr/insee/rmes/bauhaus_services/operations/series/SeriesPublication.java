@@ -41,7 +41,7 @@ public class SeriesPublication extends RdfService {
 	public void publishSeries(String seriesId) throws RmesException {
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
-		JSONObject serieJson = seriesUtils.getSeriesById(seriesId);
+		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId);
 		String familyId = serieJson.getJSONObject("family").getString(Constants.ID);
 		String status= famOpeSerUtils.getValidationStatus(familyId);
 		

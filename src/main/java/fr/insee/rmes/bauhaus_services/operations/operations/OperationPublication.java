@@ -40,7 +40,7 @@ public class OperationPublication extends RdfService{
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		JSONObject operationJson = operationsUtils.getOperationById(operationId);
+		JSONObject operationJson = operationsUtils.getOperationJsonById(operationId);
 		
 		checkSeriesIsPublished(operationId, operationJson);
 

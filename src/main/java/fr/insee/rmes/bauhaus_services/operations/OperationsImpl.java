@@ -30,10 +30,16 @@ import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -101,11 +107,20 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
-	
-	
+
 	@Override
-	public String getSeriesByID(String id) throws RmesException {
-		JSONObject series = seriesUtils.getSeriesById(id);
+	public Series getSeriesByID(String id) throws RmesException {
+		return seriesUtils.getSeriesById(id);
+	}
+
+	@Override
+	public IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException {
+		return seriesUtils.getSeriesLabelById(id);
+	}
+
+	@Override
+	public String getSeriesJsonByID(String id) throws RmesException {
+		JSONObject series = seriesUtils.getSeriesJsonById(id);
 		return series.toString();
 	}
 
@@ -157,11 +172,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws Exception  {
+	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
 		OutputStream os;
 		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
 			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
-		}else {
+		} else {
 			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		}
 
@@ -171,18 +186,41 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
 	}
 
-	private InputStream transformFileOutputStreamInInputStream(OutputStream os)
-			throws NoSuchFieldException, IllegalAccessException, FileNotFoundException {
-		Field pathField = FileOutputStream.class.getDeclaredField("path");
-		pathField.setAccessible(true);
-		String path = (String) pathField.get(os);
-		return new FileInputStream(path);
+	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
+		Field pathField;
+		String path = null;
+		FileInputStream fis =null;
+		try {
+			pathField = FileOutputStream.class.getDeclaredField("path");
+
+			pathField.setAccessible(true);
+			path = (String) pathField.get(os);} catch (NoSuchFieldException | SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		try {
+			fis= new FileInputStream(path);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return(fis);
 	}
 
+	@Override
+	public Operation getOperationById(String id) throws RmesException {
+		return operationsUtils.getOperationById(id);
+	}
 
 	@Override
-	public String getOperationByID(String id) throws RmesException {
-		JSONObject operation = operationsUtils.getOperationById(id);
+	public String getOperationJsonByID(String id) throws RmesException {
+		JSONObject operation = operationsUtils.getOperationJsonById(id);
 		return operation.toString();
 	}
 
@@ -201,7 +239,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String createOperation(String body) throws RmesException {
 		return operationsUtils.setOperation(body);				
 	}
-	
+
 	@Override
 	public String setOperationValidation(String id) throws RmesException{
 		return operationsUtils.setOperationValidation(id);
@@ -241,7 +279,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setFamilyValidation(String id) throws RmesException{
 		return familiesUtils.setFamilyValidation(id);
 	}
-	
+
 	/**
 	 * CREATE
 	 */
@@ -265,20 +303,25 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getIndicatorsForSearch() throws RmesException {
-			return indicatorsUtils.getIndicatorsForSearch();
+		return indicatorsUtils.getIndicatorsForSearch();
 	}
 
 	@Override
-	public String getIndicatorByID(String id) throws RmesException {
-		JSONObject indic = indicatorsUtils.getIndicatorById(id);
+	public String getIndicatorJsonByID(String id) throws RmesException {
+		JSONObject indic = indicatorsUtils.getIndicatorJsonById(id);
 		return indic.toString();
+	}
+
+	@Override
+	public Indicator getIndicatorById(String id) throws RmesException {
+		return indicatorsUtils.getIndicatorById(id);
 	}
 
 	@Override
 	public void setIndicator(String id, String body) throws RmesException {
 		indicatorsUtils.setIndicator(id,body);
 	}
-	
+
 	/**
 	 * Publish indicator
 	 * @throws RmesException 
@@ -287,7 +330,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setIndicatorValidation(String id) throws RmesException{
 		return indicatorsUtils.setIndicatorValidation(id);
 	}
-	
+
 	/**
 	 * Create indicator
 	 * @throws RmesException 
@@ -304,9 +347,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 *****************************************************************************************************/
 
 	@Override
-	public String getMSD() throws RmesException {
+	public String getMSDJson() throws RmesException {
 		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public MSD getMSD() throws RmesException {
+		return operationsUtils.getMSD();
 	}
 
 	@Override
@@ -326,6 +374,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
 		XhtmlToMarkdownUtils.convertJSONObject(documentation);
 		return documentation.toString();
+	}
+
+	@Override
+	public Documentation getFullSims(String id) throws RmesException {
+		return  documentationsUtils.getFullSims(id);
 	}
 
 	@Override
@@ -351,7 +404,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
-	
+
 	/**
 	 * PUBLISH
 	 */
@@ -360,7 +413,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.publishMetadataReport(id);
 	}
 
-	
+
 	@Override
 	public Response exportMetadataReport(String id) throws RmesException  {
 		File output;

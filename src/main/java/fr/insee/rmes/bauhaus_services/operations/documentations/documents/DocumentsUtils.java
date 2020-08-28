@@ -462,8 +462,58 @@ public class DocumentsUtils  extends RdfService  {
 
 	}
 
+	public Document buildDocumentFromJson(JSONObject jsonDoc) {
+		Document doc = new Document();
+		if (jsonDoc.has("labelLg1")) {
+			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
+		}
+		if (jsonDoc.has("labelLg2")) {
+			doc.setLabelLg2(jsonDoc.getString("labelLg2"));
+		}
+		if (jsonDoc.has("descriptionLg1")) {
+			doc.setLabelLg1(jsonDoc.getString("descriptionLg1"));
+		}
+		if (jsonDoc.has("descriptionLg2")) {
+			doc.setLabelLg2(jsonDoc.getString("descriptionLg2"));
+		}
+		if (jsonDoc.has("dateMiseAJour")) {
+			doc.setLabelLg1(jsonDoc.getString("dateMiseAJour"));
+		}
+		if (jsonDoc.has("langue")) {
+			doc.setLabelLg2(jsonDoc.getString("langue"));
+		}
+		if (jsonDoc.has("url")) {
+			doc.setLabelLg1(jsonDoc.getString("url"));
+		}
+		if (jsonDoc.has("uri")) {
+			doc.setLabelLg2(jsonDoc.getString("uri"));
+		}
+		
+		return doc ;
+	}
+	
+	public Document buildDocumentHeadFromJson(JSONObject jsonDoc) {
+		Document doc= new Document();
+		if (jsonDoc.has("url")) {	
+			doc.setUrl(jsonDoc.getString("url"));
+		}
+		if (jsonDoc.has("labelLg1")) {	
+			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
+		}
+		if (jsonDoc.has("labelLg2")) {	
+			doc.setLabelLg1(jsonDoc.getString("labelLg2"));
+		}
+		return(doc);
+	}
+	
+//	
+//	public Response downloadDocument(String id) throws RmesException {
+//		JSONObject jsonDoc = getDocument(id);
+//=======
 	public Response downloadDocumentFile(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id, false);
+
+
 		String url = getDocumentUrlFromDocument(jsonDoc);
 
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
@@ -493,4 +543,6 @@ public class DocumentsUtils  extends RdfService  {
 		return path;
 	}
 
+	
+	
 }
