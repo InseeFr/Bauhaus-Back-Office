@@ -79,8 +79,7 @@ public class FamOpeSerUtils  extends RdfService {
 			Object item = buildObjectFromJson(items.getJSONObject(i),cls);
 			result.add(item);
 		}	} catch (ClassNotFoundException e) {
-			logger.error("JsonArray cannot be parsed to this class");
-			e.printStackTrace();
+			logger.error("JsonArray cannot be parsed to this class: ".concat(e.getMessage()));
 		}
 		return result;
 	}
@@ -91,8 +90,7 @@ public class FamOpeSerUtils  extends RdfService {
 		try {
 			result = mapper.readValue(objectJson.toString(), cls);
 		} catch (JsonProcessingException e) {
-			logger.error("OperationsLink Json cannot be parsed");
-			e.printStackTrace();
+			logger.error("OperationsLink Json cannot be parsed: ".concat(e.getMessage()));
 		}
 		return result;
 	}
@@ -103,8 +101,7 @@ public class FamOpeSerUtils  extends RdfService {
 		try {
 			operationsLink = mapper.readValue(operationsLinkJson.toString(), OperationsLink.class);
 		} catch (JsonProcessingException e) {
-			logger.error("OperationsLink Json cannot be parsed");
-			e.printStackTrace();
+			logger.error("OperationsLink Json cannot be parsed: ".concat(e.getMessage()));
 		}
 		return operationsLink;
 	}

@@ -522,7 +522,7 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		if (targetType=="OPERATION") {
+		if (targetType.equals("OPERATION")) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
 			String idSeries=operation.getSeries().getId();
 			Series series=seriesUtils.getSeriesById(idSeries);
@@ -532,7 +532,7 @@ public class DocumentationsUtils extends RdfService{
 			Files.copy(is2, accessoryTempFile, options);
 		}
 
-		if (targetType=="SERIES") {
+		if (targetType.equals("SERIES")) {
 			String response=XMLUtils.produceXMLResponse(
 					seriesUtils.getSeriesById(idDatabase));
 			is = IOUtils.toInputStream(response, "UTF-8");
@@ -541,7 +541,7 @@ public class DocumentationsUtils extends RdfService{
 			Files.copy(is2, tempFile, options);
 		}
 
-		if (targetType=="INDICATOR") {
+		if (targetType.equals("INDICATOR")) {
 			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
 					indicatorsUtils.getIndicatorById(idDatabase)), "UTF-8");
 			Files.copy(is, tempFile, options);

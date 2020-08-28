@@ -104,8 +104,7 @@ public class OperationsUtils extends RdfService{
 		try {
 			operation = mapper.readValue(operationJson.toString(), Operation.class);
 		} catch (JsonProcessingException e) {
-			logger.error("Json cannot be parsed");
-			e.printStackTrace();
+			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
 		}
 		 return operation;
 	}

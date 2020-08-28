@@ -50,15 +50,18 @@ public class FileUtils {
 		// defined in java.net.JarURLConnection
 		URI uri = URI.create("jar:file:/codeSamples/zipfs/zipfstest.zip");
 
-		FileSystem zipfs = FileSystems.newFileSystem(uri, env); 
-		String sourcePath = inputFile.getPath();
-		Path source = Paths.get(sourcePath);
-		Path pathInZipfile = zipfs.getPath(StringUtils.substringAfterLast(sourcePath, "/"));          
-		// copy a file into the zip file
-		Files.copy( source,pathInZipfile, 
-				StandardCopyOption.REPLACE_EXISTING ); 
+		FileSystem zipfs = null;
 
-		return pathInZipfile.toFile();
+		try{ 
+			zipfs = FileSystems.newFileSystem(uri, env); 
+			String sourcePath = inputFile.getPath();
+			Path source = Paths.get(sourcePath);
+			Path pathInZipfile = zipfs.getPath(StringUtils.substringAfterLast(sourcePath, "/"));  
+			// copy a file into the zip file
+			Files.copy( source,pathInZipfile, 
+					StandardCopyOption.REPLACE_EXISTING ); 
+			return pathInZipfile.toFile();}
+		finally { zipfs.close();}
 	}
 
 
