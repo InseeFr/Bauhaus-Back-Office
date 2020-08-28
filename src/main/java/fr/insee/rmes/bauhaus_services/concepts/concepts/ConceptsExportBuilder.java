@@ -22,6 +22,9 @@ import fr.insee.rmes.utils.StringComparator;
 @Component
 public class ConceptsExportBuilder  extends RdfService {
 
+	private static final String UL_END = "</ul><p></p>";
+	private static final String LI_BEGIN = "<li>";
+	private static final String LI_END = "</li>";
 	private static final String CONCEPT_VERSION = "conceptVersion";
 	@Autowired 
 	ConceptsUtils conceptsUtils;
@@ -79,40 +82,40 @@ public class ConceptsExportBuilder  extends RdfService {
 	private String editGeneral(JSONObject json, String context) {
 		StringBuilder xhtml = new StringBuilder("<ul>");
 		if (json.has(Constants.ALT_LABEL_LG1)) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG1 + ") : " + json.getString(Constants.ALT_LABEL_LG1) + "</li>");
+			xhtml.append(LI_BEGIN+"Libellé alternatif (" + Config.LG1 + ") : " + json.getString(Constants.ALT_LABEL_LG1) + LI_END);
 		}
 		if (json.has(Constants.ALT_LABEL_LG2)) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG2 + ") : " + json.getString(Constants.ALT_LABEL_LG2) + "</li>");
+			xhtml.append(LI_BEGIN+"Libellé alternatif (" + Config.LG2 + ") : " + json.getString(Constants.ALT_LABEL_LG2) + LI_END);
 		}
 		if (json.has("created")) {
-			xhtml.append("<li>Date de création : " + toDate(json.getString("created")) + "</li>");
+			xhtml.append(LI_BEGIN+"Date de création : " + toDate(json.getString("created")) + LI_END);
 		}
 		if (json.has("modified")) {
-			xhtml.append("<li>Date de modification : " + toDate(json.getString("modified")) + "</li>");
+			xhtml.append(LI_BEGIN+"Date de modification : " + toDate(json.getString("modified")) + LI_END);
 		}
 		if (json.has("valid")) {
-			xhtml.append("<li>Date de fin de validité : " + toDate(json.getString("valid")) + "</li>");
+			xhtml.append(LI_BEGIN+"Date de fin de validité : " + toDate(json.getString("valid")) + LI_END);
 		}
 		if (json.has("disseminationStatus")) {
-			xhtml.append("<li>Statut de diffusion : " + toLabel(json.getString("disseminationStatus")) + "</li>");
+			xhtml.append(LI_BEGIN+"Statut de diffusion : " + toLabel(json.getString("disseminationStatus")) + LI_END);
 		}
 		if (json.has("additionalMaterial")) {
-			xhtml.append("<li>Document lié : " + json.getString("additionalMaterial") + "</li>");
+			xhtml.append(LI_BEGIN+"Document lié : " + json.getString("additionalMaterial") + LI_END);
 		}
 		if (json.has(Constants.CREATOR)) {
-			xhtml.append("<li>Timbre propriétaire : " + json.getString(Constants.CREATOR) + "</li>");
+			xhtml.append(LI_BEGIN+"Timbre propriétaire : " + json.getString(Constants.CREATOR) + LI_END);
 		}
 		if (json.has("contributor")) {
-			xhtml.append("<li>Timbre gestionnaire : " + json.getString("contributor") + "</li>");
+			xhtml.append(LI_BEGIN+"Timbre gestionnaire : " + json.getString("contributor") + LI_END);
 		}
 		if (json.has("isValidated")) {
-			xhtml.append("<li>Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) + "</li>");
+			xhtml.append(LI_BEGIN+"Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) + LI_END);
 		}
 		if (json.has(CONCEPT_VERSION)) {
-			xhtml.append("<li>Version : " + json.getString(CONCEPT_VERSION) + "</li>");
+			xhtml.append(LI_BEGIN+"Version : " + json.getString(CONCEPT_VERSION) + LI_END);
 		}
 
-		xhtml.append("</ul><p></p>");
+		xhtml.append(UL_END);
 		return xhtml.toString();
 	}
 
@@ -129,9 +132,9 @@ public class ConceptsExportBuilder  extends RdfService {
 		}
 		StringBuilder xhtml = new StringBuilder("<ul>");
 		for (String member : list) {
-			xhtml.append("<li>" + member + "</li>");
+			xhtml.append(LI_BEGIN + member + LI_END);
 		}
-		xhtml.append("</ul><p></p>");
+		xhtml.append(UL_END);
 		return xhtml.toString();
 	}
 
@@ -201,9 +204,9 @@ public class ConceptsExportBuilder  extends RdfService {
 		xhtml.append("<U>" + title + " :</U>");
 		xhtml.append("<ul>");
 		for (String item : list) {
-			xhtml.append("<li>" + item + "</li>");
+			xhtml.append(LI_BEGIN + item + LI_END);
 		}
-		xhtml.append("</ul><p></p>");
+		xhtml.append(UL_END);
 		return xhtml;
 	}
 

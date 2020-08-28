@@ -79,7 +79,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 		String fileName = json.getString(Constants.PREF_LABEL_LG1);
 		fileName = Normalizer.normalize(fileName.toLowerCase()
-				.replaceAll(" ", "-"), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "") + ".odt";
+				.replace(" ", "-"), Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "") + ".odt";
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
