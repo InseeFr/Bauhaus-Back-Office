@@ -99,8 +99,8 @@ public class ConceptsExportBuilder  extends RdfService {
 		if (json.has("additionalMaterial")) {
 			xhtml.append("<li>Document lié : " + json.getString("additionalMaterial") + "</li>");
 		}
-		if (json.has("creator")) {
-			xhtml.append("<li>Timbre propriétaire : " + json.getString("creator") + "</li>");
+		if (json.has(Constants.CREATOR)) {
+			xhtml.append("<li>Timbre propriétaire : " + json.getString(Constants.CREATOR) + "</li>");
 		}
 		if (json.has("contributor")) {
 			xhtml.append("<li>Timbre gestionnaire : " + json.getString("contributor") + "</li>");

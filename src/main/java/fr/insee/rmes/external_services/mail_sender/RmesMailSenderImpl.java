@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
@@ -76,7 +77,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
 		
-		String fileName = json.getString("prefLabelLg1");
+		String fileName = json.getString(Constants.PREF_LABEL_LG1);
 		fileName = Normalizer.normalize(fileName.toLowerCase()
 				.replaceAll(" ", "-"), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "") + ".odt";
 		

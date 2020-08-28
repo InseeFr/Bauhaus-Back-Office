@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,13 +64,7 @@ import fr.insee.rmes.utils.XMLUtils;
 @Component
 public class DocumentationsUtils extends RdfService{
 
-	private static final String ID_INDICATOR = "idIndicator";
 
-	private static final String ID_OPERATION = "idOperation";
-
-	private static final String ID_SERIES = "idSeries";
-
-	private static final String PUBLISHER = "publisher";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
@@ -93,9 +88,6 @@ public class DocumentationsUtils extends RdfService{
 
 	@Autowired
 	CodeListUtils codeListUtils;
-
-	@Autowired
-	DocumentationsUtils documentationsUtils;
 
 	@Autowired
 	private FamOpeSerUtils famOpeSerUtils;
@@ -130,47 +122,46 @@ public class DocumentationsUtils extends RdfService{
 
 	/**
 	 * Java Object	Builder
-	 * @param JsonSims
+	 * @param jsonSims
 	 * @return ExtensiveSims
 	 * @throws RmesException
 	 */
 
-	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject JsonSims) throws RmesException {
-		Documentation sims = buildDocumentationFromJson(JsonSims);
-		ExtensiveSims extensiveSims = new ExtensiveSims(sims);
-
-		return extensiveSims;
+	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject jsonSims) throws RmesException {
+		Documentation sims = buildDocumentationFromJson(jsonSims);
+		return new ExtensiveSims(sims);
 	}
 
 
 	/**
 	 * Java Object	Builder
-	 * @param JsonSims
+	 * @param jsonSims
 	 * @return Sims
 	 * @throws RmesException
 	 */
 
-	public Documentation buildDocumentationFromJson(JSONObject JsonSims) throws RmesException {
+	public Documentation buildDocumentationFromJson(JSONObject jsonSims) throws RmesException {
 
 		Documentation sims = new Documentation();
-		String idSims=JsonSims.getString(Constants.ID);
+		String idSims=jsonSims.getString(Constants.ID);
 		sims.setId(idSims);
-		sims.setLabelLg1(JsonSims.getString("labelLg1"));
-		sims.setLabelLg2(JsonSims.getString("labelLg2"));
+		sims.setLabelLg1(jsonSims.getString(Constants.LABEL_LG1));
+		sims.setLabelLg2(jsonSims.getString(Constants.LABEL_LG2));
 
 		String[] target = getDocumentationTargetTypeAndId(idSims);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
 		switch(targetType) {
-		case "OPERATION" : sims.setIdOperation(idDatabase); break;
-		case "SERIES" : sims.setIdSeries(idDatabase); break;
-		case "INDICATOR" : sims.setIdIndicator(idDatabase); break;
+		case Constants.OPERATION_UP : sims.setIdOperation(idDatabase); break;
+		case Constants.SERIES : sims.setIdSeries(idDatabase); break;
+		case Constants.INDICATOR_UP : sims.setIdIndicator(idDatabase); break;
+		default : break;
 		}
 
-		List<DocumentationRubric> rubrics = new ArrayList<DocumentationRubric>();
-		JSONArray docRubrics = JsonSims.getJSONArray("rubrics");
-		DocumentationRubric currentRubric = new DocumentationRubric();
+		List<DocumentationRubric> rubrics = new ArrayList<>();
+		JSONArray docRubrics = jsonSims.getJSONArray("rubrics");
+		DocumentationRubric currentRubric ;
 
 		for (int i = 0; i < docRubrics.length(); i++) {
 			JSONObject rubric = docRubrics.getJSONObject(i);
@@ -258,15 +249,15 @@ public class DocumentationsUtils extends RdfService{
 		String targetId = null;
 		IRI targetUri = null;
 		try {
-			targetId = simsJson.getString(ID_INDICATOR);
+			targetId = simsJson.getString(Constants.ID_INDICATOR);
 			if (!targetId.isEmpty()) {
 				targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId);
 			} else {
-				targetId = simsJson.getString(ID_OPERATION);
+				targetId = simsJson.getString(Constants.ID_OPERATION);
 				if (!targetId.isEmpty()) {
 					targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId);
 				} else {
-					targetId = simsJson.getString(ID_SERIES);
+					targetId = simsJson.getString(Constants.ID_SERIES);
 					targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId);
 				}
 			}
@@ -367,12 +358,12 @@ public class DocumentationsUtils extends RdfService{
 		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
 		String idDatabase = null;
 		if (existingIdTarget != null) {
-			idDatabase = (String) existingIdTarget.get(ID_OPERATION);
+			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get(ID_SERIES);
+				idDatabase = (String) existingIdTarget.get(Constants.ID_SERIES);
 			}
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get(ID_INDICATOR);
+				idDatabase = (String) existingIdTarget.get(Constants.ID_INDICATOR);
 			}
 		}
 		if (existingIdTarget == null || idDatabase == null) {
@@ -401,7 +392,7 @@ public class DocumentationsUtils extends RdfService{
 					"id is null");
 		}
 		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
-		if (existingIdSims != null && existingIdSims.has("idSims")) {
+		if (existingIdSims != null && existingIdSims.has(Constants.ID_SIMS)) {
 			logger.error("Documentation already exists");
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
 					"Maybe this is an update");
@@ -446,7 +437,7 @@ public class DocumentationsUtils extends RdfService{
 		if (json.length() == 0) {
 			return "1000";
 		}
-		String id = json.getString("idSims");
+		String id = json.getString(Constants.ID_SIMS);
 		if (id.equals(Constants.UNDEFINED)) {
 			return "1000";
 		}
@@ -461,19 +452,19 @@ public class DocumentationsUtils extends RdfService{
 		String idDatabase = null;
 		String targetType = null;
 		if (existingIdTarget != null ) {
-			idDatabase = (String) existingIdTarget.get("idOperation");
+			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
 
 			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get("idSeries");
+				idDatabase = (String) existingIdTarget.get(Constants.ID_SERIES);
 
 				if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-					idDatabase = (String) existingIdTarget.get("idIndicator");
-					targetType = "INDICATOR";
+					idDatabase = (String) existingIdTarget.get(Constants.ID_INDICATOR);
+					targetType = Constants.INDICATOR_UP;
 				} else {
-					targetType = "SERIES";
+					targetType = Constants.SERIES;
 				}
 			} else {
-				targetType = "OPERATION";
+				targetType = Constants.OPERATION_UP;
 			}
 		}
 		return new String[] { targetType, idDatabase };	
@@ -484,18 +475,18 @@ public class DocumentationsUtils extends RdfService{
 		String stamp = null;
 		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
 		if (target != null) {
-			String idOperation = target.getString(ID_OPERATION);
-			String idSerie = target.getString(ID_SERIES);
-			String idIndicator = target.getString(ID_INDICATOR);
+			String idOperation = target.getString(Constants.ID_OPERATION);
+			String idSerie = target.getString(Constants.ID_SERIES);
+			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(ID_SERIES))
-						.getString(PUBLISHER);
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID_SERIES))
+						.getString(Constants.PUBLISHER);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(PUBLISHER);
+				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(Constants.PUBLISHER);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(PUBLISHER);
+				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(Constants.PUBLISHER);
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
@@ -504,7 +495,7 @@ public class DocumentationsUtils extends RdfService{
 		return stamp;
 	}
 
-	public File exportMetadataReport(String id) throws Exception {
+	public File exportMetadataReport(String id) throws IOException, RmesException {
 
 		InputStream is;
 		InputStream is2;
@@ -522,40 +513,40 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		if (targetType.equals("OPERATION")) {
+		if (targetType.equals(Constants.OPERATION_UP)) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
 			String idSeries=operation.getSeries().getId();
 			Series series=seriesUtils.getSeriesById(idSeries);
-			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(operation), "UTF-8");
+			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(operation), StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
-			is2 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(series), "UTF-8");
+			is2 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(series), StandardCharsets.UTF_8);
 			Files.copy(is2, accessoryTempFile, options);
 		}
 
-		if (targetType.equals("SERIES")) {
+		if (targetType.equals(Constants.SERIES)) {
 			String response=XMLUtils.produceXMLResponse(
 					seriesUtils.getSeriesById(idDatabase));
-			is = IOUtils.toInputStream(response, "UTF-8");
+			is = IOUtils.toInputStream(response,StandardCharsets.UTF_8);
 			Files.copy(is, accessoryTempFile, options);
-			is2 = IOUtils.toInputStream(response, "UTF-8");
+			is2 = IOUtils.toInputStream(response, StandardCharsets.UTF_8);
 			Files.copy(is2, tempFile, options);
 		}
 
-		if (targetType.equals("INDICATOR")) {
+		if (targetType.equals(Constants.INDICATOR_UP)) {
 			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase)), "UTF-8");
+					indicatorsUtils.getIndicatorById(idDatabase)), StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
 		}
 
-		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
+		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), StandardCharsets.UTF_8);
 
 		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
 
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
-		List<MAS> msd = new ArrayList<MAS>();
-		MAS currentRubric = new MAS();
+		List<MAS> msd = new ArrayList<>();
+		MAS currentRubric;
 
 		for (int i = 0; i < jsonMsd.length(); i++) {
 			JSONObject rubric = jsonMsd.getJSONObject(i);

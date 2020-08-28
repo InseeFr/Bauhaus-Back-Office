@@ -46,7 +46,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Component
 @Path("/documents")
-@Tag(name="Document", description="Document API")
+@Tag(name=Constants.DOCUMENT, description="Document API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
 		@ApiResponse(responseCode = "204", description = "No Content"),
@@ -137,7 +137,7 @@ public class DocumentsResources {
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	public Response setDocument(
-			@Parameter(description = "Document", required = true, schema = @Schema(implementation=Document.class))
+			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))
 			@FormDataParam(value="body") String body,
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
 			@FormDataParam(value = "file") InputStream documentFile,
@@ -163,7 +163,7 @@ public class DocumentsResources {
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public Response setDocument(
 			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
-			@RequestBody(description = "Document", required = true)
+			@RequestBody(description = Constants.DOCUMENT, required = true)
 			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
 		try {
 			documentsService.setDocument(id, body);

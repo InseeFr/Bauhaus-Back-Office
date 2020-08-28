@@ -51,6 +51,8 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 @Component
 public class SeriesUtils extends RdfService {
 
+
+
 	@Autowired
 	CodeListService codeListService;
 
@@ -75,20 +77,21 @@ public class SeriesUtils extends RdfService {
 		return buildSeriesFromJson(getSeriesJsonById(id));	
 	}
 
-	private Series buildSeriesFromJson(JSONObject seriesJson) throws JSONException, RmesException {
+	private Series buildSeriesFromJson(JSONObject seriesJson) throws RmesException {
+		//TODO why can't we use something like 		ObjectMapper mapper = new ObjectMapper(); mapper.readValue(body, Series.class);
 		Series series=new Series();
-		series.setId(seriesJson.getString("id"));
-		if(seriesJson.has("prefLabelLg1")) {
-			series.setPrefLabelLg1(seriesJson.getString("prefLabelLg1"));
+		series.setId(seriesJson.getString(Constants.ID));
+		if(seriesJson.has(Constants.PREF_LABEL_LG1)) {
+			series.setPrefLabelLg1(seriesJson.getString(Constants.PREF_LABEL_LG1));
 		}
-		if(seriesJson.has("prefLabelLg2")) {
-			series.setPrefLabelLg2(seriesJson.getString("prefLabelLg2"));
+		if(seriesJson.has(Constants.PREF_LABEL_LG2)) {
+			series.setPrefLabelLg2(seriesJson.getString(Constants.PREF_LABEL_LG2));
 		}
-		if(seriesJson.has("altLabelLg1")) {
-			series.setAltLabelLg1(seriesJson.getString("altLabelLg1"));
+		if(seriesJson.has(Constants.ALT_LABEL_LG1)) {
+			series.setAltLabelLg1(seriesJson.getString(Constants.ALT_LABEL_LG1));
 		}
-		if(seriesJson.has("altLabelLg2")) {
-			series.setAltLabelLg2(seriesJson.getString("altLabelLg2"));
+		if(seriesJson.has(Constants.ALT_LABEL_LG2)) {
+			series.setAltLabelLg2(seriesJson.getString(Constants.ALT_LABEL_LG2));
 		}
 		if(seriesJson.has("abstractLg1")) {
 			series.setAbstractLg1(seriesJson.getString("abstractLg1"));
@@ -114,24 +117,24 @@ public class SeriesUtils extends RdfService {
 		if(seriesJson.has("accrualPeriodicityList")) {
 			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
 		}
-		if(seriesJson.has("creator")) {
+		if(seriesJson.has(Constants.CREATOR)) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("creator")));
+					seriesJson.getJSONArray(Constants.CREATOR)));
 		}
-		if(seriesJson.has("publisher")) {
+		if(seriesJson.has(Constants.PUBLISHER)) {
 			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("publisher")));
+					seriesJson.getJSONArray(Constants.PUBLISHER)));
 		}
-		if(seriesJson.has("idSims")) {
-			series.setIdSims(seriesJson.getString("idSims"));
+		if(seriesJson.has(Constants.ID_SIMS)) {
+			series.setIdSims(seriesJson.getString(Constants.ID_SIMS));
 		}
-		if(seriesJson.has("family")) {
-			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject("family")));
+		if(seriesJson.has(Constants.FAMILY)) {
+			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject(Constants.FAMILY)));
 		}
-		if(seriesJson.has("operations")) {
-			List<IdLabelTwoLangs> operations = new ArrayList<IdLabelTwoLangs>();
+		if(seriesJson.has(Constants.OPERATIONS)) {
+			List<IdLabelTwoLangs> operations = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("operations"),
+					seriesJson.getJSONArray(Constants.OPERATIONS),
 					IdLabelTwoLangs.getClassIdLabelTwoLangs());
 					for (Object o:objects){
 						operations.add((IdLabelTwoLangs) o);		
@@ -139,7 +142,7 @@ public class SeriesUtils extends RdfService {
 					series.setOperations(operations);
 		}
 		if(seriesJson.has("contributor")) {
-			List<OperationsLink> contributors = new ArrayList<OperationsLink>();
+			List<OperationsLink> contributors = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("contributor"),
 					OperationsLink.getClassOperationsLink());
@@ -149,7 +152,7 @@ public class SeriesUtils extends RdfService {
 					series.setContributors(contributors);
 		}
 		if(seriesJson.has("seeAlso")) {
-			List<OperationsLink> seeAlsoes = new ArrayList<OperationsLink>();
+			List<OperationsLink> seeAlsoes = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("seeAlso"),
 					OperationsLink.getClassOperationsLink());
@@ -159,7 +162,7 @@ public class SeriesUtils extends RdfService {
 					series.setSeeAlso(seeAlsoes);
 		}
 		if(seriesJson.has("replaces")) {
-			List<OperationsLink> replacesList = new ArrayList<OperationsLink>();
+			List<OperationsLink> replacesList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("replaces"),
 					OperationsLink.getClassOperationsLink());
@@ -169,7 +172,7 @@ public class SeriesUtils extends RdfService {
 					series.setReplaces(replacesList);
 		}
 		if(seriesJson.has("isReplacedBy")) {
-			List<OperationsLink> isReplacedByList = new ArrayList<OperationsLink>();
+			List<OperationsLink> isReplacedByList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("isReplacedBy"),
 					OperationsLink.getClassOperationsLink());
@@ -179,7 +182,7 @@ public class SeriesUtils extends RdfService {
 					series.setIsReplacedBy(isReplacedByList);
 		}
 		if(seriesJson.has("generates")) {
-			List<OperationsLink> generatesList = new ArrayList<OperationsLink>();
+			List<OperationsLink> generatesList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("generates"),
 					OperationsLink.getClassOperationsLink());
@@ -189,7 +192,7 @@ public class SeriesUtils extends RdfService {
 					series.setIsReplacedBy(generatesList);
 		}
 		if(seriesJson.has("dataCollector")) {
-			List<OperationsLink> dataCollectors = new ArrayList<OperationsLink>();
+			List<OperationsLink> dataCollectors = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
 					seriesJson.getJSONArray("dataCollector"),
 					OperationsLink.getClassOperationsLink());
@@ -236,7 +239,7 @@ public class SeriesUtils extends RdfService {
 	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
 		JSONArray operations = repoGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
 		if (operations.length() != 0) {
-			series.put("operations", operations);
+			series.put(Constants.OPERATIONS, operations);
 		}
 	}
 
@@ -250,7 +253,7 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesFamily(String idSeries, JSONObject series) throws RmesException {
 		JSONObject family = repoGestion.getResponseAsObject(SeriesQueries.getFamily(idSeries));
-		series.put("family", family);
+		series.put(Constants.FAMILY, family);
 	}
 
 	private void addSeriesLinks(String idSeries, JSONObject series) throws RmesException {
@@ -284,15 +287,15 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-		series.put("creator", creators);
+		series.put(Constants.CREATOR, creators);
 	}
 
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
 		if (publishers.length()==1) {
-			series.put("publisher", publishers.get(0));
+			series.put(Constants.PUBLISHER, publishers.get(0));
 		}else {
-			series.put("publisher", publishers);
+			series.put(Constants.PUBLISHER, publishers);
 		}
 	}
 
@@ -484,7 +487,7 @@ public class SeriesUtils extends RdfService {
 		JSONObject series = getSeriesJsonById(seriesId);
 		String idSims;
 		try {
-			idSims = series.getString("idSims");
+			idSims = series.getString(Constants.ID_SIMS);
 		} catch (JSONException e) {
 			return false;
 		}
@@ -495,7 +498,7 @@ public class SeriesUtils extends RdfService {
 		JSONObject series = getSeriesJsonById(seriesId);
 		JSONArray operations;
 		try {
-			operations = series.getJSONArray("operations");
+			operations = series.getJSONArray(Constants.OPERATIONS);
 		} catch (JSONException e) {
 			return false;
 		}

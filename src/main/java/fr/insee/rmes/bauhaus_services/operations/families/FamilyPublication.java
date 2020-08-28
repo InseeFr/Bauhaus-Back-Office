@@ -45,7 +45,7 @@ public class FamilyPublication extends RdfService {
 					if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
 							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith("publisher")
+							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
 							|| st.getPredicate().toString().endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
 					}
@@ -66,7 +66,7 @@ public class FamilyPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 		}
 		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
-		RepositoryPublication.publishResource(familyToPublishRessource, model, "family");
+		RepositoryPublication.publishResource(familyToPublishRessource, model, Constants.FAMILY);
 		
 	}
 

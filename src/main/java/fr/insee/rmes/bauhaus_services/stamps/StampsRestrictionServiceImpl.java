@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -23,9 +24,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
 
-	private static final String CREATOR = "creator";
-	private static final String MANAGER = "manager";
-	private static final String OWNER = "owner";
+
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -36,7 +35,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		String uriAsString = "<" + uri.toString() + ">";
 		JSONObject owner = repoGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
-		if (!owner.getString(OWNER).equals(user.getStamp())) {
+		if (!owner.getString(Constants.OWNER).equals(user.getStamp())) {
 			isConceptOwner = false;
 		}
 		return isConceptOwner;
@@ -54,7 +53,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString(OWNER).equals(user.getStamp())) {
+			if (!owners.getJSONObject(i).getString(Constants.OWNER).equals(user.getStamp())) {
 				isConceptsOwner = false;
 			}
 		}
@@ -162,7 +161,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		for (int i = 0; i < owners.length(); i++) {
-			if (!owners.getJSONObject(i).getString(OWNER).equals(user.getStamp())) {
+			if (!owners.getJSONObject(i).getString(Constants.OWNER).equals(user.getStamp())) {
 				isConceptOwner = false;
 			}
 		}
@@ -177,7 +176,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		JSONArray managers = repoGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString(MANAGER).equals(user.getStamp())) {
+			if (!managers.getJSONObject(i).getString(Constants.MANAGER).equals(user.getStamp())) {
 				isConceptManager = false;
 			}
 		}
@@ -201,7 +200,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uriAsString));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString(CREATOR).equals(user.getStamp())) {
+			if (!managers.getJSONObject(i).getString(Constants.CREATOR).equals(user.getStamp())) {
 				isSeriesManager = true;
 			}
 		}
@@ -217,7 +216,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isIndicatorManager = false;
 		if (creators.length() > 0) {
 			for (int i = 0; i < creators.length(); i++) {
-				if (!creators.getJSONObject(i).getString(CREATOR).equals(user.getStamp())) {
+				if (!creators.getJSONObject(i).getString(Constants.CREATOR).equals(user.getStamp())) {
 					isIndicatorManager = true;
 				}
 			}

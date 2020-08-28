@@ -33,7 +33,6 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -77,27 +76,27 @@ public class OperationsUtils extends RdfService{
 		Operation operation = new Operation();
 		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
 
-		operation.setId(jsonOperation.getString("id"));
-		if(jsonOperation.has("prefLabelLg1")) {
-			operation.setPrefLabelLg1(jsonOperation.getString("prefLabelLg1"));
+		operation.setId(jsonOperation.getString(Constants.ID));
+		if(jsonOperation.has(Constants.PREF_LABEL_LG1)) {
+			operation.setPrefLabelLg1(jsonOperation.getString(Constants.PREF_LABEL_LG1));
 		}
-		if(jsonOperation.has("prefLabelLg2")) {
-			operation.setPrefLabelLg2(jsonOperation.getString("prefLabelLg2")); 
+		if(jsonOperation.has(Constants.PREF_LABEL_LG2)) {
+			operation.setPrefLabelLg2(jsonOperation.getString(Constants.PREF_LABEL_LG2)); 
 		}
-		if(jsonOperation.has("altLabelLg1")) {
-			operation.setAltLabelLg1(jsonOperation.getString("altLabelLg1"));
+		if(jsonOperation.has(Constants.ALT_LABEL_LG1)) {
+			operation.setAltLabelLg1(jsonOperation.getString(Constants.ALT_LABEL_LG1));
 		}
-		if(jsonOperation.has("altLabelLg2")) {
-			operation.setAltLabelLg2(jsonOperation.getString("altLabelLg2"));
+		if(jsonOperation.has(Constants.ALT_LABEL_LG2)) {
+			operation.setAltLabelLg2(jsonOperation.getString(Constants.ALT_LABEL_LG2));
 		}
 		operation.setSeries(series);
-		if(jsonOperation.has("idSims")) {
-			operation.setIdSims(jsonOperation.getString("idSims"));
+		if(jsonOperation.has(Constants.ID_SIMS)) {
+			operation.setIdSims(jsonOperation.getString(Constants.ID_SIMS));
 		}
 		return operation;
 	}
 
-	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
+	private Operation buildOperationFromJson2(JSONObject operationJson) {
 		 ObjectMapper mapper = new ObjectMapper();
 		  
 		 Operation operation = new Operation();
@@ -135,7 +134,7 @@ public class OperationsUtils extends RdfService{
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					seriesUtils.getSeriesJsonById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
+					seriesUtils.getSeriesJsonById(idSeries).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
 		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits

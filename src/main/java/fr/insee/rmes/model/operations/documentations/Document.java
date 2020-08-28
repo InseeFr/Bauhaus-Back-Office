@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.utils.DateUtils;
 
@@ -55,7 +56,7 @@ public class Document {
 		this.descriptionLg2 = descriptionLg2;
 	}
 	
-	@JsonProperty("updatedDate")
+	@JsonProperty(Constants.UPDATED_DATE)
 	public String getDateMiseAJour() {
 		return DateUtils.getDate(dateMiseAJour);
 	}

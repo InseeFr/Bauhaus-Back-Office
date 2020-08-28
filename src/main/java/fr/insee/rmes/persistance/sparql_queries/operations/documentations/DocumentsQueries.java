@@ -50,7 +50,7 @@ public class DocumentsQueries {
 		String docType = getDocType(isLink) ;
 		if (params==null) {initParams();}
 		params.put(Constants.ID, id);
-		params.put("idSims", idSims);
+		params.put(Constants.ID_SIMS, idSims);
 		params.put("idRubric", idRubric);
 		params.put("type", docType );
 		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);

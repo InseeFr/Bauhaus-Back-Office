@@ -51,12 +51,12 @@ public class FamOpeSerUtils  extends RdfService {
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {
 		IdLabelTwoLangs series = new IdLabelTwoLangs();
-		series.setId(jsonFamOpeSer.getString("id"));
-		if(jsonFamOpeSer.has("labelLg1")) {
-			series.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
+		series.setId(jsonFamOpeSer.getString(Constants.ID));
+		if(jsonFamOpeSer.has(Constants.LABEL_LG1)) {
+			series.setLabelLg1(jsonFamOpeSer.getString(Constants.LABEL_LG1));
 		}
-		if(jsonFamOpeSer.has("labelLg2")) {
-			series.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
+		if(jsonFamOpeSer.has(Constants.LABEL_LG2)) {
+			series.setLabelLg2(jsonFamOpeSer.getString(Constants.LABEL_LG2));
 		}
 		return series;
 	}
