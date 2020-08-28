@@ -36,4 +36,8 @@ public class OperationsLink {
 	public boolean isEmpty() {
 		return StringUtils.isEmpty(id);
 	}
+	
+	public static String getClassOperationsLink() {
+		return "fr.insee.rmes.model.links.OperationsLink";
+	}
 }

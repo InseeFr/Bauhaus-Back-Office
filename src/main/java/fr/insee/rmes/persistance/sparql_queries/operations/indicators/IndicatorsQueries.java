@@ -124,10 +124,20 @@ public class IndicatorsQueries {
 				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
 				+" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" 
-				+"?indic dc:creator ?creator  . \n"
+				+"?indic dc:creator ?creator . \n"
 				+ "} }"
 				;
 	}
+	
+	public static String getPublishersById(String id) {
+		return "SELECT ?publisher\n"
+				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
+				+ "?indic a insee:StatisticalIndicator . \n"  
+				+" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" 
+				+"?indic dcterms:publisher ?publisher . \n"
+				+ "} }"
+				;
+	}	
 	
 	public static String indicatorLinks(String id, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"

@@ -1,5 +1,6 @@
 package fr.insee.rmes.model.operations.documentations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,11 +12,12 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 public class DocumentationRubric {
 
 	private String idAttribute;
-	
+
 	@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
 	private List<String> value;
 
 	private String labelLg1;
+//	@JsonRawValue
 	private String labelLg2;
 	private String codeList;
 	private String rangeType;
@@ -68,6 +70,7 @@ public class DocumentationRubric {
 		StringUtils.isEmpty(codeList) &&
 		(documents == null || documents.isEmpty());
 	}
+
 	public List<String> getValue() {
 		return value;
 	}
@@ -80,5 +83,11 @@ public class DocumentationRubric {
 		}
 		return value.get(0);
 	}
+	public void setValue(String value) {
+		List<String >val = new ArrayList<String>();
+		val.add(value);
+		this.value = val;
+	}
+
 }
 

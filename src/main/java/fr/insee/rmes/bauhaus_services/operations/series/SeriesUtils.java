@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +34,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -65,7 +67,142 @@ public class SeriesUtils extends RdfService {
 
 	/*READ*/
 
-	public JSONObject getSeriesById(String id) throws RmesException {
+	public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
+		return famOpeSerUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
+	}
+
+	public Series getSeriesById(String id) throws RmesException {
+		return buildSeriesFromJson(getSeriesJsonById(id));	
+	}
+
+	private Series buildSeriesFromJson(JSONObject seriesJson) throws JSONException, RmesException {
+		Series series=new Series();
+		series.setId(seriesJson.getString("id"));
+		if(seriesJson.has("prefLabelLg1")) {
+			series.setPrefLabelLg1(seriesJson.getString("prefLabelLg1"));
+		}
+		if(seriesJson.has("prefLabelLg2")) {
+			series.setPrefLabelLg2(seriesJson.getString("prefLabelLg2"));
+		}
+		if(seriesJson.has("altLabelLg1")) {
+			series.setAltLabelLg1(seriesJson.getString("altLabelLg1"));
+		}
+		if(seriesJson.has("altLabelLg2")) {
+			series.setAltLabelLg2(seriesJson.getString("altLabelLg2"));
+		}
+		if(seriesJson.has("abstractLg1")) {
+			series.setAbstractLg1(seriesJson.getString("abstractLg1"));
+		}
+		if(seriesJson.has("abstractLg2")) {
+			series.setAbstractLg2(seriesJson.getString("abstractLg2"));
+		}
+		if(seriesJson.has("historyNoteLg1")) {
+			series.setHistoryNoteLg1(seriesJson.getString("historyNoteLg1"));
+		}
+		if(seriesJson.has("historyNoteLg2")) {
+			series.setHistoryNoteLg2(seriesJson.getString("historyNoteLg2"));
+		}
+		if(seriesJson.has("typeCode")) {
+			series.setTypeCode(seriesJson.getString("typeCode"));
+		}
+		if(seriesJson.has("typeList")) {
+			series.setTypeList(seriesJson.getString("typeList"));
+		}
+		if(seriesJson.has("accrualPeriodicityCode")) {
+			series.setAccrualPeriodicityCode(seriesJson.getString("accrualPeriodicityCode"));
+		}
+		if(seriesJson.has("accrualPeriodicityList")) {
+			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
+		}
+		if(seriesJson.has("creator")) {
+			series.setCreators(famOpeSerUtils.buildStringListFromJson(
+					seriesJson.getJSONArray("creator")));
+		}
+		if(seriesJson.has("publisher")) {
+			series.setCreators(famOpeSerUtils.buildStringListFromJson(
+					seriesJson.getJSONArray("publisher")));
+		}
+		if(seriesJson.has("idSims")) {
+			series.setIdSims(seriesJson.getString("idSims"));
+		}
+		if(seriesJson.has("family")) {
+			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject("family")));
+		}
+		if(seriesJson.has("operations")) {
+			List<IdLabelTwoLangs> operations = new ArrayList<IdLabelTwoLangs>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("operations"),
+					IdLabelTwoLangs.getClassIdLabelTwoLangs());
+					for (Object o:objects){
+						operations.add((IdLabelTwoLangs) o);		
+					}
+					series.setOperations(operations);
+		}
+		if(seriesJson.has("contributor")) {
+			List<OperationsLink> contributors = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("contributor"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						contributors.add((OperationsLink) o);		
+					}
+					series.setContributors(contributors);
+		}
+		if(seriesJson.has("seeAlso")) {
+			List<OperationsLink> seeAlsoes = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("seeAlso"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						seeAlsoes.add((OperationsLink) o);		
+					}
+					series.setSeeAlso(seeAlsoes);
+		}
+		if(seriesJson.has("replaces")) {
+			List<OperationsLink> replacesList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("replaces"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						replacesList.add((OperationsLink) o);		
+					}
+					series.setReplaces(replacesList);
+		}
+		if(seriesJson.has("isReplacedBy")) {
+			List<OperationsLink> isReplacedByList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("isReplacedBy"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						isReplacedByList.add((OperationsLink) o);		
+					}
+					series.setIsReplacedBy(isReplacedByList);
+		}
+		if(seriesJson.has("generates")) {
+			List<OperationsLink> generatesList = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("generates"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						generatesList.add((OperationsLink) o);		
+					}
+					series.setIsReplacedBy(generatesList);
+		}
+		if(seriesJson.has("dataCollector")) {
+			List<OperationsLink> dataCollectors = new ArrayList<OperationsLink>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					seriesJson.getJSONArray("dataCollector"),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						dataCollectors.add((OperationsLink) o);		
+					}
+					series.setDataCollectors(dataCollectors);
+		}	
+		
+		return series;
+	}
+
+	public JSONObject getSeriesJsonById(String id) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		// check that the series exist
 		if (JSONUtils.isEmpty(series)) {
@@ -79,7 +216,6 @@ public class SeriesUtils extends RdfService {
 		addSeriesLinks(id, series);
 		addSeriesCreators(id, series);
 		addSeriesPublishers(id, series);
-
 		addGeneratedWith(id, series);
 		return series;
 	}
@@ -121,8 +257,10 @@ public class SeriesUtils extends RdfService {
 		addOneTypeOfLink(idSeries, series, DCTERMS.REPLACES);
 		addOneTypeOfLink(idSeries, series, DCTERMS.IS_REPLACED_BY);
 		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
-		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
-		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
+		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
+//		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+//		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
@@ -146,9 +284,9 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-		series.put("proprietaires", creators);
+		series.put("creator", creators);
 	}
-	
+
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
 		if (publishers.length()==1) {
@@ -164,7 +302,7 @@ public class SeriesUtils extends RdfService {
 	 * CREATE OR UPDATE
 	 */
 	private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
-	
+
 		Model model = new LinkedHashModel();
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,series.getId());
 		/*Const*/
@@ -176,14 +314,14 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
-	
+
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, RdfUtils.operationsGraph());
-	
+
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 	
-		List<String> publisher=series.getPublisher();
+		List<String> publisher=series.getPublishers();
 		if (publisher!= null) {
 			for(String publ : publisher) {
 				RdfUtils.addTripleUri(seriesURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publ), model, RdfUtils.operationsGraph());
@@ -196,22 +334,22 @@ public class SeriesUtils extends RdfService {
 				RdfUtils.addTripleString(seriesURI, DC.CREATOR, creator, model, RdfUtils.operationsGraph());
 			}
 		}
-	
+
 		//partenaires
-		addOperationLinksOrganization(series.getContributor(),DCTERMS.CONTRIBUTOR, model, seriesURI);
-		
+		addOperationLinksOrganization(series.getContributors(),DCTERMS.CONTRIBUTOR, model, seriesURI);
+
 		//Data_collector
-		addOperationLinksOrganization(series.getDataCollector(),INSEE.DATA_COLLECTOR, model, seriesURI);
-	
+		addOperationLinksOrganization(series.getDataCollectors(),INSEE.DATA_COLLECTOR, model, seriesURI);
+
 		//Type
 		addCodeList(series.getTypeList(), series.getTypeCode(), DCTERMS.TYPE, model, seriesURI);		
 		//PERIODICITY
 		addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);		
-		
+
 		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
 		addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
-		
-	
+
+
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
@@ -222,15 +360,15 @@ public class SeriesUtils extends RdfService {
 				}
 			}
 		}
-	
+
 		if (familyURI != null) {
 			//case CREATION : link series to family
 			RdfUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, RdfUtils.operationsGraph());
 			RdfUtils.addTripleUri(familyURI, DCTERMS.HAS_PART, seriesURI, model, RdfUtils.operationsGraph());
 		}
-	
+
 		repoGestion.keepHierarchicalOperationLinks(seriesURI,model);
-	
+
 		repoGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
 
@@ -343,7 +481,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	public boolean hasSims(String seriesId) throws RmesException {
-		JSONObject series = getSeriesById(seriesId);
+		JSONObject series = getSeriesJsonById(seriesId);
 		String idSims;
 		try {
 			idSims = series.getString("idSims");
@@ -354,7 +492,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	public boolean hasOperations(String seriesId) throws RmesException {
-		JSONObject series = getSeriesById(seriesId);
+		JSONObject series = getSeriesJsonById(seriesId);
 		JSONArray operations;
 		try {
 			operations = series.getJSONArray("operations");

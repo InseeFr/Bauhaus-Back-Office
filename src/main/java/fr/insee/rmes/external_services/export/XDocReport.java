@@ -22,6 +22,7 @@ import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder
 import fr.insee.rmes.exceptions.RmesException;
 import fr.opensagres.xdocreport.converter.ConverterTypeTo;
 import fr.opensagres.xdocreport.converter.Options;
+import fr.opensagres.xdocreport.converter.XDocConverterException;
 import fr.opensagres.xdocreport.core.XDocReportException;
 import fr.opensagres.xdocreport.document.IXDocReport;
 import fr.opensagres.xdocreport.document.registry.XDocReportRegistry;
@@ -31,71 +32,85 @@ import freemarker.ext.dom.NodeModel;
 
 @Component
 public class XDocReport {
-	
+
 	@Autowired
 	VarBookExportBuilder varBookExport;
 
 	static final Logger logger = LogManager.getLogger(XDocReport.class);
 
-	public OutputStream exportVariableBookInPdf(String xmlFilename, String odtTemplate) throws Exception {
+	public OutputStream exportVariableBookInPdf(String xmlFilename, String odtTemplate) throws RmesException  {
 		// 1) Load DOCX into XWPFDocument
-		IXDocReport report = getReportTemplate(odtTemplate);
-	      
-	     // 2) Create Java model context 
-	    IContext context = getXmlData(report, xmlFilename);
+		IXDocReport report;
+		OutputStream oFile = null;
+		try {
+			report = getReportTemplate(odtTemplate);
+		// 2) Create Java model context 
+		IContext context = getXmlData(report, xmlFilename);
 
-	    // 3) Generate report by merging Java model with the ODT and convert it to PDF
-	    OutputStream oFile = createOutputFile(true); 
-	    Options options = Options.getTo(ConverterTypeTo.PDF);
-	    report.convert(context, options, oFile);
+		// 3) Generate report by merging Java model with the ODT and convert it to PDF
+			oFile = createOutputFile(true); 
+			Options options = Options.getTo(ConverterTypeTo.PDF);
+
+			report.convert(context, options, oFile);
+		} catch (XDocReportException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return oFile;		
-	  
+
 	}
 
 	@Deprecated
 	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws Exception {
 		// 1) Load DOCX into XWPFDocument
-      IXDocReport report = getReportTemplate(odtTemplate);
+		IXDocReport report = getReportTemplate(odtTemplate);
 
-      // 2) Create Java model context 
-      IContext context = getXmlData(report, xml);
-  
-      // 3) Generate report by merging Java model with the ODT
-      OutputStream oFile = createOutputFile(false); 
-      report.process(context, oFile);
-      return oFile;
+		// 2) Create Java model context 
+		IContext context = getXmlData(report, xml);
+
+		// 3) Generate report by merging Java model with the ODT
+		OutputStream oFile = createOutputFile(false); 
+		report.process(context, oFile);
+		return oFile;
 	}
-	
-	public OutputStream exportVariableBookInOdt(String xml, File odtTemplate) throws Exception {
+
+	public OutputStream exportVariableBookInOdt(String xml, File odtTemplate) throws RmesException {
+		IXDocReport report;
+		OutputStream oFile = null;
+		
 		// 1) Load DOCX into XWPFDocument
-      IXDocReport report = getReportTemplate(odtTemplate);
+		try {
+			report = getReportTemplate(odtTemplate);
+			
+		// 2) Create Java model context 
+		IContext context = getXmlData(report, xml);
 
-      // 2) Create Java model context 
-      IContext context = getXmlData(report, xml);
-  
-      // 3) Generate report by merging Java model with the ODT
-      OutputStream oFile = createOutputFile(false); 
-      report.process(context, oFile);
-      return oFile;
+		// 3) Generate report by merging Java model with the ODT
+		oFile = createOutputFile(false); 
+		report.process(context, oFile);} catch (IOException | XDocReportException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return oFile;
 	}
-	
-	
-	
+
+
+
 	private IContext getXmlData(IXDocReport report, String xmlInput)
 			throws  RmesException {
-		
+
 		String xmlString = varBookExport.getData(xmlInput);
 		InputStream projectInputStream = new ByteArrayInputStream(xmlString.getBytes());
-	    InputSource projectInputSource = new InputSource( projectInputStream );
-	    NodeModel xml = null;
-	    IContext context = null ;
+		InputSource projectInputSource = new InputSource( projectInputStream );
+		NodeModel xml = null;
+		IContext context = null ;
 		try {
 			xml = NodeModel.parse( projectInputSource );
 			context = report.createContext();
 		} catch (SAXException | IOException | ParserConfigurationException | XDocReportException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass()+" - Can't put xml in XdocReport context");
 		}
-	      context.put("racine", xml);
+		context.put("racine", xml);
 		return context;
 	}
 
@@ -103,9 +118,9 @@ public class XDocReport {
 	private OutputStream createOutputFile(boolean isPdf) throws IOException {
 		//TODO pass acceptHeader to manage more than pdf/odt
 		File outFile = File.createTempFile("Codebook", (isPdf?".pdf":".odt"));
-        return new FileOutputStream(outFile);
+		return new FileOutputStream(outFile);
 	}
-	
+
 
 	@Deprecated
 	//TODO use this for default value when template is ok
@@ -113,7 +128,7 @@ public class XDocReport {
 		InputStream is = getClass().getClassLoader().getResourceAsStream("xdocreport/"+odtTemplate);
 		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
 	}
-	
+
 	private IXDocReport getReportTemplate(File odtTemplate) throws IOException, XDocReportException {
 		InputStream is = new FileInputStream(odtTemplate);
 		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);

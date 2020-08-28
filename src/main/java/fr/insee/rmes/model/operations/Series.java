@@ -59,14 +59,14 @@ public class Series {
 	public String accrualPeriodicityList;
 
 	@JsonFormat(shape = Shape.ARRAY)
-	@Schema(description = "Identifier of publisher")
-	public List<String> publisher;
+	@Schema(description = "Identifier of publishers")
+	public List<String> publishers;
 
 	@Schema(description = "Identifiers of contributors")
-	public List<OperationsLink> contributor;
+	public List<OperationsLink> contributors;
 
 	@Schema(description = "Identifiers of data collector")
-	public List<OperationsLink> dataCollector;
+	public List<OperationsLink> dataCollectors;
 
 	@Schema(description = "Identifiers of creators")
 	@JsonFormat(shape = Shape.ARRAY)
@@ -154,12 +154,12 @@ public class Series {
 		return accrualPeriodicityList;
 	}
 
-	public List<OperationsLink> getContributor() {
-		return contributor;
+	public List<OperationsLink> getContributors() {
+		return contributors;
 	}
 
-	public List<OperationsLink> getDataCollector() {
-		return dataCollector;
+	public List<OperationsLink> getDataCollectors() {
+		return dataCollectors;
 	}
 
 	public List<String> getCreators() {
@@ -182,8 +182,8 @@ public class Series {
 		return idSims;
 	}
 
-	public List<String> getPublisher() {
-		return publisher;
+	public List<String> getPublishers() {
+		return publishers;
 	}
 
 	public List<OperationsLink> getGenerates() {
@@ -254,16 +254,16 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setPublisher(String[] publisher) {
-		this.publisher = Arrays.asList(publisher);
+	public void setPublishers(String[] publishers) {
+		this.publishers = Arrays.asList(publishers);
 	}
 
-	public void setContributor(List<OperationsLink> contributor) {
-		this.contributor = contributor;
+	public void setContributors(List<OperationsLink> contributors) {
+		this.contributors = contributors;
 	}
 
-	public void setDataCollector(List<OperationsLink> dataCollector) {
-		this.dataCollector = dataCollector;
+	public void setDataCollectors(List<OperationsLink> dataCollectors) {
+		this.dataCollectors = dataCollectors;
 	}
 
 	public void setCreators(List<String> creators) {

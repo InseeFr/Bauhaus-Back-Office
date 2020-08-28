@@ -7,9 +7,11 @@ public class ExportUtils {
 			return ".odt";
 		} else if (acceptHeader.equals("application/octet-stream")) {
 			return ".pdf";
-			// default --> Odt
+		} else if (acceptHeader.equals("flatODT")) {
+			return ".fodt";
 		} else {
 			return ".odt";
+			// default --> odt
 		}
 	}
 }
