@@ -13,7 +13,6 @@ import java.nio.file.StandardCopyOption;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.XsltTransformer;
-import net.sf.saxon.TransformerFactoryImpl;
 
 @Component
 public class DocumentationExport {
