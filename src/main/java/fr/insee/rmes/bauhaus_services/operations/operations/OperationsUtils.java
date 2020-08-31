@@ -14,7 +14,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,14 +25,12 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -72,41 +69,21 @@ public class OperationsUtils extends RdfService{
 		operation.put("series", series);
 	}
 
-	public Operation buildOperationFromJson(JSONObject jsonOperation) {
+	private Operation buildOperationFromJson(JSONObject operationJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
+		String id = famOpeSerUtils.createId();
 		Operation operation = new Operation();
-		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
 
-		operation.setId(jsonOperation.getString("id"));
-		if(jsonOperation.has("prefLabelLg1")) {
-			operation.setPrefLabelLg1(jsonOperation.getString("prefLabelLg1"));
-		}
-		if(jsonOperation.has("prefLabelLg2")) {
-			operation.setPrefLabelLg2(jsonOperation.getString("prefLabelLg2")); 
-		}
-		if(jsonOperation.has("altLabelLg1")) {
-			operation.setAltLabelLg1(jsonOperation.getString("altLabelLg1"));
-		}
-		if(jsonOperation.has("altLabelLg2")) {
-			operation.setAltLabelLg2(jsonOperation.getString("altLabelLg2"));
-		}
-		operation.setSeries(series);
-		if(jsonOperation.has("idSims")) {
-			operation.setIdSims(jsonOperation.getString("idSims"));
-		}
-		return operation;
-	}
-
-	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
-		 ObjectMapper mapper = new ObjectMapper();
-		  
-		 Operation operation = new Operation();
 		try {
 			operation = mapper.readValue(operationJson.toString(), Operation.class);
-		} catch (JsonProcessingException e) {
-			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
+			operation.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
 		}
-		 return operation;
+		return operation;
 	}
 	
 	

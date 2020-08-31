@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -63,7 +62,7 @@ public class SeriesUtils extends RdfService {
 	@Autowired
 	SeriesPublication seriesPublication;
 
-	static final Logger logger = LogManager.getLogger(SeriesUtils.class);
+	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
 
@@ -75,130 +74,20 @@ public class SeriesUtils extends RdfService {
 		return buildSeriesFromJson(getSeriesJsonById(id));	
 	}
 
-	private Series buildSeriesFromJson(JSONObject seriesJson) throws JSONException, RmesException {
-		Series series=new Series();
-		series.setId(seriesJson.getString("id"));
-		if(seriesJson.has("prefLabelLg1")) {
-			series.setPrefLabelLg1(seriesJson.getString("prefLabelLg1"));
+
+	private Series buildSeriesFromJson(JSONObject seriesJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
+
+		String id = famOpeSerUtils.createId();
+		Series series = new Series();
+		try {
+			series = mapper.readValue(seriesJson.toString(), Series.class);
+			series.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
 		}
-		if(seriesJson.has("prefLabelLg2")) {
-			series.setPrefLabelLg2(seriesJson.getString("prefLabelLg2"));
-		}
-		if(seriesJson.has("altLabelLg1")) {
-			series.setAltLabelLg1(seriesJson.getString("altLabelLg1"));
-		}
-		if(seriesJson.has("altLabelLg2")) {
-			series.setAltLabelLg2(seriesJson.getString("altLabelLg2"));
-		}
-		if(seriesJson.has("abstractLg1")) {
-			series.setAbstractLg1(seriesJson.getString("abstractLg1"));
-		}
-		if(seriesJson.has("abstractLg2")) {
-			series.setAbstractLg2(seriesJson.getString("abstractLg2"));
-		}
-		if(seriesJson.has("historyNoteLg1")) {
-			series.setHistoryNoteLg1(seriesJson.getString("historyNoteLg1"));
-		}
-		if(seriesJson.has("historyNoteLg2")) {
-			series.setHistoryNoteLg2(seriesJson.getString("historyNoteLg2"));
-		}
-		if(seriesJson.has("typeCode")) {
-			series.setTypeCode(seriesJson.getString("typeCode"));
-		}
-		if(seriesJson.has("typeList")) {
-			series.setTypeList(seriesJson.getString("typeList"));
-		}
-		if(seriesJson.has("accrualPeriodicityCode")) {
-			series.setAccrualPeriodicityCode(seriesJson.getString("accrualPeriodicityCode"));
-		}
-		if(seriesJson.has("accrualPeriodicityList")) {
-			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
-		}
-		if(seriesJson.has("creator")) {
-			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("creator")));
-		}
-		if(seriesJson.has("publisher")) {
-			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-					seriesJson.getJSONArray("publisher")));
-		}
-		if(seriesJson.has("idSims")) {
-			series.setIdSims(seriesJson.getString("idSims"));
-		}
-		if(seriesJson.has("family")) {
-			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject("family")));
-		}
-		if(seriesJson.has("operations")) {
-			List<IdLabelTwoLangs> operations = new ArrayList<IdLabelTwoLangs>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("operations"),
-					IdLabelTwoLangs.getClassIdLabelTwoLangs());
-					for (Object o:objects){
-						operations.add((IdLabelTwoLangs) o);		
-					}
-					series.setOperations(operations);
-		}
-		if(seriesJson.has("contributor")) {
-			List<OperationsLink> contributors = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("contributor"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						contributors.add((OperationsLink) o);		
-					}
-					series.setContributors(contributors);
-		}
-		if(seriesJson.has("seeAlso")) {
-			List<OperationsLink> seeAlsoes = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("seeAlso"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						seeAlsoes.add((OperationsLink) o);		
-					}
-					series.setSeeAlso(seeAlsoes);
-		}
-		if(seriesJson.has("replaces")) {
-			List<OperationsLink> replacesList = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("replaces"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						replacesList.add((OperationsLink) o);		
-					}
-					series.setReplaces(replacesList);
-		}
-		if(seriesJson.has("isReplacedBy")) {
-			List<OperationsLink> isReplacedByList = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("isReplacedBy"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						isReplacedByList.add((OperationsLink) o);		
-					}
-					series.setIsReplacedBy(isReplacedByList);
-		}
-		if(seriesJson.has("generates")) {
-			List<OperationsLink> generatesList = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("generates"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						generatesList.add((OperationsLink) o);		
-					}
-					series.setIsReplacedBy(generatesList);
-		}
-		if(seriesJson.has("dataCollector")) {
-			List<OperationsLink> dataCollectors = new ArrayList<OperationsLink>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					seriesJson.getJSONArray("dataCollector"),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						dataCollectors.add((OperationsLink) o);		
-					}
-					series.setDataCollectors(dataCollectors);
-		}	
-		
 		return series;
 	}
 
@@ -259,8 +148,6 @@ public class SeriesUtils extends RdfService {
 		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
 		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
 		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
-//		addOneOrganizationLink(idSeries, series, DCTERMS.CONTRIBUTOR);
-//		addOneOrganizationLink(idSeries, series, INSEE.DATA_COLLECTOR);
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
@@ -407,18 +294,7 @@ public class SeriesUtils extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
 		}
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-
-		String id = famOpeSerUtils.createId();
-		Series series = new Series();
-		try {
-			series = mapper.readValue(body, Series.class);
-			series.id = id;
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
+		Series series = buildSeriesFromJson(new JSONObject(body));
 		checkSimsWithOperations(series);
 
 		// Tester l'existence de la famille
@@ -429,9 +305,9 @@ public class SeriesUtils extends RdfService {
 
 		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
-		logger.info("Create series : {} - {}", id, series.getPrefLabelLg1());
+		logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
 
-		return id;
+		return series.getId();
 
 	}
 
