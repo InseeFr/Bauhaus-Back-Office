@@ -18,6 +18,8 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.StringComparator;
+import fr.insee.rmes.utils.XhtmlTags;
+
 
 @Component
 public class ConceptsExportBuilder  extends RdfService {
@@ -77,42 +79,42 @@ public class ConceptsExportBuilder  extends RdfService {
 	}
 
 	private String editGeneral(JSONObject json, String context) {
-		StringBuilder xhtml = new StringBuilder("<ul>");
+		StringBuilder xhtml = new StringBuilder(XhtmlTags.OPENLIST);
 		if (json.has(Constants.ALT_LABEL_LG1)) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG1 + ") : " + json.getString(Constants.ALT_LABEL_LG1) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Libellé alternatif (" + Config.LG1 + ") : " + json.getString(Constants.ALT_LABEL_LG1)));
 		}
 		if (json.has(Constants.ALT_LABEL_LG2)) {
-			xhtml.append("<li>Libellé alternatif (" + Config.LG2 + ") : " + json.getString(Constants.ALT_LABEL_LG2) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Libellé alternatif (" + Config.LG2 + ") : " + json.getString(Constants.ALT_LABEL_LG2) ));
 		}
 		if (json.has("created")) {
-			xhtml.append("<li>Date de création : " + toDate(json.getString("created")) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Date de création : " + toDate(json.getString("created")) ));
 		}
 		if (json.has("modified")) {
-			xhtml.append("<li>Date de modification : " + toDate(json.getString("modified")) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Date de modification : " + toDate(json.getString("modified")) ));
 		}
 		if (json.has("valid")) {
-			xhtml.append("<li>Date de fin de validité : " + toDate(json.getString("valid")) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Date de fin de validité : " + toDate(json.getString("valid")) ));
 		}
 		if (json.has("disseminationStatus")) {
-			xhtml.append("<li>Statut de diffusion : " + toLabel(json.getString("disseminationStatus")) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Statut de diffusion : " + toLabel(json.getString("disseminationStatus")) ));
 		}
 		if (json.has("additionalMaterial")) {
-			xhtml.append("<li>Document lié : " + json.getString("additionalMaterial") + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Document lié : " + json.getString("additionalMaterial") ));
 		}
 		if (json.has("creator")) {
-			xhtml.append("<li>Timbre propriétaire : " + json.getString("creator") + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Timbre propriétaire : " + json.getString("creator") ));
 		}
 		if (json.has("contributor")) {
-			xhtml.append("<li>Timbre gestionnaire : " + json.getString("contributor") + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Timbre gestionnaire : " + json.getString("contributor") ));
 		}
 		if (json.has("isValidated")) {
-			xhtml.append("<li>Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Statut de validation : " + toValidationStatus(json.getString("isValidated"), context) ));
 		}
 		if (json.has(CONCEPT_VERSION)) {
-			xhtml.append("<li>Version : " + json.getString(CONCEPT_VERSION) + "</li>");
+			xhtml.append(XhtmlTags.inListItem("Version : " + json.getString(CONCEPT_VERSION) ));
 		}
 
-		xhtml.append("</ul><p></p>");
+		xhtml.append(XhtmlTags.CLOSELIST.concat("<p></p>"));
 		return xhtml.toString();
 	}
 
