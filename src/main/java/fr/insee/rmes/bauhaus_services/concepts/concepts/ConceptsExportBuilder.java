@@ -114,7 +114,7 @@ public class ConceptsExportBuilder  extends RdfService {
 			xhtml.append(XhtmlTags.inListItem("Version : " + json.getString(CONCEPT_VERSION) ));
 		}
 
-		xhtml.append(XhtmlTags.CLOSELIST.concat("<p></p>"));
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
 		return xhtml.toString();
 	}
 
@@ -129,11 +129,11 @@ public class ConceptsExportBuilder  extends RdfService {
 		if (list.isEmpty()) {
 			return "";
 		}
-		StringBuilder xhtml = new StringBuilder("<ul>");
+		StringBuilder xhtml = new StringBuilder(XhtmlTags.OPENLIST);
 		for (String member : list) {
-			xhtml.append("<li>" + member + "</li>");
+			xhtml.append(XhtmlTags.inListItem(member));
 		}
-		xhtml.append("</ul><p></p>");
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
 		return xhtml.toString();
 	}
 
@@ -200,12 +200,12 @@ public class ConceptsExportBuilder  extends RdfService {
 		if (list.isEmpty()) {
 			return xhtml;
 		}
-		xhtml.append("<U>" + title + " :</U>");
-		xhtml.append("<ul>");
+		xhtml.append(XhtmlTags.inUpperCase(title +" :"));
+		xhtml.append(XhtmlTags.OPENLIST);
 		for (String item : list) {
-			xhtml.append("<li>" + item + "</li>");
+			xhtml.append(XhtmlTags.inListItem(item));
 		}
-		xhtml.append("</ul><p></p>");
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
 		return xhtml;
 	}
 
