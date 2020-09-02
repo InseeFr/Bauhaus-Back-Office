@@ -15,7 +15,6 @@ public class Constants {
 	public static final String REPOSITORY_EXCEPTION = "RepositoryException";
 
 	public static final String PREF_LABEL_LG = "prefLabelLg";
-	public static final String PARAGRAPH = "<p></p>";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String PREF_LABEL_LG2 = "prefLabelLg2";

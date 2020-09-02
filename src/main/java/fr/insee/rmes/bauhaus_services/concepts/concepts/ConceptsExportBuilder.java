@@ -64,10 +64,10 @@ public class ConceptsExportBuilder  extends RdfService {
 		}
 		data.put("general", editGeneral(json, "collections"));
 		if (json.has(Constants.DESCRIPTION_LG1)) {
-			data.put(Constants.DESCRIPTION_LG1, json.getString(Constants.DESCRIPTION_LG1) + Constants.PARAGRAPH);
+			data.put(Constants.DESCRIPTION_LG1, json.getString(Constants.DESCRIPTION_LG1) + XhtmlTags.PARAGRAPH);
 		}
 		if (json.has(Constants.DESCRIPTION_LG2)) {
-			data.put(Constants.DESCRIPTION_LG2, json.getString(Constants.DESCRIPTION_LG2) + Constants.PARAGRAPH);
+			data.put(Constants.DESCRIPTION_LG2, json.getString(Constants.DESCRIPTION_LG2) + XhtmlTags.PARAGRAPH);
 		}
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
 		String membersLg1 = extractMembers(members, Constants.PREF_LABEL_LG1);
@@ -114,7 +114,7 @@ public class ConceptsExportBuilder  extends RdfService {
 			xhtml.append(XhtmlTags.inListItem("Version : " + json.getString(CONCEPT_VERSION) ));
 		}
 
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
 		return xhtml.toString();
 	}
 
@@ -133,7 +133,7 @@ public class ConceptsExportBuilder  extends RdfService {
 		for (String member : list) {
 			xhtml.append(XhtmlTags.inListItem(member));
 		}
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
 		return xhtml.toString();
 	}
 
@@ -192,7 +192,7 @@ public class ConceptsExportBuilder  extends RdfService {
 				break;
 		}
 
-		xhtml.append(Constants.PARAGRAPH);
+		xhtml.append(XhtmlTags.PARAGRAPH);
 		return xhtml.toString();
 	}
 
@@ -205,7 +205,7 @@ public class ConceptsExportBuilder  extends RdfService {
 		for (String item : list) {
 			xhtml.append(XhtmlTags.inListItem(item));
 		}
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.EMPTYPARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
 		return xhtml;
 	}
 
@@ -214,7 +214,7 @@ public class ConceptsExportBuilder  extends RdfService {
 				"editorialNoteLg1", "editorialNoteLg2");
 		noteTypes.forEach(noteType -> {
 			if (notes.has(noteType)) {
-				data.put(noteType, notes.getString(noteType) + Constants.PARAGRAPH);
+				data.put(noteType, notes.getString(noteType) + XhtmlTags.PARAGRAPH);
 			}
 		});
 	}
