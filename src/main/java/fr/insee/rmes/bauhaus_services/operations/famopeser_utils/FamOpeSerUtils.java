@@ -62,7 +62,7 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public List<String> buildStringListFromJson(JSONArray items) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 0; i < items.length(); i++) {
 			String item = items.getString(i);
 			result.add(item);
@@ -71,7 +71,7 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public List<Object> buildObjectListFromJson(JSONArray items, String className) throws RmesException {
-		List<Object> result = new ArrayList<Object>();
+		List<Object> result = new ArrayList<>();
 		Class<?> cls = null;
 		try {
 			cls = Class.forName(className);
@@ -84,7 +84,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) throws RmesException {
+	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) {
 		ObjectMapper mapper = new ObjectMapper();
 		Object result = new Object();
 		try {
@@ -95,7 +95,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) throws RmesException {
+	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		OperationsLink operationsLink = new OperationsLink();
 		try {

@@ -588,9 +588,7 @@ public class DocumentationsUtils extends RdfService{
 
 	public String buildShellSims() throws RmesException {
 		MSD msd= operationsUtils.getMSD();
-		String msdXml = XMLUtils.produceXMLResponse(msd);
-		//Document msdDoc = XMLUtils.convertStringToDocument(msdXml);
-		return msdXml;
+		return XMLUtils.produceXMLResponse(msd);
 	}
 
 }
