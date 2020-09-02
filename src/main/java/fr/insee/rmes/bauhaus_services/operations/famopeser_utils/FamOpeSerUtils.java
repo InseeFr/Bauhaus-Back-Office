@@ -50,15 +50,15 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {
-		IdLabelTwoLangs series = new IdLabelTwoLangs();
-		series.setId(jsonFamOpeSer.getString("id"));
+		IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs();
+		idLabelTwoLangs.setId(jsonFamOpeSer.getString("id"));
 		if(jsonFamOpeSer.has("labelLg1")) {
-			series.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
+			idLabelTwoLangs.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
 		}
 		if(jsonFamOpeSer.has("labelLg2")) {
-			series.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
+			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
 		}
-		return series;
+		return idLabelTwoLangs;
 	}
 	
 	public List<String> buildStringListFromJson(JSONArray items) {
