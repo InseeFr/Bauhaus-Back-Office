@@ -36,6 +36,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.organizations.OrganizationsServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -100,7 +101,8 @@ public class DocumentationsUtils extends RdfService{
 	@Autowired
 	private FamOpeSerUtils famOpeSerUtils;
 
-
+	@Autowired
+	OrganizationsServiceImpl organizationsServiceImpl;
 
 
 	/**
@@ -508,6 +510,7 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream is;
 		InputStream is2;
+		InputStream is3;
 		Path tempDir= Files.createTempDirectory("forExport");
 
 		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
@@ -515,6 +518,9 @@ public class DocumentationsUtils extends RdfService{
 
 		Path accessoryTempFile = Files.createTempFile(tempDir, "series",".xml");
 		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
+		
+		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",".xml");
+		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
 		
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
@@ -547,10 +553,12 @@ public class DocumentationsUtils extends RdfService{
 			Files.copy(is, tempFile, options);
 		}
 
+		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), "UTF-8");
+		Files.copy(is3, organizationsTempFile, options);
+		
 		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), "UTF-8");
 
-		 return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,targetType);
-		 //	return docExport.transfoTest(simsInputStream);
+		 return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,organizationsAbsolutePath,targetType);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {

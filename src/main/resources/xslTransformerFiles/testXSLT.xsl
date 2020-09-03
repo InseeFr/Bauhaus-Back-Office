@@ -22,6 +22,10 @@
 	<!--Sims target's series -->
 	<xsl:param name="accessoryTempFile" />
 	<xsl:param name="fileSeries" select="document($accessoryTempFile)" />
+	<!-- Organizations' list -->
+	<xsl:param name="orga" />
+	<xsl:param name="organizations" select="document($orga)" />
+	<!-- MSD -->
 	<xsl:param name="msd" />
 	<xsl:param name="fileMsd" select="document($msd)" />
 	<xsl:param name="targetType" />
@@ -210,10 +214,10 @@
 							text:display-outline-level="0" />
 					</text:sequence-decls>
 
-<!-- 					<text:p> -->
-<!-- 						<xsl:value-of select="'xsl:version: '" /> -->
-<!-- 						<xsl:value-of select="system-property('xsl:version')" /> -->
-<!-- 					</text:p> -->
+					<!-- <text:p> -->
+					<!-- <xsl:value-of select="'xsl:version: '" /> -->
+					<!-- <xsl:value-of select="system-property('xsl:version')" /> -->
+					<!-- </text:p> -->
 
 					<!-- Header -->
 					<xsl:call-template name="header"></xsl:call-template>
@@ -262,16 +266,16 @@
 									<table:table-column />
 									<table:table-column />
 									<table:table-row>
-											<xsl:variable name="rangeType"
-												select="upper-case($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/rangeType)" />
-									<table:table-cell table:style-name="framedCell">
+										<xsl:variable name="rangeType"
+											select="upper-case($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/rangeType)" />
+										<table:table-cell table:style-name="framedCell">
 											<text:p text:style-name="attribute">
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg1" />
 
 											</text:p>
-												<xsl:value-of select="$rangeType" />
+											<xsl:value-of select="$rangeType" />
 											<text:p text:style-name="RubricItem">
 												<xsl:choose>
 													<xsl:when test="$rangeType='GEOGRAPHY'">
@@ -281,7 +285,7 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepOrga($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
@@ -296,7 +300,7 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='ORGANIZATION'">
 														<xsl:value-of
-															select="local:prepOrga($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:otherwise>
@@ -310,7 +314,7 @@
 
 											</text:p>
 										</table:table-cell>
-									<table:table-cell table:style-name="framedCell">
+										<table:table-cell table:style-name="framedCell">
 											<text:p text:style-name="attribute">
 												<xsl:value-of select="$mas" />
 												-
@@ -327,7 +331,7 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepOrga($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
@@ -342,7 +346,7 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='ORGANIZATION'">
 														<xsl:value-of
-															select="local:prepOrga($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:otherwise>
@@ -610,7 +614,7 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Operation type'"></xsl:value-of>
 					</text:p>
-						<xsl:if test="$fileSeries/Series/typeCode!=''">
+					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
 							Modality
 							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
@@ -648,7 +652,7 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Series and indicators produced'"></xsl:value-of>
 					</text:p>
-						<text:p text:style-name="RubricItem">
+					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="'Series:'" />
 					</text:p>
 					<text:p text:style-name="RubricItem">
@@ -664,7 +668,7 @@
 					<text:p text:style-name="RubricItem">
 						<xsl:value-of select="'Indicators:'" />
 					</text:p>
-						<text:p text:style-name="RubricItem">
+					<text:p text:style-name="RubricItem">
 						<xsl:for-each select="$fileSeries/Series/seeAlso/seeAlso">
 							<xsl:if test="type = 'indicator'">
 								<xsl:value-of select="labelLg2"></xsl:value-of>
@@ -683,7 +687,7 @@
 					<text:p text:style-name="attribute">
 						<xsl:value-of select="'Daughter operations'"></xsl:value-of>
 					</text:p>
-						<text:p text:style-name="RubricItem">
+					<text:p text:style-name="RubricItem">
 						<xsl:for-each select="$fileSeries/Series/operations/operations">
 							<xsl:value-of select="labelLg2"></xsl:value-of>
 							<xsl:if test="position() != last()">
@@ -948,7 +952,7 @@
 	</xsl:function>
 
 
-	<xsl:function name="local:prepOrga" as="xs:string?"
+	<xsl:function name="local:prepOrgaLg1" as="xs:string?"
 		xmlns:functx="http://www.functx.com">
 		<xsl:param name="arg" as="xs:string?" />
 
@@ -957,11 +961,13 @@
 	</xsl:function>
 
 
-	<xsl:function name="local:prepText2" as="xs:string?"
+	<xsl:function name="local:prepOrgaLg2" as="xs:string?"
 		xmlns:functx="http://www.functx.com">
 		<xsl:param name="arg" as="xs:string?" />
 
-		<xsl:sequence select="'helloWorld'" />
+<!-- 		<xsl:value-of select="$organizations/ArrayList/item[id=?arg]/labelLg2"></xsl:value-of> -->
+
+<!-- 		<xsl:sequence select="$organizations/ArrayList/item[id=?arg]/labelLg2" /> -->
 
 	</xsl:function>
 
