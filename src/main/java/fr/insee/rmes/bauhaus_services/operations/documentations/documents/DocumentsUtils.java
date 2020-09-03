@@ -348,7 +348,7 @@ public class DocumentsUtils  extends RdfService  {
 		logger.debug("URL : {}" , url);
 		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
 		logger.debug("PATH : {}" , path);
-		if (!Boolean.TRUE.equals(sameName) && Files.exists(path)) {
+		if (!Boolean.TRUE.equals(sameName) && path.toFile().exists()) {
 			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
 					"There is already a document with that name.", documentName);
 		}

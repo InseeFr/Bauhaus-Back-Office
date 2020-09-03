@@ -44,7 +44,7 @@ public class Constants {
 	public static final String OWNER = "owner";
 	
 	/*P*/
-	public static final String PARAGRAPH = "<p></p>";
+	//public static final String PARAGRAPH = "<p></p>"; moved to class XhtmlTags
 	public static final String PREF_LABEL_LG = "prefLabelLg";
 	public static final String PREF_LABEL_LG1 = "prefLabelLg1";
 	public static final String PREF_LABEL_LG2 = "prefLabelLg2";

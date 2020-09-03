@@ -50,19 +50,19 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {
-		IdLabelTwoLangs series = new IdLabelTwoLangs();
-		series.setId(jsonFamOpeSer.getString(Constants.ID));
-		if(jsonFamOpeSer.has(Constants.LABEL_LG1)) {
-			series.setLabelLg1(jsonFamOpeSer.getString(Constants.LABEL_LG1));
+		IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs();
+		idLabelTwoLangs.setId(jsonFamOpeSer.getString("id"));
+		if(jsonFamOpeSer.has("labelLg1")) {
+			idLabelTwoLangs.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
 		}
-		if(jsonFamOpeSer.has(Constants.LABEL_LG2)) {
-			series.setLabelLg2(jsonFamOpeSer.getString(Constants.LABEL_LG2));
+		if(jsonFamOpeSer.has("labelLg2")) {
+			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
 		}
-		return series;
+		return idLabelTwoLangs;
 	}
 	
 	public List<String> buildStringListFromJson(JSONArray items) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 0; i < items.length(); i++) {
 			String item = items.getString(i);
 			result.add(item);
@@ -71,7 +71,7 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public List<Object> buildObjectListFromJson(JSONArray items, String className) throws RmesException {
-		List<Object> result = new ArrayList<Object>();
+		List<Object> result = new ArrayList<>();
 		Class<?> cls = null;
 		try {
 			cls = Class.forName(className);
@@ -84,7 +84,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) throws RmesException {
+	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) {
 		ObjectMapper mapper = new ObjectMapper();
 		Object result = new Object();
 		try {
@@ -95,7 +95,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) throws RmesException {
+	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		OperationsLink operationsLink = new OperationsLink();
 		try {

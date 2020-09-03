@@ -12,6 +12,20 @@ public class Operation {
 	@Schema(description = "Label lg1", required = true)
 	public String prefLabelLg1;
 
+	@Schema(description = "Label lg2")
+	public String prefLabelLg2;
+
+	@Schema(description = "Alternative label lg1")
+	public String altLabelLg1;
+
+	@Schema(description = "Alternative label lg2")
+	public String altLabelLg2;
+
+	@Schema(description = "Series")
+	public IdLabelTwoLangs series;
+	
+	public String idSims;
+
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
 			IdLabelTwoLangs series, String idSims) {
 		super();
@@ -27,21 +41,6 @@ public class Operation {
 	public Operation() {
 		super();
 	}
-
-	@Schema(description = "Label lg2")
-	public String prefLabelLg2;
-
-	@Schema(description = "Alternative label lg1")
-	public String altLabelLg1;
-
-	@Schema(description = "Alternative label lg2")
-	public String altLabelLg2;
-
-	@Schema(description = "Series")
-	public IdLabelTwoLangs series;
-	
-	public String idSims;
-
 
 	public Operation(String id) {
 		this.id=id;

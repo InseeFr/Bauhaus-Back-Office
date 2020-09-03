@@ -14,7 +14,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,7 +58,7 @@ public class OperationsUtils extends RdfService{
 	public Operation getOperationById(String id) throws RmesException {
 		return buildOperationFromJson(getOperationJsonById(id));
 	}
-	
+
 	public JSONObject getOperationJsonById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
@@ -71,44 +70,51 @@ public class OperationsUtils extends RdfService{
 		operation.put("series", series);
 	}
 
-	public Operation buildOperationFromJson(JSONObject jsonOperation) {
+	private Operation buildOperationFromJson(JSONObject operationJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
 		Operation operation = new Operation();
-		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
 
-		operation.setId(jsonOperation.getString(Constants.ID));
-		if(jsonOperation.has(Constants.PREF_LABEL_LG1)) {
-			operation.setPrefLabelLg1(jsonOperation.getString(Constants.PREF_LABEL_LG1));
+		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
+
+		operation.setId(operationJson.getString(Constants.ID));
+		if(operationJson.has(Constants.PREF_LABEL_LG1)) {
+			operation.setPrefLabelLg1(operationJson.getString(Constants.PREF_LABEL_LG1));
 		}
-		if(jsonOperation.has(Constants.PREF_LABEL_LG2)) {
-			operation.setPrefLabelLg2(jsonOperation.getString(Constants.PREF_LABEL_LG2)); 
+		if(operationJson.has(Constants.PREF_LABEL_LG2)) {
+			operation.setPrefLabelLg2(operationJson.getString(Constants.PREF_LABEL_LG2)); 
 		}
-		if(jsonOperation.has(Constants.ALT_LABEL_LG1)) {
-			operation.setAltLabelLg1(jsonOperation.getString(Constants.ALT_LABEL_LG1));
+		if(operationJson.has(Constants.ALT_LABEL_LG1)) {
+			operation.setAltLabelLg1(operationJson.getString(Constants.ALT_LABEL_LG1));
 		}
-		if(jsonOperation.has(Constants.ALT_LABEL_LG2)) {
-			operation.setAltLabelLg2(jsonOperation.getString(Constants.ALT_LABEL_LG2));
+		if(operationJson.has(Constants.ALT_LABEL_LG2)) {
+			operation.setAltLabelLg2(operationJson.getString(Constants.ALT_LABEL_LG2));
 		}
 		operation.setSeries(series);
-		if(jsonOperation.has(Constants.ID_SIMS)) {
-			operation.setIdSims(jsonOperation.getString(Constants.ID_SIMS));
+		if(operationJson.has(Constants.ID_SIMS)) {
+			operation.setIdSims(operationJson.getString(Constants.ID_SIMS));
 		}
 		return operation;
 	}
 
-	private Operation buildOperationFromJson2(JSONObject operationJson) {
-		 ObjectMapper mapper = new ObjectMapper();
-		  
-		 Operation operation = new Operation();
+	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+
+		String id = famOpeSerUtils.createId();
+		Operation operation = new Operation();
+
 		try {
 			operation = mapper.readValue(operationJson.toString(), Operation.class);
-		} catch (JsonProcessingException e) {
-			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
+			operation.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
 		}
-		 return operation;
+		return operation;
 	}
-	
-	
+
+
 	/**
 	 * CREATE
 	 * @param body

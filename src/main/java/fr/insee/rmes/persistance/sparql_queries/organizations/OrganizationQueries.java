@@ -54,7 +54,28 @@ public class OrganizationQueries {
 				+ "GROUP BY ?id ?label ?altLabel \n"
 				+ "ORDER BY ?label ";
 	}
-	
+
+	public static String organizationsTwoLangsQuery() {
+		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
+				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> \n "
+				+ "FROM <"+Config.ORG_INSEE_GRAPH+"> \n "
+
+				+ "WHERE { \n"
+				//id
+				+ "?organization dcterms:identifier ?id . \n"
+
+				//labels
+				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "')} \n"
+				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} \n"
+				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
+
+				+ "} \n" 
+				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?altLabel \n"
+				+ "ORDER BY ?labelLg1 ";
+	}
+
 	public static String getUriById(String identifier) {
 		return "SELECT  ?uri \n"
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> \n "
@@ -65,7 +86,7 @@ public class OrganizationQueries {
 
 				+ "} \n" ;
 	}
-	
+
 
 
 }
