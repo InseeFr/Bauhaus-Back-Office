@@ -50,7 +50,7 @@ public class ConceptsPublication extends RdfService{
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
 			String[] links = {"inScheme","disseminationStatus","references","replaces","related"};
-			String[] ignoredAttrs = {"isValidated","changeNote","creator","contributor"};
+			String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,"contributor"};
 
 			try {
 				boolean hasBroader = false;
@@ -207,7 +207,7 @@ public class ConceptsPublication extends RdfService{
 							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 									PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 						} else if (st.getPredicate().toString().endsWith("isValidated")
-								|| st.getPredicate().toString().endsWith("creator")
+								|| st.getPredicate().toString().endsWith(Constants.CREATOR)
 								|| st.getPredicate().toString().endsWith("contributor")) {
 							// nothing, wouldn't copy this attr
 						}

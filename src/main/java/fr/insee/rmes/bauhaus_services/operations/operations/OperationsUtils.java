@@ -25,6 +25,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -57,7 +58,7 @@ public class OperationsUtils extends RdfService{
 	public Operation getOperationById(String id) throws RmesException {
 		return buildOperationFromJson(getOperationJsonById(id));
 	}
-	
+
 	public JSONObject getOperationJsonById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
@@ -74,6 +75,33 @@ public class OperationsUtils extends RdfService{
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
+		Operation operation = new Operation();
+
+		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
+
+		operation.setId(operationJson.getString(Constants.ID));
+		if(operationJson.has(Constants.PREF_LABEL_LG1)) {
+			operation.setPrefLabelLg1(operationJson.getString(Constants.PREF_LABEL_LG1));
+		}
+		if(operationJson.has(Constants.PREF_LABEL_LG2)) {
+			operation.setPrefLabelLg2(operationJson.getString(Constants.PREF_LABEL_LG2)); 
+		}
+		if(operationJson.has(Constants.ALT_LABEL_LG1)) {
+			operation.setAltLabelLg1(operationJson.getString(Constants.ALT_LABEL_LG1));
+		}
+		if(operationJson.has(Constants.ALT_LABEL_LG2)) {
+			operation.setAltLabelLg2(operationJson.getString(Constants.ALT_LABEL_LG2));
+		}
+		operation.setSeries(series);
+		if(operationJson.has(Constants.ID_SIMS)) {
+			operation.setIdSims(operationJson.getString(Constants.ID_SIMS));
+		}
+		return operation;
+	}
+
+	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
+		ObjectMapper mapper = new ObjectMapper();
+
 		String id = famOpeSerUtils.createId();
 		Operation operation = new Operation();
 
@@ -85,8 +113,8 @@ public class OperationsUtils extends RdfService{
 		}
 		return operation;
 	}
-	
-	
+
+
 	/**
 	 * CREATE
 	 * @param body
@@ -112,7 +140,7 @@ public class OperationsUtils extends RdfService{
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					seriesUtils.getSeriesJsonById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
+					seriesUtils.getSeriesJsonById(idSeries).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
 		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits

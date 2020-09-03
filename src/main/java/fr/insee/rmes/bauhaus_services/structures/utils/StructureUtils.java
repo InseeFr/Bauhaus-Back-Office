@@ -54,7 +54,7 @@ public class StructureUtils extends RdfService {
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
         for (int i = 0; i < structures.length(); i++) {
             JSONObject current = structures.getJSONObject(i);
-            current.put("components", repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(current.get("id"))));
+            current.put("components", repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(current.get(Constants.ID))));
         }
         return structures;
     }

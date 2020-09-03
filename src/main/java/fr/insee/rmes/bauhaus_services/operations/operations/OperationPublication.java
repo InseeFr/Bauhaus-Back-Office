@@ -34,7 +34,7 @@ public class OperationPublication extends RdfService{
 	@Autowired
 	private OperationsUtils operationsUtils;
 
-	String[] ignoredAttrs = { "validationState", "hasPart", "publisher", "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, "contributor" };
 
 	public void publishOperation(String operationId) throws RmesException {
 		Model model = new LinkedHashModel();
@@ -68,7 +68,7 @@ public class OperationPublication extends RdfService{
 				addHasPartStatements(model, operation, con);
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Config.REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 		finally {
 			repoGestion.closeStatements(statements);

@@ -113,8 +113,9 @@ public class ConceptsExportBuilder  extends RdfService {
 		if (json.has(CONCEPT_VERSION)) {
 			xhtml.append(XhtmlTags.inListItem("Version : " + json.getString(CONCEPT_VERSION) ));
 		}
-
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST);
+		xhtml.append(XhtmlTags.PARAGRAPH);
+		
 		return xhtml.toString();
 	}
 
@@ -133,7 +134,9 @@ public class ConceptsExportBuilder  extends RdfService {
 		for (String member : list) {
 			xhtml.append(XhtmlTags.inListItem(member));
 		}
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST);
+		xhtml.append(XhtmlTags.PARAGRAPH);
+
 		return xhtml.toString();
 	}
 
@@ -191,7 +194,6 @@ public class ConceptsExportBuilder  extends RdfService {
 			default:
 				break;
 		}
-
 		xhtml.append(XhtmlTags.PARAGRAPH);
 		return xhtml.toString();
 	}
@@ -205,7 +207,9 @@ public class ConceptsExportBuilder  extends RdfService {
 		for (String item : list) {
 			xhtml.append(XhtmlTags.inListItem(item));
 		}
-		xhtml.append(XhtmlTags.CLOSELIST.concat(XhtmlTags.PARAGRAPH));
+		xhtml.append(XhtmlTags.CLOSELIST);
+		xhtml.append(XhtmlTags.PARAGRAPH);
+		
 		return xhtml;
 	}
 

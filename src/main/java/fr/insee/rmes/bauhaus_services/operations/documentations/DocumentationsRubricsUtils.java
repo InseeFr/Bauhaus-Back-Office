@@ -19,6 +19,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
@@ -40,9 +41,7 @@ import fr.insee.rmes.utils.JSONUtils;
 @Component
 public class DocumentationsRubricsUtils extends RdfService {
 
-	private static final String VALUE = "value";
 
-	private static final String HAS_DOC = "hasDoc";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsRubricsUtils.class);
 
@@ -92,13 +91,13 @@ public class DocumentationsRubricsUtils extends RdfService {
 			JSONObject rubric = docRubrics.getJSONObject(i);
 
 			// Get documents
-			if (rubric.has(HAS_DOC)) {
+			if (rubric.has(Constants.HAS_DOC)) {
 				clearDocuments(idSims, rubric);
 			}
 
 			// Format date
-			else if (rubric.get("rangeType").equals(RangeType.DATE)) {
-				rubric.put(VALUE, DateUtils.getDate(rubric.getString(VALUE)));
+			else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.DATE)) {
+				rubric.put(Constants.VALUE, DateUtils.getDate(rubric.getString(Constants.VALUE)));
 			}
 
 			// Format codelist with multiple value
@@ -107,7 +106,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			}
 			
 			//Format Geo features
-			else if (rubric.get("rangeType").equals(RangeType.GEOGRAPHY.name())) {
+			else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.GEOGRAPHY.name())) {
 				clearGeographyRubric(rubric);
 			}
 		}
@@ -118,7 +117,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	}
 
 	private void clearGeographyRubric(JSONObject rubric) throws RmesException {
-		String value = rubric.getString(VALUE);
+		String value = rubric.getString(Constants.VALUE);
 		if (StringUtils.isNotEmpty(value)) {
 			IRI geoUri = RdfUtils.createIRI(value);
 			JSONObject feature = geoService.getGeoFeature(geoUri);
@@ -128,12 +127,12 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 	private void putMultipleValueInList(JSONArray docRubrics, Map<String, JSONObject> tempMultipleCodeList, int i,
 			JSONObject rubric) {
-		String newValue = rubric.getString(VALUE);
-		String attribute = rubric.getString("idAttribute");
+		String newValue = rubric.getString(Constants.VALUE);
+		String attribute = rubric.getString(Constants.ID_ATTRIBUTE);
 
 		if (tempMultipleCodeList.containsKey(attribute)) {
 			JSONObject tempObject = tempMultipleCodeList.get(attribute);
-			tempObject.accumulate(VALUE, newValue);
+			tempObject.accumulate(Constants.VALUE, newValue);
 			tempMultipleCodeList.replace(attribute, tempObject);
 		} else {
 			tempMultipleCodeList.put(attribute, rubric);
@@ -142,11 +141,11 @@ public class DocumentationsRubricsUtils extends RdfService {
 	}
 
 	private void clearDocuments(String idSims, JSONObject rubric) throws RmesException {
-		if (rubric.getBoolean(HAS_DOC)) {
-			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString("idAttribute"));
-			rubric.put("documents", listDoc);
+		if (rubric.getBoolean(Constants.HAS_DOC)) {
+			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE));
+			rubric.put(Constants.DOCUMENTS, listDoc);
 		}
-		rubric.remove(HAS_DOC);
+		rubric.remove(Constants.HAS_DOC);
 	}
 
 
@@ -289,29 +288,39 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 
-	public DocumentationRubric buildRubricFromJson(JSONObject rubric) throws RmesException {
+	public DocumentationRubric buildRubricFromJson(JSONObject rubric) {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
-		if (rubric.has("idAttribute"))		documentationRubric.setIdAttribute(rubric.getString("idAttribute"));
-		if (rubric.has("value")) {
+		if (rubric.has(Constants.ID_ATTRIBUTE)) {
+			documentationRubric.setIdAttribute(rubric.getString(Constants.ID_ATTRIBUTE));
+		}
+		if (rubric.has(Constants.VALUE)) {
 			try{
-				documentationRubric.setValue(rubric.getString("value"));
+				documentationRubric.setValue(rubric.getString(Constants.VALUE));
 			}
 			catch(JSONException e) {
 				/* value is not a string but an array */
-				JSONArray JsonArrayValue =rubric.getJSONArray("value");
-				documentationRubric.setValue(JSONUtils.jsonArrayToList(JsonArrayValue));
+				JSONArray jsonArrayValue =rubric.getJSONArray(Constants.VALUE);
+				documentationRubric.setValue(JSONUtils.jsonArrayToList(jsonArrayValue));
 			}
 		}
-		if (rubric.has("labelLg1"))		documentationRubric.setLabelLg1(rubric.getString("labelLg1"));
-		if (rubric.has("labelLg2"))		documentationRubric.setLabelLg2(rubric.getString("labelLg2"));
-		if (rubric.has("codeList"))		documentationRubric.setCodeList(rubric.getString("codeList"));
-		if (rubric.has("rangeType"))		documentationRubric.setRangeType(rubric.getString("rangeType"));
+		if (rubric.has(Constants.LABEL_LG1)) {
+			documentationRubric.setLabelLg1(rubric.getString(Constants.LABEL_LG1));
+		}
+		if (rubric.has(Constants.LABEL_LG2)) {
+			documentationRubric.setLabelLg2(rubric.getString(Constants.LABEL_LG2));
+		}
+		if (rubric.has("codeList")) {
+			documentationRubric.setCodeList(rubric.getString("codeList"));
+		}
+		if (rubric.has(Constants.RANGE_TYPE)) {
+			documentationRubric.setRangeType(rubric.getString(Constants.RANGE_TYPE));
+		}
 
-		if (rubric.has("documents")) {	
-			List<Document> docs = new ArrayList<Document>();
+		if (rubric.has(Constants.DOCUMENTS)) {	
+			List<Document> docs = new ArrayList<>();
 
-			JSONArray documents = rubric.getJSONArray("documents");
-			Document currentDoc = new Document();
+			JSONArray documents = rubric.getJSONArray(Constants.DOCUMENTS);
+			Document currentDoc;
 
 			for (int i = 0; i < documents.length(); i++) {
 				JSONObject doc = documents.getJSONObject(i);

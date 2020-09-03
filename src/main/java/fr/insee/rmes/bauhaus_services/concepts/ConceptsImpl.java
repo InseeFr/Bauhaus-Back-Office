@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
@@ -236,7 +237,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
-		String fileName = concept.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
+		String fileName = concept.getString(Constants.PREF_LABEL_LG1) + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)
@@ -266,7 +267,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportCollection(collection, acceptHeader);
-		String fileName = collection.getString("prefLabelLg1") + jasper.getExtension(acceptHeader);
+		String fileName = collection.getString(Constants.PREF_LABEL_LG1) + jasper.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)

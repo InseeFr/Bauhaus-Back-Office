@@ -285,7 +285,7 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public Response setConcept(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
 			@RequestBody(description = "Concept", required = true) String body) {
 		try {
 			conceptsService.setConcept(id, body);
@@ -328,7 +328,7 @@ public class ConceptsResources   {
 	@Operation(operationId = "setConceptSend", summary = "Send concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setConceptSend(
-			@Parameter(description = "Id", required = true) @PathParam("id") String id,
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);

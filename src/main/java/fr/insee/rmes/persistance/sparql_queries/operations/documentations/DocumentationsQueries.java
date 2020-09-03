@@ -11,7 +11,7 @@ import fr.insee.rmes.model.operations.documentations.RangeType;
 
 public class DocumentationsQueries {
 	
-	private static final String ID_SIMS = "idSims";
+	private static final String ID_SIMS = Constants.ID_SIMS;
 	static Map<String,Object> params ;
 	
 	/**

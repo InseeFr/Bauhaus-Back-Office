@@ -1,7 +1,9 @@
 package fr.insee.rmes.webservice;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -204,11 +206,12 @@ public class OperationsResources {
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
-		}
-		else try {
-			resultat = operationsService.getSeriesJsonByID(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		} else {
+			try {
+				resultat = operationsService.getSeriesJsonByID(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
 		}
 		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
@@ -334,29 +337,16 @@ public class OperationsResources {
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
-		}
-		else try {
-			resultat = operationsService.getOperationJsonByID(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		} else {
+			try {
+				resultat = operationsService.getOperationJsonByID(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
 		}
 		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
 
-
-	/**
-	 * Wait for an efficient service using xslt
-	 * @deprecated (can't parse ddi files)
-	 */
-	@GET
-	@Deprecated
-	@Path("/operation/{id}/variableBook")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getVarBook", summary = "Produce a book with all variables of an operation")
-	public Response getVarBookExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader)
-			throws RmesException{
-		return operationsService.getVarBookExport(id, acceptHeader);
-	}
 
 	@POST
 	@Path("/operation/codebook")
@@ -367,8 +357,8 @@ public class OperationsResources {
 			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
-	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws Exception {
-		String ddi = IOUtils.toString(isDDI, "utf-8"); 
+	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
+		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
 		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
 		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
 	}
@@ -479,11 +469,12 @@ public class OperationsResources {
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
-		}
-		else try {
-			resultat = operationsService.getIndicatorJsonByID(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		} else {
+			try {
+				resultat = operationsService.getIndicatorJsonByID(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
 		}
 		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
@@ -570,7 +561,7 @@ public class OperationsResources {
 	public Response getMSD(
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
 			) {
-		MSD msd = new MSD();
+		MSD msd ;
 		String jsonResultat = null ;
 		
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
@@ -649,7 +640,7 @@ public class OperationsResources {
 			@Parameter(
 					description = "Identifiant de la documentation (format : [0-9]{4})",
 					required = true,
-					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam("id") String id,
+					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id,
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
 			) {
 		Documentation fullsims;
@@ -759,7 +750,7 @@ public class OperationsResources {
 	public Response getSimsExport(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
-			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam("id") String id
+			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
 			) throws RmesException {
 		return operationsService.exportMetadataReport(id);	
 	}

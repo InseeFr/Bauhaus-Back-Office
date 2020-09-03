@@ -6,6 +6,8 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+
 public class INSEE {
 	
 	public static final String NAMESPACE = "http://rdf.insee.fr/def/base#";
@@ -66,7 +68,7 @@ public class INSEE {
 		FAMILY = f.createIRI(NAMESPACE,"StatisticalOperationFamily");
 		OPERATION = f.createIRI(NAMESPACE,"StatisticalOperation");
 		SERIES = f.createIRI(NAMESPACE,"StatisticalOperationSeries");
-		DOCUMENT = f.createIRI(NAMESPACE,"document");
+		DOCUMENT = f.createIRI(NAMESPACE,Constants.DOCUMENT);
 		INDICATOR = f.createIRI(NAMESPACE,"StatisticalIndicator");
 
 

@@ -160,17 +160,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
-
-	@Deprecated
-	@Override
-	public Response getVarBookExport(String id, String acceptHeader) throws RmesException  {
-		String xmlForJasper = varBookExport.getData(id);
-		InputStream is = jasper.exportVariableBook(xmlForJasper, acceptHeader);
-		String fileName = "Dico" + id + jasper.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
-	}
-
 	@Override
 	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
 		OutputStream os;
@@ -192,24 +181,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		FileInputStream fis =null;
 		try {
 			pathField = FileOutputStream.class.getDeclaredField("path");
-
 			pathField.setAccessible(true);
-			path = (String) pathField.get(os);} catch (NoSuchFieldException | SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		try {
+			path = (String) pathField.get(os);
 			fis= new FileInputStream(path);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
+				logger.error(e.getMessage(),e);
+			}
 		return(fis);
 	}
 
@@ -428,6 +406,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
 		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
+
 
 
 }

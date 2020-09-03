@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,7 +41,7 @@ public class Series {
 	@Schema(description = "History note lg2")
 	public String historyNoteLg2;
 
-	@Schema(description = "Family")
+	@Schema(description = Constants.FAMILY)
 	public IdLabelTwoLangs family;
 
 	@Schema(description = "Operations")
