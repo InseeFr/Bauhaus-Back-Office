@@ -66,9 +66,9 @@ public class OrganizationQueries {
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?label) = '" + Config.LG1 + "')} \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "')} \n"
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?label) = '" + Config.LG2 + "')} \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} \n"
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
 				+ "} \n" 
