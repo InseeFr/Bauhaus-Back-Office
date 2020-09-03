@@ -68,6 +68,7 @@ public class Indicator {
 	@Schema(description = "List of resources which generate the indicator")
 	public List<OperationsLink> wasGeneratedBy;
 	
+	@Schema(description="Id of Sims documentation")
 	public String idSims;
 
 	public Indicator(String id) {

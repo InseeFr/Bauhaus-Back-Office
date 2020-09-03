@@ -55,9 +55,7 @@ import fr.insee.rmes.utils.DateUtils;
 @Component
 public class DocumentsUtils  extends RdfService  {
 
-	private static final String DOCUMENT = "document";
 
-	private static final String UPDATED_DATE = "updatedDate";
 
 	private static final String SCHEME_FILE = "file://";
 	static final Logger logger = LogManager.getLogger(DocumentsUtils.class);
@@ -115,10 +113,10 @@ public class DocumentsUtils  extends RdfService  {
 		if (allDocs.length() != 0) {
 			for (int i = 0; i < allDocs.length(); i++) {
 				JSONObject doc = allDocs.getJSONObject(i);
-				if (doc.has(UPDATED_DATE)) {
-					String formatedDate = DateUtils.getDate(doc.getString(UPDATED_DATE));
-					doc.remove(UPDATED_DATE);
-					doc.put(UPDATED_DATE, formatedDate);
+				if (doc.has(Constants.UPDATED_DATE)) {
+					String formatedDate = DateUtils.getDate(doc.getString(Constants.UPDATED_DATE));
+					doc.remove(Constants.UPDATED_DATE);
+					doc.put(Constants.UPDATED_DATE, formatedDate);
 				}
 			}
 		}
@@ -212,7 +210,7 @@ public class DocumentsUtils  extends RdfService  {
 				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(uriUrl));
 		if (uri.length() > 0) {
 			throw new RmesNotAcceptableException(ErrorCodes.LINK_EXISTING_URL,
-					"This url is already referenced by another link.", uri.getString(DOCUMENT));
+					"This url is already referenced by another link.", uri.getString(Constants.DOCUMENT));
 		}
 	}
 
@@ -260,8 +258,8 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonDocs.isNull(Constants.URI)) {
 			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find Document with id: ", id);
 		}
-		if (jsonDocs.has(UPDATED_DATE)) {
-			jsonDocs.put(UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(UPDATED_DATE)));
+		if (jsonDocs.has(Constants.UPDATED_DATE)) {
+			jsonDocs.put(Constants.UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(Constants.UPDATED_DATE)));
 		}
 
 		return jsonDocs;
@@ -436,11 +434,11 @@ public class DocumentsUtils  extends RdfService  {
 	private IRI getDocumentUri(IRI url) throws RmesException {
 		JSONObject uri = repoGestion
 				.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url));
-		if (uri.length() == 0 || !uri.has(DOCUMENT)) {
+		if (uri.length() == 0 || !uri.has(Constants.DOCUMENT)) {
 			String id = createDocumentID();
 			return RdfUtils.objectIRI(ObjectType.DOCUMENT, id);
 		}
-		return RdfUtils.toURI(uri.getString(DOCUMENT));
+		return RdfUtils.toURI(uri.getString(Constants.DOCUMENT));
 	}
 
 	private String getDocumentUrlFromDocument(JSONObject jsonDoc) {
@@ -464,29 +462,29 @@ public class DocumentsUtils  extends RdfService  {
 
 	public Document buildDocumentFromJson(JSONObject jsonDoc) {
 		Document doc = new Document();
-		if (jsonDoc.has("labelLg1")) {
-			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
+		if (jsonDoc.has(Constants.LABEL_LG1)) {
+			doc.setLabelLg1(jsonDoc.getString(Constants.LABEL_LG1));
 		}
-		if (jsonDoc.has("labelLg2")) {
-			doc.setLabelLg2(jsonDoc.getString("labelLg2"));
+		if (jsonDoc.has(Constants.LABEL_LG2)) {
+			doc.setLabelLg2(jsonDoc.getString(Constants.LABEL_LG2));
 		}
-		if (jsonDoc.has("descriptionLg1")) {
-			doc.setLabelLg1(jsonDoc.getString("descriptionLg1"));
+		if (jsonDoc.has(Constants.DESCRIPTION_LG1)) {
+			doc.setDescriptionLg1(jsonDoc.getString(Constants.DESCRIPTION_LG1));
 		}
-		if (jsonDoc.has("descriptionLg2")) {
-			doc.setLabelLg2(jsonDoc.getString("descriptionLg2"));
+		if (jsonDoc.has(Constants.DESCRIPTION_LG2)) {
+			doc.setDescriptionLg2(jsonDoc.getString(Constants.DESCRIPTION_LG2));
 		}
 		if (jsonDoc.has("dateMiseAJour")) {
-			doc.setLabelLg1(jsonDoc.getString("dateMiseAJour"));
+			doc.setDateMiseAJour(jsonDoc.getString("dateMiseAJour"));
 		}
 		if (jsonDoc.has("langue")) {
-			doc.setLabelLg2(jsonDoc.getString("langue"));
+			doc.setLangue(jsonDoc.getString("langue"));
 		}
-		if (jsonDoc.has("url")) {
-			doc.setLabelLg1(jsonDoc.getString("url"));
+		if (jsonDoc.has(Constants.URL)) {
+			doc.setUrl(jsonDoc.getString(Constants.URL));
 		}
-		if (jsonDoc.has("uri")) {
-			doc.setLabelLg2(jsonDoc.getString("uri"));
+		if (jsonDoc.has(Constants.URI)) {
+			doc.setUri(jsonDoc.getString(Constants.URI));
 		}
 		
 		return doc ;
@@ -494,14 +492,14 @@ public class DocumentsUtils  extends RdfService  {
 	
 	public Document buildDocumentHeadFromJson(JSONObject jsonDoc) {
 		Document doc= new Document();
-		if (jsonDoc.has("url")) {	
-			doc.setUrl(jsonDoc.getString("url"));
+		if (jsonDoc.has(Constants.URL)) {	
+			doc.setUrl(jsonDoc.getString(Constants.URL));
 		}
-		if (jsonDoc.has("labelLg1")) {	
-			doc.setLabelLg1(jsonDoc.getString("labelLg1"));
+		if (jsonDoc.has(Constants.LABEL_LG1)) {	
+			doc.setLabelLg1(jsonDoc.getString(Constants.LABEL_LG1));
 		}
-		if (jsonDoc.has("labelLg2")) {	
-			doc.setLabelLg1(jsonDoc.getString("labelLg2"));
+		if (jsonDoc.has(Constants.LABEL_LG2)) {	
+			doc.setLabelLg1(jsonDoc.getString(Constants.LABEL_LG2));
 		}
 		return(doc);
 	}
