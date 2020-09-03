@@ -72,16 +72,24 @@ public class OrganizationsResources {
 	}
 
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Operation(operationId = "getOrganizations", summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getOrganizations() {
-		String jsonResultat;
-		try {
-			jsonResultat = organizationsService.getOrganizationsJson();
+	public Response getOrganizations(
+			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
+		String resultat;
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				resultat=XMLUtils.produceXMLResponse(organizationsService.getOrganizations());
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+		}
+		else try {
+			resultat = organizationsService.getOrganizationsJson();
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
 
 }
