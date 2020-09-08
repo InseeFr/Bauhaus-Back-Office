@@ -113,7 +113,6 @@ public class DocumentationExport {
 		try{
 			printStream = new PrintStream(osOutputFile);
 			StreamSource xsrc = new StreamSource(xslFile);
-			//TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
@@ -121,7 +120,7 @@ public class DocumentationExport {
 
 			absolutePath = absolutePath.replace('\\', '/');
 			accessoryAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
-			organizationsAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
+			organizationsAbsolutePath = organizationsAbsolutePath.replace('\\', '/');
 			msdPath = msdPath.replace('\\', '/');
 
 			xsltTransformer.setParameter("tempFile", absolutePath);
