@@ -49,6 +49,8 @@ public class Constants {
 	public static final String PREF_LABEL_LG1 = "prefLabelLg1";
 	public static final String PREF_LABEL_LG2 = "prefLabelLg2";
 	public static final String PUBLISHER = "publisher";
+	public static final String PUBLISHERS = "publishers";
+
 
 	/*R*/
 	public static final String RANGE_TYPE = "rangeType";

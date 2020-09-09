@@ -115,9 +115,9 @@ public class IndicatorsUtils  extends RdfService {
 			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
 					jsonIndicator.getJSONArray(Constants.CREATOR)));
 		}
-		if(jsonIndicator.has(Constants.PUBLISHER)) {
+		if(jsonIndicator.has(Constants.PUBLISHERS)) {
 			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
-					jsonIndicator.getJSONArray(Constants.PUBLISHER)));
+					jsonIndicator.getJSONArray(Constants.PUBLISHERS)));
 		}
 		if(jsonIndicator.has(Constants.ID_SIMS)) {
 			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
@@ -198,7 +198,7 @@ public class IndicatorsUtils  extends RdfService {
 
 	private void addIndicatorPublishers(String id, JSONObject indicator) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(IndicatorsQueries.getPublishersById(id));
-		indicator.put(Constants.PUBLISHER, publishers);
+		indicator.put(Constants.PUBLISHERS, publishers);
 	}
 
 	private void addLinks(String idIndic, JSONObject indicator) throws RmesException {
