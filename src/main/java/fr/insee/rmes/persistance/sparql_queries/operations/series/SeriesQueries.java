@@ -129,17 +129,17 @@ public class SeriesQueries {
 	}
 
 	public static String getCreatorsBySeriesUri(String uris) {
-		return "SELECT ?creator { \n" + "?series dc:creator ?creator . \n" 
+		return "SELECT ?creators { \n" + "?series dc:creator ?creators . \n" 
 				+ "VALUES ?series { " + uris
 				+ " } \n" + "}";
 	}
 
 	public static String getCreatorsById(String id) {
-		return "SELECT ?creator\n" 
+		return "SELECT ?creators\n" 
 				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
 				+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
-				+ "?series dc:creator ?creator  . \n" + "} }";
+				+ "?series dc:creator ?creators  . \n" + "} }";
 	}
 	
 	/**
@@ -148,7 +148,7 @@ public class SeriesQueries {
 	 * @return
 	 */
 	public static String getPublishers(String id) {
-		return "SELECT distinct ?publisher \n" 
+		return "SELECT distinct ?publishers \n" 
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
 				+ "FROM <"+Config.ORGANIZATIONS_GRAPH+"> "
@@ -156,7 +156,7 @@ public class SeriesQueries {
 				+ "WHERE { \n"
 					+ "?series a insee:StatisticalOperationSeries . \n" 
 					+ "?series dcterms:publisher ?uri  . \n" 
-					+ "?uri dcterms:identifier  ?publisher . \n" 
+					+ "?uri dcterms:identifier  ?publishers . \n" 
 					+ " FILTER(STRENDS(STR(?series),'/operations/serie/"+ id + "')) . \n" 
 				+ "} ";
 	}

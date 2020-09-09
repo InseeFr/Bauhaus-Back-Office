@@ -111,9 +111,9 @@ public class IndicatorsUtils  extends RdfService {
 		if(jsonIndicator.has("accrualPeriodicityList")) {
 			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
 		}
-		if(jsonIndicator.has(Constants.CREATOR)) {
+		if(jsonIndicator.has(Constants.CREATORS)) {
 			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
-					jsonIndicator.getJSONArray(Constants.CREATOR)));
+					jsonIndicator.getJSONArray(Constants.CREATORS)));
 		}
 		if(jsonIndicator.has(Constants.PUBLISHERS)) {
 			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
@@ -122,10 +122,10 @@ public class IndicatorsUtils  extends RdfService {
 		if(jsonIndicator.has(Constants.ID_SIMS)) {
 			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
 		}
-		if(jsonIndicator.has("contributor")) {
+		if(jsonIndicator.has("contributors")) {
 			List<OperationsLink> contributors = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("contributor"),
+					jsonIndicator.getJSONArray("contributors"),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						contributors.add((OperationsLink) o);		
@@ -193,7 +193,7 @@ public class IndicatorsUtils  extends RdfService {
 
 	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id));
-		indicator.put(Constants.CREATOR, creators);
+		indicator.put(Constants.CREATORS, creators);
 	}
 
 	private void addIndicatorPublishers(String id, JSONObject indicator) throws RmesException {

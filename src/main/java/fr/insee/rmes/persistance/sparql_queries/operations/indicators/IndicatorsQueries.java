@@ -58,7 +58,7 @@ public class IndicatorsQueries {
 
 	public static String indicatorsQueryForSearch() {
 	return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?altLabelLang1;separator=' || ') as ?altLabelLg1) ?altLabelLg2  ?abstractLg1 ?abstractLg2  "
-			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher  ?idSims  ?validationState  "
+			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers  ?idSims  ?validationState  "
 			+ "WHERE {  \r\n" 
 			+ "?indic a insee:StatisticalIndicator ."
 			+ "BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . "
@@ -84,7 +84,7 @@ public class IndicatorsQueries {
 			+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \r\n" 
 			+ "}   \r\n" 
 			+ "OPTIONAL {?indic dcterms:publisher ?uriPublisher . \r\n" 
-			+ "?uriPublisher dcterms:identifier  ?publisher . \r\n" 
+			+ "?uriPublisher dcterms:identifier  ?publishers . \r\n" 
 			+ "}   \r\n" 
 			+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport . ?report sdmx-mm:target ?indic  BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \r\n" 
 			+ "} \r\n" 
@@ -92,7 +92,7 @@ public class IndicatorsQueries {
 			+ "}   \r\n" 
 			+ "} \r\n" 
 			+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLang1 ?altLabelLg2 ?abstractLg1 ?abstractLg2 ?historyNoteLg1 ?historyNoteLg2  "
-			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publisher  ?idSims  ?validationState \n";	
+			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers  ?idSims  ?validationState \n";	
 		
 	}
 
@@ -120,21 +120,21 @@ public class IndicatorsQueries {
 	}
 
 	public static String getCreatorsById(String id) {
-		return "SELECT ?creator\n"
+		return "SELECT ?creators\n"
 				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
 				+" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" 
-				+"?indic dc:creator ?creator . \n"
+				+"?indic dc:creator ?creators . \n"
 				+ "} }"
 				;
 	}
 	
 	public static String getPublishersById(String id) {
-		return "SELECT ?publisher\n"
+		return "SELECT ?publishers\n"
 				+ "WHERE { GRAPH <"+Config.PRODUCTS_GRAPH+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
 				+" FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id+ "')) . \n" 
-				+"?indic dcterms:publisher ?publisher . \n"
+				+"?indic dcterms:publisher ?publishers . \n"
 				+ "} }"
 				;
 	}	
@@ -218,13 +218,13 @@ public class IndicatorsQueries {
 	}
 
 	private static void getOrganizations() {
-		addVariableToList(" ?publisher ?creator ");
+		addVariableToList(" ?publishers ?creators ");
 		addClauseToWhereClause(
 				"OPTIONAL {?indic dcterms:publisher ?uriPublisher . \n"
-						+ "?uriPublisher dcterms:identifier  ?publisher . \n"
+						+ "?uriPublisher dcterms:identifier  ?publishers . \n"
 						+ "}   \n");
 		addClauseToWhereClause(  
-				"OPTIONAL {?indic dc:creator ?creator . \n"
+				"OPTIONAL {?indic dc:creator ?creators . \n"
 						+ "}   \n");
 	}
 	
@@ -288,8 +288,8 @@ public class IndicatorsQueries {
 	}
 
 	public static String getCreatorsByIndicatorUri(String uris) {
-		return "SELECT ?creator { \n"
-				+ "?indic dc:creator ?creator . \n" 
+		return "SELECT ?creators { \n"
+				+ "?indic dc:creator ?creators . \n" 
 				+ "VALUES ?indic { " + uris + " } \n"
 				+ "}";
 	}

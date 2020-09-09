@@ -17,7 +17,7 @@ public class SeriesQueries {
 	
 	public static String oneSeriesQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 \n"
-				+ "?scopeNoteLg1 ?scopeNoteLg2 ?subject ?publisher ?covers ?familyLg1 ?familyLg2 ?idFamily \n"
+				+ "?scopeNoteLg1 ?scopeNoteLg2 ?subject ?publishers ?covers ?familyLg1 ?familyLg2 ?idFamily \n"
 				+ "WHERE { GRAPH<"+ Config.CLASSIF_FAMILIES_GRAPH + "> { \n"				+ "?series skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) . \n"
@@ -37,7 +37,7 @@ public class SeriesQueries {
 				+ "FILTER(REGEX(STR(?series),'/codes/serieDeNomenclatures/" + id + "')) . \n"
 				+ "}}} \n"
 				+ "OPTIONAL {?series dc:subject ?subject } . \n"
-				+ "OPTIONAL {?series dc:publisher ?publisher } . \n"
+				+ "OPTIONAL {?series dc:publisher ?publishers } . \n"
 				+ "OPTIONAL {?series xkos:covers ?covers } . \n"
 				// Remarque lg1
 				+ "OPTIONAL {?series skos:scopeNote ?scopeLg1 . \n"

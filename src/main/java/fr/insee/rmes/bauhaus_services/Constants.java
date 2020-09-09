@@ -8,6 +8,8 @@ public class Constants {
 
 	/*C*/
 	public static final String CREATOR = "creator";
+	public static final String CREATORS = "creators";
+
 
 	/*D*/
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
