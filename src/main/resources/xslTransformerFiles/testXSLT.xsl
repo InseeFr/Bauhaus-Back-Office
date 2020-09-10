@@ -5,6 +5,7 @@
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:local="local-functions.uri"
 	exclude-result-prefixes="xs local"
 	xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+	xmlns:saxon="http://saxon.sf.net/"
 	xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
 	xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
 	xmlns:functx="http://www.functx.com" xmlns:fn="http://www.w3.org/2005/xpath-functions"
@@ -214,9 +215,25 @@
 							text:display-outline-level="0" />
 					</text:sequence-decls>
 
+					<text:p>
+						<xsl:value-of select="'xsl:version: '" />
+						<xsl:value-of select="system-property('xsl:version')" />
+						<!-- <xsl:value-of select="$organizations"/> -->
+						<xsl:value-of select="$fileTarget//prefLabelLg1" />
+						<xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'">
+							<xsl:value-of select="labelLg1" />
+						</xsl:if>
+						<!-- <xsl:value-of select="$organizations/ArrayList/item[id = 'DG75-F110']/labelLg1)" 
+							/> -->
+
+					</text:p>
 					<!-- <text:p> -->
-					<!-- <xsl:value-of select="'xsl:version: '" /> -->
-					<!-- <xsl:value-of select="system-property('xsl:version')" /> -->
+					<!-- <xsl:value-of select="'orga: '" /> -->
+					<!-- <xsl:copy-of select="$orga" /> -->
+					<!-- <xsl:value-of select="'fileTarget: '" /> -->
+					<!-- <xsl:value-of select="$fileTarget" /> -->
+					<!-- <xsl:value-of select="'organizations: '" /> -->
+					<!-- <xsl:value-of select="$organizations" /> -->
 					<!-- </text:p> -->
 
 					<!-- Header -->
@@ -285,13 +302,18 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
-														<xsl:value-of
-															select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/labelLg1)" />
+														<xsl:call-template name="richText">
+															<xsl:with-param name="text"
+																select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/labelLg1" />
+														</xsl:call-template>
+<!-- 														<xsl:value-of -->
+<!-- 															select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute  -->
+<!-- 														= $mas]/labelLg1)" /> -->
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -299,9 +321,17 @@
 														= $mas]/labelLg1)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='ORGANIZATION'">
-														<xsl:value-of
-															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+														<xsl:variable name='orgaStamp'
+															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/value" />
+														<xsl:variable name='lab'
+															select="$organizations/ArrayList/item[id = $orgaStamp]/labelLg1" />
+														<xsl:variable name='altLab'
+															select="$organizations/ArrayList/item[id = $orgaStamp]/altLabel" />
+														<xsl:value-of select="local:prepOrgaLg1($orgaStamp,$lab,$altLab)" />
+														<!-- <xsl:value-of select="'orgaStamp: '" /> -->
+														<!-- <xsl:value-of select="$orgaStamp" /> -->
+														<!-- <xsl:value-of select="'label :'" /> -->
+														<!-- <xsl:value-of select="$lab" /> -->
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
@@ -331,7 +361,7 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
@@ -345,9 +375,11 @@
 														= $mas]/labelLg2)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='ORGANIZATION'">
-														<xsl:value-of
-															select="local:prepOrgaLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+														<xsl:variable name='orgaStamp'
+															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/value" />
+														<xsl:variable name='lab'
+															select="$organizations/ArrayList/item[id = $orgaStamp]/labelLg2" />
+														<xsl:value-of select="local:prepOrgaLg1($orgaStamp,$lab,'')" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
@@ -947,29 +979,107 @@
 		xmlns:functx="http://www.functx.com">
 		<xsl:param name="arg" as="xs:string?" />
 
-		<xsl:sequence select="$arg" />
+		<xsl:variable name="newtext">
+			<xsl:call-template name="solve-special-characters">
+				<xsl:with-param name="text" select="$arg" />
+			</xsl:call-template>
+		</xsl:variable>
 
+		<xsl:value-of select="saxon:evaluate($newtext)" />
+
+		<xsl:sequence select="$newtext" />
 	</xsl:function>
+
+	<xsl:template name="richText">
+		<xsl:param name="text" />
+		<xsl:apply-templates select="saxon:evaluate(text)"></xsl:apply-templates>
+	</xsl:template>
+
+	<xsl:template name="p" match="p">
+		<text:p>
+			<xsl:copy-of select="*" />
+		</text:p>
+	</xsl:template>
+
+	<xsl:template name="solve-special-characters">
+		<xsl:param name="text" />
+		<xsl:variable name="eacute">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$text" />
+				<xsl:with-param name="replace" select="'&amp;eacute;'" />
+				<xsl:with-param name="by" select="'é'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="agrave">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$eacute" />
+				<xsl:with-param name="replace" select="'&amp;agrave;'" />
+				<xsl:with-param name="by" select="'à'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="newline">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$agrave" />
+				<xsl:with-param name="replace"
+					select="concat('&lt;' , 'br /' , '&gt;')" />
+				<xsl:with-param name="by"
+					select="concat('&lt;' , 'text:line-break/', '&gt;')" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="newtext">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$newline" />
+				<xsl:with-param name="replace" select="'&amp;egrave;'" />
+				<xsl:with-param name="by" select="'è'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:sequence select="$newtext" />
+	</xsl:template>
+
+
+	<xsl:template name="string-replace-all">
+		<xsl:param name="text" />
+		<xsl:param name="replace" />
+		<xsl:param name="by" />
+		<xsl:choose>
+			<xsl:when test="$text = '' or $replace = ''or not($replace)">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, $replace)">
+				<xsl:value-of select="substring-before($text,$replace)" />
+				<xsl:value-of select="$by" />
+				<xsl:call-template name="string-replace-all">
+					<xsl:with-param name="text"
+						select="substring-after($text,$replace)" />
+					<xsl:with-param name="replace" select="$replace" />
+					<xsl:with-param name="by" select="$by" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$text" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
 
 
 	<xsl:function name="local:prepOrgaLg1" as="xs:string?"
 		xmlns:functx="http://www.functx.com">
 		<xsl:param name="arg" as="xs:string?" />
+		<xsl:param name="lab" as="xs:string?" />
+		<xsl:param name="altLab" as="xs:string?" />
 
-		<xsl:sequence select="$arg" />
-
-	</xsl:function>
-
-
-	<xsl:function name="local:prepOrgaLg2" as="xs:string?"
-		xmlns:functx="http://www.functx.com">
-		<xsl:param name="arg" as="xs:string?" />
-
-<!-- 		<xsl:value-of select="$organizations/ArrayList/item[id=?arg]/labelLg2"></xsl:value-of> -->
-
-<!-- 		<xsl:sequence select="$organizations/ArrayList/item[id=?arg]/labelLg2" /> -->
+		<xsl:sequence
+			select="if ($lab='')
+		then $arg
+		else if ($altLab='')
+		then concat($arg,' : ',$lab)
+		else concat($arg,' : ',$lab,' - ',$altLab)" />
 
 	</xsl:function>
+
+
+
 
 
 </xsl:stylesheet>
