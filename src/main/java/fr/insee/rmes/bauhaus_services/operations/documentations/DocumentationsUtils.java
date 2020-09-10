@@ -484,7 +484,7 @@ public class DocumentationsUtils extends RdfService{
 			if (idOperation != null && !idOperation.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(
 						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID_SERIES))
-						.getString(Constants.PUBLISHER);
+						.getString(Constants.PUBLISHERS);
 			} else if (idSerie != null && !idSerie.isEmpty()) {
 				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(Constants.PUBLISHER);
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {

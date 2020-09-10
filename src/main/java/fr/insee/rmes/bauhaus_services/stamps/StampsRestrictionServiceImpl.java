@@ -200,7 +200,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uriAsString));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString(Constants.CREATOR).equals(user.getStamp())) {
+			if (!managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
 				isSeriesManager = true;
 			}
 		}
@@ -216,7 +216,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isIndicatorManager = false;
 		if (creators.length() > 0) {
 			for (int i = 0; i < creators.length(); i++) {
-				if (!creators.getJSONObject(i).getString(Constants.CREATOR).equals(user.getStamp())) {
+				if (!creators.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
 					isIndicatorManager = true;
 				}
 			}

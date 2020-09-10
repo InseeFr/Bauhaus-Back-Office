@@ -301,15 +301,15 @@ public class SeriesUtils extends RdfService {
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-		series.put(Constants.CREATOR, creators);
+		series.put(Constants.CREATORS, creators);
 	}
 
 	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
 		if (publishers.length()==1) {
-			series.put(Constants.PUBLISHER, publishers.get(0));
+			series.put(Constants.PUBLISHERS, publishers.get(0));
 		}else {
-			series.put(Constants.PUBLISHER, publishers);
+			series.put(Constants.PUBLISHERS, publishers);
 		}
 	}
 
