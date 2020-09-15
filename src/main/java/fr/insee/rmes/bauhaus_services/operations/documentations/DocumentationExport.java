@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.XsltTransformer;
@@ -46,19 +47,19 @@ public class DocumentationExport {
 	public File export(InputStream inputFile) throws Exception {
 		logger.debug("Begin To export documentation");
 
-		File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
-		//File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 
 		output.deleteOnExit();
 
-		InputStream XSL_FILE = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		final PrintStream printStream = new PrintStream(osOutputFile);
 
-		saxonService.transform(inputFile, XSL_FILE, printStream);
+		saxonService.transform(inputFile, xslFile, printStream);
 		inputFile.close();
-		XSL_FILE.close();
+		xslFile.close();
 		//osOutputFile.close();
 		printStream.close();
 
@@ -68,7 +69,7 @@ public class DocumentationExport {
 
 	public File transfoTest(InputStream inputFile) throws Exception  {
 		logger.debug("Begin transformation test");
-		File output =  File.createTempFile("output", ".xml");
+		File output =  File.createTempFile(Constants.OUTPUT, ".xml");
 		output.deleteOnExit();
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/transfoXSLT.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
@@ -101,8 +102,8 @@ public class DocumentationExport {
 
 		String msdPath = msdFile.getAbsolutePath();
 
-		File output =  File.createTempFile("output", ExportUtils.getExtension("flatODT"));
-		//File output =  File.createTempFile("output", ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 
 		output.deleteOnExit();
 
