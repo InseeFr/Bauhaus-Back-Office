@@ -16,7 +16,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -40,7 +39,7 @@ public class DocumentationPublication extends RdfService {
 		Resource graph = RdfUtils.simsGraph(simsId);
 	
 		//TODO notify...
-		RepositoryConnection con = repoUtils.getConnection(RepositoryGestion.REPOSITORY_GESTION);
+		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, sims);
 
 		RepositoryResult<Statement> metadataReportStatements = repoGestion.getMetadataReportStatements(con, sims, graph);
