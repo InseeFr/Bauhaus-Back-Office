@@ -36,7 +36,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 	
 
 	public void transformRangeType(JSONObject mas) throws RmesException {
-		if (!mas.has(RANGE)) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", "");}
+		if (!mas.has(RANGE)) {throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "At least one attribute don't have range", (mas.has("id") ? mas.get("id") : mas).toString());}
 		String rangeUri = mas.getString(RANGE);
 		RangeType type = RangeType.getEnumByRdfType(RdfUtils.toURI(rangeUri));
 		mas.put(Constants.RANGE_TYPE, type.getJsonType());

@@ -22,7 +22,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.organizations.Organization;
 import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 
@@ -73,7 +72,7 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 		for (Object o:objects){
 			result.add((Organization) o);		
 		}
-		return (List<Organization>)result;
+		return result;
 	}
 	
 	private Organization buildOrganizationFromJson(JSONObject organizationJson) throws RmesException {

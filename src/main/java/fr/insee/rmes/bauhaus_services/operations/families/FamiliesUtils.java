@@ -84,7 +84,8 @@ public class FamiliesUtils  extends RdfService {
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		Family family = new Family(id);
+		Family family = new Family();
+		family.setId(id);
 		try {
 			family = mapper.readerForUpdating(family).readValue(body);
 		} catch (IOException e) {
@@ -138,15 +139,15 @@ public class FamiliesUtils  extends RdfService {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		String id = famOpeSerUtils.createId();
-		Family family = new Family(id);
+		Family family = null ;
 		try {
 			family = mapper.readValue(body,Family.class);
-			family.id = id;
+			family.setId(id);
+			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
+			logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfFamily(family,ValidationStatus.UNPUBLISHED);
-		logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
 		return id;
 
 	}
