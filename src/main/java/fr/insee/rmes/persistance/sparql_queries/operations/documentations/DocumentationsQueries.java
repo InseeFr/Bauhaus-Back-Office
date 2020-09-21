@@ -106,11 +106,14 @@ public class DocumentationsQueries {
 		params.put("CODELIST", RangeType.CODELIST);
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
+		
 		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
-
 		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
 		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
+		
+		params.put("LG1_CL","http://psi.oasis-open.org/iso/639/#fra");
+		params.put("LG2_CL","http://psi.oasis-open.org/iso/639/#eng");//TODO request to have this uri from config.LG1
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	
