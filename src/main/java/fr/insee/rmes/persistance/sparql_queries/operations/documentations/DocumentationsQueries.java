@@ -96,7 +96,7 @@ public class DocumentationsQueries {
 	 * @return ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType 
 	 * @throws RmesException
 	 */
-	public static String getDocumentationRubricsQuery(String idSims) throws RmesException {
+	public static String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SIMS, idSims);
 		params.put("DATE", RangeType.DATE);
@@ -112,8 +112,8 @@ public class DocumentationsQueries {
 		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
 		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
 		
-		params.put("LG1_CL","http://psi.oasis-open.org/iso/639/#fra");
-		params.put("LG2_CL","http://psi.oasis-open.org/iso/639/#eng");//TODO request to have this uri from config.LG1
+		params.put("LG1_CL",clLg1);
+		params.put("LG2_CL",clLg2);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	

@@ -15,13 +15,17 @@ public class Constants {
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DOCUMENT = "document";
-	public static final String DOCUMENTS = "documents";
+	public static final String DOCUMENTS_LG1 = "documentsLg1";
+	public static final String DOCUMENTS_LG2 = "documentsLg2";
+
 	
 	/*F*/
 	public static final String FAMILY = "family";
 	
 	/*H*/
-	public static final String HAS_DOC = "hasDoc";
+	public static final String HAS_DOC_LG1 = "hasDocLg1";
+	public static final String HAS_DOC_LG2 = "hasDocLg2";
+
 	
 	/*I*/
 	public static final String ID = "id";
@@ -60,6 +64,10 @@ public class Constants {
 	
 	/*S*/
 	public static final String SERIES = "SERIES";
+	
+	/*T*/
+	public static final String TEXT_LG1 = "texte";
+	public static final String TEXT_LG2 = "text";
 
 	/*U*/
 	public static final String UNDEFINED = "undefined";
