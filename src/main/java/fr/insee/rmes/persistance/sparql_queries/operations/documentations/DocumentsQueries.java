@@ -34,29 +34,28 @@ public class DocumentsQueries {
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	
-	public static String getDocumentsForSimsQuery(String idSims, String idRubric) throws RmesException {
-		return getDocuments("",idSims,idRubric,null) ;
+	public static String getDocumentsForSimsQuery(String idSims, String idRubric, String uriLang) throws RmesException {
+		return getDocuments("",idSims,idRubric,null, uriLang) ;
 	}
 	
 	public static String getDocumentQuery(String id, boolean isLink) throws RmesException {
-		return getDocuments(id,"","", isLink) ;
+		return getDocuments(id,"","", isLink, "") ;
 	}
 
 	public static String getAllDocumentsQuery() throws RmesException {
-		return getDocuments("","","", null) ;
+		return getDocuments("","","", null, "") ;
 	}
 	
-	private static String getDocuments(String id, String idSims, String idRubric, Boolean isLink) throws RmesException {
-		String docType = getDocType(isLink) ;
+	private static String getDocuments(String id, String idSims, String idRubric, Boolean isLink, String uriLang) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(Constants.ID, id);
 		params.put(Constants.ID_SIMS, idSims);
 		params.put("idRubric", idRubric);
-		params.put("type", docType );
+		params.put("type", getDocType(isLink) );
+		params.put("LANG", uriLang);
 		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
-
 
 	private static String getDocType(Boolean isLink) {
 		if (isLink == null) {

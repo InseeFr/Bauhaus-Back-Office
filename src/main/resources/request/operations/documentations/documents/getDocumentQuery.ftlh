@@ -10,6 +10,9 @@ WHERE {
 <#if idSims != "">
 	 ?text rdf:type dcmitype:Text .
 	 ?text insee:additionalMaterial ?uri . 
+	 <#if LANG != "">
+	 	FILTER(EXISTS{?text dcterms:language <${LANG}>})
+	 </#if>
 </#if>	
 
 	 ?uri rdf:type foaf:Document .

@@ -1,4 +1,4 @@
-SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDoc ?maxOccurs
+SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs
 	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
@@ -22,17 +22,29 @@ WHERE {
 		UNION {
 			 ?report rdf:type sdmx-mm:MetadataReport .
 			 ?reportAttr sdmx-mm:metadataReport ?report .
-			 ?reportAttr ?attr ?text .
-			 ?text rdf:type dcmitype:Text
-			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
 			 
-			 OPTIONAL{ ?text rdf:value ?labelLg1 .
-				 FILTER(lang(?labelLg1) = '${LG1}') 
+			 ?reportAttr ?attr ?textLg1 .
+			 ?textLg1 rdf:type dcmitype:Text .
+			 FILTER(EXISTS{?textLg1 dcterms:language <${LG1_CL}>})
+
+			 OPTIONAL{ 
+				?textLg1 rdf:value ?labelLg1 
+			}
+			 BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
+
+			 OPTIONAL {
+				 ?reportAttr ?attr ?textLg2 .
+				 ?textLg2 rdf:type dcmitype:Text .
+				 FILTER(EXISTS{?textLg2 dcterms:language <${LG2_CL}>})
+
+						OPTIONAL{ 
+							?textLg2 rdf:value ?labelLg2 
+						}
+						BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2)
 			 }
-			 OPTIONAL{?text rdf:value ?labelLg2 .
-			 	FILTER(lang(?labelLg2) = '${LG2}') 
-			 } 
-			 BIND(EXISTS{?text insee:additionalMaterial ?doc} AS ?hasDoc)
+			 
+			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+
 
 			 BIND('${RICHTEXT.jsonType}' AS ?rangeType) . 
 		} 

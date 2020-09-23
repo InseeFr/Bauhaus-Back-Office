@@ -47,6 +47,7 @@ public class RepositoryGestion extends RepositoryUtils {
 			Config.REPOSITORY_ID_GESTION);
 
 
+	
 	/**
 	 * Method which aims to produce response from a sparql query
 	 *
@@ -370,5 +371,6 @@ public class RepositoryGestion extends RepositoryUtils {
 	public RepositoryConnection getConnection() throws RmesException {
 		return getConnection(RepositoryGestion.REPOSITORY_GESTION);
 	}
+
 
 }

@@ -12,4 +12,5 @@ public abstract class RdfService {
 	@Autowired
 	protected StampsRestrictionsService stampsRestrictionsService;
 
+	
 }

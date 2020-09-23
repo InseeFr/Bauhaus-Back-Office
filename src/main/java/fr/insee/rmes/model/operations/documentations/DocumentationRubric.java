@@ -20,11 +20,11 @@ public class DocumentationRubric {
 	private List<String> value;
 
 	private String labelLg1;
-//	@JsonRawValue
 	private String labelLg2;
 	private String codeList;
 	private String rangeType;
-	private List<Document> documents;
+	private List<Document> documentsLg1;
+	private List<Document> documentsLg2;
 	
 	
 	public String getIdAttribute() {
@@ -58,12 +58,7 @@ public class DocumentationRubric {
 	public void setRangeType(String rangeType) {
 		this.rangeType = rangeType;
 	}
-	public List<Document> getDocuments() {
-		return documents;
-	}
-	public void setDocuments(List<Document> documents) {
-		this.documents = documents;
-	}
+
 	
 	public boolean isEmpty() {
 		return 
@@ -71,7 +66,16 @@ public class DocumentationRubric {
 		StringUtils.isEmpty(labelLg1) &&
 		StringUtils.isEmpty(labelLg2) &&
 		StringUtils.isEmpty(codeList) &&
-		(documents == null || documents.isEmpty());
+		(documentsLg1 == null || documentsLg1.isEmpty()) &&
+		(documentsLg2 == null || documentsLg2.isEmpty());
+	}
+	
+	public boolean hasRichTextLg1() {
+		return StringUtils.isNotEmpty(getLabelLg1()) && (getDocumentsLg1() == null || getDocumentsLg1().isEmpty());
+	}
+	
+	public boolean hasRichTextLg2() {
+		return StringUtils.isNotEmpty(getLabelLg2()) && (getDocumentsLg2() == null || getDocumentsLg2().isEmpty());
 	}
 
 	public List<String> getValue() {
@@ -86,11 +90,24 @@ public class DocumentationRubric {
 		}
 		return value.get(0);
 	}
-//	public void setValue(String value) {
-//		List<String>val = new ArrayList<String>();
-//		val.add(value);
-//		this.value = val;
-//	}
+
+	public void setValue(String value) {
+		List<String >val = new ArrayList<String>();
+		val.add(value);
+		this.value = val;
+	}
+	public List<Document> getDocumentsLg1() {
+		return documentsLg1;
+	}
+	public void setDocumentsLg1(List<Document> documentsLg1) {
+		this.documentsLg1 = documentsLg1;
+	}
+	public List<Document> getDocumentsLg2() {
+		return documentsLg2;
+	}
+	public void setDocumentsLg2(List<Document> documentsLg2) {
+		this.documentsLg2 = documentsLg2;
+	}
 
 }
 

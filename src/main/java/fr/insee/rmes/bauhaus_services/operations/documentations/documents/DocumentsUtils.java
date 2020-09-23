@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,12 +30,14 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -45,7 +48,6 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.operations.documentations.Document;
-import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.SCHEMA;
@@ -55,19 +57,20 @@ import fr.insee.rmes.utils.DateUtils;
 @Component
 public class DocumentsUtils  extends RdfService  {
 
-
-
 	private static final String SCHEME_FILE = "file://";
 	static final Logger logger = LogManager.getLogger(DocumentsUtils.class);
+	
+	@Autowired
+	private LangService langService;
 
 	/*
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
 	
-	public void addDocumentsToRubric(Model model, Resource graph, DocumentationRubric rubric, IRI textUri)
+	public void addDocumentsToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
 			throws RmesException {
-		if (rubric.getDocuments() != null && !rubric.getDocuments().isEmpty()) {
-			for (Document doc : rubric.getDocuments()) {
+		if (documents != null && !documents.isEmpty()) {
+			for (Document doc : documents) {
 				IRI url = RdfUtils.toURI(doc.getUrl());
 				IRI docUri = getDocumentUri(url);
 				RdfUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
@@ -83,8 +86,8 @@ public class DocumentsUtils  extends RdfService  {
 	 * @return
 	 * @throws RmesException
 	 */
-	public JSONArray getListDocumentLink(String idSims, String idRubric) throws RmesException {
-		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims, idRubric));
+	public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
 		formatDateInJsonArray(allDocs);
 		return allDocs;
 	}
