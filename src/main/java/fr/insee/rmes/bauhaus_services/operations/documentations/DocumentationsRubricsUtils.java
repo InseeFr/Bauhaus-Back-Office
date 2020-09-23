@@ -295,7 +295,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 		}
 		if (rubric.has(Constants.VALUE)) {
 			try{
-				documentationRubric.setValue(rubric.getString(Constants.VALUE));
+				documentationRubric.setValue(fr.insee.rmes.utils.StringUtils.stringToList(rubric.getString(Constants.VALUE)));
 			}
 			catch(JSONException e) {
 				/* value is not a string but an array */

@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -13,7 +14,9 @@ public class DocumentationRubric {
 
 	private String idAttribute;
 
-	@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
+	//@JsonProperty( "value" )
+	//@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
+	//@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY})
 	private List<String> value;
 
 	private String labelLg1;
@@ -83,11 +86,11 @@ public class DocumentationRubric {
 		}
 		return value.get(0);
 	}
-	public void setValue(String value) {
-		List<String >val = new ArrayList<String>();
-		val.add(value);
-		this.value = val;
-	}
+//	public void setValue(String value) {
+//		List<String>val = new ArrayList<String>();
+//		val.add(value);
+//		this.value = val;
+//	}
 
 }
 

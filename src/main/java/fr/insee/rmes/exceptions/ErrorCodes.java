@@ -119,5 +119,6 @@ public class ErrorCodes {
 	// SERIES
 	public static final int SERIES_OPERATION_OR_SIMS = 663;
 
-	
+	// SIMS
+	public static final int SIMS_INCORRECT = 861;
 }

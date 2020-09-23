@@ -184,12 +184,13 @@ public class DocumentationsUtils extends RdfService{
 	public String setMetadataReport(String id, String body, boolean create) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		Documentation sims = new Documentation();
 		try {
 			sims = mapper.readValue(body, Documentation.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_METHOD_FAILURE, e.getMessage(), "IOException");
+			throw new RmesNotAcceptableException(ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
 		}
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
