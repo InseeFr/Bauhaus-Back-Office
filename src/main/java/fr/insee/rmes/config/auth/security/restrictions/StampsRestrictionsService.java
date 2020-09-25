@@ -4,9 +4,12 @@ import java.util.List;
 
 import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 
 public interface StampsRestrictionsService {
+	
+	User getUser() throws RmesException;
 	
 	boolean isConceptOrCollectionOwner(IRI uri) throws RmesException;
 
