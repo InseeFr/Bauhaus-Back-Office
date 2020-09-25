@@ -112,6 +112,21 @@ public class PublicResources {
 	}
 
 	@GET
+	@Path("/stamp")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getStamp", summary = "User's stamp", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+	public Response getStamp() {
+			String stamp = null;
+			try {
+				stamp = stampsService.getStamp();
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(stamp).build();
+	}
+	
+	
+	@GET
 	@Path("/disseminationStatus")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})

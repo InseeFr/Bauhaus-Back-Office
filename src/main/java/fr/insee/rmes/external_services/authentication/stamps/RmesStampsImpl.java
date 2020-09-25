@@ -14,9 +14,12 @@ import javax.naming.directory.SearchResult;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
 
 @Service
@@ -24,6 +27,9 @@ public class RmesStampsImpl implements StampsService {
 	
 	static final Logger logger = LogManager.getLogger(RmesStampsImpl.class);
 
+	@Autowired
+	StampsRestrictionsService stampsRestrictionService; 
+	
 	@Override
 	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<>();
@@ -81,6 +87,13 @@ public class RmesStampsImpl implements StampsService {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get stamps failed");		
 		}		
 		return stamps.toString();
+	}
+
+	@Override
+	public String getStamp() throws RmesException {
+		JSONObject jsonStamp = new JSONObject();
+		jsonStamp.put("stamp",stampsRestrictionService.getUser().getStamp());
+		return jsonStamp.toString();
 	}
 
 }
