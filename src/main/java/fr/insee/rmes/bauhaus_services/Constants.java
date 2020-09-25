@@ -48,6 +48,7 @@ public class Constants {
 	public static final String OPERATIONS = "operations";
 	public static final String OPERATION_UP = "OPERATION";
 	public static final String OWNER = "owner";
+	public static final String OUTPUT = "output";
 	
 	/*P*/
 	//public static final String PARAGRAPH = "<p></p>"; moved to class XhtmlTags

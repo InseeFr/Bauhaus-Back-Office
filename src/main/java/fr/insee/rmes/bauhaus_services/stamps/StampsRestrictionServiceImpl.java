@@ -24,8 +24,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
 
-
-
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
 		User user = getUser();
@@ -60,7 +58,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isConceptsOwner;
 	}
 
-	private User getUser() {
+	public User getUser() {
 		if (Config.ENV.equals("pre-prod") || Config.ENV.equals("prod")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			return (User) authentication.getPrincipal();
@@ -73,7 +71,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		roles.put("ROLE_offline_access");
 		roles.put("ROLE_Administrateur_RMESGNCS");
 		roles.put("ROLE_uma_authorization");
-		return new User(roles, "");
+		return new User(roles, "fakeStampForDvAndQf");
 	}
 
 	private boolean isAdmin(User user) {
