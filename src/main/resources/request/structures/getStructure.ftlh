@@ -4,6 +4,9 @@ WHERE {
     ?structure dcterms:identifier "${ID}" ;
                rdfs:label ?labelLg1 ;
                rdfs:label ?labelLg2 .
+        ?structure rdfs:label ?labelLg2 .
+    FILTER (lang(?labelLg2) = '${LG2}')
+
     OPTIONAL {
         ?structure dcterms:created ?created .
     } .
@@ -12,10 +15,6 @@ WHERE {
         ?structure dcterms:modified ?modified .
     } .
 
-    OPTIONAL {
-        ?structure rdfs:label ?labelLg2 .
-        FILTER (lang(?labelLg2) = '${LG2}')
-    } .
     OPTIONAL {
         ?structure rdfs:comment ?descriptionLg1 .
         FILTER (lang(?descriptionLg1) = '${LG1}')
