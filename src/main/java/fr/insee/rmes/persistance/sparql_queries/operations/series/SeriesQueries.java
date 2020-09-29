@@ -1,10 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 
 public class SeriesQueries {
 
@@ -82,7 +85,7 @@ public class SeriesQueries {
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n" + "}" + " ORDER BY ?id";
 	}
 
-	public static String getGeneratedWith(String idSeries) {
+	public static String getGeneratedWithOld(String idSeries) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n" 
 				+ "WHERE { \n"
 
@@ -95,7 +98,7 @@ public class SeriesQueries {
 				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries + "')) . \n" + "}" + " ORDER BY ?id";
 	}
 
-	public static String getMultipleOrganizations(String idSeries, IRI linkPredicate) {
+	public static String getMultipleOrganizationsOld(String idSeries, IRI linkPredicate) {
 		return "SELECT ?id ?labelLg1 ?labelLg2\n" + "WHERE { \n" + "?series <" + linkPredicate + "> ?uri . \n"
 				+ "?uri dcterms:identifier  ?id . \n" + "?uri skos:prefLabel ?labelLg1 . \n"
 				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
@@ -107,7 +110,7 @@ public class SeriesQueries {
 				+ "} \n" + "ORDER BY ?id";
 	}
 
-	public static String getFamily(String idSeries) {
+	public static String getFamilyOld(String idSeries) {
 
 		return "SELECT ?id ?labelLg1 ?labelLg2 \n" + " FROM <"+Config.OPERATIONS_GRAPH+"> \n" + "WHERE { \n"
 
@@ -121,20 +124,20 @@ public class SeriesQueries {
 		;
 	}
 
-	public static String getOwner(String uris) {
+	public static String getOwnerOld(String uris) {
 		return "SELECT ?owner { \n" 
 				+ "?series dcterms:publisher ?owner . \n" 
 				+ "VALUES ?series { " + uris + " } \n"
 				+ "}";
 	}
 
-	public static String getCreatorsBySeriesUri(String uris) {
+	public static String getCreatorsBySeriesUriOld(String uris) {
 		return "SELECT ?creators { \n" + "?series dc:creator ?creators . \n" 
 				+ "VALUES ?series { " + uris
 				+ " } \n" + "}";
 	}
 
-	public static String getCreatorsById(String id) {
+	public static String getCreatorsByIdOld(String id) {
 		return "SELECT ?creators\n" 
 				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?series a insee:StatisticalOperationSeries . \n" 
@@ -147,7 +150,7 @@ public class SeriesQueries {
 	 * @param id
 	 * @return
 	 */
-	public static String getPublishers(String id) {
+	public static String getPublishersOld(String id) {
 		return "SELECT distinct ?publishers \n" 
 				
 				+ "FROM <"+Config.OPERATIONS_GRAPH+"> "
@@ -234,5 +237,109 @@ public class SeriesQueries {
 		}
 		whereClause.append(clause);
 	}
+	
+	
+  //////////////////////////
+ //   Using .flth files  //
+//////////////////////////
+	
 
+	private static final String ID_SERIES = "ID_SERIES";
+	private static final String URI_SERIES = "URI_SERIES";
+	private static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
+	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
+	private static final String ORG_INSEE_GRAPH = "ORG_INSEE_GRAPH";
+	private static final String LINK_PREDICATE = "LINK_PREDICATE";
+	
+	private static void initParams() {
+		params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		params.put(OPERATIONS_GRAPH, Config.OPERATIONS_GRAPH);
+	}
+	
+	private static String buildSeriesRequest(String fileName, Map<String, Object> params) throws RmesException  {
+		return FreeMarkerUtils.buildRequest("operations/series/", fileName, params);
+	}
+	
+	/**
+	 * @param idSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getFamily(String idSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(ID_SERIES, idSeries);
+		return buildSeriesRequest("getSeriesFamilyQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param uriSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getOwner(String uriSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_SERIES, uriSeries);
+		return buildSeriesRequest("getSeriesOwnerQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param uriSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getCreatorsBySeriesUri(String uriSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_SERIES, uriSeries);
+		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param idSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getCreatorsById(String idSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(ID_SERIES, idSeries);
+		return buildSeriesRequest("getSeriesCreatorsByIdQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param idSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getPublishers(String idSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(ID_SERIES, idSeries);
+		params.put(ORGANIZATIONS_GRAPH, Config.ORGANIZATIONS_GRAPH);
+		params.put(ORG_INSEE_GRAPH, Config.ORG_INSEE_GRAPH);
+		return buildSeriesRequest("getSeriesPublishersQuery.ftlh", params);	
+	}
+	
+	/**
+	 * @param idSeries, linkPredicate
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getMultipleOrganizations(String idSeries, IRI linkPredicate) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(ID_SERIES, idSeries);
+		params.put(LINK_PREDICATE, linkPredicate);
+		return buildSeriesRequest("getSeriesMultipleOrganizations.ftlh", params);	
+	}
+	
+	/**
+	 * @param idSeries
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getGeneratedWith(String idSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(ID_SERIES, idSeries);
+		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);	
+	}
+	
 }
