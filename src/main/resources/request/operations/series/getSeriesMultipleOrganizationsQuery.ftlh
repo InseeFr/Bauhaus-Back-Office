@@ -7,5 +7,5 @@ SELECT ?id ?labelLg1 ?labelLg2
 		OPTIONAL {?uri skos:prefLabel ?labelLg2 . 
 		FILTER (lang(?labelLg2) = ' ${LG2}')
 		} .
-		FILTER(STRENDS(STR(?series),'/operations/serie/ ${ID_SERIES} ')) .
+		FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) .
 		} ORDER BY ?id
