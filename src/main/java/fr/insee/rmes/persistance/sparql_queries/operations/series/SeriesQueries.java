@@ -201,7 +201,7 @@ public class SeriesQueries {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
 		params.put(LINK_PREDICATE, linkPredicate);
-		return buildSeriesRequest("getSeriesMultipleOrganizations.ftlh", params);	
+		return buildSeriesRequest("getSeriesMultipleOrganizationsQuery.ftlh", params);	
 	}
 	
 	/**
