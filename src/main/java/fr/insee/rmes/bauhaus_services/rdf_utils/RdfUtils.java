@@ -95,7 +95,7 @@ public class RdfUtils {
 	}
 
 	public static IRI structureComponentDefinitionIRI(String structureIRI, String componentDefinitionID) {
-		return factory.createIRI(structureIRI + "/composants/", componentDefinitionID);
+		return factory.createIRI(structureIRI + "/", componentDefinitionID);
 	}
 
 	public static IRI conceptIRI(String id) {
