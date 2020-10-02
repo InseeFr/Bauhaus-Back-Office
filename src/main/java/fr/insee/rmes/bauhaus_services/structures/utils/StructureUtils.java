@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -130,9 +131,27 @@ public class StructureUtils extends RdfService {
         structure.setCreated(DateUtils.getCurrentDate());
         structure.setUpdated(DateUtils.getCurrentDate());
 
+        String id = generateNextId();
+        structure.setId(id);
+
         createRdfStructure(structure);
         logger.info("Create Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId().replace(" ", "-").toLowerCase();
+    }
+
+    private String generateNextId() throws RmesException {
+        String prefix = "dsd";
+        logger.info("Generate id for structure");
+        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastStructureId());
+        logger.debug("JSON when generating the id of a structure : {}", json);
+        if (json.length() == 0) {
+            return prefix + "1000";
+        }
+        String id = json.getString(Constants.ID);
+        if (id.equals(Constants.UNDEFINED)) {
+            return prefix + "1000";
+        }
+        return prefix + (Integer.parseInt(id) + 1);
     }
 
     public String setStructure(String id, String body) throws RmesException {
@@ -150,12 +169,11 @@ public class StructureUtils extends RdfService {
         validateStructure(structure);
 
         structure.setUpdated(DateUtils.getCurrentDate());
-        String structureId = structure.getId().replace(" ", "-").toLowerCase();
-        IRI structureIri = RdfUtils.structureIRI(structureId);
+        IRI structureIri = RdfUtils.structureIRI(structure.getId());
         repoGestion.clearStructureNodeAndComponents(structureIri);
         createRdfStructure(structure);
         logger.info("Update Structure : {} - {}", structure.getId(), structure.getLabelLg1());
-        return structureId;
+        return structure.getId();
     }
 
     /**
@@ -165,7 +183,7 @@ public class StructureUtils extends RdfService {
      */
 
     public void createRdfStructure(Structure structure) throws RmesException {
-        String structureId = structure.getId().replace(" ", "-").toLowerCase();
+        String structureId = structure.getId();
         IRI structureIri = RdfUtils.structureIRI(structureId);
         Resource graph = RdfUtils.structureGraph();
 
@@ -178,6 +196,7 @@ public class StructureUtils extends RdfService {
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
+        model.add(structureIri, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
         model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
 
         /*Optional*/
