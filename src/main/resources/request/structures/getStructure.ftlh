@@ -5,7 +5,7 @@ WHERE {
                insee:identifiantMetier ?identifiant ;
                rdfs:label ?labelLg1 ;
                rdfs:label ?labelLg2 .
-        ?structure rdfs:label ?labelLg2 .
+    FILTER (lang(?labelLg1) = '${LG1}')
     FILTER (lang(?labelLg2) = '${LG2}')
 
     OPTIONAL {
@@ -24,6 +24,5 @@ WHERE {
         ?structure rdfs:comment ?descriptionLg2
         FILTER (lang(?descriptionLg2) = '${LG2}')
     } .
-    FILTER (lang(?labelLg1) = '${LG1}')
 }
 ORDER BY ?labelLg1
