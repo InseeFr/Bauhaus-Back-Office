@@ -62,6 +62,11 @@ public class StructureQueries {
 
 		return buildRequest("getLastIdByType.ftlh", params);
 	}
+	public static String lastStructureId() throws RmesException {
+		HashMap<String, Object> params = initParams();
+
+		return buildRequest("getLastIdStructure.ftlh", params);
+	}
 	public static String lastIdForComponentDefinition() throws RmesException {
 		HashMap<String, Object> params = initParams();
 		return buildRequest("getLastIdByComponentDefinition.ftlh", params);

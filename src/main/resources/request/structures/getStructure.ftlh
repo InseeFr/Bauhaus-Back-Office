@@ -1,7 +1,8 @@
-SELECT DISTINCT ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?structure dcterms:identifier "${ID}" ;
+               insee:identifiantMetier ?identifiant ;
                rdfs:label ?labelLg1 ;
                rdfs:label ?labelLg2 .
     FILTER (lang(?labelLg1) = '${LG1}')
