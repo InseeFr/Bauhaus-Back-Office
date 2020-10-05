@@ -1,4 +1,5 @@
 SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 
+	FROM <${OPERATIONS_GRAPH}>  
 				WHERE { 
 				?uri prov:wasGeneratedBy ?series . ?uri skos:prefLabel ?labelLg1 . 
 				FILTER (lang(?labelLg1) = '${LG1} ') . ?uri skos:prefLabel ?labelLg2 . 
