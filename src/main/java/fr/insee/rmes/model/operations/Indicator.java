@@ -47,7 +47,7 @@ public class Indicator {
 
 	@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of publishers")
-	public List<String> publishers;
+	public List<OperationsLink> publishers;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
@@ -135,7 +135,7 @@ public class Indicator {
 	}
 
 
-	public List<String> getPublishers() {
+	public List<OperationsLink> getPublishers() {
 		return publishers;
 	}
 
@@ -172,7 +172,7 @@ public class Indicator {
 		return creators;
 	}
 
-	public void setPublishers(List<String> publishers) {
+	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}
 	

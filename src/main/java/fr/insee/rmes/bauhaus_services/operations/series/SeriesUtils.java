@@ -86,9 +86,11 @@ public class SeriesUtils extends RdfService {
 		Series series = new Series();
 		try {
 			series = mapper.readValue(seriesJson.toString(), Series.class);
-			series.id = id;
 		} catch (IOException e) {
 			logger.error(e.getMessage());
+		}
+		if(series.getId().isEmpty()) {
+			series.id = id;
 		}
 		return series;
 	}
@@ -338,12 +340,12 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 
-		List<String> publisher=series.getPublishers();
-		if (publisher!= null) {
-			for(String publ : publisher) {
-				RdfUtils.addTripleUri(seriesURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publ), model, RdfUtils.operationsGraph());
-			}
-		}
+//		List<String> publisher=series.getPublishers();
+//		if (publisher!= null) {
+//			for(String publ : publisher) {
+//				RdfUtils.addTripleString(seriesURI, DCTERMS.PUBLISHER, publ, model, RdfUtils.operationsGraph());
+//			}
+//		}
 
 		List<String> creators=series.getCreators();
 		if (creators!=null) {
@@ -352,6 +354,9 @@ public class SeriesUtils extends RdfService {
 			}
 		}
 
+//		//Organismes responsables
+		addOperationLinksOrganization(series.getPublishers(),DCTERMS.PUBLISHER, model, seriesURI);
+		
 		//partenaires
 		addOperationLinksOrganization(series.getContributors(),DCTERMS.CONTRIBUTOR, model, seriesURI);
 

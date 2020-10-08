@@ -116,56 +116,62 @@ public class IndicatorsUtils  extends RdfService {
 					jsonIndicator.getJSONArray(Constants.CREATORS)));
 		}
 		if(jsonIndicator.has(Constants.PUBLISHERS)) {
-			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
-					jsonIndicator.getJSONArray(Constants.PUBLISHERS)));
+			List<OperationsLink> publishers = new ArrayList<>();
+			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+					jsonIndicator.getJSONArray(Constants.PUBLISHERS),
+					OperationsLink.getClassOperationsLink());
+					for (Object o:objects){
+						publishers.add((OperationsLink) o);		
+					}
+					indicator.setPublishers(publishers);
 		}
 		if(jsonIndicator.has(Constants.ID_SIMS)) {
 			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
 		}
-		if(jsonIndicator.has("contributors")) {
+		if(jsonIndicator.has(Constants.CONTRIBUTORS)) {
 			List<OperationsLink> contributors = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("contributors"),
+					jsonIndicator.getJSONArray(Constants.CONTRIBUTORS),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						contributors.add((OperationsLink) o);		
 					}
 					indicator.setContributors(contributors);
 		}
-		if(jsonIndicator.has("seeAlso")) {
+		if(jsonIndicator.has(Constants.SEEALSO)) {
 			List<OperationsLink> seeAlsoes = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("seeAlso"),
+					jsonIndicator.getJSONArray(Constants.SEEALSO),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						seeAlsoes.add((OperationsLink) o);		
 					}
 					indicator.setSeeAlso(seeAlsoes);
 		}
-		if(jsonIndicator.has("replaces")) {
+		if(jsonIndicator.has(Constants.REPLACES)) {
 			List<OperationsLink> replacesList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("replaces"),
+					jsonIndicator.getJSONArray(Constants.REPLACES),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						replacesList.add((OperationsLink) o);		
 					}
 					indicator.setReplaces(replacesList);
 		}
-		if(jsonIndicator.has("isReplacedBy")) {
+		if(jsonIndicator.has(Constants.ISREPLACEDBY)) {
 			List<OperationsLink> isReplacedByList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("isReplacedBy"),
+					jsonIndicator.getJSONArray(Constants.ISREPLACEDBY),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						isReplacedByList.add((OperationsLink) o);		
 					}
 					indicator.setIsReplacedBy(isReplacedByList);
 		}
-		if(jsonIndicator.has("wasGeneratedBy")) {
+		if(jsonIndicator.has(Constants.WASGENERATEDBY)) {
 			List<OperationsLink> wasGeneratedByList = new ArrayList<>();
 			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray("wasGeneratedBy"),
+					jsonIndicator.getJSONArray(Constants.WASGENERATEDBY),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						wasGeneratedByList.add((OperationsLink) o);		
@@ -336,10 +342,10 @@ public class IndicatorsUtils  extends RdfService {
 			}
 		}
 
-		List<String> publishers=indicator.getPublishers();
+		List<OperationsLink> publishers=indicator.getPublishers();
 		if (publishers!=null) {
-			for (String publisher : publishers) {
-				RdfUtils.addTripleString(indicURI, DCTERMS.PUBLISHER, publisher, model, RdfUtils.productsGraph());
+			for (OperationsLink publisher : publishers) {
+				RdfUtils.addTripleUri(indicURI, DCTERMS.PUBLISHER, organizationsService.getOrganizationUriById(publisher.getId()), model, RdfUtils.productsGraph());
 			}
 		}
 		
