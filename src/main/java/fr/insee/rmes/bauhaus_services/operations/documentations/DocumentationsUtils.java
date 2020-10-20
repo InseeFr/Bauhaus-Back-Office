@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -91,7 +91,7 @@ public class DocumentationsUtils extends RdfService{
 	LangService codeListUtils;
 
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerUtils;
 
 	@Autowired
 	OrganizationsServiceImpl organizationsServiceImpl;

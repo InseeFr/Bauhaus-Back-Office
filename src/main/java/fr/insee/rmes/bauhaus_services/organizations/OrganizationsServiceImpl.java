@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
@@ -32,7 +32,7 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	OrganizationUtils organizationUtils;
 
 	@Autowired
-	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerIndUtils famOpeSerUtils;
 
 	static final Logger logger = LogManager.getLogger(OrganizationsServiceImpl.class);
 	

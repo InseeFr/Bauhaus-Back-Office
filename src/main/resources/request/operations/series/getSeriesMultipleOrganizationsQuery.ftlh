@@ -1,4 +1,7 @@
 SELECT ?id ?labelLg1 ?labelLg2 
+		FROM <${OPERATIONS_GRAPH}> 
+		FROM <${ORGANIZATIONS_GRAPH}> 
+		FROM <${ORG_INSEE_GRAPH}> 
 	WHERE { 
 		?series <${LINK_PREDICATE}> ?uri .
 		?uri dcterms:identifier  ?id . 

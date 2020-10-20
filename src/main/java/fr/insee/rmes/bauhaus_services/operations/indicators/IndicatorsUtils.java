@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -60,7 +60,7 @@ public class IndicatorsUtils  extends RdfService {
 	IndicatorPublication indicatorPublication;
 
 	@Autowired
-	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerIndUtils famOpeSerIndUtils;
 
 	public Indicator getIndicatorById(String id) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id));
@@ -112,25 +112,25 @@ public class IndicatorsUtils  extends RdfService {
 			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
 		}
 		if(jsonIndicator.has(Constants.CREATORS)) {
-			indicator.setCreators(famOpeSerUtils.buildStringListFromJson(
+			indicator.setCreators(famOpeSerIndUtils.buildStringListFromJson(
 					jsonIndicator.getJSONArray(Constants.CREATORS)));
 		}
 		if(jsonIndicator.has(Constants.PUBLISHERS)) {
 			List<OperationsLink> publishers = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.PUBLISHERS),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
 						publishers.add((OperationsLink) o);		
 					}
-					indicator.setPublishers(publishers);
+					indicator.setPublishers((OperationsLink[]) publishers.toArray());
 		}
 		if(jsonIndicator.has(Constants.ID_SIMS)) {
 			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
 		}
 		if(jsonIndicator.has(Constants.CONTRIBUTORS)) {
 			List<OperationsLink> contributors = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.CONTRIBUTORS),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
@@ -140,7 +140,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 		if(jsonIndicator.has(Constants.SEEALSO)) {
 			List<OperationsLink> seeAlsoes = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.SEEALSO),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
@@ -150,7 +150,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 		if(jsonIndicator.has(Constants.REPLACES)) {
 			List<OperationsLink> replacesList = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.REPLACES),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
@@ -160,7 +160,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 		if(jsonIndicator.has(Constants.ISREPLACEDBY)) {
 			List<OperationsLink> isReplacedByList = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.ISREPLACEDBY),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
@@ -170,7 +170,7 @@ public class IndicatorsUtils  extends RdfService {
 		}
 		if(jsonIndicator.has(Constants.WASGENERATEDBY)) {
 			List<OperationsLink> wasGeneratedByList = new ArrayList<>();
-			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
+			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
 					jsonIndicator.getJSONArray(Constants.WASGENERATEDBY),
 					OperationsLink.getClassOperationsLink());
 					for (Object o:objects){
@@ -213,6 +213,7 @@ public class IndicatorsUtils  extends RdfService {
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
 		addOneOrganizationLink(idIndic,indicator, DCTERMS.CONTRIBUTOR);
+		famOpeSerIndUtils.fixOrganizationsNames(indicator);
 	}
 
 	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {
@@ -247,12 +248,15 @@ public class IndicatorsUtils  extends RdfService {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();
+		String id=createID();
+		indicator.setId(id);
 		if (indicator.getId() == null) {
 			logger.error("Create indicator cancelled - no id");
 			return null;
 		}
 		try {
 			indicator = mapper.readValue(body, Indicator.class);
+			indicator.setId(id);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}

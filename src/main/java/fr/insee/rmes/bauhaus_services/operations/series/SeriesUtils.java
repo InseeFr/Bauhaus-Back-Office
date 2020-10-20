@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -59,7 +59,7 @@ public class SeriesUtils extends RdfService {
 	OrganizationsService organizationsService;
 
 	@Autowired
-	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerIndUtils famOpeSerIndUtils;
 
 	@Autowired
 	SeriesPublication seriesPublication;
@@ -69,7 +69,7 @@ public class SeriesUtils extends RdfService {
 	/*READ*/
 
 	public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
-		return famOpeSerUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
+		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
 	}
 
 	public Series getSeriesById(String id) throws RmesException {
@@ -82,7 +82,7 @@ public class SeriesUtils extends RdfService {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
-		String id = famOpeSerUtils.createId();
+		String id = famOpeSerIndUtils.createId();
 		Series series = new Series();
 		try {
 			series = mapper.readValue(seriesJson.toString(), Series.class);
@@ -236,7 +236,7 @@ public class SeriesUtils extends RdfService {
 		addSeriesFamily(id, series);
 		addSeriesLinks(id, series);
 		addSeriesCreators(id, series);
-		addSeriesPublishers(id, series);
+	//	addSeriesPublishers(id, series);
 		addGeneratedWith(id, series);
 		return series;
 	}
@@ -280,14 +280,18 @@ public class SeriesUtils extends RdfService {
 		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
 		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
 		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
+		addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER);
+		famOpeSerIndUtils.fixOrganizationsNames(series);
 	}
 
+
+	
 	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
 		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
-			series.put(predicate.getLocalName(), links);
 		}
+		series.put(predicate.getLocalName(), links);
 	}
 
 	private void addOneOrganizationLink(String id, JSONObject series, IRI predicate) throws RmesException {
@@ -434,7 +438,7 @@ public class SeriesUtils extends RdfService {
 
 		// Tester l'existence de la famille
 		String idFamily = series.getFamily().getId();
-		if (!famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
+		if (!famOpeSerIndUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
 			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: ", idFamily);
 		}
 
@@ -482,7 +486,7 @@ public class SeriesUtils extends RdfService {
 
 		checkSimsWithOperations(series);
 
-		String status = famOpeSerUtils.getValidationStatus(id);
+		String status = famOpeSerIndUtils.getValidationStatus(id);
 		if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 		} else {

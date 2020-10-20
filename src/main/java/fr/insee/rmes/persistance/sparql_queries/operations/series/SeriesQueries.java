@@ -128,6 +128,8 @@ public class SeriesQueries {
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 		params.put(OPERATIONS_GRAPH, Config.OPERATIONS_GRAPH);
+		params.put(ORGANIZATIONS_GRAPH, Config.ORGANIZATIONS_GRAPH);
+		params.put(ORG_INSEE_GRAPH, Config.ORG_INSEE_GRAPH);
 	}
 	
 	private static String buildSeriesRequest(String fileName, Map<String, Object> params) throws RmesException  {
@@ -187,8 +189,6 @@ public class SeriesQueries {
 	public static String getPublishers(String idSeries) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
-		params.put(ORGANIZATIONS_GRAPH, Config.ORGANIZATIONS_GRAPH);
-		params.put(ORG_INSEE_GRAPH, Config.ORG_INSEE_GRAPH);
 		return buildSeriesRequest("getSeriesPublishersQuery.ftlh", params);	
 	}
 	

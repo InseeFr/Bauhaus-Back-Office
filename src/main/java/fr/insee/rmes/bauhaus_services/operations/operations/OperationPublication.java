@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -29,7 +29,7 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 public class OperationPublication extends RdfService{
 	
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerUtils;
 	
 	@Autowired
 	private OperationsUtils operationsUtils;

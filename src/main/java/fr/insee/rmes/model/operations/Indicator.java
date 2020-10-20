@@ -1,5 +1,6 @@
 package fr.insee.rmes.model.operations;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -76,7 +77,6 @@ public class Indicator {
 	}
 	
 	public Indicator() throws RmesException {
-		this.id= new IndicatorsUtils().createID();
 	}
 
 
@@ -93,6 +93,7 @@ public class Indicator {
 	public String getPrefLabelLg2() {
 		return prefLabelLg2;
 	}
+
 
 
 	public String getAltLabelLg1() {
@@ -172,8 +173,8 @@ public class Indicator {
 		return creators;
 	}
 
-	public void setPublishers(List<OperationsLink> publishers) {
-		this.publishers = publishers;
+	public void setPublishers(OperationsLink[] publishers) {
+		this.publishers = Arrays.asList(publishers);
 	}
 	
 	public void setCreators(List<String> creators) {
@@ -244,4 +245,11 @@ public class Indicator {
 		this.idSims = idSims;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+//
+//	public void setPublishers(List<OperationsLink> publishers) {
+//		this.publishers = publishers;
+//	}
 }
