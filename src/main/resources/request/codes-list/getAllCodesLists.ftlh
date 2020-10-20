@@ -1,18 +1,18 @@
-SELECT ?value ?label ?range
+SELECT ?uri ?label ?range
 WHERE {
 {
-GRAPH <http://rdf.insee.fr/graphes/codes> {
-?value rdf:type skos:ConceptScheme .
-?value skos:prefLabel ?label .
+GRAPH <${CODES_LISTS_GRAPH}> {
+?uri rdf:type skos:ConceptScheme .
+?uri skos:prefLabel ?label .
 FILTER(lang(?label) = 'fr') .
-?value rdfs:seeAlso ?range
+?range rdfs:seeAlso ?uri
 }
 }
 UNION
 {
-?value ?b xkos:ClassificationLevel .
-?value skos:prefLabel ?label .
+?uri rdf:type xkos:ClassificationLevel .
+?uri skos:prefLabel ?label .
 FILTER(lang(?label) = 'fr') .
-?value xkos:organizedBy ?range
+?uri xkos:organizedBy ?range
 }
 }

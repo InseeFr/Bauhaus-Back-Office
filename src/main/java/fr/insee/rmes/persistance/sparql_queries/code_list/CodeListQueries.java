@@ -8,7 +8,10 @@ import java.util.HashMap;
 
 public class CodeListQueries {
 	public static String getAllCodesLists() throws RmesException {
-		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", new HashMap<>());
+
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {
 		return "SELECT ?code ?labelLg1 ?labelLg2 \n"

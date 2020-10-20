@@ -48,7 +48,7 @@ public class CodeListsResources {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAllCodesLists", summary = "List of codes",
-			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
 	public Response getallCodesLists() {
 		String jsonResultat;
 		try {
