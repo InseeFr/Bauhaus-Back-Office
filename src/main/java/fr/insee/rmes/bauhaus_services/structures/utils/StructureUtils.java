@@ -265,7 +265,6 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
         }
 
-        model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
 
         for(String attachment : componentDefinition.getAttachment()){
             IRI attachmentIRI ;
@@ -284,6 +283,7 @@ public class StructureUtils extends RdfService {
         }
         if (component.getType().equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.ATTRIBUTE, getAttributeIRI(component.getId()), graph);
+            model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
         }
         if (component.getType().equals(QB.MEASURE_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
