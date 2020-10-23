@@ -1,9 +1,18 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+
+import java.util.HashMap;
 
 public class CodeListQueries {
+	public static String getAllCodesLists() throws RmesException {
 
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", params);
+	}
 	public static String getCodeListItemsByNotation(String notation) {
 		return "SELECT ?code ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
