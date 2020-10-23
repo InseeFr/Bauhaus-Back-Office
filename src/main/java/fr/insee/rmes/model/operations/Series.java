@@ -61,7 +61,7 @@ public class Series {
 
 	@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of publishers")
-	public List<String> publishers;
+	public List<OperationsLink> publishers;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
@@ -183,7 +183,7 @@ public class Series {
 		return idSims;
 	}
 
-	public List<String> getPublishers() {
+	public List<OperationsLink> getPublishers() {
 		return publishers;
 	}
 
@@ -255,7 +255,7 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setPublishers(String[] publishers) {
+	public void setPublishers(OperationsLink[] publishers) {
 		this.publishers = Arrays.asList(publishers);
 	}
 

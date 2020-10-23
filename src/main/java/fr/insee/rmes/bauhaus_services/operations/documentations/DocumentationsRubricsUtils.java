@@ -70,13 +70,14 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @return void : the jsonObject is updated
 	 * @throws RmesException
 	 */
-	public void getAllRubricsJson(String idSims, JSONObject jsonObject) throws RmesException {
+	public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
 		JSONArray docRubrics = repoGestion
 				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
 		if (docRubrics.length() != 0) {
 			clearRubrics(idSims, docRubrics);
-			jsonObject.put("rubrics", docRubrics);
+			jsonSims.put("rubrics", docRubrics);
 		}
+		else jsonSims.put("rubrics", new JSONArray());
 	}
 
 	/**

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -44,7 +44,7 @@ public class OperationsUtils extends RdfService{
 	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
 
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;

@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -91,7 +91,7 @@ public class DocumentationsUtils extends RdfService{
 	LangService codeListUtils;
 
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerUtils;
 
 	@Autowired
 	OrganizationsServiceImpl organizationsServiceImpl;
@@ -128,7 +128,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @return ExtensiveSims
 	 * @throws RmesException
 	 */
-
+	/* Not Used */
 	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject jsonSims) throws RmesException {
 		Documentation sims = buildDocumentationFromJson(jsonSims);
 		return new ExtensiveSims(sims);
@@ -156,22 +156,24 @@ public class DocumentationsUtils extends RdfService{
 
 		switch(targetType) {
 		case Constants.OPERATION_UP : sims.setIdOperation(idDatabase); break;
-		case Constants.SERIES : sims.setIdSeries(idDatabase); break;
+		case Constants.SERIES_UP : sims.setIdSeries(idDatabase); break;
 		case Constants.INDICATOR_UP : sims.setIdIndicator(idDatabase); break;
 		default : break;
 		}
 
 		List<DocumentationRubric> rubrics = new ArrayList<>();
-		JSONArray docRubrics = jsonSims.getJSONArray("rubrics");
-		DocumentationRubric currentRubric ;
 
-		for (int i = 0; i < docRubrics.length(); i++) {
-			JSONObject rubric = docRubrics.getJSONObject(i);
-			currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric);
-			rubrics.add(currentRubric);
-		}	
-		sims.setRubrics(rubrics);
+		if(jsonSims.has("rubrics")) {
+			JSONArray docRubrics = jsonSims.getJSONArray("rubrics");
+			DocumentationRubric currentRubric ;
 
+			for (int i = 0; i < docRubrics.length(); i++) {
+				JSONObject rubric = docRubrics.getJSONObject(i);
+				currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric);
+				rubrics.add(currentRubric);
+			}	
+			sims.setRubrics(rubrics);
+		}
 		return sims;
 	}
 
@@ -464,7 +466,7 @@ public class DocumentationsUtils extends RdfService{
 					idDatabase = (String) existingIdTarget.get(Constants.ID_INDICATOR);
 					targetType = Constants.INDICATOR_UP;
 				} else {
-					targetType = Constants.SERIES;
+					targetType = Constants.SERIES_UP;
 				}
 			} else {
 				targetType = Constants.OPERATION_UP;
@@ -530,7 +532,7 @@ public class DocumentationsUtils extends RdfService{
 			Files.copy(is2, accessoryTempFile, options);
 		}
 
-		if (targetType.equals(Constants.SERIES)) {
+		if (targetType.equals(Constants.SERIES_UP)) {
 			String response=XMLUtils.produceXMLResponse(
 					seriesUtils.getSeriesById(idDatabase));
 			is = IOUtils.toInputStream(response,StandardCharsets.UTF_8);

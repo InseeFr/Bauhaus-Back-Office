@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.operations.famopeser_utils;
+package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,9 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 
 @Component
-public class FamOpeSerUtils  extends RdfService {
+public class FamOpeSerIndUtils  extends RdfService {
 
-	static final Logger logger = LogManager.getLogger(FamOpeSerUtils.class);
+	static final Logger logger = LogManager.getLogger(FamOpeSerIndUtils.class);
 
 	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");
@@ -106,5 +106,19 @@ public class FamOpeSerUtils  extends RdfService {
 		return operationsLink;
 	}
 
+	public void fixOrganizationsNames(JSONObject series) throws RmesException {
+		if(series.has("publisher")) {
+			series.put("publishers", series.get("publisher"));
+			series.remove("publisher");
+		}
+		if(series.has("contributor")) {
+			series.put("contributors", series.get("contributor"));
+			series.remove("contributor");
+		}
+		if(series.has("dataCollector")) {
+			series.put("dataCollectors", series.get("dataCollector"));
+			series.remove("dataCollector");
+		}
+	}
 	
 }
