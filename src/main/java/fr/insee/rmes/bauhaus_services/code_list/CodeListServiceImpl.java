@@ -51,5 +51,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			return QueryUtils.correctEmptyGroupConcat(code.getString(Constants.URI));
 	}
 
+	@Override
+	public String getAllCodesLists() throws RmesException {
+		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists()).toString();
+	}
+
 
 }
