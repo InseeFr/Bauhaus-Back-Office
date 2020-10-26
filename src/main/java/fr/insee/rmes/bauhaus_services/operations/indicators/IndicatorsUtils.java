@@ -123,7 +123,8 @@ public class IndicatorsUtils  extends RdfService {
 					for (Object o:objects){
 						publishers.add((OperationsLink) o);		
 					}
-					indicator.setPublishers((OperationsLink[]) publishers.toArray());
+				//	indicator.setPublishers((OperationsLink[]) publishers.toArray());
+					indicator.setPublishers(publishers);
 		}
 		if(jsonIndicator.has(Constants.ID_SIMS)) {
 			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
@@ -191,7 +192,7 @@ public class IndicatorsUtils  extends RdfService {
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
 		addIndicatorCreators(id, indicator);
-		addIndicatorPublishers(id, indicator);
+		//addIndicatorPublishers(id, indicator);
 
 		return indicator;
 	}
@@ -213,6 +214,7 @@ public class IndicatorsUtils  extends RdfService {
 		addOneTypeOfLink(idIndic,indicator,RDFS.SEEALSO);
 		addOneTypeOfLink(idIndic,indicator,PROV.WAS_GENERATED_BY);
 		addOneOrganizationLink(idIndic,indicator, DCTERMS.CONTRIBUTOR);
+		addOneOrganizationLink(idIndic,indicator, DCTERMS.PUBLISHER);
 		famOpeSerIndUtils.fixOrganizationsNames(indicator);
 	}
 
