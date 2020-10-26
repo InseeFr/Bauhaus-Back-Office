@@ -8,12 +8,18 @@ public class OperationsLink {
 	@Schema(description = "Id of the resource linked", required = true)
 	public String id;
 	
-	@Schema(description = "Type of object", required = true)
+	@Schema(description = "Type of object")
 	public String type;
 
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1")
 	public String labelLg1;
 
+//	@Schema(description = "Type of object", required = true)
+//	public String type;
+//
+//	@Schema(description = "Label lg1", required = true)
+//	public String labelLg1;
+	
 	@Schema(description = "Label lg2")
 	public String labelLg2;
 
