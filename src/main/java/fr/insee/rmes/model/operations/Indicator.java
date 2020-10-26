@@ -46,7 +46,7 @@ public class Indicator {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@JsonFormat(shape = Shape.ARRAY)
+	//@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of publishers")
 	public List<OperationsLink> publishers;
 
@@ -173,8 +173,12 @@ public class Indicator {
 		return creators;
 	}
 
-	public void setPublishers(OperationsLink[] publishers) {
-		this.publishers = Arrays.asList(publishers);
+//	public void setPublishers(OperationsLink[] publishers) {
+//		this.publishers = Arrays.asList(publishers);
+//	}
+	
+	public void setPublishers(List<OperationsLink> publishers) {
+		this.publishers = publishers;
 	}
 	
 	public void setCreators(List<String> creators) {
