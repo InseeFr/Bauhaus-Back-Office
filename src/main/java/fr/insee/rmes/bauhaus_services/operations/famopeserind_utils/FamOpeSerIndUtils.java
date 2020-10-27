@@ -106,18 +106,18 @@ public class FamOpeSerIndUtils  extends RdfService {
 		return operationsLink;
 	}
 
-	public void fixOrganizationsNames(JSONObject series) throws RmesException {
-		if(series.has("publisher")) {
-			series.put("publishers", series.get("publisher"));
-			series.remove("publisher");
+	public void fixOrganizationsNames(JSONObject series) {
+		if(series.has(Constants.PUBLISHER)) {
+			series.put(Constants.PUBLISHERS, series.get(Constants.PUBLISHER));
+			series.remove(Constants.PUBLISHER);
 		}
-		if(series.has("contributor")) {
-			series.put("contributors", series.get("contributor"));
-			series.remove("contributor");
+		if(series.has(Constants.CONTRIBUTOR)) {
+			series.put(Constants.CONTRIBUTORS, series.get(Constants.CONTRIBUTOR));
+			series.remove(Constants.CONTRIBUTOR);
 		}
-		if(series.has("dataCollector")) {
-			series.put("dataCollectors", series.get("dataCollector"));
-			series.remove("dataCollector");
+		if(series.has(Constants.DATA_COLLECTOR)) {
+			series.put(Constants.DATA_COLLECTORS, series.get(Constants.DATA_COLLECTOR));
+			series.remove(Constants.DATA_COLLECTOR);
 		}
 	}
 	

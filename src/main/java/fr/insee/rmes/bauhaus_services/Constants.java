@@ -14,6 +14,8 @@ public class Constants {
 
 
 	/*D*/
+	public static final String DATA_COLLECTOR = "dataCollector";
+	public static final String DATA_COLLECTORS = "dataCollectors";
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DOCUMENT = "document";
@@ -73,6 +75,7 @@ public class Constants {
 	public static final String SEEALSO = "seeAlso";
 	
 	/*T*/
+	public static final String TYPE_OF_OBJECT = "typeOfObject";
 	public static final String TEXT_LG1 = "texte";
 	public static final String TEXT_LG2 = "text";
 
