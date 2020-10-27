@@ -233,8 +233,8 @@ public class IndicatorsUtils  extends RdfService {
 				JSONObject orga = organizations.getJSONObject(i);
 				orga.put("type", ObjectType.ORGANIZATION.getLabelType());
 			}
-			object.put(predicate.getLocalName(), organizations);
 		}
+		object.put(predicate.getLocalName(), organizations);
 	}
 
 	/**
