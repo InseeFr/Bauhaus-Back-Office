@@ -14,6 +14,8 @@ public class Constants {
 
 
 	/*D*/
+	public static final String DATA_COLLECTOR = "dataCollector";
+	public static final String DATA_COLLECTORS = "dataCollectors";
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DOCUMENT = "document";
