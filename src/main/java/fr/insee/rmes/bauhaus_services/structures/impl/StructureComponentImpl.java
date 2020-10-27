@@ -58,4 +58,9 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public String createComponent( String body) throws RmesException {
         return structureComponentUtils.createComponent(body);
     }
+
+    @Override
+    public void deleteComponent(String id, String type) throws RmesException {
+        structureComponentUtils.deleteComponent(id, type);
+    }
 }
