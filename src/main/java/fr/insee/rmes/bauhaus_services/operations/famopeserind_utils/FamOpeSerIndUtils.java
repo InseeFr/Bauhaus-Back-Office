@@ -106,7 +106,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 		return operationsLink;
 	}
 
-	public void fixOrganizationsNames(JSONObject series) throws RmesException {
+	public void fixOrganizationsNames(JSONObject series) {
 		if(series.has(Constants.PUBLISHER)) {
 			series.put(Constants.PUBLISHERS, series.get(Constants.PUBLISHER));
 			series.remove(Constants.PUBLISHER);
