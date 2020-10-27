@@ -197,10 +197,6 @@ public class StructureComponentUtils extends RdfService {
         if (!Arrays.asList(QB.getURIForComponent()).contains(component.getType())) {
             throw new BadRequestException("The property type is not valid");
         }
-        /*if (component.getRange() != null &&
-                !(component.getRange().equals(INSEE.CODELIST.toString()) || Arrays.asList(XSD.getURIForRange()).contains(component.getRange()))) {
-            throw new BadRequestException("The range is not valid");
-        }*/
 
     }
 
@@ -211,5 +207,17 @@ public class StructureComponentUtils extends RdfService {
         mapper.configure(
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return mapper.readValue(body, MutualizedComponent.class);
+    }
+
+    public void deleteComponent(String id, String type) throws RmesException {
+        IRI componentIri;
+        if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+            componentIri =  RdfUtils.structureComponentAttributeIRI(id);
+        } else if (type.equals(QB.MEASURE_PROPERTY.toString())) {
+            componentIri =  RdfUtils.structureComponentMeasureIRI(id);
+        } else {
+            componentIri =  RdfUtils.structureComponentDimensionIRI(id);
+        }
+        repoGestion.deleteObject(componentIri, null);
     }
 }
