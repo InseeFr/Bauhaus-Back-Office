@@ -83,7 +83,7 @@ public class SeriesUtils extends RdfService {
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
 		String id;
-		if (seriesJson.has("id")) {
+		if (seriesJson.has("id") && !seriesJson.getString("id").isEmpty()) {
 			id= seriesJson.getString("id");} else {
 				id= famOpeSerIndUtils.createId();}
 		Series series = new Series();
@@ -424,7 +424,9 @@ public class SeriesUtils extends RdfService {
 		if (data != null) {
 			for (OperationsLink d : data) {
 				if (!d.isEmpty()) {
-					RdfUtils.addTripleUri(seriesURI, predicate, organizationsService.getOrganizationUriById(d.getId()),
+					RdfUtils.addTripleUri(seriesURI, predicate,
+				//			d.getId(),
+							organizationsService.getOrganizationUriById(d.getId()),
 							model, RdfUtils.operationsGraph());
 				}
 			}
