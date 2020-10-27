@@ -44,7 +44,7 @@ public class OperationsUtils extends RdfService{
 	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
 
 	@Autowired
-	private FamOpeSerIndUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerIndUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;
@@ -70,14 +70,14 @@ public class OperationsUtils extends RdfService{
 		operation.put("series", series);
 	}
 
-	private Operation buildOperationFromJson(JSONObject operationJson) throws RmesException {
+	private Operation buildOperationFromJson(JSONObject operationJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
 		Operation operation = new Operation();
 
-		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
+		IdLabelTwoLangs series = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
 
 		operation.setId(operationJson.getString(Constants.ID));
 		if(operationJson.has(Constants.PREF_LABEL_LG1)) {
@@ -102,7 +102,7 @@ public class OperationsUtils extends RdfService{
 	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 
-		String id = famOpeSerUtils.createId();
+		String id = famOpeSerIndUtils.createId();
 		Operation operation = new Operation();
 
 		try {
@@ -124,7 +124,7 @@ public class OperationsUtils extends RdfService{
 	public String setOperation(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		String id = famOpeSerUtils.createId();
+		String id = famOpeSerIndUtils.createId();
 		Operation operation = new Operation();
 		try {
 			operation = mapper.readValue(body, Operation.class);
@@ -134,7 +134,7 @@ public class OperationsUtils extends RdfService{
 		operation.setId(id);
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
+		if (! famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		// Tester que la série n'a pas de Sims
@@ -176,7 +176,7 @@ public class OperationsUtils extends RdfService{
 			logger.error(e.getMessage());
 		}
 
-		String status= famOpeSerUtils.getValidationStatus(id);
+		String status= famOpeSerIndUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
 		} else {
