@@ -36,10 +36,13 @@ public class NotesQueries {
 	public static String getHistoricalNotes(String conceptId, String maxVersion) {
 		return "SELECT ?note ?predicat \n"
 				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
-				+ "?concept skos:notation '" + conceptId + "' . \n"
+			//	+ "?concept skos:notation '" + conceptId + "' . \n"
+				
 				+ "?concept ?predicat ?note . \n"
 				+ "?note insee:conceptVersion ?conceptVersion \n"
 				+ "FILTER(?conceptVersion < " + maxVersion + ") \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + conceptId + "')) . \n"
+
 				+ "}}";
 	}
 	
