@@ -251,8 +251,7 @@ public class IndicatorsUtils  extends RdfService {
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();
 		String id=createID();
-		indicator.setId(id);
-		if (indicator.getId() == null) {
+		if (id == null) {
 			logger.error("Create indicator cancelled - no id");
 			return null;
 		}

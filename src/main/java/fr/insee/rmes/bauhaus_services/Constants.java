@@ -39,7 +39,7 @@ public class Constants {
 	public static final String ID_SERIES = "idSeries";
 	public static final String ID_SIMS = "idSims";
 	public static final String INDICATOR_UP = "INDICATOR";
-	public static final String ISREPLACEDBY = "IsReplacedBy";
+	public static final String ISREPLACEDBY = "isReplacedBy";
 	
 	/*L*/
 	public static final String LABEL = "label";
@@ -67,7 +67,7 @@ public class Constants {
 	/*R*/
 	public static final String RANGE_TYPE = "rangeType";
 	public static final String REPOSITORY_EXCEPTION = "RepositoryException";
-	public static final String REPLACES = "Replaces";
+	public static final String REPLACES = "replaces";
 	
 	/*S*/
 	public static final String SERIES_UP = "SERIES";
