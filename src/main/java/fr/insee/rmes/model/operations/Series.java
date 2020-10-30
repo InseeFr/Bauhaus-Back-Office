@@ -1,6 +1,5 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -22,7 +21,6 @@ public class Series {
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-//	@JsonInclude(JsonInclude.Include.ALWAYS)	
 	@Schema(description = "Alternative label Lg1")
 	public String altLabelLg1;
 
