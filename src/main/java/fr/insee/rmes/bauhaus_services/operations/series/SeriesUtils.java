@@ -97,134 +97,7 @@ public class SeriesUtils extends RdfService {
 		}
 		return series;
 	}
-	//
-	//	private Series buildSeriesFromJson(JSONObject seriesJson) throws RmesException {
-	//		//TODO why can't we use something like 		ObjectMapper mapper = new ObjectMapper(); mapper.readValue(body, Series.class);
-	//		Series series=new Series();
-	//		series.setId(seriesJson.getString(Constants.ID));
-	//		if(seriesJson.has(Constants.PREF_LABEL_LG1)) {
-	//			series.setPrefLabelLg1(seriesJson.getString(Constants.PREF_LABEL_LG1));
-	//		}
-	//		if(seriesJson.has(Constants.PREF_LABEL_LG2)) {
-	//			series.setPrefLabelLg2(seriesJson.getString(Constants.PREF_LABEL_LG2));
-	//		}
-	//		if(seriesJson.has(Constants.ALT_LABEL_LG1)) {
-	//			series.setAltLabelLg1(seriesJson.getString(Constants.ALT_LABEL_LG1));
-	//		}
-	//		if(seriesJson.has(Constants.ALT_LABEL_LG2)) {
-	//			series.setAltLabelLg2(seriesJson.getString(Constants.ALT_LABEL_LG2));
-	//		}
-	//		if(seriesJson.has("abstractLg1")) {
-	//			series.setAbstractLg1(seriesJson.getString("abstractLg1"));
-	//		}
-	//		if(seriesJson.has("abstractLg2")) {
-	//			series.setAbstractLg2(seriesJson.getString("abstractLg2"));
-	//		}
-	//		if(seriesJson.has("historyNoteLg1")) {
-	//			series.setHistoryNoteLg1(seriesJson.getString("historyNoteLg1"));
-	//		}
-	//		if(seriesJson.has("historyNoteLg2")) {
-	//			series.setHistoryNoteLg2(seriesJson.getString("historyNoteLg2"));
-	//		}
-	//		if(seriesJson.has("typeCode")) {
-	//			series.setTypeCode(seriesJson.getString("typeCode"));
-	//		}
-	//		if(seriesJson.has("typeList")) {
-	//			series.setTypeList(seriesJson.getString("typeList"));
-	//		}
-	//		if(seriesJson.has("accrualPeriodicityCode")) {
-	//			series.setAccrualPeriodicityCode(seriesJson.getString("accrualPeriodicityCode"));
-	//		}
-	//		if(seriesJson.has("accrualPeriodicityList")) {
-	//			series.setAccrualPeriodicityList(seriesJson.getString("accrualPeriodicityList"));
-	//		}
-	//		if(seriesJson.has(Constants.CREATOR)) {
-	//			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-	//					seriesJson.getJSONArray(Constants.CREATOR)));
-	//		}
-	//		if(seriesJson.has(Constants.PUBLISHER)) {
-	//			series.setCreators(famOpeSerUtils.buildStringListFromJson(
-	//					seriesJson.getJSONArray(Constants.PUBLISHER)));
-	//		}
-	//		if(seriesJson.has(Constants.ID_SIMS)) {
-	//			series.setIdSims(seriesJson.getString(Constants.ID_SIMS));
-	//		}
-	//		if(seriesJson.has(Constants.FAMILY)) {
-	//			series.setFamily(famOpeSerUtils.buildIdLabelTwoLangsFromJson(seriesJson.getJSONObject(Constants.FAMILY)));
-	//		}
-	//		if(seriesJson.has(Constants.OPERATIONS)) {
-	//			List<IdLabelTwoLangs> operations = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray(Constants.OPERATIONS),
-	//					IdLabelTwoLangs.getClassIdLabelTwoLangs());
-	//					for (Object o:objects){
-	//						operations.add((IdLabelTwoLangs) o);		
-	//					}
-	//					series.setOperations(operations);
-	//		}
-	//		if(seriesJson.has("contributor")) {
-	//			List<OperationsLink> contributors = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("contributor"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						contributors.add((OperationsLink) o);		
-	//					}
-	//					series.setContributors(contributors);
-	//		}
-	//		if(seriesJson.has("seeAlso")) {
-	//			List<OperationsLink> seeAlsoes = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("seeAlso"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						seeAlsoes.add((OperationsLink) o);		
-	//					}
-	//					series.setSeeAlso(seeAlsoes);
-	//		}
-	//		if(seriesJson.has("replaces")) {
-	//			List<OperationsLink> replacesList = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("replaces"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						replacesList.add((OperationsLink) o);		
-	//					}
-	//					series.setReplaces(replacesList);
-	//		}
-	//		if(seriesJson.has("isReplacedBy")) {
-	//			List<OperationsLink> isReplacedByList = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("isReplacedBy"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						isReplacedByList.add((OperationsLink) o);		
-	//					}
-	//					series.setIsReplacedBy(isReplacedByList);
-	//		}
-	//		if(seriesJson.has("generates")) {
-	//			List<OperationsLink> generatesList = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("generates"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						generatesList.add((OperationsLink) o);		
-	//					}
-	//					series.setIsReplacedBy(generatesList);
-	//		}
-	//		if(seriesJson.has("dataCollector")) {
-	//			List<OperationsLink> dataCollectors = new ArrayList<>();
-	//			List<Object> objects = famOpeSerUtils.buildObjectListFromJson(
-	//					seriesJson.getJSONArray("dataCollector"),
-	//					OperationsLink.getClassOperationsLink());
-	//					for (Object o:objects){
-	//						dataCollectors.add((OperationsLink) o);		
-	//					}
-	//					series.setDataCollectors(dataCollectors);
-	//		}	
-	//		
-	//		return series;
-	//	}
+	
 
 	public JSONObject getSeriesJsonById(String id) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
@@ -239,7 +112,6 @@ public class SeriesUtils extends RdfService {
 		addSeriesFamily(id, series);
 		addSeriesLinks(id, series);
 		addSeriesCreators(id, series);
-		//	addSeriesPublishers(id, series);
 		addGeneratedWith(id, series);
 		return series;
 	}
@@ -288,7 +160,14 @@ public class SeriesUtils extends RdfService {
 	}
 
 
-
+/**
+ * Add to series the link of type "predicate".
+ * Links can be multiple
+ * @param id
+ * @param series
+ * @param predicate
+ * @throws RmesException
+ */
 	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
 		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (links.length() != 0) {
@@ -298,7 +177,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	private void addOneOrganizationLink(String id, JSONObject series, IRI predicate) throws RmesException {
-		JSONArray organizations = repoGestion.getResponseAsArray(SeriesQueries.getMultipleOrganizations(id, predicate));
+		JSONArray organizations = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);

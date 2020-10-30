@@ -6,5 +6,5 @@ SELECT distinct ?publishers
 					?series a insee:StatisticalOperationSeries .  
 					?series dcterms:publisher ?uri  .  
 					?uri dcterms:identifier ?publishers .  
-					FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES} ')) .  
+					FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) .  
 				} 

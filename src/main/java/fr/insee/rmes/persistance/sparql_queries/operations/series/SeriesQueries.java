@@ -147,16 +147,6 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesFamilyQuery.ftlh", params);	
 	}
 	
-	/**
-	 * @param uriSeries
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getOwner(String uriSeries) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(URI_SERIES, uriSeries);
-		return buildSeriesRequest("getSeriesOwnerQuery.ftlh", params);	
-	}
 	
 	/**
 	 * @param uriSeries
@@ -190,18 +180,6 @@ public class SeriesQueries {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
 		return buildSeriesRequest("getSeriesPublishersQuery.ftlh", params);	
-	}
-	
-	/**
-	 * @param idSeries, linkPredicate
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getMultipleOrganizations(String idSeries, IRI linkPredicate) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(ID_SERIES, idSeries);
-		params.put(LINK_PREDICATE, linkPredicate);
-		return buildSeriesRequest("getSeriesMultipleOrganizationsQuery.ftlh", params);	
 	}
 	
 	/**
@@ -244,7 +222,8 @@ public class SeriesQueries {
 	 */	
 	public static String seriesWithSimsQuery() throws RmesException {
 		if (params==null) {initParams();}
-		return buildSeriesRequest("getSeriesWithSimsQuery.ftlh", params);	
+		params.put("withSims", "true");
+		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
 	
 	/**
@@ -253,6 +232,7 @@ public class SeriesQueries {
 	 */	
 	public static String seriesQuery() throws RmesException {
 		if (params==null) {initParams();}
+		params.put("withSims", "false");
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
 }
