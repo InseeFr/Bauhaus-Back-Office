@@ -12,4 +12,8 @@ public interface StructureComponent {
     public String updateComponent(String componentId, String body) throws RmesException;
 
     public String createComponent(String body) throws RmesException;
+
+    public void deleteComponent(String id, String type) throws RmesException;
+
+
 }
