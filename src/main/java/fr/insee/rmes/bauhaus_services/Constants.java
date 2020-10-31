@@ -9,9 +9,13 @@ public class Constants {
 	/*C*/
 	public static final String CREATOR = "creator";
 	public static final String CREATORS = "creators";
+	public static final String CONTRIBUTOR = "contributor";
+	public static final String CONTRIBUTORS = "contributors";
 
 
 	/*D*/
+	public static final String DATA_COLLECTOR = "dataCollector";
+	public static final String DATA_COLLECTORS = "dataCollectors";
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DOCUMENT = "document";
@@ -36,6 +40,7 @@ public class Constants {
 	public static final String ID_SERIES = "idSeries";
 	public static final String ID_SIMS = "idSims";
 	public static final String INDICATOR_UP = "INDICATOR";
+	public static final String ISREPLACEDBY = "IsReplacedBy";
 	
 	/*L*/
 	public static final String LABEL = "label";
@@ -63,11 +68,15 @@ public class Constants {
 	/*R*/
 	public static final String RANGE_TYPE = "rangeType";
 	public static final String REPOSITORY_EXCEPTION = "RepositoryException";
+	public static final String REPLACES = "Replaces";
 	
 	/*S*/
+	public static final String SERIES_UP = "SERIES";
 	public static final String SERIES = "SERIES";
+	public static final String SEEALSO = "seeAlso";
 	
 	/*T*/
+	public static final String TYPE_OF_OBJECT = "typeOfObject";
 	public static final String TEXT_LG1 = "texte";
 	public static final String TEXT_LG2 = "text";
 
@@ -80,6 +89,9 @@ public class Constants {
 	/*V*/
 	public static final String VALUE = "value";
 
+	/*W*/
+	public static final String WASGENERATEDBY = "wasGeneratedBy";
+	
 	private Constants() {
 		throw new IllegalStateException("Utility class");
 	}

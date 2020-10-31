@@ -185,12 +185,13 @@ public class StructureResources {
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public Response deleteComponentById(@PathParam(Constants.ID) String id) {
         String jsonResultat;
+
         try {
             structureComponentService.deleteComponent(id);
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
         }
-        return Response.status(HttpStatus.SC_OK)    .build();
+        return Response.status(HttpStatus.SC_OK).build();
     }
 
     @PUT
