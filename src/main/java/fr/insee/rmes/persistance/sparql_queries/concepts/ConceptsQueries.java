@@ -30,7 +30,8 @@ public class ConceptsQueries {
 	public static String conceptsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
-				+ "?concept skos:notation ?id . \n"
+				+ "?concept skos:notation ?notation . \n"
+				+ "BIND (STR(?notation) AS ?id) \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "FILTER (lang(?label) = '" + Config.LG1 + "') \n"
 			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
@@ -45,7 +46,8 @@ public class ConceptsQueries {
 			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
 			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
 			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
-			+ "?concept skos:notation ?id . \n"
+			+ "?concept skos:notation ?notation . \n"
+			+ "BIND (STR(?notation) AS ?id) \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
 			+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "')} \n"
@@ -185,7 +187,7 @@ public class ConceptsQueries {
 				+ "?concept rdf:type skos:Concept . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				
-			//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore ???
+			//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 
 
 				+ "{?concept skos:narrower ?conceptlinked . \n"
 				+ "BIND('narrower' AS ?typeOfLink)} \n"
@@ -215,16 +217,19 @@ public class ConceptsQueries {
 	
 	public static String getNarrowers(String id) {
 		return "SELECT ?narrowerId { \n"
-				+ "?concept skos:notation '" + id + "' . \n" 
+				//+ "?concept skos:notation '" + id + "' . \n" 
 				+ "?concept skos:narrower ?narrower . \n"
-				+ "?narrower skos:notation ?narrowerId \n"
+				+ "?narrower skos:notation ?narrowerIdStr \n"
+				+ "BIND (STR(?narrowerIdStr) AS ?narrowerId) \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
+
 				+ "}";
 	}
 	
 	public static String hasBroader(String id) {
 		return "ASK { \n"
-				+ "?concept skos:notation '" + id + "' . \n" 
 				+ "?concept skos:broader ?broader \n"
+				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "}";			
 	}
 	

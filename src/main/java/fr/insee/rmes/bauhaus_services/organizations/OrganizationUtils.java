@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
@@ -17,7 +17,7 @@ import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQuerie
 public class OrganizationUtils  extends RdfService {
 	
 	@Autowired
-	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerIndUtils famOpeSerUtils;
 	
 	public String getUri(String code) throws RmesException{
 		if (StringUtils.isEmpty(code) ) {return null;}

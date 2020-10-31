@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import javax.ws.rs.core.MediaType;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
@@ -87,6 +88,7 @@ public class XMLUtils {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 		// disable resolving of external DTD entities
 		factory.setAttribute(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+		factory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
 		DocumentBuilder builder;  
 		try  
 		{  
