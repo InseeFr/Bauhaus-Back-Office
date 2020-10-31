@@ -13,7 +13,7 @@ public interface StructureComponent {
 
     public String createComponent(String body) throws RmesException;
 
-    public void deleteComponent(String id, String type) throws RmesException;
+    public void deleteComponent(String id) throws RmesException;
 
 
 }

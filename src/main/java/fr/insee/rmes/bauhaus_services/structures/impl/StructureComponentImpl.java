@@ -60,7 +60,11 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     }
 
     @Override
-    public void deleteComponent(String id, String type) throws RmesException {
-        structureComponentUtils.deleteComponent(id, type);
+    public void deleteComponent(String id) throws RmesException {
+        JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
+        if(response.keySet().isEmpty()){
+            throw new NotFoundException("This component do not exist");
+        }
+        structureComponentUtils.deleteComponent(response, id);
     }
 }
