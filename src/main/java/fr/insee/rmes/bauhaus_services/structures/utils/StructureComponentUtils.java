@@ -38,6 +38,8 @@ import fr.insee.rmes.utils.DateUtils;
 @Component
 public class StructureComponentUtils extends RdfService {
     static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
+    public static final String VALIDATED = "Validated";
+    public static final String MODIFIED = "Modified";
 
     public String formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
@@ -210,18 +212,17 @@ public class StructureComponentUtils extends RdfService {
         return mapper.readValue(body, MutualizedComponent.class);
     }
 
-    public void deleteComponent(JSONObject component, String id) throws RmesException {
-        System.out.println(component);
+    public void deleteComponent(JSONObject component, String id, String type) throws RmesException {
         String state = component.getString("validationState");
-        if(state.equals("Validated") || state.equals("Modified")){
+        if(state.equals(VALIDATED) || state.equals(MODIFIED)){
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
 
 
         IRI componentIri;
-        if (id.startsWith(("a"))) {
+        if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())) {
             componentIri =  RdfUtils.structureComponentAttributeIRI(id);
-        } else if (id.startsWith("m")) {
+        } else if (type.equalsIgnoreCase(QB.MEASURE_PROPERTY.toString())) {
             componentIri =  RdfUtils.structureComponentMeasureIRI(id);
         } else {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);

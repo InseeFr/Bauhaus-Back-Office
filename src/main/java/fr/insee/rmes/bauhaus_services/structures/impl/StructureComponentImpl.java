@@ -65,6 +65,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         if(response.keySet().isEmpty()){
             throw new NotFoundException("This component do not exist");
         }
-        structureComponentUtils.deleteComponent(response, id);
+        String type = response.getString("type");
+        structureComponentUtils.deleteComponent(response, id, type);
     }
 }
