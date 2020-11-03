@@ -41,11 +41,11 @@ public class StructureComponentUtils extends RdfService {
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
-    public String formatComponent(String id, JSONObject response) throws RmesException {
+    public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
         addCodeListRange(response);
         addStructures(response, id);
-        return response.toString();
+        return response;
 
     }
 
@@ -217,8 +217,20 @@ public class StructureComponentUtils extends RdfService {
         if(state.equals(VALIDATED) || state.equals(MODIFIED)){
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
+        JSONArray structures = component.getJSONArray("structures");
 
+        boolean findPublishedStructure = false;
+        for (int i = 0; i < structures.length(); i++) {
+            JSONObject structure = (JSONObject) structures.get(i);
+            if(state.equals(VALIDATED) || state.equals(MODIFIED)){
+                findPublishedStructure = true;
+                break;
+            }
+        }
 
+        if(findPublishedStructure){
+            throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
+        }
         IRI componentIri;
         if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())) {
             componentIri =  RdfUtils.structureComponentAttributeIRI(id);
