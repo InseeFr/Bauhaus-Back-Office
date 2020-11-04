@@ -21,6 +21,7 @@ import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.Structure;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,7 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-
+@Hidden
 @Component
 @Path("/structures")
 @Tag(name = "Data structure definitions", description = "Structure API")
