@@ -121,10 +121,12 @@ public class SeriesUtils extends RdfService {
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
-			addOneOrganizationLink(series.get(Constants.ID).toString(), series, INSEE.DATA_COLLECTOR);
-			addSeriesCreators(series.get(Constants.ID).toString(), series);
-			addSeriesPublishers(series.get(Constants.ID).toString(), series);
-			result.put(series);
+			String idSeries = series.get(Constants.ID).toString();
+			addSeriesCreators(idSeries, series);
+			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
+			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
+			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER);
+			famOpeSerIndUtils.fixOrganizationsNames(series);			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
 	}
@@ -176,29 +178,9 @@ public class SeriesUtils extends RdfService {
 		series.put(predicate.getLocalName(), links);
 	}
 
-	private void addOneOrganizationLink(String id, JSONObject series, IRI predicate) throws RmesException {
-		JSONArray organizations = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
-		if (organizations.length() != 0) {
-			for (int i = 0; i < organizations.length(); i++) {
-				JSONObject orga = organizations.getJSONObject(i);
-				orga.put("type", ObjectType.ORGANIZATION.getLabelType());
-			}
-			series.put(predicate.getLocalName(), organizations);
-		}
-	}
-
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
 		series.put(Constants.CREATORS, creators);
-	}
-
-	private void addSeriesPublishers(String id, JSONObject series) throws RmesException {
-		JSONArray publishers = repoGestion.getResponseAsJSONList(SeriesQueries.getPublishers(id));
-		if (publishers.length()==1) {
-			series.put(Constants.PUBLISHERS, publishers.get(0));
-		}else {
-			series.put(Constants.PUBLISHERS, publishers);
-		}
 	}
 
 	/*WRITE*/
