@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.operations.famopeser_utils;
+package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,9 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 
 @Component
-public class FamOpeSerUtils  extends RdfService {
+public class FamOpeSerIndUtils  extends RdfService {
 
-	static final Logger logger = LogManager.getLogger(FamOpeSerUtils.class);
+	static final Logger logger = LogManager.getLogger(FamOpeSerIndUtils.class);
 
 	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");
@@ -50,19 +50,19 @@ public class FamOpeSerUtils  extends RdfService {
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {
-		IdLabelTwoLangs series = new IdLabelTwoLangs();
-		series.setId(jsonFamOpeSer.getString("id"));
+		IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs();
+		idLabelTwoLangs.setId(jsonFamOpeSer.getString("id"));
 		if(jsonFamOpeSer.has("labelLg1")) {
-			series.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
+			idLabelTwoLangs.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
 		}
 		if(jsonFamOpeSer.has("labelLg2")) {
-			series.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
+			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
 		}
-		return series;
+		return idLabelTwoLangs;
 	}
 	
 	public List<String> buildStringListFromJson(JSONArray items) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 0; i < items.length(); i++) {
 			String item = items.getString(i);
 			result.add(item);
@@ -70,8 +70,8 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public List<Object> buildObjectListFromJson(JSONArray items, String className) throws RmesException {
-		List<Object> result = new ArrayList<Object>();
+	public List<Object> buildObjectListFromJson(JSONArray items, String className) {
+		List<Object> result = new ArrayList<>();
 		Class<?> cls = null;
 		try {
 			cls = Class.forName(className);
@@ -84,7 +84,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) throws RmesException {
+	public Object buildObjectFromJson(JSONObject objectJson, Class<?> cls) {
 		ObjectMapper mapper = new ObjectMapper();
 		Object result = new Object();
 		try {
@@ -95,7 +95,7 @@ public class FamOpeSerUtils  extends RdfService {
 		return result;
 	}
 	
-	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) throws RmesException {
+	public OperationsLink buildOperationsLinkFromJson(JSONObject operationsLinkJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		OperationsLink operationsLink = new OperationsLink();
 		try {
@@ -106,5 +106,19 @@ public class FamOpeSerUtils  extends RdfService {
 		return operationsLink;
 	}
 
+	public void fixOrganizationsNames(JSONObject series) {
+		if(series.has(Constants.PUBLISHER)) {
+			series.put(Constants.PUBLISHERS, series.get(Constants.PUBLISHER));
+			series.remove(Constants.PUBLISHER);
+		}
+		if(series.has(Constants.CONTRIBUTOR)) {
+			series.put(Constants.CONTRIBUTORS, series.get(Constants.CONTRIBUTOR));
+			series.remove(Constants.CONTRIBUTOR);
+		}
+		if(series.has(Constants.DATA_COLLECTOR)) {
+			series.put(Constants.DATA_COLLECTORS, series.get(Constants.DATA_COLLECTOR));
+			series.remove(Constants.DATA_COLLECTOR);
+		}
+	}
 	
 }

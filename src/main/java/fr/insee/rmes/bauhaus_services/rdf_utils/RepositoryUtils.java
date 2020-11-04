@@ -21,12 +21,12 @@ import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 
 
 public abstract class RepositoryUtils {
 	
-	private static final String VALUE = "value";
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
@@ -231,7 +231,7 @@ public abstract class RepositoryUtils {
 			final JSONObject jsonResults = new JSONObject();
 
 			Set<String> set = json.keySet();
-			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(VALUE)));
+			set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(Constants.VALUE)));
 			arrayRes.put(jsonResults);
 		}
 		return arrayRes;
@@ -254,7 +254,7 @@ public abstract class RepositoryUtils {
 			final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
 					.get(i);
 			Set<String> set = json.keySet();
-			set.forEach(s -> arrayRes.put(((JSONObject)json.get(s)).get(VALUE)));
+			set.forEach(s -> arrayRes.put(((JSONObject)json.get(s)).get(Constants.VALUE)));
 		}
 		return arrayRes;
 	}
@@ -270,7 +270,7 @@ public abstract class RepositoryUtils {
 		final JSONObject jsonResults = new JSONObject();
 
 		Set<String> set = json.keySet();
-		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(VALUE)));
+		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(Constants.VALUE)));
 		return jsonResults;
 	}
 	

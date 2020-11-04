@@ -53,23 +53,20 @@ public class LinksUtils {
 	}
 
 	private void addTripleReferences(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> {
+		conceptsIDToLink.forEach(conceptIDToLink -> 
 			model.add(conceptURI, DCTERMS.REFERENCES, RdfUtils.conceptIRI(conceptIDToLink),
-					RdfUtils.conceptGraph());
-		});
+					RdfUtils.conceptGraph()));
 	}
 
 	private void addTripleSucceed(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> {
+		conceptsIDToLink.forEach(conceptIDToLink -> 
 			model.add(conceptURI, DCTERMS.REPLACES, RdfUtils.conceptIRI(conceptIDToLink),
-					RdfUtils.conceptGraph());
-		});
+					RdfUtils.conceptGraph()));
 	}
 
 	private void addTripleRelated(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> {
-			model.add(conceptURI, SKOS.RELATED, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
-		});
+		conceptsIDToLink.forEach(conceptIDToLink -> 
+			model.add(conceptURI, SKOS.RELATED, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph()));
 	}
 	
 }

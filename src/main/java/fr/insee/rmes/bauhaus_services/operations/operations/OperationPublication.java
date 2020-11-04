@@ -13,12 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -29,12 +28,12 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 public class OperationPublication extends RdfService{
 	
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerUtils;
 	
 	@Autowired
 	private OperationsUtils operationsUtils;
 
-	String[] ignoredAttrs = { "validationState", "hasPart", "publisher", "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, "contributor" };
 
 	public void publishOperation(String operationId) throws RmesException {
 		Model model = new LinkedHashModel();
@@ -68,7 +67,7 @@ public class OperationPublication extends RdfService{
 				addHasPartStatements(model, operation, con);
 			}
 		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Config.REPOSITORY_EXCEPTION);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 		finally {
 			repoGestion.closeStatements(statements);

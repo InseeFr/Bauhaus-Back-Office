@@ -1,10 +1,7 @@
 package fr.insee.rmes.model.operations.documentations;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-//import lombok.Getter;
-//import lombok.Setter;
 
-// @Getter @Setter
 public class MAS {
 
 	@Schema(description="Id of the Metadata Attribute Specification")

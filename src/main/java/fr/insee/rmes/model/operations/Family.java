@@ -31,8 +31,8 @@ public class Family {
 	public List<IdLabelTwoLangs> series;
 	
 	
-	public Family(String id) {
-		this.id=id;
+	public Family() {
+		//empty constructor for Jackson mapper
 	}
 
 	public String getPrefLabelLg1() {
@@ -53,6 +53,10 @@ public class Family {
 
 	public String getAbstractLg2() {
 		return abstractLg2;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 

@@ -11,7 +11,7 @@ import fr.insee.rmes.model.operations.documentations.RangeType;
 
 public class DocumentationsQueries {
 	
-	private static final String ID_SIMS = "idSims";
+	private static final String ID_SIMS = Constants.ID_SIMS;
 	static Map<String,Object> params ;
 	
 	/**
@@ -96,7 +96,7 @@ public class DocumentationsQueries {
 	 * @return ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType 
 	 * @throws RmesException
 	 */
-	public static String getDocumentationRubricsQuery(String idSims) throws RmesException {
+	public static String getDocumentationRubricsQuery(String idSims, String clLg1, String clLg2) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SIMS, idSims);
 		params.put("DATE", RangeType.DATE);
@@ -106,11 +106,14 @@ public class DocumentationsQueries {
 		params.put("CODELIST", RangeType.CODELIST);
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
+		
 		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
-
 		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
 		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
+		
+		params.put("LG1_CL",clLg1);
+		params.put("LG2_CL",clLg2);
 		return buildRequest("getDocumentationRubricsQuery.ftlh", params);	
 	}
 	

@@ -20,14 +20,14 @@ import fr.insee.rmes.config.Config;
 
 public class Igesa {
 
-	final static Logger logger = LogManager.getLogger(Igesa.class);
+	static final Logger logger = LogManager.getLogger(Igesa.class);
 
-	public static void post(String URL) {
-		logger.info("Igesa, post : " + URL);
-		HttpPost httppost = new HttpPost(URL);
+	public static void post(String url) {
+		logger.info("Igesa, post : {}", url);
+		HttpPost httppost = new HttpPost(url);
 
 		/* ajout des paramètres d’authentification dans la requête */
-		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		List<NameValuePair> params = new ArrayList<>();
 		params.add(new BasicNameValuePair("j_username", Config.IGESA_USER));
 		params.add(new BasicNameValuePair("j_password", Config.IGESA_PASSWORD));
 		try {
@@ -39,7 +39,7 @@ public class Igesa {
 			/* Récupération de la réponse */
 			HttpResponse response = httpclient.execute(httppost);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			logger.info(readBuffer(reader));
+			readBuffer(reader);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -56,8 +56,9 @@ public class Igesa {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-
-		return builder.toString();
+		String result = builder.toString();
+		logger.info(result);
+		return result;
 	}
 
 }

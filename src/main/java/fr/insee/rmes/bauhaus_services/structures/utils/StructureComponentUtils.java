@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -197,10 +198,6 @@ public class StructureComponentUtils extends RdfService {
         if (!Arrays.asList(QB.getURIForComponent()).contains(component.getType())) {
             throw new BadRequestException("The property type is not valid");
         }
-        /*if (component.getRange() != null &&
-                !(component.getRange().equals(INSEE.CODELIST.toString()) || Arrays.asList(XSD.getURIForRange()).contains(component.getRange()))) {
-            throw new BadRequestException("The range is not valid");
-        }*/
 
     }
 
@@ -211,5 +208,24 @@ public class StructureComponentUtils extends RdfService {
         mapper.configure(
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return mapper.readValue(body, MutualizedComponent.class);
+    }
+
+    public void deleteComponent(JSONObject component, String id) throws RmesException {
+        System.out.println(component);
+        String state = component.getString("validationState");
+        if(state.equals("Validated") || state.equals("Modified")){
+            throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
+        }
+
+
+        IRI componentIri;
+        if (id.startsWith(("a"))) {
+            componentIri =  RdfUtils.structureComponentAttributeIRI(id);
+        } else if (id.startsWith("m")) {
+            componentIri =  RdfUtils.structureComponentMeasureIRI(id);
+        } else {
+            componentIri =  RdfUtils.structureComponentDimensionIRI(id);
+        }
+        repoGestion.deleteObject(componentIri, null);
     }
 }

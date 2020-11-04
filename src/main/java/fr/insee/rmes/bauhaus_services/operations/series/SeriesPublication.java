@@ -13,12 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -28,9 +27,10 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class SeriesPublication extends RdfService {
+// TODO : merge into SeriesUtils ?	
 	
 	@Autowired
-	FamOpeSerUtils famOpeSerUtils;
+	FamOpeSerIndUtils famOpeSerUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;
@@ -42,7 +42,7 @@ public class SeriesPublication extends RdfService {
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
 		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId);
-		String familyId = serieJson.getJSONObject("family").getString(Constants.ID);
+		String familyId = serieJson.getJSONObject(Constants.FAMILY).getString(Constants.ID);
 		String status= famOpeSerUtils.getValidationStatus(familyId);
 		
 		if(PublicationUtils.isPublished(status)) {
@@ -76,7 +76,7 @@ public class SeriesPublication extends RdfService {
 					} else if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
 							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith("publisher")
+							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
 							|| st.getPredicate().toString().endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
 					}
@@ -98,7 +98,7 @@ public class SeriesPublication extends RdfService {
 					
 				}
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Config.REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 		
 		} finally {

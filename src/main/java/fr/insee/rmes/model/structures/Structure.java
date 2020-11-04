@@ -7,6 +7,7 @@ import fr.insee.rmes.exceptions.RmesException;
 public class Structure {
 
 	private String id;
+	private String identifiant;
 	private String labelLg1;
 	private String labelLg2;
 	private String descriptionLg1;
@@ -90,4 +91,11 @@ public class Structure {
 		this.updated = updated;
 	}
 
+	public String getIdentifiant() {
+		return identifiant;
+	}
+
+	public void setIdentifiant(String identifiant) {
+		this.identifiant = identifiant;
+	}
 }

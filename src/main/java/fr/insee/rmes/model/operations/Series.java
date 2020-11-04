@@ -1,11 +1,11 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,7 +21,6 @@ public class Series {
 	@Schema(description = "Label lg2")
 	public String prefLabelLg2;
 
-//	@JsonInclude(JsonInclude.Include.ALWAYS)	
 	@Schema(description = "Alternative label Lg1")
 	public String altLabelLg1;
 
@@ -40,7 +39,7 @@ public class Series {
 	@Schema(description = "History note lg2")
 	public String historyNoteLg2;
 
-	@Schema(description = "Family")
+	@Schema(description = Constants.FAMILY)
 	public IdLabelTwoLangs family;
 
 	@Schema(description = "Operations")
@@ -58,9 +57,9 @@ public class Series {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@JsonFormat(shape = Shape.ARRAY)
+	//@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of publishers")
-	public List<String> publishers;
+	public List<OperationsLink> publishers;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
@@ -182,7 +181,7 @@ public class Series {
 		return idSims;
 	}
 
-	public List<String> getPublishers() {
+	public List<OperationsLink> getPublishers() {
 		return publishers;
 	}
 
@@ -254,10 +253,15 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-	public void setPublishers(String[] publishers) {
-		this.publishers = Arrays.asList(publishers);
+//	public void setPublishers(OperationsLink[] publishers) {
+//		this.publishers = Arrays.asList(publishers);
+//	}
+
+	public void setPublishers(List<OperationsLink> publishers) {
+		this.publishers = publishers;
 	}
 
+	
 	public void setContributors(List<OperationsLink> contributors) {
 		this.contributors = contributors;
 	}

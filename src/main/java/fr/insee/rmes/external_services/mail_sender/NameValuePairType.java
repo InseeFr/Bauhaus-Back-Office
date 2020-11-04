@@ -16,6 +16,8 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+
 
 /**
  * <p>Classe Java pour NameValuePairType complex type.
@@ -40,7 +42,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "NameValuePairType", propOrder = {
     "name",
-    "value"
+    Constants.VALUE
 })
 public class NameValuePairType {
 

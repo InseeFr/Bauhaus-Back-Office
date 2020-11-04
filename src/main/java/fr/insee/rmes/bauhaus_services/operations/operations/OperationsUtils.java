@@ -14,13 +14,12 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeser_utils.FamOpeSerUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -33,7 +32,6 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -46,7 +44,7 @@ public class OperationsUtils extends RdfService{
 	static final Logger logger = LogManager.getLogger(OperationsUtils.class);
 
 	@Autowired
-	private FamOpeSerUtils famOpeSerUtils;
+	private FamOpeSerIndUtils famOpeSerIndUtils;
 
 	@Autowired
 	private SeriesUtils seriesUtils;
@@ -60,7 +58,7 @@ public class OperationsUtils extends RdfService{
 	public Operation getOperationById(String id) throws RmesException {
 		return buildOperationFromJson(getOperationJsonById(id));
 	}
-	
+
 	public JSONObject getOperationJsonById(String id) throws RmesException {
 		JSONObject operation = repoGestion.getResponseAsObject(OperationsQueries.operationQuery(id));
 		getOperationSeries(id, operation);
@@ -72,44 +70,51 @@ public class OperationsUtils extends RdfService{
 		operation.put("series", series);
 	}
 
-	public Operation buildOperationFromJson(JSONObject jsonOperation) {
+	private Operation buildOperationFromJson(JSONObject operationJson) {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
 		Operation operation = new Operation();
-		IdLabelTwoLangs series = famOpeSerUtils.buildIdLabelTwoLangsFromJson(jsonOperation.getJSONObject("series"));
 
-		operation.setId(jsonOperation.getString("id"));
-		if(jsonOperation.has("prefLabelLg1")) {
-			operation.setPrefLabelLg1(jsonOperation.getString("prefLabelLg1"));
+		IdLabelTwoLangs series = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
+
+		operation.setId(operationJson.getString(Constants.ID));
+		if(operationJson.has(Constants.PREF_LABEL_LG1)) {
+			operation.setPrefLabelLg1(operationJson.getString(Constants.PREF_LABEL_LG1));
 		}
-		if(jsonOperation.has("prefLabelLg2")) {
-			operation.setPrefLabelLg2(jsonOperation.getString("prefLabelLg2")); 
+		if(operationJson.has(Constants.PREF_LABEL_LG2)) {
+			operation.setPrefLabelLg2(operationJson.getString(Constants.PREF_LABEL_LG2)); 
 		}
-		if(jsonOperation.has("altLabelLg1")) {
-			operation.setAltLabelLg1(jsonOperation.getString("altLabelLg1"));
+		if(operationJson.has(Constants.ALT_LABEL_LG1)) {
+			operation.setAltLabelLg1(operationJson.getString(Constants.ALT_LABEL_LG1));
 		}
-		if(jsonOperation.has("altLabelLg2")) {
-			operation.setAltLabelLg2(jsonOperation.getString("altLabelLg2"));
+		if(operationJson.has(Constants.ALT_LABEL_LG2)) {
+			operation.setAltLabelLg2(operationJson.getString(Constants.ALT_LABEL_LG2));
 		}
 		operation.setSeries(series);
-		if(jsonOperation.has("idSims")) {
-			operation.setIdSims(jsonOperation.getString("idSims"));
+		if(operationJson.has(Constants.ID_SIMS)) {
+			operation.setIdSims(operationJson.getString(Constants.ID_SIMS));
 		}
 		return operation;
 	}
 
 	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
-		 ObjectMapper mapper = new ObjectMapper();
-		  
-		 Operation operation = new Operation();
+		ObjectMapper mapper = new ObjectMapper();
+
+		String id = famOpeSerIndUtils.createId();
+		Operation operation = new Operation();
+
 		try {
 			operation = mapper.readValue(operationJson.toString(), Operation.class);
-		} catch (JsonProcessingException e) {
-			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
+			operation.id = id;
+		} catch (IOException e) {
+			logger.error(e.getMessage());
 		}
-		 return operation;
+		return operation;
 	}
-	
-	
+
+
 	/**
 	 * CREATE
 	 * @param body
@@ -119,7 +124,7 @@ public class OperationsUtils extends RdfService{
 	public String setOperation(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		String id = famOpeSerUtils.createId();
+		String id = famOpeSerIndUtils.createId();
 		Operation operation = new Operation();
 		try {
 			operation = mapper.readValue(body, Operation.class);
@@ -129,13 +134,13 @@ public class OperationsUtils extends RdfService{
 		operation.setId(id);
 		// Tester l'existence de la série
 		String idSeries= operation.getSeries().getId();
-		if (! famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
+		if (! famOpeSerIndUtils.checkIfObjectExists(ObjectType.SERIES,idSeries)) {
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					seriesUtils.getSeriesJsonById(idSeries).getString("prefLabelLg1")+" ; "+operation.getPrefLabelLg1());
+					seriesUtils.getSeriesJsonById(idSeries).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
 		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits
@@ -171,7 +176,7 @@ public class OperationsUtils extends RdfService{
 			logger.error(e.getMessage());
 		}
 
-		String status= famOpeSerUtils.getValidationStatus(id);
+		String status= famOpeSerIndUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
 		} else {

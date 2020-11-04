@@ -64,6 +64,9 @@ public class ErrorCodes {
 	public static final int COLLECTION_VALIDATION_RIGHTS_DENIED = 903;
 	public static final int COLLECTION_MAILING_RIGHTS_DENIED = 904;
 
+	// STRUCTURES
+
+	public static final int COMPONENT_FORBIDDEN_DELETE = 1001;
 
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
@@ -119,5 +122,6 @@ public class ErrorCodes {
 	// SERIES
 	public static final int SERIES_OPERATION_OR_SIMS = 663;
 
-	
+	// SIMS
+	public static final int SIMS_INCORRECT = 861;
 }

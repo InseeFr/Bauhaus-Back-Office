@@ -2,6 +2,7 @@ package fr.insee.rmes.model.operations.documentations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -38,7 +39,7 @@ public class ExtensiveSims {
 		switch(targetType) {
 //		case "OPERATION" : this.operation = indicatorsUtils.getIndicatorById(idDatabase);  break;
 //		case "SERIES" : this.series = indicatorsUtils.getIndicatorById(idDatabase);  break;
-		case "INDICATOR" : this.indicator = indicatorsUtils.getIndicatorById(idDatabase); break;
+		case Constants.INDICATOR_UP : this.indicator = indicatorsUtils.getIndicatorById(idDatabase); break;
 		}
 		
 		documentationsUtils.getDocumentationTargetTypeAndId(id);

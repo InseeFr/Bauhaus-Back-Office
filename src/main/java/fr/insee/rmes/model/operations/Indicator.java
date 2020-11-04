@@ -5,7 +5,6 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,9 +44,9 @@ public class Indicator {
 	@Schema(description = "Frequencies list's notation")
 	public String accrualPeriodicityList;
 
-	@JsonFormat(shape = Shape.ARRAY)
+	//@JsonFormat(shape = Shape.ARRAY)
 	@Schema(description = "Identifier of publishers")
-	public List<String> publishers;
+	public List<OperationsLink> publishers;
 
 	@Schema(description = "Identifiers of contributors")
 	public List<OperationsLink> contributors;
@@ -68,6 +67,7 @@ public class Indicator {
 	@Schema(description = "List of resources which generate the indicator")
 	public List<OperationsLink> wasGeneratedBy;
 	
+	@Schema(description="Id of Sims documentation")
 	public String idSims;
 
 	public Indicator(String id) {
@@ -75,7 +75,6 @@ public class Indicator {
 	}
 	
 	public Indicator() throws RmesException {
-		this.id= new IndicatorsUtils().createID();
 	}
 
 
@@ -92,6 +91,7 @@ public class Indicator {
 	public String getPrefLabelLg2() {
 		return prefLabelLg2;
 	}
+
 
 
 	public String getAltLabelLg1() {
@@ -134,7 +134,7 @@ public class Indicator {
 	}
 
 
-	public List<String> getPublishers() {
+	public List<OperationsLink> getPublishers() {
 		return publishers;
 	}
 
@@ -171,7 +171,11 @@ public class Indicator {
 		return creators;
 	}
 
-	public void setPublishers(List<String> publishers) {
+//	public void setPublishers(OperationsLink[] publishers) {
+//		this.publishers = Arrays.asList(publishers);
+//	}
+	
+	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}
 	
@@ -243,4 +247,11 @@ public class Indicator {
 		this.idSims = idSims;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+//
+//	public void setPublishers(List<OperationsLink> publishers) {
+//		this.publishers = publishers;
+//	}
 }
