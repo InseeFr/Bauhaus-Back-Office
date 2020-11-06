@@ -38,8 +38,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         return repoGestion.getResponseAsArray(StructureQueries.getComponents()).toString();
     }
 
-    @Override
-    public String getComponent(String id) throws RmesException {
+    public JSONObject getComponentObject(String id) throws RmesException {
 
         logger.info("Starting to get one mutualized component");
         JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
@@ -47,6 +46,11 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
             throw new NotFoundException("This component do not exist");
         }
         return structureComponentUtils.formatComponent(id, response);
+    }
+
+    @Override
+    public String getComponent(String id) throws RmesException {
+        return this.getComponentObject(id).toString();
     }
 
     @Override
@@ -61,10 +65,11 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
 
     @Override
     public void deleteComponent(String id) throws RmesException {
-        JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
+        JSONObject response = this.getComponentObject(id);
         if(response.keySet().isEmpty()){
             throw new NotFoundException("This component do not exist");
         }
-        structureComponentUtils.deleteComponent(response, id);
+        String type = response.getString("type");
+        structureComponentUtils.deleteComponent(response, id, type);
     }
 }
