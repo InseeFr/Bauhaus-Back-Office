@@ -66,7 +66,7 @@ public class IndicatorsUtils  extends RdfService {
 		return buildIndicatorFromJson(getIndicatorJsonById(id));
 	}
 
-	private Indicator buildIndicatorFromJson2(JSONObject indicatorJson) {
+	public Indicator buildIndicatorFromJson(JSONObject indicatorJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
 		Indicator indicator = new Indicator(id);
@@ -75,115 +75,41 @@ public class IndicatorsUtils  extends RdfService {
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
 		}
-		return indicator;
-	}
-
-	private Indicator buildIndicatorFromJson(JSONObject jsonIndicator) throws RmesException {
-		String id= jsonIndicator.getString(Constants.ID);
-		Indicator indicator = new Indicator(id);
-		if(jsonIndicator.has(Constants.PREF_LABEL_LG1)) {
-			indicator.setPrefLabelLg1(jsonIndicator.getString(Constants.PREF_LABEL_LG1));
+		if (indicatorJson.has(Constants.CONTRIBUTORS)) {
+			List<OperationsLink> contributors = buildListFromJsonToArray(indicatorJson, Constants.CONTRIBUTORS);
+			indicator.setContributors(contributors);
 		}
-		if(jsonIndicator.has(Constants.PREF_LABEL_LG2)) {
-			indicator.setPrefLabelLg2(jsonIndicator.getString(Constants.PREF_LABEL_LG2)); 
+		if (indicatorJson.has(Constants.SEEALSO)) {
+			List<OperationsLink> seeAlsoes = buildListFromJsonToArray(indicatorJson, Constants.SEEALSO);
+			indicator.setSeeAlso(seeAlsoes);
 		}
-		if(jsonIndicator.has(Constants.ALT_LABEL_LG1)) {
-			indicator.setAltLabelLg1(jsonIndicator.getString(Constants.ALT_LABEL_LG1));
+		if (indicatorJson.has(Constants.REPLACES)) {
+			List<OperationsLink> replacesList = buildListFromJsonToArray(indicatorJson, Constants.REPLACES);
+			indicator.setReplaces(replacesList);
 		}
-		if(jsonIndicator.has(Constants.ALT_LABEL_LG2)) {
-			indicator.setAltLabelLg2(jsonIndicator.getString(Constants.ALT_LABEL_LG2));
+		if (indicatorJson.has(Constants.ISREPLACEDBY)) {
+			List<OperationsLink> isReplacedByList = buildListFromJsonToArray(indicatorJson, Constants.ISREPLACEDBY);
+			indicator.setIsReplacedBy(isReplacedByList);
 		}
-		if(jsonIndicator.has("abstractLg1")) {
-			indicator.setAbstractLg1(jsonIndicator.getString("abstractLg1"));
-		}
-		if(jsonIndicator.has("abstractLg2")) {
-			indicator.setAbstractLg2(jsonIndicator.getString("abstractLg2"));
-		}
-		if(jsonIndicator.has("historyNoteLg1")) {
-			indicator.setHistoryNoteLg1(jsonIndicator.getString("historyNoteLg1"));
-		}
-		if(jsonIndicator.has("historyNoteLg2")) {
-			indicator.setHistoryNoteLg2(jsonIndicator.getString("historyNoteLg2"));
-		}
-		if(jsonIndicator.has("accrualPeriodicityCode")) {
-			indicator.setAccrualPeriodicityCode(jsonIndicator.getString("accrualPeriodicityCode"));
-		}
-		if(jsonIndicator.has("accrualPeriodicityList")) {
-			indicator.setAccrualPeriodicityList(jsonIndicator.getString("accrualPeriodicityList"));
-		}
-		if(jsonIndicator.has(Constants.CREATORS)) {
-			indicator.setCreators(famOpeSerIndUtils.buildStringListFromJson(
-					jsonIndicator.getJSONArray(Constants.CREATORS)));
-		}
-		if(jsonIndicator.has(Constants.PUBLISHERS)) {
-			List<OperationsLink> publishers = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.PUBLISHERS),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						publishers.add((OperationsLink) o);		
-					}
-				//	indicator.setPublishers((OperationsLink[]) publishers.toArray());
-					indicator.setPublishers(publishers);
-		}
-		if(jsonIndicator.has(Constants.ID_SIMS)) {
-			indicator.setIdSims(jsonIndicator.getString(Constants.ID_SIMS));
-		}
-		if(jsonIndicator.has(Constants.CONTRIBUTORS)) {
-			List<OperationsLink> contributors = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.CONTRIBUTORS),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						contributors.add((OperationsLink) o);		
-					}
-					indicator.setContributors(contributors);
-		}
-		if(jsonIndicator.has(Constants.SEEALSO)) {
-			List<OperationsLink> seeAlsoes = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.SEEALSO),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						seeAlsoes.add((OperationsLink) o);		
-					}
-					indicator.setSeeAlso(seeAlsoes);
-		}
-		if(jsonIndicator.has(Constants.REPLACES)) {
-			List<OperationsLink> replacesList = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.REPLACES),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						replacesList.add((OperationsLink) o);		
-					}
-					indicator.setReplaces(replacesList);
-		}
-		if(jsonIndicator.has(Constants.ISREPLACEDBY)) {
-			List<OperationsLink> isReplacedByList = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.ISREPLACEDBY),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						isReplacedByList.add((OperationsLink) o);		
-					}
-					indicator.setIsReplacedBy(isReplacedByList);
-		}
-		if(jsonIndicator.has(Constants.WASGENERATEDBY)) {
-			List<OperationsLink> wasGeneratedByList = new ArrayList<>();
-			List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(
-					jsonIndicator.getJSONArray(Constants.WASGENERATEDBY),
-					OperationsLink.getClassOperationsLink());
-					for (Object o:objects){
-						wasGeneratedByList.add((OperationsLink) o);		
-					}
-					indicator.setWasGeneratedBy(wasGeneratedByList);
+		if (indicatorJson.has(Constants.WASGENERATEDBY)) {
+			List<OperationsLink> wasGeneratedByList = buildListFromJsonToArray(indicatorJson, Constants.WASGENERATEDBY);
+			indicator.setWasGeneratedBy(wasGeneratedByList);
 		}
 		return indicator;
 	}
 
 
-	public JSONObject getIndicatorJsonById(String id) throws RmesException{
+	private List<OperationsLink> buildListFromJsonToArray(JSONObject jsonIndicator, String constant) {
+		List<OperationsLink> list = new ArrayList<>();
+		List<Object> objects = famOpeSerIndUtils.buildObjectListFromJson(jsonIndicator.getJSONArray(constant),
+				OperationsLink.getClassOperationsLink());
+		for (Object o : objects) {
+			list.add((OperationsLink) o);
+		}
+		return list;
+	}
+
+	public JSONObject getIndicatorJsonById(String id) throws RmesException {
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
 		}
@@ -192,8 +118,6 @@ public class IndicatorsUtils  extends RdfService {
 		indicator.put(Constants.ID, id);
 		addLinks(id, indicator);
 		addIndicatorCreators(id, indicator);
-		//addIndicatorPublishers(id, indicator);
-
 		return indicator;
 	}
 

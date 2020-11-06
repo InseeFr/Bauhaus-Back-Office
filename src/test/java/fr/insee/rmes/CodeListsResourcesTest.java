@@ -23,7 +23,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.CodeListsResources;
 
 
-public class CodeListsResourcesTest {
+class CodeListsResourcesTest {
 
     private final static String NOTATION = "213";
         
@@ -48,7 +48,7 @@ public class CodeListsResourcesTest {
     //getCodeListByNotation//
 
     @Test
-    public void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException {
+    void givengetCodeListByNotation_whenCorrectRequest_thenResponseIsOk() throws RmesException {
     	when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
     	when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
     	
