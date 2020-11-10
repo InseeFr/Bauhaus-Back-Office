@@ -78,7 +78,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
 			
 		String fileName = json.getString(Constants.PREF_LABEL_LG1);
-		fileName = FileUtils.cleanFileNameAndAddOdtExtension(fileName);
+		fileName = FileUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
