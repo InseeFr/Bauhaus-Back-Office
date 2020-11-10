@@ -31,6 +31,7 @@ import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.FileUtils;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -237,7 +238,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
-		String fileName = concept.getString(Constants.PREF_LABEL_LG1) + jasper.getExtension(acceptHeader);
+		String fileName = FileUtils.cleanFileNameAndAddExtension(concept.getString(Constants.PREF_LABEL_LG1), jasper.getExtension(acceptHeader)) ;
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)

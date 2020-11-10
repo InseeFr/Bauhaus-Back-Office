@@ -1,4 +1,4 @@
-package fr.insee.rmes;
+package fr.insee.rmes.webservice;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,7 +20,6 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.webservice.CodeListsResources;
 
 
 class CodeListsResourcesTest {

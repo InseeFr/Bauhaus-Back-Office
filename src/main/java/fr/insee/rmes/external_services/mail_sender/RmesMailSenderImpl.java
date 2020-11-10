@@ -2,7 +2,6 @@ package fr.insee.rmes.external_services.mail_sender;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +37,7 @@ import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.mail_sender.SendRequest.Recipients;
 import fr.insee.rmes.model.mail_sender.Mail;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
+import fr.insee.rmes.utils.FileUtils;
 
 @Service
 public class RmesMailSenderImpl implements MailSenderContract {
@@ -76,10 +76,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	}
 		
 	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
-		
+			
 		String fileName = json.getString(Constants.PREF_LABEL_LG1);
-		fileName = Normalizer.normalize(fileName.toLowerCase()
-				.replace(" ", "-"), Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "") + ".odt";
+		fileName = FileUtils.cleanFileNameAndAddOdtExtension(fileName);
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
@@ -135,6 +134,8 @@ public class RmesMailSenderImpl implements MailSenderContract {
 				.post(Entity.entity(mp, MediaType.MULTIPART_FORM_DATA_TYPE),String.class); 	
 		return isMailSent(result);
 	}
+
+
 	
 	private Mail prepareMail(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
