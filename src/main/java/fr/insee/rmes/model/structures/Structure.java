@@ -17,7 +17,7 @@ public class Structure {
 	private String validationState;
 	private String contributor;
 	private String creator;
-
+    private String disseminationStatus;
 
 	private String updated;
 
@@ -124,4 +124,12 @@ public class Structure {
 	public void setContributor(String contributor) {
 		this.contributor = contributor;
 	}
+
+    public String getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(String disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
+    }
 }

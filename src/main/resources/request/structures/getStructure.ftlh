@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor ?disseminationStatus
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?structure dcterms:identifier "${ID}" ;
@@ -7,6 +7,10 @@ WHERE {
                rdfs:label ?labelLg2 .
     FILTER (lang(?labelLg1) = '${LG1}')
     FILTER (lang(?labelLg2) = '${LG2}')
+
+    OPTIONAL {
+        ?structure insee:disseminationStatus ?disseminationStatus .
+    } .
 
     OPTIONAL {
         ?structure dcterms:created ?created .

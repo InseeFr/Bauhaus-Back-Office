@@ -24,6 +24,7 @@ public class MutualizedComponent {
 
     private String creator;
     private String contributor;
+    private String disseminationStatus;
 
 
     public MutualizedComponent() throws RmesException {
@@ -148,5 +149,13 @@ public class MutualizedComponent {
 
     public void setContributor(String contributor) {
         this.contributor = contributor;
+    }
+
+    public String getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(String disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
     }
 }

@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified ?creator ?contributor
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified ?creator ?contributor ?disseminationStatus
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
@@ -12,6 +12,10 @@ WHERE {
 
     OPTIONAL {
         ?structure dcterms:contributor ?contributor .
+    } .
+
+    OPTIONAL {
+        ?structure insee:disseminationStatus ?disseminationStatus .
     } .
 
     OPTIONAL {

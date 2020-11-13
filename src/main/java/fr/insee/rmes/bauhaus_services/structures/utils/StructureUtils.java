@@ -209,6 +209,7 @@ public class StructureUtils extends RdfService {
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         RdfUtils.addTripleString(structureIri, DCTERMS.CONTRIBUTOR, structure.getContributor(), model, graph);
+        RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
 
