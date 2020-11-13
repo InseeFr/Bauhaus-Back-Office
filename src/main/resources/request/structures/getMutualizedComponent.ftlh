@@ -1,10 +1,18 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified ?creator ?contributor
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
                insee:identifiantMetier ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
+
+    OPTIONAL {
+        ?structure dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?structure dcterms:contributor ?contributor .
+    } .
 
     OPTIONAL {
         ?component insee:validationState ?validationState

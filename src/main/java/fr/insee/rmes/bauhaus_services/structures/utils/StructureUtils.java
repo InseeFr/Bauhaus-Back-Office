@@ -207,6 +207,8 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
         RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
+        RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
+        RdfUtils.addTripleString(structureIri, DCTERMS.CONTRIBUTOR, structure.getContributor(), model, graph);
 
         createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
 
