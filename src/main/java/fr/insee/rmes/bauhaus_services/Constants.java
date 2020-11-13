@@ -33,6 +33,7 @@ public class Constants {
 	
 	/*I*/
 	public static final String ID = "id";
+	public static final String COMPONENT_TYPE = "componentType";
 	public static final String ID_ATTRIBUTE = "idAttribute";
 	public static final String ID_INDICATOR = "idIndicator";
 	public static final String ID_OPERATION = "idOperation";

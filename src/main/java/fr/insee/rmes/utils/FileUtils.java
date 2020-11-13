@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +42,19 @@ public class FileUtils {
 			IOUtils.copy(in, out);
 		}
 		return tempFile;
+	}
+	
+	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
+		fileName = fileName.toLowerCase().trim();
+		fileName = StringUtils.normalizeSpace(fileName);
+		fileName = fileName.replace(" ","-");
+		fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "") ;
+		if (extension.startsWith(".")) {
+			fileName += extension ;
+		}else {
+			fileName += "." + extension ;
+		}
+		return fileName;
 	}
 
 	public static File zipFile(File inputFile) throws IOException {
