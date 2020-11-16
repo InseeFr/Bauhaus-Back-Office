@@ -7,15 +7,15 @@ WHERE {
                rdfs:label ?labelLg1 .
 
     OPTIONAL {
-        ?structure dc:creator ?creator .
+        ?component dc:creator ?creator .
     } .
 
     OPTIONAL {
-        ?structure dcterms:contributor ?contributor .
+        ?component dcterms:contributor ?contributor .
     } .
 
     OPTIONAL {
-        ?structure insee:disseminationStatus ?disseminationStatus .
+        ?component insee:disseminationStatus ?disseminationStatus .
     } .
 
     OPTIONAL {
