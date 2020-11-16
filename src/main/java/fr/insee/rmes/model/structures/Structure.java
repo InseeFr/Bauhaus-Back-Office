@@ -17,7 +17,6 @@ public class Structure {
 	private String descriptionLg2;
 	private List<ComponentDefinition> componentDefinitions;
 	private String created;
-	private ValidationStatus validationState;
 	private String contributor;
 	private String creator;
     private String disseminationStatus;
@@ -102,14 +101,6 @@ public class Structure {
 
 	public void setIdentifiant(String identifiant) {
 		this.identifiant = identifiant;
-	}
-
-	public ValidationStatus getValidationState() {
-		return validationState;
-	}
-
-	public void setValidationState(ValidationStatus validationState) {
-		this.validationState = validationState;
 	}
 
 	public String getCreator() {
