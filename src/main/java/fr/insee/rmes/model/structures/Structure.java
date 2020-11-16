@@ -3,6 +3,9 @@ package fr.insee.rmes.model.structures;
 import java.util.List;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+
+import javax.validation.Validation;
 
 public class Structure {
 
@@ -14,7 +17,7 @@ public class Structure {
 	private String descriptionLg2;
 	private List<ComponentDefinition> componentDefinitions;
 	private String created;
-	private String validationState;
+	private ValidationStatus validationState;
 	private String contributor;
 	private String creator;
     private String disseminationStatus;
@@ -101,11 +104,11 @@ public class Structure {
 		this.identifiant = identifiant;
 	}
 
-	public String getValidationState() {
+	public ValidationStatus getValidationState() {
 		return validationState;
 	}
 
-	public void setValidationState(String validationState) {
+	public void setValidationState(ValidationStatus validationState) {
 		this.validationState = validationState;
 	}
 

@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor ?disseminationStatus
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor ?disseminationStatus ?validationState
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?structure dcterms:identifier "${ID}" ;
@@ -27,6 +27,10 @@ WHERE {
     OPTIONAL {
 
         ?structure dcterms:modified ?modified .
+    } .
+
+    OPTIONAL {
+        ?structure insee:validationState ?validationState
     } .
 
     OPTIONAL {

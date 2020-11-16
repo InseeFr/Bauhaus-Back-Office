@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -133,7 +134,7 @@ public class StructureUtils extends RdfService {
 
         String id = generateNextId();
         structure.setId(id);
-
+        structure.setValidationState(ValidationStatus.UNPUBLISHED);
         createRdfStructure(structure);
         logger.info("Create Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId().replace(" ", "-").toLowerCase();
@@ -198,6 +199,7 @@ public class StructureUtils extends RdfService {
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
         model.add(structureIri, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
         model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
+        model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(structure.getValidationState()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
