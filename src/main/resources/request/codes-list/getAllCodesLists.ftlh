@@ -1,9 +1,10 @@
-SELECT ?uri ?label ?range
+SELECT ?uri ?label ?range ?notation
 WHERE {
 {
 GRAPH <${CODES_LISTS_GRAPH}> {
 ?uri rdf:type skos:ConceptScheme .
 ?uri skos:prefLabel ?label .
+?uri skos:notation ?notation .
 FILTER(lang(?label) = 'fr') .
 ?range rdfs:seeAlso ?uri
 }

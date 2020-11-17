@@ -3,6 +3,9 @@ package fr.insee.rmes.model.structures;
 import java.util.List;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+
+import javax.validation.Validation;
 
 public class Structure {
 
@@ -14,8 +17,9 @@ public class Structure {
 	private String descriptionLg2;
 	private List<ComponentDefinition> componentDefinitions;
 	private String created;
-
-
+	private String contributor;
+	private String creator;
+    private String disseminationStatus;
 
 	private String updated;
 
@@ -98,4 +102,28 @@ public class Structure {
 	public void setIdentifiant(String identifiant) {
 		this.identifiant = identifiant;
 	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
+	public String getContributor() {
+		return contributor;
+	}
+
+	public void setContributor(String contributor) {
+		this.contributor = contributor;
+	}
+
+    public String getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(String disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
+    }
 }
