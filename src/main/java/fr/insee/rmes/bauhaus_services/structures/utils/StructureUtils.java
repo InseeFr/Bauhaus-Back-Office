@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -133,8 +135,7 @@ public class StructureUtils extends RdfService {
 
         String id = generateNextId();
         structure.setId(id);
-
-        createRdfStructure(structure);
+        createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
         logger.info("Create Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId().replace(" ", "-").toLowerCase();
     }
@@ -171,7 +172,7 @@ public class StructureUtils extends RdfService {
         structure.setUpdated(DateUtils.getCurrentDate());
         IRI structureIri = RdfUtils.structureIRI(structure.getId());
         repoGestion.clearStructureNodeAndComponents(structureIri);
-        createRdfStructure(structure);
+        createRdfStructure(structure, ValidationStatus.MODIFIED);
         logger.info("Update Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId();
     }
@@ -182,15 +183,15 @@ public class StructureUtils extends RdfService {
      * @throws RmesException
      */
 
-    public void createRdfStructure(Structure structure) throws RmesException {
+    public void createRdfStructure(Structure structure, ValidationStatus status) throws RmesException {
         String structureId = structure.getId();
         IRI structureIri = RdfUtils.structureIRI(structureId);
         Resource graph = RdfUtils.structureGraph();
 
-        createRdfStructure(structure, structureId, structureIri, graph);
+        createRdfStructure(structure, structureId, structureIri, graph, status);
     }
 
-    public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph) throws RmesException {
+    public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status) throws RmesException {
         Model model = new LinkedHashModel();
 
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
@@ -198,6 +199,7 @@ public class StructureUtils extends RdfService {
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
         model.add(structureIri, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
         model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
+        model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
@@ -207,6 +209,9 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
         RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
+        RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
+        RdfUtils.addTripleString(structureIri, DCTERMS.CONTRIBUTOR, structure.getContributor(), model, graph);
+        RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
 
