@@ -5,7 +5,7 @@ import fr.insee.rmes.exceptions.RmesException;
 public interface CodeListService {
 
 
-	String getCodeList(String codeListUri) throws RmesException;
+	String getCodeListJson(String codeListUri) throws RmesException;
 
 	String getCode(String notation, String id) throws RmesException;
 

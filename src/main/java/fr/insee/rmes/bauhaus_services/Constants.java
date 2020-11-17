@@ -3,10 +3,13 @@ package fr.insee.rmes.bauhaus_services;
 public class Constants {
 
 	/*A*/
+	public static final String ACCRUAL_PERIODICITY_LIST ="accrualPeriodicityList";
 	public static final String ALT_LABEL_LG1 = "altLabelLg1";
 	public static final String ALT_LABEL_LG2 = "altLabelLg2";
 
 	/*C*/
+	public static final String CODE_LIST_FREQ = "CL_FREQ";
+	public static final String CODE_LIST_SOURCE_CATEGORY = "CL_SOURCE_CATEGORY";
 	public static final String CREATOR = "creator";
 	public static final String CREATORS = "creators";
 	public static final String CONTRIBUTOR = "contributor";
@@ -76,9 +79,10 @@ public class Constants {
 	public static final String SEEALSO = "seeAlso";
 	
 	/*T*/
-	public static final String TYPE_OF_OBJECT = "typeOfObject";
 	public static final String TEXT_LG1 = "texte";
 	public static final String TEXT_LG2 = "text";
+	public static final String TYPE_OF_OBJECT = "typeOfObject";
+	public static final String TYPELIST = "typeList";
 
 	/*U*/
 	public static final String UNDEFINED = "undefined";

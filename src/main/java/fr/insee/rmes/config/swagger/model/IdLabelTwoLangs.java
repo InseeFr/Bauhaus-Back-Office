@@ -3,26 +3,6 @@ package fr.insee.rmes.config.swagger.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class IdLabelTwoLangs {
-	
-	public String getLabelLg1() {
-		return labelLg1;
-	}
-
-	public void setLabelLg1(String labelLg1) {
-		this.labelLg1 = labelLg1;
-	}
-
-	public String getLabelLg2() {
-		return labelLg2;
-	}
-
-	public void setLabelLg2(String labelLg2) {
-		this.labelLg2 = labelLg2;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	@Schema(description = "Id", required = true)
 	public String id;
@@ -51,6 +31,25 @@ public class IdLabelTwoLangs {
 	public static String getClassIdLabelTwoLangs() {
 		return "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
 	}
+	
+	public String getLabelLg1() {
+		return labelLg1;
+	}
 
+	public void setLabelLg1(String labelLg1) {
+		this.labelLg1 = labelLg1;
+	}
+
+	public String getLabelLg2() {
+		return labelLg2;
+	}
+
+	public void setLabelLg2(String labelLg2) {
+		this.labelLg2 = labelLg2;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 }

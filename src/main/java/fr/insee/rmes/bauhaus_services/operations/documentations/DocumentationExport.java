@@ -90,7 +90,7 @@ public class DocumentationExport {
 
 	public File export(InputStream inputFile, 
 			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
-			String targetType) throws RmesException, IOException  {
+			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXml = documentationsUtils.buildShellSims();
@@ -123,11 +123,13 @@ public class DocumentationExport {
 			accessoryAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
 			organizationsAbsolutePath = organizationsAbsolutePath.replace('\\', '/');
 			msdPath = msdPath.replace('\\', '/');
+			codeListAbsolutePath = codeListAbsolutePath.replace('\\', '/');
 
 			xsltTransformer.setParameter("tempFile", absolutePath);
 			xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
 			xsltTransformer.setParameter("orga", organizationsAbsolutePath);
 			xsltTransformer.setParameter("msd", msdPath);
+			xsltTransformer.setParameter("codeList", codeListAbsolutePath);
 			xsltTransformer.setParameter("targetType", targetType);
 
 			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
