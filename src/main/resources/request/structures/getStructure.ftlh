@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor ?disseminationStatus ?validationState
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?structure dcterms:identifier "${ID}" ;
@@ -9,11 +9,28 @@ WHERE {
     FILTER (lang(?labelLg2) = '${LG2}')
 
     OPTIONAL {
+        ?structure insee:disseminationStatus ?disseminationStatus .
+    } .
+
+    OPTIONAL {
         ?structure dcterms:created ?created .
     } .
 
     OPTIONAL {
+        ?structure dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?structure dcterms:contributor ?contributor .
+    } .
+
+    OPTIONAL {
+
         ?structure dcterms:modified ?modified .
+    } .
+
+    OPTIONAL {
+        ?structure insee:validationState ?validationState
     } .
 
     OPTIONAL {
