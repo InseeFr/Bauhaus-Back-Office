@@ -3,6 +3,10 @@ package fr.insee.rmes.utils;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.core.MediaType;
 import javax.xml.XMLConstants;
@@ -99,6 +103,16 @@ public class XMLUtils {
 			logger.error(e.getMessage());  
 		} 
 		return null;
+	}
+
+	public static List<String> getTagValues(String text, String tag) {
+		final Pattern TAG_REGEX = Pattern.compile("<"+tag+">(.+?)</"+tag+">", Pattern.DOTALL);
+		final List<String> tagValues = new ArrayList<String>();
+		final Matcher matcher = TAG_REGEX.matcher(text);
+		while (matcher.find()) {
+			tagValues.add(matcher.group(1));
+		}
+		return tagValues;
 	}
 
 }
