@@ -478,9 +478,9 @@ public class DocumentationsUtils extends RdfService{
 		return new String[] { targetType, idDatabase };	
 	}
 
-	public String getDocumentationOwnerByIdSims(String idSims) throws RmesException {
-		logger.info("Search Sims Owner's Stamp");
-		String stamp = null;
+	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
+		logger.info("Search Sims Owners' Stamps");
+		String stamps = null;
 		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
 		if (target != null) {
 			String idOperation = target.getString(Constants.ID_OPERATION);
@@ -488,19 +488,19 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID_SERIES))
-						.getString(Constants.PUBLISHERS);
+				stamps = seriesUtils.getSeriesJsonById(
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID))
+						.getJSONArray(Constants.CREATORS).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(Constants.PUBLISHER);
+				stamps = seriesUtils.getSeriesJsonById(idSerie).getJSONArray(Constants.CREATORS).toString();
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(Constants.PUBLISHER);
+				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
 			}
 		}
-		return stamp;
+		return stamps;
 	}
 
 	public File exportMetadataReport(String id) throws IOException, RmesException {
