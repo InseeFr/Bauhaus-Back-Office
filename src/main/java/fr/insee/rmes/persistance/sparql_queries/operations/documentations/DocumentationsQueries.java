@@ -109,8 +109,6 @@ public class DocumentationsQueries {
 		
 		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
 		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
-		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
-		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
 		
 		params.put("LG1_CL",clLg1);
 		params.put("LG2_CL",clLg2);
