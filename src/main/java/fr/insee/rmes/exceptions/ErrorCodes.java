@@ -67,6 +67,7 @@ public class ErrorCodes {
 	// STRUCTURES
 
 	public static final int COMPONENT_FORBIDDEN_DELETE = 1001;
+	public static final int COMPONENT_UNICITY = 1002;
 
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
