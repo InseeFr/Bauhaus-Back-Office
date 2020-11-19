@@ -42,7 +42,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  *
  */
 @Component
-@Path("/")
+@Path("/users")
 @Tag(name="User", description="User Management")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
