@@ -118,9 +118,8 @@ public class StructureComponentUtils extends RdfService {
 
     private void createRDFForComponent(MutualizedComponent component, ValidationStatus status) throws RmesException {
 
-        JSONArray componentsWithSameCodelistAndConcept = repoGestion.getResponseAsArray(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
-
-        if(componentsWithSameCodelistAndConcept.length() > 0){
+        Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
+        if(componentsWithSameCodelistAndConcept){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
                     "A component with the same code list and concept already exists", "");
         }
