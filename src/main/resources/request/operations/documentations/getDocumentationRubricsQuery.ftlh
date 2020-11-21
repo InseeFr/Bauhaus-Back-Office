@@ -1,12 +1,11 @@
-SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs
+SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs ?uri
 	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
 	FROM <${ORG_INSEE_GRAPH}>
 
     FROM NAMED  <${MSD_GRAPH}> 
- 	FROM NAMED  <${COG_GRAPH}>
-	FROM NAMED  <${GEO_SIMS_GRAPH}>
+
 WHERE { 
  		<#-- RangeType.DATE : value -->
 		{
@@ -93,14 +92,11 @@ WHERE {
 		UNION {
 			?report rdf:type sdmx-mm:MetadataReport .
 			?reportAttr sdmx-mm:metadataReport ?report .
-			?reportAttr ?attr ?value . 
+			?reportAttr ?attr ?uri . 
 			GRAPH  <${MSD_GRAPH}>  {
 					?attr rdfs:range geo:Feature .
 				}
 			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) .
-			GRAPH  ?g {
-				?value skos:prefLabel|igeo:name|rdfs:label ?labelLg1 .
-			}
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} 
 			

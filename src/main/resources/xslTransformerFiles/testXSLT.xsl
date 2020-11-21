@@ -25,6 +25,9 @@
 	<!-- Organizations' list -->
 	<xsl:param name="orga" />
 	<xsl:param name="organizations" select="document($orga)" />
+	<!-- Code lists -->
+	<xsl:param name="codeList" />
+	<xsl:param name="codeLists" select="document($codeList)" />
 	<!-- MSD -->
 	<xsl:param name="msd" />
 	<xsl:param name="fileMsd" select="document($msd)" />
@@ -291,9 +294,10 @@
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg1" />
-
+												-
+												<xsl:value-of select="$rangeType" />
 											</text:p>
-											<xsl:value-of select="$rangeType" />
+
 											<text:p text:style-name="RubricItem">
 												<xsl:choose>
 													<xsl:when test="$rangeType='GEOGRAPHY'">
@@ -337,18 +341,14 @@
 															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
 													</xsl:otherwise>
 												</xsl:choose>
-												<!-- <xsl:apply-templates -->
-												<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
-													= $mas]" /> -->
-
 											</text:p>
 										</table:table-cell>
+
 										<table:table-cell table:style-name="framedCell">
 											<text:p text:style-name="attribute">
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg2" />
-
 											</text:p>
 											<xsl:value-of select="$rangeType" />
 											<text:p text:style-name="RubricItem">
@@ -364,9 +364,10 @@
 														= $mas]/value)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
-														<!-- <xsl:value-of -->
-														<!-- select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute -->
-														<!-- = $mas]/labelLg2)" /> -->
+														<xsl:call-template name="richText">
+															<xsl:with-param name="text"
+																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg2" />
+														</xsl:call-template>
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -491,10 +492,8 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modalité
-							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
-							de la liste de codes:
-							<xsl:value-of select="$fileSeries/Series/typeList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg1($fileSeries/Series/typeCode,$fileSeries/Series/typeList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -502,10 +501,8 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/accrualPeriodicityCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modalité
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityCode"></xsl:value-of>
-							de la liste de codes:
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg1($fileSeries/Series/typeCode,$fileSeries/Series/accrualPeriodicityList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -647,10 +644,8 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modality
-							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
-							of code-list:
-							<xsl:value-of select="$fileSeries/Series/typeList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg2($fileSeries/Series/typeCode,$fileSeries/Series/typeList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -658,10 +653,9 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/accrualPeriodicityCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modality
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityCode"></xsl:value-of>
-							of code-list:
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg2($fileSeries/Series/typeCode,$fileSeries/Series/accrualPeriodicityList)"></xsl:value-of>
+
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -963,6 +957,21 @@
 		</table:table>
 	</xsl:template>
 
+	<xsl:function name="local:codeListLg1" as="xs:string?">
+		<xsl:param name="modality" as="xs:string?" />
+		<xsl:param name="oneCodeList" as="xs:string?" />
+		<xsl:sequence
+			select="$codeLists/codelist/CodeList[notation=$oneCodeList]/codes/codes[code=$modality]/labelLg1" />
+	</xsl:function>
+
+	<xsl:function name="local:codeListLg2" as="xs:string?">
+		<xsl:param name="modality" as="xs:string?" />
+		<xsl:param name="oneCodeList" as="xs:string?" />
+		<xsl:sequence
+			select="$codeLists/codelist/CodeList[notation=$oneCodeList]/codes/codes[code=$modality]/labelLg2" />
+	</xsl:function>
+
+
 	<xsl:function name="local:prepText" as="xs:string?">
 		<xsl:param name="arg" as="xs:string?" />
 
@@ -1003,8 +1012,10 @@
 
 	<xsl:template name="richText">
 		<xsl:param name="text" />
-		<xsl:apply-templates
-			select="unparsed-text(concat('&lt;html&gt;',$text,'&lt;/html&gt;'))"></xsl:apply-templates>
+		<xsl:copy-of select="'coucou'" />
+		<xsl:copy-of select="$text" />
+		<!-- <xsl:apply-templates -->
+		<!-- select="unparsed-text(concat('&lt;html&gt;',$text,'&lt;/html&gt;'))"></xsl:apply-templates> -->
 		<!-- <xsl:value-of select="unparsed-text(text)"></xsl:value-of> -->
 	</xsl:template>
 

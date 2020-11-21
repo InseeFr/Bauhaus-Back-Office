@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
@@ -96,6 +97,8 @@ public class DocumentationsUtils extends RdfService{
 	@Autowired
 	OrganizationsServiceImpl organizationsServiceImpl;
 
+	@Autowired
+	CodeListServiceImpl codeListServiceImpl;
 
 	/**
 	 * GETTER
@@ -475,9 +478,9 @@ public class DocumentationsUtils extends RdfService{
 		return new String[] { targetType, idDatabase };	
 	}
 
-	public String getDocumentationOwnerByIdSims(String idSims) throws RmesException {
-		logger.info("Search Sims Owner's Stamp");
-		String stamp = null;
+	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
+		logger.info("Search Sims Owners' Stamps");
+		String stamps = null;
 		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
 		if (target != null) {
 			String idOperation = target.getString(Constants.ID_OPERATION);
@@ -485,19 +488,19 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID_SERIES))
-						.getString(Constants.PUBLISHERS);
+				stamps = seriesUtils.getSeriesJsonById(
+						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID))
+						.getJSONArray(Constants.CREATORS).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamp = seriesUtils.getSeriesJsonById(idSerie).getString(Constants.PUBLISHER);
+				stamps = seriesUtils.getSeriesJsonById(idSerie).getJSONArray(Constants.CREATORS).toString();
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamp = indicatorsUtils.getIndicatorJsonById(idIndicator).getString(Constants.PUBLISHER);
+				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
 			} else {
 				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
 						"Check your documentation creation");
 			}
 		}
-		return stamp;
+		return stamps;
 	}
 
 	public File exportMetadataReport(String id) throws IOException, RmesException {
@@ -505,6 +508,8 @@ public class DocumentationsUtils extends RdfService{
 		InputStream is;
 		InputStream is2;
 		InputStream is3;
+		InputStream is4;
+
 		Path tempDir= Files.createTempDirectory("forExport");
 
 		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
@@ -516,20 +521,31 @@ public class DocumentationsUtils extends RdfService{
 		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",".xml");
 		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
 
+		Path codeListTempFile = Files.createTempFile(tempDir, "freq",".xml");
+		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
+		
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
+		List<String>neededCodeLists=new ArrayList<String>();
+		
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
 			String idSeries=operation.getSeries().getId();
 			Series series=seriesUtils.getSeriesById(idSeries);
-			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(operation), StandardCharsets.UTF_8);
+			String operationXML = XMLUtils.produceXMLResponse(operation);
+			is = IOUtils.toInputStream(operationXML, StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
-			is2 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(series), StandardCharsets.UTF_8);
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
+			String seriesXML = XMLUtils.produceXMLResponse(series);
+			is2 = IOUtils.toInputStream(seriesXML, StandardCharsets.UTF_8);
 			Files.copy(is2, accessoryTempFile, options);
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
 
 		if (targetType.equals(Constants.SERIES_UP)) {
@@ -539,20 +555,46 @@ public class DocumentationsUtils extends RdfService{
 			Files.copy(is, accessoryTempFile, options);
 			is2 = IOUtils.toInputStream(response, StandardCharsets.UTF_8);
 			Files.copy(is2, tempFile, options);
+			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
-			is = IOUtils.toInputStream(XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase)), StandardCharsets.UTF_8);
+			String response=XMLUtils.produceXMLResponse(
+					indicatorsUtils.getIndicatorById(idDatabase));
+			is = IOUtils.toInputStream(response, StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
+			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
 
 		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), StandardCharsets.UTF_8);
 		Files.copy(is3, organizationsTempFile, options);
 
+		String codeListsXml="";
+//		String codeList;
+		codeListsXml=codeListsXml.concat("<codelist>");
+//		codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
+		
+		for(String code : neededCodeLists) {
+			codeListsXml=codeListsXml.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
+		}
+		codeListsXml=codeListsXml.concat("</codelist>");
+
+		is4 = IOUtils.toInputStream(codeListsXml, StandardCharsets.UTF_8);
+		Files.copy(is4, codeListTempFile, options);
+		
+//		
+//		is4 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_FREQ)), StandardCharsets.UTF_8);
+//		Files.copy(is4, codeListFreqTempFile, options);
+//
+//		is5 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_SOURCE_CATEGORY)), StandardCharsets.UTF_8);
+//		Files.copy(is5, codeListTypeTempFile, options);
+		
 		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), StandardCharsets.UTF_8);
 
-		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,organizationsAbsolutePath,targetType);
+		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,
+				organizationsAbsolutePath,codeListAbsolutePath,targetType);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {

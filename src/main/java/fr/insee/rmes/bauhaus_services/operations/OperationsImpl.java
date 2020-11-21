@@ -361,7 +361,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
-		return documentationsUtils.getDocumentationOwnerByIdSims(id);
+		return documentationsUtils.getDocumentationOwnersByIdSims(id);
 	}
 
 
