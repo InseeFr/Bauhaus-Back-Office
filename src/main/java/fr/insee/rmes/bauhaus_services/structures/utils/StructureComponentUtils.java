@@ -6,6 +6,7 @@ import java.util.Arrays;
 import javax.ws.rs.BadRequestException;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,6 +82,17 @@ public class StructureComponentUtils extends RdfService {
         return component.getId();
     }
 
+    public String createComponent(String body) throws RmesException {
+        MutualizedComponent component;
+        try {
+            component = deserializeBody(body);
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+
+        }
+        return createComponent(component);
+    }
+
     public String createComponent(MutualizedComponent component) throws RmesException {
         if (component.getId() != null) {
             throw new BadRequestException("During the creation of a new component, the id property should be null");
@@ -103,18 +115,15 @@ public class StructureComponentUtils extends RdfService {
         return id;
     }
 
-    public String createComponent(String body) throws RmesException {
-        MutualizedComponent component;
-        try {
-            component = deserializeBody(body);
-        } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-
-        }
-        return createComponent(component);
-    }
 
     private void createRDFForComponent(MutualizedComponent component, ValidationStatus status) throws RmesException {
+
+        Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
+        if(componentsWithSameCodelistAndConcept){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
+                    "A component with the same code list and concept already exists", "");
+        }
+
         String type = component.getType();
 
         if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {

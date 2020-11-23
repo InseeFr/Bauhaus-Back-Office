@@ -5,6 +5,7 @@ import java.util.HashMap;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 
 public class StructureQueries {
 
@@ -29,6 +30,16 @@ public class StructureQueries {
 		HashMap<String, Object> params = initParams();
 		params.put("ID", structureId);
 		return buildRequest("getStructure.ftlh", params);
+	}
+
+	public static String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("COMPONENT_ID", componentId);
+		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
+		params.put("CODE_LIST_URI", codeListUri);
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CONCEPT_GRAPH", Config.CONCEPTS_GRAPH);
+		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
 	
 	public static String getComponentsForSearch() throws RmesException {
