@@ -3,9 +3,6 @@ package fr.insee.rmes.model.structures;
 import java.util.List;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.ValidationStatus;
-
-import javax.validation.Validation;
 
 public class Structure {
 
@@ -27,7 +24,7 @@ public class Structure {
 
 	}
 
-	public Structure(String id) throws RmesException {
+	public Structure(String id) {
 		this.id = id;
 	}
 

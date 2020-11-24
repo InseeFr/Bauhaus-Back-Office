@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,9 +17,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.organizations.Organization;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {

@@ -123,7 +123,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	}
 
 	private void clearGeographyRubric(JSONObject rubric) throws RmesException {
-		String value = rubric.getString(Constants.VALUE);
+		String value = rubric.getString(Constants.URI);
 		if (StringUtils.isNotEmpty(value)) {
 			IRI geoUri = RdfUtils.createIRI(value);
 			JSONObject feature = geoService.getGeoFeature(geoUri);
@@ -225,7 +225,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 				}
 				break;
 			case GEOGRAPHY:
-				String featureUri = rubric.getSimpleValue();
+				String featureUri = rubric.getUri();
 				if (StringUtils.isNotEmpty(featureUri)) {
 					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
 				}
