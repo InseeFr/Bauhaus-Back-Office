@@ -170,17 +170,6 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByIdQuery.ftlh", params);	
 	}
 	
-	/**
-	 * @param idSeries
-	 * return publishers id (publishers are organizations)
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getPublishers(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(ID_SERIES, idSeries);
-		return buildSeriesRequest("getSeriesPublishersQuery.ftlh", params);	
-	}
 	
 	/**
 	 * @param idSeries
