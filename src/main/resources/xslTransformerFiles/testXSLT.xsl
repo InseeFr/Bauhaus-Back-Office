@@ -307,8 +307,9 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
 
@@ -360,8 +361,9 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg2($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
 														<xsl:call-template name="richText">
@@ -409,8 +411,6 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:for-each>
-
-
 
 				</office:text>
 			</office:body>

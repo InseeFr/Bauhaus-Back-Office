@@ -8,6 +8,7 @@ public class Constants {
 	public static final String ALT_LABEL_LG2 = "altLabelLg2";
 
 	/*C*/
+	public static final String CODELIST = "codeList";
 	public static final String CODE_LIST_FREQ = "CL_FREQ";
 	public static final String CODE_LIST_SOURCE_CATEGORY = "CL_SOURCE_CATEGORY";
 	public static final String CREATOR = "creator";
@@ -95,6 +96,10 @@ public class Constants {
 
 	/*W*/
 	public static final String WASGENERATEDBY = "wasGeneratedBy";
+	
+	/*X*/
+	public static final String XML_OPEN_CODELIST_TAG = "<codelist>";
+	public static final String XML_END_CODELIST_TAG = "</codelist>";
 	
 	private Constants() {
 		throw new IllegalStateException("Utility class");
