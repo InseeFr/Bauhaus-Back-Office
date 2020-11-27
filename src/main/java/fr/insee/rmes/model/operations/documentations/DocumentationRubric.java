@@ -72,11 +72,11 @@ public class DocumentationRubric {
 	}
 	
 	public boolean hasRichTextLg1() {
-		return StringUtils.isNotEmpty(getLabelLg1()) && (getDocumentsLg1() == null || getDocumentsLg1().isEmpty());
+		return StringUtils.isNotEmpty(getLabelLg1()) || (getDocumentsLg1() != null && !getDocumentsLg1().isEmpty());
 	}
 	
 	public boolean hasRichTextLg2() {
-		return StringUtils.isNotEmpty(getLabelLg2()) && (getDocumentsLg2() == null || getDocumentsLg2().isEmpty());
+		return StringUtils.isNotEmpty(getLabelLg2()) || (getDocumentsLg2() != null && !getDocumentsLg2().isEmpty());
 	}
 
 	public List<String> getValue() {

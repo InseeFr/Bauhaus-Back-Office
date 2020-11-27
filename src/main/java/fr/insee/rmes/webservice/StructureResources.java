@@ -97,6 +97,21 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
+    @GET
+    @Path("/structure/{id}/details")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
+            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
+    public Response getStructureByIdDetails(@PathParam(Constants.ID) String id) {
+        String jsonResultat = null;
+        try {
+            jsonResultat = structureService.getStructureByIdWithDetails(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
     @POST
     @Path("/structure")
     @Consumes(MediaType.APPLICATION_JSON)
