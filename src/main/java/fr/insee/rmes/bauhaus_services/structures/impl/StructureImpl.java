@@ -41,6 +41,12 @@ public class StructureImpl  extends RdfService implements StructureService {
 		return structureUtils.formatStructure(structure, id).toString();
 	}
 
+	@Override
+	public String getStructureByIdWithDetails(String id) throws RmesException {
+		logger.info("Starting to get all details of a structure");
+		return this.getStructureById(id);
+	}
+
 	/**
 	 * Create new Structure
 	 * @throws RmesException 
@@ -63,4 +69,6 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public void deleteStructure(String structureId) throws RmesException {
 		structureUtils.deleteStructure(structureId);
 	}
+
+
 }
