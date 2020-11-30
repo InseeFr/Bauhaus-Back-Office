@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class Documentation {
 
 	private String id;
@@ -14,6 +16,8 @@ public class Documentation {
 
 	private String labelLg1;
 	private String labelLg2;
+	
+	@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 	private List<DocumentationRubric> rubrics;
 	
 	

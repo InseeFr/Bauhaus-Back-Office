@@ -200,9 +200,9 @@ public class DocumentationsUtils extends RdfService{
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
 		}
 		// Fix for sims passed without target (TEMPORARY ?)
-		if (sims.getIdTarget()==null) {
-			addTarget(sims);
-		}
+//		if (sims.getIdTarget()==null) {
+//			addTarget(sims);
+//		}
 
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
