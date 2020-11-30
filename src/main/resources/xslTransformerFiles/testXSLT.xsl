@@ -218,15 +218,13 @@
 					</text:sequence-decls>
 
 					<text:p>
-						<xsl:value-of select="'xsl:version: '" />
-						<xsl:value-of select="system-property('xsl:version')" />
+						<!-- <xsl:value-of select="'xsl:version: '" /> -->
+						<!-- <xsl:value-of select="system-property('xsl:version')" /> -->
 						<!-- <xsl:value-of select="$organizations"/> -->
-						<xsl:value-of select="$fileTarget//prefLabelLg1" />
-						<xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'">
-							<xsl:value-of select="labelLg1" />
-						</xsl:if>
-						<!-- <xsl:value-of select="$organizations/ArrayList/item[id = 'DG75-F110']/labelLg1)" 
-							/> -->
+						<!-- <xsl:value-of select="$fileTarget//prefLabelLg1" /> -->
+						<!-- <xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'"> -->
+						<!-- <xsl:value-of select="labelLg1" /> -->
+						<!-- </xsl:if> -->
 
 					</text:p>
 					<!-- <text:p> -->
@@ -307,20 +305,20 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
 
-														<xsl:call-template name="richText">
-															<xsl:with-param name="text"
-																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
-														</xsl:call-template>
+														<!-- <xsl:call-template name="richText"> -->
+														<!-- <xsl:with-param name="text" -->
+														<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg1" /> -->
+														<!-- </xsl:call-template> -->
 
-
-														<!-- <xsl:value-of -->
-														<!-- select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute -->
-														<!-- = $mas]/labelLg1)" /> -->
+														<xsl:value-of
+															select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -360,14 +358,18 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg2($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
-														<xsl:call-template name="richText">
-															<xsl:with-param name="text"
-																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg2" />
-														</xsl:call-template>
+														<!-- <xsl:call-template name="richText"> -->
+														<!-- <xsl:with-param name="text" -->
+														<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg2" /> -->
+														<!-- </xsl:call-template> -->
+														<xsl:value-of
+															select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg2)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -409,8 +411,6 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:for-each>
-
-
 
 				</office:text>
 			</office:body>
@@ -1000,23 +1000,23 @@
 		<!-- <xsl:variable name="myVar" select="saxon:evaluate($newtext)" -->
 		<!-- as="node()" /> -->
 		<!-- <xsl:value-of select="saxon:evaluate($newtext)" /> -->
-		<xsl:variable name="myVar" select="unparsed-text($newtext)" />
+		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" /> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" as="node()"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text('&lt;p&gt;blabla&lt;/p&gt;')"/> -->
 		<!-- <xsl:variable name="myVar" select="'coucou'"/> -->
 		<!-- <xsl:copy-of select="unparsed-text($newtext)" /> -->
-		<xsl:sequence select="$myVar" />
-		<!-- <xsl:sequence select="$newtext" /> -->
+		<!-- <xsl:sequence select="$myVar" /> -->
+		<xsl:sequence select="$newtext" />
 	</xsl:function>
 
 	<xsl:template name="richText">
 		<xsl:param name="text" />
-		<xsl:copy-of select="'coucou'" />
+		<xsl:copy-of select="'coucouTemplate'" />
 		<xsl:copy-of select="$text" />
-		<!-- <xsl:apply-templates -->
-		<!-- select="unparsed-text(concat('&lt;html&gt;',$text,'&lt;/html&gt;'))"></xsl:apply-templates> -->
-		<!-- <xsl:value-of select="unparsed-text(text)"></xsl:value-of> -->
+		<xsl:value-of select="$text" />
+		<xsl:value-of select="concat('&lt;html&gt;',$text,'&lt;/html&gt;')"></xsl:value-of>
+		<xsl:copy-of select="'coucouFINTemplate'" />
 	</xsl:template>
 
 	<xsl:template name="p" match="p">

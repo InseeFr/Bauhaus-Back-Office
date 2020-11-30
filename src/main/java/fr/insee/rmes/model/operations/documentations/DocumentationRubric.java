@@ -5,12 +5,15 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class DocumentationRubric {
 
 	private String idAttribute;
 
+	@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 	private List<String> value;
 
 	private String labelLg1;
@@ -89,7 +92,7 @@ public class DocumentationRubric {
 		return value.get(0);
 	}
 
-	public void setValue(String value) {
+	public void setSingleValue(String value) {
 		List<String >val = new ArrayList<>();
 		val.add(value);
 		this.value = val;

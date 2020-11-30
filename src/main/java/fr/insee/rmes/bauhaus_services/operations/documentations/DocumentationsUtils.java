@@ -9,7 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -197,6 +199,11 @@ public class DocumentationsUtils extends RdfService{
 			logger.error(e.getMessage());
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
 		}
+		// Fix for sims passed without target (TEMPORARY ?)
+//		if (sims.getIdTarget()==null) {
+//			addTarget(sims);
+//		}
+
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
@@ -233,6 +240,20 @@ public class DocumentationsUtils extends RdfService{
 		return sims.getId();
 	}
 
+
+	private void addTarget(Documentation sims) throws RmesException {
+		if (sims.getIdTarget()==null) {
+			String[] target = getDocumentationTargetTypeAndId(sims.getId());
+		
+			String targetType = target[0];
+			String targetId = target[1];
+			switch(targetType) {
+				case Constants.INDICATOR_UP : sims.setIdIndicator(targetId);
+				case Constants.OPERATION_UP : sims.setIdOperation(targetId);
+				case Constants.SERIES_UP : sims.setIdSeries(targetId);
+			}
+		}
+	}
 
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
@@ -523,7 +544,7 @@ public class DocumentationsUtils extends RdfService{
 
 		Path codeListTempFile = Files.createTempFile(tempDir, "freq",".xml");
 		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
-		
+
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
 		String[] target = getDocumentationTargetTypeAndId(id);
@@ -531,7 +552,7 @@ public class DocumentationsUtils extends RdfService{
 		String idDatabase = target[1];
 
 		List<String>neededCodeLists=new ArrayList<String>();
-		
+
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
 			String idSeries=operation.getSeries().getId();
@@ -571,27 +592,23 @@ public class DocumentationsUtils extends RdfService{
 		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), StandardCharsets.UTF_8);
 		Files.copy(is3, organizationsTempFile, options);
 
-		String codeListsXml="";
-//		String codeList;
-		codeListsXml=codeListsXml.concat("<codelist>");
-//		codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
+		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
+
+		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
 		
+		String codeListsXml="";
+		codeListsXml=codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
+
 		for(String code : neededCodeLists) {
 			codeListsXml=codeListsXml.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
 		}
-		codeListsXml=codeListsXml.concat("</codelist>");
+		codeListsXml=codeListsXml.concat(Constants.XML_END_CODELIST_TAG);
 
 		is4 = IOUtils.toInputStream(codeListsXml, StandardCharsets.UTF_8);
 		Files.copy(is4, codeListTempFile, options);
-		
-//		
-//		is4 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_FREQ)), StandardCharsets.UTF_8);
-//		Files.copy(is4, codeListFreqTempFile, options);
-//
-//		is5 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_SOURCE_CATEGORY)), StandardCharsets.UTF_8);
-//		Files.copy(is5, codeListTypeTempFile, options);
-		
-		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), StandardCharsets.UTF_8);
+
+		InputStream simsInputStream = IOUtils.toInputStream(simsXML, StandardCharsets.UTF_8);
 
 		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,
 				organizationsAbsolutePath,codeListAbsolutePath,targetType);
