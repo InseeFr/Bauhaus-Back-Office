@@ -9,6 +9,8 @@ public class ExportUtils {
 			return ".pdf";
 		} else if (acceptHeader.equals("flatODT")) {
 			return ".fodt";
+		} else if (acceptHeader.equals("XML")) {
+			return ".xml";
 		} else {
 			return ".odt";
 			// default --> odt
