@@ -339,7 +339,6 @@ public class DocumentsUtils  extends RdfService  {
 			
 			// Delete the old file
 			logger.info("Delete old file {}, with URL {}", documentName, docUrl);
-			checkDocumentReference(docId, jsonDoc.getString(Constants.URI)); 
 			deleteFile(docUrl);
 		}
 
