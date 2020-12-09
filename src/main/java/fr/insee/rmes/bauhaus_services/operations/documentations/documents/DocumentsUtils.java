@@ -290,6 +290,7 @@ public class DocumentsUtils  extends RdfService  {
 		return repoGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri));
 	}
 
+	// Check that the document is not referred to by any sims
 	private void checkDocumentReference(String docId, String uri) throws RmesException {
 		JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
 		if (jsonResultat.length() > 0) {
@@ -333,13 +334,13 @@ public class DocumentsUtils  extends RdfService  {
 			logger.info("Try to replace file {}, new URL is {}", documentName, newUrl);
 			uploadFile(documentFile, documentName, newUrl, false);
 
-			// Delete the old file
-			logger.info("Delete old file {}, with URL {}", documentName, docUrl);
-			checkDocumentReference(docId, jsonDoc.getString(Constants.URI));
-			deleteFile(docUrl);
-
 			// Update document's url
 			changeDocumentsURL(docId, docUrl, newUrl);
+			
+			// Delete the old file
+			logger.info("Delete old file {}, with URL {}", documentName, docUrl);
+			checkDocumentReference(docId, jsonDoc.getString(Constants.URI)); 
+			deleteFile(docUrl);
 		}
 
 		return newUrl;
