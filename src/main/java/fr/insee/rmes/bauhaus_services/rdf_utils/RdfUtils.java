@@ -264,7 +264,7 @@ public class RdfUtils {
 				model.add(bnode, predicat, RdfUtils.setLiteralString(value, lang), graph);
 		}
 	}
-
+	
 	private RdfUtils() {
 	    throw new IllegalStateException("Utility class");
 	}

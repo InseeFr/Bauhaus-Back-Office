@@ -41,6 +41,10 @@ public interface StampsRestrictionsService {
 
 	boolean canCreateSims(IRI targetURI) throws RmesException;
 
+	boolean canDeleteSims(IRI seriesURI) throws RmesException;
+
+	boolean canDeleteSims(List<IRI> uris) throws RmesException;
+	
 	boolean canModifySeries(IRI uri) throws RmesException;
 
 	boolean canValidateSeries(IRI uri) throws RmesException;

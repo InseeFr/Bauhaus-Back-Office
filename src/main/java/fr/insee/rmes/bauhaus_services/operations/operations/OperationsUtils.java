@@ -213,6 +213,7 @@ public class OperationsUtils extends RdfService{
 	public String setOperationValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
+		//TODO: check : is it the Series id or the Ope id ?
 		IRI seriesURI = getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");

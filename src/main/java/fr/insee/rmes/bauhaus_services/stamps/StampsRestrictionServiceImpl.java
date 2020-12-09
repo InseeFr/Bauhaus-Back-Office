@@ -307,6 +307,19 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	@Override
+	public boolean canDeleteSims(IRI targetURI) throws RmesException {
+		List<IRI> uris = new ArrayList<>();
+		uris.add(targetURI);
+		return canDeleteSims(uris);
+	}
+	
+	@Override
+	public boolean canDeleteSims(List<IRI> uris) throws RmesException {
+		User user = getUser();
+		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
+	}
+	
+	@Override
 	public boolean canModifyConcept(IRI uri) throws RmesException {
 		User user = getUser();
 		List<IRI> uris = new ArrayList<>();
@@ -354,5 +367,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		User user = getUser();
 		return (isAdmin(user) || isSeriesContributor(user) || isIndicatorContributor(user));
 	}
+
+	
 
 }
