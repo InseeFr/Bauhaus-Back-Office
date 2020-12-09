@@ -316,7 +316,8 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	@Override
 	public boolean canDeleteSims(List<IRI> uris) throws RmesException {
 		User user = getUser();
-		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
+//		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
+		return (isAdmin(user));
 	}
 	
 	@Override
