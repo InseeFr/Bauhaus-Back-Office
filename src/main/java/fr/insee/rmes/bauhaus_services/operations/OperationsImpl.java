@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -382,6 +383,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.setMetadataReport(id, body, false);
 	}
 
+	/**
+	 * DELETE
+	 */
+	@Override
+	public Status deleteMetadataReport(String id) throws RmesException {
+		return documentationsUtils.deleteMetadataReport(id);
+	}
 
 	/**
 	 * PUBLISH

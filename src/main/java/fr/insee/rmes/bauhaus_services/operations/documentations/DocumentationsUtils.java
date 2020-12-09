@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -51,6 +53,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -62,6 +65,7 @@ import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.XMLUtils;
 
 
@@ -199,10 +203,6 @@ public class DocumentationsUtils extends RdfService{
 			logger.error(e.getMessage());
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
 		}
-		// Fix for sims passed without target (TEMPORARY ?)
-//		if (sims.getIdTarget()==null) {
-//			addTarget(sims);
-//		}
 
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
@@ -650,6 +650,26 @@ public class DocumentationsUtils extends RdfService{
 	public String buildShellSims() throws RmesException {
 		MSD msd= operationsUtils.getMSD();
 		return XMLUtils.produceXMLResponse(msd);
+	}
+
+	public Status deleteMetadataReport(String id) throws RmesException {
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+		
+		if (targetType != Constants.SERIES) {
+			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
+		}
+		
+		IRI targetUri=RdfUtils.objectIRI(ObjectType.SERIES, idDatabase);
+		if (!stampsRestrictionsService.canDeleteSims(targetUri)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
+					"Only an admin or a manager can delete a new sims.");
+		}		
+		Resource graph = RdfUtils.simsGraph(id);
+		
+		return repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+		
 	}
 
 }
