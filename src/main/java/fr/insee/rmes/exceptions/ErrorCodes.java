@@ -125,4 +125,6 @@ public class ErrorCodes {
 
 	// SIMS
 	public static final int SIMS_INCORRECT = 861;
+	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
+	public static final int SIMS_DELETION_RIGHTS_DENIED = 863;
 }

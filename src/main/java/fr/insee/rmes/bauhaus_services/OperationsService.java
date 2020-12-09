@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 import java.io.File;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
@@ -140,6 +141,8 @@ public interface OperationsService {
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;
+
+	Status deleteMetadataReport(String id) throws RmesException;
 
 
 

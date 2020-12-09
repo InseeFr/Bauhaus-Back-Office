@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -722,7 +723,31 @@ public class OperationsResources {
 		return Response.status(Status.NO_CONTENT).build();
 	}
 
+	/**
+	 * DELETE
+	 * @param id
+	 * @return
+	 */
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR, Roles.SPRING_CNIS })
+	@DELETE
+	@Path("/metadataReport/delete/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
+	public Response deleteMetadataReportById(
+			@PathParam(Constants.ID) String id, 
+			@RequestBody(description = "Report to delete", required = true,
+			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+		Status result=Status.NO_CONTENT;
+		try {
+			 result = operationsService.deleteMetadataReport(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(result).build();
+	}
 
+	
+	
 	/**
 	 * PUBLISH
 	 * @param id
