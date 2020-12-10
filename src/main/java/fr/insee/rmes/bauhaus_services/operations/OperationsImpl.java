@@ -1,12 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -14,10 +10,12 @@ import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.Resource;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.OperationsService;
@@ -46,6 +44,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.indicators.Indicators
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.springframework.util.StreamUtils;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -55,6 +54,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
 	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
+
+	@Value("classpath:bauhaus-sims.json")
+	org.springframework.core.io.Resource simsDefaultValue;
 
 	@Autowired
 	Jasper jasper;
@@ -328,6 +330,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String getMSDJson() throws RmesException {
 		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
+	public String getMetadataReportDefaultValue() throws IOException {
+		return StreamUtils.copyToString(this.simsDefaultValue.getInputStream(), Charset.defaultCharset());
 	}
 
 	@Override
