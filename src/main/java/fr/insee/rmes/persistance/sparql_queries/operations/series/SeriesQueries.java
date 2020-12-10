@@ -20,6 +20,7 @@ public class SeriesQueries {
 	static Map<String, Object> params;
 	
 	private static final String ID_SERIES = "ID_SERIES";
+	private static final String PRODUCTS_GRAPH = "PRODUCTS_GRAPH";
 	private static final String URI_SERIES = "URI_SERIES";
 	private static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
@@ -190,6 +191,7 @@ public class SeriesQueries {
 	public static String getOperations(String idSeries) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
+		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);	
 	}
 	
