@@ -13,15 +13,11 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2
 				FILTER (lang(?labelLg2) = '${LG2}')} .   
 				
 				BIND(
-				IF(regex(str(?uriLinked), "/operations/serie/"),
-					STRAFTER(STR(?uriLinked),'/operations/serie/'),
-				IF(regex(str(?uriLinked), "/produits/indicateur/"),
-					STRAFTER(STR(?uriLinked),'/produits/indicateur/'),
-				IF(regex(str(?uriLinked), "organisations/insee/"),
-					STRAFTER(STR(?uriLinked),'organisations/insee/'),
-				IF(regex(str(?uriLinked), "organisations/"),
-					STRAFTER(STR(?uriLinked),'organisations/'),
-				STR(?uriLinked) ))))
+					IF(regex(str(?uriLinked), "/operations/serie/"),
+						STRAFTER(STR(?uriLinked),'/operations/serie/'),
+					IF(regex(str(?uriLinked), "/produits/indicateur/"),
+						STRAFTER(STR(?uriLinked),'/produits/indicateur/'),
+					STR(?uriLinked) ))
 				AS ?id) .
 				
 				FILTER(STRENDS(STR(?series),'/operations/serie/${ID_SERIES}')) . 
