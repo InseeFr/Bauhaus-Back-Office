@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -200,10 +201,14 @@ public class SeriesQueries {
 	 * @return String
 	 * @throws RmesException
 	 */	
-	public static String seriesLinks(String idSeries, IRI linkPredicate) throws RmesException {
+	public static String seriesLinks(String idSeries, IRI linkPredicate, String resultType) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
 		params.put(LINK_PREDICATE, linkPredicate);
+		if(resultType==Constants.ORGANIZATIONS) {
+			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
+		}
+		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);		
 		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);	
 	}
 	
