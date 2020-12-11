@@ -57,6 +57,7 @@ public class Constants {
 	/*O*/
 	public static final String OPERATIONS = "operations";
 	public static final String OPERATION_UP = "OPERATION";
+	public static final String ORGANIZATIONS = "organizations";
 	public static final String OWNER = "owner";
 	public static final String OUTPUT = "output";
 	
