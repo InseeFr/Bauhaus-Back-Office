@@ -1,8 +1,6 @@
-SELECT DISTINCT ?id ?labelLg1 ?labelLg2 
+SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?typeOfObject
 		FROM <${OPERATIONS_GRAPH}> 
 		FROM <${PRODUCTS_GRAPH}> 
-		FROM <${ORGANIZATIONS_GRAPH}> 
-		FROM <${ORG_INSEE_GRAPH}> 
 	WHERE {   
 				?series <${LINK_PREDICATE}> ?uriLinked .   
 
@@ -11,6 +9,8 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2
 				
 				OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . 
 				FILTER (lang(?labelLg2) = '${LG2}')} .   
+				
+				OPTIONAL {?uriLinked rdf:type ?typeOfObject .}
 				
 				BIND(
 					IF(regex(str(?uriLinked), "/operations/serie/"),
