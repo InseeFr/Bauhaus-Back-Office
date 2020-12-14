@@ -56,6 +56,7 @@ public class ErrorCodes {
 	public static final int SIMS_MODIFICATION_RIGHTS_DENIED = 802;
 	public static final int SIMS_VALIDATION_RIGHTS_DENIED = 803;
 	public static final int SIMS_VALIDATION_UNPUBLISHED_TARGET = 804;
+	public static final int SIMS_DELETION_RIGHTS_DENIED = 805;
 
 	// COLLECTIONS
 
@@ -105,8 +106,6 @@ public class ErrorCodes {
 	public static final int GEOFEATURE_UNKNOWN = 845;
 	public static final int GEOFEATURE_INCORRECT_BODY = 846;
 
-
-	
 	
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
@@ -126,5 +125,4 @@ public class ErrorCodes {
 	// SIMS
 	public static final int SIMS_INCORRECT = 861;
 	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
-	public static final int SIMS_DELETION_RIGHTS_DENIED = 863;
 }
