@@ -667,7 +667,7 @@ public class DocumentationsUtils extends RdfService{
 		IRI targetUri=RdfUtils.objectIRI(ObjectType.SERIES, idDatabase);
 		if (!stampsRestrictionsService.canDeleteSims(targetUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
-					"Only an admin or a manager can delete a new sims.");
+					"Only an admin or a manager can delete a sims.");
 		}		
 		Resource graph = RdfUtils.simsGraph(id);
 
