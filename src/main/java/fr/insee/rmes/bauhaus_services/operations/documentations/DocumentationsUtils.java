@@ -9,7 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,12 +48,14 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -59,7 +66,9 @@ import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.XMLUtils;
 
 
@@ -197,6 +206,7 @@ public class DocumentationsUtils extends RdfService{
 			logger.error(e.getMessage());
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_INCORRECT, e.getMessage(), "IOException: cannot parse input");
 		}
+
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
@@ -233,6 +243,20 @@ public class DocumentationsUtils extends RdfService{
 		return sims.getId();
 	}
 
+
+	private void addTarget(Documentation sims) throws RmesException {
+		if (sims.getIdTarget()==null) {
+			String[] target = getDocumentationTargetTypeAndId(sims.getId());
+
+			String targetType = target[0];
+			String targetId = target[1];
+			switch(targetType) {
+			case Constants.INDICATOR_UP : sims.setIdIndicator(targetId);
+			case Constants.OPERATION_UP : sims.setIdOperation(targetId);
+			case Constants.SERIES_UP : sims.setIdSeries(targetId);
+			}
+		}
+	}
 
 	private String getDocumentationValidationStatus(String id) throws RmesException {
 		try {
@@ -523,7 +547,7 @@ public class DocumentationsUtils extends RdfService{
 
 		Path codeListTempFile = Files.createTempFile(tempDir, "freq",".xml");
 		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
-		
+
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 
 		String[] target = getDocumentationTargetTypeAndId(id);
@@ -531,7 +555,7 @@ public class DocumentationsUtils extends RdfService{
 		String idDatabase = target[1];
 
 		List<String>neededCodeLists=new ArrayList<String>();
-		
+
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
 			String idSeries=operation.getSeries().getId();
@@ -571,27 +595,23 @@ public class DocumentationsUtils extends RdfService{
 		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), StandardCharsets.UTF_8);
 		Files.copy(is3, organizationsTempFile, options);
 
+		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
+
+		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
+
 		String codeListsXml="";
-//		String codeList;
-		codeListsXml=codeListsXml.concat("<codelist>");
-//		codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
-		
+		codeListsXml=codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
+
 		for(String code : neededCodeLists) {
 			codeListsXml=codeListsXml.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
 		}
-		codeListsXml=codeListsXml.concat("</codelist>");
+		codeListsXml=codeListsXml.concat(Constants.XML_END_CODELIST_TAG);
 
 		is4 = IOUtils.toInputStream(codeListsXml, StandardCharsets.UTF_8);
 		Files.copy(is4, codeListTempFile, options);
-		
-//		
-//		is4 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_FREQ)), StandardCharsets.UTF_8);
-//		Files.copy(is4, codeListFreqTempFile, options);
-//
-//		is5 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(Constants.CODE_LIST_SOURCE_CATEGORY)), StandardCharsets.UTF_8);
-//		Files.copy(is5, codeListTypeTempFile, options);
-		
-		InputStream simsInputStream = IOUtils.toInputStream(XMLUtils.produceResponse(getFullSims(id), "application/xml"), StandardCharsets.UTF_8);
+
+		InputStream simsInputStream = IOUtils.toInputStream(simsXML, StandardCharsets.UTF_8);
 
 		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,
 				organizationsAbsolutePath,codeListAbsolutePath,targetType);
@@ -633,6 +653,31 @@ public class DocumentationsUtils extends RdfService{
 	public String buildShellSims() throws RmesException {
 		MSD msd= operationsUtils.getMSD();
 		return XMLUtils.produceXMLResponse(msd);
+	}
+
+	public Status deleteMetadataReport(String id) throws RmesException {
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+
+		if (targetType != Constants.SERIES) {
+			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
+		}
+
+		IRI targetUri=RdfUtils.objectIRI(ObjectType.SERIES, idDatabase);
+		if (!stampsRestrictionsService.canDeleteSims(targetUri)) {
+			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
+					"Only an admin or a manager can delete a sims.");
+		}		
+		Resource graph = RdfUtils.simsGraph(id);
+
+		Response.Status result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+		if (result.equals(Status.OK)) {
+			result = RepositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));	
+		}
+
+		return result;
+
 	}
 
 }

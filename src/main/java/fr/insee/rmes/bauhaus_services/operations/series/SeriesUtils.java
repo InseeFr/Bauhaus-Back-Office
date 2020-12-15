@@ -123,9 +123,9 @@ public class SeriesUtils extends RdfService {
 			JSONObject series = resQuery.getJSONObject(i);
 			String idSeries = series.get(Constants.ID).toString();
 			addSeriesCreators(idSeries, series);
-			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
-			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
-			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER);
+			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
+			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
+			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
 			famOpeSerIndUtils.fixOrganizationsNames(series);			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
@@ -152,12 +152,12 @@ public class SeriesUtils extends RdfService {
 	}
 
 	private void addSeriesLinks(String idSeries, JSONObject series) throws RmesException {
-		addOneTypeOfLink(idSeries, series, DCTERMS.REPLACES);
-		addOneTypeOfLink(idSeries, series, DCTERMS.IS_REPLACED_BY);
-		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO);
-		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR);
-		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR);
-		addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER);
+		addOneTypeOfLink(idSeries, series, DCTERMS.REPLACES, Constants.OPERATIONS);
+		addOneTypeOfLink(idSeries, series, DCTERMS.IS_REPLACED_BY, Constants.OPERATIONS);
+		addOneTypeOfLink(idSeries, series, RDFS.SEEALSO, Constants.OPERATIONS);
+		addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
+		addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
+		addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
 		famOpeSerIndUtils.fixOrganizationsNames(series);
 	}
 
@@ -170,8 +170,9 @@ public class SeriesUtils extends RdfService {
  * @param predicate
  * @throws RmesException
  */
-	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate) throws RmesException {
-		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate));
+	private void addOneTypeOfLink(String id, JSONObject series, IRI predicate, String resultType) throws RmesException {
+		
+		JSONArray links = repoGestion.getResponseAsArray(SeriesQueries.seriesLinks(id, predicate, resultType));
 		if (links.length() != 0) {
 			links = QueryUtils.transformRdfTypeInString(links);
 		}

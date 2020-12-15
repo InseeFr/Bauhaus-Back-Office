@@ -218,15 +218,13 @@
 					</text:sequence-decls>
 
 					<text:p>
-						<xsl:value-of select="'xsl:version: '" />
-						<xsl:value-of select="system-property('xsl:version')" />
+						<!-- <xsl:value-of select="'xsl:version: '" /> -->
+						<!-- <xsl:value-of select="system-property('xsl:version')" /> -->
 						<!-- <xsl:value-of select="$organizations"/> -->
-						<xsl:value-of select="$fileTarget//prefLabelLg1" />
-						<xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'">
-							<xsl:value-of select="labelLg1" />
-						</xsl:if>
-						<!-- <xsl:value-of select="$organizations/ArrayList/item[id = 'DG75-F110']/labelLg1)" 
-							/> -->
+						<!-- <xsl:value-of select="$fileTarget//prefLabelLg1" /> -->
+						<!-- <xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'"> -->
+						<!-- <xsl:value-of select="labelLg1" /> -->
+						<!-- </xsl:if> -->
 
 					</text:p>
 					<!-- <text:p> -->
@@ -298,36 +296,44 @@
 												<xsl:value-of select="$rangeType" />
 											</text:p>
 
-											<text:p text:style-name="RubricItem">
-												<xsl:choose>
-													<xsl:when test="$rangeType='GEOGRAPHY'">
+
+											<xsl:choose>
+												<xsl:when test="$rangeType='GEOGRAPHY'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/labelLg1)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='CODE_LIST'">
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='CODE_LIST'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='RICH_TEXT'">
+															select="local:codeListLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='RICH_TEXT'">
 
-														<xsl:call-template name="richText">
-															<xsl:with-param name="text"
-																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
-														</xsl:call-template>
+													<xsl:call-template name="richText">
+														<xsl:with-param name="text"
+															select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg1" />
+													</xsl:call-template>
 
+<!-- 													<xsl:copy-of -->
+<!-- 														select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1)" /> -->
 
-														<!-- <xsl:value-of -->
-														<!-- select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute -->
-														<!-- = $mas]/labelLg1)" /> -->
-													</xsl:when>
-													<xsl:when test="$rangeType='TEXT'">
+												</xsl:when>
+												<xsl:when test="$rangeType='TEXT'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/labelLg1)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='ORGANIZATION'">
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='ORGANIZATION'">
+													<text:p text:style-name="RubricItem">
 														<xsl:variable name='orgaStamp'
 															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/value" />
 														<xsl:variable name='lab'
@@ -335,13 +341,16 @@
 														<xsl:variable name='altLab'
 															select="$organizations/ArrayList/item[id = $orgaStamp]/altLabel" />
 														<xsl:value-of select="local:prepOrgaLg1($orgaStamp,$lab,$altLab)" />
-													</xsl:when>
-													<xsl:otherwise>
+													</text:p>
+												</xsl:when>
+												<xsl:otherwise>
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</text:p>
+													</text:p>
+												</xsl:otherwise>
+											</xsl:choose>
+
 										</table:table-cell>
 
 										<table:table-cell table:style-name="framedCell">
@@ -360,14 +369,18 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg2($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
-														<xsl:call-template name="richText">
-															<xsl:with-param name="text"
-																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg2" />
-														</xsl:call-template>
+														<!-- <xsl:call-template name="richText"> -->
+														<!-- <xsl:with-param name="text" -->
+														<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg2" /> -->
+														<!-- </xsl:call-template> -->
+														<xsl:value-of
+															select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg2)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -409,8 +422,6 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:for-each>
-
-
 
 				</office:text>
 			</office:body>
@@ -983,8 +994,10 @@
  " />
 	</xsl:function>
 
-	<xsl:function name="local:prepRichText" as="xs:string?"
-		xmlns:functx="http://www.functx.com">
+	<!-- <xsl:function name="local:prepRichText" as="xs:string?"> -->
+	<xsl:function name="local:prepRichText" as="element()*">
+
+
 		<xsl:param name="arg" as="xs:string?" />
 
 		<!-- <xsl:variable name="newtext"> -->
@@ -995,28 +1008,37 @@
 
 
 		<xsl:variable name="newtext"
-			select="concat('&lt;html&gt;',$arg,'&lt;/html&gt;')" />
+			select="concat('&lt;html&gt;',replace(replace($arg,'\s+$',''),'^\s+',''),'&lt;/html&gt;')" />
 
 		<!-- <xsl:variable name="myVar" select="saxon:evaluate($newtext)" -->
 		<!-- as="node()" /> -->
 		<!-- <xsl:value-of select="saxon:evaluate($newtext)" /> -->
-		<xsl:variable name="myVar" select="unparsed-text($newtext)" />
+		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" /> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" as="node()"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text('&lt;p&gt;blabla&lt;/p&gt;')"/> -->
 		<!-- <xsl:variable name="myVar" select="'coucou'"/> -->
 		<!-- <xsl:copy-of select="unparsed-text($newtext)" /> -->
-		<xsl:sequence select="$myVar" />
+		<!-- <xsl:sequence select="$myVar" /> -->
 		<!-- <xsl:sequence select="$newtext" /> -->
+		<xsl:element name="html">
+			<xsl:copy-of select="replace(replace($arg,'\s+$',''),'^\s+','')"></xsl:copy-of>
+		</xsl:element>
+
 	</xsl:function>
 
 	<xsl:template name="richText">
 		<xsl:param name="text" />
-		<xsl:copy-of select="'coucou'" />
-		<xsl:copy-of select="$text" />
-		<!-- <xsl:apply-templates -->
-		<!-- select="unparsed-text(concat('&lt;html&gt;',$text,'&lt;/html&gt;'))"></xsl:apply-templates> -->
-		<!-- <xsl:value-of select="unparsed-text(text)"></xsl:value-of> -->
+<!-- 		<xsl:copy-of select="'coucouTemplate'" /> -->
+<!-- 		<xsl:copy-of select="$text" /> -->
+<!-- 		<xsl:value-of select="$text" /> -->
+<!-- 		<xsl:value-of select="concat('&lt;html&gt;',$text,'&lt;/html&gt;')"></xsl:value-of> -->
+		<xsl:element name="RichText">
+			<xsl:copy-of select="replace(replace($text,'\s+$',''),'^\s+','')"></xsl:copy-of>
+		</xsl:element>
+
+<!-- 		<xsl:copy-of select="'coucouFINTemplate'" /> -->
+
 	</xsl:template>
 
 	<xsl:template name="p" match="p">
