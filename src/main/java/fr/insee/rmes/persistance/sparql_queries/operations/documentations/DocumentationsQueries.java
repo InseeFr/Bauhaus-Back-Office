@@ -3,6 +3,8 @@ package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.rdf4j.model.Resource;
+
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
@@ -150,4 +152,9 @@ public class DocumentationsQueries {
 	 private DocumentationsQueries() {
 		 throw new IllegalStateException("Utility class");
 	 }
+
+	public static String deleteGraph(Resource graph) throws RmesException {
+		params.put("DOCUMENTATION_GRAPH", graph);
+		return buildRequest("deleteGraph.ftlh", params);	
+	}
 }

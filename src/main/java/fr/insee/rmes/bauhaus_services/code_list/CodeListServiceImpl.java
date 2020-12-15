@@ -46,7 +46,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		ObjectMapper mapper = new ObjectMapper();
 		CodeList codeList = new CodeList();
 		try {
-			codeList = mapper.readValue(codeListJson.toString(), CodeList.class);
+			codeList = mapper.readValue(codeListJson, CodeList.class);
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
 		}

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
@@ -142,5 +143,7 @@ public interface OperationsService {
 
 	String getMSDJson() throws RmesException;
 
-    String getMetadataReportDefaultValue() throws IOException;
+  String getMetadataReportDefaultValue() throws IOException;
+
+	Status deleteMetadataReport(String id) throws RmesException;
 }
