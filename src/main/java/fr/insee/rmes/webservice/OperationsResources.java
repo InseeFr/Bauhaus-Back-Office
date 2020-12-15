@@ -633,7 +633,7 @@ public class OperationsResources {
 	@GET
 	@Path("/metadataReport/default")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata rpoert",
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata report",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getMetadataReportDefaultValue() throws IOException {
