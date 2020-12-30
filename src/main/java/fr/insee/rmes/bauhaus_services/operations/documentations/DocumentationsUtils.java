@@ -526,6 +526,10 @@ public class DocumentationsUtils extends RdfService{
 		}
 		return stamps;
 	}
+	
+	public File exportTestMetadataReport() throws IOException, RmesException {
+		return docExport.testExport();
+	}
 
 	public File exportMetadataReport(String id) throws IOException, RmesException {
 
