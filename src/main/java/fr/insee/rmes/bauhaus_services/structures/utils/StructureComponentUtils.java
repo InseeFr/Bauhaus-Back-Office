@@ -7,6 +7,7 @@ import javax.ws.rs.BadRequestException;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,11 +119,16 @@ public class StructureComponentUtils extends RdfService {
 
     private void createRDFForComponent(MutualizedComponent component, ValidationStatus status) throws RmesException {
 
-        Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
-        if(componentsWithSameCodelistAndConcept){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
-                    "A component with the same code list and concept already exists", "");
+
+        if(StringUtils.isNotEmpty(component.getConcept()) && StringUtils.isNotEmpty(component.getCodeList())){
+            Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
+
+            if(componentsWithSameCodelistAndConcept){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
+                        "A component with the same code list and concept already exists", "");
+            }
         }
+
 
         String type = component.getType();
 

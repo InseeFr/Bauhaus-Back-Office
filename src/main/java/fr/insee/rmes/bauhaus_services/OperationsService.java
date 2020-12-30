@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -144,8 +145,7 @@ public interface OperationsService {
 
 	String getMSDJson() throws RmesException;
 
+  String getMetadataReportDefaultValue() throws IOException;
+
 	Status deleteMetadataReport(String id) throws RmesException;
-
-
-
 }
