@@ -19,47 +19,25 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<!-- <xsl:template match="html:html"> -->
-	<!-- <xsl:apply-templates select="node()" /> -->
-	<!-- </xsl:template> -->
 
 	<xsl:template match="RichText">
-		<text:p text:style-name="HeaderFr">
-			<xsl:value-of select="'coucou richtext in text:p'" />
-		</text:p>
-		coucou richtext
-		<xsl:value-of select="node()" disable-output-escaping="yes" />
+		<!-- <text:p text:style-name="Text_20_body"> -->
+		<!-- <xsl:value-of select="'coucou richtext'" /> -->
+		<!-- </text:p> -->
+<!-- 		<xsl:value-of select="node()" disable-output-escaping="yes" /> -->
 		<xsl:apply-templates select="node()" />
-	</xsl:template>
-
-	<xsl:template match="html">
-		coucou html
-		<xsl:apply-templates select="node()" />
-	</xsl:template>
-
-	<xsl:template match="html:p">
-		<text:p>
-			coucou html:p
-			<xsl:attribute name="text:style-name">
-                <xsl:choose>
-                    <xsl:when test="preceding-sibling::html:p">
-                        <xsl:value-of select="Text_20_body" />
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:value-of select="P1" />
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:attribute>
-			<xsl:apply-templates select="node()" />
-		</text:p>
+<!-- 		<xsl:value-of select="node()"/> -->
 	</xsl:template>
 
 	<xsl:template match="p">
 		<text:p>
-			coucou p
+			<text:p text:style-name="Text_20_body">
+				<xsl:value-of select="'coucou richtext'" />
+			</text:p>
+
 			<xsl:attribute name="text:style-name">
                 <xsl:choose>
-                    <xsl:when test="preceding-sibling::html:p">
+                    <xsl:when test="preceding-sibling::p">
                         <xsl:value-of select="Text_20_body" />
                     </xsl:when>
                     <xsl:otherwise>
@@ -71,10 +49,26 @@
 		</text:p>
 	</xsl:template>
 
-	<!-- <xsl:template match="text()"> -->
-	<!-- coucou text -->
-	<!-- <xsl:value-of select="replace(.,'''','&amp;apos;')" /> -->
-	<!-- </xsl:template> -->
+	<xsl:template match="strong">
+		<text:text>
+			<xsl:attribute name="text:b">
+            </xsl:attribute>
+			<xsl:apply-templates select="node()" />
+		</text:text>
+	</xsl:template>
+
+	<xsl:template match="em">
+		<text:text>
+			<xsl:attribute name="text:i">
+            </xsl:attribute>
+			<xsl:apply-templates select="node()" />
+		</text:text>
+	</xsl:template>
+
+
+	<xsl:template match="text()">
+		<xsl:value-of select="replace(.,'''','&amp;apos;')" />
+	</xsl:template>
 
 
 </xsl:stylesheet>

@@ -138,6 +138,8 @@ public interface OperationsService {
 	
 	Response exportMetadataReport(String id) throws RmesException;
 
+	Response exportTestMetadataReport() throws RmesException;
+	
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;

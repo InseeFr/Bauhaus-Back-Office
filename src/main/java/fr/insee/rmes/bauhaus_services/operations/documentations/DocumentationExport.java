@@ -89,13 +89,14 @@ public class DocumentationExport {
 		return output;	
 	}
 
-	public File convertXhtmlToFodt(InputStream inputFile) throws IOException {
+	public File convertRichText(InputStream inputFile) throws IOException {
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
 		output.deleteOnExit();
 		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertXhtmlToFodt.xsl");
+		//InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertXhtmlToFodt.xsl");
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
 
 		PrintStream printStream= null;
 
@@ -115,6 +116,36 @@ public class DocumentationExport {
 		}
 		return output;
 	}
+	
+	public File testExport() throws IOException {
+		
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		output.deleteOnExit();
+		
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
+
+		PrintStream printStream= null;
+
+		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
+		try{
+			printStream = new PrintStream(osOutputFile);
+			StreamSource xsrc = new StreamSource(xslFile);
+			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
+		} catch (TransformerException e) {
+			logger.error(e.getMessage());
+		} finally {
+			inputFile.close();
+			osOutputFile.close();
+			printStream.close();
+		}
+		return output;
+	}
+		
+	
 	
 	public File export(InputStream inputFile, 
 			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
@@ -173,8 +204,8 @@ public class DocumentationExport {
 			printStream.close();
 		}
 		logger.debug("End To export documentation");
-		//return output;
-		return convertXhtmlToFodt(new FileInputStream(outputIntermediate));
+//		return convertRichText(new FileInputStream(outputIntermediate));
+		return(outputIntermediate);
 	}
 
 }

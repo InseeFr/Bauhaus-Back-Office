@@ -780,7 +780,16 @@ public class OperationsResources {
 		return operationsService.exportMetadataReport(id);	
 	}
 
+	@GET
+	@Path("/metadataReport/testExport")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	public Response getTestSimsExport() throws RmesException {
+		return operationsService.exportTestMetadataReport();	
+	}
 
+	
+	
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);
 		return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
