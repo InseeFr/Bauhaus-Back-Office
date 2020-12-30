@@ -1,0 +1,17 @@
+{
+  "S.10.6": {
+    "documentsLg1": [
+      {
+        "labelLg1": "Immatriculations de voitures particuli��res neuves",
+        "lang": "fr",
+        "uri": "http://id.insee.fr/documents/document/76",
+        "url": "https://www.insee.fr/fr/metadonnees/source/fichier/Methodologie_immatriculations_voitures_neuves.pdf"
+      }
+    ],
+    "documentsLg2": [],
+    "labelLg2": "INSEE revises the values ​​of its statistics so that they reflect reality as accurately as possible and to ensure their relevance and reliability. It uses well-established, standardized and planned procedures according to international standards. It announces revisions simultaneously with their diffusion or in advance according to a protocol adapted to the source of the revisions, their size and the sensitivity of the statistics published. All the explanations necessary to understand these revisions accompany the diffusion of the relevant statistical sources on the Insee.fr site.",
+    "rangeType": "RICH_TEXT",
+    "labelLg1": "L’Insee révise les valeurs de ses statistiques pour qu’elles reflètent la réalité de la manière la plus exacte possible et pour garantir leur pertinence et leur fiabilité. Il a recours à des procédures bien établies, normalisées et planifiées suivant les standards internationaux. Il annonce les révisions simultanément à leur diffusion ou à l’avance selon un protocole adapté à la source des révisions, à leur ampleur et à la sensibilité des statistiques publiées. Toutes les explications nécessaires à la compréhension de ces révisions accompagnent la diffusion des sources statistiques concernées sur le site Insee.fr.",
+    "idAttribute": "S.10.6"
+  }
+}
