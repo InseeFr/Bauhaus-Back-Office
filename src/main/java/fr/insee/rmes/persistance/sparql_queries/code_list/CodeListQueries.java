@@ -79,4 +79,12 @@ public class CodeListQueries {
 				+ " }}";
 	}
 
+	public static String geCodesListByIRI(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODE_LIST", id);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getCodeListByIRI.ftlh", params);
+	}
 }

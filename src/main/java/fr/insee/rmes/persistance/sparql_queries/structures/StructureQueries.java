@@ -32,13 +32,14 @@ public class StructureQueries {
 		return buildRequest("getStructure.ftlh", params);
 	}
 
-	public static String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri) throws RmesException {
+	public static String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri, String type) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
 		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
 		params.put("CONCEPT_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("TYPE", type);
 		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
 	

@@ -1,4 +1,4 @@
-SELECT DISTINCT ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?order ?created ?modified ?required
+SELECT DISTINCT ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?order ?created ?modified ?required ?creator ?contributor ?disseminationStatus
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
@@ -35,6 +35,18 @@ WHERE {
     } .
     OPTIONAL {
         ?component dcterms:modified ?modified
+    } .
+
+    OPTIONAL {
+        ?component dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?component dcterms:contributor ?contributor .
+    } .
+
+    OPTIONAL {
+        ?component insee:disseminationStatus ?disseminationStatus .
     } .
 
     OPTIONAL {
