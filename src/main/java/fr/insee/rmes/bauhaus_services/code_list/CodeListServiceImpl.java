@@ -77,5 +77,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists()).toString();
 	}
 
+	@Override
+	public String geCodesListByIRI(String IRI) throws RmesException {
+		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(IRI)).toString();
+	}
+
 
 }

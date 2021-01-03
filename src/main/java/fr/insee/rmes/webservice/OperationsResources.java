@@ -744,9 +744,7 @@ public class OperationsResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
 	public Response deleteMetadataReportById(
-			@PathParam(Constants.ID) String id, 
-			@RequestBody(description = "Report to delete", required = true,
-			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+			@PathParam(Constants.ID) String id) {
 		Status result=Status.NO_CONTENT;
 		try {
 			 result = operationsService.deleteMetadataReport(id);
