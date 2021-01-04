@@ -8,6 +8,7 @@ import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -132,7 +133,7 @@ public class StructureUtils extends RdfService {
         validateStructure(structure);
         structure.setCreated(DateUtils.getCurrentDate());
         structure.setUpdated(DateUtils.getCurrentDate());
-
+        structure.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         String id = generateNextId();
         structure.setId(id);
         createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
@@ -213,12 +214,12 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DCTERMS.CONTRIBUTOR, structure.getContributor(), model, graph);
         RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
-        createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
+        createRdfComponentSpecifications(structure, structureIri, structure.getComponentDefinitions(), model, graph);
 
         repoGestion.loadSimpleObject(structureIri, model, null);
     }
 
-    public void createRdfComponentSpecifications(IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
+    public void createRdfComponentSpecifications(Structure structure, IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
         int nextID = getNextComponentSpecificationID();
         for (int i = 0; i < componentList.size(); i++) {
             ComponentDefinition componentDefinition = componentList.get(i);

@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -107,8 +108,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		JSONArray seriesArray = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery());
+		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
 	@Override

@@ -1,5 +1,9 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -20,7 +24,10 @@ public class StructureImpl  extends RdfService implements StructureService {
 	
 	@Autowired
 	StructureUtils structureUtils;
-	
+
+	@Autowired
+	CodeListService codeListService;
+
 	@Override
 	public String getStructures() throws RmesException {
 		logger.info("Starting to get structures");
@@ -41,10 +48,76 @@ public class StructureImpl  extends RdfService implements StructureService {
 		return structureUtils.formatStructure(structure, id).toString();
 	}
 
+	private void removeEmptyAttachment(JSONObject cd){
+		if(((JSONArray) cd.get("attachment")).length() == 0){
+			cd.remove("attachment");
+		}
+	}
 	@Override
 	public String getStructureByIdWithDetails(String id) throws RmesException {
 		logger.info("Starting to get all details of a structure");
-		return this.getStructureById(id);
+		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
+		JSONObject structureWithComponentSpecifications = structureUtils.formatStructure(structure, id);
+		JSONArray componentDefinitions = (JSONArray) structureWithComponentSpecifications.get("componentDefinitions");
+		componentDefinitions.forEach(o -> {
+			JSONObject cd = (JSONObject) o;
+			removeEmptyAttachment((JSONObject) o);
+			cd.remove("id");
+			cd.remove("created");
+			cd.remove("modified");
+
+			JSONObject component = (JSONObject) cd.get("component");
+
+			// We first have to rename the type property
+			String type = (String) component.get("type");
+			if(type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())){
+				component.put("type", "attribute");
+			}
+			if(type.equalsIgnoreCase(QB.MEASURE_PROPERTY.toString())){
+				component.put("type", "measure");
+			}
+			if(type.equalsIgnoreCase(QB.DIMENSION_PROPERTY.toString())){
+				component.put("type", "dimension");
+			}
+
+			// If the codelist is defined, we have to remove the range property and fetch the codes list
+			if(!component.isNull("codeList")){
+				component.remove("range");
+
+				JSONObject codeList = new JSONObject();
+				codeList.put("id", component.getString("codeList"));
+				try {
+					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString("codeList"))));
+				} catch (RmesException e) {
+					logger.error("Cannot fetch code list of the structure " + id);
+					logger.error(e);
+				}
+
+				component.put("codeList", codeList);
+			}
+
+			if(!component.isNull("concept")){
+				try {
+					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(component.getString("concept")));
+					JSONObject structureConcept = new JSONObject();
+					structureConcept.put("id", component.getString("concept"));
+					if(!concept.isNull("prefLabelLg1")){
+						structureConcept.put("labelLg1", concept.getString("prefLabelLg1"));
+					}
+					if(!concept.isNull("prefLabelLg2")){
+						structureConcept.put("labelLg2", concept.getString("prefLabelLg2"));
+					}
+					component.put("concept", structureConcept);
+				} catch (RmesException e) {
+					logger.error("Cannot fetch concept of the structure " + id);
+					logger.error(e);
+				}
+
+			}
+
+		});
+
+		return structureWithComponentSpecifications.toString();
 	}
 
 	/**
