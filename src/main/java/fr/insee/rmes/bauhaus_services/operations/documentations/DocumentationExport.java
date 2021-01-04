@@ -164,12 +164,12 @@ public class DocumentationExport {
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
 		output.deleteOnExit();
 
-		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
-		outputIntermediate.deleteOnExit();
+//		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
+//		outputIntermediate.deleteOnExit();
 		
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-	//	OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+	//	OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		PrintStream printStream= null;
 
@@ -205,7 +205,7 @@ public class DocumentationExport {
 		}
 		logger.debug("End To export documentation");
 //		return convertRichText(new FileInputStream(outputIntermediate));
-		return(outputIntermediate);
+		return(output);
 	}
 
 }
