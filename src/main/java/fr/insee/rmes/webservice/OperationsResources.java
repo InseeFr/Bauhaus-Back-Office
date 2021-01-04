@@ -738,7 +738,7 @@ public class OperationsResources {
 	 * @param id
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR, Roles.SPRING_CNIS })
+	@Secured({ Roles.SPRING_ADMIN })
 	@DELETE
 	@Path("/metadataReport/delete/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
