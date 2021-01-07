@@ -162,8 +162,10 @@ public class DocumentationExport {
 		String msdPath = msdFile.getAbsolutePath();
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
+	
 //		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
 //		outputIntermediate.deleteOnExit();
 		
