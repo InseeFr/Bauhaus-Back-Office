@@ -21,7 +21,7 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?structure dcterms:contributor ?contributor .
+        ?structure dc:contributor ?contributor .
     } .
 
     OPTIONAL {

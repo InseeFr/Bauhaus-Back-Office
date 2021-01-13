@@ -113,6 +113,15 @@ public class ConceptsQueries {
 				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";
 	}
+
+	public static String conceptQueryForDetailStructure(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		params.put("ID", id);
+		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
+	}
 	
 	public static String altLabel(String id, String lang) {
 		return "SELECT ?altLabel \n"

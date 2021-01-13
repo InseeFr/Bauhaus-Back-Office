@@ -98,16 +98,8 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 			if(!component.isNull("concept")){
 				try {
-					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(component.getString("concept")));
-					JSONObject structureConcept = new JSONObject();
-					structureConcept.put("id", component.getString("concept"));
-					if(!concept.isNull("prefLabelLg1")){
-						structureConcept.put("labelLg1", concept.getString("prefLabelLg1"));
-					}
-					if(!concept.isNull("prefLabelLg2")){
-						structureConcept.put("labelLg2", concept.getString("prefLabelLg2"));
-					}
-					component.put("concept", structureConcept);
+					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString("concept")));
+					component.put("concept", concept);
 				} catch (RmesException e) {
 					logger.error("Cannot fetch concept of the structure " + id);
 					logger.error(e);

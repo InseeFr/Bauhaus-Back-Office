@@ -133,7 +133,7 @@ public class StructureUtils extends RdfService {
         validateStructure(structure);
         structure.setCreated(DateUtils.getCurrentDate());
         structure.setUpdated(DateUtils.getCurrentDate());
-        structure.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
+        //structure.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         String id = generateNextId();
         structure.setId(id);
         createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
@@ -211,7 +211,7 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
-        RdfUtils.addTripleString(structureIri, DCTERMS.CONTRIBUTOR, structure.getContributor(), model, graph);
+        RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);
         RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         createRdfComponentSpecifications(structure, structureIri, structure.getComponentDefinitions(), model, graph);
