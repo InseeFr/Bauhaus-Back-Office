@@ -157,7 +157,7 @@ public class StructureComponentUtils extends RdfService {
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
         model.add(componentURI, DCTERMS.MODIFIED, RdfUtils.setLiteralDateTime(component.getUpdated()), graph);
         RdfUtils.addTripleString(componentURI, DC.CREATOR, component.getCreator(), model, graph);
-        RdfUtils.addTripleString(componentURI, DCTERMS.CONTRIBUTOR, component.getContributor(), model, graph);
+        RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
         RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);

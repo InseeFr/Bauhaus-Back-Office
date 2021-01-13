@@ -42,7 +42,7 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?component dcterms:contributor ?contributor .
+        ?component dc:contributor ?contributor .
     } .
 
     OPTIONAL {
