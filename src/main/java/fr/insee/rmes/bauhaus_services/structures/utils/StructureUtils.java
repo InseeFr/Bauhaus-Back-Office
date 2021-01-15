@@ -3,10 +3,14 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -192,7 +196,25 @@ public class StructureUtils extends RdfService {
         createRdfStructure(structure, structureId, structureIri, graph, status);
     }
 
+    private void checkUnicityForStructure(Structure structure) throws RmesException {
+        List<ComponentDefinition> componentsWithoutId = structure.getComponentDefinitions().stream().filter((ComponentDefinition cd) -> {
+            return cd.getComponent().getId() == null;
+        }).collect(Collectors.toList());
+
+        if(componentsWithoutId.size() == 0){
+            String[] ids = structure.getComponentDefinitions().stream().map(cd -> {
+                return cd.getComponent().getId();
+            }).map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
+            Boolean structureWithSameComponents = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
+            if(structureWithSameComponents){
+                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
+                        "A structure with the same components already exists", "");
+            }
+        }
+    }
     public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status) throws RmesException {
+
+
         Model model = new LinkedHashModel();
 
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
@@ -327,7 +349,8 @@ public class StructureUtils extends RdfService {
         return RdfUtils.structureComponentAttributeIRI(id);
     }
 
-    private void validateStructure(Structure structure) {
+    private void validateStructure(Structure structure) throws RmesException {
+        checkUnicityForStructure(structure);
         if (structure.getId() == null) {
             throw new BadRequestException("The property identifiant is required");
         }
