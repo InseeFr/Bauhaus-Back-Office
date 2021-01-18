@@ -199,8 +199,6 @@ public class StructureResources {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public Response deleteComponentById(@PathParam(Constants.ID) String id) {
-        String jsonResultat;
-
         try {
             structureComponentService.deleteComponent(id);
         } catch (RmesException e) {

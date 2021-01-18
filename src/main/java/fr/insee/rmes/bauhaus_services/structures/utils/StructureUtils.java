@@ -4,12 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
-import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,9 +30,11 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
