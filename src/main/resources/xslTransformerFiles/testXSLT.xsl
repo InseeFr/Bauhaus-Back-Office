@@ -572,9 +572,10 @@
 						<xsl:value-of select="$fileSeries/Series/historyNoteLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Type d'"></xsl:value-of>
-						&apos;
-						<xsl:value-of select="'opération'" />
+<!-- 						<xsl:value-of select="'Type d'"></xsl:value-of> -->
+<!-- 						&apos; -->
+<!-- 						<xsl:value-of select="'opération'" /> -->
+						<xsl:value-of select="'Type d''opération'" />
 					</text:p>
 					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
