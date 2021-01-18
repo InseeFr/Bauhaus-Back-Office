@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.insee.rmes.model.structures.Structure;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -47,6 +48,7 @@ class StructureUtilsTest {
 
         Model model = new LinkedHashModel();
         IRI structureIRI = SimpleValueFactory.getInstance().createIRI("http://structure");
+        Structure structure = new Structure();
 
         List<ComponentDefinition> components = new ArrayList<>();
 
@@ -65,7 +67,7 @@ class StructureUtilsTest {
 
         doNothing().when(structureUtils).createRdfComponentSpecification(any(), any(), any(), any());
 
-        structureUtils.createRdfComponentSpecifications(structureIRI, components, model, graph);
+        structureUtils.createRdfComponentSpecifications(structure, structureIRI, components, model, graph);
 
         verify(structureUtils, times(2)).createRdfComponentSpecification(any(), any(), any(), any());
     }

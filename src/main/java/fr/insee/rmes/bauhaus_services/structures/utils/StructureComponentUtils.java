@@ -7,6 +7,7 @@ import javax.ws.rs.BadRequestException;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -111,7 +112,7 @@ public class StructureComponentUtils extends RdfService {
         String currentDate = DateUtils.getCurrentDate();
         component.setCreated(currentDate);
         component.setUpdated(currentDate);
-
+        component.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
         return id;
     }
@@ -121,7 +122,7 @@ public class StructureComponentUtils extends RdfService {
 
 
         if(StringUtils.isNotEmpty(component.getConcept()) && StringUtils.isNotEmpty(component.getCodeList())){
-            Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList()));
+            Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
 
             if(componentsWithSameCodelistAndConcept){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
@@ -129,9 +130,7 @@ public class StructureComponentUtils extends RdfService {
             }
         }
 
-
         String type = component.getType();
-
         if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             createRDFForComponent(component, QB.ATTRIBUTE_PROPERTY, RdfUtils.structureComponentAttributeIRI(component.getId()), status);
         } else if (type.equals(QB.MEASURE_PROPERTY.toString())) {
@@ -158,7 +157,7 @@ public class StructureComponentUtils extends RdfService {
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
         model.add(componentURI, DCTERMS.MODIFIED, RdfUtils.setLiteralDateTime(component.getUpdated()), graph);
         RdfUtils.addTripleString(componentURI, DC.CREATOR, component.getCreator(), model, graph);
-        RdfUtils.addTripleString(componentURI, DCTERMS.CONTRIBUTOR, component.getContributor(), model, graph);
+        RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
         RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
