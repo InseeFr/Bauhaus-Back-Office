@@ -112,6 +112,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
+	public String getSeriesWithStamp(String stamp) throws RmesException  {
+		logger.info("Starting to get series list with sims");
+		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+	
+	@Override
 	public Series getSeriesByID(String id) throws RmesException {
 		return seriesUtils.getSeriesById(id);
 	}
@@ -437,5 +444,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
 
+	@Override
+	public String getSeriesForStamp(String stamp) throws RmesException {
+		return seriesUtils.getSeriesForStamp(stamp);
+	}
+	
+	@Override
+	public String getSeriesIdsForStamp(String stamp) throws RmesException {
+		return seriesUtils.getSeriesIdsForStamp(stamp);
+	}
 
 }

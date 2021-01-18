@@ -564,7 +564,7 @@ public class OperationsResources {
 			) {
 		MSD msd ;
 		String jsonResultat = null ;
-		
+
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
 			try {
 				msd = operationsService.getMSD();
@@ -573,7 +573,7 @@ public class OperationsResources {
 			}
 			return Response.ok(XMLUtils.produceResponse(msd, header)).build();
 		}
-		
+
 		else {
 			try {
 				jsonResultat = operationsService.getMSDJson();
@@ -583,7 +583,7 @@ public class OperationsResources {
 			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 		}
 	}
-	
+
 	@GET
 	@Path("/metadataAttribute/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -635,7 +635,7 @@ public class OperationsResources {
 	@Path("/metadataReport/default")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata report",
-			responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
+	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getMetadataReportDefaultValue() throws IOException {
 		return Response.status(HttpStatus.SC_OK).entity(operationsService.getMetadataReportDefaultValue()).build();
@@ -675,7 +675,7 @@ public class OperationsResources {
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
-	))})
+			))})
 	public Response getMetadataReportOwner(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
@@ -749,15 +749,15 @@ public class OperationsResources {
 			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		Status result=Status.NO_CONTENT;
 		try {
-			 result = operationsService.deleteMetadataReport(id);
+			result = operationsService.deleteMetadataReport(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(result).build();
 	}
 
-	
-	
+
+
 	/**
 	 * PUBLISH
 	 * @param id
@@ -779,6 +779,46 @@ public class OperationsResources {
 	}
 
 	@GET
+	@Path("/series/seriesForStamp/{stamp}")	
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesForStamp", summary = "Series with given stamp")
+	public Response getSeriesForStamp(@Parameter(
+			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
+			required = true,
+			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
+			) throws RmesException {
+		String jsonResultat = operationsService.getSeriesForStamp(stamp);	
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/series/seriesIdsForStamp/{stamp}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesIdsForStamp", summary = "Ids of Series with given stamp")
+	public Response getSeriesIdsForStamp(@Parameter(
+			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
+			required = true,
+			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
+			) throws RmesException {
+		String jsonResultat = operationsService.getSeriesIdsForStamp(stamp);
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	@GET
+	@Path("/series/seriesWithStamp/{stamp}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesIdsForStamp", summary = "Series with given stamp as creator")
+	public Response getSeriesWithStamp(@Parameter(
+			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
+			required = true,
+			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
+			) throws RmesException {
+		String jsonResultat = operationsService.getSeriesWithStamp(stamp);	
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+
+	@GET
 	@Path("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
@@ -798,8 +838,9 @@ public class OperationsResources {
 		return operationsService.exportTestMetadataReport();	
 	}
 
-	
-	
+
+
+
 	private Response returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);
 		return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
