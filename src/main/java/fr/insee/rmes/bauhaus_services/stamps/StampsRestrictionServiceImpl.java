@@ -190,12 +190,9 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return true;
 	}
 
-	private boolean isSeriesManager(IRI uri) throws RmesException {
+	public boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
-		StringBuilder sb = new StringBuilder();
-		sb.append("<" + uri.toString() + "> ");
-		String uriAsString = sb.toString();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uri.toString()));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
 			if (!managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
@@ -332,7 +329,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	@Override
 	public boolean canModifySeries(IRI uri) throws RmesException {
 		User user = getUser();
-		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uri) && isSeriesContributor(user)));
+		return ((isSeriesManager(uri) && isSeriesContributor(user)) || isAdmin(user) || isCnis(user) );
 	}
 
 	@Override

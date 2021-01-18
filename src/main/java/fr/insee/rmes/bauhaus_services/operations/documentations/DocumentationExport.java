@@ -162,14 +162,16 @@ public class DocumentationExport {
 		String msdPath = msdFile.getAbsolutePath();
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
-		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
-		outputIntermediate.deleteOnExit();
+	
+//		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
+//		outputIntermediate.deleteOnExit();
 		
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-	//	OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+	//	OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		PrintStream printStream= null;
 
@@ -205,7 +207,7 @@ public class DocumentationExport {
 		}
 		logger.debug("End To export documentation");
 //		return convertRichText(new FileInputStream(outputIntermediate));
-		return(outputIntermediate);
+		return(output);
 	}
 
 }
