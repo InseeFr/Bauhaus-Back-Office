@@ -48,7 +48,7 @@ public class DocumentationExport {
 	public File export(InputStream inputFile) throws Exception {
 		logger.debug("Begin To export documentation");
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 
 		output.deleteOnExit();
@@ -91,7 +91,7 @@ public class DocumentationExport {
 
 	public File convertRichText(InputStream inputFile) throws IOException {
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
@@ -119,7 +119,7 @@ public class DocumentationExport {
 	
 	public File testExport() throws IOException {
 		
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
@@ -161,7 +161,7 @@ public class DocumentationExport {
 
 		String msdPath = msdFile.getAbsolutePath();
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
