@@ -1,6 +1,12 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 
@@ -8,17 +14,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import fr.insee.rmes.bauhaus_services.Constants;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.Resource;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
@@ -46,7 +51,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.indicators.Indicators
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
-import org.springframework.util.StreamUtils;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -112,6 +116,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
+	@Override
+	public String getSeriesWithStamp(String stamp) throws RmesException  {
+		logger.info("Starting to get series list with sims");
+		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+	
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
 		return seriesUtils.getSeriesById(id);
@@ -423,6 +434,29 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
 
+	@Override
+	public Response exportTestMetadataReport() throws RmesException  {
+		File output;
+		InputStream is;
+		try {
+			output = documentationsUtils.exportTestMetadataReport();
+			is = new FileInputStream(output);
+		} catch (Exception e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+		}
+		String fileName = output.getName();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
+	}
 
+	@Override
+	public String getSeriesForStamp(String stamp) throws RmesException {
+		return seriesUtils.getSeriesForStamp(stamp);
+	}
+	
+	@Override
+	public String getSeriesIdsForStamp(String stamp) throws RmesException {
+		return seriesUtils.getSeriesIdsForStamp(stamp);
+	}
 
 }

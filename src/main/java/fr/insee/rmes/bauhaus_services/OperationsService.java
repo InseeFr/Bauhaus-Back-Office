@@ -47,13 +47,18 @@ public interface OperationsService {
 	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
 
 	String getSeriesWithSims() throws RmesException;
+
+	String getSeriesWithStamp(String stamp) throws RmesException;
 	
 	void setSeries(String id, String body) throws RmesException;
 
 	String createSeries(String body) throws RmesException;
 
 	String setSeriesValidation(String body) throws RmesException;
+
+	String getSeriesForStamp(String stamp) throws RmesException;
 	
+	String getSeriesIdsForStamp(String stamp) throws RmesException;
 	
 	/******************************************************************************************
 	 * OPERATIONS
@@ -139,6 +144,8 @@ public interface OperationsService {
 	
 	Response exportMetadataReport(String id) throws RmesException;
 
+	Response exportTestMetadataReport() throws RmesException;
+	
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;
@@ -146,4 +153,5 @@ public interface OperationsService {
   String getMetadataReportDefaultValue() throws IOException;
 
 	Status deleteMetadataReport(String id) throws RmesException;
+
 }

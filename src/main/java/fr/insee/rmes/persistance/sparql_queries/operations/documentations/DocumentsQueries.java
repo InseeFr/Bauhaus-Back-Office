@@ -43,7 +43,6 @@ public class DocumentsQueries {
 	}
 
 	public static String getSimsByDocument(String id) throws RmesException {
-		Map params = new HashMap<>();
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 		params.put("ID", Config.DOCUMENTS_BASE_URI + "/" + id);

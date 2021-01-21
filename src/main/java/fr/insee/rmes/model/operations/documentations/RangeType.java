@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
@@ -15,10 +15,10 @@ import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 public enum RangeType {
 	
-	STRING(XMLSchema.STRING, "TEXT"),
+	STRING(XSD.STRING, "TEXT"),
 	RICHTEXT(DCMITYPE.TEXT, "RICH_TEXT"),
 	ATTRIBUTE(SDMX_MM.REPORTED_ATTRIBUTE, "REPORTED_ATTRIBUTE"),
-	DATE(XMLSchema.DATE, "DATE"),
+	DATE(XSD.DATE, "DATE"),
 	ORGANIZATION(ORG.ORGANIZATION,"ORGANIZATION"),
 	CODELIST(null,"CODE_LIST"),
 	GEOGRAPHY(GEO.FEATURE,"GEOGRAPHY"),

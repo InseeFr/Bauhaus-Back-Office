@@ -22,6 +22,7 @@ public class SeriesQueries {
 	
 	private static final String ID_SERIES = "ID_SERIES";
 	private static final String PRODUCTS_GRAPH = "PRODUCTS_GRAPH";
+	private static final String STAMP = "STAMP";
 	private static final String URI_SERIES = "URI_SERIES";
 	private static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
@@ -162,6 +163,18 @@ public class SeriesQueries {
 	}
 	
 	/**
+	 * @param stamp
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String getSeriesIdsForStamp(String stamp) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(STAMP, stamp);
+		return buildSeriesRequest("getSeriesByCreatorStampQuery.ftlh", params);	
+	}
+	
+	
+	/**
 	 * @param idSeries
 	 * @return String
 	 * @throws RmesException
@@ -223,6 +236,18 @@ public class SeriesQueries {
 	}
 	
 	/**
+	 * @param stamp
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String seriesWithStampQuery(String stamp) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(STAMP, stamp);
+		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);	
+	}
+	
+	
+	/**
 	 * @return String
 	 * @throws RmesException
 	 */	
@@ -231,4 +256,6 @@ public class SeriesQueries {
 		params.put("withSims", "false");
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
+
+
 }
