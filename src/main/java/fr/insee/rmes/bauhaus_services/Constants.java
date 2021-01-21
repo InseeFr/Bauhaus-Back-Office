@@ -11,6 +11,7 @@ public class Constants {
 	public static final String CODELIST = "codeList";
 	public static final String CODE_LIST_FREQ = "CL_FREQ";
 	public static final String CODE_LIST_SOURCE_CATEGORY = "CL_SOURCE_CATEGORY";
+	public static final String CONCEPT = "concept";
 	public static final String CREATOR = "creator";
 	public static final String CREATORS = "creators";
 	public static final String CONTRIBUTOR = "contributor";
@@ -29,6 +30,7 @@ public class Constants {
 	
 	/*F*/
 	public static final String FAMILY = "family";
+	public static final String FLAT_ODT = "flatODT";
 	
 	/*H*/
 	public static final String HAS_DOC_LG1 = "hasDocLg1";

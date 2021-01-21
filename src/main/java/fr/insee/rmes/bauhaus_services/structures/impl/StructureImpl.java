@@ -1,5 +1,11 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -80,25 +86,25 @@ public class StructureImpl  extends RdfService implements StructureService {
 			}
 
 			// If the codelist is defined, we have to remove the range property and fetch the codes list
-			if(!component.isNull("codeList")){
+			if(!component.isNull(Constants.CODELIST)){
 				component.remove("range");
 
 				JSONObject codeList = new JSONObject();
-				codeList.put("id", component.getString("codeList"));
+				codeList.put("id", component.getString(Constants.CODELIST));
 				try {
-					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString("codeList"))));
+					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString(Constants.CODELIST))));
 				} catch (RmesException e) {
 					logger.error("Cannot fetch code list of the structure " + id);
 					logger.error(e);
 				}
 
-				component.put("codeList", codeList);
+				component.put(Constants.CODELIST, codeList);
 			}
 
-			if(!component.isNull("concept")){
+			if(!component.isNull(Constants.CONCEPT)){
 				try {
-					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString("concept")));
-					component.put("concept", concept);
+					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
+					component.put(Constants.CONCEPT, concept);
 				} catch (RmesException e) {
 					logger.error("Cannot fetch concept of the structure " + id);
 					logger.error(e);

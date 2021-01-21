@@ -243,13 +243,13 @@ public class DocumentationsUtils extends RdfService{
 	private void addTarget(Documentation sims) throws RmesException {
 		if (sims.getIdTarget()==null) {
 			String[] target = getDocumentationTargetTypeAndId(sims.getId());
-
 			String targetType = target[0];
 			String targetId = target[1];
 			switch(targetType) {
-			case Constants.INDICATOR_UP : sims.setIdIndicator(targetId);
-			case Constants.OPERATION_UP : sims.setIdOperation(targetId);
-			case Constants.SERIES_UP : sims.setIdSeries(targetId);
+			case Constants.INDICATOR_UP : sims.setIdIndicator(targetId); break;
+			case Constants.OPERATION_UP : sims.setIdOperation(targetId); break;
+			case Constants.SERIES_UP : sims.setIdSeries(targetId); break;
+			default: break;
 			}
 		}
 	}
