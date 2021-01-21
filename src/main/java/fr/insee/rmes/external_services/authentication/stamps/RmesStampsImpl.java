@@ -33,35 +33,41 @@ public class RmesStampsImpl implements StampsService {
 	@Override
 	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<>();
-		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 		try {
-			// Connexion à la racine de l'annuaire
-			Hashtable<String, String> environment = new Hashtable<>();
-			environment.put(Context.INITIAL_CONTEXT_FACTORY,
-					"com.sun.jndi.ldap.LdapCtxFactory");
-			environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
-			environment.put(Context.SECURITY_AUTHENTICATION, "none");
-			DirContext context;
+			if(Config.LDAP_URL != null && !Config.LDAP_URL.isEmpty()) {
+				logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 
-			context = new InitialDirContext(environment);
+				// Connexion à la racine de l'annuaire
+				Hashtable<String, String> environment = new Hashtable<>();
+				environment.put(Context.INITIAL_CONTEXT_FACTORY,
+						"com.sun.jndi.ldap.LdapCtxFactory");
+				environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
+				environment.put(Context.SECURITY_AUTHENTICATION, "none");
+				DirContext context;
 
-			// Spécification des critères pour la recherche des unités
-			SearchControls controls = new SearchControls();
-			controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			controls.setReturningAttributes(new String[] { "ou", "description" });
-			String filter = "(objectClass=inseeUnite)";
+				context = new InitialDirContext(environment);
 
-			// Exécution de la recherche et parcours des résultats
-			NamingEnumeration<SearchResult> results = context.search(
-					"ou=Unités,o=insee,c=fr", filter, controls);
-			while (results.hasMore()) {
-				SearchResult entree = results.next();
-				String stamp = entree.getAttributes().get("ou").get()
-						.toString();
-				if(!stamp.equals("AUTRE")) {
-					stamps.add("\"" + stamp + "\"");
+				// Spécification des critères pour la recherche des unités
+				SearchControls controls = new SearchControls();
+				controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+				controls.setReturningAttributes(new String[] { "ou", "description" });
+				String filter = "(objectClass=inseeUnite)";
+
+				// Exécution de la recherche et parcours des résultats
+				NamingEnumeration<SearchResult> results = context.search(
+						"ou=Unités,o=insee,c=fr", filter, controls);
+				while (results.hasMore()) {
+					SearchResult entree = results.next();
+					String stamp = entree.getAttributes().get("ou").get()
+							.toString();
+					if(!stamp.equals("AUTRE")) {
+						stamps.add("\"" + stamp + "\"");
+					}
 				}
+
+				context.close();
 			}
+
 			// Add SSM Stamps
 			stamps.add("\"SSM-SSP\"");
 			stamps.add("\"SSM-DARES\"");
@@ -80,7 +86,6 @@ public class RmesStampsImpl implements StampsService {
 			stamps.add("\"SSM-SIES\"");
 			stamps.add("\"SSM-DEPS\"");
 			
-			context.close();
 			logger.info("Get stamps succeed");
 		} catch (NamingException e) {
 			logger.error("Get stamps failed");

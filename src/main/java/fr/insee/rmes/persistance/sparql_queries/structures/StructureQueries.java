@@ -42,6 +42,15 @@ public class StructureQueries {
 		params.put("TYPE", type);
 		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
+	public static String checkUnicityStructure(String structureId, String[] ids) throws RmesException {
+		HashMap<String, Object> params = initParams();
+
+		params.put("NB_COMPONENT", ids.length);
+		params.put("IDS", ids);
+		params.put("STRUCTURE_ID", structureId);
+
+		return buildRequest("checkUnicityStructure.ftlh", params);
+	}
 	
 	public static String getComponentsForSearch() throws RmesException {
 		HashMap<String, Object> params = initParams();
@@ -78,10 +87,6 @@ public class StructureQueries {
 		HashMap<String, Object> params = initParams();
 
 		return buildRequest("getLastIdStructure.ftlh", params);
-	}
-	public static String lastIdForComponentDefinition() throws RmesException {
-		HashMap<String, Object> params = initParams();
-		return buildRequest("getLastIdByComponentDefinition.ftlh", params);
 	}
 
 	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
