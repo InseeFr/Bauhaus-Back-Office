@@ -29,6 +29,8 @@ public interface StampsRestrictionsService {
 
 	boolean canValidateSeries(List<IRI> uris) throws RmesException;
 
+	boolean isSeriesManager(IRI uri) throws RmesException;
+
 	boolean canCreateConcept() throws RmesException;
 
 	boolean canModifyConcept(IRI uri) throws RmesException;
