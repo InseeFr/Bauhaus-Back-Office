@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +54,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -66,9 +64,7 @@ import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.XMLUtils;
 
 
@@ -247,13 +243,13 @@ public class DocumentationsUtils extends RdfService{
 	private void addTarget(Documentation sims) throws RmesException {
 		if (sims.getIdTarget()==null) {
 			String[] target = getDocumentationTargetTypeAndId(sims.getId());
-
 			String targetType = target[0];
 			String targetId = target[1];
 			switch(targetType) {
-			case Constants.INDICATOR_UP : sims.setIdIndicator(targetId);
-			case Constants.OPERATION_UP : sims.setIdOperation(targetId);
-			case Constants.SERIES_UP : sims.setIdSeries(targetId);
+			case Constants.INDICATOR_UP : sims.setIdIndicator(targetId); break;
+			case Constants.OPERATION_UP : sims.setIdOperation(targetId); break;
+			case Constants.SERIES_UP : sims.setIdSeries(targetId); break;
+			default: break;
 			}
 		}
 	}
@@ -525,6 +521,10 @@ public class DocumentationsUtils extends RdfService{
 			}
 		}
 		return stamps;
+	}
+	
+	public File exportTestMetadataReport() throws IOException, RmesException {
+		return docExport.testExport();
 	}
 
 	public File exportMetadataReport(String id) throws IOException, RmesException {

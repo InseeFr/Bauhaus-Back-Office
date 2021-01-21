@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +47,7 @@ public class DocumentationExport {
 	public File export(InputStream inputFile) throws Exception {
 		logger.debug("Begin To export documentation");
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 
 		output.deleteOnExit();
@@ -89,13 +88,14 @@ public class DocumentationExport {
 		return output;	
 	}
 
-	public File convertXhtmlToFodt(InputStream inputFile) throws IOException {
+	public File convertRichText(InputStream inputFile) throws IOException {
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertXhtmlToFodt.xsl");
+		//InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertXhtmlToFodt.xsl");
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
 
 		PrintStream printStream= null;
 
@@ -116,6 +116,36 @@ public class DocumentationExport {
 		return output;
 	}
 	
+	public File testExport() throws IOException {
+		
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+		output.deleteOnExit();
+		
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
+
+		PrintStream printStream= null;
+
+		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
+		try{
+			printStream = new PrintStream(osOutputFile);
+			StreamSource xsrc = new StreamSource(xslFile);
+			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
+		} catch (TransformerException e) {
+			logger.error(e.getMessage());
+		} finally {
+			inputFile.close();
+			osOutputFile.close();
+			printStream.close();
+		}
+		return output;
+	}
+		
+	
+	
 	public File export(InputStream inputFile, 
 			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
 			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
@@ -130,15 +160,17 @@ public class DocumentationExport {
 
 		String msdPath = msdFile.getAbsolutePath();
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("flatODT"));
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
-		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
-		outputIntermediate.deleteOnExit();
+	
+//		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
+//		outputIntermediate.deleteOnExit();
 		
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-	//	OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+	//	OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		PrintStream printStream= null;
 
@@ -173,8 +205,8 @@ public class DocumentationExport {
 			printStream.close();
 		}
 		logger.debug("End To export documentation");
-		//return output;
-		return convertXhtmlToFodt(new FileInputStream(outputIntermediate));
+//		return convertRichText(new FileInputStream(outputIntermediate));
+		return(output);
 	}
 
 }

@@ -14,7 +14,7 @@ public class RmesException extends Exception {
 	private static final long serialVersionUID = -7959158367542389147L;
 
 	private final int status;
-	private final JSONObject details;
+	private final transient JSONObject details;
 
 	/**
 	 *
@@ -25,7 +25,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, String message, String details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(MESSAGE, message);
 		this.details.put(DETAILS_STRING,	details);		
 	}
@@ -33,7 +33,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, String message, JSONArray details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(MESSAGE, message);
 		this.details.put(DETAILS_STRING, details.toString());
 	}
@@ -41,7 +41,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, int errorCode, String message, String details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(CODE, errorCode);
 		this.details.put(MESSAGE, message);
 		this.details.put(DETAILS_STRING, details);
@@ -50,7 +50,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, int errorCode, String details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(CODE, errorCode);
 		this.details.put(DETAILS_STRING, details);
 	}
@@ -58,7 +58,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, int errorCode, JSONArray details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(CODE, errorCode);
 		this.details.put(DETAILS_STRING, details.toString());
 	}
@@ -66,7 +66,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, int errorCode, String message, JSONArray details) {
 		super();
 		this.status = status;
-		this.details = new JSONObject();
+		this.details = new Details();
 		this.details.put(CODE, errorCode);
 		this.details.put(MESSAGE, message);
 		this.details.put(DETAILS_STRING, details.toString());
