@@ -38,7 +38,7 @@
 
 		<jersey.version>2.19</jersey.version>
 		<jackson.version>2.10.1</jackson.version>
-		<rdf4j.version>3.2.1</rdf4j.version>
+		<rdf4j.version>3.5.0</rdf4j.version>
 		<swagger.core.version>2.0.9</swagger.core.version>
 		<spring.version>4.3.25.RELEASE</spring.version>
 		<spring.security.version>4.2.17.RELEASE</spring.security.version>
