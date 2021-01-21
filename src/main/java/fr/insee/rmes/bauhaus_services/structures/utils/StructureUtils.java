@@ -3,16 +3,13 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -205,7 +202,7 @@ public class StructureUtils extends RdfService {
             String[] ids = structure.getComponentDefinitions().stream().map(cd -> {
                 return cd.getComponent().getId();
             }).map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
-            Boolean structureWithSameComponents = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
+            Boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
                 throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
                         "A structure with the same components already exists", "");
@@ -242,7 +239,6 @@ public class StructureUtils extends RdfService {
     }
 
     public void createRdfComponentSpecifications(Structure structure, IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
-        int nextID = getNextComponentSpecificationID();
         for (int i = 0; i < componentList.size(); i++) {
             ComponentDefinition componentDefinition = componentList.get(i);
             MutualizedComponent component = componentDefinition.getComponent();
@@ -260,7 +256,7 @@ public class StructureUtils extends RdfService {
             }
             componentDefinition.setModified(DateUtils.getCurrentDate());
             if (componentDefinition.getId() == null) {
-                componentDefinition.setId("cs" + (nextID + i) );
+                componentDefinition.setId("cs" + (1000 + i) );
             }
             createRdfComponentSpecification(structureIRI, model, componentDefinition, graph);
         }
@@ -316,21 +312,6 @@ public class StructureUtils extends RdfService {
         if (component.getType().equals(QB.MEASURE_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
-    }
-
-    public int getNextComponentSpecificationID() throws RmesException {
-
-        logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastIdForComponentDefinition());
-        logger.debug("JSON when generating the id of a component : {}", json);
-        if (json.length() == 0) {
-            return 1000;
-        }
-        String id = json.getString(Constants.ID);
-        if (id.equals(Constants.UNDEFINED)) {
-            return 1000;
-        }
-        return (Integer.parseInt(id) + 1);
     }
 
     public IRI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {

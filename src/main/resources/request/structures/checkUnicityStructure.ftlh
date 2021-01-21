@@ -12,7 +12,7 @@ FROM<${STRUCTURES_GRAPH}>
                 ?componentSpec (qb:attribute | qb:dimension | qb:measure) / dcterms:identifier ?id .
                 FILTER(
 <#list IDS as id>
-?id = "${id}" <#sep>
+?id = "${id}" <#sep> ||
 </#list>
  )
             }
