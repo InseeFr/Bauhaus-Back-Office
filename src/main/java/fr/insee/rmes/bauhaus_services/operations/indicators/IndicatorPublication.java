@@ -45,10 +45,20 @@ public class IndicatorPublication extends RdfService {
 					Statement st = statements.next();
 					// Triplets that don't get published
 					if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
-							|| st.getPredicate().toString().endsWith("contributor")) {
+							|| st.getPredicate().toString().endsWith("validationState")) {
 						// nothing, wouldn't copy this attr
+					}else if (st.getPredicate().toString().endsWith("wasGeneratedBy") ||
+							st.getPredicate().toString().endsWith("seeAlso") ||
+							st.getPredicate().toString().endsWith("replaces") ||
+							st.getPredicate().toString().endsWith("isReplacedBy")||
+							st.getPredicate().toString().endsWith("contributor") ||
+							st.getPredicate().toString().endsWith("publisher") ||
+							st.getPredicate().toString().endsWith("accrualPeriodicity")
+							) {
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
+								st.getPredicate(),
+								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
+								st.getContext());
 					}
 					// Literals
 					else {

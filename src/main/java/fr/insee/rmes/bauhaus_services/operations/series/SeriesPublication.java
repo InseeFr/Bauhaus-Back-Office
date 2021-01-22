@@ -68,16 +68,19 @@ public class SeriesPublication extends RdfService {
 					if (st.getPredicate().toString().endsWith("isPartOf") ||
 							st.getPredicate().toString().endsWith("seeAlso") ||
 							st.getPredicate().toString().endsWith("replaces") ||
-							st.getPredicate().toString().endsWith("isReplacedBy") ) {
+							st.getPredicate().toString().endsWith("isReplacedBy")||
+							st.getPredicate().toString().endsWith("dataCollector") || 
+							st.getPredicate().toString().endsWith("contributor")  ||
+							st.getPredicate().toString().endsWith("publisher")  ||
+							st.getPredicate().toString().endsWith("accrualPeriodicity")||
+							st.getPredicate().toString().endsWith("type")   ) {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(),
 								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
 								st.getContext());
 					} else if (st.getPredicate().toString().endsWith("isValidated")
 							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
-							|| st.getPredicate().toString().endsWith("contributor")) {
+							|| st.getPredicate().toString().endsWith("hasPart")) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals

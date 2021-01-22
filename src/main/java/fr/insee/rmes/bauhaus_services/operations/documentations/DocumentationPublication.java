@@ -53,9 +53,7 @@ public class DocumentationPublication extends RdfService {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					// Triplets that don't get published
-					if ( st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
-							|| st.getPredicate().toString().endsWith("contributor")) {
+					if ( st.getPredicate().toString().endsWith("validationState")){
 						// nothing, wouldn't copy this attr
 					} else if (
 							// Other URI to transform : 
