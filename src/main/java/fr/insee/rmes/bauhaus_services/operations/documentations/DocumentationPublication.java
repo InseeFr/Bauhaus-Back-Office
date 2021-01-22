@@ -1,9 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -26,74 +28,55 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class DocumentationPublication extends RdfService {
-	
+
 	@Autowired
 	static RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	public void publishSims(String simsId) throws RmesException {
-		
+
 		Model model = new LinkedHashModel();
-		Resource sims= RdfUtils.objectIRI(ObjectType.DOCUMENTATION,simsId);
+		Resource sims = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, simsId);
 		Resource graph = RdfUtils.simsGraph(simsId);
-	
-		//TODO notify...
+
+		// TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, sims);
+		RepositoryResult<Statement> metadataReportStatements = repoGestion.getCompleteGraph(con, graph);
 
-		RepositoryResult<Statement> metadataReportStatements = repoGestion.getMetadataReportStatements(con, sims, graph);
-
-		
-		try {	
-			try {
-				if (!statements.hasNext()) {
-					throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID,"Sims not found", simsId);
-				}
-				while (statements.hasNext()) {
-					Statement st = statements.next();
-					// Triplets that don't get published
-					if ( st.getPredicate().toString().endsWith("validationState")){
-						// nothing, wouldn't copy this attr
-					} else if (
-							// Other URI to transform : 
-							st.getPredicate().toString().endsWith("target")
-							|| st.getPredicate().toString().endsWith("additionalMaterial") 
-							|| st.getPredicate().toString().endsWith("metadataReport"))
-					{
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-							st.getPredicate(), 
-							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-							st.getContext());
-					}
-					
-					// Literals
-					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(), 
-								st.getObject(),
-								st.getContext());
-					}
-				}
-				while (metadataReportStatements.hasNext()) {
-					Statement st = metadataReportStatements.next();
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-							st.getPredicate(), 
-							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
-							st.getContext());
-				}
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+		try {
+			if (!metadataReportStatements.hasNext()) {
+				throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Sims not found", simsId);
 			}
-		
-		} finally {
-			repoGestion.closeStatements(statements);
+			while (metadataReportStatements.hasNext()) {
+				Statement st = metadataReportStatements.next();
+				// Triplets that don't get published
+				if (st.getPredicate().toString().endsWith("validationState")) {
+					// nothing, wouldn't copy this attr
+				} else {
+					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					IRI predicate = RdfUtils
+							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+					Value object = st.getObject();
+					if (st.getObject() instanceof Resource) {
+						object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+					}
+
+					model.add(subject, predicate, object, st.getContext());
+				}
+			}
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					Constants.REPOSITORY_EXCEPTION);
 		}
-		
+
+		finally {
+			repoGestion.closeStatements(metadataReportStatements);
+		}
+
 		Resource simsToPublishRessource = PublicationUtils.tranformBaseURIToPublish(sims);
 		RepositoryPublication.publishResource(simsToPublishRessource, model, "sims");
-		
+
 	}
 
-	
 }

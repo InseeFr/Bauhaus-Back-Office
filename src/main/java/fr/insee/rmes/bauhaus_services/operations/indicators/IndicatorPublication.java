@@ -28,58 +28,52 @@ public class IndicatorPublication extends RdfService {
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	public void publishIndicator(String indicatorId) throws RmesException {
-		
+
 		Model model = new LinkedHashModel();
-		Resource indicator= RdfUtils.objectIRI(ObjectType.INDICATOR,indicatorId);
-	
-		//TODO notify...
+		Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
+
+		// TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator);
 
-		try {	
-			try {
-				if (!statements.hasNext()) {
-					throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found", indicatorId);
-				}
-				while (statements.hasNext()) {
-					Statement st = statements.next();
-					// Triplets that don't get published
-					if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")) {
-						// nothing, wouldn't copy this attr
-					}else if (st.getPredicate().toString().endsWith("wasGeneratedBy") ||
-							st.getPredicate().toString().endsWith("seeAlso") ||
-							st.getPredicate().toString().endsWith("replaces") ||
-							st.getPredicate().toString().endsWith("isReplacedBy")||
-							st.getPredicate().toString().endsWith("contributor") ||
-							st.getPredicate().toString().endsWith("publisher") ||
-							st.getPredicate().toString().endsWith("accrualPeriodicity")
-							) {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
-								st.getContext());
-					}
-					// Literals
-					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(), 
-								st.getObject(),
-								st.getContext());
-					}
-					// Other URI to transform : none
-				}
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+		try {
+			if (!statements.hasNext()) {
+				throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID, "Indicator not found", indicatorId);
 			}
-		
-		} finally {
+			while (statements.hasNext()) {
+				Statement st = statements.next();
+				// Triplets that don't get published
+				if (st.getPredicate().toString().endsWith("isValidated")
+						|| st.getPredicate().toString().endsWith("validationState")) {
+					// nothing, wouldn't copy this attr
+				} else if (st.getPredicate().toString().endsWith("wasGeneratedBy")
+						|| st.getPredicate().toString().endsWith("seeAlso")
+						|| st.getPredicate().toString().endsWith("replaces")
+						|| st.getPredicate().toString().endsWith("isReplacedBy")
+						|| st.getPredicate().toString().endsWith("contributor")
+						|| st.getPredicate().toString().endsWith("publisher")
+						|| st.getPredicate().toString().endsWith("accrualPeriodicity")) {
+					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+				}
+				// Literals
+				else {
+					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							st.getObject(), st.getContext());
+				}
+				// Other URI to transform : none
+			}
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					Constants.REPOSITORY_EXCEPTION);
+		}
+
+		finally {
 			repoGestion.closeStatements(statements);
 		}
 		Resource indicatorToPublishRessource = PublicationUtils.tranformBaseURIToPublish(indicator);
 		RepositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
-		
+
 	}
 
-	
 }

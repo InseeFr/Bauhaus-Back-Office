@@ -123,13 +123,12 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object,
-			Resource context) throws RmesException {
+	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
-			statements = con. getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
+			statements = con. getStatements(null, null, null,context); //get the complete Graph
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get MetadataReport statements : " + object);
+			throwsRmesException(e, "Failure get following graph : " + context);
 		}
 		return statements;
 	}

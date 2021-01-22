@@ -270,32 +270,26 @@ public class DocumentationsUtils extends RdfService{
 	 */
 	public String publishMetadataReport(String id) throws RmesException {
 		Model model = new LinkedHashModel();
-		JSONObject simsJson = getDocumentationByIdSims(id);
+		//JSONObject simsJson = getDocumentationByIdSims(id);
 		Resource graph = RdfUtils.simsGraph(id);
 
 		// Find target
-		String targetId = null;
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String targetId = target[1];
 		IRI targetUri = null;
-		try {
-			targetId = simsJson.getString(Constants.ID_INDICATOR);
-			if (!targetId.isEmpty()) {
-				targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId);
-			} else {
-				targetId = simsJson.getString(Constants.ID_OPERATION);
-				if (!targetId.isEmpty()) {
-					targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId);
-				} else {
-					targetId = simsJson.getString(Constants.ID_SERIES);
-					targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId);
-				}
-			}
-		} catch (JSONException e) {
-			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
-		}
+		
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
+		switch(targetType) {
+			case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
+			case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
+			case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
+			default : break;
+		};
+		
 		/* Check rights */
 		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
