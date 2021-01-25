@@ -74,8 +74,7 @@ public class DocumentationPublication extends RdfService {
 			repoGestion.closeStatements(metadataReportStatements);
 		}
 
-		Resource simsToPublishRessource = PublicationUtils.tranformBaseURIToPublish(sims);
-		RepositoryPublication.publishResource(simsToPublishRessource, model, "sims");
+		RepositoryPublication.publishContext(graph, model, "sims");
 
 	}
 
