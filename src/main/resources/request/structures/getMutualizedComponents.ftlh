@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier ?id ;
@@ -6,6 +6,14 @@ WHERE {
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 
+
+    OPTIONAL {
+        ?component dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?component insee:validationState ?validationState
+    } .
 
     OPTIONAL {
         ?component qb:codeList ?codeList
