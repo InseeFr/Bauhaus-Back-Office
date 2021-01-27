@@ -1,4 +1,4 @@
-SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
+SELECT distinct ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
 	FROM <${DOCUMENTS_GRAPH}>
 
 <#if idSims != "">
@@ -11,7 +11,7 @@ WHERE {
 	 ?text rdf:type dcmitype:Text .
 	 ?text insee:additionalMaterial ?uri . 
 	 <#if LANG != "">
-	 	FILTER(EXISTS{?text dcterms:language <${LANG}>})
+	 	?text dcterms:language <${LANG}> .
 	 </#if>
 </#if>	
 
