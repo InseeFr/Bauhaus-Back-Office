@@ -3,6 +3,7 @@ package fr.insee.rmes.utils;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -20,6 +21,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
@@ -40,6 +42,8 @@ public class XMLUtils {
 
 	public static final String toString(Document xml) throws TransformerFactoryConfigurationError, TransformerException  {
 		TransformerFactory tf = TransformerFactory.newInstance();
+		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, ""); 
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
@@ -73,7 +77,7 @@ public class XMLUtils {
 		catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-		return response;
+		return encodeXml(response);
 	}
 
 	public static String produceXMLResponse(Object obj) {
@@ -85,7 +89,7 @@ public class XMLUtils {
 		catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-		return response;
+		return encodeXml(response);
 	}
 
 	public static Document convertStringToDocument(String xmlStr) {
@@ -97,8 +101,7 @@ public class XMLUtils {
 		try  
 		{  
 			builder = factory.newDocumentBuilder();  
-			Document doc = builder.parse( new InputSource( new StringReader( xmlStr ) ) ); 
-			return doc;
+			return builder.parse( new InputSource( new StringReader( xmlStr ) ) ); 
 		} catch (Exception e) {  
 			logger.error(e.getMessage());  
 		} 
@@ -107,12 +110,18 @@ public class XMLUtils {
 
 	public static List<String> getTagValues(String text, String tag) {
 		final Pattern TAG_REGEX = Pattern.compile("<"+tag+">(.+?)</"+tag+">", Pattern.DOTALL);
-		final List<String> tagValues = new ArrayList<String>();
+		final List<String> tagValues = new ArrayList<>();
 		final Matcher matcher = TAG_REGEX.matcher(text);
 		while (matcher.find()) {
 			tagValues.add(matcher.group(1));
 		}
 		return tagValues;
 	}
+	
+    private static String encodeXml(String response) {
+    	String ret = StringEscapeUtils.unescapeXml(response);
+    	ret = StringEscapeUtils.unescapeHtml4(ret);
+    	return new String(ret.getBytes(), StandardCharsets.UTF_8);
+    }
 
 }
