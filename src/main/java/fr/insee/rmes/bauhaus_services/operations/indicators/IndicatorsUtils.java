@@ -294,7 +294,7 @@ public class IndicatorsUtils  extends RdfService {
 			}
 		}
 
-		repoGestion.keepHierarchicalOperationLinks(indicURI,model);
+		//repoGestion.keepHierarchicalOperationLinks(indicURI,model);
 
 		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}

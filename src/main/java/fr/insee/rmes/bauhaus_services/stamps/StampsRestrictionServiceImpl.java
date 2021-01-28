@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
@@ -30,7 +31,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		if (isAdmin(user)) {
 			return true;
 		}
-		String uriAsString = "<" + uri.toString() + ">";
+		String uriAsString = "<" + ((SimpleIRI)uri).toString() + ">";
 		JSONObject owner = repoGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		if (!owner.getString(Constants.OWNER).equals(user.getStamp())) {
@@ -46,7 +47,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 			return true;
 		}
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
@@ -154,7 +155,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptOwner(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
@@ -169,7 +170,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray managers = repoGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
@@ -192,7 +193,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 
 	public boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uri.toString()));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)uri).toString()));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
 			if (!managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
@@ -205,7 +206,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isIndicatorManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray creators = repoGestion.getResponseAsArray(IndicatorsQueries.getCreatorsByIndicatorUri(uriAsString));
 		Boolean isIndicatorManager = false;

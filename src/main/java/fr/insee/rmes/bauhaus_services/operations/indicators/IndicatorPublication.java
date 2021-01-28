@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -43,16 +44,18 @@ public class IndicatorPublication extends RdfService {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				// Triplets that don't get published
-				if (st.getPredicate().toString().endsWith("isValidated")
-						|| st.getPredicate().toString().endsWith("validationState")) {
+				String pred = ((SimpleIRI) st.getPredicate()).toString();
+				
+				if (pred.endsWith("isValidated")
+						|| pred.endsWith("validationState")) {
 					// nothing, wouldn't copy this attr
-				} else if (st.getPredicate().toString().endsWith("wasGeneratedBy")
-						|| st.getPredicate().toString().endsWith("seeAlso")
-						|| st.getPredicate().toString().endsWith("replaces")
-						|| st.getPredicate().toString().endsWith("isReplacedBy")
-						|| st.getPredicate().toString().endsWith("contributor")
-						|| st.getPredicate().toString().endsWith("publisher")
-						|| st.getPredicate().toString().endsWith("accrualPeriodicity")) {
+				} else if (pred.endsWith("wasGeneratedBy")
+						|| pred.endsWith("seeAlso")
+						|| pred.endsWith("replaces")
+						|| pred.endsWith("isReplacedBy")
+						|| pred.endsWith("contributor")
+						|| pred.endsWith("publisher")
+						|| pred.endsWith("accrualPeriodicity")) {
 					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 				}

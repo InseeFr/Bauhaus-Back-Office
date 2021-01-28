@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -84,7 +85,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Override
 	public String getRelatedConcepts(String id)  throws RmesException{
-		String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT,id).toString();
+		String uriConcept = ((SimpleIRI)RdfUtils.objectIRI(ObjectType.CONCEPT,id)).toString();
 		JSONArray resQuery = conceptsUtils.getRelatedConcepts(uriConcept);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -97,7 +98,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */	
 	@Override
 	public String deleteConcept(String id) throws RmesException {
-		String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT,id).toString();
+		String uriConcept = ((SimpleIRI)RdfUtils.objectIRI(ObjectType.CONCEPT,id)).toString();
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
 		/* check concept isn't used in several graphs */

@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -41,12 +42,13 @@ public class FamilyPublication extends RdfService {
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
+					String pred = ((SimpleIRI) st.getPredicate()).toString();
 					// Triplets that don't get published
-					if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
-							|| st.getPredicate().toString().endsWith("contributor")) {
+					if (pred.endsWith("isValidated")
+							|| pred.endsWith("validationState")
+							|| pred.endsWith("hasPart")
+							|| pred.endsWith(Constants.PUBLISHER)
+							|| pred.endsWith("contributor")) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals

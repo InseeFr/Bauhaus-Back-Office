@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -64,23 +65,25 @@ public class SeriesPublication extends RdfService {
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
+					String pred = ((SimpleIRI) st.getPredicate()).toString();
+					
 					// Other URI to transform
-					if (st.getPredicate().toString().endsWith("isPartOf") ||
-							st.getPredicate().toString().endsWith("seeAlso") ||
-							st.getPredicate().toString().endsWith("replaces") ||
-							st.getPredicate().toString().endsWith("isReplacedBy")||
-							st.getPredicate().toString().endsWith("dataCollector") || 
-							st.getPredicate().toString().endsWith("contributor")  ||
-							st.getPredicate().toString().endsWith("publisher")  ||
-							st.getPredicate().toString().endsWith("accrualPeriodicity")||
-							st.getPredicate().toString().endsWith("type")   ) {
+					if (pred.endsWith("isPartOf") ||
+							pred.endsWith("seeAlso") ||
+							pred.endsWith("replaces") ||
+							pred.endsWith("isReplacedBy")||
+							pred.endsWith("dataCollector") || 
+							pred.endsWith("contributor")  ||
+							pred.endsWith("publisher")  ||
+							pred.endsWith("accrualPeriodicity")||
+							pred.endsWith("type")   ) {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(),
 								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
 								st.getContext());
-					} else if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith("hasPart")) {
+					} else if (pred.endsWith("isValidated")
+							|| pred.endsWith("validationState")
+							|| pred.endsWith("hasPart")) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals

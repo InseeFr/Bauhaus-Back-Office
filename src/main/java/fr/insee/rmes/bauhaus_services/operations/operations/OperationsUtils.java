@@ -99,22 +99,6 @@ public class OperationsUtils extends RdfService{
 		return operation;
 	}
 
-	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-
-		String id = famOpeSerIndUtils.createId();
-		Operation operation = new Operation();
-
-		try {
-			operation = mapper.readValue(operationJson.toString(), Operation.class);
-			operation.id = id;
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		return operation;
-	}
-
-
 	/**
 	 * CREATE
 	 * @param body

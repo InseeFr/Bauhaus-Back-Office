@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -60,7 +61,7 @@ public class StructureComponentUtils extends RdfService {
 
     private void addCodeListRange(JSONObject response) {
         if (response.has("codeList")) {
-            response.put("range", INSEE.CODELIST.toString());
+            response.put("range", ((SimpleIRI)INSEE.CODELIST).toString());
         }
     }
 
@@ -131,9 +132,9 @@ public class StructureComponentUtils extends RdfService {
         }
 
         String type = component.getType();
-        if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+        if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
             createRDFForComponent(component, QB.ATTRIBUTE_PROPERTY, RdfUtils.structureComponentAttributeIRI(component.getId()), status);
-        } else if (type.equals(QB.MEASURE_PROPERTY.toString())) {
+        } else if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             createRDFForComponent(component, QB.MEASURE_PROPERTY, RdfUtils.structureComponentMeasureIRI(component.getId()), status);
         } else {
             createRDFForComponent(component, QB.DIMENSION_PROPERTY, RdfUtils.structureComponentDimensionIRI(component.getId()), status);
@@ -162,7 +163,7 @@ public class StructureComponentUtils extends RdfService {
 
         RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
 
-        if (component.getRange() != null && component.getRange().equals(INSEE.CODELIST.toString())) {
+        if (component.getRange() != null && component.getRange().equals(((SimpleIRI)INSEE.CODELIST).toString())) {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
         } else {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
@@ -176,10 +177,10 @@ public class StructureComponentUtils extends RdfService {
     }
 
     private String generateNextId(String type) throws RmesException {
-        if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+        if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
             return generateNextId("a", "attribut", QB.ATTRIBUTE_PROPERTY);
         }
-        if (type.equals(QB.MEASURE_PROPERTY.toString())) {
+        if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             return generateNextId("m", "mesure", QB.MEASURE_PROPERTY);
         }
         return generateNextId("d", "dimension", QB.DIMENSION_PROPERTY);
@@ -189,7 +190,7 @@ public class StructureComponentUtils extends RdfService {
 
     private String generateNextId(String prefix, String namespaceSuffix, IRI type) throws RmesException {
         logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, type.toString()));
+        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, ((SimpleIRI)type).toString()));
         logger.debug("JSON when generating the id of a component : {}", json);
         if (json.length() == 0) {
             return prefix + "1000";
@@ -240,19 +241,23 @@ public class StructureComponentUtils extends RdfService {
         boolean findPublishedStructure = false;
         for (int i = 0; i < structures.length(); i++) {
             JSONObject structure = (JSONObject) structures.get(i);
-            if(state.equals(VALIDATED) || state.equals(MODIFIED)){
+            //FIXME begin
+            /* I make a proposal, but I don't really know what you want to do here         */
+            String stateStructure = structure.getString("validationState"); //update state to test foreach
+            if(stateStructure.equals(VALIDATED) || stateStructure.equals(MODIFIED)){
                 findPublishedStructure = true;
                 break;
             }
+            //FIXME end
         }
 
         if(findPublishedStructure){
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
         IRI componentIri;
-        if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())) {
+        if (type.equalsIgnoreCase(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
             componentIri =  RdfUtils.structureComponentAttributeIRI(id);
-        } else if (type.equalsIgnoreCase(QB.MEASURE_PROPERTY.toString())) {
+        } else if (type.equalsIgnoreCase(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             componentIri =  RdfUtils.structureComponentMeasureIRI(id);
         } else {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);

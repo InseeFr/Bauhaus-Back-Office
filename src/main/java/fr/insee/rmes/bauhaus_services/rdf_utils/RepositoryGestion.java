@@ -30,7 +30,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 @Component
 @DependsOn("AppContext")

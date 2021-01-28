@@ -301,20 +301,6 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
-	// Check that the document is not referred to by any other sims than allowedUri
-	private void checkDocumentReferences(String docId, String uri, String allowedUri) throws RmesException {
-		JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
-		if (jsonResultat.length() > 0) {
-			for(int i=0; i<jsonResultat.length();i++) {
-				if(jsonResultat.getJSONObject(i).getString("text")!=allowedUri) {
-					throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
-							"The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
-							+ " sims, including: " + jsonResultat.getJSONObject(i).getString("text").toString(),
-							jsonResultat);
-				}
-			}
-		}
-	}
 
 	public String changeFile(String docId, InputStream documentFile, String documentName) throws RmesException {
 
