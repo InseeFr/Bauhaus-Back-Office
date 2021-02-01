@@ -31,22 +31,9 @@ public class FreemarkerConfig {
 		// plain directory for it, but non-file-system sources are possible too:
         
 		try {
-			MultiTemplateLoader mtl = null;
-			
-			FileTemplateLoader ftl1 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
-
-			FileTemplateLoader ftl2 = null;
-			try {
-				ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
-			} catch (NullPointerException e) {
-				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl1 });
-			}
-			if (mtl == null) {
-				mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
-			}
+			MultiTemplateLoader mtl = getTemplateLoader();
 			logger.info("Init freemarker templateloader {} , {}", FreemarkerConfig.class.getClassLoader().getResource("request"), FreemarkerConfig.class.getClassLoader().getResource("xdocreport"));
 			cfg.setTemplateLoader(mtl);
-
 		} catch (IOException | URISyntaxException e) {
 			logger.error(e.getMessage());
 		}
@@ -67,6 +54,31 @@ public class FreemarkerConfig {
 		cfg.setWrapUncheckedExceptions(true);
 		
 		
+	}
+
+	/**
+	 * Get template loader
+	 * @return
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	private static MultiTemplateLoader getTemplateLoader() throws IOException, URISyntaxException {
+		MultiTemplateLoader mtl = null;
+		
+		//Get request files
+		FileTemplateLoader ftl1 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("request").toURI()));
+
+		//Get xdocreport files if they exist
+		FileTemplateLoader ftl2 = null;
+		try {
+			ftl2 = new FileTemplateLoader(new File(FreemarkerConfig.class.getClassLoader().getResource("xdocreport").toURI()));
+		} catch (NullPointerException e) {
+			mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl1 });
+		}
+		if (mtl == null) {
+			mtl = new MultiTemplateLoader(new TemplateLoader[] { ftl2, ftl1 });
+		}
+		return mtl;
 	}
 
 	public static Configuration getCfg() {
