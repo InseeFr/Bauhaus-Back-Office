@@ -66,6 +66,11 @@ public class IndicatorsUtils  extends RdfService {
 		return buildIndicatorFromJson(getIndicatorJsonById(id));
 	}
 
+	/**
+	 * From json issued of the database to Java Object
+	 * @param indicatorJson
+	 * @return
+	 */
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson) {
 		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
@@ -109,6 +114,12 @@ public class IndicatorsUtils  extends RdfService {
 		return list;
 	}
 
+	/**
+	 * From database
+	 * @param id
+	 * @return
+	 * @throws RmesException
+	 */
 	public JSONObject getIndicatorJsonById(String id) throws RmesException {
 		if (!checkIfIndicatorExists(id)) {
 			throw new RmesNotFoundException(ErrorCodes.INDICATOR_UNKNOWN_ID,"Indicator not found: ", id);
@@ -132,6 +143,12 @@ public class IndicatorsUtils  extends RdfService {
 		indicator.put(Constants.PUBLISHERS, publishers);
 	}
 
+	/**
+	 * From database
+	 * @param idIndic
+	 * @param indicator
+	 * @throws RmesException
+	 */
 	private void addLinks(String idIndic, JSONObject indicator) throws RmesException {
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.REPLACES);
 		addOneTypeOfLink(idIndic,indicator,DCTERMS.IS_REPLACED_BY);
@@ -293,8 +310,6 @@ public class IndicatorsUtils  extends RdfService {
 				RdfUtils.addTripleUri(RdfUtils.toURI(isReplUri), DCTERMS.REPLACES ,indicURI, model, RdfUtils.productsGraph());
 			}
 		}
-
-		//repoGestion.keepHierarchicalOperationLinks(indicURI,model);
 
 		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
