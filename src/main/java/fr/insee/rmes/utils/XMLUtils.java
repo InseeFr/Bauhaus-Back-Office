@@ -119,8 +119,9 @@ public class XMLUtils {
 	}
 	
     private static String encodeXml(String response) {
-    	String ret = StringEscapeUtils.unescapeXml(response);
-    	ret = StringEscapeUtils.unescapeHtml4(ret);
+    	String ret = StringEscapeUtils.unescapeHtml4(response);
+    	ret = StringEscapeUtils.unescapeXml(ret);
+    	ret = ret.replace("&[^amp;]", "&amp;");
     	return new String(ret.getBytes(), StandardCharsets.UTF_8);
     }
 
