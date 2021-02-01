@@ -73,6 +73,8 @@ public class DocumentationsUtils extends RdfService{
 
 
 
+	private static final String DOT_XML = ".xml";
+
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
 	@Autowired
@@ -256,7 +258,6 @@ public class DocumentationsUtils extends RdfService{
 	 */
 	public String publishMetadataReport(String id) throws RmesException {
 		Model model = new LinkedHashModel();
-		//JSONObject simsJson = getDocumentationByIdSims(id);
 		Resource graph = RdfUtils.simsGraph(id);
 
 		// Find target
@@ -274,7 +275,7 @@ public class DocumentationsUtils extends RdfService{
 			case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
 			case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
 			default : break;
-		};
+		}
 		
 		/* Check rights */
 		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
@@ -503,7 +504,7 @@ public class DocumentationsUtils extends RdfService{
 		return stamps;
 	}
 	
-	public File exportTestMetadataReport() throws IOException, RmesException {
+	public File exportTestMetadataReport() throws IOException {
 		return docExport.testExport();
 	}
 
@@ -516,16 +517,16 @@ public class DocumentationsUtils extends RdfService{
 
 		Path tempDir= Files.createTempDirectory("forExport");
 
-		Path tempFile = Files.createTempFile(tempDir, "target",".xml");
+		Path tempFile = Files.createTempFile(tempDir, "target",DOT_XML);
 		String absolutePath = tempFile.toFile().getAbsolutePath();
 
-		Path accessoryTempFile = Files.createTempFile(tempDir, "series",".xml");
+		Path accessoryTempFile = Files.createTempFile(tempDir, "series",DOT_XML);
 		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
 
-		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",".xml");
+		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",DOT_XML);
 		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
 
-		Path codeListTempFile = Files.createTempFile(tempDir, "freq",".xml");
+		Path codeListTempFile = Files.createTempFile(tempDir, "freq",DOT_XML);
 		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
 
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
@@ -534,7 +535,7 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		List<String>neededCodeLists=new ArrayList<String>();
+		List<String>neededCodeLists=new ArrayList<>();
 
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			Operation operation=operationsUtils.getOperationById(idDatabase);
@@ -580,8 +581,7 @@ public class DocumentationsUtils extends RdfService{
 
 		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
 
-		String codeListsXml="";
-		codeListsXml=codeListsXml.concat(Constants.XML_OPEN_CODELIST_TAG);
+		String codeListsXml=Constants.XML_OPEN_CODELIST_TAG;
 
 		for(String code : neededCodeLists) {
 			codeListsXml=codeListsXml.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
@@ -640,7 +640,7 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		if (targetType != Constants.SERIES) {
+		if (!Constants.SERIES.equals(targetType)) {
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 

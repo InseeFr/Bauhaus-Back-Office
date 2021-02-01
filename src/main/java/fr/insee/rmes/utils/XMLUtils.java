@@ -37,6 +37,11 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 public class XMLUtils {
 
 	static final Logger logger = LogManager.getLogger(XMLUtils.class);
+	
+	  private XMLUtils() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	public static final String toString(Document xml)
 			throws TransformerFactoryConfigurationError, TransformerException {
@@ -91,6 +96,8 @@ public class XMLUtils {
 
 	public static Document convertStringToDocument(String xmlStr) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); // compliant
 		// disable resolving of external DTD entities
 		factory.setAttribute(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 		factory.setAttribute(XMLConstants.FEATURE_SECURE_PROCESSING, Boolean.TRUE);
@@ -105,9 +112,9 @@ public class XMLUtils {
 	}
 
 	public static List<String> getTagValues(String text, String tag) {
-		final Pattern TAG_REGEX = Pattern.compile("<" + tag + ">(.+?)</" + tag + ">", Pattern.DOTALL);
+		final Pattern tagRegex = Pattern.compile("<" + tag + ">(.+?)</" + tag + ">", Pattern.DOTALL);
 		final List<String> tagValues = new ArrayList<>();
-		final Matcher matcher = TAG_REGEX.matcher(text);
+		final Matcher matcher = tagRegex.matcher(text);
 		while (matcher.find()) {
 			tagValues.add(matcher.group(1));
 		}
@@ -119,7 +126,6 @@ public class XMLUtils {
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 
 		final String regex = "&[^amp;]";
-
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern.matcher(ret).replaceAll("&amp;");
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
