@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
-import fr.insee.rmes.external_services.export.XsltTransformer;
 
 @Component
 public class DocumentationExport {
@@ -38,95 +37,16 @@ public class DocumentationExport {
 
 	private static final Logger logger = LoggerFactory.getLogger(DocumentationExport.class);
 
-	private XsltTransformer saxonService = new XsltTransformer();
 
-	public File export(File inputFile) throws Exception {
-		InputStream isInputFile = FileUtils.openInputStream(inputFile);
-		return export(isInputFile);
-	}
-
-	public File export(InputStream inputFile) throws Exception {
-		logger.debug("Begin To export documentation");
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
-
-		output.deleteOnExit();
-
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-
-		final PrintStream printStream = new PrintStream(osOutputFile);
-
-		saxonService.transform(inputFile, xslFile, printStream);
-		inputFile.close();
-		xslFile.close();
-		//osOutputFile.close();
-		printStream.close();
-
-		logger.debug("End To export documentation");
-		return output;
-	}
-
-	public File transfoTest(InputStream inputFile) throws Exception  {
-		logger.debug("Begin transformation test");
-		File output =  File.createTempFile(Constants.OUTPUT, ".xml");
-		output.deleteOnExit();
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/transfoXSLT.xsl");
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		PrintStream printStream = new PrintStream(osOutputFile);
-		StreamSource xsrc = new StreamSource(xslFile);
-		//TransformerFactory transformerFactory = net.sf.saxon.TransformerFactoryImpl.newInstance();	
-		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();	
-
-		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-		xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		inputFile.close();
-		xslFile.close();
-		osOutputFile.close();
-		printStream.close();
-		logger.debug("End transformation test");
-		return output;	
-	}
-
-	public File convertRichText(InputStream inputFile) throws IOException {
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-		
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		//InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertXhtmlToFodt.xsl");
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
-
-		PrintStream printStream= null;
-
-		try{
-			printStream = new PrintStream(osOutputFile);
-			StreamSource xsrc = new StreamSource(xslFile);
-			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		} catch (TransformerException e) {
-			logger.error(e.getMessage());
-		} finally {
-			inputFile.close();
-			osOutputFile.close();
-			printStream.close();
-		}
-		return output;
-	}
-	
 	public File testExport() throws IOException {
 		
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
-		PrintStream printStream= null;
 		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
-		try{
-			printStream = new PrintStream(osOutputFile);
+		
+		try(PrintStream printStream = new PrintStream(osOutputFile)	){
 			StreamSource xsrc = new StreamSource(xslFile);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -137,7 +57,6 @@ public class DocumentationExport {
 		} finally {
 			inputFile.close();
 			osOutputFile.close();
-			printStream.close();
 		}
 		return output;
 	}
@@ -202,21 +121,14 @@ public class DocumentationExport {
 		String msdPath = msdFile.getAbsolutePath();
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		//File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("application/vnd.oasis.opendocument.text"));
 		output.deleteOnExit();
 
-	
-//		File outputIntermediate =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension("XML"));
-//		outputIntermediate.deleteOnExit();
-		
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-	//	OutputStream osOutputFile = FileUtils.openOutputStream(outputIntermediate);
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
-		PrintStream printStream= null;
 
-		try{
-			printStream = new PrintStream(osOutputFile);
+		try(PrintStream printStream = new PrintStream(osOutputFile)	){
+			
 			StreamSource xsrc = new StreamSource(xslFile);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -243,10 +155,8 @@ public class DocumentationExport {
 			inputFile.close();
 			xslFile.close();
 			osOutputFile.close();
-			printStream.close();
 		}
 		logger.debug("End To export documentation");
-//		return convertRichText(new FileInputStream(outputIntermediate));
 		return(output);
 	}
 	

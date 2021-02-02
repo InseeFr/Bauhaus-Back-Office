@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class OperationsLink {
 
+	public static final String CLASS_NAME = "fr.insee.rmes.model.links.OperationsLink";
+
 	@Schema(description = "Id of the resource linked", required = true)
 	public String id;
 	
@@ -52,9 +54,14 @@ public class OperationsLink {
 	}
 	
 	public static String getClassOperationsLink() {
-		return "fr.insee.rmes.model.links.OperationsLink";
+		return CLASS_NAME;
 	}
 
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, labelLg1, labelLg2, type);
+	}
 
 	@Override
 	public boolean equals(Object obj) {

@@ -138,24 +138,8 @@ public class IndicatorsQueries {
 				+ "} }"
 				;
 	}	
-	
-	public static String indicatorLinks(String id, IRI linkPredicate) {
-		return "SELECT ?id  ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { \n" 
-				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
-				+ "?uriLinked skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
-				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "')} . \n"
-				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
-				
-				+ "FILTER(STRENDS(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/" + id + "')) . \n"
 
-				+ "} \n"
-				+ "ORDER BY ?labelLg1";
-	}
-	
-	public static String indicatorLinksWithTypeOfObject(String id, IRI linkPredicate) {
+	public static String indicatorLinks(String id, IRI linkPredicate) {
 		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n" 
 				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"

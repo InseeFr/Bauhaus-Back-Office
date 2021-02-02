@@ -218,7 +218,7 @@ public class SeriesQueries {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
 		params.put(LINK_PREDICATE, linkPredicate);
-		if(resultType==Constants.ORGANIZATIONS) {
+		if(Constants.ORGANIZATIONS.equals(resultType)) {
 			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
 		}
 		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);		

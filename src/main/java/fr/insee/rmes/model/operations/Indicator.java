@@ -174,10 +174,6 @@ public class Indicator {
 		return creators;
 	}
 
-//	public void setPublishers(OperationsLink[] publishers) {
-//		this.publishers = Arrays.asList(publishers);
-//	}
-	
 	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}
@@ -252,6 +248,13 @@ public class Indicator {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(abstractLg1, abstractLg2, accrualPeriodicityCode, accrualPeriodicityList, altLabelLg1,
+				altLabelLg2, contributors, creators, historyNoteLg1, historyNoteLg2, id, idSims, isReplacedBy,
+				prefLabelLg1, prefLabelLg2, publishers, replaces, seeAlso, wasGeneratedBy);
 	}
 
 	@Override
