@@ -28,7 +28,6 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class SeriesPublication extends RdfService {
-// TODO : merge into SeriesUtils ?	
 	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
