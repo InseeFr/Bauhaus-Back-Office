@@ -12,6 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -24,6 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
@@ -68,7 +75,22 @@ public class DocumentationExport {
 		String msdXML = documentationsUtils.buildShellSims();
 		String parametersXML ="";
 		InputStream parametersXMLFile = getClass().getResourceAsStream("/xslTransformerFiles/parameters.xml");
-
+		
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance(); 
+        domFactory.setIgnoringComments(true);
+		 DocumentBuilder docBuilder;
+	     Document doc = null;
+		try {
+			docBuilder = domFactory.newDocumentBuilder();
+			doc = docBuilder.parse(parametersXMLFile);
+	         Node root=doc.getFirstChild();
+	         Element newserver=doc.createElement("targetType");
+	         newserver.setNodeValue(targetType);
+	         root.appendChild(newserver);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}        
+		
 		try {
 			parametersXML = IOUtils.toString(parametersXMLFile, StandardCharsets.UTF_8);
 		} catch (IOException e) {
@@ -98,7 +120,7 @@ public class DocumentationExport {
 			xsltTransformer.setParameter("seriesXML", seriesXML);
 			xsltTransformer.setParameter("msdXML", msdXML);
 			xsltTransformer.setParameter("codeListsXML", codeListsXML);
-			xsltTransformer.setParameter("parametersXML", parametersXML);
+			xsltTransformer.setParameter("parametersXML", doc.toString());
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
