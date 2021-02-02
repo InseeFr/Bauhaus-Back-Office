@@ -299,15 +299,21 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleUri(indicURI, DCTERMS.ACCRUAL_PERIODICITY, accPeriodicityUri, model, RdfUtils.productsGraph());
 
 		addOneWayLink(model, indicURI, indicator.getSeeAlso(), RDFS.SEEALSO);
-		addOneWayLink(model, indicURI,  indicator.getReplaces(), DCTERMS.REPLACES);
 		addOneWayLink(model, indicURI, indicator.getWasGeneratedBy(), PROV.WAS_GENERATED_BY);
 
+		List<OperationsLink> replaces = indicator.getReplaces();
+		if (replaces != null) {
+			for (OperationsLink replace : replaces) {
+				String replaceUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
+				addReplacesAndReplacedBy(model, RdfUtils.toURI(replaceUri), indicURI);
+			}
+		}		
+		
 		List<OperationsLink> isReplacedBys = indicator.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
 				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-				RdfUtils.addTripleUri(indicURI, DCTERMS.IS_REPLACED_BY ,isReplUri, model, RdfUtils.productsGraph());
-				RdfUtils.addTripleUri(RdfUtils.toURI(isReplUri), DCTERMS.REPLACES ,indicURI, model, RdfUtils.productsGraph());
+				addReplacesAndReplacedBy(model, indicURI, RdfUtils.toURI(isReplUri));
 			}
 		}
 
@@ -341,6 +347,11 @@ public class IndicatorsUtils  extends RdfService {
 				RdfUtils.addTripleUri(indicURI, linkPredicate ,linkedObjectUri, model, RdfUtils.productsGraph());
 			}
 		}
+	}
+	
+	private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
+		RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY ,next, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleUri(next, DCTERMS.REPLACES ,previous, model, RdfUtils.productsGraph());
 	}
 
 	public String createID() throws RmesException {
