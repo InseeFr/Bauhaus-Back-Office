@@ -92,6 +92,10 @@ public class XMLUtils {
 		return encodeXml(response);
 	}
 
+	public static String produceEmptyXML() {
+		return("");
+	}
+	
 	public static Document convertStringToDocument(String xmlStr) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
 		// disable resolving of external DTD entities

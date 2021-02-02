@@ -19,6 +19,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,12 +121,9 @@ public class DocumentationExport {
 		
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
-		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
-
 		PrintStream printStream= null;
-
 		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
 		try{
 			printStream = new PrintStream(osOutputFile);
@@ -143,10 +141,53 @@ public class DocumentationExport {
 		}
 		return output;
 	}
-		
 	
-	
-	public File export(InputStream inputFile, 
+	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
+			String organizationsXML, String codeListsXML, String targetType) throws RmesException, IOException  {
+		logger.debug("Begin To export documentation");
+
+		String msdXML = documentationsUtils.buildShellSims();
+
+		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+		output.deleteOnExit();
+
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+
+		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
+		PrintStream printStream= null;
+
+		try{
+			// prepare transformer
+			StreamSource xsrc = new StreamSource(xslFile);
+			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+			// set parameters
+			xsltTransformer.setParameter("simsXML", simsXML);
+			xsltTransformer.setParameter("operationXML", operationXML);
+			xsltTransformer.setParameter("indicatorXML", indicatorXML);
+			xsltTransformer.setParameter("seriesXML", seriesXML);
+			xsltTransformer.setParameter("msdXML", msdXML);
+			xsltTransformer.setParameter("codeListsXML", codeListsXML);
+			xsltTransformer.setParameter("targetType", targetType);
+			// prepare output
+			printStream = new PrintStream(osOutputFile);
+			// transformation
+			xsltTransformer.transform(new StreamSource(odtFile), new StreamResult(printStream));
+		} catch (TransformerException e) {
+			logger.error(e.getMessage());
+		} finally {
+			odtFile.close();
+			xslFile.close();
+			osOutputFile.close();
+			printStream.close();
+		}
+		logger.debug("End To export documentation");
+		return(output);
+	}
+
+	public File exportOld(InputStream inputFile, 
 			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
 			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
@@ -208,5 +249,6 @@ public class DocumentationExport {
 //		return convertRichText(new FileInputStream(outputIntermediate));
 		return(output);
 	}
-
+	
+	
 }
