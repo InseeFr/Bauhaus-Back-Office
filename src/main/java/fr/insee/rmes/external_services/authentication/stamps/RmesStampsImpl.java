@@ -1,13 +1,10 @@
 package fr.insee.rmes.external_services.authentication.stamps;
 
-import java.util.Hashtable;
 import java.util.TreeSet;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
@@ -21,6 +18,7 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.external_services.authentication.LdapConnexion;
 
 @Service
 public class RmesStampsImpl implements StampsService {
@@ -35,17 +33,8 @@ public class RmesStampsImpl implements StampsService {
 		TreeSet<String> stamps = new TreeSet<>();
 		try {
 			if(Config.LDAP_URL != null && !Config.LDAP_URL.isEmpty()) {
-				logger.info("Connection to LDAP : {}", Config.LDAP_URL);
-
 				// Connexion à la racine de l'annuaire
-				Hashtable<String, String> environment = new Hashtable<>();
-				environment.put(Context.INITIAL_CONTEXT_FACTORY,
-						"com.sun.jndi.ldap.LdapCtxFactory");
-				environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
-				environment.put(Context.SECURITY_AUTHENTICATION, "none");
-				DirContext context;
-
-				context = new InitialDirContext(environment);
+				DirContext context = LdapConnexion.getLdapContext();
 
 				// Spécification des critères pour la recherche des unités
 				SearchControls controls = new SearchControls();
