@@ -39,13 +39,13 @@ public class DocumentationExport {
 
 
 	public File testExport() throws IOException {
-		
+
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
 		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
-		
+
 		try(PrintStream printStream = new PrintStream(osOutputFile)	){
 			StreamSource xsrc = new StreamSource(xslFile);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
@@ -60,12 +60,21 @@ public class DocumentationExport {
 		}
 		return output;
 	}
-	
+
 	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
+		String parametersXML ="";
+		InputStream parametersXMLFile = getClass().getResourceAsStream("/xslTransformerFiles/parameters.xml");
+
+		try {
+			parametersXML = IOUtils.toString(parametersXMLFile, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			logger.error("Failed to read the xml : ", e);
+		}
+
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
@@ -89,7 +98,7 @@ public class DocumentationExport {
 			xsltTransformer.setParameter("seriesXML", seriesXML);
 			xsltTransformer.setParameter("msdXML", msdXML);
 			xsltTransformer.setParameter("codeListsXML", codeListsXML);
-			xsltTransformer.setParameter("targetType", targetType);
+			xsltTransformer.setParameter("parametersXML", parametersXML);
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
@@ -128,7 +137,7 @@ public class DocumentationExport {
 
 
 		try(PrintStream printStream = new PrintStream(osOutputFile)	){
-			
+
 			StreamSource xsrc = new StreamSource(xslFile);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -159,6 +168,6 @@ public class DocumentationExport {
 		logger.debug("End To export documentation");
 		return(output);
 	}
-	
-	
+
+
 }
