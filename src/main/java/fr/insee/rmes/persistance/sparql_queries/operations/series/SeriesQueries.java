@@ -167,17 +167,6 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
 	}
 	
-	/**
-	 * @param stamp
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getSeriesIdsForStamp(String stamp) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(STAMP, stamp);
-		return buildSeriesRequest("getSeriesByCreatorStampQuery.ftlh", params);	
-	}
-	
 	
 	/**
 	 * @param idSeries
