@@ -17,10 +17,6 @@ import fr.insee.rmes.exceptions.RmesException;
 @Service
 public class LdapConnexion {
 	
-	  private LdapConnexion() {
-		    throw new IllegalStateException("Utility class");
-	  }
-	
 	static final Logger logger = LogManager.getLogger(LdapConnexion.class);
 
 	public static DirContext getLdapContext() throws NamingException, RmesException {
