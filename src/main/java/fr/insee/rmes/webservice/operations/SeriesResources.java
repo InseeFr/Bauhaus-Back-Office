@@ -96,6 +96,26 @@ public class SeriesResources extends OperationsAbstResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+	
+	/**
+	 * Get series where stamp is the creator
+	 * If only id, label, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
+	 * @param stamp
+	 * @return 
+	 * @throws RmesException
+	 */
+	@GET
+	@Path("/series/advanced-search/{stamp}")	
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearchWithStamps", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
+	public Response getSeriesForSearchWithStamps(@Parameter(
+			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
+			required = true,
+			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
+			) throws RmesException {
+		String jsonResultat = operationsService.getSeriesForSearchWithStamp(stamp);	
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
 	@PUT
@@ -172,36 +192,17 @@ public class SeriesResources extends OperationsAbstResources {
 	}
 
 
-	@GET
-	@Path("/series/seriesForStamp/{stamp}")	
-	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesForStamp", summary = "Series with given stamp")
-	public Response getSeriesForStamp(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
-			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesForStamp(stamp);	
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
 
-	@GET
-	@Path("/series/seriesIdsForStamp/{stamp}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesIdsForStamp", summary = "Ids of Series with given stamp")
-	public Response getSeriesIdsForStamp(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
-			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesIdsForStamp(stamp);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
-	
+	/**
+	 * Get series where stamp is the creator
+	 * @param stamp
+	 * @return id / label / altLabel
+	 * @throws RmesException
+	 */
 	@GET
 	@Path("/series/seriesWithStamp/{stamp}")
 	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesIdsForStamp", summary = "Series with given stamp as creator")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesWithStamp", summary = "Series with given stamp as creator")
 	public Response getSeriesWithStamp(@Parameter(
 			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
 			required = true,

@@ -116,8 +116,9 @@ public class SeriesUtils extends RdfService {
 		return series;
 	}
 
-	public String getSeriesForSearch() throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
+
+	public String getSeriesForSearch(String stamp) throws RmesException {
+		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch(stamp));
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
@@ -126,10 +127,11 @@ public class SeriesUtils extends RdfService {
 			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
 			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
 			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-			famOpeSerIndUtils.fixOrganizationsNames(series);			result.put(series);
+			famOpeSerIndUtils.fixOrganizationsNames(series);			
+			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
-	}
+	}	
 
 	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
 		JSONArray operations = repoGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
@@ -413,28 +415,6 @@ public class SeriesUtils extends RdfService {
 		return id;
 	}
 
-	public String getSeriesForStamp(String stamp) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
-		JSONArray result = new JSONArray();
-		for (int i = 0; i < resQuery.length(); i++) {
-			JSONObject series = resQuery.getJSONObject(i);
-			String idSeries = series.get(Constants.ID).toString();
-			IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, idSeries);
-			if(stampsRestrictionsService.isSeriesManager(seriesURI)) {
-				addSeriesCreators(idSeries, series);
-				addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
-				addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
-				addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-				famOpeSerIndUtils.fixOrganizationsNames(series);		
-				result.put(series);
-			}
-		}
 
-		return QueryUtils.correctEmptyGroupConcat(result.toString());
-	}
 
-	public String getSeriesIdsForStamp(String stamp) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesIdsForStamp(stamp));
-		return (resQuery.toString());
-	}
 }
