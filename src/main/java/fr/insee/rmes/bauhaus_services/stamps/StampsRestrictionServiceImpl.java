@@ -25,6 +25,8 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
+import static fr.insee.rmes.config.auth.roles.Roles.SPRING_PREFIX;
+
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
 
@@ -89,7 +91,14 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		this.fakeUser = mapper.readValue(user, User.class);
+		JSONObject userObject = new JSONObject(user);
+
+		JSONArray roles = userObject.getJSONArray("roles");
+
+		JSONArray springRoles = new JSONArray();
+		roles.forEach(role -> springRoles.put(SPRING_PREFIX + role));
+
+		this.fakeUser = new User(springRoles, userObject.getString("stamp"));
 	}
 
 	private boolean isAdmin(User user) {
