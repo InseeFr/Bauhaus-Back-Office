@@ -10,6 +10,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.config.auth.user.User;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,7 +67,8 @@ public class UserResources {
 	@Autowired
 	StampsService stampsService;
 
-	
+	@Autowired
+	StampsRestrictionsService stampsRestrictionService;
 
 	@GET
 	@Path("/stamp")
@@ -77,6 +82,15 @@ public class UserResources {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
 			return Response.status(HttpStatus.SC_OK).entity(stamp).build();
+	}
+
+	@POST
+	@Path("/login")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "login", summary = "Fake Login", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))})
+	public Response login(@RequestBody(description = "Component", required = true) String user) throws JsonProcessingException {
+		stampsRestrictionService.setFakeUser(user);
+		return Response.status(HttpStatus.SC_OK).build();
 	}
 	
 	
