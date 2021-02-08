@@ -60,7 +60,7 @@ public class XDocReport {
 	}
 
 	@Deprecated
-	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws Exception {
+	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws IOException, XDocReportException, RmesException {
 		// 1) Load DOCX into XWPFDocument
 		IXDocReport report = getReportTemplate(odtTemplate);
 
