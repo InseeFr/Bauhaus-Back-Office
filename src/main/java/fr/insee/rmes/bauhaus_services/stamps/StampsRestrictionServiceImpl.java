@@ -3,6 +3,9 @@ package fr.insee.rmes.bauhaus_services.stamps;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
@@ -22,8 +25,12 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
+import static fr.insee.rmes.config.auth.roles.Roles.SPRING_PREFIX;
+
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
+
+	private User fakeUser;
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -67,12 +74,31 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return dvOrQfUser();
 	}
 
+
 	private User dvOrQfUser() {
+		if(this.fakeUser != null){
+			return this.fakeUser;
+		}
+
 		JSONArray roles = new JSONArray();
 		roles.put("ROLE_offline_access");
 		roles.put("ROLE_Administrateur_RMESGNCS");
 		roles.put("ROLE_uma_authorization");
-		return new User(roles, "fakeStampForDvAndQf");
+		return  new User(roles, "fakeStampForDvAndQf");
+	}
+
+	public void setFakeUser(String user) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(
+				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		JSONObject userObject = new JSONObject(user);
+
+		JSONArray roles = userObject.getJSONArray("roles");
+
+		JSONArray springRoles = new JSONArray();
+		roles.forEach(role -> springRoles.put(SPRING_PREFIX + role));
+
+		this.fakeUser = new User(springRoles, userObject.getString("stamp"));
 	}
 
 	private boolean isAdmin(User user) {
