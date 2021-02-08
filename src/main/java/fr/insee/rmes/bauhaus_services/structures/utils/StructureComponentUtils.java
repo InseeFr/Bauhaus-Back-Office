@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,10 @@ public class StructureComponentUtils extends RdfService {
         }
     }
 
+    private String getValidationStatus(String id) throws RmesException {
+        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+    }
+
     public String updateComponent(String componentId, String body) throws RmesException {
         MutualizedComponent component;
         try {
@@ -80,7 +85,13 @@ public class StructureComponentUtils extends RdfService {
         validateComponent(component);
 
         component.setUpdated(DateUtils.getCurrentDate());
-        createRDFForComponent(component, ValidationStatus.MODIFIED);
+        String status= getValidationStatus(componentId);
+        if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+            createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
+        } else {
+            createRDFForComponent(component, ValidationStatus.MODIFIED);
+        }
+
 
         return component.getId();
     }
