@@ -33,7 +33,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
-import net.sf.saxon.TransformerFactoryImpl;
 
 public class XMLUtils {
 
@@ -46,7 +45,7 @@ public class XMLUtils {
 
 	public static final String toString(Document xml)
 			throws TransformerFactoryConfigurationError, TransformerException {
-		TransformerFactory tf = TransformerFactoryImpl.newDefaultInstance();
+		TransformerFactory tf = TransformerFactory.newDefaultInstance();
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
