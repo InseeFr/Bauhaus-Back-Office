@@ -356,15 +356,6 @@ public class StructureUtils extends RdfService {
     }
 
     public void deleteStructure(String structureId) throws RmesException {
-        JSONArray components = repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(structureId));
-        components.forEach(component -> {
-            String id = ((JSONObject) component).getString("id");
-            String type = ((JSONObject) component).getString("type");
-            try {
-                structureComponentUtils.deleteComponent((JSONObject) component, id, type);
-            } catch (RmesException e) {
-            }
-        });
         IRI structureIri = RdfUtils.structureIRI(structureId);
         repoGestion.clearStructureNodeAndComponents(structureIri);
         repoGestion.deleteObject(structureIri, null);
