@@ -45,7 +45,7 @@ public class XMLUtils {
 
 	public static final String toString(Document xml)
 			throws TransformerFactoryConfigurationError, TransformerException {
-		TransformerFactory tf = TransformerFactory.newDefaultInstance();
+		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
