@@ -449,6 +449,14 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.7.2</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/jaxen/jaxen --> 
+		<!-- Used for LDAP connexion -->
+		<dependency>
+			<groupId>jaxen</groupId>
+			<artifactId>jaxen</artifactId>
+			<version>1.1.1</version>
+		</dependency>
 
 		<!-- XHTML to Markdown parser -->
 		<dependency>
