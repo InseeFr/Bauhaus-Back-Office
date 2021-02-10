@@ -776,31 +776,6 @@ public class OperationsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
-	@GET
-	@Path("/series/seriesForStamp/{stamp}")	
-	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesForStamp", summary = "Series with given stamp")
-	public Response getSeriesForStamp(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
-			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesForStamp(stamp);	
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
-
-	@GET
-	@Path("/series/seriesIdsForStamp/{stamp}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "seriesIdsForStamp", summary = "Ids of Series with given stamp")
-	public Response getSeriesIdsForStamp(@Parameter(
-			description = "Timbre d'un utilisateur (format : ([A-Za-z0-9_-]+))",
-			required = true,
-			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathParam(Constants.STAMP) String stamp
-			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesIdsForStamp(stamp);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
-	}
 	
 	@GET
 	@Path("/series/seriesWithStamp/{stamp}")
