@@ -56,9 +56,8 @@ public interface OperationsService {
 
 	String setSeriesValidation(String body) throws RmesException;
 
-	String getSeriesForStamp(String stamp) throws RmesException;
+	String getSeriesForSearchWithStamp(String stamp) throws RmesException;
 	
-	String getSeriesIdsForStamp(String stamp) throws RmesException;
 	
 	/******************************************************************************************
 	 * OPERATIONS
@@ -150,7 +149,7 @@ public interface OperationsService {
 
 	String getMSDJson() throws RmesException;
 
-  String getMetadataReportDefaultValue() throws IOException;
+	String getMetadataReportDefaultValue() throws IOException;
 
 	Status deleteMetadataReport(String id) throws RmesException;
 

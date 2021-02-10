@@ -52,15 +52,14 @@ public class XDocReport {
 
 			report.convert(context, options, oFile);
 		} catch (XDocReportException | IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		return oFile;		
 
 	}
 
 	@Deprecated
-	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws Exception {
+	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws IOException, XDocReportException, RmesException {
 		// 1) Load DOCX into XWPFDocument
 		IXDocReport report = getReportTemplate(odtTemplate);
 
@@ -81,14 +80,14 @@ public class XDocReport {
 		try {
 			report = getReportTemplate(odtTemplate);
 			
-		// 2) Create Java model context 
-		IContext context = getXmlData(report, xml);
-
-		// 3) Generate report by merging Java model with the ODT
-		oFile = createOutputFile(false); 
-		report.process(context, oFile);} catch (IOException | XDocReportException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// 2) Create Java model context 
+			IContext context = getXmlData(report, xml);
+	
+			// 3) Generate report by merging Java model with the ODT
+			oFile = createOutputFile(false); 
+			report.process(context, oFile);
+		}catch (IOException | XDocReportException e) {
+			logger.error(e.getMessage());
 		}
 		return oFile;
 	}

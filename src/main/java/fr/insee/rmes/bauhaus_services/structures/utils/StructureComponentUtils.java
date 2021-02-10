@@ -241,14 +241,11 @@ public class StructureComponentUtils extends RdfService {
         boolean findPublishedStructure = false;
         for (int i = 0; i < structures.length(); i++) {
             JSONObject structure = (JSONObject) structures.get(i);
-            //FIXME begin
-            /* I make a proposal, but I don't really know what you want to do here         */
             String stateStructure = structure.getString("validationState"); //update state to test foreach
             if(stateStructure.equals(VALIDATED) || stateStructure.equals(MODIFIED)){
                 findPublishedStructure = true;
                 break;
             }
-            //FIXME end
         }
 
         if(findPublishedStructure){
