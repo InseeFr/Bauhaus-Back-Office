@@ -266,18 +266,18 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String targetId = target[1];
 		IRI targetUri = null;
-		
+
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
 		switch(targetType) {
-			case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
-			case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
-			case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
-			default : break;
+		case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
+		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
+		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
+		default : break;
 		}
-		
+
 		/* Check rights */
 		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -504,12 +504,12 @@ public class DocumentationsUtils extends RdfService{
 		}
 		return stamps;
 	}
-	
+
 	public File exportTestMetadataReport() throws IOException {
 		return docExport.testExport();
 	}
 
-	public File exportMetadataReport(String id) throws IOException, RmesException {
+	public File exportMetadataReport(String id, Boolean includeEmptyMas) throws IOException, RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -517,7 +517,7 @@ public class DocumentationsUtils extends RdfService{
 		String operationXML;
 		String seriesXML = emptyXML;
 		String indicatorXML;
-		
+
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
@@ -551,16 +551,16 @@ public class DocumentationsUtils extends RdfService{
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
-	} else {indicatorXML = emptyXML;}
-		
-		
+		} else {indicatorXML = emptyXML;}
+
+
 		if (targetType.equals(Constants.SERIES_UP)) {
 			seriesXML=XMLUtils.produceXMLResponse(
 					seriesUtils.getSeriesById(idDatabase));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
-		
+
 		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
 
 		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
@@ -577,7 +577,7 @@ public class DocumentationsUtils extends RdfService{
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType);
+				organizationsXML,codeListsXML,targetType,includeEmptyMas);
 	}
 
 	public File exportMetadataReportOld(String id) throws IOException, RmesException {
@@ -670,8 +670,8 @@ public class DocumentationsUtils extends RdfService{
 		return docExport.exportOld(simsInputStream,absolutePath,accessoryAbsolutePath,
 				organizationsAbsolutePath,codeListAbsolutePath,targetType);
 	}
-	
-	
+
+
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
 		MAS currentRubric;

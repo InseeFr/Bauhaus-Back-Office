@@ -10,11 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -22,19 +21,15 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
+import fr.insee.rmes.utils.XMLUtils;
 
 @Component
 public class DocumentationExport {
@@ -69,39 +64,18 @@ public class DocumentationExport {
 	}
 
 	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
-			String organizationsXML, String codeListsXML, String targetType) throws RmesException, IOException  {
+			String organizationsXML, String codeListsXML, String targetType, Boolean includeEmptyMas) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
-		String parametersXML ="";
-		InputStream parametersXMLFile = getClass().getResourceAsStream("/xslTransformerFiles/parameters.xml");
-		
-		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance(); 
-        domFactory.setIgnoringComments(true);
-		 DocumentBuilder docBuilder;
-	     Document doc = null;
-		try {
-			docBuilder = domFactory.newDocumentBuilder();
-			doc = docBuilder.parse(parametersXMLFile);
-	         Node root=doc.getFirstChild();
-	         Element newserver=doc.createElement("targetType");
-	         newserver.setNodeValue(targetType);
-	         root.appendChild(newserver);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}        
-		
-		try {
-			parametersXML = IOUtils.toString(parametersXMLFile, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			logger.error("Failed to read the xml : ", e);
-		}
 
+		List<String> languages = new ArrayList<String>();
+		String parametersXML = buildParams(languages,includeEmptyMas,targetType);
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt_v6.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
@@ -114,13 +88,15 @@ public class DocumentationExport {
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 			// set parameters
-			xsltTransformer.setParameter("simsXML", simsXML);
-			xsltTransformer.setParameter("operationXML", operationXML);
-			xsltTransformer.setParameter("indicatorXML", indicatorXML);
-			xsltTransformer.setParameter("seriesXML", seriesXML);
-			xsltTransformer.setParameter("msdXML", msdXML);
-			xsltTransformer.setParameter("codeListsXML", codeListsXML);
-			xsltTransformer.setParameter("parametersXML", doc.toString());
+			xsltTransformer.setParameter("Sims", simsXML);
+			xsltTransformer.setParameter("Organizations", organizationsXML);
+			xsltTransformer.setParameter("Operation", operationXML);
+			xsltTransformer.setParameter("Indicator", indicatorXML);
+			xsltTransformer.setParameter("Series", seriesXML);
+			xsltTransformer.setParameter("Msd", msdXML);
+			xsltTransformer.setParameter("CodeLists", codeListsXML);
+			xsltTransformer.setParameter("parameters", XMLUtils.convertStringToDocument(parametersXML));
+			//xsltTransformer.setParameter("parameters", doc.toString());
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
@@ -135,6 +111,59 @@ public class DocumentationExport {
 		}
 		logger.debug("End To export documentation");
 		return(output);
+	}
+
+	private String buildParams(List<String> languages, Boolean includeEmptyMas, String targetType) {
+		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
+		String parametersXML="";
+		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
+
+		parametersXML=parametersXML.concat(Constants.XML_OPEN_LANGUAGES_TAG);
+		//		for(String language : languages) {
+		//			parametersXML=parametersXML.concat(Constants.XML_OPEN_LANGUAGE_TAG);
+		//			parametersXML=parametersXML.concat(Constants.XML_END_LANGUAGE_TAG);
+		//		}
+		parametersXML=parametersXML.concat("<language id=\"Fr\">1</language>\r\n<language id=\"En\">2</language>");
+		parametersXML=parametersXML.concat(Constants.XML_END_LANGUAGES_TAG);
+
+		parametersXML=parametersXML.concat(Constants.XML_OPEN_INCLUDE_EMPTY_MAS_TAG);
+		parametersXML=parametersXML.concat(includeEmptyMasString);
+		parametersXML=parametersXML.concat(Constants.XML_END_INCLUDE_EMPTY_MAS_TAG);
+
+		parametersXML=parametersXML.concat(Constants.XML_OPEN_TARGET_TYPE_TAG);
+		parametersXML=parametersXML.concat(targetType);
+		parametersXML=parametersXML.concat(Constants.XML_END_TARGET_TYPE_TAG);
+
+		parametersXML=parametersXML.concat(Constants.XML_END_PARAMETERS_TAG);
+		return XMLUtils.encodeXml(parametersXML);
+		
+		// return XMLUtils.convertStringToDocument(parametersXML).toString();
+		
+		/*	
+ 		InputStream parametersXMLFile = getClass().getResourceAsStream("/xslTransformerFiles/parameters.xml");
+		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance(); 
+        domFactory.setIgnoringComments(true);
+		 DocumentBuilder docBuilder;
+	     Document doc = null;
+		try {
+			docBuilder = domFactory.newDocumentBuilder();
+			doc = docBuilder.parse(parametersXMLFile);
+	         Node root=doc.getFirstChild();
+	         Element targetTypeNode=doc.createElement("targetType");
+	         targetTypeNode.setNodeValue(targetType);
+	         Element includeEmptyMasNode=doc.createElement("includeEmptyMas");
+	         includeEmptyMasNode.setNodeValue(includeEmptyMasString);
+	         root.appendChild(targetTypeNode);
+	         root.appendChild(includeEmptyMasNode);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}        
+		try {
+			parametersXML = IOUtils.toString(parametersXMLFile, StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			logger.error("Failed to read the xml : ", e);
+		}
+		 */		
 	}
 
 	public File exportOld(InputStream inputFile, 

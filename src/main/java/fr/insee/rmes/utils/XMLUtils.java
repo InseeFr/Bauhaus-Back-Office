@@ -125,7 +125,7 @@ public class XMLUtils {
 		return tagValues;
 	}
 
-	private static String encodeXml(String response) {
+	public static String encodeXml(String response) {
 		String ret = StringEscapeUtils.unescapeXml(response);
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 

@@ -420,11 +420,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public Response exportMetadataReport(String id) throws RmesException  {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas) throws RmesException  {
 		File output;
 		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id);
+			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas);
 			is = new FileInputStream(output);
 		} catch (Exception e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
