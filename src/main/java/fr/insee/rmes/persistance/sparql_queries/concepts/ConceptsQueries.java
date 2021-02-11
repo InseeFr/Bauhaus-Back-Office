@@ -301,6 +301,12 @@ public class ConceptsQueries {
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
 	}
 
+	public static String isConceptValidated(String conceptId) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("ID", conceptId);
+		return buildConceptRequest("isConceptValidated.ftlh", params);
+	}
 	
 	/**
 	 * @param uriConcept

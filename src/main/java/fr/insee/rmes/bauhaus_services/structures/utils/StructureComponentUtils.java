@@ -6,6 +6,7 @@ import java.util.Arrays;
 import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +22,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -46,6 +48,9 @@ public class StructureComponentUtils extends RdfService {
     static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
+
+    @Autowired
+    ComponentPublication componentPublication;
 
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
@@ -274,5 +279,46 @@ public class StructureComponentUtils extends RdfService {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);
         }
         repoGestion.deleteObject(componentIri, null);
+    }
+
+    public String publishComponent(JSONObject component) throws RmesException {
+
+        if(component.isNull("creator") || "".equals(component.getString("creator"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+        }
+
+        if(component.isNull("disseminationStatus") || "".equals(component.getString("disseminationStatus"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+        }
+
+        if(!component.isNull("concept") && !"".equals(component.getString("concept"))){
+            if(!repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
+            }
+        }
+
+        MutualizedComponent mutualizedComponent;
+        try {
+            mutualizedComponent = deserializeBody(component.toString());
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+        }
+        mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
+        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED);
+
+        String type = component.getString("type");
+        String id = component.getString("id");
+
+        if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id));
+        }
+        if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id));
+        }
+        if (type.equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id));
+        }
+
+        return id;
     }
 }
