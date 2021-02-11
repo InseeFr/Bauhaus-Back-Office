@@ -129,7 +129,6 @@ public class StructureComponentUtils extends RdfService {
         String currentDate = DateUtils.getCurrentDate();
         component.setCreated(currentDate);
         component.setUpdated(currentDate);
-        component.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
         return id;
     }
