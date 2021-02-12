@@ -73,6 +73,8 @@ public class ErrorCodes {
 	public static final int COMPONENT_PUBLICATION_EMPTY_CREATOR = 1004;
 	public static final int COMPONENT_PUBLICATION_EMPTY_STATUS = 1005;
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
+	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
+
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
 	 */

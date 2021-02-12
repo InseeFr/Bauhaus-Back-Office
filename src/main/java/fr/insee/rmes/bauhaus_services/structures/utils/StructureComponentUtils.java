@@ -6,6 +6,7 @@ import java.util.Arrays;
 import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -297,6 +298,13 @@ public class StructureComponentUtils extends RdfService {
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
             }
         }
+
+        if(!component.isNull("codeList") && !"".equals(component.getString("codeList"))){
+            if(!repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
+            }
+        }
+
 
         MutualizedComponent mutualizedComponent;
         try {
