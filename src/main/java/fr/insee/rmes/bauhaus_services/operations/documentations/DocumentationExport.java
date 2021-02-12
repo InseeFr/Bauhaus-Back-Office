@@ -95,7 +95,7 @@ public class DocumentationExport {
 			xsltTransformer.setParameter("Series", seriesXML);
 			xsltTransformer.setParameter("Msd", msdXML);
 			xsltTransformer.setParameter("CodeLists", codeListsXML);
-			xsltTransformer.setParameter("parameters", XMLUtils.convertStringToDocument(parametersXML));
+			xsltTransformer.setParameter("parameters", parametersXML);
 			//xsltTransformer.setParameter("parameters", doc.toString());
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
@@ -116,6 +116,8 @@ public class DocumentationExport {
 	private String buildParams(List<String> languages, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
+		parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
+		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_LANGUAGES_TAG);
