@@ -57,6 +57,9 @@ public class StructureUtils extends RdfService {
     @Autowired
     StructureComponentUtils structureComponentUtils;
 
+    @Autowired
+    StructurePublication structurePublication;
+
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
         for (int i = 0; i < structures.length(); i++) {
             JSONObject current = structures.getJSONObject(i);
@@ -359,5 +362,34 @@ public class StructureUtils extends RdfService {
         IRI structureIri = RdfUtils.structureIRI(structureId);
         repoGestion.clearStructureNodeAndComponents(structureIri);
         repoGestion.deleteObject(structureIri, null);
+    }
+
+    public String publishStructure(JSONObject structure) throws RmesException {
+        String id = structure.getString("id");
+        JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getCountOfUnValidatedComponent(id));
+        int count = response.getInt("count");
+        if(count > 0){
+            throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "All components must be validated", new JSONArray());
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Structure structureObject = new Structure(id);
+        try {
+            structureObject = mapper.readerForUpdating(structureObject).readValue(structure.toString());
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+        }
+
+        IRI structureIri = RdfUtils.structureIRI(structureObject.getId());
+
+        this.structurePublication.publish(structureIri);
+
+        structureObject.setUpdated(DateUtils.getCurrentDate());
+        repoGestion.clearStructureNodeAndComponents(structureIri);
+        createRdfStructure(structureObject, ValidationStatus.VALIDATED);
+
+        return structure.toString();
     }
 }

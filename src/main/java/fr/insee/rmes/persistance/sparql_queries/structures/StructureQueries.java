@@ -94,6 +94,12 @@ public class StructureQueries {
 		return buildRequest("getLastIdStructure.ftlh", params);
 	}
 
+	public static String getCountOfUnValidatedComponent(String structureById) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("ID", structureById);
+		return buildRequest("getCountOfUnValidatedComponent.ftlh", params);
+	}
+
 	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("structures/", fileName, params);
 	}
@@ -107,4 +113,6 @@ public class StructureQueries {
 
 		return params;
 	}
+
+
 }

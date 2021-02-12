@@ -98,6 +98,22 @@ public class StructureResources {
     }
 
     @GET
+    @Path("/structure/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "publishStructureById", summary = "Publish a structure")
+    public Response publishStructureById(@PathParam(Constants.ID) String id) {
+        String jsonResultat = null;
+        try {
+            jsonResultat = structureService.publishStructureById(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        } catch( Exception e ) {
+            System.out.println(e);
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET
     @Path("/structure/{id}/details")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
