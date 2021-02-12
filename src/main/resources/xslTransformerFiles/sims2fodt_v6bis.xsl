@@ -19,87 +19,29 @@
     <xsl:param name="parametersFile"/>
 
     <!-- the params with the content of the files -->
-    <xsl:param name="parameters">
-        <xsl:choose>
-            <xsl:when test="doc-available($parametersFile)">
-                <xsl:copy-of select="document($parametersFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <parameters/>
-            </xsl:otherwise>
-        </xsl:choose>
-    </xsl:param>
+    <xsl:param name="parameters" select="document($parametersFile)"/>
     <xsl:param name="series" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($seriesFile)">
-                <xsl:copy-of select="document($seriesFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Series/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Series/>
     </xsl:param>
     <xsl:param name="operation" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($operationFile)">
-                <xsl:copy-of select="document($operationFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Operation/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Operation/>
     </xsl:param>
     <xsl:param name="indicator" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($indicatorFile)">
-                <xsl:copy-of select="document($indicatorFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Indicator/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Indicator/>
     </xsl:param>
     <xsl:param name="sims" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($simsFile)">
-                <xsl:copy-of select="document($simsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Sims/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Sims/>
     </xsl:param>
     <xsl:param name="organizations" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($organizationsFile)">
-                <xsl:copy-of select="document($organizationsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Organizations/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Organizations/>
     </xsl:param>
     <xsl:param name="codeLists" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($codeListsFile)">
-                <xsl:copy-of select="document($codeListsFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <CodeLists/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <CodeLists/>
     </xsl:param>
     <xsl:param name="msd" as="node()">
-        <xsl:choose>
-            <xsl:when test="doc-available($msdFile)">
-                <xsl:copy-of select="document($msdFile)"/>
-            </xsl:when>
-            <xsl:otherwise>
-                <Msd/>
-            </xsl:otherwise>
-        </xsl:choose>
+        <Msd/>
     </xsl:param>
-    
+
     <!-- keep the minimum spaces from the data -->
     <xsl:strip-space elements="*" />
 
@@ -123,57 +65,6 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="office:automatic-styles">
-        <xsl:copy>
-            <parameters>
-                <xsl:copy-of select="$parameters"/>
-            </parameters>
-            <seriesFile>
-                <xsl:copy-of select="$seriesFile"/>
-            </seriesFile>
-            <operationFile>
-                <xsl:copy-of select="$operationFile"/>
-            </operationFile>
-            <indicatorFile>
-                <xsl:copy-of select="$indicatorFile"/>
-            </indicatorFile>
-            <simsFile>
-                <xsl:copy-of select="$simsFile"/>
-            </simsFile>
-            <organizationsFile>
-                <xsl:copy-of select="$organizationsFile"/>
-            </organizationsFile>
-            <codeListsFile>
-                <xsl:copy-of select="$codeListsFile"/>
-            </codeListsFile>
-            <msdFile>
-                <xsl:copy-of select="$msdFile"/>
-            </msdFile>
-            <series>
-                <xsl:copy-of select="$series"/>
-            </series>
-            <operation>
-                <xsl:copy-of select="$operation"/>
-            </operation>
-            <indicator>
-                <xsl:copy-of select="$indicator"/>
-            </indicator>
-            <sims>
-                <xsl:copy-of select="$sims"/>
-            </sims>
-            <organizations>
-                <xsl:copy-of select="$organizations"/>
-            </organizations>
-            <codeLists>
-                <xsl:copy-of select="$codeLists"/>
-            </codeLists>
-            <msd>
-                <xsl:copy-of select="$msd"/>
-            </msd>
-            <xsl:apply-templates select="node() | @*"/>
-        </xsl:copy>
-        
-    </xsl:template>
     <xd:doc>
         <xd:desc>loop on the mas</xd:desc>
     </xd:doc>

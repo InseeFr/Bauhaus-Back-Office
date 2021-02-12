@@ -26,7 +26,7 @@ public class Constants {
 	public static final String DOCUMENT = "document";
 	public static final String DOCUMENTS_LG1 = "documentsLg1";
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
-
+	public static final String DOT_XML = ".xml";
 	
 	/*F*/
 	public static final String FAMILY = "family";

@@ -93,7 +93,7 @@ public class XMLUtils {
 	}
 
 	public static String produceEmptyXML() {
-		return("");
+		return("<></>");
 	}
 	
 	public static Document convertStringToDocument(String xmlStr) {
@@ -130,6 +130,15 @@ public class XMLUtils {
 		final String regex = "&[^amp;]";
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern.matcher(ret).replaceAll("&amp;");
+		
+		final String regex2 = "&lt;";
+		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern2.matcher(ret).replaceAll("&amp;lt;");
+		
+		final String regex3 = "&gt;";
+		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern3.matcher(ret).replaceAll("&amp;gt;");
+		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 

@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,16 +89,28 @@ public class DocumentationExport {
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-			// set parameters
-			xsltTransformer.setParameter("Sims", simsXML);
-			xsltTransformer.setParameter("Organizations", organizationsXML);
-			xsltTransformer.setParameter("Operation", operationXML);
-			xsltTransformer.setParameter("Indicator", indicatorXML);
-			xsltTransformer.setParameter("Series", seriesXML);
-			xsltTransformer.setParameter("Msd", msdXML);
-			xsltTransformer.setParameter("CodeLists", codeListsXML);
-			xsltTransformer.setParameter("parameters", parametersXML);
-			//xsltTransformer.setParameter("parameters", doc.toString());
+			
+			// set parameters as Strings
+//			xsltTransformer.setParameter("Sims", simsXML);
+//			xsltTransformer.setParameter("Organizations", organizationsXML);
+//			xsltTransformer.setParameter("Operation", operationXML);
+//			xsltTransformer.setParameter("Indicator", indicatorXML);
+//			xsltTransformer.setParameter("Series", seriesXML);
+//			xsltTransformer.setParameter("Msd", msdXML);
+//			xsltTransformer.setParameter("CodeLists", codeListsXML);
+//			xsltTransformer.setParameter("parameters", parametersXML);
+			
+			// Pass parameters in a file
+			Path tempDir= Files.createTempDirectory("forExport");
+			addParameter ( xsltTransformer,  "parametersFile",  parametersXML,tempDir);
+			addParameter ( xsltTransformer,  "simsFile",  simsXML,tempDir);
+			addParameter ( xsltTransformer,  "seriesFile",  seriesXML,tempDir);
+			addParameter ( xsltTransformer,  "operationFile",  operationXML,tempDir);
+			addParameter ( xsltTransformer,  "indicatorFile",  indicatorXML,tempDir);
+			addParameter ( xsltTransformer,  "msdFile",  msdXML,tempDir);
+			addParameter ( xsltTransformer,  "codeListsFile",  codeListsXML,tempDir);
+			addParameter ( xsltTransformer,  "organizationsFile",  organizationsXML,tempDir);
+			
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
@@ -116,7 +130,7 @@ public class DocumentationExport {
 	private String buildParams(List<String> languages, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
-		parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
+	//	parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
 		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 
@@ -168,6 +182,18 @@ public class DocumentationExport {
 		 */		
 	}
 
+	private void addParameter (Transformer xsltTransformer, String paramName, String paramData, Path tempDir) throws IOException {
+		// Pass parameters in a file
+		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
+		Path tempFile = Files.createTempFile(tempDir, paramName,Constants.DOT_XML);
+		String absolutePath = tempFile.toFile().getAbsolutePath();
+		InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
+		Files.copy(is, tempFile, options);
+		absolutePath = absolutePath.replace('\\', '/');
+		xsltTransformer.setParameter(paramName, absolutePath);			
+	}
+	
+	
 	public File exportOld(InputStream inputFile, 
 			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
 			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
