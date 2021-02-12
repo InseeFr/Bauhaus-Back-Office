@@ -176,7 +176,9 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
-        RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+        if(component.getConcept() != null){
+            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+        }
 
         if (component.getRange() != null && component.getRange().equals(((SimpleIRI)INSEE.CODELIST).toString())) {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
@@ -303,20 +305,21 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
         }
         mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
-        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED);
 
         String type = component.getString("type");
         String id = component.getString("id");
 
         if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
-            componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id));
+            componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
         }
         if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
-            componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id));
+            componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id), QB.MEASURE_PROPERTY);
         }
         if (type.equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
-            componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id));
+            componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
         }
+
+        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED);
 
         return id;
     }
