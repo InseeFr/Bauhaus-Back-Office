@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.QB;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -35,6 +36,11 @@ public class ComponentPublication extends RdfService {
 
 					if (pred.endsWith("validationState")) {
 						// nothing, wouldn't copy this attr
+					}else if (pred.endsWith("attribute")
+							|| pred.endsWith("dimension")
+							|| pred.endsWith("measure")) {
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 					}
 					else {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
