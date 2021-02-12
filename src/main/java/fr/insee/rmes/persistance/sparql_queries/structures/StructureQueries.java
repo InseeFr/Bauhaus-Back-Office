@@ -14,6 +14,11 @@ public class StructureQueries {
 		return buildRequest("getStructures.ftlh", params);
 	}
 
+	public static String getValidationStatus(String id) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("id", id);
+		return buildRequest("getValidationStatus.ftlh", params);
+	}
 	public static String getStructuresAttachments(String id) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put("COMPONENT_SPECIFICATION_ID", id);
