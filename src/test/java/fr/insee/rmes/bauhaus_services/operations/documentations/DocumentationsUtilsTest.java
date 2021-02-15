@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -34,7 +35,7 @@ public class DocumentationsUtilsTest {
 		MockitoAnnotations.initMocks(this);
 	}
 	@Test
-	//@Disabled
+	@Disabled
 	void buildDocumentationFromJsonTest() throws RmesException{
 		
 		// Mocker les méthodes de buildDocumentationFromJson qui font appel à d'autres classes
