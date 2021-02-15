@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +54,9 @@ public class StructureUtils extends RdfService {
     public static final String COMPONENT_DEFINITION_CREATED = "componentDefinitionCreated";
     public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
+
+    @Autowired
+    StructureComponent structureComponent;
 
     @Autowired
     StructureComponentUtils structureComponentUtils;
@@ -366,10 +370,14 @@ public class StructureUtils extends RdfService {
 
     public String publishStructure(JSONObject structure) throws RmesException {
         String id = structure.getString("id");
-        JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getCountOfUnValidatedComponent(id));
-        int count = response.getInt("count");
-        if(count > 0){
-            throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "All components must be validated", new JSONArray());
+        JSONArray ids = repoGestion.getResponseAsArray(StructureQueries.getUnValidatedComponent(id));
+        for (int i = 0; i < ids.length(); i++) {
+            String idComponent = ((JSONObject) ids.get(i)).getString("id");
+            try {
+                structureComponent.publishComponent(idComponent);
+            } catch (RmesException e) {
+                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "The component " + idComponent + " component can not be published", new JSONArray());
+            }
         }
 
         ObjectMapper mapper = new ObjectMapper();
