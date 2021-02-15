@@ -141,7 +141,7 @@ public interface OperationsService {
 
 	String publishMetadataReport(String id) throws RmesException;
 	
-	Response exportMetadataReport(String id) throws RmesException;
+	Response exportMetadataReport(String id, Boolean includeEmptyMas) throws RmesException;
 
 	Response exportTestMetadataReport() throws RmesException;
 	

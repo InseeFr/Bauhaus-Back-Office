@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+                 xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+                 xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+                 xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+                 xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+                 xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+                 xmlns:saxon="http://saxon.sf.net/"
+                 xmlns:functx="http://www.functx.com"
+                 xmlns:fn="http://www.w3.org/2005/xpath-functions"
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
+                 xmlns:officeooo="http://openoffice.org/2009/office"
+                 office:version="1.2"
+                 office:mimetype="application/vnd.oasis.opendocument.text">
+   <office:automatic-styles>
+      <style:style style:name="Tableau3.A" style:family="table-column">
+         <style:table-column-properties style:column-width="8.0cm"/>
+      </style:style>
+      <style:style style:name="Tableau3.B" style:family="table-column">
+         <style:table-column-properties style:column-width="0.5cm"/>
+      </style:style>
+      <style:style style:name="framedCell" style:family="table-cell">
+         <style:table-cell-properties fo:wrap-option="wrap"
+                                      style:shrink-to-fit="false"
+                                      style:vertical-align="top"
+                                      fo:border="2pt solid #234ca5"
+                                      fo:padding="0cm"/>
+      </style:style>
+      <style:style style:name="P1"
+                   style:parent-style-name="Standard"
+                   style:family="paragraph">
+         <style:paragraph-properties fo:text-align="left"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"/>
+         <style:text-properties fo:font-size="12pt" fo:font-weight="normal" fo:color="#000000"/>
+      </style:style>
+      <style:style style:name="HeaderFr"
+                   style:family="paragraph"
+                   style:class="chapter">
+         <style:paragraph-properties fo:text-align="center"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"
+                                     fo:background-color="#012a83"/>
+         <style:text-properties fo:font-size="24pt" fo:font-weight="bold" fo:color="#ffffff"/>
+      </style:style>
+      <style:style style:name="HeaderEn"
+                   style:family="paragraph"
+                   style:class="chapter">
+         <style:paragraph-properties fo:text-align="center"
+                                     style:justify-single-word="false"
+                                     fo:background-color="#234ca5"/>
+         <style:text-properties fo:font-size="20pt" fo:font-weight="bold" fo:color="#ffffff"/>
+      </style:style>
+      <style:style style:name="RubricItem" style:family="paragraph">
+         <style:paragraph-properties style:vertical-align="top"
+                                     style:justify-single-word="false"
+                                     fo:text-align="start"
+                                     style:auto-text-indent="false"
+                                     fo:text-indent="0cm"
+                                     fo:line-height="100%"
+                                     fo:margin-bottom="0.33cm"
+                                     fo:margin-top="0.33cm"
+                                     fo:margin-right="0.33cm"
+                                     fo:margin-left="0.33cm"/>
+         <style:text-properties style:text-rotation-scale="line-height"
+                                style:text-rotation-angle="0"
+                                style:font-size-complex="10pt"
+                                style:font-size-asian="10pt"
+                                fo:font-size="10pt"
+                                style:font-name="Arial"/>
+      </style:style>
+      <style:style style:name="Tableau1"
+                   style:master-page-name="master_5f_0"
+                   style:family="table">
+         <style:table-properties style:page-number="auto"
+                                 style:width="20.98cm"/>
+      </style:style>
+      <style:style style:name="T2" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="center" fo:margin-top="1cm"/>
+         <style:text-properties style:text-rotation-scale="line-height"
+                                style:text-rotation-angle="0"
+                                style:font-size-complex="14pt"
+                                style:font-size-asian="14pt"
+                                fo:font-weight="bold"
+                                fo:font-size="14pt"
+                                style:font-name="Arial"
+                                fo:color="#234ca5"/>
+      </style:style>
+      <style:style style:name="T2En" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="center"/>
+         <style:text-properties style:text-rotation-scale="line-height"
+                                style:text-rotation-angle="0"
+                                style:font-size-complex="12pt"
+                                style:font-size-asian="12pt"
+                                fo:font-weight="bold"
+                                fo:font-size="12pt"
+                                style:font-name="Arial"
+                                fo:color="#234ca5"/>
+      </style:style>
+      <style:style style:name="T3" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="center"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"
+                                     fo:background-color="#012a83"/>
+         <style:text-properties fo:font-size="14pt" fo:font-weight="bold" fo:color="#ffffff"/>
+      </style:style>
+      <text:list-style style:name="L1">
+         <text:list-level-style-bullet text:bullet-char="•"
+                                       text:style-name="Bullet_20_Symbols"
+                                       text:level="1">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="1.27cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="1.27cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-bullet>
+         <text:list-level-style-bullet text:bullet-char="◦"
+                                       text:style-name="Bullet_20_Symbols"
+                                       text:level="2">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="1.905cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="1.905cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-bullet>
+         <text:list-level-style-bullet text:bullet-char="▪"
+                                       text:style-name="Bullet_20_Symbols"
+                                       text:level="3">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="2.54cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="2.54cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-bullet>
+      </text:list-style>
+      <text:list-style style:name="L2">
+         <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                                       text:level="1"
+                                       style:num-format="1"
+                                       style:num-suffix=".">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="1.27cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="1.27cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-number>
+         <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                                       text:level="2"
+                                       style:num-format="1"
+                                       style:num-suffix=".">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="1.905cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="1.905cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-number>
+         <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                                       text:level="3"
+                                       style:num-format="1"
+                                       style:num-suffix=".">
+            <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+               <style:list-level-label-alignment fo:margin-left="2.54cm"
+                                                 fo:text-indent="-0.635cm"
+                                                 text:list-tab-stop-position="2.54cm"
+                                                 text:label-followed-by="listtab"/>
+            </style:list-level-properties>
+         </text:list-level-style-number>
+      </text:list-style>
+      <style:style style:name="TitleFr" style:family="paragraph" style:class="chapter">
+         <style:paragraph-properties fo:text-align="center"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"/>
+         <style:text-properties fo:font-size="20pt" fo:font-weight="bold" fo:color="#0000ff"/>
+      </style:style>
+      <style:style style:name="TitleEn" style:family="paragraph" style:class="chapter">
+         <style:paragraph-properties fo:text-align="center"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"/>
+         <style:text-properties fo:font-size="16pt" fo:font-weight="bold" fo:color="#0000ff"/>
+      </style:style>
+      <style:style style:name="Rubric" style:family="paragraph" style:class="chapter">
+         <style:paragraph-properties fo:text-align="left"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"/>
+         <style:text-properties fo:font-size="12pt" fo:font-weight="normal" fo:color="#000000"/>
+      </style:style>
+      <style:style style:name="RubricHead" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="left"
+                                     fo:margin-top="1cm"
+                                     style:justify-single-word="false"/>
+         <style:text-properties style:font-weight-complex="bold"
+                                style:font-size-complex="10pt"
+                                style:font-weight-asian="bold"
+                                style:font-size-asian="10pt"
+                                fo:font-weight="bold"
+                                fo:font-size="10pt"
+                                style:font-name="Arial1"
+                                style:text-underline-color="font-color"
+                                style:text-underline-width="auto"
+                                style:text-underline-style="solid"/>
+      </style:style>
+      <style:style style:name="attribute" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="left"
+                                     style:justify-single-word="false"
+                                     fo:margin-bottom="0.15cm"
+                                     fo:margin-top="0.33cm"
+                                     fo:margin-right="0.15cm"
+                                     fo:margin-left="0.15cm"/>
+         <style:text-properties fo:font-size="10pt"
+                                fo:font-weight="bold"
+                                fo:color="#000000"
+                                style:text-underline-color="font-color"
+                                style:text-underline-width="auto"
+                                style:text-underline-style="solid"/>
+      </style:style>
+      <style:style style:name="Field" style:family="paragraph">
+         <style:paragraph-properties fo:text-align="left"
+                                     style:justify-single-word="false"
+                                     fo:margin-bottom="0.33cm"
+                                     fo:margin-top="0.33cm"
+                                     fo:margin-right="0.15cm"
+                                     fo:margin-left="0.15cm"/>
+         <style:text-properties fo:font-size="10pt" fo:font-weight="normal" fo:color="#000000"/>
+      </style:style>
+      <style:style style:name="Bold" style:family="text">
+         <style:text-properties style:font-weight-complex="bold"
+                                style:font-weight-asian="bold"
+                                fo:font-weight="bold"/>
+      </style:style>
+      <style:style style:name="Italic" style:family="text">
+         <style:text-properties style:font-weight-complex="normal"
+                                style:font-weight-asian="normal"
+                                fo:font-weight="normal"
+                                style:font-style-complex="italic"
+                                style:font-style-asian="italic"
+                                fo:font-style="italic"/>
+      </style:style>
+   </office:automatic-styles>
+   <office:body>
+      <office:text text:use-soft-page-breaks="true">
+         <text:sequence-decls>
+            <text:sequence-decl text:name="Illustration" text:display-outline-level="0"/>
+            <text:sequence-decl text:name="Table" text:display-outline-level="0"/>
+            <text:sequence-decl text:name="Text" text:display-outline-level="0"/>
+            <text:sequence-decl text:name="Drawing" text:display-outline-level="0"/>
+         </text:sequence-decls>
+         <table:table table:name="Tableau1" table:style-name="Tableau1" xml:id="targetType.series.header">
+            <table:table-column table:style-name="TC0">
+            </table:table-column>
+            <table:table-row xml:id="lang.Fr.targetType.series.prefLabel">
+                  <table:table-cell>
+                     <text:p text:style-name="HeaderFr">${series.prefLabelLg1}</text:p>
+                  </table:table-cell>
+               </table:table-row>
+            <table:table-row xml:id="lang.En.targetType.series.prefLabel">
+               <table:table-cell>
+                  <text:p text:style-name="HeaderEn">${series.prefLabelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table table:name="Tableau1" table:style-name="Tableau1" xml:id="targetType.operation.header">
+            <table:table-column table:style-name="TC0">
+            </table:table-column>
+            <table:table-row xml:id="lang.Fr.targetType.operation.prefLabel">
+               <table:table-cell>
+                  <text:p text:style-name="HeaderFr">${operation.prefLabelLg1}</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row xml:id="lang.En.targetType.operation.prefLabel">
+               <table:table-cell>
+                  <text:p text:style-name="HeaderEn">${operation.prefLabelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table table:name="Tableau1" table:style-name="Tableau1" xml:id="targetType.indicator.header">
+            <table:table-column table:style-name="TC0">
+            </table:table-column>
+            <table:table-row xml:id="lang.Fr.targetType.indicator.prefLabel">
+               <table:table-cell>
+                  <text:p text:style-name="HeaderFr">${indicator.prefLabelLg1}</text:p>
+               </table:table-cell>
+            </table:table-row>
+            <table:table-row xml:id="lang.En.targetType.indicator.prefLabel">
+               <table:table-cell>
+                  <text:p text:style-name="HeaderEn">${indicator.prefLabelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table table:name="TableauSeriesHead" table:style-name="Tableau1">
+            <table:table-column table:style-name="TC0">
+            </table:table-column>
+            <table:table-row>
+               <table:table-cell>
+                  <text:p text:style-name="T2" xml:id="lang.Fr.series.head">Informations sur la série : ${series.prefLabelLg1}</text:p>
+                  <text:p text:style-name="T2En" xml:id="lang.En.series.head">Informations about the series: ${series.prefLabelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table table:name="TableauSeries" table:style-name="Tableau1">
+            <table:table-column table:style-name="Tableau3.A" xml:id="lang.Fr.series.column"/>
+            <table:table-column table:style-name="Tableau3.B" xml:id="lang.2.series.column"/>
+            <table:table-column table:style-name="Tableau3.A" xml:id="lang.En.series.column"/>
+            <table:table-row>
+               <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.series.body">
+                  <text:p text:style-name="attribute">Nom court</text:p>
+                  <text:p text:style-name="RubricItem">${series.altLabelLg1}</text:p>
+                  <text:p text:style-name="attribute">Résumé</text:p>
+                  <text:p text:style-name="RubricItem">${series.abstractLg1}</text:p>
+                  <text:p text:style-name="attribute">Historique</text:p>
+                  <text:p text:style-name="RubricItem">${series.historyNoteLg1}</text:p>
+                  <text:p text:style-name="attribute">Type d'opération</text:p>
+                  <text:p text:style-name="RubricItem">${seriesCode.type.labelLg1}</text:p>
+                  <text:p text:style-name="attribute">Fréquence de collecte des données</text:p>
+                  <text:p text:style-name="RubricItem">${seriesCode.accrualPeriodicity.labelLg1}</text:p>
+                  <text:p text:style-name="attribute">Organismes responsables</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.publishers.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Partenaires</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.contributors.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Services collecteurs</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.dataCollectors.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Propriétaire</text:p>
+                  <text:p text:style-name="RubricItem">${series.creators}</text:p>
+                  <text:p text:style-name="attribute">Succède à</text:p>
+                  <text:p text:style-name="RubricItem">${series.replaces.labelLg1}</text:p>
+                  <text:p text:style-name="attribute">Remplacée par</text:p>
+                  <text:p text:style-name="RubricItem">${series.isReplacedBy.labelLg1}</text:p>
+                  <text:p text:style-name="attribute">Indicateurs produits</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.generates.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Séries ou Indicateurs liés</text:p>
+                  <text:p text:style-name="attribute">Séries:</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.seeAlso.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Indicateurs:</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.seeAlso.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Famille parente</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.family.labelLg1},'L1')</text:p>
+                  <text:p text:style-name="attribute">Opérations filles</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.operations.labelLg1},'L1')</text:p>
+               </table:table-cell>
+               <table:table-cell table:style-name="separatingColumn" xml:id="lang.2.series.body"/>
+               <table:table-cell table:style-name="framedCell" xml:id="lang.En.series.body">
+                  <text:p text:style-name="attribute">Short name</text:p>
+                  <text:p text:style-name="RubricItem">${series.altLabelLg2}</text:p>
+                  <text:p text:style-name="attribute">Summary</text:p>
+                  <text:p text:style-name="RubricItem">${series.abstractLg2}</text:p>
+                  <text:p text:style-name="attribute">History</text:p>
+                  <text:p text:style-name="RubricItem">${series.historyNoteLg2}</text:p>
+                  <text:p text:style-name="attribute">Operation type</text:p>
+                  <text:p text:style-name="RubricItem">${seriesCode.type.labelLg2}</text:p>
+                  <text:p text:style-name="attribute">Data collection frequency</text:p>
+                  <text:p text:style-name="RubricItem">${seriesCode.accrualPeriodicity.labelLg2}</text:p>
+                  <text:p text:style-name="attribute">Replaces</text:p>
+                  <text:p text:style-name="RubricItem">${series.replaces.labelLg2}</text:p>
+                  <text:p text:style-name="attribute">Replaced by</text:p>
+                  <text:p text:style-name="RubricItem">${series.isReplacedBy.labelLg2}</text:p>
+                  <text:p text:style-name="attribute">Series and indicators produced</text:p>
+                  <text:p text:style-name="attribute">Series:</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.seeAlso.labelLg2},'L1')</text:p>
+                  <text:p text:style-name="attribute">Indicators:</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.seeAlso.labelLg2},'L1')</text:p>
+                  <text:p text:style-name="attribute">Parent Family</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.family.labelLg2},'L1')</text:p>
+                  <text:p text:style-name="attribute">Daughter operations</text:p>
+                  <text:p text:style-name="RubricItem">#list(${series.operations.labelLg2},'L1')</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table>
+            <table:table-column table:style-name="TC0">
+            </table:table-column>
+            <table:table-row>
+               <table:table-cell>
+                  <text:p text:style-name="T2" xml:id="lang.Fr.operations">Informations sur l'opération : ${operation.prefLabelLg1}</text:p>
+                  <text:p text:style-name="T2En" xml:id="lang.En.operations">Informations about the operation: ${operation.prefLabelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <table:table>
+            <table:table-column table:style-name="Tableau3.A" xml:id="lang.Fr.sims.column"/>
+            <table:table-column table:style-name="Tableau3.B" xml:id="lang.2.sims.column"/>
+            <table:table-column table:style-name="Tableau3.A" xml:id="lang.En.sims.column"/>
+            <table:table-row>
+               <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.sims.body">
+                  <text:p text:style-name="attribute">Nom court</text:p>
+                  <text:p text:style-name="RubricItem">${operation.altLabelLg1}</text:p>
+                  <text:p text:style-name="attribute">Liens</text:p>
+                  <text:p text:style-name="RubricItem">Je ne sais pas d'où on les sort</text:p>
+                  <text:p text:style-name="attribute">Série parente</text:p>
+                  <text:p text:style-name="RubricItem">${operation.series.labelLg1}</text:p>
+               </table:table-cell>
+               <table:table-cell xml:id="lang.2.sims.body"/>
+               <table:table-cell table:style-name="framedCell" xml:id="lang.En.sims.body">
+                  <text:p text:style-name="attribute">Short name</text:p>
+                  <text:p text:style-name="RubricItem">${operation.altLabelLg2}</text:p>
+                  <text:p text:style-name="attribute">Links</text:p>
+                  <text:p text:style-name="RubricItem">Je ne sais pas d'où on les sort</text:p>
+                  <text:p text:style-name="attribute">Parent series</text:p>
+                  <text:p text:style-name="RubricItem">${operation.series.labelLg2}</text:p>
+               </table:table-cell>
+            </table:table-row>
+         </table:table>
+         <text:p text:style-name="T3">Informations sur le Sims : ${sims.prefLabelLg1}</text:p>
+         <text:section text:name="mas-loop">
+            <table:table xml:id="mas.parent">
+               <table:table-column/>
+               <table:table-column/>
+               <table:table-row>
+                  <table:table-cell>
+                     <text:p text:style-name="RubricHead">${mas.idMas} - ${mas.masLabelLg1}</text:p>
+                  </table:table-cell>
+               </table:table-row>
+            </table:table>
+            <table:table xml:id="mas.child">
+               <table:table-column xml:id="lang.Fr.mas.column"/>
+               <table:table-column xml:id="lang.En.mas.column"/>
+               <table:table-row>
+                  <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.mas.body">
+                     <text:p text:style-name="attribute">${mas.idMas} - ${mas.masLabelLg1}</text:p>
+                     <text:p text:style-name="RubricItem">${simsRubrics.labelLg1}</text:p>
+                  </table:table-cell>
+                  <table:table-cell table:style-name="framedCell" xml:id="lang.En.mas.body">
+                     <text:p text:style-name="attribute">${mas.idMas} - ${mas.masLabelLg2}</text:p>
+                     <text:p text:style-name="RubricItem">${simsRubrics.labelLg2}</text:p>
+                  </table:table-cell>
+               </table:table-row>
+            </table:table>
+         </text:section>
+      </office:text>
+   </office:body>
+</office:document>

@@ -92,6 +92,10 @@ public class XMLUtils {
 		return encodeXml(response);
 	}
 
+	public static String produceEmptyXML() {
+		return("<></>");
+	}
+	
 	public static Document convertStringToDocument(String xmlStr) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
@@ -119,13 +123,22 @@ public class XMLUtils {
 		return tagValues;
 	}
 
-	private static String encodeXml(String response) {
+	public static String encodeXml(String response) {
 		String ret = StringEscapeUtils.unescapeXml(response);
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 
 		final String regex = "&[^amp;]";
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern.matcher(ret).replaceAll("&amp;");
+		
+		final String regex2 = "&lt;";
+		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern2.matcher(ret).replaceAll("&amp;lt;");
+		
+		final String regex3 = "&gt;";
+		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern3.matcher(ret).replaceAll("&amp;gt;");
+		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 

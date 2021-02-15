@@ -55,6 +55,7 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -265,18 +266,18 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String targetId = target[1];
 		IRI targetUri = null;
-		
+
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
 		switch(targetType) {
-			case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
-			case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
-			case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
-			default : break;
+		case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
+		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
+		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
+		default : break;
 		}
-		
+
 		/* Check rights */
 		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -503,12 +504,83 @@ public class DocumentationsUtils extends RdfService{
 		}
 		return stamps;
 	}
-	
+
 	public File exportTestMetadataReport() throws IOException {
 		return docExport.testExport();
 	}
 
-	public File exportMetadataReport(String id) throws IOException, RmesException {
+	public File exportMetadataReport(String id, Boolean includeEmptyMas) throws IOException, RmesException {
+
+		String emptyXML=XMLUtils.produceEmptyXML();
+		Operation operation;
+		Series series;
+		String operationXML;
+		String seriesXML = emptyXML;
+		String indicatorXML;
+
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+
+		List<String>neededCodeLists=new ArrayList<String>();
+
+		if (targetType.equals(Constants.OPERATION_UP)) {
+			operation=operationsUtils.getOperationById(idDatabase);
+			operationXML = XMLUtils.produceXMLResponse(operation);
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
+			String idSeries=operation.getSeries().getId();
+			series=seriesUtils.getSeriesById(idSeries);
+			seriesXML = XMLUtils.produceXMLResponse(series);
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		} else {operationXML = emptyXML;}
+
+
+		if (targetType.equals(Constants.INDICATOR_UP)) {
+			indicatorXML=XMLUtils.produceXMLResponse(
+					indicatorsUtils.getIndicatorById(idDatabase));
+			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
+			String idSeries=XMLUtils.getTagValues(
+					XMLUtils.getTagValues(
+							indicatorXML,
+							Constants.WASGENERATEDBY).iterator().next(),
+					Constants.ID).iterator().next();
+			series=seriesUtils.getSeriesById(idSeries);
+			seriesXML = XMLUtils.produceXMLResponse(series);
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		} else {indicatorXML = emptyXML;}
+
+
+		if (targetType.equals(Constants.SERIES_UP)) {
+			seriesXML=XMLUtils.produceXMLResponse(
+					seriesUtils.getSeriesById(idDatabase));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		}
+
+		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
+
+		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
+
+		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
+
+		String codeListsXML="";
+		codeListsXML=codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
+
+		for(String code : neededCodeLists) {
+			codeListsXML=codeListsXML.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
+		}
+		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
+
+		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
+				organizationsXML,codeListsXML,targetType,includeEmptyMas);
+	}
+
+	public File exportMetadataReportOld(String id) throws IOException, RmesException {
 
 		InputStream is;
 		InputStream is2;
@@ -517,16 +589,18 @@ public class DocumentationsUtils extends RdfService{
 
 		Path tempDir= Files.createTempDirectory("forExport");
 
+		// Xml File for Operation, Indicator or Series 
 		Path tempFile = Files.createTempFile(tempDir, "target",DOT_XML);
 		String absolutePath = tempFile.toFile().getAbsolutePath();
-
+		// Xml File for Series
 		Path accessoryTempFile = Files.createTempFile(tempDir, "series",DOT_XML);
 		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
-
+		// Xml File for Organizations
 		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",DOT_XML);
 		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
-
+		// Xml File for needed CodeLists
 		Path codeListTempFile = Files.createTempFile(tempDir, "freq",DOT_XML);
+
 		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
 
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
@@ -593,9 +667,10 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream simsInputStream = IOUtils.toInputStream(simsXML, StandardCharsets.UTF_8);
 
-		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,
+		return docExport.exportOld(simsInputStream,absolutePath,accessoryAbsolutePath,
 				organizationsAbsolutePath,codeListAbsolutePath,targetType);
 	}
+
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();

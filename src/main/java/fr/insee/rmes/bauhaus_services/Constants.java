@@ -26,7 +26,7 @@ public class Constants {
 	public static final String DOCUMENT = "document";
 	public static final String DOCUMENTS_LG1 = "documentsLg1";
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
-
+	public static final String DOT_XML = ".xml";
 	
 	/*F*/
 	public static final String FAMILY = "family";
@@ -101,8 +101,19 @@ public class Constants {
 	public static final String WASGENERATEDBY = "wasGeneratedBy";
 	
 	/*X*/
+	public static final String XML_START_DOCUMENT = "<?xml version=\"1.0\"?>";
 	public static final String XML_OPEN_CODELIST_TAG = "<codelist>";
 	public static final String XML_END_CODELIST_TAG = "</codelist>";
+	public static final String XML_OPEN_PARAMETERS_TAG = "<parameters>";
+	public static final String XML_END_PARAMETERS_TAG = "</parameters>";
+	public static final String XML_OPEN_LANGUAGES_TAG = "<languages>";
+	public static final String XML_END_LANGUAGES_TAG = "</languages>";
+	public static final String XML_OPEN_LANGUAGE_TAG = "<language>";
+	public static final String XML_END_LANGUAGE_TAG = "</language>";
+	public static final String XML_OPEN_TARGET_TYPE_TAG = "<targetType>";
+	public static final String XML_END_TARGET_TYPE_TAG = "</targetType>";
+	public static final String XML_OPEN_INCLUDE_EMPTY_MAS_TAG = "<IncludeEmptyMas>";
+	public static final String XML_END_INCLUDE_EMPTY_MAS_TAG = "</IncludeEmptyMas>";
 	
 	private Constants() {
 		throw new IllegalStateException("Utility class");

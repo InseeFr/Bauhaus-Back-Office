@@ -277,7 +277,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
 			) throws RmesException {
-		return operationsService.exportMetadataReport(id);	
+		return operationsService.exportMetadataReport(id,true);	
 	}
 
 	@GET
