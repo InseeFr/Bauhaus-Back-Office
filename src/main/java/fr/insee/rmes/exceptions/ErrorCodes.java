@@ -70,6 +70,10 @@ public class ErrorCodes {
 	public static final int COMPONENT_FORBIDDEN_DELETE = 1001;
 	public static final int COMPONENT_UNICITY = 1002;
 	public static final int STRUCTURE_UNICITY = 1003;
+	public static final int COMPONENT_PUBLICATION_EMPTY_CREATOR = 1004;
+	public static final int COMPONENT_PUBLICATION_EMPTY_STATUS = 1005;
+	public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
+	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
 
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS

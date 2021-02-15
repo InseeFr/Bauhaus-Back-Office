@@ -3,8 +3,11 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -20,6 +23,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -46,6 +50,9 @@ public class StructureComponentUtils extends RdfService {
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
+    @Autowired
+    ComponentPublication componentPublication;
+
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
         addCodeListRange(response);
@@ -65,6 +72,10 @@ public class StructureComponentUtils extends RdfService {
         }
     }
 
+    private String getValidationStatus(String id) throws RmesException {
+        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+    }
+
     public String updateComponent(String componentId, String body) throws RmesException {
         MutualizedComponent component;
         try {
@@ -80,7 +91,13 @@ public class StructureComponentUtils extends RdfService {
         validateComponent(component);
 
         component.setUpdated(DateUtils.getCurrentDate());
-        createRDFForComponent(component, ValidationStatus.MODIFIED);
+        String status= getValidationStatus(componentId);
+        if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+            createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
+        } else {
+            createRDFForComponent(component, ValidationStatus.MODIFIED);
+        }
+
 
         return component.getId();
     }
@@ -113,7 +130,6 @@ public class StructureComponentUtils extends RdfService {
         String currentDate = DateUtils.getCurrentDate();
         component.setCreated(currentDate);
         component.setUpdated(currentDate);
-        component.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
         return id;
     }
@@ -161,7 +177,9 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
-        RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+        if(component.getConcept() != null){
+            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+        }
 
         if (component.getRange() != null && component.getRange().equals(((SimpleIRI)INSEE.CODELIST).toString())) {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
@@ -260,5 +278,54 @@ public class StructureComponentUtils extends RdfService {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);
         }
         repoGestion.deleteObject(componentIri, null);
+    }
+
+    public String publishComponent(JSONObject component) throws RmesException {
+
+        if(component.isNull("creator") || "".equals(component.getString("creator"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+        }
+
+        if(component.isNull("disseminationStatus") || "".equals(component.getString("disseminationStatus"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+        }
+
+        if(!component.isNull("concept") && !"".equals(component.getString("concept"))){
+            if(!repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
+            }
+        }
+
+        if(!component.isNull("codeList") && !"".equals(component.getString("codeList"))){
+            if(!repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
+            }
+        }
+
+
+        MutualizedComponent mutualizedComponent;
+        try {
+            mutualizedComponent = deserializeBody(component.toString());
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+        }
+        mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
+
+        String type = component.getString("type");
+        String id = component.getString("id");
+
+        if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
+        }
+        if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id), QB.MEASURE_PROPERTY);
+        }
+        if (type.equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
+            componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
+        }
+
+        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED);
+
+        return id;
     }
 }

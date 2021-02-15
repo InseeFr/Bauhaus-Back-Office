@@ -7,6 +7,14 @@ import fr.insee.rmes.exceptions.RmesException;
 import java.util.HashMap;
 
 public class CodeListQueries {
+
+	public static String isCodesListValidated(String codesListUri) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("IRI", codesListUri);
+		return FreeMarkerUtils.buildRequest("codes-list/", "isCodesListValidated.ftlh", params);
+	}
+
 	public static String getAllCodesLists() throws RmesException {
 
 		HashMap<String, Object> params = new HashMap<>();
