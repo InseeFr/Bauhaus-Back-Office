@@ -15,5 +15,5 @@ public interface StructureComponent {
 
     public void deleteComponent(String id) throws RmesException;
 
-
+    public String publishComponent(String id) throws RmesException;
 }

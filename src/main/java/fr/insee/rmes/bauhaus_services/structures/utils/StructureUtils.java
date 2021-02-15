@@ -158,6 +158,10 @@ public class StructureUtils extends RdfService {
         return prefix + (Integer.parseInt(id) + 1);
     }
 
+    private String getValidationStatus(String id) throws RmesException {
+        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+    }
+
     public String setStructure(String id, String body) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(
@@ -175,7 +179,14 @@ public class StructureUtils extends RdfService {
         structure.setUpdated(DateUtils.getCurrentDate());
         IRI structureIri = RdfUtils.structureIRI(structure.getId());
         repoGestion.clearStructureNodeAndComponents(structureIri);
-        createRdfStructure(structure, ValidationStatus.MODIFIED);
+
+        String status= getValidationStatus(id);
+        if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+            createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
+        } else {
+            createRdfStructure(structure, ValidationStatus.MODIFIED);
+        }
+
         logger.info("Update Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId();
     }
@@ -345,15 +356,6 @@ public class StructureUtils extends RdfService {
     }
 
     public void deleteStructure(String structureId) throws RmesException {
-        JSONArray components = repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(structureId));
-        components.forEach(component -> {
-            String id = ((JSONObject) component).getString("id");
-            String type = ((JSONObject) component).getString("type");
-            try {
-                structureComponentUtils.deleteComponent((JSONObject) component, id, type);
-            } catch (RmesException e) {
-            }
-        });
         IRI structureIri = RdfUtils.structureIRI(structureId);
         repoGestion.clearStructureNodeAndComponents(structureIri);
         repoGestion.deleteObject(structureIri, null);
