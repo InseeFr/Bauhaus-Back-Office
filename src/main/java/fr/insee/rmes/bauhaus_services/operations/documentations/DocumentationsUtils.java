@@ -509,7 +509,7 @@ public class DocumentationsUtils extends RdfService{
 		return docExport.testExport();
 	}
 
-	public File exportMetadataReport(String id, Boolean includeEmptyMas) throws IOException, RmesException {
+	public File exportMetadataReport(String id, Boolean includeEmptyMas, Boolean english) throws IOException, RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -577,7 +577,7 @@ public class DocumentationsUtils extends RdfService{
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas);
+				organizationsXML,codeListsXML,targetType,includeEmptyMas,english);
 	}
 
 	public File exportMetadataReportOld(String id) throws IOException, RmesException {

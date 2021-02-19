@@ -268,16 +268,33 @@ public class MetadataReportResources extends OperationsAbstResources {
 	}
 
 
+	/**
+	 * EXPORT
+	 * @param id
+	 * @param english
+	 * @param includeEmptyMas
+	 * @return response
+	 */	
+
 	@GET
-	@Path("/metadataReport/export/{id}")
+	@Path("/metadataReport/export/{id}/{emptyMas}/{en}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public Response getSimsExport(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
+			,
+			@Parameter(
+					description = "Inclure les champs vides",
+					required = false) @PathParam("emptyMas") Boolean includeEmptyMas,
+			@Parameter(
+					description = "Version anglaise",
+					required = false) @PathParam("en") Boolean english
 			) throws RmesException {
-		return operationsService.exportMetadataReport(id,true);	
+		if (includeEmptyMas==null) {includeEmptyMas=true;}
+		if (english==null) {english=true;}
+		return operationsService.exportMetadataReport(id,includeEmptyMas,english);	
 	}
 
 	@GET

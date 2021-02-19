@@ -112,8 +112,8 @@ public class Constants {
 	public static final String XML_END_LANGUAGE_TAG = "</language>";
 	public static final String XML_OPEN_TARGET_TYPE_TAG = "<targetType>";
 	public static final String XML_END_TARGET_TYPE_TAG = "</targetType>";
-	public static final String XML_OPEN_INCLUDE_EMPTY_MAS_TAG = "<IncludeEmptyMas>";
-	public static final String XML_END_INCLUDE_EMPTY_MAS_TAG = "</IncludeEmptyMas>";
+	public static final String XML_OPEN_INCLUDE_EMPTY_MAS_TAG = "<includeEmptyMas>";
+	public static final String XML_END_INCLUDE_EMPTY_MAS_TAG = "</includeEmptyMas>";
 	
 	private Constants() {
 		throw new IllegalStateException("Utility class");

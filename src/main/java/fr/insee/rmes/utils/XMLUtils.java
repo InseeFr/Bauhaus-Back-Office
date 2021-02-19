@@ -93,7 +93,7 @@ public class XMLUtils {
 	}
 
 	public static String produceEmptyXML() {
-		return("<></>");
+		return("<empty></empty>");
 	}
 	
 	public static Document convertStringToDocument(String xmlStr) {
