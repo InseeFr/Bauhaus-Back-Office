@@ -431,7 +431,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		}
 		String fileName = output.getName();
 		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
+		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
 
 	@Override
