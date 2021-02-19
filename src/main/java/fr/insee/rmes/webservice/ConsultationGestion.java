@@ -41,7 +41,7 @@ public class ConsultationGestion {
 
 
     @GET()
-    @Path("/{id}")
+    @Path("/concept/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getDetailedConcept", summary = "Get a concept")
     public Response getDetailedConcept(@PathParam(Constants.ID) String id) {
@@ -55,6 +55,7 @@ public class ConsultationGestion {
     }
 
     @GET()
+    @Path("/concepts")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getAllConcepts", summary = "Get all concepts")
     public Response getAllConcepts() {
