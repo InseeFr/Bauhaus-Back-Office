@@ -131,6 +131,7 @@ public class ErrorCodes {
 	// SIMS
 	public static final int SIMS_INCORRECT = 861;
 	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
+	public static final int SIMS_EXPORT_WITHOUT_LANGUAGE = 863;
 	
 	  private ErrorCodes() {
 		    throw new IllegalStateException("Utility class");
