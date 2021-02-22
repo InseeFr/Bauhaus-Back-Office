@@ -113,6 +113,11 @@ public class StructureImpl  extends RdfService implements StructureService {
 		return structureWithComponentSpecifications.toString();
 	}
 
+	@Override
+	public String publishStructureById(String id) throws RmesException {
+		return structureUtils.publishStructure(new JSONObject(this.getStructureById(id)));
+	}
+
 	/**
 	 * Create new Structure
 	 * @throws RmesException 
