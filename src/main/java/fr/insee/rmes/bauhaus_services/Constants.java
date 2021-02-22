@@ -101,6 +101,7 @@ public class Constants {
 	public static final String WASGENERATEDBY = "wasGeneratedBy";
 	
 	/*X*/
+	public static final String XML_EMPTY_TAG = "<empty/>";
 	public static final String XML_START_DOCUMENT = "<?xml version=\"1.0\"?>";
 	public static final String XML_OPEN_CODELIST_TAG = "<codelist>";
 	public static final String XML_END_CODELIST_TAG = "</codelist>";
