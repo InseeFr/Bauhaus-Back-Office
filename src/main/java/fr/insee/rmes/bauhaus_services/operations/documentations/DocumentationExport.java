@@ -67,13 +67,13 @@ public class DocumentationExport {
 
 	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
-			Boolean includeEmptyMas, Boolean english) throws RmesException, IOException  {
+			Boolean includeEmptyMas, Boolean francais, Boolean english) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
 
 	//	List<String> languages = new ArrayList<String>();
-		String parametersXML = buildParams(english,includeEmptyMas,targetType);
+		String parametersXML = buildParams(francais,english,includeEmptyMas,targetType);
 
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
@@ -128,7 +128,7 @@ public class DocumentationExport {
 		return(output);
 	}
 
-	private String buildParams(Boolean english, Boolean includeEmptyMas, String targetType) {
+	private String buildParams(Boolean francais,Boolean english, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
 	//	parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
@@ -140,8 +140,8 @@ public class DocumentationExport {
 		//			parametersXML=parametersXML.concat(Constants.XML_OPEN_LANGUAGE_TAG);
 		//			parametersXML=parametersXML.concat(Constants.XML_END_LANGUAGE_TAG);
 		//		}
-		parametersXML=parametersXML.concat("<language id=\"Fr\">1</language>");
-		if(english) parametersXML=parametersXML.concat("\r\n<language id=\"En\">2</language>");
+		if(francais) parametersXML=parametersXML.concat("<language id=\"Fr\">1</language>");
+		if(english) parametersXML=parametersXML.concat("<language id=\"En\">2</language>");
 		parametersXML=parametersXML.concat(Constants.XML_END_LANGUAGES_TAG);
 
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_INCLUDE_EMPTY_MAS_TAG);

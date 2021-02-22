@@ -36,6 +36,7 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
@@ -423,13 +424,19 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.publishMetadataReport(id);
 	}
 
-
+	/**
+	 * EXPORT
+	 */
 	@Override
-	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean english) throws RmesException  {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean francais, Boolean english) throws RmesException  {
+
+		if(!(francais) && !(english)) throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE, 
+				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
+				"at least one language must be selected for export"); 
 		File output;
 		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, english);
+			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, francais, english);
 			is = new FileInputStream(output);
 		} catch (Exception e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");

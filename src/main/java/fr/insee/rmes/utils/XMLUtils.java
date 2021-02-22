@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 
@@ -93,7 +94,7 @@ public class XMLUtils {
 	}
 
 	public static String produceEmptyXML() {
-		return("<empty></empty>");
+		return(Constants.XML_EMPTY_TAG);
 	}
 	
 	public static Document convertStringToDocument(String xmlStr) {
@@ -133,11 +134,11 @@ public class XMLUtils {
 		
 		final String regex2 = "&lt;";
 		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern2.matcher(ret).replaceAll("&amp;lt;");
+		ret = pattern2.matcher(ret).replaceAll("&amp;amp;lt;");
 		
 		final String regex3 = "&gt;";
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern3.matcher(ret).replaceAll("&amp;gt;");
+		ret = pattern3.matcher(ret).replaceAll("&amp;amp;gt;");
 		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
