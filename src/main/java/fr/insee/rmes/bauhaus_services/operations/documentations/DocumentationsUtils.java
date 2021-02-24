@@ -55,7 +55,6 @@ import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
