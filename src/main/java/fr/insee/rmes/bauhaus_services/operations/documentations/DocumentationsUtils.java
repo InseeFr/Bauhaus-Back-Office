@@ -494,11 +494,10 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamps = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID))
-						.getJSONArray(Constants.CREATORS).toString();
+				IRI seriesUri = operationsUtils.getSeriesUri(idOperation);
+				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamps = seriesUtils.getSeriesJsonById(idSerie).getJSONArray(Constants.CREATORS).toString();
+				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
 				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
 			} else {
