@@ -470,6 +470,17 @@
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
+                    <xsl:when test="$simsRubrics//rangeType='DATE'">
+                        <xsl:variable name="date" select="$simsRubrics//value/value"/>
+                        <xsl:choose>
+                            <xsl:when test="$address-complement = 'labelLg1'">
+                                <xsl:value-of select="concat(substring($date,9,2),'/',substring($date,6,2),'/',substring($date,1,4))"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$date"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='ORGANIZATION'">
                         <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
                         <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$address-complement]"/>
