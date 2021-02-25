@@ -284,7 +284,7 @@ public class DocumentationsUtils extends RdfService{
 
 		/* Check rights */
 		IRI seriesOrIndicatorUri = targetUri;
-		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
+		if (targetType.equals(Constants.OPERATION_UP)) {
 			seriesOrIndicatorUri = operationsUtils.getSeriesUri(targetId);
 		}
 		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
