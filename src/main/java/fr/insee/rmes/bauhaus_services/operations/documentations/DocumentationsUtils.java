@@ -283,7 +283,11 @@ public class DocumentationsUtils extends RdfService{
 		}
 
 		/* Check rights */
-		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+		IRI seriesOrIndicatorUri = targetUri;
+		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
+			seriesOrIndicatorUri = operationsUtils.getSeriesUri(targetId);
+		}
+		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
 					"Only an admin or a manager can create a new sims.");
 		}
