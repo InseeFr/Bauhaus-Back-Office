@@ -24,6 +24,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
@@ -208,7 +209,7 @@ public class DocumentationsUtils extends RdfService{
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
-			id = prepareCreation(idTarget);
+			id = checkTargetHasNoSimsAndcreateSimsId(idTarget);
 			sims.setId(id);
 			checkIfTargetIsASeriesWithOperations(idTarget);
 		} else {
@@ -219,14 +220,18 @@ public class DocumentationsUtils extends RdfService{
 		String status = getDocumentationValidationStatus(id);
 
 		// Create or update rdf
+		IRI seriesOrIndicatorUri = targetUri;
+		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
+			seriesOrIndicatorUri = operationsUtils.getSeriesUri(idTarget);
+		}
 		if (create) {
-			if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
 						"Only an admin or a manager can create a new sims.");
 			}
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if (!stampsRestrictionsService.canModifySims(targetUri)) {
+			if (!stampsRestrictionsService.canModifySims(seriesOrIndicatorUri)) {
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
 						"Only an admin, CNIS, or a manager can modify this sims.", id);
 			}
@@ -394,7 +399,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @return
 	 * @throws RmesException
 	 */
-	private String prepareCreation(String idTarget) throws RmesException {
+	private String checkTargetHasNoSimsAndcreateSimsId(String idTarget) throws RmesException {
 		if (idTarget == null) {
 			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null",
@@ -521,7 +526,7 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		List<String>neededCodeLists=new ArrayList<String>();
+		List<String>neededCodeLists=new ArrayList<>();
 
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			operation=operationsUtils.getOperationById(idDatabase);
@@ -712,14 +717,12 @@ public class DocumentationsUtils extends RdfService{
 	public Status deleteMetadataReport(String id) throws RmesException {
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
-		String idDatabase = target[1];
 
 		if (!Constants.SERIES.equals(targetType)) {
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 
-		IRI targetUri=RdfUtils.objectIRI(ObjectType.SERIES, idDatabase);
-		if (!stampsRestrictionsService.canDeleteSims(targetUri)) {
+		if (!stampsRestrictionsService.canDeleteSims()) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
 					"Only an admin or a manager can delete a sims.");
 		}		
