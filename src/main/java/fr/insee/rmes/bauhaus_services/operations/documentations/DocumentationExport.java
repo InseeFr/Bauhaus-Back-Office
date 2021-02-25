@@ -78,10 +78,10 @@ public class DocumentationExport {
 		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
 		output.deleteOnExit();
 
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt_v7.xsl");
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt_v9.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
-		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
+		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern4.fodt");
 		PrintStream printStream= null;
 
 		try{
