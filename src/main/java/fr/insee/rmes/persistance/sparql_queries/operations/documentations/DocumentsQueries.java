@@ -43,8 +43,7 @@ public class DocumentsQueries {
 	}
 
 	public static String getSimsByDocument(String id) throws RmesException {
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		if (params==null) {initParams();}
 		params.put("ID", Config.DOCUMENTS_BASE_URI + "/" + id);
 		return buildRequest("getSimsByDocument.ftlh", params);
 	}

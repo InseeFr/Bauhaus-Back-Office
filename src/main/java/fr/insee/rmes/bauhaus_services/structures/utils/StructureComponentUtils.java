@@ -3,11 +3,8 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.validation.Validation;
 import javax.ws.rs.BadRequestException;
 
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -37,10 +34,11 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
 

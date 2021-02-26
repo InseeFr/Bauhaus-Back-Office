@@ -33,15 +33,13 @@ import javax.ws.rs.core.Response;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class ConsultationGestion {
 
-    private static final String TEXT_PLAIN = "text/plain";
-
     @Autowired
     ConsultationGestionService consultationGestionService;
 
 
 
     @GET()
-    @Path("/{id}")
+    @Path("/concept/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getDetailedConcept", summary = "Get a concept")
     public Response getDetailedConcept(@PathParam(Constants.ID) String id) {
@@ -55,6 +53,7 @@ public class ConsultationGestion {
     }
 
     @GET()
+    @Path("/concepts")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getAllConcepts", summary = "Get all concepts")
     public Response getAllConcepts() {

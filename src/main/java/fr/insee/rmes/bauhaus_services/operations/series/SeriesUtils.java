@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -184,6 +185,14 @@ public class SeriesUtils extends RdfService {
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
 		series.put(Constants.CREATORS, creators);
+	}
+	
+	public JSONArray getSeriesCreators(String id) throws RmesException {
+		return  repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
+	}
+	
+	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
+		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)iri).toString()));
 	}
 
 	/*WRITE*/

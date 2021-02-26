@@ -16,4 +16,6 @@ public interface StructureService {
     void deleteStructure(String structureId) throws RmesException;
 
 	String getStructureByIdWithDetails(String id) throws RmesException;
+
+	String publishStructureById(String id) throws RmesException;
 }

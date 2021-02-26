@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -19,14 +18,14 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 
 @Repository
-public class ComponentPublication extends RdfService {
+public class StructurePublication extends RdfService {
 
-	public void publishComponent(Resource component, IRI type) throws RmesException {
+	public void publish(Resource structure) throws RmesException {
 		
 		Model model = new LinkedHashModel();
 		//TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, component);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, structure);
 
 		try {	
 			try {
@@ -36,11 +35,6 @@ public class ComponentPublication extends RdfService {
 
 					if (pred.endsWith("validationState")) {
 						// nothing, wouldn't copy this attr
-					}else if (pred.endsWith("attribute")
-							|| pred.endsWith("dimension")
-							|| pred.endsWith("measure")) {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 					}
 					else {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
@@ -57,8 +51,8 @@ public class ComponentPublication extends RdfService {
 		} finally {
 			repoGestion.closeStatements(statements);
 		}
-		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
-		RepositoryPublication.publishResource(componentToPublishRessource, model, ((SimpleIRI) type).toString());
+		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(structure);
+		RepositoryPublication.publishResource(componentToPublishRessource, model, "Structure");
 		
 	}
 
