@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import java.io.IOException;
 
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -10,6 +11,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -67,6 +69,8 @@ public class OperationsUtils extends RdfService{
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
+		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(series.getString("id")));
+		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
 	}
 
