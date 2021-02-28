@@ -36,7 +36,9 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.external_services.export.ExportUtils;
 import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
@@ -106,7 +108,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String getSeriesForSearch() throws RmesException  {
-		return seriesUtils.getSeriesForSearch();
+		return seriesUtils.getSeriesForSearch(null);
 	}
 
 	@Override
@@ -121,6 +123,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		logger.info("Starting to get series list with sims");
 		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+	
+	@Override
+	public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
+		return seriesUtils.getSeriesForSearch(stamp);
 	}
 	
 	@Override
@@ -418,13 +425,20 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return documentationsUtils.publishMetadataReport(id);
 	}
 
-
+	/**
+	 * EXPORT
+	 */
 	@Override
-	public Response exportMetadataReport(String id) throws RmesException  {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean francais, Boolean english) throws RmesException  {
+
+		if(!(francais) && !(english)) throw new RmesNotAcceptableException(
+				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
+				"at least one language must be selected for export",
+				"in export of sims: "+id); 
 		File output;
 		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id);
+			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, francais, english);
 			is = new FileInputStream(output);
 		} catch (Exception e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
@@ -434,6 +448,21 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
 
+	public Response exportMetadataReportOld(String id) throws RmesException  {
+		File output;
+		InputStream is;
+		try {
+			output = documentationsUtils.exportMetadataReportOld(id);
+			is = new FileInputStream(output);
+		} catch (Exception e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+		}
+		String fileName = output.getName();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
+	}
+	
+	
 	@Override
 	public Response exportTestMetadataReport() throws RmesException  {
 		File output;
@@ -449,14 +478,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
 
-	@Override
-	public String getSeriesForStamp(String stamp) throws RmesException {
-		return seriesUtils.getSeriesForStamp(stamp);
-	}
+
 	
-	@Override
-	public String getSeriesIdsForStamp(String stamp) throws RmesException {
-		return seriesUtils.getSeriesIdsForStamp(stamp);
-	}
 
 }

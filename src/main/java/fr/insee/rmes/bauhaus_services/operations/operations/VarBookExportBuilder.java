@@ -18,9 +18,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -39,8 +37,6 @@ public class VarBookExportBuilder {
 
 	static final Logger logger = LogManager.getLogger(VarBookExportBuilder.class);
 
-	@Autowired
-	RestTemplate restTemplate;
 
 	public String getData(String xml) throws RmesException {
 		Document xmlReadyToExport = transformXml(xml);

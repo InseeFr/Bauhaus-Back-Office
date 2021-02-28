@@ -39,11 +39,16 @@ public class SeriesQueries {
 		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
 	}
 
-	public static String getSeriesForSearch() {
+	public static String getSeriesForSearch(String stamp) {
 		variables = null;
 		whereClause = null;
 		getSimpleAttr(null);
 		getCodesLists();
+		
+		if (stamp != null) {
+			addClauseToWhereClause(" ?series dc:creator ?crea ."
+					+ " FILTER (str(?crea) = '" + stamp + "' )  .  \n ");
+		}
 
 		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
 	}
@@ -160,17 +165,6 @@ public class SeriesQueries {
 		if (params==null) {initParams();}
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
-	}
-	
-	/**
-	 * @param stamp
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getSeriesIdsForStamp(String stamp) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(STAMP, stamp);
-		return buildSeriesRequest("getSeriesByCreatorStampQuery.ftlh", params);	
 	}
 	
 	

@@ -31,6 +31,7 @@ import org.xml.sax.InputSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 
@@ -46,8 +47,6 @@ public class XMLUtils {
 	public static final String toString(Document xml)
 			throws TransformerFactoryConfigurationError, TransformerException {
 		TransformerFactory tf = TransformerFactory.newInstance();
-		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-		tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 		Transformer transformer = tf.newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
@@ -94,6 +93,10 @@ public class XMLUtils {
 		return encodeXml(response);
 	}
 
+	public static String produceEmptyXML() {
+		return(Constants.XML_EMPTY_TAG);
+	}
+	
 	public static Document convertStringToDocument(String xmlStr) {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, ""); // Compliant
@@ -121,13 +124,22 @@ public class XMLUtils {
 		return tagValues;
 	}
 
-	private static String encodeXml(String response) {
+	public static String encodeXml(String response) {
 		String ret = StringEscapeUtils.unescapeXml(response);
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 
 		final String regex = "&[^amp;]";
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern.matcher(ret).replaceAll("&amp;");
+		
+		final String regex2 = "&lt;";
+		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern2.matcher(ret).replaceAll("&amp;amp;lt;");
+		
+		final String regex3 = "&gt;";
+		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern3.matcher(ret).replaceAll("&amp;amp;gt;");
+		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 

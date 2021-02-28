@@ -5,7 +5,6 @@ import org.springframework.core.env.Environment;
 public class Config {
 
 
-	public static Object CODE_LIST_BASE_URI = "";
 	public static String APP_HOST = "";
 
 	public static String ENV = "";
@@ -61,6 +60,8 @@ public class Config {
 
 
 	public static String CODELIST_GRAPH = "";
+	public static String CODE_LIST_BASE_URI = "";
+
 
 	public static String ORGANIZATIONS_GRAPH = "";
 	public static String ORG_INSEE_GRAPH = "";

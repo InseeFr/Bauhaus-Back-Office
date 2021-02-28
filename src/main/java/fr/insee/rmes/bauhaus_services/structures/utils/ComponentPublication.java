@@ -1,11 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.QB;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -17,6 +11,12 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
+
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.exceptions.RmesException;
 
 @Repository
 public class ComponentPublication extends RdfService {
@@ -58,7 +58,7 @@ public class ComponentPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 		}
 		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
-		RepositoryPublication.publishResource(componentToPublishRessource, model, type.toString());
+		RepositoryPublication.publishResource(componentToPublishRessource, model, ((SimpleIRI) type).toString());
 		
 	}
 
