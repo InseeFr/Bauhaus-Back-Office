@@ -16,7 +16,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 
 @Component
@@ -42,12 +41,8 @@ public class MetadataStructureDefUtils  extends RdfService {
 		mas.put(Constants.RANGE_TYPE, type.getJsonType());
 		mas.remove(RANGE);
 
-		if (type.equals(RangeType.CODELIST)) {
-			JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListNotationByUri(rangeUri));
-			if (codeList != null && !codeList.isNull("notation")) {
-				String codeListNotation = codeList.getString("notation");
-				mas.put("codeList", codeListNotation);
-			}
+		if (!type.equals(RangeType.CODELIST)) {
+			mas.remove("codeList");
 		}
 
 	}

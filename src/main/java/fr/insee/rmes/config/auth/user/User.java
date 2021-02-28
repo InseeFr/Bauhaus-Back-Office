@@ -7,9 +7,9 @@ import org.springframework.security.core.GrantedAuthority;
 
 public class User {
 	
-	JSONArray roles;
-	String stamp = "";
-	Collection<GrantedAuthority> authorities;
+	private JSONArray roles;
+	private String stamp = "";
+	private Collection<GrantedAuthority> authorities;
 	
 	public User() {
 		super();

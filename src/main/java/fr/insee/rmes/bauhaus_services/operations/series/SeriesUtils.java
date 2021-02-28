@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -116,8 +117,9 @@ public class SeriesUtils extends RdfService {
 		return series;
 	}
 
-	public String getSeriesForSearch() throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
+
+	public String getSeriesForSearch(String stamp) throws RmesException {
+		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch(stamp));
 		JSONArray result = new JSONArray();
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
@@ -126,10 +128,11 @@ public class SeriesUtils extends RdfService {
 			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
 			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
 			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-			famOpeSerIndUtils.fixOrganizationsNames(series);			result.put(series);
+			famOpeSerIndUtils.fixOrganizationsNames(series);			
+			result.put(series);
 		}
 		return QueryUtils.correctEmptyGroupConcat(result.toString());
-	}
+	}	
 
 	private void addSeriesOperations(String idSeries, JSONObject series) throws RmesException {
 		JSONArray operations = repoGestion.getResponseAsArray(SeriesQueries.getOperations(idSeries));
@@ -183,6 +186,14 @@ public class SeriesUtils extends RdfService {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
 		series.put(Constants.CREATORS, creators);
 	}
+	
+	public JSONArray getSeriesCreators(String id) throws RmesException {
+		return  repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
+	}
+	
+	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
+		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)iri).toString()));
+	}
 
 	/*WRITE*/
 
@@ -233,14 +244,22 @@ public class SeriesUtils extends RdfService {
 		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
 		addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
 
+		List<OperationsLink> replaces = series.getReplaces();
+		if (replaces != null) {
+			for (OperationsLink replace : replaces) {
+				if(!replace.isEmpty()) {
+					String replUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
+					addReplacesAndReplacedBy(model,  RdfUtils.toURI(replUri), seriesURI);
+				}
+			}
+		}
 
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
 				if(!isRepl.isEmpty()) {
 					String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-					RdfUtils.addTripleUri(seriesURI, DCTERMS.IS_REPLACED_BY ,isReplUri, model, RdfUtils.operationsGraph());
-					RdfUtils.addTripleUri(RdfUtils.toURI(isReplUri), DCTERMS.REPLACES ,seriesURI, model, RdfUtils.operationsGraph());
+					addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
 				}
 			}
 		}
@@ -254,6 +273,11 @@ public class SeriesUtils extends RdfService {
 		repoGestion.keepHierarchicalOperationLinks(seriesURI,model);
 
 		repoGestion.loadObjectWithReplaceLinks(seriesURI, model);
+	}
+	
+	private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
+		RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY ,next, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleUri(next, DCTERMS.REPLACES ,previous, model, RdfUtils.operationsGraph());
 	}
 
 	private void addOperationLinks(List<OperationsLink> links, IRI predicate, Model model, IRI seriesURI) {
@@ -400,28 +424,6 @@ public class SeriesUtils extends RdfService {
 		return id;
 	}
 
-	public String getSeriesForStamp(String stamp) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesForSearch());
-		JSONArray result = new JSONArray();
-		for (int i = 0; i < resQuery.length(); i++) {
-			JSONObject series = resQuery.getJSONObject(i);
-			String idSeries = series.get(Constants.ID).toString();
-			IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, idSeries);
-			if(stampsRestrictionsService.isSeriesManager(seriesURI)) {
-				addSeriesCreators(idSeries, series);
-				addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
-				addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
-				addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
-				famOpeSerIndUtils.fixOrganizationsNames(series);		
-				result.put(series);
-			}
-		}
 
-		return QueryUtils.correctEmptyGroupConcat(result.toString());
-	}
 
-	public String getSeriesIdsForStamp(String stamp) throws RmesException {
-		JSONArray resQuery = repoGestion.getResponseAsArray(SeriesQueries.getSeriesIdsForStamp(stamp));
-		return (resQuery.toString());
-	}
 }
