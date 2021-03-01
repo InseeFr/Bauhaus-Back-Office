@@ -535,6 +535,16 @@
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:when>
+            <xsl:when test="$source = 'identifiedSims'">
+                <xsl:call-template name="get-variable-nodes">
+                    <xsl:with-param name="variable-address" select="concat('simsRubrics/',substring-after($address-complement,'/'))"/>
+                    <xsl:with-param name="context" as="node()" tunnel="yes">
+                        <Context>
+                            <mas><xsl:value-of select="substring-before($address-complement,'/')"/></mas>
+                        </Context>
+                    </xsl:with-param>
+                </xsl:call-template>
+            </xsl:when>
             <xsl:otherwise>
                 <TODO>TODO</TODO>
             </xsl:otherwise>
