@@ -382,10 +382,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Documentation getFullSims(String id) throws RmesException {
-		return  documentationsUtils.getFullSims(id);
+	public Documentation getFullSimsForXml(String id) throws RmesException {
+		return  documentationsUtils.getFullSimsForXml(id);
 	}
 
+	@Override
+	public String getFullSimsForJson(String id) throws RmesException {
+		return  documentationsUtils.getFullSimsForJson(id).toString();
+	}
+	
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
 		return documentationsUtils.getDocumentationOwnersByIdSims(id);

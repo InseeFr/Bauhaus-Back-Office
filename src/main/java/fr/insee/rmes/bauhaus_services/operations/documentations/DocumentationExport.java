@@ -88,16 +88,6 @@ public class DocumentationExport {
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 			
-			// set parameters as Strings
-//			xsltTransformer.setParameter("Sims", simsXML);
-//			xsltTransformer.setParameter("Organizations", organizationsXML);
-//			xsltTransformer.setParameter("Operation", operationXML);
-//			xsltTransformer.setParameter("Indicator", indicatorXML);
-//			xsltTransformer.setParameter("Series", seriesXML);
-//			xsltTransformer.setParameter("Msd", msdXML);
-//			xsltTransformer.setParameter("CodeLists", codeListsXML);
-//			xsltTransformer.setParameter("parameters", parametersXML);
-			
 			// Pass parameters in a file
 			Path tempDir= Files.createTempDirectory("forExport");
 			addParameter ( xsltTransformer,  "parametersFile",  parametersXML,tempDir);
@@ -133,7 +123,6 @@ public class DocumentationExport {
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_LANGUAGES_TAG);
-
 		if(lg1) parametersXML=parametersXML.concat("<language id=\"Fr\">1</language>");
 		if(lg2) parametersXML=parametersXML.concat("<language id=\"En\">2</language>");
 		parametersXML=parametersXML.concat(Constants.XML_END_LANGUAGES_TAG);
@@ -148,34 +137,6 @@ public class DocumentationExport {
 
 		parametersXML=parametersXML.concat(Constants.XML_END_PARAMETERS_TAG);
 		return XMLUtils.encodeXml(parametersXML);
-		
-		// return XMLUtils.convertStringToDocument(parametersXML).toString();
-		
-		/*	
- 		InputStream parametersXMLFile = getClass().getResourceAsStream("/xslTransformerFiles/parameters.xml");
-		DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance(); 
-        domFactory.setIgnoringComments(true);
-		 DocumentBuilder docBuilder;
-	     Document doc = null;
-		try {
-			docBuilder = domFactory.newDocumentBuilder();
-			doc = docBuilder.parse(parametersXMLFile);
-	         Node root=doc.getFirstChild();
-	         Element targetTypeNode=doc.createElement("targetType");
-	         targetTypeNode.setNodeValue(targetType);
-	         Element includeEmptyMasNode=doc.createElement("includeEmptyMas");
-	         includeEmptyMasNode.setNodeValue(includeEmptyMasString);
-	         root.appendChild(targetTypeNode);
-	         root.appendChild(includeEmptyMasNode);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}        
-		try {
-			parametersXML = IOUtils.toString(parametersXMLFile, StandardCharsets.UTF_8);
-		} catch (IOException e) {
-			logger.error("Failed to read the xml : ", e);
-		}
-		 */		
 	}
 
 	private void addParameter (Transformer xsltTransformer, String paramName, String paramData, Path tempDir) throws IOException {

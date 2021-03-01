@@ -146,13 +146,30 @@ public class MetadataReportResources extends OperationsAbstResources {
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
 			) {
 		Documentation fullsims;
-		try {
-			fullsims = operationsService.getFullSims(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		String jsonResultat;
+		
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				fullsims = operationsService.getFullSimsForXml(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+
+			return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
 		}
 
-		return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
+		else {
+			try {
+				jsonResultat = operationsService.getFullSimsForJson(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		}
+		
+		
+		
+	
 	}
 
 	/**

@@ -128,17 +128,34 @@ public class XMLUtils {
 		String ret = StringEscapeUtils.unescapeXml(response);
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 
-		final String regex = "&[^amp;]";
+		final String regex = "&";
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern.matcher(ret).replaceAll("&amp;");
 		
-		final String regex2 = "&lt;";
+		final String regex2 = "&amp;amp;";
 		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern2.matcher(ret).replaceAll("&amp;amp;lt;");
+		ret = pattern2.matcher(ret).replaceAll("&amp;");
 		
-		final String regex3 = "&gt;";
+		final String regex3 = "&amp;gt;";
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern3.matcher(ret).replaceAll("&amp;amp;gt;");
+		ret = pattern3.matcher(ret).replaceAll("&gt;");
+		
+		final String regex4 = "&amp;lt;";
+		final Pattern pattern4 = Pattern.compile(regex4, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern4.matcher(ret).replaceAll("&lt;");
+		
+		final String regex5 = Constants.XML_ESPERLUETTE_REPLACEMENT;
+		final Pattern pattern5 = Pattern.compile(regex5, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern5.matcher(ret).replaceAll("&amp;");
+		
+		final String regex6 = Constants.XML_SUP_REPLACEMENT;
+		final Pattern pattern6 = Pattern.compile(regex6, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern6.matcher(ret).replaceAll("&gt;");
+		
+		final String regex7 = Constants.XML_INF_REPLACEMENT;
+		final Pattern pattern7 = Pattern.compile(regex7, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern7.matcher(ret).replaceAll("&lt;");
+		
 		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}

@@ -128,10 +128,14 @@ public class DocumentationsUtils extends RdfService{
 		return doc;
 	}
 
-	public Documentation getFullSims(String id) throws RmesException {
-		return buildDocumentationFromJson(getDocumentationByIdSims(id));
+	public Documentation getFullSimsForXml(String id) throws RmesException {
+		return buildDocumentationFromJson(getDocumentationByIdSims(id),true);
 	}
 
+	public JSONObject getFullSimsForJson(String id) throws RmesException {
+		return getDocumentationByIdSims(id);
+	}
+	
 
 	/**
 	 * Java Object	Builder
@@ -141,7 +145,7 @@ public class DocumentationsUtils extends RdfService{
 	 */
 	/* Not Used */
 	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject jsonSims) throws RmesException {
-		Documentation sims = buildDocumentationFromJson(jsonSims);
+		Documentation sims = buildDocumentationFromJson(jsonSims,false);
 		return new ExtensiveSims(sims);
 	}
 
@@ -153,7 +157,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 
-	public Documentation buildDocumentationFromJson(JSONObject jsonSims) throws RmesException {
+	public Documentation buildDocumentationFromJson(JSONObject jsonSims, Boolean forXml) throws RmesException {
 
 		Documentation sims = new Documentation();
 		String idSims=jsonSims.getString(Constants.ID);
@@ -180,7 +184,7 @@ public class DocumentationsUtils extends RdfService{
 
 			for (int i = 0; i < docRubrics.length(); i++) {
 				JSONObject rubric = docRubrics.getJSONObject(i);
-				currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric);
+				currentRubric = documentationsRubricsUtils.buildRubricFromJson(rubric,forXml);
 				rubrics.add(currentRubric);
 			}	
 			sims.setRubrics(rubrics);
@@ -570,7 +574,7 @@ public class DocumentationsUtils extends RdfService{
 
 		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
 
-		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		String simsXML=XMLUtils.produceResponse(getFullSimsForXml(id), "application/xml");
 		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
 
 		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
@@ -657,7 +661,7 @@ public class DocumentationsUtils extends RdfService{
 		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), StandardCharsets.UTF_8);
 		Files.copy(is3, organizationsTempFile, options);
 
-		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		String simsXML=XMLUtils.produceResponse(getFullSimsForXml(id), "application/xml");
 		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
 
 		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
