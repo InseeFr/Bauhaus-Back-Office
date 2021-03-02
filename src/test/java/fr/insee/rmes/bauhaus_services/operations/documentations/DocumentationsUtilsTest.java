@@ -39,11 +39,11 @@ public class DocumentationsUtilsTest {
 	void buildDocumentationFromJsonTest() throws RmesException{
 		
 		// Mocker les méthodes de buildDocumentationFromJson qui font appel à d'autres classes
-        when(mockDocumentationsRubricsUtils.buildRubricFromJson(Mockito.any())).thenReturn(new DocumentationRubric());
+        when(mockDocumentationsRubricsUtils.buildRubricFromJson(Mockito.any(),true)).thenReturn(new DocumentationRubric());
 		
 		String source="{\"rubrics\":[],\"idSeries\":\"\",\"labelLg2\":\"Metadata report 9999\",\"labelLg1\":\"Rapport de métadonnées 9999\",\"idOperation\":\"s8888\",\"idIndicator\":\"\",\"id\":\"9999\"}";
 		JSONObject jsonDocumentation = new JSONObject(source);
-		Documentation sims = documentationsUtils.buildDocumentationFromJson(jsonDocumentation);
+		Documentation sims = documentationsUtils.buildDocumentationFromJson(jsonDocumentation,true);
 		if (!sims.getId().equals("9999")) {
 			fail("false id");
 		}
