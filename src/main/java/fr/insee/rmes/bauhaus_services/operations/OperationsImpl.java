@@ -382,10 +382,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Documentation getFullSims(String id) throws RmesException {
-		return  documentationsUtils.getFullSims(id);
+	public Documentation getFullSimsForXml(String id) throws RmesException {
+		return  documentationsUtils.getFullSimsForXml(id);
 	}
 
+	@Override
+	public String getFullSimsForJson(String id) throws RmesException {
+		return  documentationsUtils.getFullSimsForJson(id).toString();
+	}
+	
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
 		return documentationsUtils.getDocumentationOwnersByIdSims(id);
@@ -429,16 +434,16 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 * EXPORT
 	 */
 	@Override
-	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean francais, Boolean english) throws RmesException  {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException  {
 
-		if(!(francais) && !(english)) throw new RmesNotAcceptableException(
+		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: "+id); 
 		File output;
 		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, francais, english);
+			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2);
 			is = new FileInputStream(output);
 		} catch (Exception e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");

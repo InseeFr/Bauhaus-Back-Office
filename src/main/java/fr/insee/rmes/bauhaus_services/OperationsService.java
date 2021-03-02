@@ -133,15 +133,17 @@ public interface OperationsService {
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
-	Documentation getFullSims(String id) throws RmesException;
+	Documentation getFullSimsForXml(String id) throws RmesException;
 
+	String getFullSimsForJson(String id) throws RmesException;
+	
 	String createMetadataReport(String body) throws RmesException;
 
 	String setMetadataReport(String id, String body) throws RmesException;
 
 	String publishMetadataReport(String id) throws RmesException;
 	
-	Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean francais, Boolean english) throws RmesException;
+	Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
 
 	Response exportTestMetadataReport() throws RmesException;
 	

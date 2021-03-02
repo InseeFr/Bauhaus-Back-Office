@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
-    xmlns:saxon="http://saxon.sf.net/"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
     xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
     xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:officeooo="http://openoffice.org/2009/office"
     exclude-result-prefixes="xs xd"
@@ -19,29 +19,85 @@
     <xsl:param name="parametersFile"/>
 
     <!-- the params with the content of the files -->
-    <xsl:param name="parameters" as="node()">
-        <parameters><targetType></targetType></parameters>
+    <xsl:param name="parameters">
+        <xsl:choose>
+            <xsl:when test="doc-available($parametersFile)">
+                <xsl:copy-of select="document($parametersFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <parameters/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="series" as="node()">
-        <Series/>
+        <xsl:choose>
+            <xsl:when test="doc-available($seriesFile)">
+                <xsl:copy-of select="document($seriesFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Series/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="operation" as="node()">
-        <Operation/>
+        <xsl:choose>
+            <xsl:when test="doc-available($operationFile)">
+                <xsl:copy-of select="document($operationFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Operation/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="indicator" as="node()">
-        <Indicator/>
+        <xsl:choose>
+            <xsl:when test="doc-available($indicatorFile)">
+                <xsl:copy-of select="document($indicatorFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Indicator/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="sims" as="node()">
-        <Sims/>
+        <xsl:choose>
+            <xsl:when test="doc-available($simsFile)">
+                <xsl:copy-of select="document($simsFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Sims/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="organizations" as="node()">
-        <Organizations/>
+        <xsl:choose>
+            <xsl:when test="doc-available($organizationsFile)">
+                <xsl:copy-of select="document($organizationsFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Organizations/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="codeLists" as="node()">
-        <CodeLists/>
+        <xsl:choose>
+            <xsl:when test="doc-available($codeListsFile)">
+                <xsl:copy-of select="document($codeListsFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <CodeLists/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
     <xsl:param name="msd" as="node()">
-        <Msd/>
+        <xsl:choose>
+            <xsl:when test="doc-available($msdFile)">
+                <xsl:copy-of select="document($msdFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Msd/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:param>
 
     <!-- keep the minimum spaces from the data -->
@@ -86,7 +142,7 @@
                             <mas><xsl:value-of select="idMas"/></mas>
                         </Context>
                     </xsl:with-param>
-                </xsl:apply-templates>                
+                </xsl:apply-templates>
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
@@ -104,7 +160,7 @@
                 <xsl:variable name="show-children" as="xs:boolean">
                     <xsl:choose>
                         <xsl:when test="$parameter-name = 'targetType'">
-                            <xsl:value-of select="upper-case($parameters//targetType) = upper-case($parameter-value)"/>
+                            <xsl:value-of select="$parameters//targetType !='' and contains(upper-case($parameter-value),upper-case($parameters//targetType))"/>
                         </xsl:when>
                         <xsl:when test="$parameter-name = 'lang'">
                             <xsl:value-of select="$parameter-value = $parameters//language/@id
@@ -193,7 +249,7 @@
                     </xsl:call-template>
                 </xsl:variable>
                 <xsl:choose>
-                    <xsl:when test="not(saxon:evaluate($test1-text))">
+                    <xsl:when test="not($test1-text != '')">
                         <xsl:call-template name="personalize-text">
                             <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
                         </xsl:call-template>
@@ -201,7 +257,7 @@
                             <xsl:with-param name="text-to-personalize" select="regex-group(7)"/>
                         </xsl:call-template>
                     </xsl:when>
-                    <xsl:when test="not(saxon:evaluate($test2-text))">
+                    <xsl:when test="not($test2-text != '')">
                         <xsl:call-template name="personalize-text">
                             <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
                         </xsl:call-template>
@@ -244,7 +300,7 @@
                             </xsl:call-template>
                         </xsl:variable>
                         <xsl:choose>
-                            <xsl:when test="not(saxon:evaluate($test1-text))">
+                            <xsl:when test="not($test1-text != '')">
                                 <xsl:call-template name="personalize-text">
                                     <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
                                 </xsl:call-template>
@@ -279,15 +335,24 @@
                                         </xsl:call-template>
                                     </xsl:variable>
                                     <xsl:if test="$listed-variables != ''">
-                                        <text:list text:style-name="{regex-group(3)}">
-                                            <xsl:for-each select="$listed-variables">
-                                                <text:list-item>
-                                                    <text:p>
-                                                        <xsl:value-of select="."/>
-                                                    </text:p>
-                                                </text:list-item>
-                                            </xsl:for-each>
-                                        </text:list>
+                                        <xsl:choose>
+                                            <xsl:when test="count($listed-variables) &gt; 1">
+                                                <text:list text:style-name="{regex-group(3)}">
+                                                    <xsl:for-each select="$listed-variables">
+                                                        <text:list-item>
+                                                            <text:p>
+                                                                <xsl:value-of select="."/>
+                                                            </text:p>
+                                                        </text:list-item>
+                                                    </xsl:for-each>
+                                                </text:list>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <text:p text:style-name="{$style}">
+                                                    <xsl:value-of select="$listed-variables"/>
+                                                </text:p>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
                                     </xsl:if>
                                     <xsl:call-template name="personalize-text">
                                         <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
@@ -335,36 +400,51 @@
         <xsl:param name="style" tunnel="yes"/>
         <xsl:param name="context" as="node()" tunnel="yes"/>
 
-        <xsl:variable name="source" select="substring-before($variable-address,'.')"/>
-        <xsl:variable name="address-complement" select="substring-after($variable-address,'.')"/>
+        <xsl:variable name="source" select="substring-before($variable-address,'/')"/>
+        <xsl:variable name="address-complement" select="substring-after($variable-address,'/')"/>
 
         <xsl:choose>
-            <xsl:when test="$source = 'series' and not(contains($address-complement,'.'))">
+            <xsl:when test="$source = 'series' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$series//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
-            <xsl:when test="$source = 'series'">
-                <xsl:copy-of select="$series//*[local-name()=substring-before($address-complement,'.')]//*[local-name()=substring-after($address-complement,'.')]/text()"/>
+            <xsl:when test="$source = 'series' and starts-with($address-complement,'seeAlso-')">
+                <xsl:copy-of select="$series//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
             </xsl:when>
-            <xsl:when test="$source = 'operation' and not(contains($address-complement,'.'))">
+            <xsl:when test="$source = 'series'">
+                <xsl:copy-of select="$series//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+            </xsl:when>
+            <xsl:when test="$source = 'operation' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$operation//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'operation'">
-                <xsl:copy-of select="$operation//*[local-name()=substring-before($address-complement,'.')]//*[local-name()=substring-after($address-complement,'.')]/text()"/>
+                <xsl:copy-of select="$operation//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
             </xsl:when>
-            <xsl:when test="$source = 'indicator' and not(contains($address-complement,'.'))">
+            <xsl:when test="$source = 'indicator' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$indicator//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
+            <xsl:when test="$source = 'indicator' and starts-with($address-complement,'seeAlso-')">
+                <xsl:copy-of select="$indicator//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+            </xsl:when>
             <xsl:when test="$source = 'indicator'">
-                <xsl:copy-of select="$indicator//*[local-name()=substring-before($address-complement,'.')]//*[local-name()=substring-after($address-complement,'.')]/text()"/>
+                <xsl:copy-of select="$indicator//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'seriesCode'">
-                <xsl:variable name="series-variable" select="substring-before($address-complement,'.')"/>
-                <xsl:variable name="codeList-variable" select="substring-after($address-complement,'.')"/>
+                <xsl:variable name="series-variable" select="substring-before($address-complement,'/')"/>
+                <xsl:variable name="codeList-variable" select="substring-after($address-complement,'/')"/>
                 <xsl:variable name="codeList-name" select="$series//*[local-name() = concat($series-variable,'List')]"/>
                 <xsl:variable name="code-value" select="$series//*[local-name() = concat($series-variable,'Code')]"/>
                 <xsl:copy-of select="$codeLists//CodeList[notation=$codeList-name]
                                                 //codes[code=$code-value]
                                                 /*[local-name()=$codeList-variable]/text()"/>
+            </xsl:when>
+            <xsl:when test="$source = 'indicatorCode'">
+                <xsl:variable name="indicator-variable" select="substring-before($address-complement,'/')"/>
+                <xsl:variable name="codeList-variable" select="substring-after($address-complement,'/')"/>
+                <xsl:variable name="codeList-name" select="$indicator//*[local-name() = concat($indicator-variable,'List')]"/>
+                <xsl:variable name="code-value" select="$indicator//*[local-name() = concat($indicator-variable,'Code')]"/>
+                <xsl:copy-of select="$codeLists//CodeList[notation=$codeList-name]
+                                               //codes[code=$code-value]
+                                               /*[local-name()=$codeList-variable]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'sims'">
                 <xsl:copy-of select="$sims//*[local-name()=$address-complement]/text()"/>
@@ -387,6 +467,17 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <xsl:value-of select="$original-text"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:when test="$simsRubrics//rangeType='DATE'">
+                        <xsl:variable name="date" select="$simsRubrics//value/value"/>
+                        <xsl:choose>
+                            <xsl:when test="$address-complement = 'labelLg1'">
+                                <xsl:value-of select="concat(substring($date,9,2),'/',substring($date,6,2),'/',substring($date,1,4))"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$date"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
@@ -416,14 +507,43 @@
                     <xsl:when test="$simsRubrics//rangeType='CODE_LIST'">
                         <xsl:variable name="codeList-name" select="$simsRubrics//codeList"/>
                         <xsl:variable name="code-value" select="$simsRubrics//value"/>
-                        <xsl:value-of select="$codeLists//CodeList[notation=$codeList-name]
-                            //codes[code=$code-value]
-                            /*[local-name()=$address-complement]"/>
+                        <xsl:choose>
+                            <xsl:when test="count($codeLists//CodeList[notation=$codeList-name]
+                                                            //codes[code=$code-value]
+                                                             /*[local-name()=$address-complement]) &gt; 1">
+                                <text:list text:style-name="L1">
+                                    <xsl:for-each select="$codeLists//CodeList[notation=$codeList-name]
+                                                                    //codes[code=$code-value]
+                                                                     /*[local-name()=$address-complement]">
+                                        <text:list-item>
+                                            <text:p text:style-name="{$style}">
+                                                <xsl:value-of select="."/>
+                                            </text:p>
+                                        </text:list-item>
+                                    </xsl:for-each>
+                                </text:list>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="$codeLists//CodeList[notation=$codeList-name]
+                                                                //codes[code=$code-value]
+                                                                 /*[local-name()=$address-complement]"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="'type de rubrique à définir'"/>
                     </xsl:otherwise>
                 </xsl:choose>
+            </xsl:when>
+            <xsl:when test="$source = 'identifiedSims'">
+                <xsl:call-template name="get-variable-nodes">
+                    <xsl:with-param name="variable-address" select="concat('simsRubrics/',substring-after($address-complement,'/'))"/>
+                    <xsl:with-param name="context" as="node()" tunnel="yes">
+                        <Context>
+                            <mas><xsl:value-of select="substring-before($address-complement,'/')"/></mas>
+                        </Context>
+                    </xsl:with-param>
+                </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
                 <TODO>TODO</TODO>
@@ -451,7 +571,7 @@
         <xsl:param name="style"/>
         <text:list-item>
             <text:p text:style-name="{$style}">
-                <xsl:apply-templates select="*|text()" mode="rich-text"/>    
+                <xsl:apply-templates select="*|text()" mode="rich-text"/>
             </text:p>
         </text:list-item>
     </xsl:template>
@@ -467,6 +587,12 @@
     </xsl:template>
     <xsl:template match="br" mode="rich-text" priority="1">
         <text:line-break/>
+    </xsl:template>
+    <xsl:template match="a" mode="rich-text">
+        <text:a xlink:type="simple">
+            <xsl:attribute name="xlink:href" select="@href"/>
+            <xsl:value-of select="."/>
+        </text:a>
     </xsl:template>
     <xsl:template match="node()" mode="rich-text" priority="-1">
         <xsl:value-of select="concat('début balise ',name())"/>

@@ -146,13 +146,30 @@ public class MetadataReportResources extends OperationsAbstResources {
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
 			) {
 		Documentation fullsims;
-		try {
-			fullsims = operationsService.getFullSims(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		String jsonResultat;
+		
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				fullsims = operationsService.getFullSimsForXml(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+
+			return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
 		}
 
-		return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
+		else {
+			try {
+				jsonResultat = operationsService.getFullSimsForJson(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		}
+		
+		
+		
+	
 	}
 
 	/**
@@ -271,13 +288,13 @@ public class MetadataReportResources extends OperationsAbstResources {
 	/**
 	 * EXPORT
 	 * @param id
-	 * @param english
+	 * @param lg2
 	 * @param includeEmptyMas
 	 * @return response
 	 */	
 
 	@GET
-	@Path("/metadataReport/export/{id}/{emptyMas}/{fr}/{en}")
+	@Path("/metadataReport/export/{id}/{emptyMas}/{lg1}/{lg2}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public Response getSimsExport(@Parameter(
@@ -291,16 +308,16 @@ public class MetadataReportResources extends OperationsAbstResources {
 			,
 			@Parameter(
 					description = "Version française",
-					required = false) @PathParam("fr") Boolean francais
+					required = false) @PathParam("lg1") Boolean lg1
 			,
 			@Parameter(
 					description = "Version anglaise",
-					required = false) @PathParam("en") Boolean english
+					required = false) @PathParam("lg2") Boolean lg2
 			) throws RmesException {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (francais==null) {francais=true;}
-		if (english==null) {english=true;}
-		return operationsService.exportMetadataReport(id,includeEmptyMas,francais,english);	
+		if (lg1==null) {lg1=true;}
+		if (lg2==null) {lg2=true;}
+		return operationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
 	}
 
 	@GET
