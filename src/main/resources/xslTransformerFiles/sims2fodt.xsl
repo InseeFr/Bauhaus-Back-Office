@@ -211,6 +211,10 @@
         </xsl:choose>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>text:p elements containing ${referenceToData} are filled with the referenced data</xd:desc>
+        <xd:desc>referenced data may contain paragraphs with their own style or simple strings</xd:desc>
+    </xd:doc>
     <xsl:template match="text:p[contains(text(),'${')]">
         <xsl:variable name="new-text">
             <xsl:call-template name="personalize-text">
@@ -230,6 +234,14 @@
         </xsl:choose>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>
+            <xd:p>Recognize grammar structures :</xd:p>
+            <xd:p>#if (condition) content #endif</xd:p>
+            <xd:p>#list(content,'list style')</xd:p>
+            <xd:p>${dataReference}</xd:p>
+        </xd:desc>
+    </xd:doc>
     <xsl:template name="personalize-text">
         <xsl:param name="text-to-personalize"/>
         <xsl:param name="style" tunnel="yes"/>
@@ -248,47 +260,22 @@
                         <xsl:with-param name="variable-address" select="substring-before(substring-after(regex-group(4),'${'),'}')"/>
                     </xsl:call-template>
                 </xsl:variable>
-                <xsl:choose>
-                    <xsl:when test="not($test1-text != '')">
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(7)"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="not($test2-text != '')">
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(3)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(6)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(7)"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(3)"/>
-                        </xsl:call-template>
+                <xsl:call-template name="personalize-text">
+                    <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
+                </xsl:call-template>
+                <xsl:if test="$test1-text != ''">
+                    <xsl:if test="$test2-text != ''">
                         <xsl:call-template name="personalize-text">
                             <xsl:with-param name="text-to-personalize" select="regex-group(5)"/>
                         </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(6)"/>
-                        </xsl:call-template>
-                        <xsl:call-template name="personalize-text">
-                            <xsl:with-param name="text-to-personalize" select="regex-group(7)"/>
-                        </xsl:call-template>
-                    </xsl:otherwise>
-                </xsl:choose>
+                    </xsl:if>
+                    <xsl:call-template name="personalize-text">
+                        <xsl:with-param name="text-to-personalize" select="regex-group(6)"/>
+                    </xsl:call-template>
+                </xsl:if>
+                <xsl:call-template name="personalize-text">
+                    <xsl:with-param name="text-to-personalize" select="regex-group(7)"/>
+                </xsl:call-template>
             </xsl:matching-substring>
             <xsl:non-matching-substring>
                 <!-- $1 #if ($2 ='$4') $5 #endif $6 ... or "!=" instead of "=" -->
@@ -299,27 +286,17 @@
                                 <xsl:with-param name="variable-address" select="substring-before(substring-after(regex-group(2),'${'),'}')"/>
                             </xsl:call-template>
                         </xsl:variable>
-                        <xsl:choose>
-                            <xsl:when test="not($test1-text != '')">
-                                <xsl:call-template name="personalize-text">
-                                    <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="personalize-text">
-                                    <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
-                                </xsl:call-template>
-                            </xsl:when>
-                            <xsl:otherwise>
-                                <xsl:call-template name="personalize-text">
-                                    <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="personalize-text">
-                                    <xsl:with-param name="text-to-personalize" select="regex-group(3)"/>
-                                </xsl:call-template>
-                                <xsl:call-template name="personalize-text">
-                                    <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
-                                </xsl:call-template>
-                            </xsl:otherwise>
-                        </xsl:choose>
+                        <xsl:call-template name="personalize-text">
+                            <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
+                        </xsl:call-template>
+                        <xsl:if test="$test1-text != ''">
+                            <xsl:call-template name="personalize-text">
+                                <xsl:with-param name="text-to-personalize" select="regex-group(3)"/>
+                            </xsl:call-template>
+                        </xsl:if>
+                        <xsl:call-template name="personalize-text">
+                            <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
+                        </xsl:call-template>
                     </xsl:matching-substring>
                     <xsl:non-matching-substring>
                         <!-- $1 #list ($2,'$3') $4 -->
@@ -551,6 +528,9 @@
         </xsl:choose>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>replace html elements with libreOffice ones</xd:desc>
+    </xd:doc>
     <xsl:template match="p" mode="rich-text">
         <xsl:param name="style" tunnel="yes"/>
         <text:p text:style-name="{$style}">
