@@ -148,7 +148,7 @@
     </xsl:template>
 
     <xd:doc>
-        <xd:desc>elements with @id are used to filter the pattern, depending on parameters or </xd:desc>
+        <xd:desc>elements with @id are used to filter the pattern, depending on parameters or mas/isPresentational </xd:desc>
     </xd:doc>
     <xsl:template match="*[@xml:id]" priority="1">
         <xsl:param name="context" tunnel="yes"/>
@@ -239,9 +239,9 @@
     <xd:doc>
         <xd:desc>
             <xd:p>Recognize grammar structures :</xd:p>
-            <xd:p>#if (condition) content #endif</xd:p>
-            <xd:p>#list(content,'list style')</xd:p>
             <xd:p>${dataReference}</xd:p>
+            <xd:p>#if (${dataReference}) content #endif</xd:p>
+            <xd:p>#list(${dataReference},'list style')</xd:p>
         </xd:desc>
     </xd:doc>
     <xsl:template name="personalize-text">
@@ -249,8 +249,8 @@
         <xsl:param name="style" tunnel="yes"/>
         <xsl:param name="context" as="node()" tunnel="yes"/>
 
-        <!-- $1 #if ($2 ='$4') $5 #if ($6='$8') $9 #endif #endif $10 ... or != instead of = -->
-        <xsl:analyze-string select="$text-to-personalize" regex="^(.*)#if \((.*)\)(.*)#if \((.*)\)(.)*#endif(.)*#endif(.*)$">
+        <!-- $1 #if ($2) $3 #if ($4) $5 #endif $6 #endif $7-->
+        <xsl:analyze-string select="$text-to-personalize" regex="^(.*)#if \((.*)\)(.*)#if \((.*)\)(.*)#endif(.*)#endif(.*)$">
             <xsl:matching-substring>
                 <xsl:variable name="test1-text">
                     <xsl:call-template name="get-variable-nodes">
@@ -266,6 +266,9 @@
                     <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
                 </xsl:call-template>
                 <xsl:if test="$test1-text != ''">
+                    <xsl:call-template name="personalize-text">
+                        <xsl:with-param name="text-to-personalize" select="regex-group(3)"/>
+                    </xsl:call-template>
                     <xsl:if test="$test2-text != ''">
                         <xsl:call-template name="personalize-text">
                             <xsl:with-param name="text-to-personalize" select="regex-group(5)"/>
@@ -280,7 +283,7 @@
                 </xsl:call-template>
             </xsl:matching-substring>
             <xsl:non-matching-substring>
-                <!-- $1 #if ($2 ='$4') $5 #endif $6 ... or "!=" instead of "=" -->
+                <!-- $1 #if ($2) $3 #endif $4 -->
                 <xsl:analyze-string select="$text-to-personalize" regex="^(.*)#if \((.*)\)(.*)#endif(.*)$">
                     <xsl:matching-substring>
                         <xsl:variable name="test1-text">
@@ -301,43 +304,40 @@
                         </xsl:call-template>
                     </xsl:matching-substring>
                     <xsl:non-matching-substring>
-                        <!-- $1 #list ($2,'$3') $4 -->
+                        <!-- $1 #list($2,'$3') $4 -->
                         <xsl:analyze-string select="$text-to-personalize" regex="^(.*)#list\((.*),'(.*)'\)(.*)$">
                             <xsl:matching-substring>
-                                <xsl:variable name="list-content">
-                                    <xsl:call-template name="personalize-text">
-                                        <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
-                                    </xsl:call-template>
-                                    <xsl:variable name="listed-variables" as="xs:string *">
-                                        <xsl:call-template name="get-variable-nodes">
-                                            <xsl:with-param name="variable-address" select="substring-before(substring-after(regex-group(2),'${'),'}')"/>
-                                        </xsl:call-template>
-                                    </xsl:variable>
-                                    <xsl:if test="$listed-variables != ''">
-                                        <xsl:choose>
-                                            <xsl:when test="count($listed-variables) &gt; 1">
-                                                <text:list text:style-name="{regex-group(3)}">
-                                                    <xsl:for-each select="$listed-variables">
-                                                        <text:list-item>
-                                                            <text:p>
-                                                                <xsl:value-of select="."/>
-                                                            </text:p>
-                                                        </text:list-item>
-                                                    </xsl:for-each>
-                                                </text:list>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <text:p text:style-name="{$style}">
-                                                    <xsl:value-of select="$listed-variables"/>
-                                                </text:p>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:if>
-                                    <xsl:call-template name="personalize-text">
-                                        <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
+                                <xsl:call-template name="personalize-text">
+                                    <xsl:with-param name="text-to-personalize" select="regex-group(1)"/>
+                                </xsl:call-template>
+                                <xsl:variable name="listed-variables" as="xs:string *">
+                                    <xsl:call-template name="get-variable-nodes">
+                                        <xsl:with-param name="variable-address" select="substring-before(substring-after(regex-group(2),'${'),'}')"/>
                                     </xsl:call-template>
                                 </xsl:variable>
-                                <xsl:copy-of select="$list-content"/>
+                                <xsl:if test="$listed-variables != ''">
+                                    <xsl:choose>
+                                        <xsl:when test="count($listed-variables) &gt; 1">
+                                            <text:list text:style-name="{regex-group(3)}">
+                                                <xsl:for-each select="$listed-variables">
+                                                    <text:list-item>
+                                                        <text:p text:style-name="{$style}">
+                                                            <xsl:value-of select="."/>
+                                                        </text:p>
+                                                    </text:list-item>
+                                                </xsl:for-each>
+                                            </text:list>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <text:p text:style-name="{$style}">
+                                                <xsl:value-of select="$listed-variables"/>
+                                            </text:p>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:if>
+                                <xsl:call-template name="personalize-text">
+                                    <xsl:with-param name="text-to-personalize" select="regex-group(4)"/>
+                                </xsl:call-template>
                             </xsl:matching-substring>
                             <xsl:non-matching-substring>
                                 <xsl:choose>
@@ -436,7 +436,11 @@
                 <xsl:choose>
                     <xsl:when test="not($simsRubrics//*)"/>
                     <xsl:when test="$simsRubrics//rangeType='RICH_TEXT'">
-                        <xsl:apply-templates select="$simsRubrics//*[local-name()=$address-complement]/*" mode="rich-text"/>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text">
+                                <xsl:value-of  select="$simsRubrics//*[local-name()=$address-complement]/text()" disable-output-escaping="true"/>
+                            </xsl:with-param>
+                        </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='TEXT' or $simsRubrics//rangeType='GEOGRAPHY'">
                         <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$address-complement]"/>
@@ -531,58 +535,96 @@
     </xsl:template>
 
     <xd:doc>
-        <xd:desc>replace html elements with libreOffice ones</xd:desc>
+        <xd:desc><xd:p>replace html elements with libreOffice ones</xd:p>
+            <xd:p><![CDATA[Problem : html elements are surrounded by &lt; and &gt; instead of < and >, because there is no difference between a tag and < blabla in comment > in the text...]]>
+        </xd:p></xd:desc>
     </xd:doc>
-    <xsl:template match="p" mode="rich-text">
+    <xsl:template name="rich-text">
+        <xsl:param name="text"/>
         <xsl:param name="style" tunnel="yes"/>
-        <text:p text:style-name="{$style}">
-            <xsl:apply-templates select="node()|text()" mode="rich-text"/>
-        </text:p>
-    </xsl:template>
-    <xsl:template match="ol" mode="rich-text">
-        <text:list text:style-name="L2">
-            <xsl:apply-templates select="*|text()" mode="rich-text"/>
-        </text:list>
-    </xsl:template>
-    <xsl:template match="ul" mode="rich-text">
-        <text:list text:style-name="L1">
-            <xsl:apply-templates select="*|text()" mode="rich-text"/>
-        </text:list>
-    </xsl:template>
-    <xsl:template match="li" mode="rich-text">
-        <xsl:param name="style"/>
-        <text:list-item>
-            <text:p text:style-name="{$style}">
-                <xsl:apply-templates select="*|text()" mode="rich-text"/>
-            </text:p>
-        </text:list-item>
-    </xsl:template>
-    <xsl:template match="strong" mode="rich-text">
-        <text:span text:style-name="Bold">
-            <xsl:apply-templates select="*|text()" mode="rich-text"/>
-        </text:span>
-    </xsl:template>
-    <xsl:template match="em" mode="rich-text">
-        <text:span text:style-name="Italic">
-            <xsl:apply-templates select="*|text()" mode="rich-text"/>
-        </text:span>
-    </xsl:template>
-    <xsl:template match="br" mode="rich-text" priority="1">
-        <text:line-break/>
-    </xsl:template>
-    <xsl:template match="a" mode="rich-text">
-        <text:a xlink:type="simple">
-            <xsl:attribute name="xlink:href" select="@href"/>
-            <xsl:value-of select="."/>
-        </text:a>
-    </xsl:template>
-    <xsl:template match="node()" mode="rich-text" priority="-1">
-        <xsl:value-of select="concat('début balise ',name())"/>
-        <xsl:apply-templates select="*|text()" mode="rich-text"/>
-        <xsl:value-of select="concat('fin balise ',name())"/>
-    </xsl:template>
-
-    <xsl:template match="text()" mode="rich-text">
-        <xsl:value-of select="."/>
+        
+        <xsl:choose>
+            <xsl:when test="contains($text,'&lt;')">
+                <xsl:value-of select="substring-before($text,'&lt;')"/>
+                <xsl:variable name="tag" select="substring-before(substring-after($text,'&lt;'),'&gt;')"/>
+                <xsl:choose>
+                    <xsl:when test="$tag='br /' or $tag='br/'">
+                        <text:line-break/>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,'/&gt;')"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="$tag='p' or $tag='strong' or $tag='em' or $tag='ul' or $tag='ol'">
+                        <xsl:variable name="element-name">
+                            <xsl:choose>
+                                <xsl:when test="$tag='p'">p</xsl:when>
+                                <xsl:when test="$tag = 'strong' or $tag='em'">span</xsl:when>
+                                <xsl:when test="$tag='ul' or $tag='ol'">list</xsl:when>
+                            </xsl:choose>
+                        </xsl:variable>
+                        <xsl:variable name="attribute-value">
+                            <xsl:choose>
+                                <xsl:when test="$tag='p'"><xsl:value-of select="$style"/></xsl:when>
+                                <xsl:when test="$tag = 'strong'">Bold</xsl:when>
+                                <xsl:when test="$tag = 'em'">Italic</xsl:when>
+                                <xsl:when test="$tag='ul'">L1</xsl:when>
+                                <xsl:when test="$tag='ol'">L2</xsl:when>
+                            </xsl:choose>
+                        </xsl:variable>
+                        <xsl:element name="text:{$element-name}">
+                            <xsl:attribute name="text:style-name" select="$attribute-value"/>
+                            <xsl:call-template name="rich-text">
+                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),concat('&lt;/',$tag,'&gt;'))"/>
+                            </xsl:call-template>
+                        </xsl:element>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,concat('&lt;/',$tag,'&gt;'))"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="$tag='li'">
+                        <text:list-item>
+                            <text:p text:style-name="{$style}">
+                                <xsl:call-template name="rich-text">
+                                    <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),concat('&lt;/',$tag,'&gt;'))"/>
+                                </xsl:call-template>
+                            </text:p>
+                        </text:list-item>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,concat('&lt;/',$tag,'&gt;'))"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="starts-with($tag,'a ') and contains($tag,'href=&quot;')">
+                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href=&quot;'),'$quot')}">
+                            <xsl:call-template name="rich-text">
+                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),'&lt;/a&gt;')"/>
+                            </xsl:call-template>
+                        </text:a>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,'&lt;/a&gt;')"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:when test="starts-with($tag,'a ') and contains($tag,'href=''')">
+                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href='''),'''')}">
+                            <xsl:call-template name="rich-text">
+                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),'&lt;/a&gt;')"/>
+                            </xsl:call-template>
+                        </text:a>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,'&lt;/a&gt;')"/>
+                        </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <!-- real < -->
+                        <xsl:value-of select="'&lt;'"/>
+                        <xsl:call-template name="rich-text">
+                            <xsl:with-param name="text" select="substring-after($text,'&lt;')"/>
+                        </xsl:call-template>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$text"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 </xsl:stylesheet>
