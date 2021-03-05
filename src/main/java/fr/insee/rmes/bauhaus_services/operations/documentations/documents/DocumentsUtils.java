@@ -14,7 +14,9 @@ import java.util.regex.Pattern;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -419,6 +421,7 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 	private String getDocumentNameFromUrl(String docUrl) {
+		if (docUrl.contains("\\")) return StringUtils.substringAfterLast(docUrl, "\\");
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
 
@@ -511,28 +514,29 @@ public class DocumentsUtils  extends RdfService  {
 		return(doc);
 	}
 
-	//	
-	//	public Response downloadDocument(String id) throws RmesException {
-	//		JSONObject jsonDoc = getDocument(id);
-	//=======
+	/**
+	 * Download a document by id
+	 * @param id
+	 * @return Response containing the file (inputStream)
+	 * @throws RmesException
+	 */
 	public Response downloadDocumentFile(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id, false);
 
-
 		String url = getDocumentUrlFromDocument(jsonDoc);
-
-		Path path = Paths.get(url.replace(SCHEME_FILE, ""));
-		ContentDisposition content = null;
-		try (InputStream is = new FileInputStream(path.toFile()))
-		{
-			String fileName = getDocumentNameFromUrl(url);
-			content = ContentDisposition.type("attachment").fileName(fileName).build();
-			return Response.ok(is).header("Content-Disposition", content).build();
-
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file");
-		}
+		String fileName = getDocumentNameFromUrl(url);
+		Path path = Paths.get(url);
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		try {
+			return Response.ok( (StreamingOutput) output -> {
+	                InputStream input = new FileInputStream( path.toFile() );
+	                IOUtils.copy(input, output);
+	                output.flush();   
+	        } ).header( "Content-Disposition", content ).build();
+		 } catch ( Exception e ) { 
+         	logger.error(e.getMessage());
+         	throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file"); 
+         }
 	}
 
 
