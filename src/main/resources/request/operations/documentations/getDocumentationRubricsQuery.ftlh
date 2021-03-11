@@ -24,7 +24,7 @@ WHERE {
 		UNION {
 			 ?reportAttr ?attr ?textLg1 .
 			 ?textLg1 rdf:type dcmitype:Text .
-			 FILTER(EXISTS{?textLg1 dcterms:language <${LG1_CL}>})
+			 ?textLg1 dcterms:language <${LG1_CL}>
 
 			 OPTIONAL{ 
 				?textLg1 rdf:value ?labelLg1 
@@ -34,7 +34,7 @@ WHERE {
 			 OPTIONAL {
 				 ?reportAttr ?attr ?textLg2 .
 				 ?textLg2 rdf:type dcmitype:Text .
-				 FILTER(EXISTS{?textLg2 dcterms:language <${LG2_CL}>})
+				 ?textLg2 dcterms:language <${LG2_CL}>
 
 						OPTIONAL{ 
 							?textLg2 rdf:value ?labelLg2 

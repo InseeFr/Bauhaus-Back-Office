@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator ?range
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier ?id ;
@@ -23,6 +23,10 @@ WHERE {
 
     OPTIONAL {
         ?component qb:concept ?conceptObject
+    } .
+
+    OPTIONAL {
+        ?component rdfs:range ?range
     } .
 
     BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
