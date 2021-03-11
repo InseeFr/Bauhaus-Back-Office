@@ -11,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -136,7 +137,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	@Path("/metadataReport/fullSims/{id}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFullSims", summary = "Full sims for an id", 
-	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json" ,*/ schema = @Schema(implementation = Documentation.class)
+	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getFullSims(
 			@Parameter(
@@ -304,15 +305,15 @@ public class MetadataReportResources extends OperationsAbstResources {
 			,
 			@Parameter(
 					description = "Inclure les champs vides",
-					required = false) @PathParam("emptyMas") Boolean includeEmptyMas
+					required = false)  @QueryParam("emptyMas") Boolean includeEmptyMas
 			,
 			@Parameter(
 					description = "Version française",
-					required = false) @PathParam("lg1") Boolean lg1
+					required = false) @QueryParam("lg1")  Boolean lg1
 			,
 			@Parameter(
 					description = "Version anglaise",
-					required = false) @PathParam("lg2") Boolean lg2
+					required = false) @QueryParam("lg2")  Boolean lg2
 			) throws RmesException {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
