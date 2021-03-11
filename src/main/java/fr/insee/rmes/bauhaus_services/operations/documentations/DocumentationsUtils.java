@@ -24,6 +24,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
@@ -208,7 +209,7 @@ public class DocumentationsUtils extends RdfService{
 		// Check idOperation/idSerie/IdIndicator and Init or check id sims
 		String idTarget = sims.getIdTarget();
 		if (create) {
-			id = prepareCreation(idTarget);
+			id = checkTargetHasNoSimsAndcreateSimsId(idTarget);
 			sims.setId(id);
 			checkIfTargetIsASeriesWithOperations(idTarget);
 		} else {
@@ -219,14 +220,18 @@ public class DocumentationsUtils extends RdfService{
 		String status = getDocumentationValidationStatus(id);
 
 		// Create or update rdf
+		IRI seriesOrIndicatorUri = targetUri;
+		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
+			seriesOrIndicatorUri = operationsUtils.getSeriesUri(idTarget);
+		}
 		if (create) {
-			if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
 						"Only an admin or a manager can create a new sims.");
 			}
 			saveRdfMetadataReport(sims, targetUri, ValidationStatus.UNPUBLISHED);
 		} else {
-			if (!stampsRestrictionsService.canModifySims(targetUri)) {
+			if (!stampsRestrictionsService.canModifySims(seriesOrIndicatorUri)) {
 				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
 						"Only an admin, CNIS, or a manager can modify this sims.", id);
 			}
@@ -265,20 +270,24 @@ public class DocumentationsUtils extends RdfService{
 		String targetType = target[0];
 		String targetId = target[1];
 		IRI targetUri = null;
-		
+
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
 		}
 
 		switch(targetType) {
-			case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
-			case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
-			case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
-			default : break;
+		case Constants.OPERATION_UP : targetUri = RdfUtils.objectIRI(ObjectType.OPERATION, targetId); break;
+		case Constants.SERIES_UP : targetUri = RdfUtils.objectIRI(ObjectType.SERIES, targetId); break;
+		case Constants.INDICATOR_UP : targetUri = RdfUtils.objectIRI(ObjectType.INDICATOR, targetId); break;
+		default : break;
 		}
-		
+
 		/* Check rights */
-		if (!stampsRestrictionsService.canCreateSims(targetUri)) {
+		IRI seriesOrIndicatorUri = targetUri;
+		if (targetType.equals(Constants.OPERATION_UP)) {
+			seriesOrIndicatorUri = operationsUtils.getSeriesUri(targetId);
+		}
+		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
 					"Only an admin or a manager can create a new sims.");
 		}
@@ -394,7 +403,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @return
 	 * @throws RmesException
 	 */
-	private String prepareCreation(String idTarget) throws RmesException {
+	private String checkTargetHasNoSimsAndcreateSimsId(String idTarget) throws RmesException {
 		if (idTarget == null) {
 			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null",
@@ -489,11 +498,10 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				stamps = seriesUtils.getSeriesJsonById(
-						operationsUtils.getOperationJsonById(idOperation).getJSONObject("series").getString(Constants.ID))
-						.getJSONArray(Constants.CREATORS).toString();
+				IRI seriesUri = operationsUtils.getSeriesUri(idOperation);
+				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamps = seriesUtils.getSeriesJsonById(idSerie).getJSONArray(Constants.CREATORS).toString();
+				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
 			} else if (idIndicator != null && !idIndicator.isEmpty()) {
 				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
 			} else {
@@ -503,12 +511,83 @@ public class DocumentationsUtils extends RdfService{
 		}
 		return stamps;
 	}
-	
+
 	public File exportTestMetadataReport() throws IOException {
 		return docExport.testExport();
 	}
 
-	public File exportMetadataReport(String id) throws IOException, RmesException {
+	public File exportMetadataReport(String id, Boolean includeEmptyMas, Boolean francais, Boolean english) throws IOException, RmesException {
+
+		String emptyXML=XMLUtils.produceEmptyXML();
+		Operation operation;
+		Series series;
+		String operationXML;
+		String seriesXML = emptyXML;
+		String indicatorXML;
+
+		String[] target = getDocumentationTargetTypeAndId(id);
+		String targetType = target[0];
+		String idDatabase = target[1];
+
+		List<String>neededCodeLists=new ArrayList<>();
+
+		if (targetType.equals(Constants.OPERATION_UP)) {
+			operation=operationsUtils.getOperationById(idDatabase);
+			operationXML = XMLUtils.produceXMLResponse(operation);
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
+			String idSeries=operation.getSeries().getId();
+			series=seriesUtils.getSeriesById(idSeries);
+			seriesXML = XMLUtils.produceXMLResponse(series);
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		} else {operationXML = emptyXML;}
+
+
+		if (targetType.equals(Constants.INDICATOR_UP)) {
+			indicatorXML=XMLUtils.produceXMLResponse(
+					indicatorsUtils.getIndicatorById(idDatabase));
+			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
+			String idSeries=XMLUtils.getTagValues(
+					XMLUtils.getTagValues(
+							indicatorXML,
+							Constants.WASGENERATEDBY).iterator().next(),
+					Constants.ID).iterator().next();
+			series=seriesUtils.getSeriesById(idSeries);
+			seriesXML = XMLUtils.produceXMLResponse(series);
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		} else {indicatorXML = emptyXML;}
+
+
+		if (targetType.equals(Constants.SERIES_UP)) {
+			seriesXML=XMLUtils.produceXMLResponse(
+					seriesUtils.getSeriesById(idDatabase));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
+			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
+		}
+
+		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
+
+		String simsXML=XMLUtils.produceResponse(getFullSims(id), "application/xml");
+		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
+
+		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
+
+		String codeListsXML="";
+		codeListsXML=codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
+
+		for(String code : neededCodeLists) {
+			codeListsXML=codeListsXML.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
+		}
+		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
+
+		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
+				organizationsXML,codeListsXML,targetType,includeEmptyMas,francais,english);
+	}
+
+	public File exportMetadataReportOld(String id) throws IOException, RmesException {
 
 		InputStream is;
 		InputStream is2;
@@ -517,16 +596,18 @@ public class DocumentationsUtils extends RdfService{
 
 		Path tempDir= Files.createTempDirectory("forExport");
 
+		// Xml File for Operation, Indicator or Series 
 		Path tempFile = Files.createTempFile(tempDir, "target",DOT_XML);
 		String absolutePath = tempFile.toFile().getAbsolutePath();
-
+		// Xml File for Series
 		Path accessoryTempFile = Files.createTempFile(tempDir, "series",DOT_XML);
 		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
-
+		// Xml File for Organizations
 		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",DOT_XML);
 		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
-
+		// Xml File for needed CodeLists
 		Path codeListTempFile = Files.createTempFile(tempDir, "freq",DOT_XML);
+
 		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
 
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
@@ -593,9 +674,10 @@ public class DocumentationsUtils extends RdfService{
 
 		InputStream simsInputStream = IOUtils.toInputStream(simsXML, StandardCharsets.UTF_8);
 
-		return docExport.export(simsInputStream,absolutePath,accessoryAbsolutePath,
+		return docExport.exportOld(simsInputStream,absolutePath,accessoryAbsolutePath,
 				organizationsAbsolutePath,codeListAbsolutePath,targetType);
 	}
+
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
@@ -638,14 +720,12 @@ public class DocumentationsUtils extends RdfService{
 	public Status deleteMetadataReport(String id) throws RmesException {
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
-		String idDatabase = target[1];
 
 		if (!Constants.SERIES.equals(targetType)) {
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 
-		IRI targetUri=RdfUtils.objectIRI(ObjectType.SERIES, idDatabase);
-		if (!stampsRestrictionsService.canDeleteSims(targetUri)) {
+		if (!stampsRestrictionsService.canDeleteSims()) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_DELETION_RIGHTS_DENIED,
 					"Only an admin or a manager can delete a sims.");
 		}		

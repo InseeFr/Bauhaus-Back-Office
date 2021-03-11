@@ -10,7 +10,7 @@ SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altL
 			 BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . 
 			 OPTIONAL{
 			 	?series skos:altLabel ?altLabelLg1 .   
-			 	FILTER (lang(?altLabelLg1) = '  ${LG1}') 
+			 	FILTER (lang(?altLabelLg1) = '${LG1}') 
 			 }
 			 
 		}

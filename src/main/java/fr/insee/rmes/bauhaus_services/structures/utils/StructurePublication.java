@@ -1,13 +1,6 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import com.sun.xml.bind.v2.runtime.reflect.opt.Const;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -17,6 +10,12 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
+
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.exceptions.RmesException;
 
 @Repository
 public class StructurePublication extends RdfService {

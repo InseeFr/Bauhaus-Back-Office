@@ -73,6 +73,12 @@ public class OperationsUtils extends RdfService{
 		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
 	}
+	
+	public IRI getSeriesUri(String idOperation) throws RmesException{
+		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
+		if (series != null && series.has("id"))		return RdfUtils.objectIRI(ObjectType.SERIES, series.getString("id"));
+		return null;
+	}
 
 	private Operation buildOperationFromJson(JSONObject operationJson) {
 		ObjectMapper mapper = new ObjectMapper();
@@ -149,7 +155,6 @@ public class OperationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String id, String body) throws RmesException {
-
 		IRI seriesURI=getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
@@ -221,9 +226,7 @@ public class OperationsUtils extends RdfService{
 		return id;
 	}
 
-	private IRI getSeriesUri(String id){
-		return RdfUtils.objectIRI(ObjectType.SERIES, id);
-	}
+
 
 	public MSD getMSD() throws RmesException {
 		//		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();		
