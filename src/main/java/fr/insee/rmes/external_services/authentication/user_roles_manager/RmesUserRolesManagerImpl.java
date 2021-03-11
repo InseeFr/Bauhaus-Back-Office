@@ -2,15 +2,12 @@ package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
 import java.io.StringReader;
 import java.text.MessageFormat;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.ws.rs.client.Client;
@@ -32,6 +29,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.external_services.authentication.LdapConnexion;
 import fr.insee.rmes.utils.JSONComparator;
 
 @Service
@@ -101,16 +99,10 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Override
 	public String getAgents() throws RmesException {
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-		logger.info("Connection to LDAP : {0}", Config.LDAP_URL);
+		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 		try {
 			// Connexion à la racine de l'annuaire
-			Hashtable<String, String> environment = new Hashtable<>();
-			environment.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-			environment.put(Context.PROVIDER_URL, Config.LDAP_URL);
-			environment.put(Context.SECURITY_AUTHENTICATION, "none");
-			DirContext context;
-
-			context = new InitialDirContext(environment);
+			DirContext context = LdapConnexion.getLdapContext();
 
 			// Spécification des critères pour la recherche des unités
 			SearchControls controls = new SearchControls();
@@ -130,7 +122,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			context.close();
 			logger.info("Get agents succeed");
 		} catch (NamingException e) {
-			logger.error("Get agents failed : {0}", e.getMessage());
+			logger.error("Get agents failed : {}", e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents failed");
 		}
 		return agents.toString();

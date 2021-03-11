@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpStatus;
@@ -28,7 +27,6 @@ import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.JasperReportsContext;
-import net.sf.jasperreports.engine.data.JRXmlDataSource;
 import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
@@ -70,16 +68,6 @@ public class Jasper {
 		return null;
 	}
 
-	public InputStream exportVariableBook(String xml, String acceptHeader) {
-		InputStream is = getClass().getClassLoader().getResourceAsStream("jasper/export_varBook.jrxml");
-		try {
-			return exportXml(xml, is, acceptHeader);
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-		return null;
-	}
-
 	/**
 	 * Generic export method from json data
 	 * @param json data to export
@@ -103,28 +91,6 @@ public class Jasper {
 
 		getJrProperties();
 		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, null);
-		return new ByteArrayInputStream(output.toByteArray());
-	}
-
-	/**
-	 * Generic export method from xml data
-	 * @param xml data to export
-	 * @param is jasper template
-	 * @param acceptHeader mimeType
-	 * @return 
-	 * @throws JRException 
-	 * @throws Exception
-	 */
-	private InputStream exportXml(String xml, InputStream is, String acceptHeader) throws JRException  {
-		Map<String, Object> jasperParams = new HashMap<>();
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		String pathJasper = classLoader.getResource("jasper/export_varBook.jrxml").getPath()
-				.replace("export_varBook.jrxml", "").substring(1).replace("%20", " ");
-		jasperParams.put("PATH_JASPER", pathJasper);
-		InputStream xmlInput = new ByteArrayInputStream(xml.getBytes());
-		JRDataSource datasource = new JRXmlDataSource(xmlInput, "/*[local-name()='DDIInstance']", true);
-		getJrProperties();
-		ByteArrayOutputStream output = exportReport(is, acceptHeader, jasperParams, datasource);
 		return new ByteArrayInputStream(output.toByteArray());
 	}
 

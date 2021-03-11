@@ -1,4 +1,4 @@
-SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs
+SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs ?codeList
   FROM <${MSD_GRAPH}> 
   FROM <${CODELIST_GRAPH}> 
   FROM <${MSD_CONCEPTS_GRAPH}>
@@ -8,7 +8,10 @@ SELECT ?id ?masLabelLg1 ?masLabelLg2 ?range ?isPresentational ?maxOccurs
 	  OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
 									
 	  ?mas sdmx-mm:metadataAttributeProperty ?map . 
-	  OPTIONAL {?map rdfs:range ?range } 
+	  ?map rdfs:range ?range .
+	  
+	  OPTIONAL {?range rdfs:seeAlso/skos:notation|skos:notation ?codeList .}
+
 	  
 	  ?map sdmx-mm:concept ?concept .
 	  ?concept skos:prefLabel ?masLabelLg1 ; 

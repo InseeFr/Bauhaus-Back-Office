@@ -33,8 +33,6 @@ import javax.ws.rs.core.Response;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class ConsultationGestion {
 
-    private static final String TEXT_PLAIN = "text/plain";
-
     @Autowired
     ConsultationGestionService consultationGestionService;
 

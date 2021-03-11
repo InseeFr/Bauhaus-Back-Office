@@ -1,5 +1,7 @@
 package fr.insee.rmes.external_services.notifications;
 
+import java.util.Arrays;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -53,6 +55,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
 	public void sendMessageToBrocker(String message) throws RmesException {
         String url = BROKER_URL;
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(Config.BROKER_USER, Config.BROKER_PASSWORD, url);
+        connectionFactory.setTrustedPackages(Arrays.asList("fr.insee.rmes"));
         Connection connection = null;
 
         try {
