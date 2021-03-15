@@ -55,20 +55,26 @@ public class Log4j2ServletContextListener implements ServletContextListener {
 	private Properties getProperties() throws IOException {
         Properties props = new Properties();
         props.load(getClass().getClassLoader().getResourceAsStream("bauhaus-dev.properties"));
-        loadPropertiesIfExist(props, "bauhaus-dev.properties");
-        loadPropertiesIfExist(props, "bauhaus-qf.properties");
-        loadPropertiesIfExist(props, "bauhaus-production.properties");
-        loadPropertiesIfExist(props, "production.properties");
+        props = this.loadIfExists(props, "bauhaus-dev.properties");
+        props = this.loadIfExists(props, "bauhaus-qf.properties");
+        props = this.loadIfExists(props, "bauhaus-production.properties");
+        props = this.loadIfExists(props, "production.properties");
         return props;
     }
 
-	private void loadPropertiesIfExist(Properties props, String fileName) throws IOException{
-		File f = new File(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), fileName));
-        if(f.exists() && !f.isDirectory()) {
-            FileReader r = new FileReader(f);
-            props.load(r);
-            r.close();
-        }
+	/*
+	 * load properties on catalina base
+	 */
+	private Properties loadIfExists(Properties props, String filename) throws IOException {
+		File f = new File(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), filename));
+		if (f.exists() && !f.isDirectory()) {
+			try (FileReader r = new FileReader(f);){ 
+				props.load(r);
+				return props;
+			}
+		}
+		return props;
 	}
+
 
 }
