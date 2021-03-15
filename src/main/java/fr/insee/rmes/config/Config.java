@@ -6,7 +6,7 @@ import org.springframework.core.env.Environment;
 
 public class Config {
 
-	private static final  Logger logger = LogManager.getLogger(ApplicationContext.class);
+	private static final  Logger logger = LogManager.getLogger(Config.class);
 	
 	public static String APP_HOST = "";
 
