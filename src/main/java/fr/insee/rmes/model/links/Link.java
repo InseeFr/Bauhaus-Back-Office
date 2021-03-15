@@ -6,6 +6,7 @@ public class Link {
 	
 	private String typeOfLink;
 	private List<String> ids;
+	private List<String> urn;
 	
 	public Link() {
 		//nothing to do
@@ -16,6 +17,10 @@ public class Link {
 	}
 	public List<String> getIds() {
 		return ids;
+	}
+
+	public List<String> getUrn() {
+		return urn;
 	}
 
 }
