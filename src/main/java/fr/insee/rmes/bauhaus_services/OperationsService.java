@@ -145,6 +145,8 @@ public interface OperationsService {
 	
 	Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
 
+	Response exportMetadataReportForLabel(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
+	
 	Response exportTestMetadataReport() throws RmesException;
 	
 	String getMetadataReportOwner(String id) throws RmesException;
@@ -154,5 +156,6 @@ public interface OperationsService {
 	String getMetadataReportDefaultValue() throws IOException;
 
 	Status deleteMetadataReport(String id) throws RmesException;
+
 
 }
