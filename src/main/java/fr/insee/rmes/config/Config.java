@@ -1,10 +1,13 @@
 package fr.insee.rmes.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.Environment;
 
 public class Config {
 
-
+	private static final  Logger logger = LogManager.getLogger(ApplicationContext.class);
+	
 	public static String APP_HOST = "";
 
 	public static String ENV = "";
@@ -227,4 +230,20 @@ public class Config {
 		Config.STRUCTURES_COMPONENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
 		Config.STRUCTURES_COMPONENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.components.baseURI");
 	}
+
+	public static void printMajorConfig() {
+		logger.info("*********************** CONFIG USED ***********************************");
+
+		logger.info("ENV : {}", ENV);
+		logger.info("SERVEUR GESTION : {} _ REPO : {} _ BASEURI : {}",SESAME_SERVER_GESTION,REPOSITORY_ID_GESTION, BASE_URI_GESTION);
+		logger.info("SERVEUR PUBLICATION : {} _ REPO : {} _ BASEURI : {}",SESAME_SERVER_PUBLICATION, REPOSITORY_ID_PUBLICATION, BASE_URI_PUBLICATION);
+		logger.info("SERVEUR PUB INTERNE : {} _ REPO : {}",SESAME_SERVER_PUBLICATION_INTERNE,REPOSITORY_ID_PUBLICATION_INTERNE);
+		
+		logger.info("DOCUMENT STORAGE : {}", DOCUMENTS_STORAGE);
+		
+		logger.info("*********************** END CONFIG USED ***********************************");
+		
+		
+	}
+
 }
