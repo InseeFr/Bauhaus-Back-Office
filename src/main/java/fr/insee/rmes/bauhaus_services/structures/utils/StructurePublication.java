@@ -35,6 +35,13 @@ public class StructurePublication extends RdfService {
 
 					if (pred.endsWith("validationState")) {
 						// nothing, wouldn't copy this attr
+					} if(pred.endsWith("component")){
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+								st.getPredicate(),
+								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								st.getContext());
+
+						publish((Resource) st.getObject());
 					}
 					else {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
