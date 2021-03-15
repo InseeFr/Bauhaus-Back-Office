@@ -317,7 +317,7 @@
                                 </xsl:variable>
                                 <xsl:if test="$listed-variables != ''">
                                     <xsl:choose>
-                                        <xsl:when test="count($listed-variables) &gt; 1">
+                                        <xsl:when test="count($listed-variables) != 1">
                                             <text:list text:style-name="{regex-group(3)}">
                                                 <xsl:for-each select="$listed-variables">
                                                     <text:list-item>
@@ -432,18 +432,24 @@
                 <xsl:copy-of select="$msd//mas[idMas = $context//mas]//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'simsRubrics'">
-                <xsl:variable name="simsRubrics" select="$sims//rubrics[idAttribute = $context//mas]" as="node()*"/>
+                <xsl:call-template name="get-variable-nodes">
+                    <xsl:with-param name="variable-address" select="concat('identifiedSims/',$context//mas,'/',$address-complement)"/>
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$source = 'identifiedSims'">
+                <xsl:variable name="simsRubrics" select="$sims//rubrics[idAttribute = substring-before($address-complement,'/')]" as="node()*"/>
+                <xsl:variable name="rubric-element" select="substring-after($address-complement,'/')"/>
                 <xsl:choose>
                     <xsl:when test="not($simsRubrics//*)"/>
                     <xsl:when test="$simsRubrics//rangeType='RICH_TEXT'">
                         <xsl:call-template name="rich-text">
                             <xsl:with-param name="text">
-                                <xsl:value-of  select="$simsRubrics//*[local-name()=$address-complement]/text()" disable-output-escaping="true"/>
+                                <xsl:value-of  select="$simsRubrics//*[local-name()=$rubric-element]"/>
                             </xsl:with-param>
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='TEXT' or $simsRubrics//rangeType='GEOGRAPHY'">
-                        <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$address-complement]"/>
+                        <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$rubric-element]"/>
                         <xsl:choose>
                             <xsl:when test="starts-with($original-text,'&lt;p&gt;')">
                                 <xsl:value-of select="substring-before(substring-after($original-text,'&lt;p&gt;'),'&lt;/p&gt;')"/>
@@ -456,7 +462,7 @@
                     <xsl:when test="$simsRubrics//rangeType='DATE'">
                         <xsl:variable name="date" select="$simsRubrics//value/value"/>
                         <xsl:choose>
-                            <xsl:when test="$address-complement = 'labelLg1'">
+                            <xsl:when test="$rubric-element = 'labelLg1'">
                                 <xsl:value-of select="concat(substring($date,9,2),'/',substring($date,6,2),'/',substring($date,1,4))"/>
                             </xsl:when>
                             <xsl:otherwise>
@@ -466,9 +472,9 @@
                     </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='ORGANIZATION'">
                         <xsl:variable name="organisation" select="$simsRubrics//value/value"/>
-                        <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$address-complement]"/>
+                        <xsl:variable name="original-text" select="$organizations//item[id=$organisation]/*[local-name()=$rubric-element]"/>
                         <xsl:choose>
-                            <xsl:when test="$original-text != '' and $address-complement = 'labelLg1'">
+                            <xsl:when test="$original-text != '' and $rubric-element = 'labelLg1'">
                                 <xsl:variable name="altLabel" select="$organizations//item[id=$organisation]/altLabel"/>
                                 <xsl:choose>
                                     <xsl:when test="$altLabel != ''">
@@ -489,15 +495,15 @@
                     </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='CODE_LIST'">
                         <xsl:variable name="codeList-name" select="$simsRubrics//codeList"/>
-                        <xsl:variable name="code-value" select="$simsRubrics//value"/>
+                        <xsl:variable name="code-value" select="$simsRubrics//value[not(value)]"/>
                         <xsl:choose>
                             <xsl:when test="count($codeLists//CodeList[notation=$codeList-name]
                                                             //codes[code=$code-value]
-                                                             /*[local-name()=$address-complement]) &gt; 1">
+                                                             /*[local-name()=$rubric-element]) &gt; 1">
                                 <text:list text:style-name="L1">
                                     <xsl:for-each select="$codeLists//CodeList[notation=$codeList-name]
                                                                     //codes[code=$code-value]
-                                                                     /*[local-name()=$address-complement]">
+                                                                     /*[local-name()=$rubric-element]">
                                         <text:list-item>
                                             <text:p text:style-name="{$style}">
                                                 <xsl:value-of select="."/>
@@ -509,24 +515,14 @@
                             <xsl:otherwise>
                                 <xsl:value-of select="$codeLists//CodeList[notation=$codeList-name]
                                                                 //codes[code=$code-value]
-                                                                 /*[local-name()=$address-complement]"/>
+                                                                 /*[local-name()=$rubric-element]"/>
                             </xsl:otherwise>
                         </xsl:choose>
                     </xsl:when>
                     <xsl:otherwise>
                         <xsl:value-of select="'type de rubrique à définir'"/>
                     </xsl:otherwise>
-                </xsl:choose>
-            </xsl:when>
-            <xsl:when test="$source = 'identifiedSims'">
-                <xsl:call-template name="get-variable-nodes">
-                    <xsl:with-param name="variable-address" select="concat('simsRubrics/',substring-after($address-complement,'/'))"/>
-                    <xsl:with-param name="context" as="node()" tunnel="yes">
-                        <Context>
-                            <mas><xsl:value-of select="substring-before($address-complement,'/')"/></mas>
-                        </Context>
-                    </xsl:with-param>
-                </xsl:call-template>
+                </xsl:choose>                
             </xsl:when>
             <xsl:otherwise>
                 <TODO>TODO</TODO>
@@ -594,7 +590,7 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="starts-with($tag,'a ') and contains($tag,'href=&quot;')">
-                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href=&quot;'),'$quot')}">
+                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href=&quot;'),'&quot;')}">
                             <xsl:call-template name="rich-text">
                                 <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),'&lt;/a&gt;')"/>
                             </xsl:call-template>

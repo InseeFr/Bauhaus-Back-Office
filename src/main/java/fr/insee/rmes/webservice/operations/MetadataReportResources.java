@@ -137,7 +137,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	@Path("/metadataReport/fullSims/{id}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFullSims", summary = "Full sims for an id", 
-	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json" ,*/ schema = @Schema(implementation = Documentation.class)
+	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getFullSims(
 			@Parameter(
@@ -305,15 +305,15 @@ public class MetadataReportResources extends OperationsAbstResources {
 			,
 			@Parameter(
 					description = "Inclure les champs vides",
-					required = false) @QueryParam("emptyMas") Boolean includeEmptyMas
+					required = false)  @QueryParam("emptyMas") Boolean includeEmptyMas
 			,
 			@Parameter(
 					description = "Version française",
-					required = false) @QueryParam("lg1") Boolean lg1
+					required = false) @QueryParam("lg1")  Boolean lg1
 			,
 			@Parameter(
 					description = "Version anglaise",
-					required = false) @QueryParam("lg2") Boolean lg2
+					required = false) @QueryParam("lg2")  Boolean lg2
 			) throws RmesException {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}

@@ -316,7 +316,7 @@
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1315_1782290185"/>Avis d’opportunité du Cnis<text:bookmark-end text:name="__RefHeading___Toc1315_1782290185"/></text:h>
             <text:p text:style-name="Heading">Numéro de visa :</text:p>
-            <text:p text:style-name="Text_20_body">${identifiedSims/I.6.3/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.6.4/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1317_1782290185"/>Règlement européen<text:bookmark-end text:name="__RefHeading___Toc1317_1782290185"
@@ -362,7 +362,7 @@
             <text:p text:style-name="Heading">Accès aux micro-données :</text:p>
             <text:p text:style-name="Text_20_body">${identifiedSims/S.10.4/labelLg1}</text:p>
             <text:p text:style-name="Heading">Période de collecte :</text:p>
-            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.1/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.7/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1329_1782290185"/>Exploitation et diffusion des résultats<text:bookmark-end text:name="__RefHeading___Toc1329_1782290185"
@@ -376,7 +376,7 @@
                     text:name="__RefHeading___Toc1331_1782290185"/>Bilan d’exécution de l’enquête précédente et des résultats produits<text:bookmark-end
                     text:name="__RefHeading___Toc1331_1782290185"/></text:h>
             <text:p text:style-name="Heading">Faits marquants :</text:p>
-            <text:p text:style-name="Text_20_body">${identifiedSims/C.3.1/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/C.3.10/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1333_1782290185"/>Bilan de la mise en œuvre des recommandations du Comité du label<text:bookmark-end
@@ -401,7 +401,7 @@
             <text:p text:style-name="Heading">Erreur de couverture :</text:p>
             <text:p text:style-name="Text_20_body">${identifiedSims/S.13.3.1/labelLg1}</text:p>
             <text:p text:style-name="Heading">Unités enquêtées :</text:p>
-            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.3/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.9/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc8961_1782290185"/>Paramètres d’intérêt de l’enquête<text:bookmark-end text:name="__RefHeading___Toc8961_1782290185"
@@ -415,9 +415,9 @@
                     text:name="__RefHeading___Toc8963_1782290185"/>Description du sondage<text:bookmark-end text:name="__RefHeading___Toc8963_1782290185"
                 /></text:h>
             <text:p text:style-name="Heading">Plan de sondage</text:p>
-            <text:p text:style-name="P6">${identifiedSims/I.18.4/labelLg1}</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.10/labelLg1}</text:p>
             <text:p text:style-name="Heading">Taille de l’échantillon</text:p>
-            <text:p text:style-name="P6">${identifiedSims/I.18.5/labelLg1}</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.11/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc8965_1782290185"
@@ -441,7 +441,7 @@
             <text:p text:style-name="Heading">Collecte des données</text:p>
             <text:p text:style-name="P6">${identifiedSims/S.18.3/labelLg1}</text:p>
             <text:p text:style-name="Heading">Mode de collecte</text:p>
-            <text:p text:style-name="P6">${identifiedSims/I.18.2/labelLg1}</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.8/labelLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc8971_1782290185"/>Sécurité des données et protection du secret statistique<text:bookmark-end
@@ -455,7 +455,7 @@
                     text:name="__RefHeading___Toc8973_1782290185"/>Lettres-avis définitives, notices ou plaquettes d’informations<text:bookmark-end
                     text:name="__RefHeading___Toc8973_1782290185"/></text:h>
             <text:p text:style-name="Heading">Documents de collecte</text:p>
-            <text:p text:style-name="P7">${identifiedSims/I.18.6/labelLg1}</text:p>
+            <text:p text:style-name="P7">${identifiedSims/I.18.12/labelLg1}</text:p>
             <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
                     text:name="__RefHeading___Toc8975_1782290185"/>Questionnaire<text:bookmark-end
                     text:name="__RefHeading___Toc8975_1782290185"/></text:h>
@@ -466,7 +466,7 @@
                     text:name="__RefHeading___Toc8979_1782290185"/>Questionnaire définitif<text:bookmark-end text:name="__RefHeading___Toc8979_1782290185"
                 /></text:h>
             <text:p text:style-name="Heading">Documents de collecte</text:p>
-            <text:p text:style-name="P7">${identifiedSims/I.18.6/labelLg1}</text:p>
+            <text:p text:style-name="P7">${identifiedSims/I.18.12/labelLg1}</text:p>
             <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
                     text:name="__RefHeading___Toc8981_1782290185"/>Coût des enquêtes<text:bookmark-end text:name="__RefHeading___Toc8981_1782290185"
                 /></text:h>
