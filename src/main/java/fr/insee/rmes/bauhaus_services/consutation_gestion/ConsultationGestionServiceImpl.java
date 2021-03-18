@@ -54,6 +54,29 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         return repoGestion.getResponseAsArray(buildRequest("getAllConcepts.ftlh", params)).toString();
     }
 
+    @Override
+    public String getAllStructures() throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
+        JSONArray structures =  repoGestion.getResponseAsArray(buildRequest("getStructures.ftlh", params));
+
+        for (int i = 0; i < structures.length(); i++) {
+            JSONObject structure = structures.getJSONObject(i);
+            String validationState = structure.getString("validationState");
+            if("Validated".equalsIgnoreCase(validationState)){
+                structure.put("validationState", "Publiée");
+            }
+            if("Modified".equalsIgnoreCase(validationState)){
+                structure.put("validationState", "Provisoire, déjà publiée");
+            }
+            if("Unpublished".equalsIgnoreCase(validationState)){
+                structure.put("validationState", "Provisoire, jamais publiée");
+            }
+        }
+
+        return structures.toString();
+    }
+
     private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
         return FreeMarkerUtils.buildRequest("consultation-gestion/", fileName, params);
     }

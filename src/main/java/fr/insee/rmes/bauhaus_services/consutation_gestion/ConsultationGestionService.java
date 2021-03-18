@@ -6,4 +6,6 @@ public interface ConsultationGestionService {
     String getDetailedConcept(String id) throws RmesException;
 
     String getAllConcepts() throws RmesException;
+
+    String getAllStructures() throws RmesException;
 }
