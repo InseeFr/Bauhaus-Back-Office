@@ -77,6 +77,23 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         return structures.toString();
     }
 
+    @Override
+    public String getAllCodesLists() throws RmesException {
+        String defaultDate = "2020-01-01T00:00:00.000";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+
+        JSONArray codesLists =  repoGestion.getResponseAsArray(buildRequest("getAllCodesLists.ftlh", params));
+        for (int i = 0; i < codesLists.length(); i++) {
+            JSONObject codesList = codesLists.getJSONObject(i);
+            if(!codesList.has("modified")){
+                codesList.put("modified", defaultDate);
+            }
+        }
+        return codesLists.toString();
+    }
+
     private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
         return FreeMarkerUtils.buildRequest("consultation-gestion/", fileName, params);
     }

@@ -80,4 +80,18 @@ public class ConsultationGestion {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
+    @GET()
+    @Path("/listesCodes")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getAllCodesLists", summary = "Get all codes lists")
+    public Response getAllCodesLists() {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getAllCodesLists();
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
 }
