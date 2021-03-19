@@ -222,6 +222,7 @@
             <xsl:call-template name="personalize-text">
                 <xsl:with-param name="text-to-personalize" select="text()"/>
                 <xsl:with-param name="style" select="@text:style-name" tunnel="yes"/>
+                <xsl:with-param name="title-style" select="preceding::text:p[1]/@text:style-name" tunnel="yes"/>
             </xsl:call-template>
         </xsl:variable>
         <xsl:choose>
@@ -377,6 +378,7 @@
     <xsl:template name="get-variable-nodes">
         <xsl:param name="variable-address"/>
         <xsl:param name="style" tunnel="yes"/>
+        <xsl:param name="title-style" tunnel="yes"/>
         <xsl:param name="context" as="node()" tunnel="yes"/>
 
         <xsl:variable name="source" select="substring-before($variable-address,'/')"/>
@@ -447,6 +449,105 @@
                                 <xsl:value-of  select="$simsRubrics//*[local-name()=$rubric-element]"/>
                             </xsl:with-param>
                         </xsl:call-template>
+                        <xsl:variable name="count-links" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[contains(tokenize(text(),'/')[last()],'.')])"/>
+                        <xsl:variable name="count-documents" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[not(contains(tokenize(text(),'/')[last()],'.'))])"/>
+                        <xsl:choose>
+                            <xsl:when test="$count-links = 0"/>
+                            <xsl:when test="$count-links = 1 and ends-with($rubric-element,'Lg1')">
+                                <text:p text:style-name="{$title-style}">Lien :</text:p>
+                            </xsl:when>
+                            <xsl:when test="$count-links = 1">
+                                <text:p text:style-name="{$title-style}">Link:</text:p>
+                            </xsl:when>
+                            <xsl:when test="ends-with($rubric-element,'Lg1')">
+                                <text:p text:style-name="{$title-style}">Liens :</text:p>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <text:p text:style-name="{$title-style}">Links:</text:p>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][url[contains(tokenize(text(),'/')[last()],'.')]]">
+                            <xsl:element name="text:p">
+                                <xsl:attribute name="text:style-name" select="$style"/>
+                                <xsl:element name="text:a">
+                                    <xsl:attribute name="xlink:type" select="'simple'"/>
+                                    <xsl:attribute name="xlink:href" select="url"/>
+                                    <xsl:choose>
+                                        <xsl:when test="ends-with($rubric-element,'1')">
+                                            <xsl:value-of select="labelLg1"/>
+                                        </xsl:when>
+                                        <xsl:when test="not(labelLg2/text()!='')">
+                                            <xsl:value-of select="labelLg1"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="labelLg2"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:element>
+                                <xsl:value-of select="concat(' (',lang,')')"/>
+                            </xsl:element>
+                            <xsl:element name="text:p">
+                                <xsl:attribute name="text:style-name" select="$style"/>
+                                <xsl:choose>
+                                    <xsl:when test="ends-with($rubric-element,'1')">
+                                        <xsl:value-of select="descriptionLg1"/>
+                                    </xsl:when>
+                                    <xsl:when test="not(descriptionLg2/text()!='')">
+                                        <xsl:value-of select="descriptionLg1"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="descriptionLg2"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:element>
+                        </xsl:for-each>
+                        <xsl:choose>
+                            <xsl:when test="$count-documents = 0"/>
+                            <xsl:when test="$count-documents = 1 and ends-with($rubric-element,'Lg1')">
+                                <text:p text:style-name="{$title-style}">Document :</text:p>
+                            </xsl:when>
+                            <xsl:when test="$count-documents = 1">
+                                <text:p text:style-name="{$title-style}">Document:</text:p>
+                            </xsl:when>
+                            <xsl:when test="ends-with($rubric-element,'Lg1')">
+                                <text:p text:style-name="{$title-style}">Documents :</text:p>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <text:p text:style-name="{$title-style}">Document:</text:p>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][url[not(contains(tokenize(text(),'/')[last()],'.'))]]">
+                            <xsl:element name="text:p">
+                                <xsl:attribute name="text:style-name" select="$style"/>
+                                <xsl:variable name="date" select="date"/>
+                                <xsl:choose>
+                                    <xsl:when test="ends-with($rubric-element,'1')">
+                                        <xsl:value-of select="concat(labelLg1,' (',lang,' - ',substring($date,9,2),'/',substring($date,6,2),'/',substring($date,1,4),')')"/>
+                                    </xsl:when>
+                                    <xsl:when test="not(labelLg2/text()!='')">
+                                        <xsl:value-of select="concat(labelLg1,' (',lang,' - ',$date,')')"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="concat(labelLg2,' (',lang,' - ',$date,')')"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:element>
+                            <xsl:element name="text:p">
+                                <xsl:attribute name="text:style-name" select="$style"/>
+                                <xsl:choose>
+                                    <xsl:when test="ends-with($rubric-element,'1')">
+                                        <xsl:value-of select="descriptionLg1"/>
+                                    </xsl:when>
+                                    <xsl:when test="not(descriptionLg2/text()!='')">
+                                        <xsl:value-of select="descriptionLg1"/>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:value-of select="descriptionLg2"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:element>
+                            <text:p text:style-name="{$style}"><xsl:value-of select="tokenize(url/text(),'/')[last()]"/></text:p>
+                        </xsl:for-each>
                     </xsl:when>
                     <xsl:when test="$simsRubrics//rangeType='TEXT' or $simsRubrics//rangeType='GEOGRAPHY'">
                         <xsl:variable name="original-text" select="$simsRubrics//*[local-name()=$rubric-element]"/>
