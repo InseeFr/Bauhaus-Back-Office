@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -70,13 +71,13 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     }
 
     private String getValidationState(String validationState){
-        if("Validated".equalsIgnoreCase(validationState)){
+        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState)){
             return "Publiée";
         }
-        if("Modified".equalsIgnoreCase(validationState)){
+        if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState)){
             return "Provisoire, déjà publiée";
         }
-        if("Unpublished".equalsIgnoreCase(validationState)){
+        if(ValidationStatus.UNPUBLISHED.toString().equalsIgnoreCase(validationState)){
             return "Provisoire, jamais publiée";
         }
 
