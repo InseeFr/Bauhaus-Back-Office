@@ -62,19 +62,25 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         for (int i = 0; i < structures.length(); i++) {
             JSONObject structure = structures.getJSONObject(i);
-            String validationState = structure.getString("validationState");
-            if("Validated".equalsIgnoreCase(validationState)){
-                structure.put("validationState", "Publiée");
-            }
-            if("Modified".equalsIgnoreCase(validationState)){
-                structure.put("validationState", "Provisoire, déjà publiée");
-            }
-            if("Unpublished".equalsIgnoreCase(validationState)){
-                structure.put("validationState", "Provisoire, jamais publiée");
-            }
+            String validationState = structure.getString("statutValidation");
+            structure.put("statutValidation", this.getValidationState(validationState));
         }
 
         return structures.toString();
+    }
+
+    private String getValidationState(String validationState){
+        if("Validated".equalsIgnoreCase(validationState)){
+            return "Publiée";
+        }
+        if("Modified".equalsIgnoreCase(validationState)){
+            return "Provisoire, déjà publiée";
+        }
+        if("Unpublished".equalsIgnoreCase(validationState)){
+            return "Provisoire, jamais publiée";
+        }
+
+        return validationState;
     }
 
     @Override
@@ -87,11 +93,80 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         JSONArray codesLists =  repoGestion.getResponseAsArray(buildRequest("getAllCodesLists.ftlh", params));
         for (int i = 0; i < codesLists.length(); i++) {
             JSONObject codesList = codesLists.getJSONObject(i);
-            if(!codesList.has("modified")){
-                codesList.put("modified", defaultDate);
+            if(!codesList.has("dateMiseAJour")){
+                codesList.put("dateMiseAJour", defaultDate);
+            }
+            if(codesList.has("statutValidation")){
+                String validationState = codesList.getString("statutValidation");
+                codesList.put("statutValidation", this.getValidationState(validationState));
             }
         }
         return codesLists.toString();
+    }
+
+    @Override
+    public String getCodesList(String notation) throws RmesException {
+        String defaultDate = "2020-01-01T00:00:00.000";
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("NOTATION", notation);
+
+        JSONObject codesList =  repoGestion.getResponseAsObject(buildRequest("getCodesList.ftlh", params));
+
+        codesList.put("label", this.formatLabel(codesList));
+        codesList.remove("prefLabelLg1");
+        codesList.remove("prefLabelLg2");
+
+        if(codesList.has("statutValidation")){
+            String validationState = codesList.getString("statutValidation");
+            codesList.put("statutValidation", this.getValidationState(validationState));
+        }
+
+        if(!codesList.has("dateCréation")){
+            codesList.put("dateCréation", defaultDate);
+        }
+        if(!codesList.has("dateMiseAJour")){
+            codesList.put("dateMiseAJour", defaultDate);
+        }
+
+        codesList.put("codes", this.getCodes(notation));
+
+        return codesList.toString();
+    }
+
+    private JSONArray getCodes(String notation) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("NOTATION", notation);
+
+        JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
+
+        for (int i = 0; i < codes.length(); i++) {
+            JSONObject code = codes.getJSONObject(i);
+            code.put("label", this.formatLabel(code));
+            code.remove("prefLabelLg1");
+            code.remove("prefLabelLg2");
+        }
+
+        return codes;
+    }
+
+    private JSONArray formatLabel(JSONObject obj) {
+        JSONArray label = new JSONArray();
+
+        JSONObject lg1 = new JSONObject();
+        JSONObject lg2 = new JSONObject();
+
+        lg1.put("langue", Config.LG1);
+        lg2.put("langue", Config.LG2);
+        lg1.put("contenu", obj.getString("prefLabelLg1"));
+        lg2.put("contenu", obj.getString("prefLabelLg2"));
+
+        label.put(lg1);
+        label.put(lg2);
+
+        return label;
     }
 
     private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
