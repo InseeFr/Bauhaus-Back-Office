@@ -5,9 +5,9 @@ WHERE {
     ?uri skos:notation "${NOTATION}" .
     BIND("CL_FREQ" AS ?notation) .
     ?uri skos:prefLabel ?prefLabelLg1 .
-    FILTER (lang(?prefLabelLg1) = 'fr') .
+    FILTER (lang(?prefLabelLg1) = '${LG1}') .
     ?uri skos:prefLabel ?prefLabelLg2 .
-    FILTER (lang(?prefLabelLg2) = 'en') .
+    FILTER (lang(?prefLabelLg2) = '${LG2}') .
     OPTIONAL {?listeCode dcterms:created ?dateCréation . }
     OPTIONAL {?listeCode dcterms:modified ?dateMiseAJour . }
     OPTIONAL {?listeCode dcterms:valid ?dateFinValidité . }
