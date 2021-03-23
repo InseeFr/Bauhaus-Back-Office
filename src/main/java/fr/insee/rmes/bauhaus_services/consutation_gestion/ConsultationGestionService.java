@@ -12,4 +12,6 @@ public interface ConsultationGestionService {
     String getAllCodesLists() throws RmesException;
 
     String getCodesList(String notation) throws RmesException;
+
+    String getStructure(String id) throws RmesException;
 }
