@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,32 +39,9 @@ public class DocumentationExport {
 	private static final Logger logger = LoggerFactory.getLogger(DocumentationExport.class);
 
 
-	public File testExport() throws IOException {
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
-		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
-
-		try(PrintStream printStream = new PrintStream(osOutputFile)	){
-			StreamSource xsrc = new StreamSource(xslFile);
-			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		} catch (TransformerException e) {
-			logger.error(e.getMessage());
-		} finally {
-			inputFile.close();
-			osOutputFile.close();
-		}
-		return output;
-	}
-
 	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
-			Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException, IOException  {
+			boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
@@ -151,59 +127,6 @@ public class DocumentationExport {
 	}
 	
 	
-	public File exportOld(InputStream inputFile, 
-			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
-			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
-		logger.debug("Begin To export documentation");
-
-		String msdXml = documentationsUtils.buildShellSims();
-		File msdFile =  File.createTempFile("msdXml", ".xml");
-		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-
-		InputStream is = new ByteArrayInputStream(msdXml.getBytes(StandardCharsets.UTF_8));
-		Files.copy(is, msdFile.toPath(), options);
-
-		String msdPath = msdFile.getAbsolutePath();
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-
-
-		try(PrintStream printStream = new PrintStream(osOutputFile)	){
-
-			StreamSource xsrc = new StreamSource(xslFile);
-			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-
-			absolutePath = absolutePath.replace('\\', '/');
-			accessoryAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
-			organizationsAbsolutePath = organizationsAbsolutePath.replace('\\', '/');
-			msdPath = msdPath.replace('\\', '/');
-			codeListAbsolutePath = codeListAbsolutePath.replace('\\', '/');
-
-			xsltTransformer.setParameter("tempFile", absolutePath);
-			xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
-			xsltTransformer.setParameter("orga", organizationsAbsolutePath);
-			xsltTransformer.setParameter("msd", msdPath);
-			xsltTransformer.setParameter("codeList", codeListAbsolutePath);
-			xsltTransformer.setParameter("targetType", targetType);
-
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		} catch (TransformerException e) {
-			logger.error(e.getMessage());
-		} finally {
-			inputFile.close();
-			xslFile.close();
-			osOutputFile.close();
-		}
-		logger.debug("End To export documentation");
-		return(output);
-	}
 
 
 }
