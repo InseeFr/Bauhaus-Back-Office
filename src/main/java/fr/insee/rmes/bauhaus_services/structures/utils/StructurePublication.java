@@ -42,6 +42,11 @@ public class StructurePublication extends RdfService {
 								st.getContext());
 
 						publish((Resource) st.getObject());
+					} else if(pred.endsWith("attribute") || pred.endsWith("measure") || pred.endsWith("dimension")){
+						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+								st.getPredicate(),
+								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								st.getContext());
 					}
 					else {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
