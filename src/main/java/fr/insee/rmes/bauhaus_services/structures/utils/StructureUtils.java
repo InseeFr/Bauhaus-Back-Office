@@ -227,6 +227,7 @@ public class StructureUtils extends RdfService {
     }
     public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status) throws RmesException {
 
+        repoGestion.clearStructureNodeAndComponents(structureIri);
 
         Model model = new LinkedHashModel();
 
