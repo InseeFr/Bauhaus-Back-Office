@@ -519,18 +519,36 @@
                         <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][url[contains(tokenize(text(),'/')[last()],'.')]]">
                             <xsl:element name="text:p">
                                 <xsl:attribute name="text:style-name" select="$style"/>
-                                <xsl:variable name="date" select="date"/>
+                                <xsl:variable name="document-language" select="lang"/>
+                                <xsl:variable name="document-date" select="updatedDate"/>
                                 <xsl:choose>
                                     <xsl:when test="ends-with($rubric-element,'1')">
-                                        <xsl:value-of select="concat(labelLg1,' (',lang,' - ',substring($date,9,2),'/',substring($date,6,2),'/',substring($date,1,4),')')"/>
+                                        <xsl:value-of select="labelLg1"/>
                                     </xsl:when>
                                     <xsl:when test="not(labelLg2/text()!='')">
-                                        <xsl:value-of select="concat(labelLg1,' (',lang,' - ',$date,')')"/>
+                                        <xsl:value-of select="labelLg1"/>
                                     </xsl:when>
                                     <xsl:otherwise>
-                                        <xsl:value-of select="concat(labelLg2,' (',lang,' - ',$date,')')"/>
+                                        <xsl:value-of select="labelLg2"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
+                                <xsl:if test="$document-language !='' or $document-date !=''">
+                                    <xsl:value-of select="concat(' (',$document-language)"/>
+                                    <xsl:if test="$document-language !='' and $document-date !=''">
+                                        <xsl:value-of select="' - '"/>
+                                    </xsl:if>
+                                    <xsl:if test="$document-date != ''">
+                                        <xsl:choose>
+                                            <xsl:when test="ends-with($rubric-element,'1')">
+                                                <xsl:value-of select="concat(substring($document-date,9,2),'/',substring($document-date,6,2),'/',substring($document-date,1,4),')')"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:value-of select="$document-date"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </xsl:if>
+                                    <xsl:value-of select="')'"/>
+                                </xsl:if>
                             </xsl:element>
                             <xsl:element name="text:p">
                                 <xsl:attribute name="text:style-name" select="$style"/>
@@ -679,11 +697,21 @@
                         </xsl:call-template>
                     </xsl:when>
                     <xsl:when test="$tag='li'">
+                        <xsl:variable name="li-content-string" select="substring-before(substring-after($text,'&gt;'),'&lt;/li&gt;')"/>
                         <text:list-item>
                             <text:p text:style-name="{$style}">
-                                <xsl:call-template name="rich-text">
-                                    <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),concat('&lt;/',$tag,'&gt;'))"/>
-                                </xsl:call-template>
+                                <xsl:choose>
+                                    <xsl:when test="contains($li-content-string,'&lt;p&gt;')">
+                                        <xsl:call-template name="rich-text">
+                                            <xsl:with-param name="text" select="substring-before(substring-after($li-content-string,'&lt;p&gt;'),'&lt;/p&gt;')"/>
+                                        </xsl:call-template>                                        
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <xsl:call-template name="rich-text">
+                                            <xsl:with-param name="text" select="$li-content-string"/>
+                                        </xsl:call-template>
+                                    </xsl:otherwise>
+                                </xsl:choose>
                             </text:p>
                         </text:list-item>
                         <xsl:call-template name="rich-text">
