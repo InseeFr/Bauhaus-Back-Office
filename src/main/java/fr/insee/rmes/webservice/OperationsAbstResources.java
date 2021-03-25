@@ -7,7 +7,6 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.exceptions.RmesException;
@@ -16,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
-@Component
 @Path("/operations")
 @Tag(name="Operations", description="Operation API")
 @ApiResponses(value = { 

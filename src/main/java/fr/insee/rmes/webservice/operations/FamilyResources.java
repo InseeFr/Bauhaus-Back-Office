@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
  * FAMILY
  ******************************************************************************************************/
 @Component
+@Qualifier("Family")
 @Path("/operations")
 public class FamilyResources extends OperationsAbstResources {
 

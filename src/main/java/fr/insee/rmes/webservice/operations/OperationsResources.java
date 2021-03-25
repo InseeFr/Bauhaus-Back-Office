@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
 @Component
+@Qualifier("Operation")
 @Path("/operations")
 public class OperationsResources extends OperationsAbstResources {
 
