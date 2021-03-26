@@ -289,6 +289,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	/**
 	 * EXPORT
 	 * @param id
+	 * @param lg1
 	 * @param lg2
 	 * @param includeEmptyMas
 	 * @return response
@@ -324,36 +325,19 @@ public class MetadataReportResources extends OperationsAbstResources {
 	/**
 	 * EXPORTFORLABEL
 	 * @param id
-	 * @param lg2
-	 * @param includeEmptyMas
 	 * @return response
 	 */	
 
 	@GET
-	@Path("/metadataReport/export/label/{id}/{emptyMas}/{lg1}/{lg2}")
+	@Path("/metadataReport/export/label/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report for label comitee")
 	public Response getSimsLabelExport(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
-			,
-			@Parameter(
-					description = "Inclure les champs vides",
-					required = false) @QueryParam("emptyMas") Boolean includeEmptyMas
-			,
-			@Parameter(
-					description = "Version française",
-					required = false) @QueryParam("lg1") Boolean lg1
-			,
-			@Parameter(
-					description = "Version anglaise",
-					required = false) @QueryParam("lg2") Boolean lg2
 			) throws RmesException {
-		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (lg1==null) {lg1=true;}
-		if (lg2==null) {lg2=true;}
-		return operationsService.exportMetadataReportForLabel(id,includeEmptyMas,lg1,lg2);	
+		return operationsService.exportMetadataReportForLabel(id);	
 	}
 	
 	

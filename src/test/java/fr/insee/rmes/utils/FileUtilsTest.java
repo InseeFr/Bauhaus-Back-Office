@@ -14,14 +14,14 @@ class FileUtilsTest {
 	@ValueSource(strings = { "Carrières complètes ", "carrières-complètes", "  Carrières    complètes  " })
 	void givenCleanFileName_whenString_thenResponseIsClean(String name) throws RmesException {
 
-		String cleanFileName = FileUtils.cleanFileNameAndAddExtension(name, "odt");
+		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension(name, "odt");
 		assertEquals("carrières-complètes.odt", cleanFileName);
 	}
 
 	@Test
 	void givenCleanFileName_whenStringWithPointExtension_thenResponseIsClean() throws RmesException {
 
-		String cleanFileName = FileUtils.cleanFileNameAndAddExtension("test de nommage bidon ", ".odt");
+		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension("test de nommage bidon ", ".odt");
 		assertEquals("test-de-nommage-bidon.odt", cleanFileName);
 	}
 

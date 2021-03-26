@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import javax.xml.XMLConstants;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
@@ -63,23 +65,57 @@ public class DocumentationExport {
 		return output;
 	}
 
+//	public File callXsltEmportTransfo(String paramPath,String goal)throws RmesException, IOException  {
+//		
+//		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+//		output.deleteOnExit();
+//
+//		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
+//		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+//		InputStream odtFile ;
+//		if(goal == Constants.GOAL_RMES){
+//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
+//		}
+//		if(goal == Constants.GOAL_COMITE_LABEL){
+//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/labelPattern.fodt");
+//		}
+//		PrintStream printStream= null;
+//		
+//		try{
+//			// prepare transformer
+//			StreamSource xsrc = new StreamSource(xslFile);
+//			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
+//			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+//		}
+//		
+//		return null;
+//
+//	}
+	
 	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
-			Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException, IOException  {
+			Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
-
 		String parametersXML = buildParams(lg1,lg2,includeEmptyMas,targetType);
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-
+		File output =  null;
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
-		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
+		InputStream odtFile = null ;
+		if(goal == Constants.GOAL_RMES){
+			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
+			output = File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+		}
+		if(goal == Constants.GOAL_COMITE_LABEL){
+			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
+			output = File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+		}	
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+		output.deleteOnExit();
 		PrintStream printStream= null;
+		Path tempDir= Files.createTempDirectory("forExport");
 
 		try{
 			// prepare transformer
@@ -89,7 +125,6 @@ public class DocumentationExport {
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 			
 			// Pass parameters in a file
-			Path tempDir= Files.createTempDirectory("forExport");
 			addParameter ( xsltTransformer,  "parametersFile",  parametersXML,tempDir);
 			addParameter ( xsltTransformer,  "simsFile",  simsXML,tempDir);
 			addParameter ( xsltTransformer,  "seriesFile",  seriesXML,tempDir);
@@ -103,6 +138,13 @@ public class DocumentationExport {
 			printStream = new PrintStream(osOutputFile);
 			// transformation
 			xsltTransformer.transform(new StreamSource(odtFile), new StreamResult(printStream));
+			
+			//create odt
+			if(goal == Constants.GOAL_COMITE_LABEL){
+				FilesUtils.addFileToZipFolder(output,new File("/xslTransformerFiles/toZipForLabel.zip"));
+				FileUtils.copyFile(new File("/xslTransformerFiles/toZipForLabel.zip"), output);
+				Files.move(output.toPath(), tempDir.resolve(Paths.get("export.odt")), StandardCopyOption.REPLACE_EXISTING);
+			}
 		} catch (TransformerException e) {
 			logger.error(e.getMessage());
 		} finally {
@@ -112,7 +154,11 @@ public class DocumentationExport {
 			printStream.close();
 		}
 		logger.debug("End To export documentation");
-		return(output);
+		
+		if(goal == Constants.GOAL_RMES){
+			return(output);
+		}
+		return (new File(tempDir.toString(),"export.odt"));
 	}
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
@@ -142,7 +188,7 @@ public class DocumentationExport {
 	private void addParameter (Transformer xsltTransformer, String paramName, String paramData, Path tempDir) throws IOException {
 		// Pass parameters in a file
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-		Path tempFile = Files.createTempFile(tempDir, paramName,Constants.DOT_XML);
+		Path tempFile = Files.createTempFile(tempDir, paramName, Constants.DOT_XML);
 		String absolutePath = tempFile.toFile().getAbsolutePath();
 		InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
 		Files.copy(is, tempFile, options);

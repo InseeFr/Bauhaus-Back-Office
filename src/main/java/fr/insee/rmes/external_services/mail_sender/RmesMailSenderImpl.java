@@ -37,7 +37,7 @@ import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.mail_sender.SendRequest.Recipients;
 import fr.insee.rmes.model.mail_sender.Mail;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
-import fr.insee.rmes.utils.FileUtils;
+import fr.insee.rmes.utils.FilesUtils;
 
 @Service
 public class RmesMailSenderImpl implements MailSenderContract {
@@ -78,7 +78,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
 			
 		String fileName = json.getString(Constants.PREF_LABEL_LG1);
-		fileName = FileUtils.cleanFileNameAndAddExtension(fileName,"odt");
+		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 

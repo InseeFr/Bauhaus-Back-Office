@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
@@ -443,7 +444,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		File output;
 		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2);
+			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
 			is = new FileInputStream(output);
 		} catch (Exception e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
@@ -453,6 +454,23 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
 
+	@Override
+	public Response exportMetadataReportForLabel(String id) throws RmesException  {
+
+		File output;
+		InputStream is;
+		try {
+			output = documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
+			is = new FileInputStream(output);
+		} catch (Exception e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+		}
+		String fileName = output.getName();
+		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
+		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
+	}
+
+	
 	public Response exportMetadataReportOld(String id) throws RmesException  {
 		File output;
 		InputStream is;

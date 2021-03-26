@@ -46,21 +46,22 @@
 		<junit.version>5.7.0</junit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-		
+
 		<!-- SONAR -->
 		<sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
 			src/main/java/fr/insee/rmes/modeles/**/*</sonar.exclusions>
 		<sonar.projectKey>${project.groupId}:${project.artifactId}</sonar.projectKey>
 		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.language>java</sonar.language>
-        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
-        <version.maven-jacoco>0.8.5</version.maven-jacoco>
+		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+		<sonar.language>java</sonar.language>
+		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+		<version.maven-jacoco>0.8.5</version.maven-jacoco>
 		<version.maven-sonar>3.7.0.1746</version.maven-sonar>
-		<argLine>-Xms256m -Xmx512m -XX:MaxPermSize=128m -ea -Dfile.encoding=UTF-8</argLine>
-        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-		
+		<argLine>-Xms256m -Xmx512m -XX:MaxPermSize=128m -ea
+			-Dfile.encoding=UTF-8</argLine>
+		<sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+
 	</properties>
 
 	<repositories>
@@ -82,7 +83,12 @@
 			<artifactId>jackson-dataformat-xml</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.zeroturnaround</groupId>
+			<artifactId>zt-zip</artifactId>
+			<version>1.14</version>
+			<type>jar</type>
+		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
@@ -258,10 +264,10 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.junit.jupiter</groupId>
-    		<artifactId>junit-jupiter-params</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
 			<version>${junit.version}</version>
-    		<scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -449,8 +455,8 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.7.2</version>
 		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/jaxen/jaxen --> 
+
+		<!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
 		<!-- Used for LDAP connexion -->
 		<dependency>
 			<groupId>jaxen</groupId>
@@ -464,12 +470,12 @@
 			<artifactId>flexmark-all</artifactId>
 			<version>0.50.42</version>
 		</dependency>
-		
-		
+
+
 		<dependency>
-		    <groupId>org.apache.commons</groupId>
-		    <artifactId>commons-text</artifactId>
-		    <version>1.9</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.9</version>
 		</dependency>
 	</dependencies>
 
@@ -494,9 +500,9 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
-	
-				<!-- Plugin lancement des tests -->
-		 	<plugin>
+
+			<!-- Plugin lancement des tests -->
+			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<includes>
@@ -511,16 +517,16 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-			
+
 			<plugin>
-			    <groupId>org.sonarsource.scanner.maven</groupId>
-			    <artifactId>sonar-maven-plugin</artifactId>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
 			</plugin>
-			
+
 
 			<!-- Plugin pour prise en compte des tests sur SonarQube plate-forme innovation -->
 			<plugin>
-			    <groupId>org.jacoco</groupId>
+				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<executions>
 					<execution>
@@ -532,81 +538,83 @@
 						<id>jacoco-site</id>
 						<phase>test</phase>
 						<goals>
-				    		<goal>report</goal>
+							<goal>report</goal>
 						</goals>
 					</execution>
 				</executions>
-			</plugin>	
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
 
 				<!-- Pour l'exécution des tests unitaires -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin.version}</version>
-				<!-- https://carlobertoldi.wordpress.com/2012/03/12/maven-unit-tests-and-those-funny-characters/ -->
-				<configuration>
-       				 <junitArtifactName>junit:junit</junitArtifactName>
-        			<encoding>UTF-8</encoding>
-       				 <inputEncoding>UTF-8</inputEncoding>
-        			<outputEncoding>UTF-8</outputEncoding>
-					<!-- permet la surcharge de maven-surefire-plugin tout en fonctionnant avec jacoco -->
-					<!-- <argLine>${argLine}</argLine>	MAVEN surcharge with properties	 -->
-    			</configuration>
-
-				<executions>
-					<execution>
-						<id>test</id>
-						<phase>test</phase>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<skip>false</skip>
-							<includes>
-								<include>**/*Test.java</include>
-							</includes>
-							<encoding>UTF-8</encoding>
-						</configuration>
-
-					</execution>
-				</executions>
-			</plugin>
-				
-				
 				<plugin>
-                	<groupId>org.sonarsource.scanner.maven</groupId>
-                	<artifactId>sonar-maven-plugin</artifactId>
-                	<version>${version.maven-sonar}</version>
-            	</plugin>
-				
-	
-				<!-- Plugin pour prise en compte des tests sur SonarQube plate-forme innovation -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven-surefire-plugin.version}</version>
+					<!-- https://carlobertoldi.wordpress.com/2012/03/12/maven-unit-tests-and-those-funny-characters/ -->
+					<configuration>
+						<junitArtifactName>junit:junit</junitArtifactName>
+						<encoding>UTF-8</encoding>
+						<inputEncoding>UTF-8</inputEncoding>
+						<outputEncoding>UTF-8</outputEncoding>
+						<!-- permet la surcharge de maven-surefire-plugin tout en fonctionnant 
+							avec jacoco -->
+						<!-- <argLine>${argLine}</argLine> MAVEN surcharge with properties -->
+					</configuration>
+
+					<executions>
+						<execution>
+							<id>test</id>
+							<phase>test</phase>
+							<goals>
+								<goal>test</goal>
+							</goals>
+							<configuration>
+								<skip>false</skip>
+								<includes>
+									<include>**/*Test.java</include>
+								</includes>
+								<encoding>UTF-8</encoding>
+							</configuration>
+
+						</execution>
+					</executions>
+				</plugin>
+
+
+				<plugin>
+					<groupId>org.sonarsource.scanner.maven</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${version.maven-sonar}</version>
+				</plugin>
+
+
+				<!-- Plugin pour prise en compte des tests sur SonarQube plate-forme 
+					innovation -->
 				<plugin>
 					<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>${version.maven-jacoco}</version>
-						<executions>
-							<execution>
-								<id>default-prepare-agent</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>report</id>
-								<phase>report</phase>
-								<goals>
-									<goal>report-aggregate</goal>
-								</goals>
-							</execution>
-						</executions>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${version.maven-jacoco}</version>
+					<executions>
+						<execution>
+							<id>default-prepare-agent</id>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>report</id>
+							<phase>report</phase>
+							<goals>
+								<goal>report-aggregate</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
-				
+
 			</plugins>
-		 </pluginManagement>
+		</pluginManagement>
 	</build>
 
 </project>

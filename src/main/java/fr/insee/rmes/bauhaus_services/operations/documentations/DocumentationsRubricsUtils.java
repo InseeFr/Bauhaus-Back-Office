@@ -378,18 +378,6 @@ public class DocumentationsRubricsUtils extends RdfService {
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
 
-//		final String regex4 = "&amp;amp;";
-//		final Pattern pattern4 = Pattern.compile(regex4, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-//		ret = pattern4.matcher(ret).replaceAll("&amp;");
-//
-//		final String regex5 = "&amp;gt;";
-//		final Pattern pattern5 = Pattern.compile(regex5, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-//		ret = pattern5.matcher(ret).replaceAll("&gt;");
-//
-//		final String regex6 = "&amp;lt;";
-//		final Pattern pattern6 = Pattern.compile(regex6, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-//		ret = pattern6.matcher(ret).replaceAll("&lt;");
-
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 
