@@ -272,9 +272,7 @@ public class StructureUtils extends RdfService {
                 componentDefinition.setCreated(DateUtils.getCurrentDate());
             }
             componentDefinition.setModified(DateUtils.getCurrentDate());
-            if (componentDefinition.getId() == null) {
-                componentDefinition.setId("cs" + (1000 + i) );
-            }
+            componentDefinition.setId("cs" + (1000 + i) );
             createRdfComponentSpecification(structureIRI, model, componentDefinition, graph);
         }
     }

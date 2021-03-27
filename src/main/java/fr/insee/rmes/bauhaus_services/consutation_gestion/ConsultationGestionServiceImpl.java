@@ -163,7 +163,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             if(component.has("representation")){
                 if(component.getString("representation").endsWith("date")){
                     component.put("representation", "date");
-                } else if(component.getString("representation").endsWith("integer")){
+                } else if(component.getString("representation").endsWith("int")){
                     component.put("representation", "entier");
                 } else if(component.getString("representation").endsWith("float")){
                     component.put("representation", "décimal");
