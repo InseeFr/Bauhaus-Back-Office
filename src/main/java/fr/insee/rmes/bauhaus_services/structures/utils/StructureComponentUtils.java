@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -177,7 +178,15 @@ public class StructureComponentUtils extends RdfService {
         }
 
         if (component.getRange() != null && component.getRange().equals(((SimpleIRI)INSEE.CODELIST).toString())) {
-            RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
+            RdfUtils.addTripleUri(componentURI, RDF.TYPE, QB.CODED_PROPERTY, model, graph);
+
+            JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getCodeList()));
+
+            if(object.has("uriClasseOwl")){
+                RdfUtils.addTripleUri(componentURI, RDFS.RANGE, object.getString("uriClasseOwl"), model, graph);
+            } else {
+                RdfUtils.addTripleUri(componentURI, RDFS.RANGE, SKOS.CONCEPT, model, graph);
+            }
         } else {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
         }
