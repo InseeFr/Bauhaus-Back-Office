@@ -1,4 +1,4 @@
-SELECT ?uri ?id ?notation ?prefLabelLg1 ?prefLabelLg2 ?concept ?representation ?listeCode ?ordre
+SELECT ?uri ?id ?notation ?prefLabelLg1 ?prefLabelLg2 ?concept ?representation ?listeCode ?ordre ?attachement ?obligatoire
 FROM <${STRUCTURES_GRAPH}>
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
@@ -16,5 +16,6 @@ WHERE {
     OPTIONAL { ?uri rdfs:range ?representation . }
     OPTIONAL { ?uri qb:codeList ?listeCode . }
     OPTIONAL { ?uriComponentSpecification qb:order ?ordre . }
-
+    OPTIONAL {?uriComponentSpecification qb:componentAttachment ?attachement . }
+    OPTIONAL {?uriComponentSpecification qb:componentRequired ?obligatoire . }
 }
