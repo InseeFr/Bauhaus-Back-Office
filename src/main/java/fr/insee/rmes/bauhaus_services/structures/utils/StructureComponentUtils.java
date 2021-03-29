@@ -299,12 +299,12 @@ public class StructureComponentUtils extends RdfService {
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
             }
         }
-/*
+
         if(!component.isNull("codeList") && !"".equals(component.getString("codeList"))){
             if(!repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
             }
-        }*/
+        }
 
 
         MutualizedComponent mutualizedComponent;
