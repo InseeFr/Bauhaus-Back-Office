@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0"
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+    xmlns:ooo="http://openoffice.org/2004/office"
+    xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+    xmlns:dr3d="urn:oasis:names:tc:opendocument:xmlns:dr3d:1.0"
+    xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+    xmlns:chart="urn:oasis:names:tc:opendocument:xmlns:chart:1.0"
+    xmlns:rpt="http://openoffice.org/2005/report"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+    xmlns:number="urn:oasis:names:tc:opendocument:xmlns:datastyle:1.0"
+    xmlns:ooow="http://openoffice.org/2004/writer" xmlns:oooc="http://openoffice.org/2004/calc"
+    xmlns:of="urn:oasis:names:tc:opendocument:xmlns:of:1.2"
+    xmlns:css3t="http://www.w3.org/TR/css3-text/" xmlns:tableooo="http://openoffice.org/2009/table"
+    xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0"
+    xmlns:drawooo="http://openoffice.org/2010/draw"
+    xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
+    xmlns:grddl="http://www.w3.org/2003/g/data-view#"
+    xmlns:field="urn:openoffice:names:experimental:ooo-ms-interop:xmlns:field:1.0"
+    xmlns:math="http://www.w3.org/1998/Math/MathML"
+    xmlns:form="urn:oasis:names:tc:opendocument:xmlns:form:1.0"
+    xmlns:script="urn:oasis:names:tc:opendocument:xmlns:script:1.0"
+    xmlns:dom="http://www.w3.org/2001/xml-events" xmlns:xforms="http://www.w3.org/2002/xforms"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:formx="urn:openoffice:names:experimental:ooxml-odf-interop:xmlns:form:1.0"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:officeooo="http://openoffice.org/2009/office"
+    office:version="1.2">
+    <office:scripts/>
+    <office:font-face-decls>
+        <style:font-face style:name="Arial1" svg:font-family="Arial"
+            style:font-family-generic="swiss"/>
+        <style:font-face style:name="Liberation Serif"
+            svg:font-family="&apos;Liberation Serif&apos;" style:font-family-generic="roman"
+            style:font-pitch="variable"/>
+        <style:font-face style:name="Liberation Sans" svg:font-family="&apos;Liberation Sans&apos;"
+            style:font-family-generic="swiss" style:font-pitch="variable"/>
+        <style:font-face style:name="Liberation Sans1" svg:font-family="&apos;Liberation Sans&apos;"
+            style:font-adornments="Normal" style:font-family-generic="swiss"
+            style:font-pitch="variable"/>
+        <style:font-face style:name="Arial" svg:font-family="Arial"
+            style:font-family-generic="system" style:font-pitch="variable"/>
+        <style:font-face style:name="Microsoft YaHei" svg:font-family="&apos;Microsoft YaHei&apos;"
+            style:font-family-generic="system" style:font-pitch="variable"/>
+        <style:font-face style:name="NSimSun" svg:font-family="NSimSun"
+            style:font-family-generic="system" style:font-pitch="variable"/>
+    </office:font-face-decls>
+    <office:automatic-styles>
+        <style:style style:name="P1" style:family="paragraph"
+            style:parent-style-name="Contents_20_1">
+            <style:paragraph-properties>
+                <style:tab-stops>
+                    <style:tab-stop style:position="17cm" style:type="right"
+                        style:leader-style="dotted" style:leader-text="."/>
+                </style:tab-stops>
+            </style:paragraph-properties>
+        </style:style>
+        <style:style style:name="P2" style:family="paragraph"
+            style:parent-style-name="Contents_20_2">
+            <style:paragraph-properties>
+                <style:tab-stops>
+                    <style:tab-stop style:position="17cm" style:type="right"
+                        style:leader-style="dotted" style:leader-text="."/>
+                </style:tab-stops>
+            </style:paragraph-properties>
+        </style:style>
+        <style:style style:name="P3" style:family="paragraph" style:parent-style-name="Heading_20_1"
+            style:list-style-name=""/>
+        <style:style style:name="P4" style:family="paragraph" style:parent-style-name="Heading_20_1">
+            <style:paragraph-properties fo:break-before="page"/>
+        </style:style>
+        <style:style style:name="P5" style:family="paragraph" style:parent-style-name="Text_20_body">
+            <style:text-properties officeooo:paragraph-rsid="0021dfaa"/>
+        </style:style>
+        <style:style style:name="P6" style:family="paragraph" style:parent-style-name="Text_20_body">
+            <style:text-properties officeooo:paragraph-rsid="00223e78"/>
+        </style:style>
+        <style:style style:name="P7" style:family="paragraph" style:parent-style-name="Text_20_body">
+            <style:text-properties officeooo:paragraph-rsid="0022ea32"/>
+        </style:style>
+        <style:style style:name="T1" style:family="text">
+            <style:text-properties officeooo:rsid="0021dfaa"/>
+        </style:style>
+        <style:style style:name="T2" style:family="text">
+            <style:text-properties officeooo:rsid="00223e78"/>
+        </style:style>
+        <style:style style:name="Sect1" style:family="section">
+            <style:section-properties style:editable="false">
+                <style:columns fo:column-count="1" fo:column-gap="0cm"/>
+            </style:section-properties>
+        </style:style>
+    </office:automatic-styles>
+    <office:body>
+        <office:text text:use-soft-page-breaks="true">
+            <office:forms form:automatic-focus="false" form:apply-design-mode="false"/>
+            <text:sequence-decls>
+                <text:sequence-decl text:display-outline-level="0" text:name="Illustration"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Table"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Text"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>
+                <text:sequence-decl text:display-outline-level="0" text:name="Figure"/>
+            </text:sequence-decls>
+            <text:table-of-content text:style-name="Sect1" text:protected="true"
+                text:name="Table des matières1">
+                <text:table-of-content-source text:outline-level="10">
+                    <text:index-title-template text:style-name="Contents_20_Heading">Table des matières</text:index-title-template>
+                    <text:table-of-content-entry-template text:outline-level="1"
+                        text:style-name="Contents_20_1">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="2"
+                        text:style-name="Contents_20_2">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="3"
+                        text:style-name="Contents_20_3">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="4"
+                        text:style-name="Contents_20_4">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="5"
+                        text:style-name="Contents_20_5">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="6"
+                        text:style-name="Contents_20_6">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="7"
+                        text:style-name="Contents_20_7">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="8"
+                        text:style-name="Contents_20_8">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="9"
+                        text:style-name="Contents_20_9">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                    <text:table-of-content-entry-template text:outline-level="10"
+                        text:style-name="Contents_20_10">
+                        <text:index-entry-link-start text:style-name="Index_20_Link"/>
+                        <text:index-entry-chapter/>
+                        <text:index-entry-text/>
+                        <text:index-entry-tab-stop style:type="right" style:leader-char="."/>
+                        <text:index-entry-page-number/>
+                        <text:index-entry-link-end/>
+                    </text:table-of-content-entry-template>
+                </text:table-of-content-source>
+                <text:index-body>
+                    <text:index-title text:style-name="Sect1" text:name="Table des matières1_Head">
+                        <text:p text:style-name="Contents_20_Heading">Table des matières</text:p>
+                    </text:index-title>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1311_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >1. Demande de label d’intérêt général et de qualité statistique avec le caractère obligatoire<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1313_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2. Contexte de l’enquête<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1315_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.1. Avis d’opportunité du Cnis<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1317_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.2. Règlement européen<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1319_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.3. Service producteur et services réalisant la collecte<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1321_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.4. Objectifs détaillés des enquêtes et principaux thèmes abordés<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1323_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.5. Instances de concertation avec les partenaires sociaux<text:tab/>2</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1325_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.6. Autres éléments de la comitologie<text:tab/>3</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1327_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.7. Calendrier de l’enquête<text:tab/>3</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1329_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.8. Exploitation et diffusion des résultats<text:tab/>3</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1331_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.9. Bilan d’exécution de l’enquête précédente et des résultats produits<text:tab/>3</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1333_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >2.10. Bilan de la mise en œuvre des recommandations du Comité du label<text:tab/>3</text:a></text:p>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1335_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >3. Méthodologie statistique<text:tab/>4</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc1337_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >3.1. Champ de l’enquête et unités enquêtées<text:tab/>4</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8961_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >3.2. Paramètres d’intérêt de l’enquête<text:tab/>4</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8963_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >3.3. Description du sondage<text:tab/>4</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8965_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >3.4. Traitements statistiques<text:tab/>5</text:a></text:p>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8967_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >4. Description du mode de collecte<text:tab/>6</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8969_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >4.1. Protocole de collecte<text:tab/>6</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8971_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >4.2. Sécurité des données et protection du secret statistique<text:tab/>6</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8973_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >4.3. Lettres-avis définitives, notices ou plaquettes d’informations<text:tab/>6</text:a></text:p>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8975_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >5. Questionnaire<text:tab/>7</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8977_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >5.1. Compte-rendu détaillé des tests<text:tab/>7</text:a></text:p>
+                    <text:p text:style-name="P2"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8979_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >5.2. Questionnaire définitif<text:tab/>7</text:a></text:p>
+                    <text:p text:style-name="P1"><text:a xlink:type="simple"
+                            xlink:href="#__RefHeading___Toc8981_1782290185"
+                            text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
+                            >6. Coût des enquêtes<text:tab/>8</text:a></text:p>
+                </text:index-body>
+            </text:table-of-content>
+            <text:h text:style-name="P3" text:outline-level="1"/>
+            <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc1311_1782290185"/>Demande de label d’intérêt général et de qualité statistique avec le caractère obligatoire<text:bookmark-end
+                    text:name="__RefHeading___Toc1311_1782290185"/></text:h>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_1" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc1313_1782290185"/>Contexte de l’enquête<text:bookmark-end text:name="__RefHeading___Toc1313_1782290185"
+                /></text:h>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1315_1782290185"/>Avis d’opportunité du Cnis<text:bookmark-end text:name="__RefHeading___Toc1315_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Numéro de visa :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.6.4/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1317_1782290185"/>Règlement européen<text:bookmark-end text:name="__RefHeading___Toc1317_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Actes juridiques et autres accords :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.6.1/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1319_1782290185"/>Service producteur et services réalisant la collecte<text:bookmark-end
+                    text:name="__RefHeading___Toc1319_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Organisme responsable :</text:p>
+            <text:p text:style-name="Text_20_body">#list(${series/publishers/labelLg1},'L1')</text:p>
+            <text:p text:style-name="Heading">Service collecteur :</text:p>
+            <text:p text:style-name="Text_20_body">#list(${series/dataCollectors/labelLg1},'L1')</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1321_1782290185"/>Objectifs détaillés des enquêtes et principaux thèmes abordés<text:bookmark-end
+                    text:name="__RefHeading___Toc1321_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Résumé :</text:p>
+            <text:p text:style-name="Text_20_body">${series/abstractLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1323_1782290185"/>Instances de concertation avec les partenaires sociaux<text:bookmark-end
+                    text:name="__RefHeading___Toc1323_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Partenaires :</text:p>
+            <text:p text:style-name="Text_20_body">#list(${series/contributors/labelLg1},'L1')</text:p>
+            <text:p text:style-name="Heading">Instance de concertation :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/C.12.1.1/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1325_1782290185"/><text:soft-page-break/>Autres éléments de la comitologie<text:bookmark-end
+                    text:name="__RefHeading___Toc1325_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Partenaires :</text:p>
+            <text:p text:style-name="Text_20_body">#list(${series/contributors/labelLg1},'L1')</text:p>
+            <text:p text:style-name="Heading">Comitologie :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/C.11.1.2/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1327_1782290185"/>Calendrier de l’enquête<text:bookmark-end text:name="__RefHeading___Toc1327_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Calendrier de diffusion :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.8.1/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Accès aux micro-données :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.10.4/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Période de collecte :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.7/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1329_1782290185"/>Exploitation et diffusion des résultats<text:bookmark-end text:name="__RefHeading___Toc1329_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Publications :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.10.2/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Base de données en ligne :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.10.3/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1331_1782290185"/>Bilan d’exécution de l’enquête précédente et des résultats produits<text:bookmark-end
+                    text:name="__RefHeading___Toc1331_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Faits marquants :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/C.3.10/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1333_1782290185"/>Bilan de la mise en œuvre des recommandations du Comité du label<text:bookmark-end
+                    text:name="__RefHeading___Toc1333_1782290185"/></text:h>
+            <text:p text:style-name="Text_20_body"/>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_1" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc1335_1782290185"
+                /><text:soft-page-break/>Méthodologie statistique<text:bookmark-end
+                    text:name="__RefHeading___Toc1335_1782290185"/></text:h>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc1337_1782290185"/>Champ de l’enquête et unités enquêtées<text:bookmark-end text:name="__RefHeading___Toc1337_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Couverture sectorielle :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.3.3/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Unité statistique :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.3.5/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Population statistique :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.3.6/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Zone géographique de référence :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.3.7/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Erreur de couverture :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/S.13.3.1/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Unités enquêtées :</text:p>
+            <text:p text:style-name="Text_20_body">${identifiedSims/I.18.9/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8961_1782290185"/>Paramètres d’intérêt de l’enquête<text:bookmark-end text:name="__RefHeading___Toc8961_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Description des données</text:p>
+            <text:p text:style-name="P5">${identifiedSims/S.3.1/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Nomenclature</text:p>
+            <text:p text:style-name="P5">${identifiedSims/S.3.2/labelLg1}</text:p>
+            <text:p text:style-name="P5"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8963_1782290185"/>Description du sondage<text:bookmark-end text:name="__RefHeading___Toc8963_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Plan de sondage</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.10/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Taille de l’échantillon</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.11/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8965_1782290185"
+                /><text:soft-page-break/>Traitements statistiques<text:bookmark-end
+                    text:name="__RefHeading___Toc8965_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Élaboration des données</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.18.5/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Ajustement</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.18.6/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc8967_1782290185"/>Description du mode de collecte<text:bookmark-end text:name="__RefHeading___Toc8967_1782290185"
+                /></text:h>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8969_1782290185"/>Protocole de collecte<text:bookmark-end text:name="__RefHeading___Toc8969_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Données sources</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.18.1/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Fréquence de collecte des données</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.18.2/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Collecte des données</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.18.3/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Mode de collecte</text:p>
+            <text:p text:style-name="P6">${identifiedSims/I.18.8/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8971_1782290185"/>Sécurité des données et protection du secret statistique<text:bookmark-end
+                    text:name="__RefHeading___Toc8971_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Politique de confidentialité</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.7.1/labelLg1}</text:p>
+            <text:p text:style-name="Heading">Confidentialité — traitement des données</text:p>
+            <text:p text:style-name="P6">${identifiedSims/S.7.2/labelLg1}</text:p>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8973_1782290185"/>Lettres-avis définitives, notices ou plaquettes d’informations<text:bookmark-end
+                    text:name="__RefHeading___Toc8973_1782290185"/></text:h>
+            <text:p text:style-name="Heading">Documents de collecte</text:p>
+            <text:p text:style-name="P7">${identifiedSims/I.18.12/labelLg1}</text:p>
+            <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc8975_1782290185"/>Questionnaire<text:bookmark-end
+                    text:name="__RefHeading___Toc8975_1782290185"/></text:h>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8977_1782290185"/>Compte-rendu détaillé des tests<text:bookmark-end text:name="__RefHeading___Toc8977_1782290185"/></text:h>
+            <text:p text:style-name="Text_20_body"/>
+            <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
+                    text:name="__RefHeading___Toc8979_1782290185"/>Questionnaire définitif<text:bookmark-end text:name="__RefHeading___Toc8979_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Documents de collecte</text:p>
+            <text:p text:style-name="P7">${identifiedSims/I.18.12/labelLg1}</text:p>
+            <text:h text:style-name="P4" text:outline-level="1"><text:bookmark-start
+                    text:name="__RefHeading___Toc8981_1782290185"/>Coût des enquêtes<text:bookmark-end text:name="__RefHeading___Toc8981_1782290185"
+                /></text:h>
+            <text:p text:style-name="Heading">Coût et charges</text:p>
+            <text:p text:style-name="P7">${identifiedSims/S.16/labelLg1}</text:p>
+        </office:text>
+    </office:body>
+</office:document-content>

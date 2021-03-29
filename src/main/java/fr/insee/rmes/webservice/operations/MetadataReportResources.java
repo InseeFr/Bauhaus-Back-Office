@@ -11,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -136,7 +137,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	@Path("/metadataReport/fullSims/{id}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFullSims", summary = "Full sims for an id", 
-	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json" ,*/ schema = @Schema(implementation = Documentation.class)
+	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getFullSims(
 			@Parameter(
@@ -146,13 +147,30 @@ public class MetadataReportResources extends OperationsAbstResources {
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header
 			) {
 		Documentation fullsims;
-		try {
-			fullsims = operationsService.getFullSims(id);
-		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		String jsonResultat;
+		
+		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+			try {
+				fullsims = operationsService.getFullSimsForXml(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+
+			return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
 		}
 
-		return Response.ok(XMLUtils.produceResponse(fullsims, header)).build();
+		else {
+			try {
+				jsonResultat = operationsService.getFullSimsForJson(id);
+			} catch (RmesException e) {
+				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			}
+			return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		}
+		
+		
+		
+	
 	}
 
 	/**
@@ -271,13 +289,13 @@ public class MetadataReportResources extends OperationsAbstResources {
 	/**
 	 * EXPORT
 	 * @param id
-	 * @param english
+	 * @param lg2
 	 * @param includeEmptyMas
 	 * @return response
 	 */	
 
 	@GET
-	@Path("/metadataReport/export/{id}/{emptyMas}/{fr}/{en}")
+	@Path("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public Response getSimsExport(@Parameter(
@@ -287,28 +305,20 @@ public class MetadataReportResources extends OperationsAbstResources {
 			,
 			@Parameter(
 					description = "Inclure les champs vides",
-					required = false) @PathParam("emptyMas") Boolean includeEmptyMas
+					required = false)  @QueryParam("emptyMas") Boolean includeEmptyMas
 			,
 			@Parameter(
 					description = "Version française",
-					required = false) @PathParam("fr") Boolean francais
+					required = false) @QueryParam("lg1")  Boolean lg1
 			,
 			@Parameter(
 					description = "Version anglaise",
-					required = false) @PathParam("en") Boolean english
+					required = false) @QueryParam("lg2")  Boolean lg2
 			) throws RmesException {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (francais==null) {francais=true;}
-		if (english==null) {english=true;}
-		return operationsService.exportMetadataReport(id,includeEmptyMas,francais,english);	
-	}
-
-	@GET
-	@Path("/metadataReport/testExport")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public Response getTestSimsExport() throws RmesException {
-		return operationsService.exportTestMetadataReport();	
+		if (lg1==null) {lg1=true;}
+		if (lg2==null) {lg2=true;}
+		return operationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
 	}
 
 }

@@ -1,11 +1,14 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,13 +59,13 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 	@Autowired
 	private CodeListService codeListService;
-	
+
 	@Autowired
 	private LangService langService;
-	
+
 	@Autowired
 	private GeographyService geoService;
-	
+
 
 	/**
 	 * GETTER
@@ -110,7 +113,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			else if (rubric.has("maxOccurs")) {
 				putMultipleValueInList(docRubrics, tempMultipleCodeList, i, rubric);
 			}
-			
+
 			//Format Geo features
 			else if (rubric.get(Constants.RANGE_TYPE).equals(RangeType.GEOGRAPHY.name())) {
 				clearGeographyRubric(rubric);
@@ -198,40 +201,40 @@ public class DocumentationsRubricsUtils extends RdfService {
 	private void addRubricByRangeType(Model model, Resource graph, DocumentationRubric rubric, RangeType type,
 			IRI predicateUri, IRI attributeUri) throws RmesException {
 		switch (type) {
-			case DATE:
-				RdfUtils.addTripleDate(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
-				break;
-			case CODELIST:
-				if (rubric.getValue() != null) {
-					for (String code : rubric.getValue()) {
-						getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, code);
-					}
+		case DATE:
+			RdfUtils.addTripleDate(attributeUri, predicateUri, rubric.getSimpleValue(), model, graph);
+			break;
+		case CODELIST:
+			if (rubric.getValue() != null) {
+				for (String code : rubric.getValue()) {
+					getCodeUriAndAddToModel(model, graph, rubric, predicateUri, attributeUri, code);
 				}
-				break;
-			case RICHTEXT:
-				if (!rubric.isEmpty()) {
-					addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
-				}
-				break;
-			case ORGANIZATION:
-				String orgaUri = organizationUtils.getUri(rubric.getSimpleValue());
-				if (orgaUri != null) {
-					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(orgaUri), model, graph);
-				}
-				break;
-			case STRING:
-				if (!rubric.isEmpty()) {
-					addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
-				}
-				break;
-			case GEOGRAPHY:
-				String featureUri = rubric.getUri();
-				if (StringUtils.isNotEmpty(featureUri)) {
-					RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
-				}
-				break;
-			default:
-				break;
+			}
+			break;
+		case RICHTEXT:
+			if (!rubric.isEmpty()) {
+				addRichTextToModel(model, graph, rubric, predicateUri, attributeUri);
+			}
+			break;
+		case ORGANIZATION:
+			String orgaUri = organizationUtils.getUri(rubric.getSimpleValue());
+			if (orgaUri != null) {
+				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(orgaUri), model, graph);
+			}
+			break;
+		case STRING:
+			if (!rubric.isEmpty()) {
+				addSimpleTextToModel(model, graph, rubric, predicateUri, attributeUri);
+			}
+			break;
+		case GEOGRAPHY:
+			String featureUri = rubric.getUri();
+			if (StringUtils.isNotEmpty(featureUri)) {
+				RdfUtils.addTripleUri(attributeUri, predicateUri, RdfUtils.toURI(featureUri), model, graph);
+			}
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -279,7 +282,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			docUtils.addDocumentsToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}
 	}
-	
+
 
 
 
@@ -309,7 +312,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 
-	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric) {
+	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, Boolean forXml) {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (jsonRubric.has(Constants.ID_ATTRIBUTE)) {
 			documentationRubric.setIdAttribute(jsonRubric.getString(Constants.ID_ATTRIBUTE));
@@ -325,10 +328,22 @@ public class DocumentationsRubricsUtils extends RdfService {
 			}
 		}
 		if (jsonRubric.has(Constants.LABEL_LG1)) {
-			documentationRubric.setLabelLg1(jsonRubric.getString(Constants.LABEL_LG1));
+			if(forXml) {
+				documentationRubric.setLabelLg1(solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)));
+			}
+			else
+			{
+				documentationRubric.setLabelLg1(jsonRubric.getString(Constants.LABEL_LG1));
+			}
 		}
 		if (jsonRubric.has(Constants.LABEL_LG2)) {
-			documentationRubric.setLabelLg2(jsonRubric.getString(Constants.LABEL_LG2));
+			if(forXml) {
+				documentationRubric.setLabelLg2(solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)));
+			}
+			else
+			{
+				documentationRubric.setLabelLg2(jsonRubric.getString(Constants.LABEL_LG2));
+			}
 		}
 		if (jsonRubric.has("codeList")) {
 			documentationRubric.setCodeList(jsonRubric.getString("codeList"));
@@ -344,6 +359,38 @@ public class DocumentationsRubricsUtils extends RdfService {
 			addJsonDocumentToObjectRubric(jsonRubric, documentationRubric, Constants.DOCUMENTS_LG2);
 		}
 		return documentationRubric;
+	}
+
+	private String solveSpecialXmlcharacters(String rubric) {
+		String ret = StringEscapeUtils.unescapeXml(rubric);
+		ret = StringEscapeUtils.unescapeHtml4(ret);
+		//ret=rubric
+		
+		final String regex = "&";
+		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern.matcher(ret).replaceAll(Constants.XML_ESPERLUETTE_REPLACEMENT);
+
+		final String regex2 = "<";
+		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern2.matcher(ret).replaceAll(Constants.XML_INF_REPLACEMENT);
+
+		final String regex3 = ">";
+		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
+
+//		final String regex4 = "&amp;amp;";
+//		final Pattern pattern4 = Pattern.compile(regex4, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+//		ret = pattern4.matcher(ret).replaceAll("&amp;");
+//
+//		final String regex5 = "&amp;gt;";
+//		final Pattern pattern5 = Pattern.compile(regex5, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+//		ret = pattern5.matcher(ret).replaceAll("&gt;");
+//
+//		final String regex6 = "&amp;lt;";
+//		final Pattern pattern6 = Pattern.compile(regex6, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+//		ret = pattern6.matcher(ret).replaceAll("&lt;");
+
+		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 
 	private void addJsonDocumentToObjectRubric(JSONObject rubric, DocumentationRubric documentationRubric, String documentsWithRubricLang) {
@@ -363,5 +410,5 @@ public class DocumentationsRubricsUtils extends RdfService {
 			documentationRubric.setDocumentsLg2(docs);
 		}
 	}
-	
+
 }

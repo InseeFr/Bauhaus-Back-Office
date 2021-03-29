@@ -118,6 +118,9 @@ public class Constants {
 	public static final String XML_END_TARGET_TYPE_TAG = "</targetType>";
 	public static final String XML_OPEN_INCLUDE_EMPTY_MAS_TAG = "<includeEmptyMas>";
 	public static final String XML_END_INCLUDE_EMPTY_MAS_TAG = "</includeEmptyMas>";
+	public static final String XML_INF_REPLACEMENT = "replacementForInf";
+	public static final String XML_SUP_REPLACEMENT = "replacementForSup";
+	public static final String XML_ESPERLUETTE_REPLACEMENT = "replacementForEsperluette";
 	
 	private Constants() {
 		throw new IllegalStateException("Utility class");
