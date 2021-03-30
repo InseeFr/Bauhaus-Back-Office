@@ -31,7 +31,7 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.OperationsAbstResources;
+import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +42,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 @Component
 @Qualifier("Operation")
 @Path("/operations")
-public class OperationsResources extends OperationsAbstResources {
+public class OperationsResources extends OperationsCommonResources {
 
 	/***************************************************************************************************
 	 * OPERATIONS

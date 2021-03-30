@@ -26,9 +26,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public abstract class OperationsAbstResources {
+public class OperationsCommonResources {
 
-	protected static final Logger logger = LogManager.getLogger(OperationsAbstResources.class);
+	protected static final Logger logger = LogManager.getLogger(OperationsCommonResources.class);
 
 	@Autowired
 	protected OperationsService operationsService;
