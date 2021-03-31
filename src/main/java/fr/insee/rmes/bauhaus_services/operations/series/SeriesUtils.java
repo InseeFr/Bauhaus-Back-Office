@@ -242,7 +242,7 @@ public class SeriesUtils extends RdfService {
 		addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);		
 
 		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
-		addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
+		//addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
 
 		List<OperationsLink> replaces = series.getReplaces();
 		if (replaces != null) {
