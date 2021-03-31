@@ -8,6 +8,8 @@ import java.util.Properties;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.web.Log4jServletContextListener;
 import org.apache.logging.log4j.web.Log4jWebSupport;
 
@@ -24,7 +26,16 @@ public class Log4j2ServletContextListener implements ServletContextListener {
 	public Log4j2ServletContextListener() {
 		this.listener = new Log4jServletContextListener();
 		try {
+			//Get the appropriate log4j2.xml file
 			this.getEnvironmentProperties();
+
+			//Force a reconfiguration
+			//Documentation on https://logging.apache.org/log4j/log4j-2.5/faq.html
+			if (!log4j2ConfigFile.equals("log4j2.xml")){//case of external file
+				LoggerContext context = (org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false);
+				File file = new File(log4j2ConfigFile);
+				context.setConfigLocation(file.toURI());
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
