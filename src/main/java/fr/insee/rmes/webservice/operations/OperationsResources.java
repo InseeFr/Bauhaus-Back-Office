@@ -99,7 +99,13 @@ public class OperationsResources extends OperationsCommonResources {
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
 		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
-		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
+		Response response;
+		try {
+			response = operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+		return response;	
 	}
 
 	/**

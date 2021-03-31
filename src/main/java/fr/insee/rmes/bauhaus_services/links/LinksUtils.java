@@ -34,8 +34,16 @@ public class LinksUtils {
 			else if (link.getTypeOfLink().equals("related")) {
 				addTripleRelated(conceptURI, link.getIds(), model);
 			}
+			else if (link.getTypeOfLink().equals("closeMatch")){
+				addTripleCloseMatch(conceptURI, link.getUrn(), model);
+			}
+			
 		});
 
+	}
+
+	private void addTripleCloseMatch(IRI conceptURI, List<String> urn, Model model) {
+		urn.forEach(urnToAdd -> model.add(conceptURI, SKOS.CLOSE_MATCH, RdfUtils.toURI(urnToAdd), RdfUtils.conceptGraph()));
 	}
 
 	private void addTripleBroader(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
