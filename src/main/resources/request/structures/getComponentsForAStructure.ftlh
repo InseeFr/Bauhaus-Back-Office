@@ -23,7 +23,7 @@ WHERE {
 
 
     OPTIONAL {
-        ?component insee:identifiantMetier ?identifiant .
+        ?component skos:notation ?identifiant .
     } .
 
     OPTIONAL {

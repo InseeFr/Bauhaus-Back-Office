@@ -19,6 +19,8 @@ public class CodeListQueries {
 
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {

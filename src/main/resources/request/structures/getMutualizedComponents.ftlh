@@ -2,7 +2,7 @@ SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationS
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier ?id ;
-               insee:identifiantMetier ?identifiant ;
+               skos:notation ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 

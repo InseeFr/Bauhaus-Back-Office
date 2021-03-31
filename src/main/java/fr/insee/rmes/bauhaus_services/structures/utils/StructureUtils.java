@@ -16,10 +16,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -230,13 +227,14 @@ public class StructureUtils extends RdfService {
     }
     public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status) throws RmesException {
 
+        repoGestion.clearStructureNodeAndComponents(structureIri);
 
         Model model = new LinkedHashModel();
 
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
-        model.add(structureIri, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
+        model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
         model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
         model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
@@ -274,9 +272,7 @@ public class StructureUtils extends RdfService {
                 componentDefinition.setCreated(DateUtils.getCurrentDate());
             }
             componentDefinition.setModified(DateUtils.getCurrentDate());
-            if (componentDefinition.getId() == null) {
-                componentDefinition.setId("cs" + (1000 + i) );
-            }
+            componentDefinition.setId("cs" + (1000 + i) );
             createRdfComponentSpecification(structureIRI, model, componentDefinition, graph);
         }
     }

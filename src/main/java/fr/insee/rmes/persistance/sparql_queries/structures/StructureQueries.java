@@ -100,6 +100,14 @@ public class StructureQueries {
 		return buildRequest("getUnValidatedComponent.ftlh", params);
 	}
 
+	public static String getUriClasseOwl(String codeList) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODES_LIST", codeList);
+
+		return buildRequest("getUriClasseOwl.ftlh", params);
+	}
+
 	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("structures/", fileName, params);
 	}
@@ -113,6 +121,4 @@ public class StructureQueries {
 
 		return params;
 	}
-
-
 }

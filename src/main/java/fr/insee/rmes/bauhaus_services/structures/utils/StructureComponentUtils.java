@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -14,10 +15,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,7 +165,7 @@ public class StructureComponentUtils extends RdfService {
 
         model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), Config.LG1), graph);
         model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), Config.LG2), graph);
-        model.add(componentURI, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(component.getIdentifiant()), graph);
+        model.add(componentURI, SKOS.NOTATION, RdfUtils.setLiteralString(component.getIdentifiant()), graph);
         model.add(componentURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status), graph);
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
         model.add(componentURI, DCTERMS.MODIFIED, RdfUtils.setLiteralDateTime(component.getUpdated()), graph);
@@ -180,7 +178,15 @@ public class StructureComponentUtils extends RdfService {
         }
 
         if (component.getRange() != null && component.getRange().equals(((SimpleIRI)INSEE.CODELIST).toString())) {
-            RdfUtils.addTripleUri(componentURI, RDFS.RANGE, Config.CODE_LIST_BASE_URI + "/" + component.getCodeList() + "/Class", model, graph);
+            RdfUtils.addTripleUri(componentURI, RDF.TYPE, QB.CODED_PROPERTY, model, graph);
+
+            JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getCodeList()));
+
+            if(object.has("uriClasseOwl")){
+                RdfUtils.addTripleUri(componentURI, RDFS.RANGE, object.getString("uriClasseOwl"), model, graph);
+            } else {
+                RdfUtils.addTripleUri(componentURI, RDFS.RANGE, SKOS.CONCEPT, model, graph);
+            }
         } else {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
         }

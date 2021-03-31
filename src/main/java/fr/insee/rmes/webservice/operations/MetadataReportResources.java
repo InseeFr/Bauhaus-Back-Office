@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.OperationsAbstResources;
+import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,8 +39,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
 @Component
+@Qualifier("Report")
 @Path("/operations")
-public class MetadataReportResources extends OperationsAbstResources {
+public class MetadataReportResources extends OperationsCommonResources {
 
 	
 	/***************************************************************************************************
@@ -295,7 +297,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	 */	
 
 	@GET
-	@Path("/metadataReport/export/{id}/{emptyMas}/{lg1}/{lg2}")
+	@Path("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public Response getSimsExport(@Parameter(
@@ -319,14 +321,6 @@ public class MetadataReportResources extends OperationsAbstResources {
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}
 		return operationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
-	}
-
-	@GET
-	@Path("/metadataReport/testExport")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public Response getTestSimsExport() throws RmesException {
-		return operationsService.exportTestMetadataReport();	
 	}
 
 }
