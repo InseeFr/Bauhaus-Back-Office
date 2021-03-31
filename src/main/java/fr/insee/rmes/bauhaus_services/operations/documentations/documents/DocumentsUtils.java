@@ -266,7 +266,7 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonDocs.has(Constants.UPDATED_DATE)) {
 			jsonDocs.put(Constants.UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(Constants.UPDATED_DATE)));
 		}
-		jsonDocs.put("sims", repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id)));
+		jsonDocs.put("sims", repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id, isLink)));
 		return jsonDocs;
 	}
 
