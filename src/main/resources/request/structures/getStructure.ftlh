@@ -34,11 +34,11 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?structure rdfs:comment ?descriptionLg1 .
+        ?structure dc:description ?descriptionLg1 .
         FILTER (lang(?descriptionLg1) = '${LG1}')
     } .
     OPTIONAL {
-        ?structure rdfs:comment ?descriptionLg2
+        ?structure dc:description ?descriptionLg2
         FILTER (lang(?descriptionLg2) = '${LG2}')
     } .
 }
