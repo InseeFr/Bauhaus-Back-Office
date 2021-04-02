@@ -24,17 +24,12 @@ public class Log4jInseeServletContainerInitializer extends Log4jServletContainer
     @Override
     public void onStartup(final Set<Class<?>> classes, final ServletContext servletContext) throws ServletException {
         servletContext.setInitParameter(Log4jWebSupport.LOG4J_CONFIG_LOCATION,findLog4jConfFile());
-        switchOnLog4jServletContainerInitializer(servletContext);
         super.onStartup(classes, servletContext);
         switchOffLog4jServletContainerInitializer(servletContext);
     }
 
-    private void switchOnLog4jServletContainerInitializer(ServletContext servletContext) {
-        servletContext.setInitParameter(Log4jWebSupport.IS_LOG4J_AUTO_INITIALIZATION_DISABLED,"false");
-    }
-
-    private void switchOffLog4jServletContainerInitializer(ServletContext servletContext) {
-        servletContext.setInitParameter(Log4jWebSupport.IS_LOG4J_AUTO_INITIALIZATION_DISABLED,"true");
+    private boolean switchOffLog4jServletContainerInitializer(ServletContext servletContext) {
+        return servletContext.setInitParameter(Log4jWebSupport.IS_LOG4J_AUTO_INITIALIZATION_DISABLED,"true");
     }
 
     private String findLog4jConfFile() {
@@ -51,7 +46,7 @@ public class Log4jInseeServletContainerInitializer extends Log4jServletContainer
                 Paths.get(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), "bauhaus-dev.properties")),
                 bauhausDevPropsInClassPath)
                 .filter(Objects::nonNull)
-                .map(p->PropertiesUtils.readPropertyFromFile("fr.insee.rmes.bauhaus.log.configuration",p))
+                .map(p->PropertiesUtils.readPropertyFromPath("fr.insee.rmes.bauhaus.log.configuration",p))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()

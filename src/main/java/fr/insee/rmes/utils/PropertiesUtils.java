@@ -13,7 +13,7 @@ public class PropertiesUtils {
 
     private static final Properties propsForReadPropertyFromFile=new Properties();
 
-    public static Optional<String> readPropertyFromFile(@NotNull String propertyName,@NotNull Path filePath){
+    public static Optional<String> readPropertyFromPath(@NotNull String propertyName, @NotNull Path filePath){
         propsForReadPropertyFromFile.remove(propertyName);
         // Use OS charset : for example windows-1252 for windows, UTF-8 for linux, ...
         // switch to java 11 to specify charset

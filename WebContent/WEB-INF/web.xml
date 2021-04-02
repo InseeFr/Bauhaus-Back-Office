@@ -10,10 +10,10 @@
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 
-	<context-param>
-		<param-name>isLog4jAutoInitializationDisabled</param-name>
-		<param-value>true</param-value>
-	</context-param>
+	<absolute-ordering>
+		<others/>
+		<name>log4j</name>
+	</absolute-ordering>
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
