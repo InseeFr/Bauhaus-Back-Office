@@ -32,6 +32,8 @@ public class ApplicationContext {
 	@Autowired
 	Environment env;
 	
+
+	
 	@Bean
 	public HttpClientBuilder httpClientBuilder()
 			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
@@ -50,6 +52,7 @@ public class ApplicationContext {
 	@PostConstruct
 	public void setUp() {
 		Config.setConfig(env);
+		Config.printMajorConfig();
 	}
 
 	

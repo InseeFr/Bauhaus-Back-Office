@@ -17,12 +17,12 @@ public class XKOS {
 	/**
 	 * The XKOS namespace: http://rdf-vocabulary.ddialliance.org/xkos#
 	 */
-	public static final String NAMESPACE = "http://rdf-vocabulary.ddialliance.org/xkos#";
+	private static final String NAMESPACE = "http://rdf-vocabulary.ddialliance.org/xkos#";
 
 	/**
 	 * The recommended prefix for the SKOS namespace: "xkos"
 	 */
-	public static final String PREFIX = "xkos";
+	private static final String PREFIX = "xkos";
 
 	/**
 	 * An immutable {@link Namespace} constant that represents the XKOS namespace.

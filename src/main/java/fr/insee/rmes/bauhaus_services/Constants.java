@@ -60,6 +60,9 @@ public class Constants {
 	
 	/*M*/
 	public static final String MANAGER = "manager";
+
+	/*N*/
+	public static final String NOTATION = "notation";
 	
 	/*O*/
 	public static final String OPERATIONS = "operations";

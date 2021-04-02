@@ -96,8 +96,14 @@ public class OperationsResources extends OperationsAbstResources {
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
-		File codeBookFile = fr.insee.rmes.utils.FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
-		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
+		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
+		Response response;
+		try {
+			response = operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+		return response;	
 	}
 
 	/**

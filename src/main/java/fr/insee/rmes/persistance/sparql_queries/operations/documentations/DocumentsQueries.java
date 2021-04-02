@@ -42,9 +42,9 @@ public class DocumentsQueries {
 		return getDocuments(id,"","", isLink, "") ;
 	}
 
-	public static String getSimsByDocument(String id) throws RmesException {
+	public static String getSimsByDocument(String id, boolean isLink) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("ID", Config.DOCUMENTS_BASE_URI + "/" + id);
+		params.put("ID", (isLink ? Config.LINKS_BASE_URI : Config.DOCUMENTS_BASE_URI) + "/" + id);
 		return buildRequest("getSimsByDocument.ftlh", params);
 	}
 
