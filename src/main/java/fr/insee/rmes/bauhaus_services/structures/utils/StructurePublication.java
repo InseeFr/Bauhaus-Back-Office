@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
+import java.util.Arrays;
+
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -17,8 +19,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 
-import java.util.Arrays;
-
 @Repository
 public class StructurePublication extends RdfService {
 
@@ -32,10 +32,8 @@ public class StructurePublication extends RdfService {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					String pred = ((SimpleIRI) st.getPredicate()).toString();
-					boolean result = Arrays.stream(denyList).anyMatch(entry -> pred.endsWith(entry));
 					if (Arrays.stream(denyList).anyMatch(entry -> pred.endsWith(entry))) {
 						// nothing, wouldn't copy this attr
-						boolean r = result;
 					} else if(pred.endsWith("component")){
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
 								st.getPredicate(),
