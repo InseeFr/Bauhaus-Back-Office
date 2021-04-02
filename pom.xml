@@ -529,7 +529,30 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>	
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.cargo</groupId>
+				<artifactId>cargo-maven3-plugin</artifactId>
+				<version>1.9.3</version>
+				<configuration>
+					<configuration>
+						<!--catalina.base-->
+                        <type>existing</type>
+						<home>c:/insee/catalinaBase-cargo</home>
+					</configuration>
+					<container>
+						<containerId>tomcat9x</containerId>
+						<type>installed</type>
+						<home>c:/INSEE/apache-tomcat-9.0.40</home>
+						<systemProperties>
+							<properties.path>c:/INSEE/catalinaBase-cargo/webapps</properties.path>
+						</systemProperties>
+					</container>
+
+				</configuration>
+			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -543,8 +566,6 @@
 				<configuration>
        				 <junitArtifactName>junit:junit</junitArtifactName>
         			<encoding>UTF-8</encoding>
-       				 <inputEncoding>UTF-8</inputEncoding>
-        			<outputEncoding>UTF-8</outputEncoding>
 					<!-- permet la surcharge de maven-surefire-plugin tout en fonctionnant avec jacoco -->
 					<!-- <argLine>${argLine}</argLine>	MAVEN surcharge with properties	 -->
     			</configuration>
