@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -64,7 +65,8 @@ public class DocumentsUtils  extends RdfService  {
 
 	@Autowired
 	private LangService langService;
-
+	@Autowired
+	DocumentationsUtils documentationsUtils;
 	/*
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
@@ -258,7 +260,7 @@ public class DocumentsUtils  extends RdfService  {
 	/**
 	 * Get RDF for a document or a link by ID
 	 * @param id
-	 * @param documentType 
+	 * @param isLink
 	 * @return
 	 * @throws RmesException
 	 */
@@ -276,7 +278,15 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonDocs.has(Constants.UPDATED_DATE)) {
 			jsonDocs.put(Constants.UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(Constants.UPDATED_DATE)));
 		}
-		jsonDocs.put("sims", repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id)));
+
+		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id, isLink));
+
+		for (int i = 0; i < sims.length(); i++) {
+			JSONObject sim = sims.getJSONObject(i);
+			sim.put("creators", new JSONArray(documentationsUtils.getDocumentationOwnersByIdSims(sim.getString("id"))));
+		}
+
+		jsonDocs.put("sims", sims);
 		return jsonDocs;
 	}
 

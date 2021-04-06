@@ -32,6 +32,11 @@ public class Constants {
 	public static final String FAMILY = "family";
 	public static final String FLAT_ODT = "flatODT";
 	
+	/*G*/
+	public static final String GOAL_COMITE_LABEL = "goalLabel";
+	public static final String GOAL_RMES = "goalRmes";
+
+	
 	/*H*/
 	public static final String HAS_DOC_LG1 = "hasDocLg1";
 	public static final String HAS_DOC_LG2 = "hasDocLg2";
@@ -104,6 +109,7 @@ public class Constants {
 	public static final String WASGENERATEDBY = "wasGeneratedBy";
 	
 	/*X*/
+	public static final String XML = "xml";
 	public static final String XML_EMPTY_TAG = "<empty/>";
 	public static final String XML_START_DOCUMENT = "<?xml version=\"1.0\"?>";
 	public static final String XML_OPEN_CODELIST_TAG = "<codelist>";

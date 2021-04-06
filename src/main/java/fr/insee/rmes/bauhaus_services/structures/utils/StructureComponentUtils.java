@@ -195,8 +195,8 @@ public class StructureComponentUtils extends RdfService {
         }
 
         RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, component.getCodeList(), model, graph);
-        RdfUtils.addTripleStringMdToXhtml(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleStringMdToXhtml(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), Config.LG1, model, graph);
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), Config.LG2, model, graph);
 
         repoGestion.loadSimpleObject(componentURI, model, null);
     }

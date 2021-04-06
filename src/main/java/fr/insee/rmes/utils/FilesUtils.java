@@ -20,10 +20,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zeroturnaround.zip.ZipUtil;
 
-public class FileUtils {
+public class FilesUtils {
 
-	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(FilesUtils.class);
 
 	public static InputStream fileToIS(File file) {
 		InputStream is = null;
@@ -43,7 +44,7 @@ public class FileUtils {
 		}
 		return tempFile;
 	}
-	
+
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
 		fileName = fileName.toLowerCase().trim();
 		fileName = StringUtils.normalizeSpace(fileName);
@@ -78,8 +79,19 @@ public class FileUtils {
 		finally { if (zipfs != null) zipfs.close();}
 	}
 
+	public static void zipFolder(String folderToZip, String zipName) throws IOException { 
+		ZipUtil.pack(new File("D:\\reports\\january\\"), new File("D:\\reports\\january.zip"));
+	}
 
-	private FileUtils() {
+	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
+		ZipUtil.packEntry(fileToAdd, zipArchive);
+	}
+
+	public static void renameFile(Path filePath, String newName, Path newFolder) {
+		
+	}
+
+	private FilesUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
