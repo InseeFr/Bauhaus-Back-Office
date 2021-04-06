@@ -40,7 +40,7 @@ WHERE {
 		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = '${id}')
 </#if>	 
 
-<#if idSims != "">
+<#if idRubric != "">
 	FILTER(REGEX(STR(?text), '${idRubric}')) 
 </#if>	
 <#if type != "">
