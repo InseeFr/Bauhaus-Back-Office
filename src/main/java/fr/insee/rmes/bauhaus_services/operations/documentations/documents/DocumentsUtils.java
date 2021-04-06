@@ -426,7 +426,7 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 	private String createFileUrl(String name) throws RmesException {
-		String url = getStorageFolderPath().resolve(name).toString();
+		String url = getGestionStorageFolderPath().resolve(name).toString();
 		Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
 		Matcher m = p.matcher(url);
 		if (m.find()) {// absolute URL
@@ -540,11 +540,11 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 
-	public Path getStorageFolderPath() throws RmesException {
+	public Path getGestionStorageFolderPath() throws RmesException {
 		Path path = null;
-		File dir = new File(Config.DOCUMENTS_STORAGE);
+		File dir = new File(Config.DOCUMENTS_STORAGE_GESTION);
 		if (dir.exists()) {
-			path = Paths.get(Config.DOCUMENTS_STORAGE);
+			path = Paths.get(Config.DOCUMENTS_STORAGE_GESTION);
 		} else {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Storage folder not found",
 					"Config.DOCUMENTS_STORAGE");
