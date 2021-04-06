@@ -30,6 +30,7 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -98,7 +99,7 @@ public class OperationsResources extends OperationsCommonResources {
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
-		File codeBookFile = fr.insee.rmes.utils.FileUtils.streamToFile(isCodeBook, "dicoVar",".odt");
+		File codeBookFile = FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
 		Response response;
 		try {
 			response = operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);
