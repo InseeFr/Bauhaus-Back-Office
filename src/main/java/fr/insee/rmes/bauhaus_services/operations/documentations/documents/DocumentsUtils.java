@@ -89,12 +89,22 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
 		formatDateInJsonArray(allDocs);
 		return allDocs;
 	}
-
-
+	
+		/**
+	 * Get documents link to a metadata report
+	 * @param idSims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getListDocumentSims(String idSims) throws RmesException {
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims));
+		formatDateInJsonArray(allDocs);
+		return allDocs;
+	}
 
 
 
@@ -143,7 +153,7 @@ public class DocumentsUtils  extends RdfService  {
 		return id.toString();
 	}
 
-	private Integer getIdFromJson(JSONObject json) {
+	public Integer getIdFromJson(JSONObject json) {
 		if (json.length() == 0) {
 			return null;
 		} else {
@@ -420,7 +430,7 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
-	private String getDocumentNameFromUrl(String docUrl) {
+	public String getDocumentNameFromUrl(String docUrl) {
 		if (docUrl.contains("\\")) return StringUtils.substringAfterLast(docUrl, "\\");
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
@@ -451,7 +461,7 @@ public class DocumentsUtils  extends RdfService  {
 		return RdfUtils.toURI(uri.getString(Constants.DOCUMENT));
 	}
 
-	private String getDocumentUrlFromDocument(JSONObject jsonDoc) {
+	public String getDocumentUrlFromDocument(JSONObject jsonDoc) {
 		return jsonDoc.getString(Constants.URL).replace(SCHEME_FILE, "");
 	}
 

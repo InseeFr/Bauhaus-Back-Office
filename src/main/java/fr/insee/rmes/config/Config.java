@@ -52,6 +52,7 @@ public class Config {
 	public static String DOCUMENTS_STORAGE_GESTION = "";
 	public static String DOCUMENTS_STORAGE_PUBLICATION_EXTERNE = "";
 	public static String DOCUMENTS_STORAGE_PUBLICATION_INTERNE = "";
+	public static String DOCUMENTS_BASEURL = "";
 
 	public static String PRODUCTS_GRAPH = "";
 
@@ -223,6 +224,7 @@ public class Config {
 		Config.DOCUMENTS_STORAGE_GESTION = env.getProperty("fr.insee.rmes.bauhaus.storage.document.gestion");
 		Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE = env.getProperty("fr.insee.rmes.bauhaus.storage.document.publication");
 		Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE = env.getProperty("fr.insee.rmes.bauhaus.storage.document.publication.interne");
+		Config.DOCUMENTS_BASEURL = env.getProperty("fr.insee.web4g.baseURL");
 
 
 		Config.PRODUCTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.products.graph");

@@ -34,9 +34,14 @@ public class DocumentsQueries {
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	
-	public static String getDocumentsForSimsQuery(String idSims, String idRubric, String uriLang) throws RmesException {
+	public static String getDocumentsForSimsRubricQuery(String idSims, String idRubric, String uriLang) throws RmesException {
 		return getDocuments("",idSims,idRubric,null, uriLang) ;
 	}
+	
+	public static String getDocumentsForSimsQuery(String idSims) throws RmesException {
+		return getDocuments("",idSims,"",null, "") ;
+	}
+	
 	
 	public static String getDocumentQuery(String id, boolean isLink) throws RmesException {
 		return getDocuments(id,"","", isLink, "") ;

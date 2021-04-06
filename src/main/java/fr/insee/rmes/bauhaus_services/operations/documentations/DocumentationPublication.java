@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -33,6 +34,9 @@ public class DocumentationPublication extends RdfService {
 	static RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
+	
+	@Autowired 
+	DocumentsPublication documentsPublication;
 
 	public void publishSims(String simsId) throws RmesException {
 
@@ -64,6 +68,7 @@ public class DocumentationPublication extends RdfService {
 					model.add(subject, predicate, object, st.getContext());
 				}
 			}
+			documentsPublication.publishAllDocumentsInSims(simsId,model);
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
