@@ -97,7 +97,7 @@ public class DocumentsUtils  extends RdfService  {
 	}
 	
 		/**
-	 * Get documents link to a metadata report
+	 * Get documents link to a metadata report (no links)
 	 * @param idSims
 	 * @return
 	 * @throws RmesException
@@ -108,7 +108,17 @@ public class DocumentsUtils  extends RdfService  {
 		return allDocs;
 	}
 
-
+	/**
+	 * Get links link to a metadata report (no document)
+	 * @param idSims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getListLinksSims(String idSims) throws RmesException {
+		JSONArray allLinks = repoGestion.getResponseAsArray(DocumentsQueries.getLinksForSimsQuery(idSims));
+		formatDateInJsonArray(allLinks);
+		return allLinks;
+	}
 
 	/**
 	 * Get all documents
@@ -473,6 +483,10 @@ public class DocumentsUtils  extends RdfService  {
 
 	public String getDocumentUrlFromDocument(JSONObject jsonDoc) {
 		return jsonDoc.getString(Constants.URL).replace(SCHEME_FILE, "");
+	}
+	
+	public boolean isDocument(JSONObject jsonDoc) {
+		return jsonDoc.getString(Constants.URI).matches(Config.DOCUMENTS_BASE_URI);
 	}
 
 	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {

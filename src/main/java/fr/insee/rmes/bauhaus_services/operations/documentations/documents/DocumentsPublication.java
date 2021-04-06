@@ -44,8 +44,9 @@ public class DocumentsPublication  extends RdfService{
 	static final Logger logger = LogManager.getLogger(DocumentsPublication.class);
 
 	public void publishAllDocumentsInSims(String idSims, Model model) throws RmesException {
-		// Get all files
+		// Get all documents
 		JSONArray listDoc = docUtils.getListDocumentSims(idSims);
+		
 		Map<Integer,String> mapIdUrls = new HashMap<>();
 		listDoc.forEach(doc -> mapIdUrls.put(docUtils.getIdFromJson((JSONObject) doc), docUtils.getDocumentUrlFromDocument((JSONObject) doc)));
 
@@ -59,8 +60,12 @@ public class DocumentsPublication  extends RdfService{
 			// Change url in document
 			model.addAll(getModelToPublish(docId,filename));
 		}
-
 		
+		//Get all links
+		JSONArray listLinks = docUtils.getListLinksSims(idSims);
+		for (Object link : listLinks) {
+			model.addAll(getLinkModelToPublish(docUtils.getIdFromJson((JSONObject)link).toString()));
+		}		
 		
 	}
 
@@ -99,13 +104,7 @@ public class DocumentsPublication  extends RdfService{
 					model.add(subject, predicate, object, st.getContext());
 				} else {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
-					IRI predicate = RdfUtils
-							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					Value object = st.getObject();
-					if (st.getObject() instanceof Resource) {
-						object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
-					}
-					model.add(subject, predicate, object, st.getContext());
+					renameAndAddTripleToModel(model, st, subject);
 				}
 			}
 		} catch (RepositoryException e) {
@@ -117,6 +116,44 @@ public class DocumentsPublication  extends RdfService{
 			repoGestion.closeStatements(documentStatements);
 		}
 		return model;
+	}
+	
+	private Model getLinkModelToPublish(String linkId) throws RmesException {
+		Model model = new LinkedHashModel();
+		Resource link = RdfUtils.linkIRI(linkId);
+
+		RepositoryConnection con = repoGestion.getConnection();
+		RepositoryResult<Statement> linkStatements = repoGestion.getStatements(con, link);
+
+		try {
+			if (!linkStatements.hasNext()) {
+				throw new RmesNotFoundException(ErrorCodes.LINK_UNKNOWN_ID, "Link not found", linkId);
+			}
+			while (linkStatements.hasNext()) {
+				Statement st = linkStatements.next();
+					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					renameAndAddTripleToModel(model, st, subject);
+				
+			}
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					Constants.REPOSITORY_EXCEPTION);
+		}
+
+		finally {
+			repoGestion.closeStatements(linkStatements);
+		}
+		return model;
+	}
+
+	public void renameAndAddTripleToModel(Model model, Statement st, Resource subject) {
+		IRI predicate = RdfUtils
+				.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+		Value object = st.getObject();
+		if (st.getObject() instanceof Resource) {
+			object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+		}
+		model.add(subject, predicate, object, st.getContext());
 	}
 
 }
