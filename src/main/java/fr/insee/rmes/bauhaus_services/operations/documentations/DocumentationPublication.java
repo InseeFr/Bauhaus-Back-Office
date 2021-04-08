@@ -35,6 +35,9 @@ public class DocumentationPublication extends RdfService {
 	@Autowired
 	static RepositoryUtils repoUtils;
 
+//	@Autowired 
+//	DocumentsPublication documentsPublication;
+	
 	static NotificationsContract notification = new RmesNotificationsImpl();
 
 	static final String[] rubricsNotForPublication = {"S.1.3","S.1.4","S.1.6","S.1.7","validationState"};
@@ -56,7 +59,8 @@ public class DocumentationPublication extends RdfService {
 				Statement st = metadataReportStatements.next();
 				// Triplets that don't get published
 				String predicate = ((SimpleIRI)st.getPredicate()).toString();
-				if (!isTripletForPublication(predicate)) {
+				String subjectString = ((SimpleIRI)st.getSubject()).toString();
+				if (!isTripletForPublication(predicate,subjectString)) {
 					// nothing, wouldn't copy this attr
 				} else {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
@@ -83,9 +87,10 @@ public class DocumentationPublication extends RdfService {
 
 	}
 
-	private boolean isTripletForPublication(String predicate) {
+	private boolean isTripletForPublication(String predicate, String subjectString) {
 		for(String rubric : rubricsNotForPublication) {
-			if (predicate.endsWith(rubric)) return false;}
+			if (predicate.endsWith(rubric)) return false;
+			if (predicate.endsWith("rdf:type") && subjectString.endsWith(rubric) ) return false;}
 		return true;
 	}
 
