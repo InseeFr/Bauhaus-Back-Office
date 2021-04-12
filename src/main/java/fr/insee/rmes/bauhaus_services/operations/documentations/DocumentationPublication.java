@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
