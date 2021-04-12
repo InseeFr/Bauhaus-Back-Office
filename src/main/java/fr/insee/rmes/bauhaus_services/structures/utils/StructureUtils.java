@@ -243,8 +243,8 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
         RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), Config.LG2, model, graph);
-        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), Config.LG1, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);

@@ -5,7 +5,7 @@ WHERE {
                skos:notation ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
-
+    filter ( ?type = qb:DimensionProperty || ?type = qb:AttributeProperty || ?type = qb:MeasureProperty )
     OPTIONAL {
         ?component dc:creator ?creator .
     } .
