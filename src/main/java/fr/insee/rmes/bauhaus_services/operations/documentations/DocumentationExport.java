@@ -100,26 +100,31 @@ public class DocumentationExport {
 
 		String msdXML = documentationsUtils.buildShellSims();
 		String parametersXML = buildParams(lg1,lg2,includeEmptyMas,targetType);
-		File output =  null;
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
-
-		InputStream odtFile = null ;
+		File output =   File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+		InputStream xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
+		InputStream zipToCompleteIS = null;
+		InputStream odtFileIS = null ;
+		
 		if(goal == Constants.GOAL_RMES){
-			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
-			output = File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+			odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/rmesPatternContent.xml");
+			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForRmes/export.zip");
+
 		}
 		if(goal == Constants.GOAL_COMITE_LABEL){
-			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
-			output = File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+			odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
+			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
 		}	
+		
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 		output.deleteOnExit();
 		PrintStream printStream= null;
 		Path tempDir= Files.createTempDirectory("forExport");
-
+		String fileName="export.odt";
+		Path finalPath = Paths.get(tempDir.toString()+"/"+fileName);
+		
 		try{
 			// prepare transformer
-			StreamSource xsrc = new StreamSource(xslFile);
+			StreamSource xsrc = new StreamSource(xslFileIS);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
@@ -137,28 +142,30 @@ public class DocumentationExport {
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
-			xsltTransformer.transform(new StreamSource(odtFile), new StreamResult(printStream));
+			xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(printStream));
 			
 			//create odt
-			if(goal == Constants.GOAL_COMITE_LABEL){
-				FilesUtils.addFileToZipFolder(output,new File("/xslTransformerFiles/toZipForLabel.zip"));
-				FileUtils.copyFile(new File("/xslTransformerFiles/toZipForLabel.zip"), output);
-				Files.move(output.toPath(), tempDir.resolve(Paths.get("export.odt")), StandardCopyOption.REPLACE_EXISTING);
-			}
+			Path contentPath = Paths.get(tempDir.toString()+"/content.xml");
+			Files.copy(Paths.get(output.getAbsolutePath()), contentPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+			Path zipPath = Paths.get(tempDir.toString()+"/export.zip");
+			Files.copy(zipToCompleteIS, zipPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+			FilesUtils.addFileToZipFolder(contentPath.toFile(),zipPath.toFile());
+			Files.copy(zipPath, finalPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+
 		} catch (TransformerException e) {
 			logger.error(e.getMessage());
 		} finally {
-			odtFile.close();
-			xslFile.close();
+			odtFileIS.close();
+			xslFileIS.close();
 			osOutputFile.close();
 			printStream.close();
 		}
 		logger.debug("End To export documentation");
 		
-		if(goal == Constants.GOAL_RMES){
-			return(output);
-		}
-		return (new File(tempDir.toString(),"export.odt"));
+		return (finalPath.toFile());
 	}
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
