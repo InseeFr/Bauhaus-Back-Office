@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,12 +71,12 @@ public class DocumentsPublication  extends RdfService{
 	}
 
 	private void copyFileInPublicationFolders(String originalPath, String filename) throws RmesException {
-		Path targetPathInt = Path.of(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE, filename);
-		Path targetPathExt = Path.of(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE, filename);
+		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE, filename);
+		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE, filename);
 
 		try {
-			Files.copy(Path.of(originalPath), targetPathInt, StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Path.of(originalPath), targetPathExt, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Paths.get(originalPath), targetPathInt, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Paths.get(originalPath), targetPathExt, StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
@@ -100,7 +101,7 @@ public class DocumentsPublication  extends RdfService{
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					Value object = RdfUtils.toURI(Path.of(Config.DOCUMENTS_BASEURL,filename).toString());
+					Value object = RdfUtils.toURI(Paths.get(Config.DOCUMENTS_BASEURL,filename).toString());
 					model.add(subject, predicate, object, st.getContext());
 				} else {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
