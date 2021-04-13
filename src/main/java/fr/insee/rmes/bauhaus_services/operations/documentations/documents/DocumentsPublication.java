@@ -56,7 +56,7 @@ public class DocumentsPublication  extends RdfService{
 			String originalPath = doc.getValue();
 			String filename = docUtils.getDocumentNameFromUrl(originalPath);
 			// Publish the physical files
-			copyFileInPublicationFolders(originalPath, filename);
+			copyFileInPublicationFolders(originalPath);
 			
 			// Change url in document
 			model.addAll(getModelToPublish(docId,filename));
@@ -70,7 +70,7 @@ public class DocumentsPublication  extends RdfService{
 		
 	}
 
-	private void copyFileInPublicationFolders(String originalPath, String filename) throws RmesException {
+	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
 		Path file = Paths.get(originalPath);
 		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
 		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
@@ -80,8 +80,8 @@ public class DocumentsPublication  extends RdfService{
 			Files.copy(file, targetPathExt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					"IOException - Can't copy files");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass() + e.getMessage(),
+					e.getClass() + " - Can't copy files");
 		}
 	}
 	
