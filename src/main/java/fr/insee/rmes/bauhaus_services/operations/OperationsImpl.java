@@ -125,12 +125,12 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
-	
+
 	@Override
 	public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
 		return seriesUtils.getSeriesForSearch(stamp);
 	}
-	
+
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
 		return seriesUtils.getSeriesById(id);
@@ -208,9 +208,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 			path = (String) pathField.get(os);
 			fis= new FileInputStream(path);
 
-			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
-				logger.error(e.getMessage(),e);
-			}
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
+			logger.error(e.getMessage(),e);
+		}
 		return(fis);
 	}
 
@@ -391,7 +391,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String getFullSimsForJson(String id) throws RmesException {
 		return  documentationsUtils.getFullSimsForJson(id).toString();
 	}
-	
+
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
 		return documentationsUtils.getDocumentationOwnersByIdSims(id);
@@ -441,36 +441,26 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: "+id); 
-		File output;
-		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
-			is = new FileInputStream(output);
-		} catch (Exception e1) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+			return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
 		}
-		String fileName = output.getName();
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
 
 	@Override
 	public Response exportMetadataReportForLabel(String id) throws RmesException  {
 
-		File output;
-		InputStream is;
 		try {
-			output = documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
-			is = new FileInputStream(output);
-		} catch (Exception e1) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
 		}
-		String fileName = output.getName();
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
 
-	
+
 	public Response exportMetadataReportOld(String id) throws RmesException  {
 		File output;
 		InputStream is;
@@ -484,8 +474,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
 		return Response.ok(is, MediaType.APPLICATION_OCTET_STREAM).header(CONTENT_DISPOSITION, content).build();
 	}
-	
-	
+
+
 	@Override
 	public Response exportTestMetadataReport() throws RmesException  {
 		File output;
@@ -502,6 +492,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 
-	
+
 
 }

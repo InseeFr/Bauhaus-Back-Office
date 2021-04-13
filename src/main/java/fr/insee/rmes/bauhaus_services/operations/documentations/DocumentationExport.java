@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -22,6 +25,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,36 +69,8 @@ public class DocumentationExport {
 		}
 		return output;
 	}
-
-//	public File callXsltEmportTransfo(String paramPath,String goal)throws RmesException, IOException  {
-//		
-//		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-//		output.deleteOnExit();
-//
-//		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
-//		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-//		InputStream odtFile ;
-//		if(goal == Constants.GOAL_RMES){
-//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
-//		}
-//		if(goal == Constants.GOAL_COMITE_LABEL){
-//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/labelPattern.fodt");
-//		}
-//		PrintStream printStream= null;
-//		
-//		try{
-//			// prepare transformer
-//			StreamSource xsrc = new StreamSource(xslFile);
-//			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-//			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-//		}
-//		
-//		return null;
-//
-//	}
 	
-	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
+	public Response export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
 			Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
@@ -165,13 +142,23 @@ public class DocumentationExport {
 		}
 		logger.debug("End To export documentation");
 		
-		return (finalPath.toFile());
-	}
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+
+		try {
+			return Response.ok( (StreamingOutput) out -> {
+	                InputStream input = new FileInputStream( finalPath.toFile() );
+	                IOUtils.copy(input, out);
+	                out.flush();   
+	        } ).header( "Content-Disposition", content ).build();
+		 } catch ( Exception e ) { 
+         	logger.error(e.getMessage());
+         	throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file"); 
+         }
+			}
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
-	//	parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
 		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 

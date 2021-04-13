@@ -520,7 +520,7 @@ public class DocumentationsUtils extends RdfService{
 		return docExport.testExport();
 	}
 
-	public File exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
