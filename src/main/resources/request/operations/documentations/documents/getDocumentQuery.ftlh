@@ -1,4 +1,4 @@
-SELECT distinct ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
+SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
 	FROM <${DOCUMENTS_GRAPH}>
 
 <#if idSims != "">
@@ -38,7 +38,10 @@ WHERE {
 	 
 <#if id != "">
 		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = '${id}')
-</#if>	 
+	    BIND('${id}' ) AS ?id) .
+<#else>
+	    BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id) .
+</#if>
 
 <#if idRubric != "">
 	FILTER(REGEX(STR(?text), '${idRubric}')) 
