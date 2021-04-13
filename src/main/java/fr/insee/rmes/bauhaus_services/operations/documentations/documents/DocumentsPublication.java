@@ -71,12 +71,13 @@ public class DocumentsPublication  extends RdfService{
 	}
 
 	private void copyFileInPublicationFolders(String originalPath, String filename) throws RmesException {
-		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE, filename);
-		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE, filename);
+		Path file = Paths.get(originalPath);
+		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
+		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
 
 		try {
-			Files.copy(Paths.get(originalPath), targetPathInt, StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(originalPath), targetPathExt, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(file, targetPathExt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
