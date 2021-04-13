@@ -66,5 +66,60 @@ public class ConsultationGestion {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
+    @GET()
+    @Path("/structures")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getAllStructures", summary = "Get all structures")
+    public Response getAllStructures() {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getAllStructures();
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET()
+    @Path("/structure/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getStructure", summary = "Get a structure")
+    public Response getStructure(@PathParam(Constants.ID) String id) {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getStructure(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET()
+    @Path("/listesCodes")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getAllCodesLists", summary = "Get all codes lists")
+    public Response getAllCodesLists() {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getAllCodesLists();
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET()
+    @Path("/listeCode/{notation}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getCodesList", summary = "Get one codes list")
+    public Response getCodesList(@PathParam(Constants.NOTATION) String notation) {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getCodesList(notation);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
 
 }

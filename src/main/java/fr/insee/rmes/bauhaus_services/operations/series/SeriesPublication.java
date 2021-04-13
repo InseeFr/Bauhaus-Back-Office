@@ -56,6 +56,8 @@ public class SeriesPublication extends RdfService {
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, series);
 		
 		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, series);
+		RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, series);
+		RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, series);
 		
 		try {	
 			try {
@@ -76,10 +78,7 @@ public class SeriesPublication extends RdfService {
 							pred.endsWith("publisher")  ||
 							pred.endsWith("accrualPeriodicity")||
 							pred.endsWith("type")   ) {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
-								st.getContext());
+						transformSubjectAndObject(model, st);
 					} else if (pred.endsWith("isValidated")
 							|| pred.endsWith("validationState")
 							|| pred.endsWith("hasPart")) {
@@ -93,13 +92,9 @@ public class SeriesPublication extends RdfService {
 								st.getContext()
 								);
 					}
-					while (hasPartStatements.hasNext()) {
-						Statement hpst = hasPartStatements.next();
-						model.add(PublicationUtils.tranformBaseURIToPublish(hpst.getSubject()), 
-								hpst.getPredicate(), 
-								PublicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
-								hpst.getContext());
-					}
+					addStatementsToModel(model, hasPartStatements);
+					addStatementsToModel(model, replacesStatements);
+					addStatementsToModel(model, isReplacedByStatements);
 					
 				}
 			} catch (RepositoryException e) {
@@ -113,6 +108,20 @@ public class SeriesPublication extends RdfService {
 		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
 		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
+	}
+
+	public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {
+		while (statements.hasNext()) {
+			Statement statement = statements.next();
+			transformSubjectAndObject(model, statement);
+		}
+	}
+
+	public void transformSubjectAndObject(Model model, Statement statement) {
+		model.add(PublicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
+				statement.getPredicate(), 
+				PublicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
+				statement.getContext());
 	}
 
 }

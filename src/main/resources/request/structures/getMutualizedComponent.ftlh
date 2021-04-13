@@ -2,10 +2,10 @@ SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?r
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
-               insee:identifiantMetier ?identifiant ;
+               skos:notation ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
-
+    filter ( ?type = qb:DimensionProperty || ?type = qb:AttributeProperty || ?type = qb:MeasureProperty )
     OPTIONAL {
         ?component dc:creator ?creator .
     } .

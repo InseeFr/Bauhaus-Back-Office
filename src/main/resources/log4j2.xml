@@ -2,6 +2,15 @@
 <configuration>
 	<appenders>
 
+		<Console name="Console-Appender" target="SYSTEM_OUT">
+			<PatternLayout>
+				<pattern>
+					[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+				</pattern>
+			</PatternLayout>
+		</Console>
+
+
 		<RollingFile name="RollingFile" fileName="D://logs/bauhaus.log"
 			filePattern="D://logs/bauhaus-%d{MM-dd-yyyy}-%i.log.gz"
 			ignoreExceptions="false">
@@ -18,7 +27,7 @@
 
 	<loggers>
 		<root level="INFO">
-			<appender-ref ref="RollingFile" />
+			<appender-ref ref="Console-Appender" />
 		</root>
 	</loggers>
 </configuration>

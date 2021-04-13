@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -64,7 +65,8 @@ public class DocumentsUtils  extends RdfService  {
 
 	@Autowired
 	private LangService langService;
-
+	@Autowired
+	DocumentationsUtils documentationsUtils;
 	/*
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
@@ -89,14 +91,34 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
+		formatDateInJsonArray(allDocs);
+		return allDocs;
+	}
+	
+		/**
+	 * Get documents link to a metadata report (no links)
+	 * @param idSims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getListDocumentSims(String idSims) throws RmesException {
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsQuery(idSims));
 		formatDateInJsonArray(allDocs);
 		return allDocs;
 	}
 
-
-
-
+	/**
+	 * Get links link to a metadata report (no document)
+	 * @param idSims
+	 * @return
+	 * @throws RmesException
+	 */
+	public JSONArray getListLinksSims(String idSims) throws RmesException {
+		JSONArray allLinks = repoGestion.getResponseAsArray(DocumentsQueries.getLinksForSimsQuery(idSims));
+		formatDateInJsonArray(allLinks);
+		return allLinks;
+	}
 
 	/**
 	 * Get all documents
@@ -143,7 +165,7 @@ public class DocumentsUtils  extends RdfService  {
 		return id.toString();
 	}
 
-	private Integer getIdFromJson(JSONObject json) {
+	public Integer getIdFromJson(JSONObject json) {
 		if (json.length() == 0) {
 			return null;
 		} else {
@@ -248,7 +270,7 @@ public class DocumentsUtils  extends RdfService  {
 	/**
 	 * Get RDF for a document or a link by ID
 	 * @param id
-	 * @param documentType 
+	 * @param isLink
 	 * @return
 	 * @throws RmesException
 	 */
@@ -266,7 +288,15 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonDocs.has(Constants.UPDATED_DATE)) {
 			jsonDocs.put(Constants.UPDATED_DATE, DateUtils.getDate(jsonDocs.getString(Constants.UPDATED_DATE)));
 		}
-		jsonDocs.put("sims", repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id)));
+
+		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id, isLink));
+
+		for (int i = 0; i < sims.length(); i++) {
+			JSONObject sim = sims.getJSONObject(i);
+			sim.put("creators", new JSONArray(documentationsUtils.getDocumentationOwnersByIdSims(sim.getString("id"))));
+		}
+
+		jsonDocs.put("sims", sims);
 		return jsonDocs;
 	}
 
@@ -420,13 +450,13 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
-	private String getDocumentNameFromUrl(String docUrl) {
+	public String getDocumentNameFromUrl(String docUrl) {
 		if (docUrl.contains("\\")) return StringUtils.substringAfterLast(docUrl, "\\");
 		return StringUtils.substringAfterLast(docUrl, "/");
 	}
 
 	private String createFileUrl(String name) throws RmesException {
-		String url = getStorageFolderPath().resolve(name).toString();
+		String url = getGestionStorageFolderPath().resolve(name).toString();
 		Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
 		Matcher m = p.matcher(url);
 		if (m.find()) {// absolute URL
@@ -451,8 +481,12 @@ public class DocumentsUtils  extends RdfService  {
 		return RdfUtils.toURI(uri.getString(Constants.DOCUMENT));
 	}
 
-	private String getDocumentUrlFromDocument(JSONObject jsonDoc) {
+	public String getDocumentUrlFromDocument(JSONObject jsonDoc) {
 		return jsonDoc.getString(Constants.URL).replace(SCHEME_FILE, "");
+	}
+	
+	public boolean isDocument(JSONObject jsonDoc) {
+		return jsonDoc.getString(Constants.URI).matches(Config.DOCUMENTS_BASE_URI);
 	}
 
 	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {
@@ -540,11 +574,11 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 
-	public Path getStorageFolderPath() throws RmesException {
+	public Path getGestionStorageFolderPath() throws RmesException {
 		Path path = null;
-		File dir = new File(Config.DOCUMENTS_STORAGE);
+		File dir = new File(Config.DOCUMENTS_STORAGE_GESTION);
 		if (dir.exists()) {
-			path = Paths.get(Config.DOCUMENTS_STORAGE);
+			path = Paths.get(Config.DOCUMENTS_STORAGE_GESTION);
 		} else {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Storage folder not found",
 					"Config.DOCUMENTS_STORAGE");
