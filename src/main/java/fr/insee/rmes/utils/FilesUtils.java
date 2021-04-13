@@ -20,6 +20,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zeroturnaround.zip.FileSource;
+import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class FilesUtils {
@@ -79,17 +81,12 @@ public class FilesUtils {
 		finally { if (zipfs != null) zipfs.close();}
 	}
 
-	public static void zipFolder(String folderToZip, String zipName) throws IOException { 
-		ZipUtil.pack(new File("D:\\reports\\january\\"), new File("D:\\reports\\january.zip"));
-	}
 
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
-		ZipUtil.packEntry(fileToAdd, zipArchive);
+		ZipEntrySource entry =  new FileSource(fileToAdd.getName(), fileToAdd);
+		ZipUtil.addEntry(zipArchive, entry);
 	}
 
-	public static void renameFile(Path filePath, String newName, Path newFolder) {
-		
-	}
 
 	private FilesUtils() {
 		throw new IllegalStateException("Utility class");
