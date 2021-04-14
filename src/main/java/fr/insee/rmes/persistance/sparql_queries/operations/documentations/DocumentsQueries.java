@@ -34,17 +34,25 @@ public class DocumentsQueries {
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	
-	public static String getDocumentsForSimsQuery(String idSims, String idRubric, String uriLang) throws RmesException {
+	public static String getDocumentsForSimsRubricQuery(String idSims, String idRubric, String uriLang) throws RmesException {
 		return getDocuments("",idSims,idRubric,null, uriLang) ;
+	}
+	
+	public static String getDocumentsForSimsQuery(String idSims) throws RmesException {
+		return getDocuments("",idSims,"",false, "") ;
+	}
+	
+	public static String getLinksForSimsQuery(String idSims) throws RmesException {
+		return getDocuments("",idSims,"",true, "") ;
 	}
 	
 	public static String getDocumentQuery(String id, boolean isLink) throws RmesException {
 		return getDocuments(id,"","", isLink, "") ;
 	}
 
-	public static String getSimsByDocument(String id) throws RmesException {
+	public static String getSimsByDocument(String id, boolean isLink) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("ID", Config.DOCUMENTS_BASE_URI + "/" + id);
+		params.put("ID", getDocType(isLink) + "/" + id);
 		return buildRequest("getSimsByDocument.ftlh", params);
 	}
 
@@ -67,7 +75,7 @@ public class DocumentsQueries {
 		if (isLink == null) {
 			return "";
 		}
-		return (Boolean.TRUE.equals(isLink) ? "/page/" :"/document/");
+		return (Boolean.TRUE.equals(isLink) ? Config.LINKS_BASE_URI :Config.DOCUMENTS_BASE_URI);
 	}
 	
 	

@@ -1,5 +1,10 @@
 package fr.insee.rmes.webservice;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
 import javax.ws.rs.GET;
@@ -8,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,7 +77,7 @@ public class PublicResources {
 	@Path("/init")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getInit", summary = "Initial properties", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
-	public Response getProperties() {
+	public Response getProperties() throws RmesException {
 		JSONObject props = new JSONObject();
 		try {
 			props.put("appHost", Config.APP_HOST);
@@ -81,11 +87,23 @@ public class PublicResources {
 			props.put("lg1", Config.LG1);
 			props.put("lg2", Config.LG2);
 			props.put("authType", AuthType.getAuthType());
+			props.put("modules", getActiveModules());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			throw e;
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,e.getMessage(),e.getClass().getSimpleName());
 		}
 		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
+	}
+
+	private List<String> getActiveModules() {
+        String dirPath = Config.DOCUMENTS_STORAGE_GESTION + "/BauhausActiveModules.txt";
+        File file = new File(dirPath);
+        try {
+			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			return new ArrayList<>();
+		} 
 	}
 
 	@GET

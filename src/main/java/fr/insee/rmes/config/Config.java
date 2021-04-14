@@ -1,10 +1,13 @@
 package fr.insee.rmes.config;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.Environment;
 
 public class Config {
 
-
+	private static final  Logger logger = LogManager.getLogger(Config.class);
+	
 	public static String APP_HOST = "";
 
 	public static String ENV = "";
@@ -46,7 +49,10 @@ public class Config {
 
 	public static String LINKS_BASE_URI = "";
 	public static String DOCUMENTS_GRAPH = "";
-	public static String DOCUMENTS_STORAGE = "";
+	public static String DOCUMENTS_STORAGE_GESTION = "";
+	public static String DOCUMENTS_STORAGE_PUBLICATION_EXTERNE = "";
+	public static String DOCUMENTS_STORAGE_PUBLICATION_INTERNE = "";
+	public static String DOCUMENTS_BASEURL = "";
 
 	public static String PRODUCTS_GRAPH = "";
 
@@ -215,7 +221,11 @@ public class Config {
 		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
 		Config.LINKS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.links.baseURI");
 		Config.DOCUMENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.documents.graph");
-		Config.DOCUMENTS_STORAGE = env.getProperty("fr.insee.rmes.bauhaus.storage.document");
+		Config.DOCUMENTS_STORAGE_GESTION = env.getProperty("fr.insee.rmes.bauhaus.storage.document.gestion");
+		Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE = env.getProperty("fr.insee.rmes.bauhaus.storage.document.publication");
+		Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE = env.getProperty("fr.insee.rmes.bauhaus.storage.document.publication.interne");
+		Config.DOCUMENTS_BASEURL = env.getProperty("fr.insee.web4g.baseURL");
+
 
 		Config.PRODUCTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.products.graph");
 		Config.PRODUCTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.products.baseURI");
@@ -227,4 +237,29 @@ public class Config {
 		Config.STRUCTURES_COMPONENTS_GRAPH = BASE_GRAPH + env.getProperty("fr.insee.rmes.bauhaus.structures.components.graph");
 		Config.STRUCTURES_COMPONENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.structures.components.baseURI");
 	}
+
+	public static void printMajorConfig() {
+		logger.info("*********************** CONFIG USED ***********************************");
+
+		logger.info("ENV : {}", ENV);
+		
+		logger.info("SERVEUR RDF : ");
+		
+		logger.info("   GESTION : {} _ REPO : {} _ BASEURI : {}",SESAME_SERVER_GESTION,REPOSITORY_ID_GESTION, BASE_URI_GESTION);
+		logger.info("   PUB EXTERNE : {} _ REPO : {} _ BASEURI : {}",SESAME_SERVER_PUBLICATION, REPOSITORY_ID_PUBLICATION, BASE_URI_PUBLICATION);
+		logger.info("   PUB INTERNE : {} _ REPO : {}",SESAME_SERVER_PUBLICATION_INTERNE,REPOSITORY_ID_PUBLICATION_INTERNE);
+		
+		logger.info("DOCUMENT STORAGE : ");
+		
+		logger.info("   GESTION : {}", DOCUMENTS_STORAGE_GESTION);
+		logger.info("   PUB EXTERNE : {}", DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
+		logger.info("   PUB INTERNE : {}", DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
+
+
+		
+		logger.info("*********************** END CONFIG USED ***********************************");
+		
+		
+	}
+
 }

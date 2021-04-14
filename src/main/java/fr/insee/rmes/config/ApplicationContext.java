@@ -24,13 +24,18 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration("AppContext")
-@PropertySource(value = { "classpath:bauhaus-core.properties", "classpath:bauhaus-dev.properties",
-		"file:${catalina.base}/webapps/bauhaus-dev.properties", "file:${catalina.base}/webapps/bauhaus-qf.properties","file:${catalina.base}/webapps/bauhaus-production.properties",
-		"file:${catalina.base}/webapps/production.properties", }, ignoreResourceNotFound = true)
+@PropertySource(value =  "classpath:bauhaus-core.properties")
+@PropertySource(value =  "classpath:bauhaus-dev.properties")
+@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-dev.properties", ignoreResourceNotFound = true)
+@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-qf.properties", ignoreResourceNotFound = true)
+@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-production.properties", ignoreResourceNotFound = true)
+@PropertySource(value =  "file:${catalina.base}/webapps/production.properties", ignoreResourceNotFound = true) 
 public class ApplicationContext {
 
 	@Autowired
 	Environment env;
+	
+
 	
 	@Bean
 	public HttpClientBuilder httpClientBuilder()
@@ -50,6 +55,7 @@ public class ApplicationContext {
 	@PostConstruct
 	public void setUp() {
 		Config.setConfig(env);
+		Config.printMajorConfig();
 	}
 
 	

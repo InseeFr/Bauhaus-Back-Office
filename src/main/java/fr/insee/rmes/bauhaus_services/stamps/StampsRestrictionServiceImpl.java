@@ -81,7 +81,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 
 		JSONArray roles = new JSONArray();
 		roles.put("ROLE_offline_access");
-		roles.put("ROLE_Administrateur_RMESGNCS");
+		roles.put("Administrateur_RMESGNCS");
 		roles.put("ROLE_uma_authorization");
 		return  new User(roles, "fakeStampForDvAndQf");
 	}

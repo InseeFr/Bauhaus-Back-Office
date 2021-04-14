@@ -33,12 +33,14 @@ public class ComponentPublication extends RdfService {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					String pred = ((SimpleIRI) st.getPredicate()).toString();
-
-					if (pred.endsWith("validationState")) {
+					if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
 						// nothing, wouldn't copy this attr
 					}else if (pred.endsWith("attribute")
 							|| pred.endsWith("dimension")
-							|| pred.endsWith("measure")) {
+							|| pred.endsWith("measure")
+							|| pred.endsWith("codeList")
+							|| pred.endsWith("concept")
+							|| pred.endsWith("range")) {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 					}
