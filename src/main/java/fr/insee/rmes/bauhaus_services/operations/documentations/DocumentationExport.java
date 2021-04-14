@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import javax.ws.rs.core.Response;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Component;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.export.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
@@ -47,13 +49,14 @@ public class DocumentationExport {
 	
 	public Response export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
-			boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException, IOException  {
+			boolean includeEmptyMas, boolean lg1, boolean lg2, String goal) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
 
 		String parametersXML = buildParams(lg1,lg2,includeEmptyMas,targetType);
 		File output =   File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+		output.deleteOnExit();
 		InputStream xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
 		InputStream zipToCompleteIS = null;
 		InputStream odtFileIS = null ;
@@ -68,17 +71,13 @@ public class DocumentationExport {
 			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
 		}	
 		
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-
-		output.deleteOnExit();
-
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
 
 		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
 		PrintStream printStream= null;
 
-    Path tempDir= Files.createTempDirectory("forExport");
+		Path tempDir= Files.createTempDirectory("forExport");
 		String fileName="export.odt";
 		Path finalPath = Paths.get(tempDir.toString()+"/"+fileName);
 		
@@ -90,7 +89,6 @@ public class DocumentationExport {
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
 			
 			// Pass parameters in a file
-			Path tempDir= Files.createTempDirectory("forExport");
 			addParameter ( xsltTransformer,  "parametersFile",  parametersXML,tempDir);
 			addParameter ( xsltTransformer,  "simsFile",  simsXML,tempDir);
 			addParameter ( xsltTransformer,  "seriesFile",  seriesXML,tempDir);
