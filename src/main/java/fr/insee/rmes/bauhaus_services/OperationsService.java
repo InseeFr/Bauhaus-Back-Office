@@ -153,4 +153,6 @@ public interface OperationsService {
 
 	Status deleteMetadataReport(String id) throws RmesException;
 
+	Response exportMetadataReportForLabel(String id) throws RmesException;
+
 }
