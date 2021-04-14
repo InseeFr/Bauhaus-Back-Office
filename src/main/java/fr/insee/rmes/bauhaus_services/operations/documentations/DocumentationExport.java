@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -20,6 +23,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +44,8 @@ public class DocumentationExport {
 	private static final Logger logger = LoggerFactory.getLogger(DocumentationExport.class);
 
 
-	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
+	
+	public Response export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
 			boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
@@ -47,8 +53,23 @@ public class DocumentationExport {
 		String msdXML = documentationsUtils.buildShellSims();
 
 		String parametersXML = buildParams(lg1,lg2,includeEmptyMas,targetType);
+		File output =   File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+		InputStream xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
+		InputStream zipToCompleteIS = null;
+		InputStream odtFileIS = null ;
+		
+		if(goal == Constants.GOAL_RMES){
+			odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/rmesPatternContent.xml");
+			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForRmes/export.zip");
 
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
+		}
+		if(goal == Constants.GOAL_COMITE_LABEL){
+			odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
+			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
+		}	
+		
+		OutputStream osOutputFile = FileUtils.openOutputStream(output);
+
 		output.deleteOnExit();
 
 		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
@@ -57,9 +78,13 @@ public class DocumentationExport {
 		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
 		PrintStream printStream= null;
 
+    Path tempDir= Files.createTempDirectory("forExport");
+		String fileName="export.odt";
+		Path finalPath = Paths.get(tempDir.toString()+"/"+fileName);
+		
 		try{
 			// prepare transformer
-			StreamSource xsrc = new StreamSource(xslFile);
+			StreamSource xsrc = new StreamSource(xslFileIS);
 			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
 			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
@@ -78,23 +103,47 @@ public class DocumentationExport {
 			// prepare output
 			printStream = new PrintStream(osOutputFile);
 			// transformation
-			xsltTransformer.transform(new StreamSource(odtFile), new StreamResult(printStream));
+			xsltTransformer.transform(new StreamSource(odtFileIS), new StreamResult(printStream));
+			
+			//create odt
+			Path contentPath = Paths.get(tempDir.toString()+"/content.xml");
+			Files.copy(Paths.get(output.getAbsolutePath()), contentPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+			Path zipPath = Paths.get(tempDir.toString()+"/export.zip");
+			Files.copy(zipToCompleteIS, zipPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+			FilesUtils.addFileToZipFolder(contentPath.toFile(),zipPath.toFile());
+			Files.copy(zipPath, finalPath, 
+					StandardCopyOption.REPLACE_EXISTING);
+
 		} catch (TransformerException e) {
 			logger.error(e.getMessage());
 		} finally {
-			odtFile.close();
-			xslFile.close();
+			odtFileIS.close();
+			xslFileIS.close();
 			osOutputFile.close();
 			printStream.close();
 		}
 		logger.debug("End To export documentation");
-		return(output);
-	}
+		
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+
+		try {
+			return Response.ok( (StreamingOutput) out -> {
+	                InputStream input = new FileInputStream( finalPath.toFile() );
+	                IOUtils.copy(input, out);
+	                out.flush();   
+	        } ).header( "Content-Disposition", content ).build();
+		 } catch ( Exception e ) { 
+         	logger.error(e.getMessage());
+         	throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file"); 
+         }
+			}
+
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
-	//	parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
 		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 
