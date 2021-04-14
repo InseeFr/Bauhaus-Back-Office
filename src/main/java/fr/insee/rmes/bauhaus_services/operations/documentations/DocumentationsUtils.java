@@ -574,10 +574,8 @@ public class DocumentationsUtils extends RdfService{
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2);
+				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
-
-
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
