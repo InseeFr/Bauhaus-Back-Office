@@ -444,7 +444,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		try {
 			return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
 		}
 	}
@@ -455,7 +455,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		try {
 			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
 		}
 	}
