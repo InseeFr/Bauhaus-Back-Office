@@ -505,7 +505,8 @@ public class DocumentationsUtils extends RdfService{
 		return stamps;
 	}
 
-	public File exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws IOException, RmesException {
+
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -573,10 +574,8 @@ public class DocumentationsUtils extends RdfService{
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2);
+				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
-
-
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
