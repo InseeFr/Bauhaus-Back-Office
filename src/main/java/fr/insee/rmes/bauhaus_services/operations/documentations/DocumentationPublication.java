@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -33,6 +34,11 @@ public class DocumentationPublication extends RdfService {
 	static RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
+	
+	@Autowired 
+	DocumentsPublication documentsPublication;
+
+	static final String[] rubricsNotForPublication = {"S.1.3","S.1.4","S.1.6","S.1.7","validationState"};
 
 	public void publishSims(String simsId) throws RmesException {
 
@@ -50,20 +56,22 @@ public class DocumentationPublication extends RdfService {
 			while (metadataReportStatements.hasNext()) {
 				Statement st = metadataReportStatements.next();
 				// Triplets that don't get published
-				if (((SimpleIRI)st.getPredicate()).toString().endsWith("validationState")) {
+				String predicate = ((SimpleIRI)st.getPredicate()).toString();
+				if (!isTripletForPublication(predicate)) {
 					// nothing, wouldn't copy this attr
 				} else {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
-					IRI predicate = RdfUtils
+					IRI predicateIRI = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 					Value object = st.getObject();
 					if (st.getObject() instanceof Resource) {
 						object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 					}
 
-					model.add(subject, predicate, object, st.getContext());
+					model.add(subject, predicateIRI, object, st.getContext());
 				}
 			}
+			documentsPublication.publishAllDocumentsInSims(simsId,model);
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
@@ -75,6 +83,12 @@ public class DocumentationPublication extends RdfService {
 
 		RepositoryPublication.publishContext(graph, model, "sims");
 
+	}
+
+	private boolean isTripletForPublication(String predicate) {
+		for(String rubric : rubricsNotForPublication) {
+			if (predicate.endsWith(rubric)) return false;}
+		return true;
 	}
 
 }

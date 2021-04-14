@@ -2,12 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -71,10 +64,6 @@ import fr.insee.rmes.utils.XMLUtils;
 
 @Component
 public class DocumentationsUtils extends RdfService{
-
-
-
-	private static final String DOT_XML = ".xml";
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
@@ -516,9 +505,6 @@ public class DocumentationsUtils extends RdfService{
 		return stamps;
 	}
 
-	public File exportTestMetadataReport() throws IOException {
-		return docExport.testExport();
-	}
 
 	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
 
@@ -588,99 +574,9 @@ public class DocumentationsUtils extends RdfService{
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2,goal);
+				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2);
 	}
 
-	public File exportMetadataReportOld(String id) throws IOException, RmesException {
-
-		InputStream is;
-		InputStream is2;
-		InputStream is3;
-		InputStream is4;
-
-		Path tempDir= Files.createTempDirectory("forExport");
-
-		// Xml File for Operation, Indicator or Series 
-		Path tempFile = Files.createTempFile(tempDir, "target",DOT_XML);
-		String absolutePath = tempFile.toFile().getAbsolutePath();
-		// Xml File for Series
-		Path accessoryTempFile = Files.createTempFile(tempDir, "series",DOT_XML);
-		String accessoryAbsolutePath = accessoryTempFile.toFile().getAbsolutePath();
-		// Xml File for Organizations
-		Path organizationsTempFile = Files.createTempFile(tempDir, "orga",DOT_XML);
-		String organizationsAbsolutePath = organizationsTempFile.toFile().getAbsolutePath();
-		// Xml File for needed CodeLists
-		Path codeListTempFile = Files.createTempFile(tempDir, "freq",DOT_XML);
-
-		String codeListAbsolutePath = codeListTempFile.toFile().getAbsolutePath();
-
-		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-
-		String[] target = getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
-		String idDatabase = target[1];
-
-		List<String>neededCodeLists=new ArrayList<>();
-
-		if (targetType.equals(Constants.OPERATION_UP)) {
-			Operation operation=operationsUtils.getOperationById(idDatabase);
-			String idSeries=operation.getSeries().getId();
-			Series series=seriesUtils.getSeriesById(idSeries);
-			String operationXML = XMLUtils.produceXMLResponse(operation);
-			is = IOUtils.toInputStream(operationXML, StandardCharsets.UTF_8);
-			Files.copy(is, tempFile, options);
-			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
-			String seriesXML = XMLUtils.produceXMLResponse(series);
-			is2 = IOUtils.toInputStream(seriesXML, StandardCharsets.UTF_8);
-			Files.copy(is2, accessoryTempFile, options);
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
-		}
-
-		if (targetType.equals(Constants.SERIES_UP)) {
-			String response=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase));
-			is = IOUtils.toInputStream(response,StandardCharsets.UTF_8);
-			Files.copy(is, accessoryTempFile, options);
-			is2 = IOUtils.toInputStream(response, StandardCharsets.UTF_8);
-			Files.copy(is2, tempFile, options);
-			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.ACCRUAL_PERIODICITY_LIST));
-		}
-
-		if (targetType.equals(Constants.INDICATOR_UP)) {
-			String response=XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase));
-			is = IOUtils.toInputStream(response, StandardCharsets.UTF_8);
-			Files.copy(is, tempFile, options);
-			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(response,Constants.ACCRUAL_PERIODICITY_LIST));
-		}
-
-		is3 = IOUtils.toInputStream(XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations()), StandardCharsets.UTF_8);
-		Files.copy(is3, organizationsTempFile, options);
-
-		String simsXML=XMLUtils.produceResponse(getFullSimsForXml(id), "application/xml");
-		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
-
-		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
-
-		String codeListsXml=Constants.XML_OPEN_CODELIST_TAG;
-
-		for(String code : neededCodeLists) {
-			codeListsXml=codeListsXml.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
-		}
-		codeListsXml=codeListsXml.concat(Constants.XML_END_CODELIST_TAG);
-
-		is4 = IOUtils.toInputStream(codeListsXml, StandardCharsets.UTF_8);
-		Files.copy(is4, codeListTempFile, options);
-
-		InputStream simsInputStream = IOUtils.toInputStream(simsXML, StandardCharsets.UTF_8);
-
-		return docExport.exportOld(simsInputStream,absolutePath,accessoryAbsolutePath,
-				organizationsAbsolutePath,codeListAbsolutePath,targetType);
-	}
 
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {

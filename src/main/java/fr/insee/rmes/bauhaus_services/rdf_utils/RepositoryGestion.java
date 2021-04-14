@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -113,11 +114,27 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.HAS_PART,object);
+	}
+	
+	public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
+			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.REPLACES,object);
+	}
+	
+	public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
+			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.IS_REPLACED_BY,object);
+	}
+	
+	
+	private RepositoryResult<Statement> getStatementsPredicatObject(RepositoryConnection con, IRI predicate, Resource object)
+			throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
-			statements = con.getStatements(null, DCTERMS.HAS_PART, object, false);
+			statements = con.getStatements(null, predicate, object, false);
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get hasPart statements : " + object);
+			throwsRmesException(e, "Failure get " +((SimpleIRI)predicate).toString() + " statements : " + object);
 		}
 		return statements;
 	}
