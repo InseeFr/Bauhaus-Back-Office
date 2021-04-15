@@ -73,7 +73,7 @@ public class FilesUtils {
 			zipfs = FileSystems.newFileSystem(uri, env); 
 			String sourcePath = inputFile.getPath();
 			Path source = Paths.get(sourcePath);
-			Path pathInZipfile = zipfs.getPath(StringUtils.substringAfterLast(sourcePath, "/"));  
+			Path pathInZipfile = zipfs.getPath(UriUtils.getLastPartFromUri(sourcePath));  
 			// copy a file into the zip file
 			Files.copy( source,pathInZipfile, 
 					StandardCopyOption.REPLACE_EXISTING ); 
