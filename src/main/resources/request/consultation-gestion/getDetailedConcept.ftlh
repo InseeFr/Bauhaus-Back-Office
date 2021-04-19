@@ -7,11 +7,6 @@ WHERE {
     BIND(STRAFTER(STR(?uri),'/definition/') AS ?id) .
     ?uri skos:prefLabel ?prefLabelLg2 .
     FILTER (lang(?prefLabelLg2) = '${LG2}') .
-    OPTIONAL {
-        ?uri skos:closeMatch ?conceptSDMX .
-        FILTER(strStarts(STR(?conceptSDMX),'urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept'))
-        BIND(STRAFTER(STR(?conceptSDMX),').') AS ?namingHint) .
-    } .
     ?uri dcterms:created ?dateCreation .
     ?uri dcterms:modified ?dateMiseAjour .
     ?uri insee:isValidated ?statutValidation .
