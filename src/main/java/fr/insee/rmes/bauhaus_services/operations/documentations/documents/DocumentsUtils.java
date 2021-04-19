@@ -542,11 +542,11 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonDoc.has(Constants.DESCRIPTION_LG2)) {
 			doc.setDescriptionLg2(jsonDoc.getString(Constants.DESCRIPTION_LG2));
 		}
-		if (jsonDoc.has("dateMiseAJour")) {
-			doc.setDateMiseAJour(jsonDoc.getString("dateMiseAJour"));
+		if (jsonDoc.has(Constants.UPDATED_DATE)) {
+			doc.setDateMiseAJour(jsonDoc.getString(Constants.UPDATED_DATE));
 		}
-		if (jsonDoc.has("langue")) {
-			doc.setLangue(jsonDoc.getString("langue"));
+		if (jsonDoc.has(Constants.LANG)) {
+			doc.setLangue(jsonDoc.getString(Constants.LANG));
 		}
 		if (jsonDoc.has(Constants.URL)) {
 			doc.setUrl(jsonDoc.getString(Constants.URL));
