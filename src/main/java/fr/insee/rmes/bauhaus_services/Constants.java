@@ -58,6 +58,7 @@ public class Constants {
 	public static final String LABEL = "label";
 	public static final String LABEL_LG1 = "labelLg1";
 	public static final String LABEL_LG2 = "labelLg2";
+	public static final String LANG = "lang";
 	
 	/*M*/
 	public static final String MANAGER = "manager";
