@@ -25,6 +25,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         JSONArray labels = new JSONArray();
 
 
+
         String labelLg1 = concept.getString("prefLabelLg1");
         JSONObject labelLg1Object = new JSONObject();
         labelLg1Object.put("langue", Config.LG1);
@@ -42,6 +43,11 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         }
 
         concept.put("label", labels);
+
+        JSONArray conceptsSdmx = repoGestion.getResponseAsArray(buildRequest("getConceptsSdmx.ftlh", params));
+        if(conceptsSdmx.length() > 0){
+            concept.put("conceptsSdmx", conceptsSdmx);
+        }
 
         return concept.toString();
     }
