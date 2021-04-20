@@ -26,29 +26,6 @@ public class ExtensiveSims {
 	/* un jour créer l'interface Documentable implémentée par Série / Opération / Indicateur ? */ 
 	//	private Documentable target;
 	
-	public ExtensiveSims(Documentation documentation) throws RmesException {
-
-		super();
-		this.documentation = documentation;
-		String id=documentation.getId();
-		
-		String[] target = documentationsUtils.getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
-		String idDatabase = target[1];
-
-		switch(targetType) {
-//		case "OPERATION" : this.operation = indicatorsUtils.getIndicatorById(idDatabase);  break;
-//		case "SERIES" : this.series = indicatorsUtils.getIndicatorById(idDatabase);  break;
-		case Constants.INDICATOR_UP : this.indicator = indicatorsUtils.getIndicatorById(idDatabase); break;
-		}
-		
-		documentationsUtils.getDocumentationTargetTypeAndId(id);
-	}
-	
-	
-	
-	
-	
 	public Documentation getDocumentation() {
 		return documentation;
 	}

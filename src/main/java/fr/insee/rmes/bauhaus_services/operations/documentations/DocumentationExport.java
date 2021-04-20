@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -22,6 +24,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,65 +46,17 @@ public class DocumentationExport {
 	private static final Logger logger = LoggerFactory.getLogger(DocumentationExport.class);
 
 
-	public File testExport() throws IOException {
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/convertRichText.xsl");
-		InputStream inputFile = getClass().getResourceAsStream("/testXML.xml");
-
-		try(PrintStream printStream = new PrintStream(osOutputFile)	){
-			StreamSource xsrc = new StreamSource(xslFile);
-			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		} catch (TransformerException e) {
-			logger.error(e.getMessage());
-		} finally {
-			inputFile.close();
-			osOutputFile.close();
-		}
-		return output;
-	}
-
-//	public File callXsltEmportTransfo(String paramPath,String goal)throws RmesException, IOException  {
-//		
-//		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-//		output.deleteOnExit();
-//
-//		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
-//		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-//		InputStream odtFile ;
-//		if(goal == Constants.GOAL_RMES){
-//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
-//		}
-//		if(goal == Constants.GOAL_COMITE_LABEL){
-//			odtFile = getClass().getResourceAsStream("/xslTransformerFiles/labelPattern.fodt");
-//		}
-//		PrintStream printStream= null;
-//		
-//		try{
-//			// prepare transformer
-//			StreamSource xsrc = new StreamSource(xslFile);
-//			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-//			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-//			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-//		}
-//		
-//		return null;
-//
-//	}
 	
-	public File export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
+	public Response export(String simsXML,String operationXML,String indicatorXML,String seriesXML,
 			String organizationsXML, String codeListsXML, String targetType, 
-			Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException, IOException  {
+			boolean includeEmptyMas, boolean lg1, boolean lg2, String goal) throws RmesException, IOException  {
 		logger.debug("Begin To export documentation");
 
 		String msdXML = documentationsUtils.buildShellSims();
+
 		String parametersXML = buildParams(lg1,lg2,includeEmptyMas,targetType);
 		File output =   File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+		output.deleteOnExit();
 		InputStream xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
 		InputStream zipToCompleteIS = null;
 		InputStream odtFileIS = null ;
@@ -115,9 +71,12 @@ public class DocumentationExport {
 			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
 		}	
 		
+		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
 		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-		output.deleteOnExit();
+
+		InputStream odtFile = getClass().getResourceAsStream("/xslTransformerFiles/rmesPattern.fodt");
 		PrintStream printStream= null;
+
 		Path tempDir= Files.createTempDirectory("forExport");
 		String fileName="export.odt";
 		Path finalPath = Paths.get(tempDir.toString()+"/"+fileName);
@@ -165,13 +124,24 @@ public class DocumentationExport {
 		}
 		logger.debug("End To export documentation");
 		
-		return (finalPath.toFile());
-	}
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+
+		try {
+			return Response.ok( (StreamingOutput) out -> {
+	                InputStream input = new FileInputStream( finalPath.toFile() );
+	                IOUtils.copy(input, out);
+	                out.flush();   
+	        } ).header( "Content-Disposition", content ).build();
+		 } catch ( Exception e ) { 
+         	logger.error(e.getMessage());
+         	throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file"); 
+         }
+			}
+
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
 		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
 		String parametersXML="";
-	//	parametersXML=parametersXML.concat(Constants.XML_START_DOCUMENT);
 		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
 
@@ -195,7 +165,7 @@ public class DocumentationExport {
 	private void addParameter (Transformer xsltTransformer, String paramName, String paramData, Path tempDir) throws IOException {
 		// Pass parameters in a file
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-		Path tempFile = Files.createTempFile(tempDir, paramName, Constants.DOT_XML);
+		Path tempFile = Files.createTempFile(tempDir, paramName,Constants.DOT_XML);
 		String absolutePath = tempFile.toFile().getAbsolutePath();
 		InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
 		Files.copy(is, tempFile, options);
@@ -204,59 +174,6 @@ public class DocumentationExport {
 	}
 	
 	
-	public File exportOld(InputStream inputFile, 
-			String absolutePath, String accessoryAbsolutePath, String organizationsAbsolutePath, 
-			String codeListAbsolutePath, String targetType) throws RmesException, IOException  {
-		logger.debug("Begin To export documentation");
-
-		String msdXml = documentationsUtils.buildShellSims();
-		File msdFile =  File.createTempFile("msdXml", ".xml");
-		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
-
-		InputStream is = new ByteArrayInputStream(msdXml.getBytes(StandardCharsets.UTF_8));
-		Files.copy(is, msdFile.toPath(), options);
-
-		String msdPath = msdFile.getAbsolutePath();
-
-		File output =  File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.FLAT_ODT));
-		output.deleteOnExit();
-
-		InputStream xslFile = getClass().getResourceAsStream("/xslTransformerFiles/testXSLT.xsl");
-		OutputStream osOutputFile = FileUtils.openOutputStream(output);
-
-
-		try(PrintStream printStream = new PrintStream(osOutputFile)	){
-
-			StreamSource xsrc = new StreamSource(xslFile);
-			TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-			transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-			Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
-
-			absolutePath = absolutePath.replace('\\', '/');
-			accessoryAbsolutePath = accessoryAbsolutePath.replace('\\', '/');
-			organizationsAbsolutePath = organizationsAbsolutePath.replace('\\', '/');
-			msdPath = msdPath.replace('\\', '/');
-			codeListAbsolutePath = codeListAbsolutePath.replace('\\', '/');
-
-			xsltTransformer.setParameter("tempFile", absolutePath);
-			xsltTransformer.setParameter("accessoryTempFile", accessoryAbsolutePath);
-			xsltTransformer.setParameter("orga", organizationsAbsolutePath);
-			xsltTransformer.setParameter("msd", msdPath);
-			xsltTransformer.setParameter("codeList", codeListAbsolutePath);
-			xsltTransformer.setParameter("targetType", targetType);
-
-			xsltTransformer.transform(new StreamSource(inputFile), new StreamResult(printStream));
-		} catch (TransformerException e) {
-			logger.error(e.getMessage());
-		} finally {
-			inputFile.close();
-			xslFile.close();
-			osOutputFile.close();
-		}
-		logger.debug("End To export documentation");
-		return(output);
-	}
 
 
 }
