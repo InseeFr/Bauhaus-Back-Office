@@ -77,6 +77,10 @@ public class IndicatorsUtils  extends RdfService {
 	 * @param indicatorJson
 	 * @return
 	 */
+	public Indicator buildIndicatorFromJson(JSONObject indicatorJson) {
+		return buildIndicatorFromJson(indicatorJson,false);
+	}
+	
 	public Indicator buildIndicatorFromJson(JSONObject indicatorJson, boolean forXML) {
 		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
