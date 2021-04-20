@@ -133,7 +133,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
-		return seriesUtils.getSeriesById(id);
+		return seriesUtils.getSeriesById(id,false);
 	}
 
 	@Override
@@ -315,7 +315,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public Indicator getIndicatorById(String id) throws RmesException {
-		return indicatorsUtils.getIndicatorById(id);
+		return indicatorsUtils.getIndicatorById(id,false);
 	}
 
 	@Override

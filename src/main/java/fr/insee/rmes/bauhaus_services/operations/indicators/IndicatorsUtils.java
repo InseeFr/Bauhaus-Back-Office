@@ -43,6 +43,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PROV;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -62,8 +63,8 @@ public class IndicatorsUtils  extends RdfService {
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
 
-	public Indicator getIndicatorById(String id) throws RmesException{
-		return buildIndicatorFromJson(getIndicatorJsonById(id));
+	public Indicator getIndicatorById(String id, boolean forXML) throws RmesException{
+		return buildIndicatorFromJson(getIndicatorJsonById(id), forXML);
 	}
 
 	/**
@@ -71,12 +72,13 @@ public class IndicatorsUtils  extends RdfService {
 	 * @param indicatorJson
 	 * @return
 	 */
-	public Indicator buildIndicatorFromJson(JSONObject indicatorJson) {
+	public Indicator buildIndicatorFromJson(JSONObject indicatorJson, boolean forXML) {
 		ObjectMapper mapper = new ObjectMapper();
 		String id= indicatorJson.getString(Constants.ID);
 		Indicator indicator = new Indicator(id);
 		try {
-			indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
+			if(forXML) indicator = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(indicatorJson.toString()), Indicator.class);
+			else indicator = mapper.readValue(indicatorJson.toString(), Indicator.class);
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
 		}

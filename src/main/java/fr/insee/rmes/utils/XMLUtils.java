@@ -160,4 +160,24 @@ public class XMLUtils {
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 
+	public static String solveSpecialXmlcharacters(String rubric) {
+		String ret = StringEscapeUtils.unescapeXml(rubric);
+		ret = StringEscapeUtils.unescapeHtml4(ret);
+		//ret=rubric
+		
+		final String regex = "&";
+		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern.matcher(ret).replaceAll(Constants.XML_ESPERLUETTE_REPLACEMENT);
+
+		final String regex2 = "<";
+		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern2.matcher(ret).replaceAll(Constants.XML_INF_REPLACEMENT);
+
+		final String regex3 = ">";
+		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
+
+		return new String(ret.getBytes(), StandardCharsets.UTF_8);
+	}
+	
 }
