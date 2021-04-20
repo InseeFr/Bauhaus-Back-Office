@@ -4,14 +4,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CodeListItem {
 
+
 	@Schema(description = "Code", required = true)
-	public String code;
+	private String code;
 	
 	@Schema(description = "Label lg1", required = true)
-	public String labelLg1;
+	private String labelLg1;
 	
 	@Schema(description = "Label lg2")
-	public String labelLg2;
+	private String labelLg2;
 
 	public CodeListItem(String code, String labelLg1, String labelLg2) {
 		super();
@@ -28,9 +29,6 @@ public class CodeListItem {
 		return this.code;
 	}
 
-	public static String getClassCodeLabelTwoLangs() {
-		return "fr.insee.rmes.config.swagger.model.CodeLabelTwoLangs";
-	}
 	
 	public String getLabelLg1() {
 		return labelLg1;

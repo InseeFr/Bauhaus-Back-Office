@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,9 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.OperationsAbstResources;
+import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,8 +41,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
 @Component
+@Qualifier("Operation")
 @Path("/operations")
-public class OperationsResources extends OperationsAbstResources {
+public class OperationsResources extends OperationsCommonResources {
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -96,8 +99,14 @@ public class OperationsResources extends OperationsAbstResources {
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
-		File codeBookFile = fr.insee.rmes.utils.FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
-		return operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);	
+		File codeBookFile = FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
+		Response response;
+		try {
+			response = operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+		return response;	
 	}
 
 	/**

@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.StringJoiner;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,6 +34,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @Path("/healthcheck")
 public class HealthcheckApi {
 	
+	private static final String OK_STATE = ": OK \n";
+
+	private static final String KO_STATE = ": KO \n";
+
 	String sparlQuery = "SELECT * { ?s a ?t } LIMIT 1";
 	
 	@Autowired
@@ -45,60 +50,69 @@ public class HealthcheckApi {
         MediaType.TEXT_PLAIN
     })
     public Response getHealthcheck() {
-    	String errorMessage = "";
-    	String stateResult = "Database connexion \n";
-    	logger.info("Begin healthCheck");
+    	
+    	StringJoiner errorMessage = new StringJoiner(" ");
+    	StringJoiner stateResult = new StringJoiner(" ");
+    	stateResult.add("Database connexion \n");
+    	logger.info(" Begin healthCheck");
     	
     	//Test database connexion
     	try {
 			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
-				errorMessage = errorMessage.concat("- Repository publication doesn't return statement \n");
-				stateResult = stateResult.concat(" - Connexion publication : KO \n");
+				errorMessage.add("- Repository publication doesn't return statement \n");
+				stateResult = stateResult.add(" - Connexion publication").add(KO_STATE);
 			}else {
-				stateResult = stateResult.concat(" - Connexion publication : OK \n");
+				stateResult = stateResult.add(" - Connexion publication").add(OK_STATE);
 			}
 	    	if (StringUtils.isEmpty( 	repoGestion.getResponse(sparlQuery))) {
-	    		errorMessage = errorMessage.concat("- Repository gestion doesn't return statement \n");
-	    		stateResult = stateResult.concat(" - Connexion gestion : KO \n");
+	    		errorMessage.add("- Repository gestion doesn't return statement \n");
+	    		stateResult = stateResult.add(" - Connexion gestion").add(KO_STATE);
 	    	}else {
-	    		stateResult = stateResult.concat(" - Connexion gestion : OK \n");
+	    		stateResult = stateResult.add(" - Connexion gestion").add(OK_STATE);
 	    	}
 		} catch (RmesException e) {
-			errorMessage = errorMessage.concat("- "+e.getMessage()+ " \n");
-			stateResult = stateResult.concat(" - Connexion database : KO \n");
+			errorMessage.add("- "+e.getMessage()+ " \n");
+			stateResult = stateResult.add(" - Connexion database").add(KO_STATE);
 		}
     	
-    	stateResult = stateResult.concat("Document storage \n");
+    	stateResult = stateResult.add("Document storage \n");
     	//Test access to storage
-         String dirPath = Config.DOCUMENTS_STORAGE + "testHealthcheck.txt";
-         File testFile = new File(dirPath);
-         try {
-			if (!testFile.createNewFile()) {
-				errorMessage = errorMessage.concat("- File for healthcheck already exists \n");
-				stateResult = stateResult.concat(" - File creation : KO \n");
-			}else {
-				stateResult = stateResult.concat(" - File creation : OK \n");
-			}
-			if (!Files.deleteIfExists(testFile.toPath())) {
-				errorMessage = errorMessage.concat("- Can't delete test file \n");
-				stateResult = stateResult.concat(" - File deletion : KO \n");
-			}else {
-				stateResult = stateResult.concat(" - File deletion : OK \n");
-			}
- 		} catch (IOException e) {
- 			errorMessage = errorMessage.concat("- IOException to save file in  "+Config.DOCUMENTS_STORAGE+" - "+e.getMessage()+ " \n");
- 			stateResult = stateResult.concat(" - Document storage : KO \n");
-		}
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_GESTION,"Gestion", stateResult, errorMessage);
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE,"Publication Externe", stateResult, errorMessage);
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE,"Publication Interne", stateResult, errorMessage);
     	
-         logger.info(stateResult);
+         logger.info("{}",stateResult);
          logger.info("End healthcheck");
          
-    	if (!"".equals(errorMessage)) {
-    		logger.error(errorMessage);
-    		return Response.serverError().entity(errorMessage).build();
+    	if (!"".equals(errorMessage.toString())) {
+    		logger.error("{}",errorMessage);
+    		return Response.serverError().entity(errorMessage.toString()).build();
     	}
     	else {
-    		return Response.ok(stateResult).build();
+    		return Response.ok(stateResult.toString()).build();
     	}
     }
+    
+    private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
+        String dirPath = pathToStorage + "testHealthcheck.txt";
+        File testFile = new File(dirPath);
+        try {
+			if (!testFile.createNewFile()) {
+				errorMessage.add("- File for healthcheck already exists in").add(storageType).add("\n");
+				stateResult.add(" - File creation").add(storageType).add(KO_STATE);
+			}else {
+				stateResult.add(" - File creation").add(storageType).add(OK_STATE);
+			}
+			if (!Files.deleteIfExists(testFile.toPath())) {
+				errorMessage.add("- Can't delete test file").add(storageType).add("\n");
+				stateResult.add(" - File deletion").add(storageType).add(KO_STATE);
+			}else {
+				stateResult.add(" - File deletion").add(storageType).add(OK_STATE);
+			}
+		} catch (IOException e) {
+			errorMessage.add("- IOException to save file in").add(pathToStorage).add("-").add(e.getMessage()).add("\n");
+			stateResult.add(" - Document storage").add(storageType).add(KO_STATE);
+		}
+    }
+    
 }

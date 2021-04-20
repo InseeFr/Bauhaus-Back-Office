@@ -21,9 +21,10 @@ WHERE {
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 
+    filter ( ?type = qb:DimensionProperty || ?type = qb:AttributeProperty || ?type = qb:MeasureProperty )
 
     OPTIONAL {
-        ?component insee:identifiantMetier ?identifiant .
+        ?component skos:notation ?identifiant .
     } .
 
     OPTIONAL {

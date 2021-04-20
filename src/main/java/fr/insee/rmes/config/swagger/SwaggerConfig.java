@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.context.annotation.DependsOn;
 
 import fr.insee.rmes.config.Config;
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 
 @ApplicationPath("/")
+@DependsOn("AppContext")
 public class SwaggerConfig extends ResourceConfig   {
 
 	private static final  Logger logger = LogManager.getLogger(SwaggerConfig.class);

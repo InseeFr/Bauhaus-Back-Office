@@ -41,7 +41,6 @@ public class Concept {
 			this.versioning = false;
 		}else {
 			this.creation = false;
-
 		}
 	}
 	

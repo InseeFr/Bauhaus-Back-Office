@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +30,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.OperationsAbstResources;
+import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -38,8 +39,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
 @Component
+@Qualifier("Report")
 @Path("/operations")
-public class MetadataReportResources extends OperationsAbstResources {
+public class MetadataReportResources extends OperationsCommonResources {
 
 	
 	/***************************************************************************************************
@@ -323,7 +325,7 @@ public class MetadataReportResources extends OperationsAbstResources {
 	}
 
 	/**
-	 * EXPORTFORLABEL
+	 * EXPORT FOR LABEL
 	 * @param id
 	 * @return response
 	 */	
@@ -331,22 +333,14 @@ public class MetadataReportResources extends OperationsAbstResources {
 	@GET
 	@Path("/metadataReport/export/label/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report for label comitee")
-	public Response getSimsLabelExport(@Parameter(
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	public Response getSimsExportForLabel(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
 			) throws RmesException {
+
 		return operationsService.exportMetadataReportForLabel(id);	
 	}
 	
-	
-	@GET
-	@Path("/metadataReport/testExport")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public Response getTestSimsExport() throws RmesException {
-		return operationsService.exportTestMetadataReport();	
-	}
-
 }
