@@ -124,20 +124,6 @@ public class DocumentationsUtils extends RdfService{
 		return getDocumentationByIdSims(id);
 	}
 	
-
-	/**
-	 * Java Object	Builder
-	 * @param jsonSims
-	 * @return ExtensiveSims
-	 * @throws RmesException
-	 */
-	/* Not Used */
-	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject jsonSims) throws RmesException {
-		Documentation sims = buildDocumentationFromJson(jsonSims,false);
-		return new ExtensiveSims(sims);
-	}
-
-
 	/**
 	 * Java Object	Builder
 	 * @param jsonSims
@@ -526,7 +512,7 @@ public class DocumentationsUtils extends RdfService{
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries);
+			series=seriesUtils.getSeriesById(idSeries,true);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -535,7 +521,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
 			indicatorXML=XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase));
+					indicatorsUtils.getIndicatorById(idDatabase,true));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=XMLUtils.getTagValues(
@@ -543,7 +529,7 @@ public class DocumentationsUtils extends RdfService{
 							indicatorXML,
 							Constants.WASGENERATEDBY).iterator().next(),
 					Constants.ID).iterator().next();
-			series=seriesUtils.getSeriesById(idSeries);
+			series=seriesUtils.getSeriesById(idSeries,true);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -552,7 +538,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.SERIES_UP)) {
 			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase));
+					seriesUtils.getSeriesById(idDatabase,true));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}

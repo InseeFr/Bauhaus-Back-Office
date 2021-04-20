@@ -46,6 +46,7 @@ import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -73,12 +74,12 @@ public class SeriesUtils extends RdfService {
 		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
 	}
 
-	public Series getSeriesById(String id) throws RmesException {
-		return buildSeriesFromJson(getSeriesJsonById(id));	
+	public Series getSeriesById(String id, boolean forXml) throws RmesException {
+		return buildSeriesFromJson(getSeriesJsonById(id),forXml);	
 	}
 
 
-	private Series buildSeriesFromJson(JSONObject seriesJson) throws RmesException {
+	private Series buildSeriesFromJson(JSONObject seriesJson, boolean forXml) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
@@ -89,7 +90,8 @@ public class SeriesUtils extends RdfService {
 				id= famOpeSerIndUtils.createId();}
 		Series series = new Series();
 		try {
-			series = mapper.readValue(seriesJson.toString(), Series.class);
+			if (forXml) series = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(seriesJson.toString()), Series.class);
+			else series = mapper.readValue(seriesJson.toString(), Series.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -317,7 +319,7 @@ public class SeriesUtils extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
 		}
-		Series series = buildSeriesFromJson(new JSONObject(body));
+		Series series = buildSeriesFromJson(new JSONObject(body),false);
 		checkSimsWithOperations(series);
 
 		// Tester l'existence de la famille
