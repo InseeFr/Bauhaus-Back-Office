@@ -63,6 +63,11 @@ public class IndicatorsUtils  extends RdfService {
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
 
+	
+	public Indicator getIndicatorById(String id) throws RmesException{
+		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
+	}
+	
 	public Indicator getIndicatorById(String id, boolean forXML) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), forXML);
 	}
