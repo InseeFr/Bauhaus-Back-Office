@@ -76,7 +76,7 @@ public class DateUtils {
             LocalDate date = LocalDate.parse(dateStr, DateTimeFormatter.ISO_DATE_TIME);
             return date.format(DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
-            logger.warn("Date can't be parse : {} {}" , dateStr, e.getMessage());
+            logger.warn("Date can't be parse in DateTime : {} {} {}" , dateStr, e.getMessage(), e.getClass().getSimpleName());
             return dateStr;
         }
     }
