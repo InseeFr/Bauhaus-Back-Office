@@ -40,7 +40,7 @@ FROM <${GEO_SIMS_GRAPH}>
 	}	
 			
 			
-			BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id)
+			BIND(REPLACE( STR(?uri) , '(.*/)(\\w.*$)', '$2' ) AS ?id)
 
 			BIND(EXISTS{?uri geo:union ?unionFeat}||EXISTS{?uri geo:difference ?diffFeat} AS ?hasComposition)
 			

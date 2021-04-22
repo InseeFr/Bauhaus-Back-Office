@@ -37,10 +37,10 @@ WHERE {
 	 
 	 
 <#if id != "">
-		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = '${id}')
+		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.*$)', '$2' ) = '${id}')
 	    BIND('${id}' AS ?id) .
 <#else>
-	    BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id) .
+	    BIND(REPLACE( STR(?uri) , '(.*/)(\\w.*$)', '$2' ) AS ?id) .
 </#if>
 
 <#if idRubric != "">
