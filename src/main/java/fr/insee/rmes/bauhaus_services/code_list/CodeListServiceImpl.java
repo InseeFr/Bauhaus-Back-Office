@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import fr.insee.rmes.model.ValidationStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,6 +58,60 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return buildCodeListFromJson(getCodeListJson(notation));	
 	}
 
+	private String getValidationState(String validationState){
+		if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState)){
+			return "Publiée";
+		}
+		if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState)){
+			return "Provisoire, déjà publiée";
+		}
+		if(ValidationStatus.UNPUBLISHED.toString().equalsIgnoreCase(validationState)){
+			return "Provisoire, jamais publiée";
+		}
+
+		return validationState;
+	}
+
+	@Override
+	public String getDetailedCodesList(String notation) throws RmesException {
+		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
+		codeList.put("validationState", this.getValidationState(codeList.getString("validationState")));
+		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation));
+
+		if(codes.length() > 0){
+			JSONObject formattedCodes = new JSONObject();
+			codes.forEach(c -> {
+				JSONObject tempCode = (JSONObject) c;
+				String code = tempCode.getString("code");
+
+				if(!formattedCodes.has(code)){
+					if(tempCode.has("parents")){
+						JSONArray parents = new JSONArray();
+						parents.put(tempCode.getString("parents"));
+						tempCode.put("parents", parents);
+					}
+
+					formattedCodes.put(code, tempCode);
+				} else {
+					JSONObject previousCode = formattedCodes.getJSONObject(code);
+
+					JSONArray parents = new JSONArray();
+					if(previousCode.has("parents")){
+						parents = previousCode.getJSONArray("parents");
+					}
+					parents.put(tempCode.getString("parents"));
+					previousCode.put("parents", parents);
+					formattedCodes.put(code, previousCode);
+				}
+			});
+
+
+			codeList.put("codes", formattedCodes);
+		}
+
+		return codeList.toString();
+	}
+
 	@Override
 	public String getCode(String notationCodeList, String notationCode) throws RmesException{
 		JSONObject code = repoGestion.getResponseAsObject(CodeListQueries.getCodeByNotation(notationCodeList,notationCode));
@@ -81,6 +136,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public String geCodesListByIRI(String IRI) throws RmesException {
 		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(IRI)).toString();
 	}
+
+
 
 
 }

@@ -81,4 +81,22 @@ public class CodeListQueries {
 		params.put("LG2", Config.LG2);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getCodeListByIRI.ftlh", params);
 	}
+
+	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("NOTATION", notation);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodesList.ftlh", params);
+	}
+
+	public static String getDetailedCodes(String notation) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("NOTATION", notation);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodes.ftlh", params);
+	}
 }
