@@ -113,6 +113,15 @@ public class ConceptsQueries {
 				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";
 	}
+
+	public static String conceptQueryForDetailStructure(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		params.put("ID", id);
+		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
+	}
 	
 	public static String altLabel(String id, String lang) {
 		return "SELECT ?altLabel \n"
@@ -180,40 +189,13 @@ public class ConceptsQueries {
 				+ "}} \n";
 	}
 	
-	public static String conceptLinks(String id) {
-		return "SELECT ?id ?typeOfLink ?prefLabelLg1 ?prefLabelLg2 \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
-				
-				+ "?concept rdf:type skos:Concept . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				
-			//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 
-
-				+ "{?concept skos:narrower ?conceptlinked . \n"
-				+ "BIND('narrower' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?concept skos:broader ?conceptlinked . \n"
-				+ "BIND('broader' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?concept dcterms:references ?conceptlinked . \n"
-				+ "BIND('references' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?concept dcterms:replaces ?conceptlinked . \n"
-				+ "BIND('succeed' AS ?typeOfLink)} \n"
-				+ "UNION"
-				+ "{?concept skos:related ?conceptlinked . \n"
-				+ "BIND('related' AS ?typeOfLink)} \n"
-				
-				+ "?conceptlinked skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
-				+ "OPTIONAL {?conceptlinked skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
-				+ "BIND(STRAFTER(STR(?conceptlinked),'/definition/') AS ?id) . \n"				
-				+ "}} \n"
-				+ "ORDER BY ?typeOfLink";
+	public static String conceptLinks(String idConcept) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("ID_CONCEPT", idConcept);
+		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		return buildConceptRequest("getConceptLinksById.ftlh", params);		
+		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
-	
-
 	
 	public static String getNarrowers(String id) {
 		return "SELECT ?narrowerId { \n"
@@ -292,6 +274,12 @@ public class ConceptsQueries {
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
 	}
 
+	public static String isConceptValidated(String conceptId) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("ID", conceptId);
+		return buildConceptRequest("isConceptValidated.ftlh", params);
+	}
 	
 	/**
 	 * @param uriConcept

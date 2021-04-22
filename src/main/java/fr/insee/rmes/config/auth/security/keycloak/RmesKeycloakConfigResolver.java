@@ -8,7 +8,7 @@ import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.adapters.OIDCHttpFacade;
 
-import fr.insee.rmes.utils.FileUtils;
+import fr.insee.rmes.utils.FilesUtils;
 
 public class RmesKeycloakConfigResolver implements KeycloakConfigResolver {
 	
@@ -37,7 +37,7 @@ public class RmesKeycloakConfigResolver implements KeycloakConfigResolver {
 	private InputStream updateInputStreamIfFileExists(InputStream is, String url) {
 		File f = new File(url);
 		if(f.exists() && !f.isDirectory()) { 
-			is = FileUtils.fileToIS(f);
+			is = FilesUtils.fileToIS(f);
 		}
 		return is;
 	}

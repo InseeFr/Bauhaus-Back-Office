@@ -1,10 +1,22 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?created ?modified ?creator ?contributor ?disseminationStatus
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
-               insee:identifiantMetier ?identifiant ;
+               skos:notation ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
+    filter ( ?type = qb:DimensionProperty || ?type = qb:AttributeProperty || ?type = qb:MeasureProperty )
+    OPTIONAL {
+        ?component dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?component dc:contributor ?contributor .
+    } .
+
+    OPTIONAL {
+        ?component insee:disseminationStatus ?disseminationStatus .
+    } .
 
     OPTIONAL {
         ?component insee:validationState ?validationState

@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -24,13 +29,15 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
 
+	private User fakeUser;
+
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
 		User user = getUser();
 		if (isAdmin(user)) {
 			return true;
 		}
-		String uriAsString = "<" + uri.toString() + ">";
+		String uriAsString = "<" + ((SimpleIRI)uri).toString() + ">";
 		JSONObject owner = repoGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		if (!owner.getString(Constants.OWNER).equals(user.getStamp())) {
@@ -46,7 +53,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 			return true;
 		}
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
@@ -66,19 +73,40 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return dvOrQfUser();
 	}
 
+
 	private User dvOrQfUser() {
+		if(this.fakeUser != null){
+			return this.fakeUser;
+		}
+
 		JSONArray roles = new JSONArray();
 		roles.put("ROLE_offline_access");
-		roles.put("ROLE_Administrateur_RMESGNCS");
+		roles.put("Administrateur_RMESGNCS");
 		roles.put("ROLE_uma_authorization");
-		return new User(roles, "fakeStampForDvAndQf");
+		return  new User(roles, "fakeStampForDvAndQf");
 	}
 
+	public void setFakeUser(String user) throws JsonProcessingException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(
+				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		JSONObject userObject = new JSONObject(user);
+
+		JSONArray roles = userObject.getJSONArray("roles");
+
+		this.fakeUser = new User(roles, userObject.getString("stamp"));
+	}
+
+	private boolean isAdmin() {
+		User user = getUser();
+		return (isAdmin(user));
+	}
+	
 	private boolean isAdmin(User user) {
 		Boolean isAdmin = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.SPRING_ADMIN)) {
+			if (roles.getString(i).equals(Roles.ADMIN)) {
 				isAdmin = true;
 			}
 		}
@@ -144,7 +172,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isCnis = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.SPRING_CNIS)) {
+			if (roles.getString(i).equals(Roles.CNIS)) {
 				isCnis = true;
 			}
 		}
@@ -154,7 +182,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptOwner(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
@@ -169,7 +197,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
+		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
 		String uriAsString = sb.toString();
 		JSONArray managers = repoGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
@@ -181,40 +209,26 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isConceptManager;
 	}
 
-	private boolean isSeriesManager(List<IRI> uris) throws RmesException {
-		for (IRI uri : uris) {
-			if (!isSeriesManager(uri)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean isSeriesManager(IRI uri) throws RmesException {
+	public boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
-		StringBuilder sb = new StringBuilder();
-		sb.append("<" + uri.toString() + "> ");
-		String uriAsString = sb.toString();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(uriAsString));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)uri).toString()));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
-			if (!managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
+			if (managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
 				isSeriesManager = true;
 			}
 		}
 		return isSeriesManager;
 	}
 
-	private boolean isIndicatorManager(List<IRI> uris) throws RmesException {
+	private boolean isIndicatorManager(IRI iri) throws RmesException {
 		User user = getUser();
-		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + u.toString() + "> "));
-		String uriAsString = sb.toString();
+		String uriAsString = "<" + ((SimpleIRI)iri).toString() + "> ";
 		JSONArray creators = repoGestion.getResponseAsArray(IndicatorsQueries.getCreatorsByIndicatorUri(uriAsString));
 		Boolean isIndicatorManager = false;
 		if (creators.length() > 0) {
 			for (int i = 0; i < creators.length(); i++) {
-				if (!creators.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
+				if (creators.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
 					isIndicatorManager = true;
 				}
 			}
@@ -222,42 +236,26 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return isIndicatorManager;
 	}
 
-	private boolean canModifyOrValidateIndicator(List<IRI> uris) throws RmesException {
+	private boolean canModifyOrValidateIndicator(IRI iri) throws RmesException {
 		User user = getUser();
-		return (isAdmin(user) || (isIndicatorManager(uris) && isIndicatorContributor(user)));
-	}
-
-	@Override
-	public boolean canModifyIndicator(List<IRI> uris) throws RmesException {
-		return canModifyOrValidateIndicator(uris);
-	}
-
-	@Override
-	public boolean canValidateIndicator(List<IRI> uris) throws RmesException {
-		return canModifyOrValidateIndicator(uris);
+		return (isAdmin(user) || (isIndicatorManager(iri) && isIndicatorContributor(user)));
 	}
 
 	@Override
 	public boolean canModifyIndicator(IRI uri) throws RmesException {
-		List<IRI> uris = new ArrayList<>();
-		uris.add(uri);
-		return canModifyIndicator(uris);
+		return canModifyOrValidateIndicator(uri);
 	}
 
 	@Override
 	public boolean canValidateIndicator(IRI uri) throws RmesException {
-		List<IRI> uris = new ArrayList<>();
-		uris.add(uri);
-		return canValidateIndicator(uris);
+		return canModifyOrValidateIndicator(uri);
 	}
 
 	@Override
-	public boolean canModifySims(IRI targetURI) throws RmesException {
+	public boolean canModifySims(IRI seriesOrIndicatorUri) throws RmesException {
 		User user = getUser();
-		List<IRI> uris = new ArrayList<>();
-		uris.add(targetURI);
-		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uris) && isSeriesContributor(user))
-				|| (isIndicatorManager(uris) && isIndicatorContributor(user)));
+		return (isAdmin(user) || isCnis(user) || (isSeriesManager(seriesOrIndicatorUri) && isSeriesContributor(user))
+				|| (isIndicatorManager(seriesOrIndicatorUri) && isIndicatorContributor(user)));
 	}
 
 	@Override
@@ -272,8 +270,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	private boolean canCreateFamilySeriesOrIndicator() {
-		User user = getUser();
-		return (isAdmin(user));
+		return isAdmin();
 	}
 
 	@Override
@@ -293,19 +290,17 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	@Override
-	public boolean canCreateSims(IRI targetURI) throws RmesException {
-		List<IRI> uris = new ArrayList<>();
-		uris.add(targetURI);
-		return canCreateSims(uris);
+	public boolean canCreateSims(IRI seriesOrIndicatorUri) throws RmesException {
+		User user = getUser();
+		return (isAdmin(user) || (isSeriesManager(seriesOrIndicatorUri) && isSeriesContributor(user))
+				|| (isIndicatorManager(seriesOrIndicatorUri) && isIndicatorContributor(user)));
 	}
 
 	@Override
-	public boolean canCreateSims(List<IRI> uris) throws RmesException {
-		User user = getUser();
-		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user))
-				|| (isIndicatorManager(uris) && isIndicatorContributor(user)));
+	public boolean canDeleteSims() throws RmesException {
+		return isAdmin();
 	}
-
+	
 	@Override
 	public boolean canModifyConcept(IRI uri) throws RmesException {
 		User user = getUser();
@@ -318,13 +313,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	@Override
 	public boolean canModifySeries(IRI uri) throws RmesException {
 		User user = getUser();
-		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uri) && isSeriesContributor(user)));
-	}
-
-	@Override
-	public boolean canModifySeries(List<IRI> uris) throws RmesException {
-		User user = getUser();
-		return (isAdmin(user) || isCnis(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
+		return ((isSeriesManager(uri) && isSeriesContributor(user)) || isAdmin(user) || isCnis(user) );
 	}
 
 	@Override
@@ -339,12 +328,6 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	}
 
 	@Override
-	public boolean canValidateSeries(List<IRI> uris) throws RmesException {
-		User user = getUser();
-		return (isAdmin(user) || (isSeriesManager(uris) && isSeriesContributor(user)));
-	}
-
-	@Override
 	public boolean canValidateOperation(IRI seriesURI) throws RmesException {
 		return canValidateSeries(seriesURI);
 	}
@@ -354,5 +337,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		User user = getUser();
 		return (isAdmin(user) || isSeriesContributor(user) || isIndicatorContributor(user));
 	}
+
+	
 
 }

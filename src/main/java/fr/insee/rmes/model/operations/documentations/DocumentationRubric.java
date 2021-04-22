@@ -5,15 +5,15 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 public class DocumentationRubric {
 
 	private String idAttribute;
 
-	//@JsonProperty( "value" )
-	//@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
-	//@JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY})
+	@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 	private List<String> value;
 
 	private String labelLg1;
@@ -22,6 +22,9 @@ public class DocumentationRubric {
 	private String rangeType;
 	private List<Document> documentsLg1;
 	private List<Document> documentsLg2;
+	
+	//Used for geography only
+	private String uri;
 	
 	
 	public String getIdAttribute() {
@@ -64,15 +67,16 @@ public class DocumentationRubric {
 		StringUtils.isEmpty(labelLg2) &&
 		StringUtils.isEmpty(codeList) &&
 		(documentsLg1 == null || documentsLg1.isEmpty()) &&
-		(documentsLg2 == null || documentsLg2.isEmpty());
+		(documentsLg2 == null || documentsLg2.isEmpty()) &&
+		StringUtils.isEmpty(uri);
 	}
 	
 	public boolean hasRichTextLg1() {
-		return StringUtils.isNotEmpty(getLabelLg1()) && (getDocumentsLg1() == null || getDocumentsLg1().isEmpty());
+		return StringUtils.isNotEmpty(getLabelLg1()) || (getDocumentsLg1() != null && !getDocumentsLg1().isEmpty());
 	}
 	
 	public boolean hasRichTextLg2() {
-		return StringUtils.isNotEmpty(getLabelLg2()) && (getDocumentsLg2() == null || getDocumentsLg2().isEmpty());
+		return StringUtils.isNotEmpty(getLabelLg2()) || (getDocumentsLg2() != null && !getDocumentsLg2().isEmpty());
 	}
 
 	public List<String> getValue() {
@@ -88,8 +92,8 @@ public class DocumentationRubric {
 		return value.get(0);
 	}
 
-	public void setValue(String value) {
-		List<String >val = new ArrayList<String>();
+	public void setSingleValue(String value) {
+		List<String >val = new ArrayList<>();
 		val.add(value);
 		this.value = val;
 	}
@@ -104,6 +108,12 @@ public class DocumentationRubric {
 	}
 	public void setDocumentsLg2(List<Document> documentsLg2) {
 		this.documentsLg2 = documentsLg2;
+	}
+	public String getUri() {
+		return uri;
+	}
+	public void setUri(String uri) {
+		this.uri = uri;
 	}
 
 }

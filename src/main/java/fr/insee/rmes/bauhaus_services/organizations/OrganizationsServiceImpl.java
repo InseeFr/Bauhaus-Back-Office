@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -75,18 +71,4 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 		return result;
 	}
 	
-	private Organization buildOrganizationFromJson(JSONObject organizationJson) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
-
-		Organization organization = new Organization();
-		try {
-			organization = mapper.readValue(organizationJson.toString(), Organization.class);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		return organization;
-	}
-
 }

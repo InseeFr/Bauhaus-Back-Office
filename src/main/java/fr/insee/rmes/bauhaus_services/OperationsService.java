@@ -1,8 +1,10 @@
 package fr.insee.rmes.bauhaus_services;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
@@ -45,12 +47,16 @@ public interface OperationsService {
 	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
 
 	String getSeriesWithSims() throws RmesException;
+
+	String getSeriesWithStamp(String stamp) throws RmesException;
 	
 	void setSeries(String id, String body) throws RmesException;
 
 	String createSeries(String body) throws RmesException;
 
 	String setSeriesValidation(String body) throws RmesException;
+
+	String getSeriesForSearchWithStamp(String stamp) throws RmesException;
 	
 	
 	/******************************************************************************************
@@ -127,20 +133,26 @@ public interface OperationsService {
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
-	Documentation getFullSims(String id) throws RmesException;
+	Documentation getFullSimsForXml(String id) throws RmesException;
 
+	String getFullSimsForJson(String id) throws RmesException;
+	
 	String createMetadataReport(String body) throws RmesException;
 
 	String setMetadataReport(String id, String body) throws RmesException;
 
 	String publishMetadataReport(String id) throws RmesException;
 	
-	Response exportMetadataReport(String id) throws RmesException;
+	Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
 
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;
 
+	String getMetadataReportDefaultValue() throws IOException;
 
+	Status deleteMetadataReport(String id) throws RmesException;
+
+	Response exportMetadataReportForLabel(String id) throws RmesException;
 
 }

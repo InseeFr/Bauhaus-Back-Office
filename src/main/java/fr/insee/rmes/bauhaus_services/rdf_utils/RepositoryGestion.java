@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -30,7 +31,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 @Component
 @DependsOn("AppContext")
@@ -114,22 +114,37 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.HAS_PART,object);
+	}
+	
+	public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
+			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.REPLACES,object);
+	}
+	
+	public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
+			throws RmesException {
+		return getStatementsPredicatObject(con, DCTERMS.IS_REPLACED_BY,object);
+	}
+	
+	
+	private RepositoryResult<Statement> getStatementsPredicatObject(RepositoryConnection con, IRI predicate, Resource object)
+			throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
-			statements = con.getStatements(null, DCTERMS.HAS_PART, object, false);
+			statements = con.getStatements(null, predicate, object, false);
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get hasPart statements : " + object);
+			throwsRmesException(e, "Failure get " +((SimpleIRI)predicate).toString() + " statements : " + object);
 		}
 		return statements;
 	}
 
-	public RepositoryResult<Statement> getMetadataReportStatements(RepositoryConnection con, Resource object,
-			Resource context) throws RmesException {
+	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
-			statements = con. getStatements(null, SDMX_MM.METADATA_REPORT_PREDICATE, object, true, context);
+			statements = con. getStatements(null, null, null,context); //get the complete Graph
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get MetadataReport statements : " + object);
+			throwsRmesException(e, "Failure get following graph : " + context);
 		}
 		return statements;
 	}

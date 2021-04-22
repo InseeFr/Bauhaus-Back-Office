@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +39,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 	}
 
 	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfOperationExists(RdfUtils.objectIRI(type, id).toString()));
+		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(((SimpleIRI)RdfUtils.objectIRI(type, id)).toString()));
 	}
 	
 	public String getValidationStatus(String id) throws RmesException{

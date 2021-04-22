@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -53,10 +54,10 @@ public class OperationPublication extends RdfService{
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				// Other URI to transform
-				if (st.getPredicate().toString().endsWith("isPartOf")) {
+				if (((SimpleIRI)st.getPredicate()).toString().endsWith("isPartOf")) {
 					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-				} else if (PublicationUtils.stringEndsWithItemFromList(st.getPredicate().toString(), ignoredAttrs)) {
+				} else if (PublicationUtils.stringEndsWithItemFromList(((SimpleIRI)st.getPredicate()).toString(), ignoredAttrs)) {
 					// nothing, wouldn't copy this attr
 				}
 				// Literals

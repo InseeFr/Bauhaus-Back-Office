@@ -3,10 +3,11 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 
-import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,10 +15,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +29,14 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.model.structures.Structure;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
@@ -50,7 +53,13 @@ public class StructureUtils extends RdfService {
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
 
     @Autowired
+    StructureComponent structureComponent;
+
+    @Autowired
     StructureComponentUtils structureComponentUtils;
+
+    @Autowired
+    StructurePublication structurePublication;
 
     public JSONArray formatStructuresForSearch(JSONArray structures) throws RmesException {
         for (int i = 0; i < structures.length(); i++) {
@@ -130,11 +139,10 @@ public class StructureUtils extends RdfService {
         validateStructure(structure);
         structure.setCreated(DateUtils.getCurrentDate());
         structure.setUpdated(DateUtils.getCurrentDate());
-
+        //structure.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         String id = generateNextId();
         structure.setId(id);
-
-        createRdfStructure(structure);
+        createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
         logger.info("Create Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId().replace(" ", "-").toLowerCase();
     }
@@ -154,6 +162,10 @@ public class StructureUtils extends RdfService {
         return prefix + (Integer.parseInt(id) + 1);
     }
 
+    private String getValidationStatus(String id) throws RmesException {
+        return repoGestion.getResponseAsObject(StructureQueries.getValidationStatus(id)).getString("state");
+    }
+
     public String setStructure(String id, String body) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(
@@ -171,7 +183,14 @@ public class StructureUtils extends RdfService {
         structure.setUpdated(DateUtils.getCurrentDate());
         IRI structureIri = RdfUtils.structureIRI(structure.getId());
         repoGestion.clearStructureNodeAndComponents(structureIri);
-        createRdfStructure(structure);
+
+        String status= getValidationStatus(id);
+        if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
+            createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
+        } else {
+            createRdfStructure(structure, ValidationStatus.MODIFIED);
+        }
+
         logger.info("Update Structure : {} - {}", structure.getId(), structure.getLabelLg1());
         return structure.getId();
     }
@@ -182,39 +201,61 @@ public class StructureUtils extends RdfService {
      * @throws RmesException
      */
 
-    public void createRdfStructure(Structure structure) throws RmesException {
+    public void createRdfStructure(Structure structure, ValidationStatus status) throws RmesException {
         String structureId = structure.getId();
         IRI structureIri = RdfUtils.structureIRI(structureId);
         Resource graph = RdfUtils.structureGraph();
 
-        createRdfStructure(structure, structureId, structureIri, graph);
+        createRdfStructure(structure, structureId, structureIri, graph, status);
     }
 
-    public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph) throws RmesException {
+    private void checkUnicityForStructure(Structure structure) throws RmesException {
+        List<ComponentDefinition> componentsWithoutId = structure.getComponentDefinitions().stream().filter((ComponentDefinition cd) -> {
+            return cd.getComponent().getId() == null;
+        }).collect(Collectors.toList());
+
+        if(componentsWithoutId.size() == 0){
+            String[] ids = structure.getComponentDefinitions().stream().map(cd -> {
+                return cd.getComponent().getId();
+            }).map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
+            Boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
+            if(structureWithSameComponents){
+                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
+                        "A structure with the same components already exists", "");
+            }
+        }
+    }
+    public void createRdfStructure(Structure structure, String structureId, IRI structureIri, Resource graph, ValidationStatus status) throws RmesException {
+
+        repoGestion.clearStructureNodeAndComponents(structureIri);
+
         Model model = new LinkedHashModel();
 
         model.add(structureIri, RDF.TYPE, QB.DATA_STRUCTURE_DEFINITION, graph);
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
-        model.add(structureIri, INSEE.IDENTIFIANT_METIER, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
+        model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
         model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
+        model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
         RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), Config.LG2, model, graph);
-        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleString(structureIri, DC.DESCRIPTION, structure.getDescriptionLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), Config.LG1, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), Config.LG2, model, graph);
 
+        RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
+        RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);
+        RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
-        createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), model, graph);
+        createRdfComponentSpecifications(structure, structureIri, structure.getComponentDefinitions(), model, graph);
 
         repoGestion.loadSimpleObject(structureIri, model, null);
     }
 
-    public void createRdfComponentSpecifications(IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
-        int nextID = getNextComponentSpecificationID();
+    public void createRdfComponentSpecifications(Structure structure, IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
         for (int i = 0; i < componentList.size(); i++) {
             ComponentDefinition componentDefinition = componentList.get(i);
             MutualizedComponent component = componentDefinition.getComponent();
@@ -231,9 +272,7 @@ public class StructureUtils extends RdfService {
                 componentDefinition.setCreated(DateUtils.getCurrentDate());
             }
             componentDefinition.setModified(DateUtils.getCurrentDate());
-            if (componentDefinition.getId() == null) {
-                componentDefinition.setId("cs" + (nextID + i) );
-            }
+            componentDefinition.setId("cs" + (1000 + i) );
             createRdfComponentSpecification(structureIRI, model, componentDefinition, graph);
         }
     }
@@ -247,7 +286,7 @@ public class StructureUtils extends RdfService {
 
         IRI componentSpecificationIRI;
 
-        componentSpecificationIRI = getComponentDefinitionIRI(structureIRI.toString(), componentDefinition.getId());
+        componentSpecificationIRI = getComponentDefinitionIRI(((SimpleIRI)structureIRI).toString(), componentDefinition.getId());
 
 
         model.add(structureIRI, QB.COMPONENT, componentSpecificationIRI, graph);
@@ -277,32 +316,17 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentIRI, graph);
         }
         MutualizedComponent component = componentDefinition.getComponent();
-        if (component.getType().equals(QB.DIMENSION_PROPERTY.toString())) {
+        if (component.getType().equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
 
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
-        if (component.getType().equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+        if (component.getType().equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
             model.add(componentSpecificationIRI, QB.ATTRIBUTE, getAttributeIRI(component.getId()), graph);
             model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
         }
-        if (component.getType().equals(QB.MEASURE_PROPERTY.toString())) {
+        if (component.getType().equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
-    }
-
-    public int getNextComponentSpecificationID() throws RmesException {
-
-        logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastIdForComponentDefinition());
-        logger.debug("JSON when generating the id of a component : {}", json);
-        if (json.length() == 0) {
-            return 1000;
-        }
-        String id = json.getString(Constants.ID);
-        if (id.equals(Constants.UNDEFINED)) {
-            return 1000;
-        }
-        return (Integer.parseInt(id) + 1);
     }
 
     public IRI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {
@@ -321,7 +345,8 @@ public class StructureUtils extends RdfService {
         return RdfUtils.structureComponentAttributeIRI(id);
     }
 
-    private void validateStructure(Structure structure) {
+    private void validateStructure(Structure structure) throws RmesException {
+        checkUnicityForStructure(structure);
         if (structure.getId() == null) {
             throw new BadRequestException("The property identifiant is required");
         }
@@ -337,5 +362,46 @@ public class StructureUtils extends RdfService {
         IRI structureIri = RdfUtils.structureIRI(structureId);
         repoGestion.clearStructureNodeAndComponents(structureIri);
         repoGestion.deleteObject(structureIri, null);
+    }
+
+    public String publishStructure(JSONObject structure) throws RmesException {
+        if(structure.isNull("creator") || "".equals(structure.getString("creator"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+        }
+
+        if(structure.isNull("disseminationStatus") || "".equals(structure.getString("disseminationStatus"))){
+            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+        }
+
+        String id = structure.getString("id");
+        JSONArray ids = repoGestion.getResponseAsArray(StructureQueries.getUnValidatedComponent(id));
+        for (int i = 0; i < ids.length(); i++) {
+            String idComponent = ((JSONObject) ids.get(i)).getString("id");
+            try {
+                structureComponent.publishComponent(idComponent);
+            } catch (RmesException e) {
+                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_PUBLICATION_VALIDATED_COMPONENT, "The component " + idComponent + " component can not be published", new JSONArray());
+            }
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        Structure structureObject = new Structure(id);
+        try {
+            structureObject = mapper.readerForUpdating(structureObject).readValue(structure.toString());
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+        }
+
+        IRI structureIri = RdfUtils.structureIRI(structureObject.getId());
+
+        this.structurePublication.publish(structureIri);
+
+        structureObject.setUpdated(DateUtils.getCurrentDate());
+        repoGestion.clearStructureNodeAndComponents(structureIri);
+        createRdfStructure(structureObject, ValidationStatus.VALIDATED);
+
+        return structure.toString();
     }
 }

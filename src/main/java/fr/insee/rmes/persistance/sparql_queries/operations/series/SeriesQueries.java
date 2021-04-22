@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -20,6 +21,8 @@ public class SeriesQueries {
 	static Map<String, Object> params;
 	
 	private static final String ID_SERIES = "ID_SERIES";
+	private static final String PRODUCTS_GRAPH = "PRODUCTS_GRAPH";
+	private static final String STAMP = "STAMP";
 	private static final String URI_SERIES = "URI_SERIES";
 	private static final String ORGANIZATIONS_GRAPH = "ORGANIZATIONS_GRAPH";
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
@@ -36,11 +39,16 @@ public class SeriesQueries {
 		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
 	}
 
-	public static String getSeriesForSearch() {
+	public static String getSeriesForSearch(String stamp) {
 		variables = null;
 		whereClause = null;
 		getSimpleAttr(null);
 		getCodesLists();
+		
+		if (stamp != null) {
+			addClauseToWhereClause(" ?series dc:creator ?crea ."
+					+ " FILTER (str(?crea) = '" + stamp + "' )  .  \n ");
+		}
 
 		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
 	}
@@ -159,6 +167,7 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
 	}
 	
+	
 	/**
 	 * @param idSeries
 	 * @return String
@@ -170,17 +179,6 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByIdQuery.ftlh", params);	
 	}
 	
-	/**
-	 * @param idSeries
-	 * return publishers id (publishers are organizations)
-	 * @return String
-	 * @throws RmesException
-	 */	
-	public static String getPublishers(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
-		params.put(ID_SERIES, idSeries);
-		return buildSeriesRequest("getSeriesPublishersQuery.ftlh", params);	
-	}
 	
 	/**
 	 * @param idSeries
@@ -201,6 +199,7 @@ public class SeriesQueries {
 	public static String getOperations(String idSeries) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
+		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);	
 	}
 	
@@ -209,10 +208,14 @@ public class SeriesQueries {
 	 * @return String
 	 * @throws RmesException
 	 */	
-	public static String seriesLinks(String idSeries, IRI linkPredicate) throws RmesException {
+	public static String seriesLinks(String idSeries, IRI linkPredicate, String resultType) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
 		params.put(LINK_PREDICATE, linkPredicate);
+		if(Constants.ORGANIZATIONS.equals(resultType)) {
+			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
+		}
+		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);		
 		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);	
 	}
 	
@@ -227,6 +230,18 @@ public class SeriesQueries {
 	}
 	
 	/**
+	 * @param stamp
+	 * @return String
+	 * @throws RmesException
+	 */	
+	public static String seriesWithStampQuery(String stamp) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(STAMP, stamp);
+		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);	
+	}
+	
+	
+	/**
 	 * @return String
 	 * @throws RmesException
 	 */	
@@ -235,4 +250,6 @@ public class SeriesQueries {
 		params.put("withSims", "false");
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
+
+
 }

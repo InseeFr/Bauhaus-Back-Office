@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<parameters>
+	<languages>
+		<language id="Fr">1</language>
+		<language id="En">2</language>
+	</languages>
+	<IncludeEmptyMas>true</IncludeEmptyMas>
+</parameters>
+
+

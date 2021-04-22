@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import java.io.IOException;
 
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -10,6 +11,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -67,7 +69,15 @@ public class OperationsUtils extends RdfService{
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
+		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(series.getString("id")));
+		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
+	}
+	
+	public IRI getSeriesUri(String idOperation) throws RmesException{
+		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
+		if (series != null && series.has("id"))		return RdfUtils.objectIRI(ObjectType.SERIES, series.getString("id"));
+		return null;
 	}
 
 	private Operation buildOperationFromJson(JSONObject operationJson) {
@@ -98,22 +108,6 @@ public class OperationsUtils extends RdfService{
 		}
 		return operation;
 	}
-
-	private Operation buildOperationFromJson2(JSONObject operationJson) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-
-		String id = famOpeSerIndUtils.createId();
-		Operation operation = new Operation();
-
-		try {
-			operation = mapper.readValue(operationJson.toString(), Operation.class);
-			operation.id = id;
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		return operation;
-	}
-
 
 	/**
 	 * CREATE
@@ -161,7 +155,6 @@ public class OperationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String id, String body) throws RmesException {
-
 		IRI seriesURI=getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
@@ -213,6 +206,7 @@ public class OperationsUtils extends RdfService{
 	public String setOperationValidation(String id)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
+		//TODO: check : is it the Series id or the Ope id ?
 		IRI seriesURI = getSeriesUri(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
@@ -232,9 +226,7 @@ public class OperationsUtils extends RdfService{
 		return id;
 	}
 
-	private IRI getSeriesUri(String id){
-		return RdfUtils.objectIRI(ObjectType.SERIES, id);
-	}
+
 
 	public MSD getMSD() throws RmesException {
 		//		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();		

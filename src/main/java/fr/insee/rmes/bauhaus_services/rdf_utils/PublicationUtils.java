@@ -15,10 +15,11 @@ public abstract class PublicationUtils {
 	}
 
 	public static Resource tranformBaseURIToPublish(Resource resource) {
+		if (!resource.toString().contains(Config.BASE_URI_GESTION)) return resource;
 		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
 		return RdfUtils.toURI(newResource);
 	}
-
+	
 	public static boolean stringEndsWithItemFromList(String inputStr, String[] items) {
 		return Arrays.stream(items).parallel().anyMatch(inputStr::endsWith);
 	}

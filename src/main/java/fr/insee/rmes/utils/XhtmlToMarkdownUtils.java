@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.parser.ParserEmulationProfile;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
 
@@ -17,6 +18,7 @@ public class XhtmlToMarkdownUtils {
 		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().size()==0) {
 			optionsXhtmlToMd = new MutableDataSet();
 			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE,true);
+			//optionsXhtmlToMd.set(FlexmarkHtmlConverter.LISTS_END_ON_DOUBLE_BLANK,true);
 		}
 	}
 	
@@ -30,7 +32,13 @@ public class XhtmlToMarkdownUtils {
 	}
 	
     public static String markdownToXhtml(String md) {
+    	if (md == "") return md;
         MutableDataSet options = new MutableDataSet();
+        options.set(FlexmarkHtmlConverter.LISTS_END_ON_DOUBLE_BLANK,true);
+        options.setFrom(ParserEmulationProfile.MARKDOWN);
+        
+        //convert soft-breaks to hard breaks
+        options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
 
         Parser parser = Parser.builder(options).build();
         HtmlRenderer renderer = HtmlRenderer.builder(options).build();

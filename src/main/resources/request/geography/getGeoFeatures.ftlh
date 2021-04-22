@@ -1,24 +1,25 @@
-SELECT DISTINCT ?id ?uri ?labelLg1 ?labelLg2 ?code ?typeTerritory ?dateCreation ?dateSuppression ?hasComposition
+SELECT DISTINCT ?id ?uri ?labelLg1 ?labelLg2 ?code ?typeTerritory 
+ ?dateCreation ?dateSuppression ?hasComposition
 FROM <${COG_GRAPH}>
 FROM <${GEO_SIMS_GRAPH}>
  WHERE { 
-		{	?uri igeo:nom ?labelLg1 ;
-				 igeo:codeINSEE ?code .
+		{	?uri igeo:nom ?labelLg1 .
+			?uri igeo:codeINSEE ?code .
 
 			OPTIONAL {
-				?evenementCreation igeo:creation ?uri ;
-					               igeo:date ?dateCreation .
+				?evntCreation igeo:creation ?uri .
+				?evntCreation igeo:date ?dateCreation .
 			}
 			OPTIONAL {
-				?evenementSuppression igeo:suppression ?uri ;
-					                  igeo:date ?dateSuppression.
+				?evntSuppression igeo:suppression ?uri .
+				?evntSuppression igeo:date ?dateSuppression.
 			}
 
 			OPTIONAL {
 				?uri a ?typeTerritoryUri .
 				BIND(STRAFTER(str(?typeTerritoryUri),"geo#") AS ?typeTerritory)
 			}
-			FILTER (!BOUND(?typeTerritory) || ?typeTerritory IN ("Region","Departement","Etat"))
+			FILTER (!BOUND(?typeTerritory) || ?typeTerritory IN ("Region","Departement"))
 
 	} 
 	UNION

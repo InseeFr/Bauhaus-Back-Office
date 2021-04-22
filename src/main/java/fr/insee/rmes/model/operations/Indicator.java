@@ -1,6 +1,7 @@
 package fr.insee.rmes.model.operations;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -10,6 +11,8 @@ import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class Indicator {
+
+
 
 	@Schema(description = "Id", required = true)
 	public String id;
@@ -171,10 +174,6 @@ public class Indicator {
 		return creators;
 	}
 
-//	public void setPublishers(OperationsLink[] publishers) {
-//		this.publishers = Arrays.asList(publishers);
-//	}
-	
 	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}
@@ -250,8 +249,35 @@ public class Indicator {
 	public void setId(String id) {
 		this.id = id;
 	}
-//
-//	public void setPublishers(List<OperationsLink> publishers) {
-//		this.publishers = publishers;
-//	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(abstractLg1, abstractLg2, accrualPeriodicityCode, accrualPeriodicityList, altLabelLg1,
+				altLabelLg2, contributors, creators, historyNoteLg1, historyNoteLg2, id, idSims, isReplacedBy,
+				prefLabelLg1, prefLabelLg2, publishers, replaces, seeAlso, wasGeneratedBy);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Indicator other = (Indicator) obj;
+		return Objects.equals(abstractLg1, other.abstractLg1) && Objects.equals(abstractLg2, other.abstractLg2)
+				&& Objects.equals(accrualPeriodicityCode, other.accrualPeriodicityCode)
+				&& Objects.equals(accrualPeriodicityList, other.accrualPeriodicityList)
+				&& Objects.equals(altLabelLg1, other.altLabelLg1) && Objects.equals(altLabelLg2, other.altLabelLg2)
+				&& Objects.equals(contributors, other.contributors) && Objects.equals(creators, other.creators)
+				&& Objects.equals(historyNoteLg1, other.historyNoteLg1)
+				&& Objects.equals(historyNoteLg2, other.historyNoteLg2) && Objects.equals(id, other.id)
+				&& Objects.equals(idSims, other.idSims) && Objects.equals(isReplacedBy, other.isReplacedBy)
+				&& Objects.equals(prefLabelLg1, other.prefLabelLg1) && Objects.equals(prefLabelLg2, other.prefLabelLg2)
+				&& Objects.equals(publishers, other.publishers) && Objects.equals(replaces, other.replaces)
+				&& Objects.equals(seeAlso, other.seeAlso) && Objects.equals(wasGeneratedBy, other.wasGeneratedBy);
+	}
+
+
 }

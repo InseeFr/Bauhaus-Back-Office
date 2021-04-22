@@ -90,7 +90,7 @@ xkos [http://rdf-vocabulary.ddialliance.org/xkos\#](http://rdf-vocabulary.ddiall
 | Date | dcterms:issued |  | Date de publication d'une changeNote – Applicable aux objets \(instance de xkos:ExplanatoryNote\) des prédicats skos:changeNote \(datée, mais non versionnée\) |
 | NumeroVersion | pav:version |  | Applicable aux objets \(instance de xkos:ExplanatoryNote\) des prédicats skos:scopeNote, skos:definition, xkos:exclusionNote |
 | TexteNote | xkos:plainText | Contenu de la note \(texte brut\) |  |
-| Version | Insee:conceptVersion | Version du concept à laquelle la note se rattache |  |
-| Langue | Dctermes:language | Fr ou en |  |
-| TexteNote | Evoc:noteLiteral | Contenu de la note en xhtml |  |
+| Version | insee:conceptVersion | Version du concept à laquelle la note se rattache |  |
+| Langue | dcterms:language | Fr ou en |  |
+| TexteNote | evoc:noteLiteral | Contenu de la note en xhtml |  |
 

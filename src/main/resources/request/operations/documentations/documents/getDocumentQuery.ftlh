@@ -1,4 +1,4 @@
-SELECT ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
+SELECT distinct ?id ?uri ?url ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?updatedDate ?lang
 	FROM <${DOCUMENTS_GRAPH}>
 
 <#if idSims != "">
@@ -11,7 +11,7 @@ WHERE {
 	 ?text rdf:type dcmitype:Text .
 	 ?text insee:additionalMaterial ?uri . 
 	 <#if LANG != "">
-	 	FILTER(EXISTS{?text dcterms:language <${LANG}>})
+	 	?text dcterms:language <${LANG}> .
 	 </#if>
 </#if>	
 
@@ -38,9 +38,12 @@ WHERE {
 	 
 <#if id != "">
 		FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = '${id}')
-</#if>	 
+	    BIND('${id}' AS ?id) .
+<#else>
+	    BIND(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) AS ?id) .
+</#if>
 
-<#if idSims != "">
+<#if idRubric != "">
 	FILTER(REGEX(STR(?text), '${idRubric}')) 
 </#if>	
 <#if type != "">

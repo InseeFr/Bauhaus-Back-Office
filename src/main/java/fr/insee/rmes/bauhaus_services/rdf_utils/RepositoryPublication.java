@@ -154,14 +154,34 @@ public class RepositoryPublication extends RepositoryUtils{
 			conn.remove(resource, null, null);
 			conn.add(model);
 			conn.close();
-			logger.info("Publication of {} : {}" ,type, resource);
+			logger.info("Publication of Resource {} : {}" ,type, resource);
 		} catch (RepositoryException e) {
-			logger.error("Publication of {} : {} {}" ,type, resource, FAILED);
+			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
 			logger.error("{} {} {}", CONNECTION_TO, repo, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
+	
+	public static void publishContext(Resource graph, Model model, String type) throws RmesException {
+		publishContext(graph, model, type, REPOSITORY_PUBLICATION_INTERNE);
+		publishContext(graph, model, type, REPOSITORY_PUBLICATION);
+	}
+	
+	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
+		if (repo == null) {return ;}
 
+		try {
+			RepositoryConnection conn = repo.getConnection();
+			conn.clear(context);
+			conn.add(model);
+			conn.close();
+			logger.info("Publication of Graph {} : {}" ,type, context);
+		} catch (RepositoryException e) {
+			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
+			logger.error("{} {} {}", CONNECTION_TO, repo, FAILED);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+		}
+	}
 	
 	
 	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {

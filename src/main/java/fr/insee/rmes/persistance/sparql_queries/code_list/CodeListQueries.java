@@ -7,10 +7,20 @@ import fr.insee.rmes.exceptions.RmesException;
 import java.util.HashMap;
 
 public class CodeListQueries {
+
+	public static String isCodesListValidated(String codesListUri) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("IRI", codesListUri);
+		return FreeMarkerUtils.buildRequest("codes-list/", "isCodesListValidated.ftlh", params);
+	}
+
 	public static String getAllCodesLists() throws RmesException {
 
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {
@@ -62,21 +72,13 @@ public class CodeListQueries {
 				+ "?uri skos:notation '"+notationCode +"' . \n"
 				+ " }}";
 	}
-	
-	public static String getCodeListNotationByUri(String uri) {
-		return "SELECT ?notation \n"
-				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
-						
-				+ "    OPTIONAL {<"+uri+"> rdfs:seeAlso ?codeListCS . \n" 
-				+ "      ?codeListCS rdf:type skos:ConceptScheme . \n"
-				+"       ?codeListCS skos:notation ?notation "
-				+ "		} \n"
-				
-				+ "    OPTIONAL {<"+uri+"> rdf:type skos:ConceptScheme . \n"
-				+"      <"+uri+"> skos:notation ?notation "
-				+ "		} \n"
-		
-				+ " }}";
-	}
 
+	public static String geCodesListByIRI(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODE_LIST", id);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getCodeListByIRI.ftlh", params);
+	}
 }

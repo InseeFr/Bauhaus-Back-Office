@@ -1,4 +1,4 @@
-WITH <${uriGraph}>
+WITH <${DOCUMENTS_GRAPH}>
 
 DELETE {
 	?uri <http://schema.org/url> ?url .
@@ -11,7 +11,7 @@ WHERE 	{
 }
 ;
 
-WITH <${uriGraph}>
+WITH <${DOCUMENTS_GRAPH}>
 
 INSERT {
 	?uri <http://schema.org/url> <${newUrl}>

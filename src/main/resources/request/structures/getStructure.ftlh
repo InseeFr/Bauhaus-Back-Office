@@ -1,19 +1,36 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified
+SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?modified ?creator ?contributor ?disseminationStatus ?validationState
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?structure dcterms:identifier "${ID}" ;
-               insee:identifiantMetier ?identifiant ;
+               skos:notation ?identifiant ;
                rdfs:label ?labelLg1 ;
                rdfs:label ?labelLg2 .
     FILTER (lang(?labelLg1) = '${LG1}')
     FILTER (lang(?labelLg2) = '${LG2}')
 
     OPTIONAL {
+        ?structure insee:disseminationStatus ?disseminationStatus .
+    } .
+
+    OPTIONAL {
         ?structure dcterms:created ?created .
     } .
 
     OPTIONAL {
+        ?structure dc:creator ?creator .
+    } .
+
+    OPTIONAL {
+        ?structure dc:contributor ?contributor .
+    } .
+
+    OPTIONAL {
+
         ?structure dcterms:modified ?modified .
+    } .
+
+    OPTIONAL {
+        ?structure insee:validationState ?validationState
     } .
 
     OPTIONAL {

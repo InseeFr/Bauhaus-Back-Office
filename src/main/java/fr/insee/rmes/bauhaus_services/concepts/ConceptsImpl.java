@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,6 +32,7 @@ import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.FilesUtils;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -83,7 +85,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Override
 	public String getRelatedConcepts(String id)  throws RmesException{
-		String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT,id).toString();
+		String uriConcept = ((SimpleIRI)RdfUtils.objectIRI(ObjectType.CONCEPT,id)).toString();
 		JSONArray resQuery = conceptsUtils.getRelatedConcepts(uriConcept);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -96,7 +98,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */	
 	@Override
 	public String deleteConcept(String id) throws RmesException {
-		String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT,id).toString();
+		String uriConcept = ((SimpleIRI)RdfUtils.objectIRI(ObjectType.CONCEPT,id)).toString();
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
 		/* check concept isn't used in several graphs */
@@ -237,7 +239,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		InputStream is = jasper.exportConcept(concept, acceptHeader);
-		String fileName = concept.getString(Constants.PREF_LABEL_LG1) + jasper.getExtension(acceptHeader);
+		String fileName = FilesUtils.cleanFileNameAndAddExtension(concept.getString(Constants.PREF_LABEL_LG1), jasper.getExtension(acceptHeader)) ;
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		return Response.ok(is, acceptHeader)
 				.header("Content-Disposition", content)

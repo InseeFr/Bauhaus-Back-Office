@@ -25,6 +25,9 @@
 	<!-- Organizations' list -->
 	<xsl:param name="orga" />
 	<xsl:param name="organizations" select="document($orga)" />
+	<!-- Code lists -->
+	<xsl:param name="codeList" />
+	<xsl:param name="codeLists" select="document($codeList)" />
 	<!-- MSD -->
 	<xsl:param name="msd" />
 	<xsl:param name="fileMsd" select="document($msd)" />
@@ -142,6 +145,75 @@
 					<style:text-properties fo:font-size="14pt"
 						fo:font-weight="bold" fo:color="#ffffff" />
 				</style:style>
+
+				<text:list-style style:name="L1">
+					<text:list-level-style-bullet
+						text:bullet-char="•" text:style-name="Bullet_20_Symbols"
+						text:level="1">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="1.27cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="1.27cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-bullet>
+					<text:list-level-style-bullet
+						text:bullet-char="◦" text:style-name="Bullet_20_Symbols"
+						text:level="2">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="1.905cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="1.905cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-bullet>
+					<text:list-level-style-bullet
+						text:bullet-char="▪" text:style-name="Bullet_20_Symbols"
+						text:level="3">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="2.54cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="2.54cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-bullet>
+				</text:list-style>
+
+				<text:list-style style:name="L2">
+					<text:list-level-style-number
+						text:style-name="Numbering_20_Symbols" text:level="1"
+						style:num-format="1" style:num-suffix=".">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="1.27cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="1.27cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-number>
+					<text:list-level-style-number
+						text:style-name="Numbering_20_Symbols" text:level="2"
+						style:num-format="1" style:num-suffix=".">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="1.905cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="1.905cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-number>
+					<text:list-level-style-number
+						text:style-name="Numbering_20_Symbols" text:level="3"
+						style:num-format="1" style:num-suffix=".">
+						<style:list-level-properties
+							text:list-level-position-and-space-mode="label-alignment">
+							<style:list-level-label-alignment
+								fo:margin-left="2.54cm" fo:text-indent="-0.635cm"
+								text:list-tab-stop-position="2.54cm" text:label-followed-by="listtab" />
+						</style:list-level-properties>
+					</text:list-level-style-number>
+				</text:list-style>
+
+
+				<!-- Mise en forme paragraphes -->
 				<style:style style:name="TitleFr" style:family="paragraph"
 					style:class="chapter">
 					<style:paragraph-properties
@@ -170,8 +242,6 @@
 					<style:paragraph-properties
 						fo:text-align="left" fo:margin-top="1cm"
 						style:justify-single-word="false" />
-					<!-- <style:text-properties fo:font-size="14pt" -->
-					<!-- fo:font-weight="bold" fo:color="blue" /> -->
 					<style:text-properties officeooo:rsid="0015b432"
 						style:font-weight-complex="bold" style:font-size-complex="10pt"
 						style:font-weight-asian="bold" style:font-size-asian="10pt"
@@ -198,6 +268,17 @@
 					<style:text-properties fo:font-size="10pt"
 						fo:font-weight="normal" fo:color="black" />
 				</style:style>
+				<style:style style:name="Bold" style:family="text">
+					<style:text-properties
+						style:font-weight-complex="bold" style:font-weight-asian="bold"
+						fo:font-weight="bold" />
+				</style:style>
+				<style:style style:name="Italic" style:family="text">
+					<style:text-properties
+						style:font-weight-complex="normal" style:font-weight-asian="normal"
+						fo:font-weight="normal" style:font-style-complex="italic"
+						style:font-style-asian="italic" fo:font-style="italic" />
+				</style:style>
 			</office:automatic-styles>
 
 
@@ -215,15 +296,13 @@
 					</text:sequence-decls>
 
 					<text:p>
-						<xsl:value-of select="'xsl:version: '" />
-						<xsl:value-of select="system-property('xsl:version')" />
+						<!-- <xsl:value-of select="'xsl:version: '" /> -->
+						<!-- <xsl:value-of select="system-property('xsl:version')" /> -->
 						<!-- <xsl:value-of select="$organizations"/> -->
-						<xsl:value-of select="$fileTarget//prefLabelLg1" />
-						<xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'">
-							<xsl:value-of select="labelLg1" />
-						</xsl:if>
-						<!-- <xsl:value-of select="$organizations/ArrayList/item[id = 'DG75-F110']/labelLg1)" 
-							/> -->
+						<!-- <xsl:value-of select="$fileTarget//prefLabelLg1" /> -->
+						<!-- <xsl:if test="$organizations/ArrayList/item/id = 'DG75-F110'"> -->
+						<!-- <xsl:value-of select="labelLg1" /> -->
+						<!-- </xsl:if> -->
 
 					</text:p>
 					<!-- <text:p> -->
@@ -283,7 +362,7 @@
 									<table:table-column />
 									<table:table-row>
 										<xsl:variable name="rangeType"
-											select="upper-case($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/rangeType)" />
+											select="upper-case(($rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/rangeType)[1])" />
 										<!-- select="upper-case($rootVar/Documentation/rubrics/rubrics[idAttribute 
 											= $mas]/rangeType[1])" /> -->
 										<table:table-cell table:style-name="framedCell">
@@ -291,39 +370,43 @@
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg1" />
-
+												-
+												<xsl:value-of select="$rangeType" />
 											</text:p>
-											<xsl:value-of select="$rangeType" />
-											<text:p text:style-name="RubricItem">
-												<xsl:choose>
-													<xsl:when test="$rangeType='GEOGRAPHY'">
+
+
+											<xsl:choose>
+												<xsl:when test="$rangeType='GEOGRAPHY'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/labelLg1)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='CODE_LIST'">
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='CODE_LIST'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='RICH_TEXT'">
-
-														<xsl:call-template name="richText">
-															<xsl:with-param name="text"
-																select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
-														</xsl:call-template>
-
-
-														<!-- <xsl:value-of -->
-														<!-- select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute -->
-														<!-- = $mas]/labelLg1)" /> -->
-													</xsl:when>
-													<xsl:when test="$rangeType='TEXT'">
+															select="local:codeListLg1($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='RICH_TEXT'">
+													<xsl:call-template name="richText">
+														<xsl:with-param name="text"
+															select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg1" />
+													</xsl:call-template>
+												</xsl:when>
+												<xsl:when test="$rangeType='TEXT'">
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
 														= $mas]/labelLg1)" />
-													</xsl:when>
-													<xsl:when test="$rangeType='ORGANIZATION'">
+													</text:p>
+												</xsl:when>
+												<xsl:when test="$rangeType='ORGANIZATION'">
+													<text:p text:style-name="RubricItem">
 														<xsl:variable name='orgaStamp'
 															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/value" />
 														<xsl:variable name='lab'
@@ -331,24 +414,23 @@
 														<xsl:variable name='altLab'
 															select="$organizations/ArrayList/item[id = $orgaStamp]/altLabel" />
 														<xsl:value-of select="local:prepOrgaLg1($orgaStamp,$lab,$altLab)" />
-													</xsl:when>
-													<xsl:otherwise>
+													</text:p>
+												</xsl:when>
+												<xsl:otherwise>
+													<text:p text:style-name="RubricItem">
 														<xsl:value-of
 															select="$rootVar/Documentation/rubrics/rubrics[idAttribute = $mas]/labelLg1" />
-													</xsl:otherwise>
-												</xsl:choose>
-												<!-- <xsl:apply-templates -->
-												<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
-													= $mas]" /> -->
+													</text:p>
+												</xsl:otherwise>
+											</xsl:choose>
 
-											</text:p>
 										</table:table-cell>
+
 										<table:table-cell table:style-name="framedCell">
 											<text:p text:style-name="attribute">
 												<xsl:value-of select="$mas" />
 												-
 												<xsl:value-of select="masLabelLg2" />
-
 											</text:p>
 											<xsl:value-of select="$rangeType" />
 											<text:p text:style-name="RubricItem">
@@ -360,13 +442,20 @@
 													</xsl:when>
 													<xsl:when test="$rangeType='CODE_LIST'">
 														<xsl:value-of
-															select="local:prepText($rootVar/Documentation/rubrics/rubrics[idAttribute 
-														= $mas]/value)" />
+															select="local:codeListLg2($rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/value,$rootVar/Documentation/rubrics/rubrics[idAttribute 
+														= $mas]/codeList)" />
 													</xsl:when>
 													<xsl:when test="$rangeType='RICH_TEXT'">
-														<!-- <xsl:value-of -->
-														<!-- select="local:prepRichText($rootVar/Documentation/rubrics/rubrics[idAttribute -->
-														<!-- = $mas]/labelLg2)" /> -->
+														<!-- English Rich Text Found -->
+														<!-- <xsl:copy-of -->
+														<!-- select="$rootVar/Documentation/rubrics/rubrics[idAttribute -->
+														<!-- = $mas]/labelLg2" /> -->
+														<xsl:call-template name="richText">
+															<xsl:with-param name="text"
+																select="$rootVar/Documentation/rubrics/rubrics[idAttribute 
+															= $mas]/labelLg2" />
+														</xsl:call-template>
 													</xsl:when>
 													<xsl:when test="$rangeType='TEXT'">
 														<xsl:value-of
@@ -408,8 +497,6 @@
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:for-each>
-
-
 
 				</office:text>
 			</office:body>
@@ -485,16 +572,15 @@
 						<xsl:value-of select="$fileSeries/Series/historyNoteLg1"></xsl:value-of>
 					</text:p>
 					<text:p text:style-name="attribute">
-						<xsl:value-of select="'Type d'"></xsl:value-of>
-						&apos;
-						<xsl:value-of select="'opération'" />
+<!-- 						<xsl:value-of select="'Type d'"></xsl:value-of> -->
+<!-- 						&apos; -->
+<!-- 						<xsl:value-of select="'opération'" /> -->
+						<xsl:value-of select="'Type d''opération'" />
 					</text:p>
 					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modalité
-							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
-							de la liste de codes:
-							<xsl:value-of select="$fileSeries/Series/typeList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg1($fileSeries/Series/typeCode,$fileSeries/Series/typeList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -502,10 +588,8 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/accrualPeriodicityCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modalité
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityCode"></xsl:value-of>
-							de la liste de codes:
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg1($fileSeries/Series/typeCode,$fileSeries/Series/accrualPeriodicityList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -647,10 +731,8 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/typeCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modality
-							<xsl:value-of select="$fileSeries/Series/typeCode"></xsl:value-of>
-							of code-list:
-							<xsl:value-of select="$fileSeries/Series/typeList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg2($fileSeries/Series/typeCode,$fileSeries/Series/typeList)"></xsl:value-of>
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -658,10 +740,9 @@
 					</text:p>
 					<xsl:if test="$fileSeries/Series/accrualPeriodicityCode!=''">
 						<text:p text:style-name="RubricItem">
-							Modality
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityCode"></xsl:value-of>
-							of code-list:
-							<xsl:value-of select="$fileSeries/Series/accrualPeriodicityList"></xsl:value-of>
+							<xsl:value-of
+								select="local:codeListLg2($fileSeries/Series/typeCode,$fileSeries/Series/accrualPeriodicityList)"></xsl:value-of>
+
 						</text:p>
 					</xsl:if>
 					<text:p text:style-name="attribute">
@@ -963,6 +1044,21 @@
 		</table:table>
 	</xsl:template>
 
+	<xsl:function name="local:codeListLg1" as="xs:string?">
+		<xsl:param name="modality" as="xs:string?" />
+		<xsl:param name="oneCodeList" as="xs:string?" />
+		<xsl:sequence
+			select="$codeLists/codelist/CodeList[notation=$oneCodeList]/codes/codes[code=$modality]/labelLg1" />
+	</xsl:function>
+
+	<xsl:function name="local:codeListLg2" as="xs:string?">
+		<xsl:param name="modality" as="xs:string?" />
+		<xsl:param name="oneCodeList" as="xs:string?" />
+		<xsl:sequence
+			select="$codeLists/codelist/CodeList[notation=$oneCodeList]/codes/codes[code=$modality]/labelLg2" />
+	</xsl:function>
+
+
 	<xsl:function name="local:prepText" as="xs:string?">
 		<xsl:param name="arg" as="xs:string?" />
 
@@ -974,8 +1070,10 @@
  " />
 	</xsl:function>
 
-	<xsl:function name="local:prepRichText" as="xs:string?"
-		xmlns:functx="http://www.functx.com">
+	<!-- <xsl:function name="local:prepRichText" as="xs:string?"> -->
+	<xsl:function name="local:prepRichText" as="element()*">
+
+
 		<xsl:param name="arg" as="xs:string?" />
 
 		<!-- <xsl:variable name="newtext"> -->
@@ -986,36 +1084,284 @@
 
 
 		<xsl:variable name="newtext"
-			select="concat('&lt;html&gt;',$arg,'&lt;/html&gt;')" />
+			select="concat('&lt;html&gt;',replace(replace($arg,'\s+$',''),'^\s+',''),'&lt;/html&gt;')" />
 
 		<!-- <xsl:variable name="myVar" select="saxon:evaluate($newtext)" -->
 		<!-- as="node()" /> -->
 		<!-- <xsl:value-of select="saxon:evaluate($newtext)" /> -->
-		<xsl:variable name="myVar" select="unparsed-text($newtext)" />
+		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" /> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)" as="node()"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text($newtext)"/> -->
 		<!-- <xsl:variable name="myVar" select="unparsed-text('&lt;p&gt;blabla&lt;/p&gt;')"/> -->
 		<!-- <xsl:variable name="myVar" select="'coucou'"/> -->
 		<!-- <xsl:copy-of select="unparsed-text($newtext)" /> -->
-		<xsl:sequence select="$myVar" />
+		<!-- <xsl:sequence select="$myVar" /> -->
 		<!-- <xsl:sequence select="$newtext" /> -->
+		<xsl:element name="html">
+			<xsl:copy-of select="replace(replace($arg,'\s+$',''),'^\s+','')"></xsl:copy-of>
+		</xsl:element>
 	</xsl:function>
+
 
 	<xsl:template name="richText">
 		<xsl:param name="text" />
-		<xsl:apply-templates
-			select="unparsed-text(concat('&lt;html&gt;',$text,'&lt;/html&gt;'))"></xsl:apply-templates>
-		<!-- <xsl:value-of select="unparsed-text(text)"></xsl:value-of> -->
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="prepUl">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
-	<xsl:template name="p" match="p">
-		<text:p text:style-name="RubricItem">
-			<xsl:copy-of select="'coucou'" />
-		</text:p>
+
+	<xsl:template name="richTextOld">
+		<xsl:param name="text" />
+		<xsl:element name="RichText">
+			<xsl:call-template name="prepRichText">
+				<xsl:with-param name="text" select="$text" />
+			</xsl:call-template>
+		</xsl:element>
 	</xsl:template>
+
+	<xsl:template name="prepRichText">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','p','&gt;'))">
+				<xsl:call-template name="solve-special-characters">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'p' , '&gt;'))" />
+				</xsl:call-template>
+				<xsl:element name="text:p">
+					<xsl:call-template name="solve-special-characters">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/p' , '&gt;')), concat('&lt;' , 'p' , '&gt;'))" />
+					</xsl:call-template>
+				</xsl:element>
+				<xsl:call-template name="prepRichText">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/p' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="solve-special-characters">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="prepUl">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','ul','&gt;'))">
+				<xsl:call-template name="prepOl">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'ul' , '&gt;'))" />
+				</xsl:call-template>
+				<text:list text:style-name="L1">
+					<xsl:call-template name="prepListItem">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/ul' , '&gt;')), concat('&lt;' , 'ul' , '&gt;'))" />
+					</xsl:call-template>
+				</text:list>
+				<xsl:call-template name="prepUl">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/ul' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="prepOl">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+
+	<xsl:template name="prepOl">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','ol','&gt;'))">
+				<xsl:call-template name="prepPar">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'ol' , '&gt;'))" />
+				</xsl:call-template>
+				<text:list text:style-name="L2">
+					<xsl:call-template name="prepListItem">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/ol' , '&gt;')), concat('&lt;' , 'ol' , '&gt;'))" />
+					</xsl:call-template>
+				</text:list>
+				<xsl:call-template name="prepOl">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/ol' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="prepPar">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<xsl:template name="prepListItem">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','li','&gt;'))">
+				<xsl:call-template name="prepPar">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'li' , '&gt;'))" />
+				</xsl:call-template>
+				<text:list-item>
+					<xsl:call-template name="prepPar">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/li' , '&gt;')), concat('&lt;' , 'li' , '&gt;'))" />
+					</xsl:call-template>
+				</text:list-item>
+				<xsl:call-template name="prepListItem">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/li' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="prepPar">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+
+	<xsl:template name="prepPar">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','p','&gt;'))">
+				<xsl:call-template name="prepBold">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'p' , '&gt;'))" />
+				</xsl:call-template>
+				<text:p text:style-name="RubricItem">
+					<xsl:call-template name="prepBold">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/p' , '&gt;')), concat('&lt;' , 'p' , '&gt;'))" />
+					</xsl:call-template>
+				</text:p>
+				<xsl:call-template name="prepPar">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/p' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<text:span text:style-name="RubricItem">
+					<xsl:call-template name="prepBold">
+						<xsl:with-param name="text" select="$text" />
+					</xsl:call-template>
+				</text:span>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+
+	<xsl:template name="prepBold">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','strong','&gt;'))">
+				<xsl:call-template name="prepItalic">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'strong' , '&gt;'))" />
+				</xsl:call-template>
+				<text:span text:style-name="Bold">
+					<xsl:call-template name="prepItalic">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/strong' , '&gt;')), concat('&lt;' , 'strong' , '&gt;'))" />
+					</xsl:call-template>
+				</text:span>
+				<xsl:call-template name="prepBold">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/strong' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="prepItalic">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+
+	<xsl:template name="prepItalic">
+		<xsl:param name="text" />
+		<xsl:choose>
+			<xsl:when test="$text = ''">
+				<!-- Prevent this routine from hanging -->
+				<xsl:value-of select="$text" />
+			</xsl:when>
+			<xsl:when test="contains($text, concat('&lt;','em','&gt;'))">
+				<xsl:call-template name="solve-special-characters">
+					<xsl:with-param name="text"
+						select="substring-before($text,concat('&lt;' , 'em' , '&gt;'))" />
+				</xsl:call-template>
+				<text:span text:style-name="Italic">
+					<xsl:call-template name="solve-special-characters">
+						<xsl:with-param name="text"
+							select="substring-after(substring-before($text,concat('&lt;' , '/em' , '&gt;')), concat('&lt;' , 'em' , '&gt;'))" />
+					</xsl:call-template>
+				</text:span>
+				<xsl:call-template name="prepItalic">
+					<xsl:with-param name="text"
+						select="substring-after($text,concat('&lt;' , '/em' , '&gt;'))" />
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:call-template name="solve-special-characters">
+					<xsl:with-param name="text" select="$text" />
+				</xsl:call-template>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+	<!-- <xsl:template name="p" match="p"> -->
+	<!-- <text:p text:style-name="RubricItem"> -->
+	<!-- <xsl:copy-of select="'coucou'" /> -->
+	<!-- </text:p> -->
+	<!-- </xsl:template> -->
 
 	<xsl:template name="solve-special-characters">
 		<xsl:param name="text" />
+		<xsl:variable name="quote">
+			'
+		</xsl:variable>
 		<xsl:variable name="eacute">
 			<xsl:call-template name="string-replace-all">
 				<xsl:with-param name="text" select="$text" />
@@ -1039,11 +1385,32 @@
 					select="concat('&lt;' , 'text:line-break/', '&gt;')" />
 			</xsl:call-template>
 		</xsl:variable>
-		<xsl:variable name="newtext">
+		<xsl:variable name="ohat">
 			<xsl:call-template name="string-replace-all">
 				<xsl:with-param name="text" select="$newline" />
+				<xsl:with-param name="replace" select="'&amp;ocirc;'" />
+				<xsl:with-param name="by" select="'ô'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="egrave">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$ohat" />
 				<xsl:with-param name="replace" select="'&amp;egrave;'" />
 				<xsl:with-param name="by" select="'è'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="ugrave">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$egrave" />
+				<xsl:with-param name="replace" select="'&amp;ugrave;'" />
+				<xsl:with-param name="by" select="'ù'" />
+			</xsl:call-template>
+		</xsl:variable>
+		<xsl:variable name="newtext">
+			<xsl:call-template name="string-replace-all">
+				<xsl:with-param name="text" select="$ugrave" />
+				<xsl:with-param name="replace" select="'&amp;rsquo;'" />
+				<xsl:with-param name="by" select="$quote" />
 			</xsl:call-template>
 		</xsl:variable>
 		<xsl:sequence select="$newtext" />

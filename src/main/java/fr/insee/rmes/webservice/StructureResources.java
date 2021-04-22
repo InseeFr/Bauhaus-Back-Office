@@ -98,6 +98,37 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
+    @GET
+    @Path("/structure/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "publishStructureById", summary = "Publish a structure")
+    public Response publishStructureById(@PathParam(Constants.ID) String id) {
+        String jsonResultat = null;
+        try {
+            jsonResultat = structureService.publishStructureById(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        } catch( Exception e ) {
+            System.out.println(e);
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET
+    @Path("/structure/{id}/details")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
+            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
+    public Response getStructureByIdDetails(@PathParam(Constants.ID) String id) {
+        String jsonResultat = null;
+        try {
+            jsonResultat = structureService.getStructureByIdWithDetails(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
     @POST
     @Path("/structure")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -180,13 +211,25 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
+    @GET
+    @Path("/components/{id}/publish")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "publishComponentById", summary = "Publish a component")
+    public Response publishComponentById(@PathParam(Constants.ID) String id) {
+        String jsonResultat;
+        try {
+            jsonResultat = structureComponentService.publishComponent(id);
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
     @DELETE
     @Path("/components/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public Response deleteComponentById(@PathParam(Constants.ID) String id) {
-        String jsonResultat;
-
         try {
             structureComponentService.deleteComponent(id);
         } catch (RmesException e) {

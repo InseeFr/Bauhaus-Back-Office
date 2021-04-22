@@ -148,7 +148,7 @@ public class DocumentsResources {
 		String id = null;
 		String documentName = fileDisposition.getFileName();
 		try {
-			id = documentsService.setDocument(body, documentFile, documentName);
+			id = documentsService.createDocument(body, documentFile, documentName);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}

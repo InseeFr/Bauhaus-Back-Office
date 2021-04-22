@@ -14,8 +14,9 @@ public class Structure {
 	private String descriptionLg2;
 	private List<ComponentDefinition> componentDefinitions;
 	private String created;
-
-
+	private String contributor;
+	private String creator;
+    private String disseminationStatus;
 
 	private String updated;
 
@@ -23,7 +24,7 @@ public class Structure {
 
 	}
 
-	public Structure(String id) throws RmesException {
+	public Structure(String id) {
 		this.id = id;
 	}
 
@@ -98,4 +99,28 @@ public class Structure {
 	public void setIdentifiant(String identifiant) {
 		this.identifiant = identifiant;
 	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
+	public String getContributor() {
+		return contributor;
+	}
+
+	public void setContributor(String contributor) {
+		this.contributor = contributor;
+	}
+
+    public String getDisseminationStatus() {
+        return disseminationStatus;
+    }
+
+    public void setDisseminationStatus(String disseminationStatus) {
+        this.disseminationStatus = disseminationStatus;
+    }
 }

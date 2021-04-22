@@ -56,6 +56,7 @@ public class ErrorCodes {
 	public static final int SIMS_MODIFICATION_RIGHTS_DENIED = 802;
 	public static final int SIMS_VALIDATION_RIGHTS_DENIED = 803;
 	public static final int SIMS_VALIDATION_UNPUBLISHED_TARGET = 804;
+	public static final int SIMS_DELETION_RIGHTS_DENIED = 805;
 
 	// COLLECTIONS
 
@@ -67,6 +68,13 @@ public class ErrorCodes {
 	// STRUCTURES
 
 	public static final int COMPONENT_FORBIDDEN_DELETE = 1001;
+	public static final int COMPONENT_UNICITY = 1002;
+	public static final int STRUCTURE_UNICITY = 1003;
+	public static final int COMPONENT_PUBLICATION_EMPTY_CREATOR = 1004;
+	public static final int COMPONENT_PUBLICATION_EMPTY_STATUS = 1005;
+	public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
+	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
+	public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
 
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
@@ -104,8 +112,6 @@ public class ErrorCodes {
 	public static final int GEOFEATURE_UNKNOWN = 845;
 	public static final int GEOFEATURE_INCORRECT_BODY = 846;
 
-
-	
 	
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
@@ -124,4 +130,10 @@ public class ErrorCodes {
 
 	// SIMS
 	public static final int SIMS_INCORRECT = 861;
+	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
+	public static final int SIMS_EXPORT_WITHOUT_LANGUAGE = 863;
+	
+	  private ErrorCodes() {
+		    throw new IllegalStateException("Utility class");
+	}
 }

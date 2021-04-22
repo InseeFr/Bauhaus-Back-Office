@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
@@ -176,17 +176,17 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralInt(String number) {
-		return factory.createLiteral(number, XMLSchema.INT);
+		return factory.createLiteral(number, XSD.INT);
 	}
 	
 	public static Literal setLiteralDateTime(String date) {
         String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDateTime(date));
-		return factory.createLiteral(parsedDate, XMLSchema.DATETIME);
+		return factory.createLiteral(parsedDate, XSD.DATETIME);
 	}
 	
 	public static Literal setLiteralDate(String date) {
 		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
-		return factory.createLiteral(parsedDate, XMLSchema.DATE);
+		return factory.createLiteral(parsedDate, XSD.DATE);
 	}
 	
 	public static Literal setLiteralXML(String string) {
@@ -194,7 +194,7 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralLanguage(String string) {
-		return factory.createLiteral(string.trim(), XMLSchema.LANGUAGE);
+		return factory.createLiteral(string.trim(), XSD.LANGUAGE);
 	}
 	
 	public static IRI toURI(String string) {
@@ -264,7 +264,7 @@ public class RdfUtils {
 				model.add(bnode, predicat, RdfUtils.setLiteralString(value, lang), graph);
 		}
 	}
-
+	
 	private RdfUtils() {
 	    throw new IllegalStateException("Utility class");
 	}

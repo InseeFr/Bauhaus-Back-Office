@@ -5,6 +5,7 @@ import java.util.HashMap;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 
 public class StructureQueries {
 
@@ -13,6 +14,11 @@ public class StructureQueries {
 		return buildRequest("getStructures.ftlh", params);
 	}
 
+	public static String getValidationStatus(String id) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("id", id);
+		return buildRequest("getValidationStatus.ftlh", params);
+	}
 	public static String getStructuresAttachments(String id) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put("COMPONENT_SPECIFICATION_ID", id);
@@ -29,6 +35,26 @@ public class StructureQueries {
 		HashMap<String, Object> params = initParams();
 		params.put("ID", structureId);
 		return buildRequest("getStructure.ftlh", params);
+	}
+
+	public static String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri, String type) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("COMPONENT_ID", componentId);
+		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
+		params.put("CODE_LIST_URI", codeListUri);
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CONCEPT_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("TYPE", type);
+		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
+	}
+	public static String checkUnicityStructure(String structureId, String[] ids) throws RmesException {
+		HashMap<String, Object> params = initParams();
+
+		params.put("NB_COMPONENT", ids.length);
+		params.put("IDS", ids);
+		params.put("STRUCTURE_ID", structureId);
+
+		return buildRequest("checkUnicityStructure.ftlh", params);
 	}
 	
 	public static String getComponentsForSearch() throws RmesException {
@@ -67,9 +93,19 @@ public class StructureQueries {
 
 		return buildRequest("getLastIdStructure.ftlh", params);
 	}
-	public static String lastIdForComponentDefinition() throws RmesException {
+
+	public static String getUnValidatedComponent(String structureById) throws RmesException {
 		HashMap<String, Object> params = initParams();
-		return buildRequest("getLastIdByComponentDefinition.ftlh", params);
+		params.put("ID", structureById);
+		return buildRequest("getUnValidatedComponent.ftlh", params);
+	}
+
+	public static String getUriClasseOwl(String codeList) throws RmesException {
+		HashMap<String, Object> params = initParams();
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODES_LIST", codeList);
+
+		return buildRequest("getUriClasseOwl.ftlh", params);
 	}
 
 	private static String buildRequest(String fileName, HashMap<String, Object> params) throws RmesException {

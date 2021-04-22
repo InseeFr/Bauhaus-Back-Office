@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -199,9 +200,9 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public Response.Status deleteConcept(String id) throws RmesException{
-		Response.Status result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.objectIRI(ObjectType.CONCEPT,id).toString(),RdfUtils.conceptGraph().toString()));
+		Response.Status result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(((SimpleIRI)RdfUtils.objectIRI(ObjectType.CONCEPT,id)).toString(),RdfUtils.conceptGraph().toString()));
 		if (result.equals(Status.OK)) {
-			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id).toString(),RdfUtils.conceptGraph().toString()));
+			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(((SimpleIRI)RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)).toString(),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
 	}

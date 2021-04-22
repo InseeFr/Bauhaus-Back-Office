@@ -45,7 +45,6 @@ public class CodeListsResources {
 
 
 	@GET
-	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAllCodesLists", summary = "List of codes",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
@@ -67,7 +66,7 @@ public class CodeListsResources {
 	public Response getCodeListByNotation(@PathParam("notation") String notation) {
 		String jsonResultat;
 		try {
-			jsonResultat = codeListService.getCodeList(notation);
+			jsonResultat = codeListService.getCodeListJson(notation);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}

@@ -18,9 +18,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,6 +26,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.utils.DocumentBuilders;
 import fr.insee.rmes.utils.StringUtils;
 import fr.insee.rmes.utils.XMLUtils;
@@ -39,8 +38,6 @@ public class VarBookExportBuilder {
 
 	static final Logger logger = LogManager.getLogger(VarBookExportBuilder.class);
 
-	@Autowired
-	RestTemplate restTemplate;
 
 	public String getData(String xml) throws RmesException {
 		Document xmlReadyToExport = transformXml(xml);
@@ -154,9 +151,10 @@ public class VarBookExportBuilder {
 	 * 
 	 * @param xml
 	 * @return
+	 * @throws RmesNotAcceptableException 
 	 * @throws RmesException 
 	 */
-	private static Document addSortedVariableList(Document xmlInput) {
+	private static Document addSortedVariableList(Document xmlInput) throws RmesNotAcceptableException {
 		if (xmlInput == null) {
 			return null;
 		}
@@ -167,10 +165,19 @@ public class VarBookExportBuilder {
 		// copy all variables
 		NodeList list = xmlInput.getElementsByTagName("RepresentedVariable");
 		Map<String, Node> sortedList = new TreeMap<>();
+		String lastVarOk = "";
 
 		for (int i = 0; i < list.getLength(); i++) {
 			Node variableNode = list.item(i);
-			sortedList.put(getVariableName(variableNode), variableNode);
+			if (variableNode == null) throw new RmesNotAcceptableException("One represented variable is null. Last variable ok is "+lastVarOk, "");
+			String variableName ;
+			try {
+				variableName = getVariableName(variableNode);
+			}catch(NullPointerException e) {
+				throw new RmesNotAcceptableException("One represented variable has no RepresentedVariableName. Last variable ok is "+lastVarOk, "");
+			}
+			sortedList.put(variableName, variableNode);
+			lastVarOk = variableName;
 		}
 
 		for (Entry<String, Node> entry : sortedList.entrySet()) {

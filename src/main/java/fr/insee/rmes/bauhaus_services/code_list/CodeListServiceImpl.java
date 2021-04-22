@@ -8,8 +8,12 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
@@ -23,9 +27,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Autowired	
 	LangService codeListUtils;
 	
-
+	@Autowired
+	FamOpeSerIndUtils famOpeSerIndUtils;
+	
+	
 	@Override
-	public String getCodeList(String notation) throws RmesException{
+	public String getCodeListJson(String notation) throws RmesException{
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
 		codeList.put("notation",notation);
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation));
@@ -35,6 +42,20 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return QueryUtils.correctEmptyGroupConcat(codeList.toString());
 	}
 
+	public CodeList buildCodeListFromJson(String codeListJson) {
+		ObjectMapper mapper = new ObjectMapper();
+		CodeList codeList = new CodeList();
+		try {
+			codeList = mapper.readValue(codeListJson, CodeList.class);
+		} catch (JsonProcessingException e) {
+			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
+		}
+		return codeList;
+	}
+	
+	public CodeList getCodeList(String notation) throws RmesException {
+		return buildCodeListFromJson(getCodeListJson(notation));	
+	}
 
 	@Override
 	public String getCode(String notationCodeList, String notationCode) throws RmesException{
@@ -54,6 +75,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String getAllCodesLists() throws RmesException {
 		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists()).toString();
+	}
+
+	@Override
+	public String geCodesListByIRI(String IRI) throws RmesException {
+		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(IRI)).toString();
 	}
 
 

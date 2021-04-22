@@ -5,6 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -27,7 +28,6 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class SeriesPublication extends RdfService {
-// TODO : merge into SeriesUtils ?	
 	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
@@ -56,6 +56,8 @@ public class SeriesPublication extends RdfService {
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, series);
 		
 		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, series);
+		RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, series);
+		RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, series);
 		
 		try {	
 			try {
@@ -64,20 +66,22 @@ public class SeriesPublication extends RdfService {
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
+					String pred = ((SimpleIRI) st.getPredicate()).toString();
+					
 					// Other URI to transform
-					if (st.getPredicate().toString().endsWith("isPartOf") ||
-							st.getPredicate().toString().endsWith("seeAlso") ||
-							st.getPredicate().toString().endsWith("replaces") ||
-							st.getPredicate().toString().endsWith("isReplacedBy") ) {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), 
-								st.getContext());
-					} else if (st.getPredicate().toString().endsWith("isValidated")
-							|| st.getPredicate().toString().endsWith("validationState")
-							|| st.getPredicate().toString().endsWith("hasPart")
-							|| st.getPredicate().toString().endsWith(Constants.PUBLISHER)
-							|| st.getPredicate().toString().endsWith("contributor")) {
+					if (pred.endsWith("isPartOf") ||
+							pred.endsWith("seeAlso") ||
+							pred.endsWith("replaces") ||
+							pred.endsWith("isReplacedBy")||
+							pred.endsWith("dataCollector") || 
+							pred.endsWith("contributor")  ||
+							pred.endsWith("publisher")  ||
+							pred.endsWith("accrualPeriodicity")||
+							pred.endsWith("type")   ) {
+						transformSubjectAndObject(model, st);
+					} else if (pred.endsWith("isValidated")
+							|| pred.endsWith("validationState")
+							|| pred.endsWith("hasPart")) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals
@@ -88,13 +92,9 @@ public class SeriesPublication extends RdfService {
 								st.getContext()
 								);
 					}
-					while (hasPartStatements.hasNext()) {
-						Statement hpst = hasPartStatements.next();
-						model.add(PublicationUtils.tranformBaseURIToPublish(hpst.getSubject()), 
-								hpst.getPredicate(), 
-								PublicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()),
-								hpst.getContext());
-					}
+					addStatementsToModel(model, hasPartStatements);
+					addStatementsToModel(model, replacesStatements);
+					addStatementsToModel(model, isReplacedByStatements);
 					
 				}
 			} catch (RepositoryException e) {
@@ -108,6 +108,20 @@ public class SeriesPublication extends RdfService {
 		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
 		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
+	}
+
+	public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {
+		while (statements.hasNext()) {
+			Statement statement = statements.next();
+			transformSubjectAndObject(model, statement);
+		}
+	}
+
+	public void transformSubjectAndObject(Model model, Statement statement) {
+		model.add(PublicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
+				statement.getPredicate(), 
+				PublicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
+				statement.getContext());
 	}
 
 }

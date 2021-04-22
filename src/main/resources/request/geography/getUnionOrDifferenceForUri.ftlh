@@ -1,18 +1,21 @@
-SELECT DISTINCT ?uri ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?typeTerritory ?dateCreation ?dateSuppression ?hasComposition
+SELECT DISTINCT ?uri ?labelLg1 ?code
 FROM <${COG_GRAPH}>
 FROM <${GEO_SIMS_GRAPH}>
  WHERE { 
 		
 <#if union>
-		    ${uri}  geo:union ?uri .
+		    <${uri}>  geo:union ?uri .
 			
 <#else>
- 			${uri}  geo:difference ?uri .
+ 			<${uri}>  geo:difference ?uri .
 </#if>
 
-			?uri igeo:nom ?labelLg1 ;
-				 igeo:codeINSEE ?code .
+			
+    ?uri (igeo:nom|rdfs:label|skos:prefLabel) ?labelLg1 .
+    OPTIONAL{
+			?uri igeo:codeINSEE ?code .
+    }
 
-		}
+}
 ORDER BY ?code
 		
