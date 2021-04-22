@@ -103,7 +103,7 @@ public class DocumentsPublication  extends RdfService{
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 					String newUrl = Paths.get(Config.DOCUMENTS_BASEURL,filename).toString();
-					logger.debug("Publishing new URL for document : {}",newUrl);
+					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
 				} else {
