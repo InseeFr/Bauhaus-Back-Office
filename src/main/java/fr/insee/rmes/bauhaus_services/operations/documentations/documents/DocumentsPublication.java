@@ -27,9 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -44,7 +46,8 @@ public class DocumentsPublication  extends RdfService{
 
 	static final Logger logger = LogManager.getLogger(DocumentsPublication.class);
 
-	public void publishAllDocumentsInSims(String idSims, Model model) throws RmesException {
+	public void publishAllDocumentsInSims(String idSims) throws RmesException {
+		
 		// Get all documents
 		JSONArray listDoc = docUtils.getListDocumentSims(idSims);
 		
@@ -58,15 +61,20 @@ public class DocumentsPublication  extends RdfService{
 			// Publish the physical files
 			copyFileInPublicationFolders(originalPath);
 			
-			// Change url in document
-			model.addAll(getModelToPublish(docId,filename));
+			// Change url in document (getModelToPublish) and publish the RDF
+			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
+			RepositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
 		}
 		
 		//Get all links
 		JSONArray listLinks = docUtils.getListLinksSims(idSims);
 		for (Object link : listLinks) {
-			model.addAll(getLinkModelToPublish(docUtils.getIdFromJson((JSONObject)link).toString()));
-		}		
+			String id = docUtils.getIdFromJson((JSONObject)link).toString();
+			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
+			RepositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
+		}
+		
+		
 		
 	}
 
