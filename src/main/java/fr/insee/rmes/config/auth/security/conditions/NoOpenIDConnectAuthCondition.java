@@ -43,9 +43,9 @@ public class NoOpenIDConnectAuthCondition implements Condition {
 	private void loadPropertiesIfExist(Properties props, String fileName) throws IOException {
 		File f = new File(String.format(WEBAPPS, System.getProperty(CATALINA_BASE), fileName));
         if(f.exists() && !f.isDirectory()) {
-            FileReader r = new FileReader(f);
-            props.load(r);
-            r.close();
+            try(FileReader r = new FileReader(f)){
+            	props.load(r);
+            }
         }
 	}
 
