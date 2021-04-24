@@ -58,24 +58,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return buildCodeListFromJson(getCodeListJson(notation));	
 	}
 
-	private String getValidationState(String validationState){
-		if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState)){
-			return "Publiée";
-		}
-		if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState)){
-			return "Provisoire, déjà publiée";
-		}
-		if(ValidationStatus.UNPUBLISHED.toString().equalsIgnoreCase(validationState)){
-			return "Provisoire, jamais publiée";
-		}
-
-		return validationState;
-	}
-
 	@Override
 	public String getDetailedCodesList(String notation) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
-		codeList.put("validationState", this.getValidationState(codeList.getString("validationState")));
 		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation));
 
 		if(codes.length() > 0){
