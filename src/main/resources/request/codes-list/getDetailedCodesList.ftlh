@@ -6,16 +6,16 @@ WHERE {
     dcterms:created ?created ;
     dcterms:modified ?modified ;
     dc:creator ?creator ;
-    dc:contributor ?contributor ;
     insee:validationState ?validationState ;
     insee:disseminationStatus ?disseminationStatus ;
-    dc:contributor ?contributor ;
+
     dcterms:modified ?modified .
     ?list skos:prefLabel ?labelLg1 .
     FILTER(lang(?labelLg1) = '${LG1}') .
     OPTIONAL {?list skos:prefLabel ?labelLg2 .
     FILTER (lang(?labelLg2) = '${LG2}') } .
 
+    OPTIONAL { ?list dc:contributor ?contributor } .
     OPTIONAL {?list skos:definition ?descriptionLg1 .
     FILTER(lang(?descriptionLg1) = '${LG1}') } .
     OPTIONAL {?list skos:definition ?descriptionLg2 .

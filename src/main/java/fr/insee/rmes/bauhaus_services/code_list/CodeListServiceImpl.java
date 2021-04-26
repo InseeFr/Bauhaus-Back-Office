@@ -98,6 +98,30 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
+	public String getDetailedCodesListForSearch() throws RmesException {
+		JSONArray lists =  repoGestion.getResponseAsArray(CodeListQueries.getCodesListsForSearch());
+		JSONArray codes =  repoGestion.getResponseAsArray(CodeListQueries.getCodesForSearch());
+
+		for (int i = 0 ; i < lists.length(); i++) {
+			JSONObject list = lists.getJSONObject(i);
+			list.put("codes", this.getCodesForList(codes, list));
+		}
+
+		return lists.toString();
+	}
+
+	private JSONArray getCodesForList(JSONArray codes, JSONObject list) {
+		JSONArray codesList = new JSONArray();
+		for (int i = 0 ; i < codes.length(); i++) {
+			JSONObject code = codes.getJSONObject(i);
+			if(code.getString("id").equalsIgnoreCase(list.getString("id"))){
+				codesList.put(code);
+			}
+		}
+		return codesList;
+	}
+
+	@Override
 	public String getCode(String notationCodeList, String notationCode) throws RmesException{
 		JSONObject code = repoGestion.getResponseAsObject(CodeListQueries.getCodeByNotation(notationCodeList,notationCode));
 		code.put("code", notationCode);
