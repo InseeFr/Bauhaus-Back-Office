@@ -70,10 +70,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				String code = tempCode.getString("code");
 
 				if(!formattedCodes.has(code)){
-					if(tempCode.has("parents")){
+					if(tempCode.has(Constants.PARENTS)){
 						JSONArray parents = new JSONArray();
-						parents.put(tempCode.getString("parents"));
-						tempCode.put("parents", parents);
+						parents.put(tempCode.getString(Constants.PARENTS));
+						tempCode.put(Constants.PARENTS, parents);
 					}
 
 					formattedCodes.put(code, tempCode);
@@ -81,11 +81,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					JSONObject previousCode = formattedCodes.getJSONObject(code);
 
 					JSONArray parents = new JSONArray();
-					if(previousCode.has("parents")){
-						parents = previousCode.getJSONArray("parents");
+					if(previousCode.has(Constants.PARENTS)){
+						parents = previousCode.getJSONArray(Constants.PARENTS);
 					}
 					parents.put(tempCode.getString("parents"));
-					previousCode.put("parents", parents);
+					previousCode.put(Constants.PARENTS, parents);
 					formattedCodes.put(code, previousCode);
 				}
 			});
