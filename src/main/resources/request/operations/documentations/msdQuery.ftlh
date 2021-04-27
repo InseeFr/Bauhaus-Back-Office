@@ -5,13 +5,13 @@ SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs
 	 	?reportStructure sdmx-mm:metadataAttributeSpecification ?mas . 
 
    		OPTIONAL {?mas sdmx-mm:parent ?parent } 
-		BIND(REPLACE( STR(?parent) , '(.*/)(\\w.+$)', '$2' ) AS ?idParent) . 
+		BIND(REPLACE( STR(?parent) , '(.*/)(\\w.*$)', '$2' ) AS ?idParent) . 
 		
    		OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
    		OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
 		
 		FILTER(STRENDS(STR(?reportStructure),'/qualite/simsv2fr/reportStructure')) . 
-		BIND(REPLACE( STR(?mas) , '(.*/)(\\w.+$)', '$2' ) AS ?idMas) . 
+		BIND(REPLACE( STR(?mas) , '(.*/)(\\w.*$)', '$2' ) AS ?idMas) . 
 		
 		?mas sdmx-mm:metadataAttributeProperty ?map . 
 	  	?map sdmx-mm:concept ?concept .

@@ -7,5 +7,5 @@ FROM <${GEO_SIMS_GRAPH}>
     OPTIONAL{
 			?uri igeo:codeINSEE ?code .
     }		
-			FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.+$)', '$2' ) = "${id}")		
+			FILTER(REPLACE( STR(?uri) , '(.*/)(\\w.*$)', '$2' ) = "${id}")		
 }

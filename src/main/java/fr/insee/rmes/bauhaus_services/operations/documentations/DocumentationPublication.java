@@ -31,7 +31,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 public class DocumentationPublication extends RdfService {
 
 	@Autowired
-	static RepositoryUtils repoUtils;
+	RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
@@ -71,7 +71,7 @@ public class DocumentationPublication extends RdfService {
 					model.add(subject, predicateIRI, object, st.getContext());
 				}
 			}
-			documentsPublication.publishAllDocumentsInSims(simsId,model);
+			documentsPublication.publishAllDocumentsInSims(simsId);
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
