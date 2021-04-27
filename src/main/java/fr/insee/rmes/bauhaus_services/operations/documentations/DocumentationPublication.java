@@ -31,7 +31,7 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 public class DocumentationPublication extends RdfService {
 
 	@Autowired
-	static RepositoryUtils repoUtils;
+	RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
