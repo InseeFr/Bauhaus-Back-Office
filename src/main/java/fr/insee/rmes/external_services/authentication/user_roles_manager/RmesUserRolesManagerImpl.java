@@ -14,6 +14,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -138,6 +139,21 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	public void setDeleteRole(String role, String user) {
 		String url = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
 		Igesa.post(url);
+	}
+
+	@Override
+	public String checkLdapConnexion() throws RmesException {
+		//IGESA
+		String xmlResponse ="";
+		try {
+			Client client = ClientBuilder.newClient();
+
+			xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
+					.request(MediaType.APPLICATION_XML).get(String.class);
+		} catch (Exception e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target IGESA");
+		}
+		return StringUtils.isEmpty(xmlResponse)? "KO" :  "OK";
 	}
 
 }

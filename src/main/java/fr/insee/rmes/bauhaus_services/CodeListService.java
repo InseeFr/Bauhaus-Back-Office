@@ -15,4 +15,7 @@ public interface CodeListService {
 
 	String geCodesListByIRI(String IRI) throws RmesException;
 
+	String getDetailedCodesList(String notation) throws RmesException;
+
+    String getDetailedCodesListForSearch() throws RmesException;
 }

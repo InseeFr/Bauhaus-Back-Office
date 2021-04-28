@@ -59,6 +59,36 @@ public class CodeListsResources {
 	}
 
 	@GET
+	@Path("/search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getDetailedCodesLisForSearch", summary = "List of codes",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+	public Response getDetailedCodesLisForSearch() {
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getDetailedCodesListForSearch();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/detailed/{notation}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+	public Response getDetailedCodesListByNotation(@PathParam("notation") String notation) {
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getDetailedCodesList(notation);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
 	@Path("/{notation}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCodeListByNotation", summary = "List of codes", 
@@ -72,6 +102,8 @@ public class CodeListsResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+
+
 
 	@GET
 	@Path("/{notation}/code/{code}")

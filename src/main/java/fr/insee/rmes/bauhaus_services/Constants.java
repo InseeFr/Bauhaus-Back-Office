@@ -129,8 +129,9 @@ public class Constants {
 	public static final String XML_INF_REPLACEMENT = "replacementForInf";
 	public static final String XML_SUP_REPLACEMENT = "replacementForSup";
 	public static final String XML_ESPERLUETTE_REPLACEMENT = "replacementForEsperluette";
-	
-	private Constants() {
+    public static final String PARENTS = "parents";
+
+    private Constants() {
 		throw new IllegalStateException("Utility class");
 	}
 }
