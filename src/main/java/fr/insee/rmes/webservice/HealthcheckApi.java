@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,6 +44,9 @@ public class HealthcheckApi {
 	@Autowired
 	protected RepositoryGestion repoGestion;
 	
+	@Autowired
+	protected UserRolesManagerService userService;
+	
 	private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
 
     @GET
@@ -53,11 +57,49 @@ public class HealthcheckApi {
     	
     	StringJoiner errorMessage = new StringJoiner(" ");
     	StringJoiner stateResult = new StringJoiner(" ");
-    	stateResult.add("Database connexion \n");
     	logger.info(" Begin healthCheck");
-    	
+
     	//Test database connexion
+    	stateResult.add("Database connexion \n");   	
+    	stateResult = testDatabaseConnexions(errorMessage, stateResult);
+    	
+    	//Test access to storage
+    	stateResult = stateResult.add("Document storage \n");
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_GESTION,"Gestion", stateResult, errorMessage);
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE,"Publication Externe", stateResult, errorMessage);
+    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE,"Publication Interne", stateResult, errorMessage);
+    	
+    	//Test LDAP connexion
+    	stateResult = stateResult.add("LDAP connexion \n");
     	try {
+			String roles = userService.getRoles();
+	    	if (StringUtils.isEmpty(roles)) {
+	    		stateResult.add("- Connexion LDAP").add(OK_STATE);
+	    	}else {
+				errorMessage.add("- No functional error but roles are empty \n");
+	    		stateResult.add("- Connexion LDAP").add(KO_STATE);
+	    	}
+		} catch (RmesException e) {
+			errorMessage.add("- "+e.getMessage()+ " \n");
+			stateResult.add("- Connexion LDAP").add(KO_STATE);
+		}
+
+    	
+    	//print result in log
+         logger.info("{}",stateResult);
+         logger.info("End healthcheck");
+         
+    	if (!"".equals(errorMessage.toString())) {
+    		logger.error("{}",errorMessage);
+    		return Response.serverError().entity(stateResult.merge(errorMessage).toString()).build();
+    	}
+    	else {
+    		return Response.ok(stateResult.toString()).build();
+    	}
+    }
+
+	public StringJoiner testDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
+		try {
 			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
 				errorMessage.add("- Repository publication doesn't return statement \n");
 				stateResult = stateResult.add(" - Connexion publication").add(KO_STATE);
@@ -74,24 +116,8 @@ public class HealthcheckApi {
 			errorMessage.add("- "+e.getMessage()+ " \n");
 			stateResult = stateResult.add(" - Connexion database").add(KO_STATE);
 		}
-    	
-    	stateResult = stateResult.add("Document storage \n");
-    	//Test access to storage
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_GESTION,"Gestion", stateResult, errorMessage);
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE,"Publication Externe", stateResult, errorMessage);
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE,"Publication Interne", stateResult, errorMessage);
-    	
-         logger.info("{}",stateResult);
-         logger.info("End healthcheck");
-         
-    	if (!"".equals(errorMessage.toString())) {
-    		logger.error("{}",errorMessage);
-    		return Response.serverError().entity(errorMessage.toString()).build();
-    	}
-    	else {
-    		return Response.ok(stateResult.toString()).build();
-    	}
-    }
+		return stateResult;
+	}
     
     private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
         String dirPath = pathToStorage + "testHealthcheck.txt";
