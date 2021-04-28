@@ -146,6 +146,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
         params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+
         params.put("STRUCTURE_ID", id);
         params.put("LG1", Config.LG1);
         params.put("LG2", Config.LG2);
@@ -162,8 +165,25 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             component.remove("prefLabelLg1");
             component.remove("prefLabelLg2");
 
-            if(component.has("listeCode")){
+            if(component.has("listeCodeUri")){
                 component.put("representation", "liste de code");
+
+                JSONObject listCode = new JSONObject();
+                listCode.put("uri", component.getString("listeCodeUri"));
+                listCode.put("notation", component.getString("listeCodeNotation"));
+                component.put("listCode", listCode);
+                component.remove("listeCodeUri");
+                component.remove("listeCodeNotation");
+            }
+
+            if(component.has("conceptUri")){
+
+                JSONObject concept = new JSONObject();
+                concept.put("uri", component.getString("conceptUri"));
+                concept.put("id", component.getString("conceptId"));
+                component.put("concept", concept);
+                component.remove("conceptUri");
+                component.remove("conceptId");
             }
 
             if(component.has("representation")){
