@@ -57,6 +57,17 @@ public class RepositoryPublication extends RepositoryUtils{
 	public static String getResponse(String query) throws RmesException {
 		return getResponse(query, REPOSITORY_PUBLICATION);
 	}
+	
+	/**
+	 * Method which aims to produce response from a sparql query for internal Repository
+	 * 
+	 * @param query
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static String getResponseInternalPublication(String query) throws RmesException {
+		return getResponse(query, REPOSITORY_PUBLICATION_INTERNE);
+	}
 
 	/**
 	 * Method which aims to produce response from a sparql query

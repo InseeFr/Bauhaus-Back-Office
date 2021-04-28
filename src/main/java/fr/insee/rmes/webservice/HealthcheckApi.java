@@ -61,7 +61,7 @@ public class HealthcheckApi {
 
     	//Test database connexion
     	stateResult.add("Database connexion \n");   	
-    	stateResult = testDatabaseConnexions(errorMessage, stateResult);
+    	checkDatabaseConnexions(errorMessage, stateResult);
     	
     	//Test access to storage
     	stateResult = stateResult.add("Document storage \n");
@@ -98,25 +98,33 @@ public class HealthcheckApi {
     	}
     }
 
-	public StringJoiner testDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
+	public void checkDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
 		try {
 			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
 				errorMessage.add("- Repository publication doesn't return statement \n");
-				stateResult = stateResult.add(" - Connexion publication").add(KO_STATE);
+				stateResult.add(" - Connexion publication Z").add(KO_STATE);
 			}else {
-				stateResult = stateResult.add(" - Connexion publication").add(OK_STATE);
+				stateResult.add(" - Connexion publication Z").add(OK_STATE);
 			}
-	    	if (StringUtils.isEmpty( 	repoGestion.getResponse(sparlQuery))) {
+			if (StringUtils.isEmpty(RepositoryPublication.getResponseInternalPublication(sparlQuery))){
+				errorMessage.add("- Repository publication interne doesn't return statement \n");
+				stateResult.add(" - Connexion publication I").add(KO_STATE);
+			}else {
+				stateResult.add(" - Connexion publication I").add(OK_STATE);
+			}
+	    	if (StringUtils.isEmpty( repoGestion.getResponse(sparlQuery))) {
 	    		errorMessage.add("- Repository gestion doesn't return statement \n");
-	    		stateResult = stateResult.add(" - Connexion gestion").add(KO_STATE);
+	    		stateResult.add(" - Connexion gestion").add(KO_STATE);
 	    	}else {
-	    		stateResult = stateResult.add(" - Connexion gestion").add(OK_STATE);
+	    		stateResult.add(" - Connexion gestion").add(OK_STATE);
 	    	}
 		} catch (RmesException e) {
 			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult = stateResult.add(" - Connexion database").add(KO_STATE);
+			stateResult.add(" - Connexion database").add(KO_STATE);
+		} catch (Exception e) {
+			errorMessage.add("- "+e.getClass().getSimpleName() +e.getMessage()+ " \n");
+			stateResult.add(" - Connexion database").add(KO_STATE);
 		}
-		return stateResult;
 	}
     
     private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
