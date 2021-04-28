@@ -1,3 +1,4 @@
+3.0.1 : Rétablissement du swagger et des droits d'accès
 3.0.0 : Module Opérations
 2.1.2 : - Correction du bug à la publication des concepts (la modification supprimait les anciennes versions de notes)
 		- Correction des getters de concepts pour ignorer le typage des identifiants des concepts (notation)
