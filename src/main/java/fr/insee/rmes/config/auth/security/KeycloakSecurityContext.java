@@ -41,7 +41,6 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
 		http.sessionManagement().disable();
 		http.authorizeRequests()
 			.antMatchers("/api/init").permitAll()
-			.antMatchers("/api/roles").permitAll()
 			.antMatchers("/api/healthcheck").permitAll()
 			.antMatchers("/swagger-ui/*").permitAll()
 			.antMatchers("/api/openapi.json").permitAll()

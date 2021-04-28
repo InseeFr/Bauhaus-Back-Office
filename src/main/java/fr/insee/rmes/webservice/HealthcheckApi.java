@@ -72,11 +72,11 @@ public class HealthcheckApi {
     	//Test LDAP connexion
     	stateResult = stateResult.add("LDAP connexion \n");
     	try {
-			String roles = userService.getRoles();
-	    	if (StringUtils.isEmpty(roles)) {
+			String result = userService.checkLdapConnexion();
+	    	if ("OK".equals(result)) {
 	    		stateResult.add("- Connexion LDAP").add(OK_STATE);
 	    	}else {
-				errorMessage.add("- No functional error but roles are empty \n");
+				errorMessage.add("- No functional error but return an empty string \n");
 	    		stateResult.add("- Connexion LDAP").add(KO_STATE);
 	    	}
 		} catch (RmesException e) {
