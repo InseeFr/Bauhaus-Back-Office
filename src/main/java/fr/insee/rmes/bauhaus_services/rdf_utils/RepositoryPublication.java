@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
+import fr.insee.rmes.persistance.ontologies.QB;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,6 +22,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.repository.util.Repositories;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -193,8 +196,42 @@ public class RepositoryPublication extends RepositoryUtils{
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
-	
-	
+
+	public static void clearStructureAndComponentForAllRepositories(Resource structure) {
+		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION);
+		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION_INTERNE);
+	}
+
+	public static void clearStructureAndComponents(Resource structure, Repository repository) {
+		List<Resource> toRemove = new ArrayList<>();
+		try {
+			RepositoryConnection conn = repository.getConnection();
+			RepositoryResult<Statement> nodes = null;
+			RepositoryResult<Statement> specifications = null;
+			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
+			while (nodes.hasNext()) {
+				Resource node = (Resource) nodes.next().getObject();
+				toRemove.add(node);
+				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
+				while (specifications.hasNext()) {
+					toRemove.add((Resource) specifications.next().getObject());
+				}
+				specifications.close();
+
+			}
+			nodes.close();
+			toRemove.forEach(res -> {
+				try {
+					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
+					conn.remove(statements);
+				} catch (RepositoryException e) {
+					logger.error("RepositoryGestion Error {}", e.getMessage());
+				}
+			});
+		} catch (RepositoryException e) {
+			new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
+		}
+	}
 	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
 				DCTERMS.REPLACES, SKOS.RELATED);

@@ -70,9 +70,11 @@ public class StructurePublication extends RdfService {
 		RepositoryConnection con = repoGestion.getConnection();
 
 		this.copyTriplet(structure, model, con, new String[]{"validationState", Constants.CREATOR, Constants.CONTRIBUTOR});
-		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(structure);
-		RepositoryPublication.publishResource(componentToPublishRessource, model, "Structure");
-		
+		Resource structureToPublish = PublicationUtils.tranformBaseURIToPublish(structure);
+
+		RepositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
+		RepositoryPublication.publishResource(structureToPublish, model, "Structure");
+
 	}
 
 }
