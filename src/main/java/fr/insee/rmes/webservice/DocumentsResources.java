@@ -156,7 +156,7 @@ public class DocumentsResources {
 	/**
 	 * Update informations about a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@PUT
 	@Path("/document/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -179,7 +179,7 @@ public class DocumentsResources {
 	/**
 	 * Change the file of a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
 	@PUT
 	@Path("/document/{id}/file")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
@@ -203,7 +203,7 @@ public class DocumentsResources {
 	/**
 	 * Delete a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
 	@DELETE
 	@Path("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
@@ -245,7 +245,7 @@ public class DocumentsResources {
 	/**
 	 * Create a new link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
 	@POST
 	@Path("/link")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
@@ -266,7 +266,7 @@ public class DocumentsResources {
 	/**
 	 * Update informations about a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
 	@PUT
 	@Path("/link/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -287,7 +287,7 @@ public class DocumentsResources {
 	/**
 	 * Delete a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
 	@DELETE
 	@Path("/link/{id}")
 	@Operation(operationId = "deleteLink", summary = "Delete a link")
