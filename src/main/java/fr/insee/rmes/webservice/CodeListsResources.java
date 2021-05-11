@@ -61,7 +61,7 @@ public class CodeListsResources {
 	@GET
 	@Path("/search")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getDetailedCodesLisForSearch", summary = "List of codes",
+	@Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
 	public Response getDetailedCodesLisForSearch() {
 		String jsonResultat;
