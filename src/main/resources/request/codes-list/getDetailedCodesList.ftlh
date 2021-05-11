@@ -2,14 +2,29 @@ SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?list skos:notation '${NOTATION}' ;
-    skos:notation ?id ;
-    dcterms:created ?created ;
-    dcterms:modified ?modified ;
-    dc:creator ?creator ;
-    insee:validationState ?validationState ;
-    insee:disseminationStatus ?disseminationStatus ;
+    skos:notation ?id .
 
-    dcterms:modified ?modified .
+    OPTIONAL {
+    ?list dcterms:created ?created .
+    }
+    OPTIONAL {
+    ?list dc:creator ?creator .
+    }
+    OPTIONAL {
+    ?list dc:contributor ?contributor .
+    }
+    OPTIONAL {
+    ?list insee:validationState ?validationState .
+    }
+    OPTIONAL {
+    ?list insee:disseminationStatus ?disseminationStatus .
+    }
+    OPTIONAL {
+    ?list dc:contributor ?contributor .
+    }
+    OPTIONAL {
+    ?list dcterms:modified ?modified .
+    }
     ?list skos:prefLabel ?labelLg1 .
     FILTER(lang(?labelLg1) = '${LG1}') .
     OPTIONAL {?list skos:prefLabel ?labelLg2 .

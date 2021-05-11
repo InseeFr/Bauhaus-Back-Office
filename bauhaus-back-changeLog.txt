@@ -1,3 +1,4 @@
+3.0.3 : Mise à jour de spring-security + correction des droits de créations de documents/liens
 3.0.2 : Corrections de l'url des documents à la publication
 3.0.1 : Rétablissement du swagger et des droits d'accès
 3.0.0 : Module Opérations
