@@ -140,7 +140,7 @@ public class DocumentationExport {
 
 
 	private String buildParams(Boolean lg1, Boolean lg2, Boolean includeEmptyMas, String targetType) {
-		String includeEmptyMasString=( includeEmptyMas ? "true" : "false");
+		String includeEmptyMasString=( Boolean.TRUE.equals(includeEmptyMas) ? "true" : "false");
 		String parametersXML="";
 		
 		parametersXML=parametersXML.concat(Constants.XML_OPEN_PARAMETERS_TAG);
