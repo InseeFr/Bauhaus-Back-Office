@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
-import fr.insee.rmes.model.ValidationStatus;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

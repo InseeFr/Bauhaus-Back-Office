@@ -72,12 +72,18 @@ public class DocumentsUtils  extends RdfService  {
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
 
-	public void addDocumentsToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
+	public void addDocumentsAndLinksToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
 			throws RmesException {
 		if (documents != null && !documents.isEmpty()) {
 			for (Document doc : documents) {
 				IRI url = RdfUtils.toURI(doc.getUrl());
-				IRI docUri = getDocumentUri(url);
+				IRI docUri ;
+				if (StringUtils.isNotEmpty(doc.getUri())){
+					docUri = RdfUtils.toURI(doc.getUri());
+				}
+				else{
+					docUri = getDocumentUri(url);
+				}
 				RdfUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
 			}
 		}
