@@ -80,7 +80,7 @@ public class StructureUtils extends RdfService {
 
         for (int i = 0; i < componentDefinitionsFlat.length(); i++) {
             JSONObject componentDefinitionFlat = componentDefinitionsFlat.getJSONObject(i);
-            JSONArray attachmentsArray = repoGestion.getResponseAsArray(StructureQueries.getStructuresAttachments(componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
+            JSONArray attachmentsArray = repoGestion.getResponseAsArray(StructureQueries.getStructuresAttachments(id, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID)));
 
             List<String> attachments = new ArrayList<>();
             for(int j = 0; j < attachmentsArray.length(); j++){
@@ -250,12 +250,12 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);
         RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
-        createRdfComponentSpecifications(structure, structureIri, structure.getComponentDefinitions(), model, graph);
-
         repoGestion.loadSimpleObject(structureIri, model, null);
+
+        createRdfComponentSpecifications(structureIri, structure.getComponentDefinitions(), graph);
     }
 
-    public void createRdfComponentSpecifications(Structure structure, IRI structureIRI, List<ComponentDefinition> componentList, Model model, Resource graph) throws RmesException {
+    public void createRdfComponentSpecifications(IRI structureIRI, List<ComponentDefinition> componentList, Resource graph) throws RmesException {
         for (int i = 0; i < componentList.size(); i++) {
             ComponentDefinition componentDefinition = componentList.get(i);
             MutualizedComponent component = componentDefinition.getComponent();
@@ -273,7 +273,7 @@ public class StructureUtils extends RdfService {
             }
             componentDefinition.setModified(DateUtils.getCurrentDate());
             componentDefinition.setId("cs" + (1000 + i) );
-            createRdfComponentSpecification(structureIRI, model, componentDefinition, graph);
+            createRdfComponentSpecification(structureIRI, componentDefinition, graph);
         }
     }
 
@@ -282,7 +282,8 @@ public class StructureUtils extends RdfService {
         component.setId(id);
     }
 
-    public void createRdfComponentSpecification(IRI structureIRI, Model model, ComponentDefinition componentDefinition, Resource graph) {
+    public void createRdfComponentSpecification(IRI structureIRI, ComponentDefinition componentDefinition, Resource graph) throws RmesException {
+        Model model = new LinkedHashModel();
 
         IRI componentSpecificationIRI;
 
@@ -304,29 +305,30 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
         }
 
-
-        for(String attachment : componentDefinition.getAttachment()){
-            IRI attachmentIRI ;
-            try {
-                attachmentIRI = RdfUtils.createIRI(attachment);
-            } catch (Exception e){
-                attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
-            }
-
-            model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentIRI, graph);
-        }
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
 
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
         if (component.getType().equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
+            for(String attachment : componentDefinition.getAttachment()){
+                IRI attachmentIRI ;
+                try {
+                    attachmentIRI = RdfUtils.createIRI(attachment);
+                } catch (Exception e){
+                    attachmentIRI = RdfUtils.structureComponentMeasureIRI(attachment);
+                }
+
+                model.add(componentSpecificationIRI, QB.COMPONENT_ATTACHMENT, attachmentIRI, graph);
+            }
+
             model.add(componentSpecificationIRI, QB.ATTRIBUTE, getAttributeIRI(component.getId()), graph);
             model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
         }
         if (component.getType().equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
+        repoGestion.loadSimpleObject(componentSpecificationIRI, model);
     }
 
     public IRI getComponentDefinitionIRI(String structureIRI, String componentDefinitionId) {
