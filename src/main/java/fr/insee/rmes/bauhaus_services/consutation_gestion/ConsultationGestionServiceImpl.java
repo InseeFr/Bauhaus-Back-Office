@@ -1,10 +1,12 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
+import jdk.vm.ci.meta.Constant;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -263,9 +265,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         for (int i = 0; i < codes.length(); i++) {
             JSONObject code = codes.getJSONObject(i);
 
-            if(code.has("parents")){
+            if(code.has(Constants.PARENTS)){
                 JSONArray children = new JSONArray();
-                String parentCode = code.getString("parents");
+                String parentCode = code.getString(Constants.PARENTS);
                 if(childrenMapping.has(parentCode)){
                     children = childrenMapping.getJSONArray(parentCode);
                 }
@@ -274,27 +276,27 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
 
 
-            if(formattedCodes.has(code.getString("uri"))){
-                JSONObject c = formattedCodes.getJSONObject(code.getString("uri"));
+            if(formattedCodes.has(code.getString(Constants.URI))){
+                JSONObject c = formattedCodes.getJSONObject(code.getString(Constants.URI));
 
-                if(code.has("parents")){
-                    JSONArray parents = c.getJSONArray("parents");
-                    parents.put(code.getString("parents"));
-                    c.put("parents", parents);
+                if(code.has(Constants.PARENTS)){
+                    JSONArray parents = c.getJSONArray(Constants.PARENTS);
+                    parents.put(code.getString(Constants.PARENTS));
+                    c.put(Constants.PARENTS, parents);
                 }
             } else {
                 code.put("label", this.formatLabel(code));
-                code.remove("prefLabelLg1");
-                code.remove("prefLabelLg2");
+                code.remove(Constants.PREF_LABEL_LG1);
+                code.remove(Constants.PREF_LABEL_LG2);
 
-                if(code.has("parents")){
+                if(code.has(Constants.PARENTS)){
                     JSONArray parents = new JSONArray();
-                    parents.put(code.getString("parents"));
-                    code.put("parents", parents);
+                    parents.put(code.getString(Constants.PARENTS));
+                    code.put(Constants.PARENTS, parents);
                 } else {
-                    code.put("parents", new JSONArray());
+                    code.put(Constants.PARENTS, new JSONArray());
                 }
-                formattedCodes.put(code.getString("uri"), code);
+                formattedCodes.put(code.getString(Constants.URI), code);
             }
         }
 
