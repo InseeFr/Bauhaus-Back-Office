@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bauhaus-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bauhaus-api
+  template:
+    metadata:
+      labels:
+        app: bauhaus-api
+    spec:
+      hostname: bauhaus-api-hostname
+      subdomain: bauhaus-api
+      containers:
+        - name: bauhaus-api
+          image: nicolaslaval/bauhaus-api:3.0.3
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: fr.insee.rmes.bauhaus.appHost
+              value: "https://bauhaus.toto.fr"
+            - name: fr.insee.rmes.bauhaus.env
+              value: "XXX"
+            - name: fr.insee.rmes.bauhaus.force.ssl
+              value: "true"
+            - name: fr.insee.rmes.bauhaus.sesame.gestion.sesameServer
+              value: "https://graphdb.linked-open-statistics.org/"
+            - name: fr.insee.rmes.bauhaus.sesame.gestion.repository
+              value: "gestion"
+            - name: fr.insee.rmes.bauhaus.sesame.gestion.baseURI
+              value: "http://bauhaus/"
+            # - name: fr.insee.rmes.bauhaus.sesame.gestion.sesameServer
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.sesame.gestion.repository
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.sesame.gestion.baseURI
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.sesame.publication.interne.repository
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.metadata.api.baseURI
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.ldap.url
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.spoc.url
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.spoc.user
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.spoc.password
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.igesa.url
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.igesa.id
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.igesa.user
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.igesa.password
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.broker.url
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.broker.user
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.broker.password
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.api.host
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.api.basepath
+            #   value: ""
+            - name: fr.insee.rmes.bauhaus.storage.document.gestion
+              value: "src/main/resources/gestion"
+            # - name: fr.insee.rmes.bauhaus.storage.document.publication
+            #   value: ""
+            # - name: fr.insee.rmes.bauhaus.storage.document.publication.interne
+            #   value: ""
+            # - name: fr.insee.web4g.baseURL
+            #   value: ""
