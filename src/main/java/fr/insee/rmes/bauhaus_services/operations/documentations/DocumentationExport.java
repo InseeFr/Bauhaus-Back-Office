@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -128,9 +127,11 @@ public class DocumentationExport {
 
 		try {
 			return Response.ok( (StreamingOutput) out -> {
-	                InputStream input = new FileInputStream( finalPath.toFile() );
+	                InputStream input = Files.newInputStream( finalPath);
 	                IOUtils.copy(input, out);
 	                out.flush();   
+	                input.close();
+	                out.close();
 	        } ).header( "Content-Disposition", content ).build();
 		 } catch ( Exception e ) { 
          	logger.error(e.getMessage());

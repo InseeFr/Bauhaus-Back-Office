@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -579,9 +578,11 @@ public class DocumentsUtils  extends RdfService  {
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		try {
 			return Response.ok( (StreamingOutput) output -> {
-	                InputStream input = new FileInputStream( path.toFile() );
+	                InputStream input = Files.newInputStream(path);
 	                IOUtils.copy(input, output);
+	                input.close();
 	                output.flush();   
+	                output.close();
 	        } ).header( "Content-Disposition", content ).build();
 		 } catch ( Exception e ) { 
          	logger.error(e.getMessage());
