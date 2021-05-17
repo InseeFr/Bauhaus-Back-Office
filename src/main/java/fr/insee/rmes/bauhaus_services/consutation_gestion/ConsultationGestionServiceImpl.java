@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
@@ -170,7 +171,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
-                listCode.put("notation", component.getString("listeCodeNotation"));
+                listCode.put("id", component.getString("listeCodeNotation"));
                 component.put("listCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
@@ -255,14 +256,60 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
 
+        JSONObject childrenMapping = new JSONObject();
+
+        JSONObject formattedCodes = new JSONObject();
+
         for (int i = 0; i < codes.length(); i++) {
             JSONObject code = codes.getJSONObject(i);
-            code.put("label", this.formatLabel(code));
-            code.remove("prefLabelLg1");
-            code.remove("prefLabelLg2");
+
+            if(code.has("parents")){
+                JSONArray children = new JSONArray();
+                String parentCode = code.getString("parents");
+                if(childrenMapping.has(parentCode)){
+                    children = childrenMapping.getJSONArray(parentCode);
+                }
+                children.put(code.get("code"));
+                childrenMapping.put(parentCode, children);
+            }
+
+
+            if(formattedCodes.has(code.getString("uri"))){
+                JSONObject c = formattedCodes.getJSONObject(code.getString("uri"));
+
+                if(code.has("parents")){
+                    JSONArray parents = c.getJSONArray("parents");
+                    parents.put(code.getString("parents"));
+                    c.put("parents", parents);
+                }
+            } else {
+                code.put("label", this.formatLabel(code));
+                code.remove("prefLabelLg1");
+                code.remove("prefLabelLg2");
+
+                if(code.has("parents")){
+                    JSONArray parents = new JSONArray();
+                    parents.put(code.getString("parents"));
+                    code.put("parents", parents);
+                } else {
+                    code.put("parents", new JSONArray());
+                }
+                formattedCodes.put(code.getString("uri"), code);
+            }
         }
 
-        return codes;
+        JSONArray result = new JSONArray();
+        Iterator<String> keys = formattedCodes.keys();
+
+        while(keys.hasNext()) {
+            String key = keys.next();
+            JSONObject code = formattedCodes.getJSONObject(key);
+            if(childrenMapping.has(code.getString("code"))){
+                code.put("enfants", childrenMapping.getJSONArray(code.getString("code")));
+            }
+            result.put(code);
+        }
+        return result;
     }
 
     private JSONArray formatLabel(JSONObject obj) {

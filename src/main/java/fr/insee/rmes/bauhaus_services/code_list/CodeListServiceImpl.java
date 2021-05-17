@@ -84,7 +84,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					if(previousCode.has(Constants.PARENTS)){
 						parents = previousCode.getJSONArray(Constants.PARENTS);
 					}
-					parents.put(tempCode.getString("parents"));
+					parents.put(tempCode.getString(Constants.PARENTS));
 					previousCode.put(Constants.PARENTS, parents);
 					formattedCodes.put(code, previousCode);
 				}
