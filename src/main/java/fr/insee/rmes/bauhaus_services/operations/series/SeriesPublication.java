@@ -104,6 +104,7 @@ public class SeriesPublication extends RdfService {
 		} finally {
 			repoGestion.closeStatements(statements);
 			repoGestion.closeStatements(hasPartStatements);
+			con.close();
 		}
 		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
 		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
