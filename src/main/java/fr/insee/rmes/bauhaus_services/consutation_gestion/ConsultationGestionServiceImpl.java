@@ -308,6 +308,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             if(childrenMapping.has(code.getString("code"))){
                 code.put("enfants", childrenMapping.getJSONArray(code.getString("code")));
             }
+            if(code.getJSONArray(Constants.PARENTS).length() == 0){
+                code.remove(Constants.PARENTS);
+            }
             result.put(code);
         }
         return result;
