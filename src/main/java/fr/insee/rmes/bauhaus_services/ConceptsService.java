@@ -41,7 +41,10 @@ public interface ConceptsService {
 	
 	public void setConceptsValidation(String body) throws  RmesException ;
 	
-	public Response getConceptExport(String id, String acceptHeader);
+	@Deprecated
+	public Response getConceptExportOld(String id, String acceptHeader);
+	
+	public Response getConceptExport(String id, String acceptHeader) throws RmesException;
 	
 	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	

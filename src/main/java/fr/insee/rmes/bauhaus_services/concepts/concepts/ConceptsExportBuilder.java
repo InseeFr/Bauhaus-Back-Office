@@ -1,28 +1,57 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import javax.xml.transform.TransformerException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.external_services.export.ExportUtils;
+import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.StringComparator;
 import fr.insee.rmes.utils.XhtmlTags;
+import fr.insee.rmes.utils.XsltUtils;
 
 
 @Component
 public class ConceptsExportBuilder  extends RdfService {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ConceptsExportBuilder.class);
+
 
 	private static final String CONCEPT_VERSION = "conceptVersion";
 	@Autowired 
@@ -31,16 +60,7 @@ public class ConceptsExportBuilder  extends RdfService {
 	public JSONObject getConceptData(String id) throws RmesException {
 		JSONObject data = new JSONObject();
 		JSONObject general = conceptsUtils.getConceptById(id);
-		if (general.has(Constants.ALT_LABEL_LG1)) {
-			general.put(Constants.ALT_LABEL_LG1, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
-		} else {
-			general.remove(Constants.ALT_LABEL_LG1);
-		}
-		if (general.has(Constants.ALT_LABEL_LG2)) {
-			general.put(Constants.ALT_LABEL_LG2, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
-		} else {
-			general.remove(Constants.ALT_LABEL_LG2);
-		}
+		transformAltLabelListInString(general);
 		data.put(Constants.PREF_LABEL_LG1, general.getString(Constants.PREF_LABEL_LG1));
 		if (general.has(Constants.PREF_LABEL_LG2)) {
 			data.put(Constants.PREF_LABEL_LG2, general.getString(Constants.PREF_LABEL_LG2));
@@ -53,6 +73,49 @@ public class ConceptsExportBuilder  extends RdfService {
 				ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
 		editNotes(notes, data);
 		return data;
+	}
+
+
+	public void transformAltLabelListInString(JSONObject general) {
+		if (general.has(Constants.ALT_LABEL_LG1)) {
+			general.put(Constants.ALT_LABEL_LG1, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
+		} else {
+			general.remove(Constants.ALT_LABEL_LG1);
+		}
+		if (general.has(Constants.ALT_LABEL_LG2)) {
+			general.put(Constants.ALT_LABEL_LG2, JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
+		} else {
+			general.remove(Constants.ALT_LABEL_LG2);
+		}
+	}
+	
+	
+	public ConceptForExport getConceptData() throws RmesException {
+		String id = "c1941";//TODO
+		
+		ConceptForExport concept = null;
+		
+		JSONObject general = conceptsUtils.getConceptById(id);
+		transformAltLabelListInString(general);
+		
+		JSONArray links = repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
+		JSONObject notes = repoGestion.getResponseAsObject(
+				ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
+
+		
+		// Deserialization in the `ConceptForExport` class	
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);	
+		try {
+			concept = mapper.readValue(general.toString(), ConceptForExport.class);
+			concept.addLinks(links);
+			concept.addNotes(notes);
+		} catch (JsonProcessingException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
+		}
+		return concept;
+		
 	}
 
 	public JSONObject getCollectionData(String id)  throws RmesException{
@@ -240,6 +303,70 @@ public class ConceptsExportBuilder  extends RdfService {
 			}
 		} else {
 			return "Provisoire";
+		}
+	}
+	
+
+	public Response export(Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
+			boolean lg2) throws RmesException {
+		logger.debug("Begin To export concept");
+
+		File output = null;
+		String fileName = "export.odt";
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		InputStream odtFileIS = null;
+		InputStream xslFileIS = null;
+		InputStream zipToCompleteIS = null;
+
+		try {
+			xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/concept2fodt.xsl");
+			odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
+			zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
+
+			// prepare output
+			output = File.createTempFile(Constants.OUTPUT, ExportUtils.getExtension(Constants.XML));
+			output.deleteOnExit();
+		} catch (IOException ioe) {
+			logger.error(ioe.getMessage());
+		} 
+
+		try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
+				PrintStream printStream = new PrintStream(osOutputFile);) {
+
+			Path tempDir = Files.createTempDirectory("forExport");
+			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName);
+			
+			//Add two params to xmlContents
+			String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+			xmlContent.put("parametersFile", parametersXML);
+
+			//transform
+			XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
+
+			// create odt
+			XsltUtils.createOdtFromXml(output, finalPath, zipToCompleteIS, tempDir);
+
+			logger.debug("End To export concept");
+
+			return Response.ok((StreamingOutput) out -> {
+				InputStream input = Files.newInputStream(finalPath);
+				IOUtils.copy(input, out);
+				out.flush();
+				input.close();
+				out.close();
+			}).header("Content-Disposition", content).build();
+		} catch (IOException | TransformerException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					e.getClass().getSimpleName());
+		} finally {
+			try {
+				if (odtFileIS != null)
+					odtFileIS.close();
+				if (xslFileIS != null)
+					xslFileIS.close();
+			} catch (IOException ioe) {
+				logger.error(ioe.getMessage());
+			}
 		}
 	}
 

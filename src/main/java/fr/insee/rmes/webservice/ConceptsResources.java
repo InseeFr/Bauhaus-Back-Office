@@ -313,10 +313,19 @@ public class ConceptsResources   {
 	}
 
 	@GET
+	@Deprecated
+	@Path("/concept/exportOld/{id}")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getConceptExportOld", summary = "Blob of concept")
+	public Response getConceptExportOld(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
+			return conceptsService.getConceptExportOld(id, acceptHeader);
+	}
+	
+	@GET
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
-	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.getConceptExport(id, acceptHeader);
 	}
 
