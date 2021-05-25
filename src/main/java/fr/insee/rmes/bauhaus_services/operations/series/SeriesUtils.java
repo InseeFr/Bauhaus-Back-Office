@@ -1,7 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -246,20 +248,19 @@ public class SeriesUtils extends RdfService {
 		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
 
 		List<OperationsLink> replaces = series.getReplaces();
-		if (replaces != null && replaces.isEmpty()) {
-			replaces.stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
+			Optional.ofNullable(replaces)
+            .orElseGet(Collections::emptyList).stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
 				String replUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
 				addReplacesAndReplacedBy(model,  RdfUtils.toURI(replUri), seriesURI);
 			});
-		}
+		
 
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
-		if (replaces != null && replaces.isEmpty()) {
-			isReplacedBys.stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
+		Optional.ofNullable(isReplacedBys)
+        .orElseGet(Collections::emptyList).stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
 				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
 				addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
 			});
-		}
 		
 		if (familyURI != null) {
 			//case CREATION : link series to family
