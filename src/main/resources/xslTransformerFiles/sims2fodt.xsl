@@ -132,7 +132,7 @@
             <xsl:sort data-type="number" select="substring-before(concat(substring-after(idMas,'.'),'.0'),'.')"/>
             <xsl:sort data-type="number" select="substring-after(substring-after(idMas,'.'),'.')"/>
             <!-- ever mas or only the mas corresponding to a rubrics from the sims or its parent or its grand-parent -->
-            <xsl:if test="$parameters//includeEmptyMas = 'true'
+            <xsl:if test="$parameters//includeEmptyFields = 'true'
                 or idMas = $sims//rubrics/idAttribute
                 or idMas = $msd//mas[idMas = $sims//rubrics/idAttribute]/idParent
                 or idMas = $msd//mas[idMas = $msd//mas[idMas = $sims//rubrics/idAttribute]/idParent]/idParent">
@@ -188,12 +188,12 @@
     </xsl:template>
 
     <xd:doc>
-        <xd:desc>filter rows when $parameters//includeEmptyMas is false</xd:desc>
+        <xd:desc>filter rows when $parameters//includeEmptyFields is false</xd:desc>
     </xd:doc>
     <xsl:template match="table:table-row">
         <xsl:variable name="show-children" as="xs:boolean">
             <xsl:choose>
-                <xsl:when test="$parameters//includeEmptyMas = 'false' and descendant::text:p[contains(text(),'${')]">
+                <xsl:when test="$parameters//includeEmptyFields = 'false' and descendant::text:p[contains(text(),'${')]">
                     <xsl:variable name="first-personalized-variable">
                         <xsl:call-template name="get-variable-nodes">
                             <xsl:with-param name="variable-address" select="substring-before(substring-after(descendant::text:p[contains(text(),'${')][1],'${'),'}')"/>
