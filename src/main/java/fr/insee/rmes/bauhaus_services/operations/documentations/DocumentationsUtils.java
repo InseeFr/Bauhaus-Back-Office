@@ -566,7 +566,6 @@ public class DocumentationsUtils extends RdfService{
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);
 		xmlContent.put("indicatorFile",  indicatorXML);
-	//	xmlContent.put("msdFile",  msdXML);
 		xmlContent.put("codeListsFile",  codeListsXML);
 		xmlContent.put("organizationsFile",  organizationsXML);
 		
