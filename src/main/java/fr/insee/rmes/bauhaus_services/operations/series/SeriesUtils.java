@@ -1,7 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
@@ -46,6 +48,7 @@ import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -73,12 +76,12 @@ public class SeriesUtils extends RdfService {
 		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
 	}
 
-	public Series getSeriesById(String id) throws RmesException {
-		return buildSeriesFromJson(getSeriesJsonById(id));	
+	public Series getSeriesById(String id, boolean forXml) throws RmesException {
+		return buildSeriesFromJson(getSeriesJsonById(id),forXml);	
 	}
 
 
-	private Series buildSeriesFromJson(JSONObject seriesJson) throws RmesException {
+	private Series buildSeriesFromJson(JSONObject seriesJson, boolean forXml) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
@@ -89,7 +92,8 @@ public class SeriesUtils extends RdfService {
 				id= famOpeSerIndUtils.createId();}
 		Series series = new Series();
 		try {
-			series = mapper.readValue(seriesJson.toString(), Series.class);
+			if (forXml) series = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(seriesJson.toString()), Series.class);
+			else series = mapper.readValue(seriesJson.toString(), Series.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -242,28 +246,22 @@ public class SeriesUtils extends RdfService {
 		addCodeList(series.getAccrualPeriodicityList(), series.getAccrualPeriodicityCode(), DCTERMS.ACCRUAL_PERIODICITY, model, seriesURI);		
 
 		addOperationLinks(series.getSeeAlso(), RDFS.SEEALSO, model, seriesURI); 
-		//addOperationLinks(series.getReplaces(), DCTERMS.REPLACES, model, seriesURI); 
 
 		List<OperationsLink> replaces = series.getReplaces();
-		if (replaces != null) {
-			for (OperationsLink replace : replaces) {
-				if(!replace.isEmpty()) {
-					String replUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
-					addReplacesAndReplacedBy(model,  RdfUtils.toURI(replUri), seriesURI);
-				}
-			}
-		}
+			Optional.ofNullable(replaces)
+            .orElseGet(Collections::emptyList).stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
+				String replUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
+				addReplacesAndReplacedBy(model,  RdfUtils.toURI(replUri), seriesURI);
+			});
+		
 
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
-		if (isReplacedBys != null) {
-			for (OperationsLink isRepl : isReplacedBys) {
-				if(!isRepl.isEmpty()) {
-					String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
-					addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
-				}
-			}
-		}
-
+		Optional.ofNullable(isReplacedBys)
+        .orElseGet(Collections::emptyList).stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
+				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+				addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
+			});
+		
 		if (familyURI != null) {
 			//case CREATION : link series to family
 			RdfUtils.addTripleUri(seriesURI, DCTERMS.IS_PART_OF, familyURI, model, RdfUtils.operationsGraph());
@@ -317,7 +315,7 @@ public class SeriesUtils extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
 		}
-		Series series = buildSeriesFromJson(new JSONObject(body));
+		Series series = buildSeriesFromJson(new JSONObject(body),false);
 		checkSimsWithOperations(series);
 
 		// Tester l'existence de la famille

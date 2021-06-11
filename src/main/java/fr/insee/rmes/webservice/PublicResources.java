@@ -96,7 +96,7 @@ public class PublicResources {
 	}
 
 	private List<String> getActiveModules() {
-        String dirPath = Config.DOCUMENTS_STORAGE_GESTION + "\\BauhausActiveModules.txt";
+        String dirPath = Config.DOCUMENTS_STORAGE_GESTION + "/BauhausActiveModules.txt";
         File file = new File(dirPath);
         try {
 			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list

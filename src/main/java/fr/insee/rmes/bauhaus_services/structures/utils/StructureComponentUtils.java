@@ -289,24 +289,20 @@ public class StructureComponentUtils extends RdfService {
 
     public String publishComponent(JSONObject component) throws RmesException {
 
-        if(component.isNull("creator") || "".equals(component.getString("creator"))){
+        if(jsonObjecthasPropertyNullOrEmpty(component, "creator")){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
-        if(component.isNull("disseminationStatus") || "".equals(component.getString("disseminationStatus"))){
+        if(jsonObjecthasPropertyNullOrEmpty(component, "disseminationStatus")){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        if(!component.isNull("concept") && !"".equals(component.getString("concept"))){
-            if(!repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
-            }
+        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
+                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
         }
 
-        if(!component.isNull("codeList") && !"".equals(component.getString("codeList"))){
-            if(!repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component, "codeList") && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
-            }
         }
 
 
@@ -324,10 +320,10 @@ public class StructureComponentUtils extends RdfService {
         if (type.equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
             componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
         }
-        if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
+        else if (type.equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
             componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id), QB.MEASURE_PROPERTY);
         }
-        if (type.equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
+        else if (type.equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
             componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
         }
 
@@ -335,4 +331,8 @@ public class StructureComponentUtils extends RdfService {
 
         return id;
     }
+
+	private boolean jsonObjecthasPropertyNullOrEmpty(JSONObject component, String property) {
+		return component.isNull(property) || "".equals(component.getString(property));
+	}
 }

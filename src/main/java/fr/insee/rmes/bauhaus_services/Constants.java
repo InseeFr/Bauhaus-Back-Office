@@ -12,6 +12,7 @@ public class Constants {
 	public static final String CODE_LIST_FREQ = "CL_FREQ";
 	public static final String CODE_LIST_SOURCE_CATEGORY = "CL_SOURCE_CATEGORY";
 	public static final String CONCEPT = "concept";
+	public static final String CONTENT = "content";
 	public static final String CREATOR = "creator";
 	public static final String CREATORS = "creators";
 	public static final String CONTRIBUTOR = "contributor";
@@ -57,6 +58,7 @@ public class Constants {
 	public static final String LABEL = "label";
 	public static final String LABEL_LG1 = "labelLg1";
 	public static final String LABEL_LG2 = "labelLg2";
+	public static final String LANG = "lang";
 	
 	/*M*/
 	public static final String MANAGER = "manager";

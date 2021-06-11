@@ -1,9 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
@@ -53,7 +54,6 @@ import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
-import fr.insee.rmes.model.operations.documentations.ExtensiveSims;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -125,20 +125,6 @@ public class DocumentationsUtils extends RdfService{
 		return getDocumentationByIdSims(id);
 	}
 	
-
-	/**
-	 * Java Object	Builder
-	 * @param jsonSims
-	 * @return ExtensiveSims
-	 * @throws RmesException
-	 */
-	/* Not Used */
-	public ExtensiveSims buildExtensiveDocumentationFromJson(JSONObject jsonSims) throws RmesException {
-		Documentation sims = buildDocumentationFromJson(jsonSims,false);
-		return new ExtensiveSims(sims);
-	}
-
-
 	/**
 	 * Java Object	Builder
 	 * @param jsonSims
@@ -505,7 +491,8 @@ public class DocumentationsUtils extends RdfService{
 		return stamps;
 	}
 
-	public File exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws IOException, RmesException {
+
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -526,7 +513,7 @@ public class DocumentationsUtils extends RdfService{
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries);
+			series=seriesUtils.getSeriesById(idSeries,true);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -535,7 +522,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.INDICATOR_UP)) {
 			indicatorXML=XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase));
+					indicatorsUtils.getIndicatorById(idDatabase,true));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=XMLUtils.getTagValues(
@@ -543,7 +530,7 @@ public class DocumentationsUtils extends RdfService{
 							indicatorXML,
 							Constants.WASGENERATEDBY).iterator().next(),
 					Constants.ID).iterator().next();
-			series=seriesUtils.getSeriesById(idSeries);
+			series=seriesUtils.getSeriesById(idSeries,true);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -552,7 +539,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.SERIES_UP)) {
 			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase));
+					seriesUtils.getSeriesById(idDatabase,true));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
@@ -572,11 +559,20 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2);
+
+		
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("simsFile",  simsXML);
+		xmlContent.put("seriesFile",  seriesXML);
+		xmlContent.put("operationFile",  operationXML);
+		xmlContent.put("indicatorFile",  indicatorXML);
+	//	xmlContent.put("msdFile",  msdXML);
+		xmlContent.put("codeListsFile",  codeListsXML);
+		xmlContent.put("organizationsFile",  organizationsXML);
+		
+		
+		return docExport.export(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
-
-
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();

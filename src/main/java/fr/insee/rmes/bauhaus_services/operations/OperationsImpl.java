@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
@@ -124,15 +125,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
-	
+
 	@Override
 	public String getSeriesForSearchWithStamp(String stamp) throws RmesException {
 		return seriesUtils.getSeriesForSearch(stamp);
 	}
-	
+
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
-		return seriesUtils.getSeriesById(id);
+		return seriesUtils.getSeriesById(id,false);
 	}
 
 	@Override
@@ -207,9 +208,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 			path = (String) pathField.get(os);
 			fis= new FileInputStream(path);
 
-			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
-				logger.error(e.getMessage(),e);
-			}
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
+			logger.error(e.getMessage(),e);
+		}
 		return(fis);
 	}
 
@@ -314,7 +315,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public Indicator getIndicatorById(String id) throws RmesException {
-		return indicatorsUtils.getIndicatorById(id);
+		return indicatorsUtils.getIndicatorById(id,false);
 	}
 
 	@Override
@@ -390,7 +391,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String getFullSimsForJson(String id) throws RmesException {
 		return  documentationsUtils.getFullSimsForJson(id).toString();
 	}
-	
+
 	@Override
 	public String getMetadataReportOwner(String id) throws RmesException {
 		return documentationsUtils.getDocumentationOwnersByIdSims(id);
@@ -436,20 +437,27 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
 
-		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
-				"at least one language must be selected for export","in export of sims: "+id); 
-		File output;
-		InputStream is;
+		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
+				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
+				"at least one language must be selected for export",
+				"in export of sims: "+id); 
 		try {
-			output = documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2);
-			is = new FileInputStream(output);
-		} catch (Exception e1) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Error export");
+			return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
 		}
-		String fileName = output.getName();
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, "application/vnd.oasis.opendocument.text").header(CONTENT_DISPOSITION, content).build();
 	}
-	
+
+	@Override
+	public Response exportMetadataReportForLabel(String id) throws RmesException  {
+
+		try {
+			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
+		}
+	}
 
 }

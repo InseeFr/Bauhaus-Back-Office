@@ -27,9 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -44,7 +46,8 @@ public class DocumentsPublication  extends RdfService{
 
 	static final Logger logger = LogManager.getLogger(DocumentsPublication.class);
 
-	public void publishAllDocumentsInSims(String idSims, Model model) throws RmesException {
+	public void publishAllDocumentsInSims(String idSims) throws RmesException {
+		
 		// Get all documents
 		JSONArray listDoc = docUtils.getListDocumentSims(idSims);
 		
@@ -56,31 +59,37 @@ public class DocumentsPublication  extends RdfService{
 			String originalPath = doc.getValue();
 			String filename = docUtils.getDocumentNameFromUrl(originalPath);
 			// Publish the physical files
-			copyFileInPublicationFolders(originalPath, filename);
+			copyFileInPublicationFolders(originalPath);
 			
-			// Change url in document
-			model.addAll(getModelToPublish(docId,filename));
+			// Change url in document (getModelToPublish) and publish the RDF
+			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
+			RepositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
 		}
 		
 		//Get all links
 		JSONArray listLinks = docUtils.getListLinksSims(idSims);
 		for (Object link : listLinks) {
-			model.addAll(getLinkModelToPublish(docUtils.getIdFromJson((JSONObject)link).toString()));
-		}		
+			String id = docUtils.getIdFromJson((JSONObject)link).toString();
+			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
+			RepositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
+		}
+		
+		
 		
 	}
 
-	private void copyFileInPublicationFolders(String originalPath, String filename) throws RmesException {
-		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE, filename);
-		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE, filename);
+	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
+		Path file = Paths.get(originalPath);
+		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
+		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
 
 		try {
-			Files.copy(Paths.get(originalPath), targetPathInt, StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(originalPath), targetPathExt, StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(file, targetPathExt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					"IOException - Can't copy files");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass() + e.getMessage(),
+					e.getClass() + " - Can't copy files");
 		}
 	}
 	
@@ -89,9 +98,11 @@ public class DocumentsPublication  extends RdfService{
 		Resource document = RdfUtils.documentIRI(documentId);
 
 		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> documentStatements = repoGestion.getStatements(con, document);
+		RepositoryResult<Statement> documentStatements = null ;
 
 		try {
+			documentStatements = repoGestion.getStatements(con, document);
+
 			if (!documentStatements.hasNext()) {
 				throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
 			}
@@ -101,22 +112,76 @@ public class DocumentsPublication  extends RdfService{
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					Value object = RdfUtils.toURI(Paths.get(Config.DOCUMENTS_BASEURL,filename).toString());
+					String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+					logger.info("Publishing document : {}",newUrl);
+					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
 				} else {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					renameAndAddTripleToModel(model, st, subject);
 				}
 			}
-		} catch (RepositoryException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
-					Constants.REPOSITORY_EXCEPTION);
+		} catch (RepositoryException |RmesException e) {
+			model = getModelWithErrorToPublish(documentId, filename);
 		}
 
 		finally {
-			repoGestion.closeStatements(documentStatements);
+			if (documentStatements != null) {
+				repoGestion.closeStatements(documentStatements);		
+			}
+			con.close();
 		}
 		return model;
+	}
+	
+	private Model getModelWithErrorToPublish(String documentId, String filename) throws RmesException {
+		logger.error("PUBLISHING A DOCUMENT WITH RDF ERROR (URL)");
+		Model model = new LinkedHashModel();
+		Resource document = RdfUtils.documentIRI(documentId);
+		
+		try {
+			JSONArray tuples = repoGestion.getResponseAsArray(""
+					+ "select ?predicat ?obj FROM <"+RdfUtils.documentsGraph()+"> "
+					+ "WHERE {"
+					+ "?document ?predicat ?obj . "
+					+ "FILTER (?document = <"+document+">) "
+					+ "}");
+
+
+			if (tuples.length()==0) {
+				throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
+			}
+			
+			Resource newSubject = PublicationUtils.tranformBaseURIToPublish(document);
+			Value object ;
+			
+			for (int i = 0; i < tuples.length(); i++) {				
+				JSONObject tuple = (JSONObject) tuples.get(i);
+				String predicatString = tuple.getString("predicat");
+				IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+				if (predicatString.endsWith("url")) {
+					String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+					logger.info("Publishing document : {}",newUrl);
+					object = RdfUtils.toURI(newUrl);
+				} else {
+					String objectString = tuple.getString("obj");
+					try {					
+						object = RdfUtils.toURI(objectString);
+						object = PublicationUtils.tranformBaseURIToPublish((Resource) object);
+
+					}catch(IllegalArgumentException iAe) {
+						object = RdfUtils.setLiteralString(objectString);
+					}
+				}
+				model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
+			}
+		} catch (RepositoryException e) {
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					Constants.REPOSITORY_EXCEPTION);
+		}
+		return model;
+		
 	}
 	
 	private Model getLinkModelToPublish(String linkId) throws RmesException {
@@ -143,6 +208,7 @@ public class DocumentsPublication  extends RdfService{
 
 		finally {
 			repoGestion.closeStatements(linkStatements);
+			con.close();
 		}
 		return model;
 	}
