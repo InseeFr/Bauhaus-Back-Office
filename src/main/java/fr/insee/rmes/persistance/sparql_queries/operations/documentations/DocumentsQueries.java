@@ -3,6 +3,7 @@ package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -27,10 +28,15 @@ public class DocumentsQueries {
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
 
-	
-	public static String getDocumentUriQuery(IRI url) throws RmesException {
+	/**
+	 * 
+	 * @param url = link or filename
+	 * @return
+	 * @throws RmesException
+	 */
+	public static String getDocumentUriQuery(String url) throws RmesException {
 		if (params==null) {initParams();}
-		params.put(Constants.URL, url);
+		params.put(Constants.URL, StringUtils.lowerCase(url));
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
 	

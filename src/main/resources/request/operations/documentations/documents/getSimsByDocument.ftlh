@@ -9,5 +9,5 @@ where {
     ?sims rdfs:label ?labelLg2 .
     FILTER (lang(?labelLg2) = '${LG2}') .
     BIND(STRAFTER(STR(?sims),'/qualite/rapport/') AS ?id) .
-    BIND(REPLACE( STR(?simsRubric) , '(.*/)(\\w.+$)', '$2' ) AS ?simsRubricId) .
+    BIND(REPLACE( STR(?simsRubric) , '(.*/)(\\w.*$)', '$2' ) AS ?simsRubricId) .
 }

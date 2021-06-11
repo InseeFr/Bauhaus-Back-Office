@@ -533,21 +533,23 @@
                                     </xsl:otherwise>
                                 </xsl:choose>
                                 <xsl:if test="$document-language !='' or $document-date !=''">
-                                    <xsl:value-of select="concat(' (',$document-language)"/>
-                                    <xsl:if test="$document-language !='' and $document-date !=''">
-                                        <xsl:value-of select="' - '"/>
-                                    </xsl:if>
-                                    <xsl:if test="$document-date != ''">
-                                        <xsl:choose>
-                                            <xsl:when test="ends-with($rubric-element,'1')">
-                                                <xsl:value-of select="concat(substring($document-date,9,2),'/',substring($document-date,6,2),'/',substring($document-date,1,4),')')"/>
-                                            </xsl:when>
-                                            <xsl:otherwise>
-                                                <xsl:value-of select="$document-date"/>
-                                            </xsl:otherwise>
-                                        </xsl:choose>
-                                    </xsl:if>
-                                    <xsl:value-of select="')'"/>
+                                    <text:span text:style-name="Italic">
+                                        <xsl:value-of select="concat(' (',$document-language)"/>
+                                        <xsl:if test="$document-language !='' and $document-date !=''">
+                                            <xsl:value-of select="' - '"/>
+                                        </xsl:if>
+                                        <xsl:if test="$document-date != ''">
+                                            <xsl:choose>
+                                                <xsl:when test="ends-with($rubric-element,'1')">
+                                                    <xsl:value-of select="concat(substring($document-date,9,2),'/',substring($document-date,6,2),'/',substring($document-date,1,4))"/>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="$document-date"/>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:if>
+                                        <xsl:value-of select="')'"/>
+                                    </text:span>
                                 </xsl:if>
                             </xsl:element>
                             <xsl:element name="text:p">

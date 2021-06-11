@@ -16,25 +16,27 @@ WHERE {
 			?reportAttr ?attr ?value . 
 			FILTER ( datatype(?value) = <${DATE.rdfType}> ) 
 			BIND('${DATE.jsonType}' AS ?rangeType) .
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 
 		} 
 			
 		<#-- RangeType.RICHTEXT : label, hasDoc -->
 		UNION {
+			?reportAttr ?attr ?temp .
+			?temp rdf:type dcmitype:Text .		
+		
+			OPTIONAL{ 
 			 ?reportAttr ?attr ?textLg1 .
 			 ?textLg1 rdf:type dcmitype:Text .
-			 ?textLg1 dcterms:language <${LG1_CL}>
-
-			 OPTIONAL{ 
-				?textLg1 rdf:value ?labelLg1 
+			 ?textLg1 dcterms:language <${LG1_CL}> .
+			 ?textLg1 rdf:value ?labelLg1 .
 			}
 			 BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
 
 			 OPTIONAL {
 				 ?reportAttr ?attr ?textLg2 .
 				 ?textLg2 rdf:type dcmitype:Text .
-				 ?textLg2 dcterms:language <${LG2_CL}>
+				 ?textLg2 dcterms:language <${LG2_CL}> .
 
 						OPTIONAL{ 
 							?textLg2 rdf:value ?labelLg2 
@@ -42,7 +44,7 @@ WHERE {
 						BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2)
 			 }
 			 
-			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 
 			 BIND('${RICHTEXT.jsonType}' AS ?rangeType) . 
 		} 
@@ -54,13 +56,13 @@ WHERE {
 			 OPTIONAL{?reportAttr ?attr ?labelLg2 .
 			 	FILTER(lang(?labelLg2) = '${LG2}') } 
 			 BIND('${STRING.jsonType}' AS ?rangeType) . 
-			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 
 		} 
 			
 		<#-- RangeType.CODELIST : value, codelist, maxoccurs -->
 		UNION {
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 			?reportAttr ?attr ?codeUri . 
 			?codeUri skos:notation ?value .
 			?codeUri skos:inScheme ?listUri .
@@ -77,7 +79,7 @@ WHERE {
 		<#-- RangeType.ORGANIZATION : value -->
 		UNION {
 			?reportAttr ?attr ?organisationUri . 
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) . 
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
 			?organisationUri dcterms:identifier ?value .
 			BIND('${ORGANIZATION.jsonType}' AS ?rangeType) .
 		} 
@@ -88,7 +90,7 @@ WHERE {
 			GRAPH  <${MSD_GRAPH}>  {
 					?attr rdfs:range geo:Feature .
 				}
-			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.+$)', '$2' ) AS ?idAttribute) .
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
 			BIND('${GEOGRAPHY.jsonType}' AS ?rangeType) .
 		} }
 			

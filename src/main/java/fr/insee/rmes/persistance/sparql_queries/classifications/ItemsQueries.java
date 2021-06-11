@@ -56,9 +56,11 @@ public class ItemsQueries {
 				+ "?additionalContentNoteLg1 ?additionalContentNoteLg2 ?exclusionNoteLg1 ?exclusionNoteLg2 \n"
 				+ "?changeNoteLg1 ?changeNoteLg2 ?changeNoteDate \n"
 				+ "WHERE { \n" 
-				+ "?item skos:notation '" + itemId + "' . \n"
+				//+ "?item skos:notation '" + itemId + "' . \n" 
 				+ "?item skos:inScheme ?classification . \n"
 				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
+				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
+
 				// definitionLg1
 				+ "OPTIONAL {?item skos:definition ?defLg1 . \n"
 				+ "?defLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"

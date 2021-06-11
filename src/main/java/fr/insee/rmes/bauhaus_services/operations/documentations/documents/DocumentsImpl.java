@@ -51,10 +51,10 @@ public class DocumentsImpl implements DocumentsService {
 
 	/*
 	 * Create
-	 * @see fr.insee.rmes.bauhaus_services.DocumentsService#setDocument(java.lang.String)
+	 * @see fr.insee.rmes.bauhaus_services.DocumentsService#createDocument(java.lang.String)
 	 */
 	@Override
-	public String setDocument(String body, InputStream documentFile,String documentName) throws RmesException {
+	public String createDocument(String body, InputStream documentFile,String documentName) throws RmesException {
 		documentsUtils.checkFileNameValidity(documentName);
 		String id=documentsUtils.createDocumentID();
 		logger.debug("Create document : {}", id);

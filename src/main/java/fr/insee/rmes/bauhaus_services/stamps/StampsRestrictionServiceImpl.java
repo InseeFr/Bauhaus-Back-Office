@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.stamps;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
@@ -26,8 +28,11 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
+
 @Service
 public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
+	
+	static final Logger logger = LogManager.getLogger(StampsRestrictionServiceImpl.class);
 
 	private User fakeUser;
 
@@ -68,7 +73,9 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	public User getUser() {
 		if (Config.ENV.equals("pre-prod") || Config.ENV.equals("prod")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			return (User) authentication.getPrincipal();
+			User currentUser = (User) authentication.getPrincipal();
+			logger.info("Current user has stamp {}", currentUser.getStamp());
+			return currentUser;
 		}
 		return dvOrQfUser();
 	}
@@ -106,7 +113,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isAdmin = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.ADMIN)) {
+			if (roles.getString(i).equals(Roles.ADMIN)||roles.getString(i).equals(Roles.SPRING_ADMIN)) {
 				isAdmin = true;
 			}
 		}
@@ -117,7 +124,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isConceptsContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.CONCEPTS_CONTRIBUTOR)) {
+			if (roles.getString(i).equals(Roles.CONCEPTS_CONTRIBUTOR)||roles.getString(i).equals(Roles.SPRING_CONCEPTS_CONTRIBUTOR)) {
 				isConceptsContributor = true;
 			}
 		}
@@ -128,7 +135,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isConceptContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.CONCEPT_CONTRIBUTOR)) {
+			if (roles.getString(i).equals(Roles.CONCEPT_CONTRIBUTOR)||roles.getString(i).equals(Roles.SPRING_CONCEPT_CONTRIBUTOR)) {
 				isConceptContributor = true;
 			}
 		}
@@ -139,7 +146,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isConceptCreator = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.CONCEPT_CREATOR)) {
+			if (roles.getString(i).equals(Roles.CONCEPT_CREATOR)||roles.getString(i).equals(Roles.SPRING_CONCEPT_CREATOR)) {
 				isConceptCreator = true;
 			}
 		}
@@ -150,7 +157,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isSeriesContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.SERIES_CONTRIBUTOR)) {
+			if (roles.getString(i).equals(Roles.SERIES_CONTRIBUTOR)||roles.getString(i).equals(Roles.SPRING_SERIES_CONTRIBUTOR)) {
 				isSeriesContributor = true;
 			}
 		}
@@ -161,7 +168,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isIndicatorContributor = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.INDICATOR_CONTRIBUTOR)) {
+			if (roles.getString(i).equals(Roles.INDICATOR_CONTRIBUTOR)||roles.getString(i).equals(Roles.SPRING_INDICATOR_CONTRIBUTOR)) {
 				isIndicatorContributor = true;
 			}
 		}
@@ -172,7 +179,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		Boolean isCnis = false;
 		JSONArray roles = user.getRoles();
 		for (int i = 0; i < roles.length(); i++) {
-			if (roles.getString(i).equals(Roles.CNIS)) {
+			if (roles.getString(i).equals(Roles.CNIS)||roles.getString(i).equals(Roles.SPRING_CNIS)) {
 				isCnis = true;
 			}
 		}

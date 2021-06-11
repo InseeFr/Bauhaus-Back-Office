@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,6 +44,9 @@ public class HealthcheckApi {
 	@Autowired
 	protected RepositoryGestion repoGestion;
 	
+	@Autowired
+	protected UserRolesManagerService userService;
+	
 	private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
 
     @GET
@@ -53,45 +57,75 @@ public class HealthcheckApi {
     	
     	StringJoiner errorMessage = new StringJoiner(" ");
     	StringJoiner stateResult = new StringJoiner(" ");
-    	stateResult.add("Database connexion \n");
     	logger.info(" Begin healthCheck");
-    	
+
     	//Test database connexion
-    	try {
-			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
-				errorMessage.add("- Repository publication doesn't return statement \n");
-				stateResult = stateResult.add(" - Connexion publication").add(KO_STATE);
-			}else {
-				stateResult = stateResult.add(" - Connexion publication").add(OK_STATE);
-			}
-	    	if (StringUtils.isEmpty( 	repoGestion.getResponse(sparlQuery))) {
-	    		errorMessage.add("- Repository gestion doesn't return statement \n");
-	    		stateResult = stateResult.add(" - Connexion gestion").add(KO_STATE);
-	    	}else {
-	    		stateResult = stateResult.add(" - Connexion gestion").add(OK_STATE);
-	    	}
-		} catch (RmesException e) {
-			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult = stateResult.add(" - Connexion database").add(KO_STATE);
-		}
+    	stateResult.add("Database connexion \n");   	
+    	checkDatabaseConnexions(errorMessage, stateResult);
     	
-    	stateResult = stateResult.add("Document storage \n");
     	//Test access to storage
+    	stateResult = stateResult.add("Document storage \n");
     	checkDocumentStorage(Config.DOCUMENTS_STORAGE_GESTION,"Gestion", stateResult, errorMessage);
     	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE,"Publication Externe", stateResult, errorMessage);
     	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE,"Publication Interne", stateResult, errorMessage);
     	
+    	//Test LDAP connexion
+    	stateResult = stateResult.add("LDAP connexion \n");
+    	try {
+			String result = userService.checkLdapConnexion();
+	    	if ("OK".equals(result)) {
+	    		stateResult.add("- Connexion LDAP").add(OK_STATE);
+	    	}else {
+				errorMessage.add("- No functional error but return an empty string \n");
+	    		stateResult.add("- Connexion LDAP").add(KO_STATE);
+	    	}
+		} catch (RmesException e) {
+			errorMessage.add("- "+e.getMessage()+ " \n");
+			stateResult.add("- Connexion LDAP").add(KO_STATE);
+		}
+
+    	
+    	//print result in log
          logger.info("{}",stateResult);
          logger.info("End healthcheck");
          
     	if (!"".equals(errorMessage.toString())) {
     		logger.error("{}",errorMessage);
-    		return Response.serverError().entity(errorMessage.toString()).build();
+    		return Response.serverError().entity(stateResult.merge(errorMessage).toString()).build();
     	}
     	else {
     		return Response.ok(stateResult.toString()).build();
     	}
     }
+
+	public void checkDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
+		try {
+			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
+				errorMessage.add("- Repository publication doesn't return statement \n");
+				stateResult.add(" - Connexion publication Z").add(KO_STATE);
+			}else {
+				stateResult.add(" - Connexion publication Z").add(OK_STATE);
+			}
+			if (StringUtils.isEmpty(RepositoryPublication.getResponseInternalPublication(sparlQuery))){
+				errorMessage.add("- Repository publication interne doesn't return statement \n");
+				stateResult.add(" - Connexion publication I").add(KO_STATE);
+			}else {
+				stateResult.add(" - Connexion publication I").add(OK_STATE);
+			}
+	    	if (StringUtils.isEmpty( repoGestion.getResponse(sparlQuery))) {
+	    		errorMessage.add("- Repository gestion doesn't return statement \n");
+	    		stateResult.add(" - Connexion gestion").add(KO_STATE);
+	    	}else {
+	    		stateResult.add(" - Connexion gestion").add(OK_STATE);
+	    	}
+		} catch (RmesException e) {
+			errorMessage.add("- "+e.getMessage()+ " \n");
+			stateResult.add(" - Connexion database").add(KO_STATE);
+		} catch (Exception e) {
+			errorMessage.add("- "+e.getClass().getSimpleName() +e.getMessage()+ " \n");
+			stateResult.add(" - Connexion database").add(KO_STATE);
+		}
+	}
     
     private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
         String dirPath = pathToStorage + "testHealthcheck.txt";
