@@ -18,4 +18,8 @@ public interface CodeListService {
 	String getDetailedCodesList(String notation) throws RmesException;
 
     String getDetailedCodesListForSearch() throws RmesException;
+
+    String setCodesList(String body) throws RmesException;
+
+	String setCodesList(String id, String body)  throws RmesException;
 }
