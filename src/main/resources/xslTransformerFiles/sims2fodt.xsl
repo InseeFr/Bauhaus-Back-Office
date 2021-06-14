@@ -388,6 +388,13 @@
             <xsl:when test="$source = 'series' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$series//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
+            <xsl:when test="$source = 'series' and starts-with($address-complement,'richContent/')">
+                <xsl:call-template name="rich-text">
+                    <xsl:with-param name="text">
+                        <xsl:value-of  select="$series//*[local-name()=substring-after($address-complement,'richContent/')]/text()"/>
+                    </xsl:with-param>
+                </xsl:call-template>
+            </xsl:when>
             <xsl:when test="$source = 'series' and starts-with($address-complement,'seeAlso-')">
                 <xsl:copy-of select="$series//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
             </xsl:when>
@@ -402,6 +409,13 @@
             </xsl:when>
             <xsl:when test="$source = 'indicator' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$indicator//*[local-name()=$address-complement]/text()"/>
+            </xsl:when>
+            <xsl:when test="$source = 'indicator' and starts-with($address-complement,'richContent/')">
+                <xsl:call-template name="rich-text">
+                    <xsl:with-param name="text">
+                        <xsl:value-of  select="$indicator//*[local-name()=substring-after($address-complement,'richContent/')]/text()"/>
+                    </xsl:with-param>
+                </xsl:call-template>
             </xsl:when>
             <xsl:when test="$source = 'indicator' and starts-with($address-complement,'seeAlso-')">
                 <xsl:copy-of select="$indicator//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
