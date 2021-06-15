@@ -66,6 +66,7 @@ public class FamilyPublication extends RdfService {
 		
 		} finally {
 			repoGestion.closeStatements(statements);
+			con.close();
 		}
 		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
 		RepositoryPublication.publishResource(familyToPublishRessource, model, Constants.FAMILY);

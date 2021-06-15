@@ -73,6 +73,7 @@ public class IndicatorPublication extends RdfService {
 
 		finally {
 			repoGestion.closeStatements(statements);
+			con.close();
 		}
 		Resource indicatorToPublishRessource = PublicationUtils.tranformBaseURIToPublish(indicator);
 		RepositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
