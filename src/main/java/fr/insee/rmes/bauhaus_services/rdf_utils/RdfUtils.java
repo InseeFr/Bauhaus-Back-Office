@@ -66,6 +66,9 @@ public class RdfUtils {
 	public static Resource structureGraph(){
 		return factory.createIRI(Config.STRUCTURES_GRAPH);
 	}
+	public static Resource codesListGraph(){
+		return factory.createIRI(Config.CODELIST_GRAPH);
+	}
 	
 	public static Resource structureComponentGraph(){
 		return factory.createIRI(Config.STRUCTURES_COMPONENTS_GRAPH);
@@ -128,6 +131,10 @@ public class RdfUtils {
 	
 	public static IRI structureIRI(String id) {
 		return objectIRI(ObjectType.STRUCTURE, id);
+	}
+
+	public static IRI codeListIRI(String id) {
+		return objectIRI(ObjectType.CODE_LIST, id);
 	}
 
 	public static IRI createIRI(String uri){

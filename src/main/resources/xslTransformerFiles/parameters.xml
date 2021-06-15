@@ -4,7 +4,7 @@
 		<language id="Fr">1</language>
 		<language id="En">2</language>
 	</languages>
-	<IncludeEmptyMas>true</IncludeEmptyMas>
+	<IncludeEmptyFields>true</IncludeEmptyFields>
 </parameters>
 
 
