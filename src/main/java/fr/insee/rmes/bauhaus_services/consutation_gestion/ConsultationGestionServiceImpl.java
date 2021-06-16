@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
@@ -170,7 +172,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
-                listCode.put("notation", component.getString("listeCodeNotation"));
+                listCode.put("id", component.getString("listeCodeNotation"));
                 component.put("listCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
@@ -255,14 +257,63 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
 
+        JSONObject childrenMapping = new JSONObject();
+
+        JSONObject formattedCodes = new JSONObject();
+
         for (int i = 0; i < codes.length(); i++) {
             JSONObject code = codes.getJSONObject(i);
-            code.put("label", this.formatLabel(code));
-            code.remove("prefLabelLg1");
-            code.remove("prefLabelLg2");
+
+            if(code.has(Constants.PARENTS)){
+                JSONArray children = new JSONArray();
+                String parentCode = code.getString(Constants.PARENTS);
+                if(childrenMapping.has(parentCode)){
+                    children = childrenMapping.getJSONArray(parentCode);
+                }
+                children.put(code.get("code"));
+                childrenMapping.put(parentCode, children);
+            }
+
+
+            if(formattedCodes.has(code.getString(Constants.URI))){
+                JSONObject c = formattedCodes.getJSONObject(code.getString(Constants.URI));
+
+                if(code.has(Constants.PARENTS)){
+                    JSONArray parents = c.getJSONArray(Constants.PARENTS);
+                    parents.put(code.getString(Constants.PARENTS));
+                    c.put(Constants.PARENTS, parents);
+                }
+            } else {
+                code.put("label", this.formatLabel(code));
+                code.remove(Constants.PREF_LABEL_LG1);
+                code.remove(Constants.PREF_LABEL_LG2);
+
+                if(code.has(Constants.PARENTS)){
+                    JSONArray parents = new JSONArray();
+                    parents.put(code.getString(Constants.PARENTS));
+                    code.put(Constants.PARENTS, parents);
+                } else {
+                    code.put(Constants.PARENTS, new JSONArray());
+                }
+                formattedCodes.put(code.getString(Constants.URI), code);
+            }
         }
 
-        return codes;
+        JSONArray result = new JSONArray();
+        Iterator<String> keys = formattedCodes.keys();
+
+        while(keys.hasNext()) {
+            String key = keys.next();
+            JSONObject code = formattedCodes.getJSONObject(key);
+            if(childrenMapping.has(code.getString("code"))){
+                code.put("enfants", childrenMapping.getJSONArray(code.getString("code")));
+            }
+            if(code.getJSONArray(Constants.PARENTS).length() == 0){
+                code.remove(Constants.PARENTS);
+            }
+            result.put(code);
+        }
+        return result;
     }
 
     private JSONArray formatLabel(JSONObject obj) {

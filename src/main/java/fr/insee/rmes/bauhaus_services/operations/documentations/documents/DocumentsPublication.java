@@ -129,6 +129,7 @@ public class DocumentsPublication  extends RdfService{
 			if (documentStatements != null) {
 				repoGestion.closeStatements(documentStatements);		
 			}
+			con.close();
 		}
 		return model;
 	}
@@ -207,6 +208,7 @@ public class DocumentsPublication  extends RdfService{
 
 		finally {
 			repoGestion.closeStatements(linkStatements);
+			con.close();
 		}
 		return model;
 	}

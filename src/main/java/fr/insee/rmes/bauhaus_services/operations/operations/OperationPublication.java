@@ -72,6 +72,7 @@ public class OperationPublication extends RdfService{
 		}
 		finally {
 			repoGestion.closeStatements(statements);
+			con.close();
 		}
 		Resource operationToPublishRessource = PublicationUtils.tranformBaseURIToPublish(operation);
 		RepositoryPublication.publishResource(operationToPublishRessource, model, "operation");

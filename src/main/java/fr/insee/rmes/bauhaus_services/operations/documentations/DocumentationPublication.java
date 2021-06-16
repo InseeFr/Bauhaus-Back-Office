@@ -79,6 +79,7 @@ public class DocumentationPublication extends RdfService {
 
 		finally {
 			repoGestion.closeStatements(metadataReportStatements);
+			con.close();
 		}
 
 		RepositoryPublication.publishContext(graph, model, "sims");
