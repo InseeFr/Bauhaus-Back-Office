@@ -2,7 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
@@ -557,8 +559,19 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-		return docExport.export(simsXML,operationXML,indicatorXML,seriesXML,
-				organizationsXML,codeListsXML,targetType,includeEmptyMas,lg1,lg2,goal);
+
+		
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("simsFile",  simsXML);
+		xmlContent.put("seriesFile",  seriesXML);
+		xmlContent.put("operationFile",  operationXML);
+		xmlContent.put("indicatorFile",  indicatorXML);
+	//	xmlContent.put("msdFile",  msdXML);
+		xmlContent.put("codeListsFile",  codeListsXML);
+		xmlContent.put("organizationsFile",  organizationsXML);
+		
+		
+		return docExport.export(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {

@@ -22,19 +22,21 @@ WHERE {
 			
 		<#-- RangeType.RICHTEXT : label, hasDoc -->
 		UNION {
+			?reportAttr ?attr ?temp .
+			?temp rdf:type dcmitype:Text .		
+		
+			OPTIONAL{ 
 			 ?reportAttr ?attr ?textLg1 .
 			 ?textLg1 rdf:type dcmitype:Text .
-			 ?textLg1 dcterms:language <${LG1_CL}>
-
-			 OPTIONAL{ 
-				?textLg1 rdf:value ?labelLg1 
+			 ?textLg1 dcterms:language <${LG1_CL}> .
+			 ?textLg1 rdf:value ?labelLg1 .
 			}
 			 BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
 
 			 OPTIONAL {
 				 ?reportAttr ?attr ?textLg2 .
 				 ?textLg2 rdf:type dcmitype:Text .
-				 ?textLg2 dcterms:language <${LG2_CL}>
+				 ?textLg2 dcterms:language <${LG2_CL}> .
 
 						OPTIONAL{ 
 							?textLg2 rdf:value ?labelLg2 
