@@ -51,13 +51,13 @@ public class DocumentationExport {
 			xslFileIS = getClass().getResourceAsStream("/xslTransformerFiles/sims2fodt.xsl");
 
 			if (Constants.GOAL_RMES.equals(goal)) {
-				odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/rmesPatternContent.xml");
-				zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForRmes/export.zip");
+				odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/simsRmes/rmesPatternContent.xml");
+				zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/simsRmes/toZipForRmes.zip");
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/labelPatternContent.xml");
-				zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/toZipForLabel/export.zip");
+				odtFileIS = getClass().getResourceAsStream("/xslTransformerFiles/simsLabel/labelPatternContent.xml");
+				zipToCompleteIS = getClass().getResourceAsStream("/xslTransformerFiles/simsLabel/toZipForLabel.zip");
 			}
 
 			// prepare output
