@@ -414,6 +414,9 @@
             <xsl:when test="$source = 'concept' and starts-with($address-complement,'richContent/')">
                 <xsl:apply-templates select="$concepts//*[local-name()=substring-after($address-complement,'richContent/')]/*" mode="rich-content"/>
             </xsl:when>
+            <xsl:when test="$source = 'concept'">
+                <xsl:copy-of select="$concepts//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+            </xsl:when>
             <xsl:when test="$source = 'collection' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$collections//*[local-name()=$address-complement]//text()"/>
             </xsl:when>
