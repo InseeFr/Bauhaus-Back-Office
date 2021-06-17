@@ -149,8 +149,8 @@
                 style:text-rotation-scale="line-height"/>
         </style:style>
         <style:style style:name="ContentCellFr" style:family="paragraph" style:parent-style-name="Standard">
-            <style:paragraph-properties fo:margin-left="0.15cm" fo:margin-right="0.15cm"
-                fo:margin-top="0.33cm" fo:margin-bottom="0.15cm" loext:contextual-spacing="false"
+            <style:paragraph-properties fo:margin-left="0.33cm" fo:margin-right="0.33cm"
+                fo:margin-top="0.15cm" fo:margin-bottom="0.15cm" loext:contextual-spacing="false"
                 fo:line-height="100%" fo:text-align="start" style:justify-single-word="false"
                 fo:text-indent="0cm" style:auto-text-indent="false" style:vertical-align="top"/>
             <style:text-properties fo:font-size="10pt"
@@ -194,6 +194,73 @@
                 style:flow-with-text="false"/>
             <style:paragraph-properties style:writing-mode="lr-tb"/>
         </style:style>
+        <text:list-style style:name="L1">
+            <text:list-level-style-bullet text:bullet-char="•"
+                text:style-name="Bullet_20_Symbols"
+                text:level="1">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.27cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.27cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:bullet-char="◦"
+                text:style-name="Bullet_20_Symbols"
+                text:level="2">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.905cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.905cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:bullet-char="▪"
+                text:style-name="Bullet_20_Symbols"
+                text:level="3">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="2.54cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="2.54cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+        </text:list-style>
+        <text:list-style style:name="L2">
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="1"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.27cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.27cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="2"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.905cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.905cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="3"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="2.54cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="2.54cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+        </text:list-style>
     </office:automatic-styles>
     <office:body>
         <office:text text:use-soft-page-breaks="true">
@@ -233,9 +300,9 @@
                 <table:table-row>
                     <table:table-cell table:style-name="InfoGenerales.A1" office:value-type="string">
                         <text:p text:style-name="InfoGeHeading">Libellé alternatif (fr) :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg1}</text:p>
+                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg1/altLabelLg1}</text:p>
                         <text:p text:style-name="InfoGeHeading">Alternative label (en) :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg2}</text:p>
+                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg2/altLabelLg2}</text:p>
                         <text:p text:style-name="InfoGeHeading">Date de création :</text:p>
                         <text:p text:style-name="InfoGeContent">${concept/created}</text:p>
                         <text:p text:style-name="InfoGeHeading">Date de modification :</text:p>
@@ -250,6 +317,8 @@
                         <text:p text:style-name="InfoGeContent">${concept/isValidated}</text:p>
                         <text:p text:style-name="InfoGeHeading">Version :</text:p>
                         <text:p text:style-name="InfoGeContent">${concept/conceptVersion}</text:p>
+                        <text:p text:style-name="InfoGeHeading">Documentation complémentaire :</text:p>
+                        <text:p text:style-name="InfoGeContent">${concept/additionalMaterial}</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
@@ -270,15 +339,45 @@
                 <table:table-column table:style-name="Tableau3Col.C" xml:id="lang.En.links.column"/>
                 <table:table-row>
                     <table:table-cell table:style-name="Tableau3Col.A1"
-                        office:value-type="string" xml:id="lang.Fr.links">
-                        <text:p text:style-name="HeadingParagraph">Concept référencé :</text:p>
-                        <text:p text:style-name="ContentCellFr">#list(${concept/referencesLg1/referencesLg1},&apos;L1&apos;)</text:p>
+                        office:value-type="string" xml:id="lang.Fr.parentlinks">
+                        <text:p text:style-name="HeadingParagraph">Concept parent :</text:p>
+                        <text:p text:style-name="ContentCellFr">#list(${concept/narrowerLg1/narrowerLg1},&apos;L1&apos;)</text:p>
                     </table:table-cell>
-                    <table:table-cell office:value-type="string" xml:id="lang.2.links">
+                    <table:table-cell office:value-type="string" xml:id="lang.2.parentlinks">
                         <text:p text:style-name="Standard"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="Tableau3Col.A1"
-                        office:value-type="string" xml:id="lang.En.links">
+                        office:value-type="string" xml:id="lang.En.parentlinks">
+                        <text:p text:style-name="HeadingParagraph">Parent concept :</text:p>
+                        <text:p text:style-name="ContentCellEn">#list(${concept/narrowerLg2/narrowerLg2},&apos;L1&apos;)</text:p>
+                    </table:table-cell>
+                </table:table-row>
+                <table:table-row>
+                    <table:table-cell table:style-name="Tableau3Col.A1"
+                        office:value-type="string" xml:id="lang.Fr.childlinks">
+                        <text:p text:style-name="HeadingParagraph">Concept enfant :</text:p>
+                        <text:p text:style-name="ContentCellFr">#list(${concept/broaderLg1/broaderLg1},&apos;L1&apos;)</text:p>
+                    </table:table-cell>
+                    <table:table-cell office:value-type="string" xml:id="lang.2.childlinks">
+                        <text:p text:style-name="Standard"/>
+                    </table:table-cell>
+                    <table:table-cell table:style-name="Tableau3Col.A1"
+                        office:value-type="string" xml:id="lang.En.childlinks">
+                        <text:p text:style-name="HeadingParagraph">Child concept :</text:p>
+                        <text:p text:style-name="ContentCellEn">#list(${concept/broaderLg2/broaderLg2},&apos;L1&apos;)</text:p>
+                    </table:table-cell>
+                </table:table-row>
+                <table:table-row>
+                    <table:table-cell table:style-name="Tableau3Col.A1"
+                        office:value-type="string" xml:id="lang.Fr.referencedlinks">
+                        <text:p text:style-name="HeadingParagraph">Concept référencé :</text:p>
+                        <text:p text:style-name="ContentCellFr">#list(${concept/referencesLg1/referencesLg1},&apos;L1&apos;)</text:p>
+                    </table:table-cell>
+                    <table:table-cell office:value-type="string" xml:id="lang.2.referencedlinks">
+                        <text:p text:style-name="Standard"/>
+                    </table:table-cell>
+                    <table:table-cell table:style-name="Tableau3Col.A1"
+                        office:value-type="string" xml:id="lang.En.referencedlinks">
                         <text:p text:style-name="HeadingParagraph">Referenced concept :</text:p>
                         <text:p text:style-name="ContentCellEn">#list(${concept/referencesLg2/referencesLg2},&apos;L1&apos;)</text:p>
                     </table:table-cell>
