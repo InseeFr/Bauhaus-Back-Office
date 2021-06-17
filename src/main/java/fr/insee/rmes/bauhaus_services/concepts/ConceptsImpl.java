@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -29,10 +31,11 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.external_services.export.Jasper;
+import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.XMLUtils;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -231,20 +234,33 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public Response getConceptExport(String id, String acceptHeader)  {
-		JSONObject concept;
+	public Response getConceptExport(String id, String acceptHeader) throws RmesException  {
+		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
-		InputStream is = jasper.exportConcept(concept, acceptHeader);
-		String fileName = FilesUtils.cleanFileNameAndAddExtension(concept.getString(Constants.PREF_LABEL_LG1), jasper.getExtension(acceptHeader)) ;
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, acceptHeader)
-				.header("Content-Disposition", content)
-				.build();
+		
+		Map<String, String> xmlContent = convertConceptInXml(concept);	
+		return conceptsExport.exportAsResponse(xmlContent,true,true,true);
 	}
+	
+	@Override
+	public InputStream getConceptExportIS(String id) throws RmesException  {
+		ConceptForExport concept = conceptsExport.getConceptData(id);
+		Map<String, String> xmlContent = convertConceptInXml(concept);
+		return conceptsExport.exportAsInputStream(xmlContent,true,true,true);
+	}
+
+	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
+		String conceptXml = XMLUtils.produceXMLResponse(concept);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
+		return xmlContent;
+	}
+	
+	
 
 	/**
 	 * Validate collection(s)

@@ -3,6 +3,7 @@
     xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
     xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
     xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:officeooo="http://openoffice.org/2009/office"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
     exclude-result-prefixes="xs xd"
     version="3.0">
 
@@ -16,6 +17,8 @@
     <xsl:param name="organizationsFile"/>
     <xsl:param name="codeListsFile"/>
     <xsl:param name="msdFile"/>
+    <xsl:param name="conceptFile"/>
+    <xsl:param name="collectionsFile"/>
     <xsl:param name="parametersFile"/>
 
     <!-- the params with the content of the files -->
@@ -96,6 +99,26 @@
             </xsl:when>
             <xsl:otherwise>
                 <Msd/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:param>
+    <xsl:param name="concepts" as="node()">
+        <xsl:choose>
+            <xsl:when test="doc-available($conceptFile)">
+                <xsl:copy-of select="document($conceptFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Concepts/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:param>
+    <xsl:param name="collections" as="node()">
+        <xsl:choose>
+            <xsl:when test="doc-available($collectionsFile)">
+                <xsl:copy-of select="document($collectionsFile)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <Collections/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:param>
@@ -212,7 +235,7 @@
             </xsl:copy>
         </xsl:if>
     </xsl:template>
-    
+
     <xd:doc>
         <xd:desc>text:p elements containing ${referenceToData} are filled with the referenced data</xd:desc>
         <xd:desc>referenced data may contain paragraphs with their own style or simple strings</xd:desc>
@@ -385,15 +408,23 @@
         <xsl:variable name="address-complement" select="substring-after($variable-address,'/')"/>
 
         <xsl:choose>
+            <xsl:when test="$source = 'concept' and not(contains($address-complement,'/'))">
+                <xsl:copy-of select="$concepts//*[local-name()=$address-complement]//text()"/>
+            </xsl:when>
+            <xsl:when test="$source = 'concept' and starts-with($address-complement,'richContent/')">
+                <xsl:apply-templates select="$concepts//*[local-name()=substring-after($address-complement,'richContent/')]/*" mode="rich-content"/>
+            </xsl:when>
+            <xsl:when test="$source = 'concept'">
+                <xsl:copy-of select="$concepts//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+            </xsl:when>
+            <xsl:when test="$source = 'collection' and not(contains($address-complement,'/'))">
+                <xsl:copy-of select="$collections//*[local-name()=$address-complement]//text()"/>
+            </xsl:when>
             <xsl:when test="$source = 'series' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$series//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'series' and starts-with($address-complement,'richContent/')">
-                <xsl:call-template name="rich-text">
-                    <xsl:with-param name="text">
-                        <xsl:value-of  select="$series//*[local-name()=substring-after($address-complement,'richContent/')]/text()"/>
-                    </xsl:with-param>
-                </xsl:call-template>
+                <xsl:apply-templates select="$series//*[local-name()=substring-after($address-complement,'richContent/')]/*" mode="rich-content"/>
             </xsl:when>
             <xsl:when test="$source = 'series' and starts-with($address-complement,'seeAlso-')">
                 <xsl:copy-of select="$series//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
@@ -411,11 +442,7 @@
                 <xsl:copy-of select="$indicator//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'indicator' and starts-with($address-complement,'richContent/')">
-                <xsl:call-template name="rich-text">
-                    <xsl:with-param name="text">
-                        <xsl:value-of  select="$indicator//*[local-name()=substring-after($address-complement,'richContent/')]/text()"/>
-                    </xsl:with-param>
-                </xsl:call-template>
+                <xsl:apply-templates select="$indicator//*[local-name()=substring-after($address-complement,'richContent/')]/*" mode="rich-content"/>
             </xsl:when>
             <xsl:when test="$source = 'indicator' and starts-with($address-complement,'seeAlso-')">
                 <xsl:copy-of select="$indicator//seeAlso[type=substring-before(substring-after($address-complement,'-'),'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
@@ -458,11 +485,7 @@
                 <xsl:choose>
                     <xsl:when test="not($simsRubrics//*)"/>
                     <xsl:when test="$simsRubrics//rangeType='RICH_TEXT'">
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text">
-                                <xsl:value-of  select="$simsRubrics//*[local-name()=$rubric-element]"/>
-                            </xsl:with-param>
-                        </xsl:call-template>
+                        <xsl:apply-templates select="$simsRubrics//*[local-name()=$rubric-element]/*" mode="rich-content"/>
                         <xsl:variable name="count-links" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[not(contains(tokenize(text(),'/')[last()],'.'))])"/>
                         <xsl:variable name="count-documents" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[contains(tokenize(text(),'/')[last()],'.')])"/>
                         <xsl:choose>
@@ -657,7 +680,7 @@
                     <xsl:otherwise>
                         <xsl:value-of select="'type de rubrique à définir'"/>
                     </xsl:otherwise>
-                </xsl:choose>                
+                </xsl:choose>
             </xsl:when>
             <xsl:otherwise>
                 <TODO>TODO</TODO>
@@ -665,107 +688,69 @@
         </xsl:choose>
     </xsl:template>
 
-    <xd:doc>
-        <xd:desc><xd:p>replace html elements with libreOffice ones</xd:p>
-            <xd:p><![CDATA[Problem : html elements are surrounded by &lt; and &gt; instead of < and >, because there is no difference between a tag and < blabla in comment > in the text...]]>
-        </xd:p></xd:desc>
-    </xd:doc>
-    <xsl:template name="rich-text">
-        <xsl:param name="text"/>
-        <xsl:param name="style" tunnel="yes"/>
-        
-        <xsl:choose>
-            <xsl:when test="contains($text,'&lt;')">
-                <xsl:value-of select="substring-before($text,'&lt;')"/>
-                <xsl:variable name="tag" select="substring-before(substring-after($text,'&lt;'),'&gt;')"/>
-                <xsl:choose>
-                    <xsl:when test="$tag='br /' or $tag='br/'">
-                        <text:line-break/>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,'/&gt;')"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="$tag='p' or $tag='strong' or $tag='em' or $tag='ul' or $tag='ol'">
-                        <xsl:variable name="element-name">
-                            <xsl:choose>
-                                <xsl:when test="$tag='p'">p</xsl:when>
-                                <xsl:when test="$tag = 'strong' or $tag='em'">span</xsl:when>
-                                <xsl:when test="$tag='ul' or $tag='ol'">list</xsl:when>
-                            </xsl:choose>
-                        </xsl:variable>
-                        <xsl:variable name="attribute-value">
-                            <xsl:choose>
-                                <xsl:when test="$tag='p'"><xsl:value-of select="$style"/></xsl:when>
-                                <xsl:when test="$tag = 'strong'">Bold</xsl:when>
-                                <xsl:when test="$tag = 'em'">Italic</xsl:when>
-                                <xsl:when test="$tag='ul'">L1</xsl:when>
-                                <xsl:when test="$tag='ol'">L2</xsl:when>
-                            </xsl:choose>
-                        </xsl:variable>
-                        <xsl:element name="text:{$element-name}">
-                            <xsl:attribute name="text:style-name" select="$attribute-value"/>
-                            <xsl:call-template name="rich-text">
-                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),concat('&lt;/',$tag,'&gt;'))"/>
-                            </xsl:call-template>
-                        </xsl:element>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,concat('&lt;/',$tag,'&gt;'))"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="$tag='li'">
-                        <xsl:variable name="li-content-string" select="substring-before(substring-after($text,'&gt;'),'&lt;/li&gt;')"/>
-                        <text:list-item>
-                            <text:p text:style-name="{$style}">
-                                <xsl:choose>
-                                    <xsl:when test="contains($li-content-string,'&lt;p&gt;')">
-                                        <xsl:call-template name="rich-text">
-                                            <xsl:with-param name="text" select="substring-before(substring-after($li-content-string,'&lt;p&gt;'),'&lt;/p&gt;')"/>
-                                        </xsl:call-template>                                        
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:call-template name="rich-text">
-                                            <xsl:with-param name="text" select="$li-content-string"/>
-                                        </xsl:call-template>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </text:p>
-                        </text:list-item>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,concat('&lt;/',$tag,'&gt;'))"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="starts-with($tag,'a ') and contains($tag,'href=&quot;')">
-                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href=&quot;'),'&quot;')}">
-                            <xsl:call-template name="rich-text">
-                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),'&lt;/a&gt;')"/>
-                            </xsl:call-template>
-                        </text:a>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,'&lt;/a&gt;')"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:when test="starts-with($tag,'a ') and contains($tag,'href=''')">
-                        <text:a xlink:type="simple" xlink:href="{substring-before(substring-after($tag,'href='''),'''')}">
-                            <xsl:call-template name="rich-text">
-                                <xsl:with-param name="text" select="substring-before(substring-after($text,'&gt;'),'&lt;/a&gt;')"/>
-                            </xsl:call-template>
-                        </text:a>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,'&lt;/a&gt;')"/>
-                        </xsl:call-template>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <!-- real < -->
-                        <xsl:value-of select="'&lt;'"/>
-                        <xsl:call-template name="rich-text">
-                            <xsl:with-param name="text" select="substring-after($text,'&lt;')"/>
-                        </xsl:call-template>
-                    </xsl:otherwise>
-                </xsl:choose>
-            </xsl:when>
-            <xsl:otherwise>
-                <xsl:value-of select="$text"/>
-            </xsl:otherwise>
-        </xsl:choose>
+    <xsl:template match="text()" mode="rich-content">
+        <xsl:value-of select="."/>
     </xsl:template>
+
+    <!-- div is just a container and is not kept in odt ; all other ones have their corresponding odt tag -->
+    <xsl:template match="xhtml:div" mode="rich-content">
+        <xsl:apply-templates select="node()" mode="rich-content"/>
+    </xsl:template>
+
+    <xsl:template match="xhtml:p" mode="rich-content">
+        <xsl:param name="style" tunnel="yes"/>
+        <text:p text:style-name="{$style}">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:p>
+    </xsl:template>
+
+    <xsl:template match="xhtml:br" mode="rich-content">
+        <text:line-break/>
+    </xsl:template>
+
+    <xsl:template match="xhtml:strong" mode="rich-content">
+        <text:span text:style-name="Bold">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:span>
+    </xsl:template>
+
+    <xsl:template match="xhtml:em" mode="rich-content">
+        <text:span text:style-name="Italic">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:span>
+    </xsl:template>
+
+    <xsl:template match="xhtml:ul" mode="rich-content">
+        <text:list text:style-name="L1">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:list>
+    </xsl:template>
+
+    <xsl:template match="xhtml:ol" mode="rich-content">
+        <text:list text:style-name="L2">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:list>
+    </xsl:template>
+
+    <xsl:template match="xhtml:li" mode="rich-content">
+        <xsl:param name="style" tunnel="yes"/>
+        <text:list-item>
+            <text:p text:style-name="{$style}">
+                <xsl:apply-templates select="node()" mode="rich-content"/>
+            </text:p>
+        </text:list-item>
+    </xsl:template>
+
+    <xsl:template match="xhtml:a" mode="rich-content">
+        <text:a xlink:type="simple" xlink:href="{@href}">
+            <xsl:apply-templates select="node()" mode="rich-content"/>
+        </text:a>
+    </xsl:template>
+
+    <xsl:template match="*" mode="rich-content">
+        <xsl:value-of select="concat('BeginUnknownTag ',local-name())"/>
+        <xsl:apply-templates select="node()" mode="rich-content"/>
+        <xsl:value-of select="concat('EndUnknownTag ',local-name())"/>
+    </xsl:template>
+
 </xsl:stylesheet>

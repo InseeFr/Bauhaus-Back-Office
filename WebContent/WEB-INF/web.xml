@@ -73,15 +73,6 @@
 		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
 
-
-	<!-- SWAGGER ANNOTATIONS -->
- <!-- <servlet>
-		<servlet-name>SwaggerConfig</servlet-name>
-		<servlet-class>fr.insee.rmes.config.swagger.SwaggerConfig</servlet-class>
-		<load-on-startup>2</load-on-startup>
-</servlet> -->
-	
-
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>

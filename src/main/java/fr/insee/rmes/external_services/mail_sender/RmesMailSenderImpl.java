@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
@@ -46,6 +46,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
+	ConceptsService conceptsService;
+	
+	@Autowired
 	Jasper jasper;
 	
 	@Autowired
@@ -58,9 +61,8 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		JSONObject json = conceptsExport.getConceptData(id);
-		InputStream is = jasper.exportConcept(json, "Mail");
-		return sendMail(mail, is, json);
+		InputStream is = conceptsService.getConceptExportIS(id);
+		return sendMail(mail, is, id);
 	}
 	
 	@Override
@@ -72,12 +74,12 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(json, "Mail");
-		return sendMail(mail, is, json);
+		return sendMail(mail, is, "json"); //TODO change send mail for collection
 	}
 		
-	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
+	private boolean sendMail(Mail mail, InputStream is, String fileName) {
 			
-		String fileName = json.getString(Constants.PREF_LABEL_LG1);
+		//String fileName = json.getString(Constants.PREF_LABEL_LG1);
 		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
