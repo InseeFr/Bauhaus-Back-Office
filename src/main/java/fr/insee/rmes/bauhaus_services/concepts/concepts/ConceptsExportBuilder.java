@@ -87,6 +87,14 @@ public class ConceptsExportBuilder extends RdfService {
 			concept = mapper.readValue(general.toString(), ConceptForExport.class);
 			concept.addLinks(links);
 			concept.addNotes(notes);
+			
+			//format specific data
+			concept.setIsValidated(toValidationStatus(concept.getIsValidated(), "concepts"));
+			concept.setDisseminationStatus(toLabel(concept.getDisseminationStatus()));
+			concept.setCreated(concept.getCreated());
+			concept.setModified(concept.getModified());
+			concept.setValid(concept.getValid());
+			
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
 		}
