@@ -6,4 +6,4 @@
 2.1.2 : - Correction du bug à la publication des concepts (la modification supprimait les anciennes versions de notes)
 		- Correction des getters de concepts pour ignorer le typage des identifiants des concepts (notation)
 2.1.1 : Version non utilisée en production mais audité pour la sécurité
-2.1.0 : Ajout de la publication vers l'interne et changement d'ergonomie de l'application		
+2.1.0 : Ajout de la publication vers l'interne et changement d'ergonomie dloe l'application		
