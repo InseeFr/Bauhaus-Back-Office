@@ -336,7 +336,7 @@
                     text:name="__RefHeading___Toc1321_1782290185"/>Objectifs détaillés des enquêtes et principaux thèmes abordés<text:bookmark-end
                     text:name="__RefHeading___Toc1321_1782290185"/></text:h>
             <text:p text:style-name="Heading">Résumé :</text:p>
-            <text:p text:style-name="Text_20_body">${series/abstractLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${series/richContent/abstractLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1323_1782290185"/>Instances de concertation avec les partenaires sociaux<text:bookmark-end

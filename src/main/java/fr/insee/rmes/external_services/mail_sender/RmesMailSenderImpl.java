@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
@@ -46,6 +47,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
+	ConceptsService conceptsService;
+	
+	@Autowired
 	Jasper jasper;
 	
 	@Autowired
@@ -58,9 +62,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		JSONObject json = conceptsExport.getConceptData(id);
-		InputStream is = jasper.exportConcept(json, "Mail");
-		return sendMail(mail, is, json);
+		Map<String,InputStream> getFileToJoin = conceptsService.getConceptExportIS(id);
+		String filename = getFileToJoin.entrySet().iterator().next().getKey();
+		InputStream is = getFileToJoin.get(filename);
+		return sendMail(mail, is, filename );
 	}
 	
 	@Override
@@ -72,12 +77,12 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		JSONObject json = conceptsExport.getCollectionData(id);
 		InputStream is = jasper.exportCollection(json, "Mail");
-		return sendMail(mail, is, json);
+		return sendMail(mail, is, "json"); //TODO change send mail for collection
 	}
 		
-	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
+	private boolean sendMail(Mail mail, InputStream is, String fileName) {
 			
-		String fileName = json.getString(Constants.PREF_LABEL_LG1);
+		//String fileName = json.getString(Constants.PREF_LABEL_LG1);
 		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();

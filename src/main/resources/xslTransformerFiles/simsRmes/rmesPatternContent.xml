@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
                  xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
                  xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
                  xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
@@ -11,8 +11,7 @@
                  xmlns:xlink="http://www.w3.org/1999/xlink"
                  xmlns:loext="urn:org:documentfoundation:names:experimental:office:xmlns:loext:1.0"
                  xmlns:officeooo="http://openoffice.org/2009/office"
-                 office:version="1.2"
-                 office:mimetype="application/vnd.oasis.opendocument.text">
+                 office:version="1.2">
    <office:automatic-styles>
       <style:style style:name="Tableau3.A" style:family="table-column">
          <style:table-column-properties style:column-width="8.0cm"/>
@@ -325,23 +324,23 @@
             <table:table-row>
                <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.series.abstract">
                   <text:p text:style-name="attribute">Résumé</text:p>
-                  <text:p text:style-name="RubricItem">${series/abstractLg1}</text:p>
+                  <text:p text:style-name="RubricItem">${series/richContent/abstractLg1}</text:p>
                </table:table-cell>
                <table:table-cell table:style-name="separatingColumn" xml:id="lang.2.series.abstract"/>
                <table:table-cell table:style-name="framedCell" xml:id="lang.En.series.abstract">
                   <text:p text:style-name="attribute">Summary</text:p>
-                  <text:p text:style-name="RubricItem">${series/abstractLg2}</text:p>
+                  <text:p text:style-name="RubricItem">${series/richContent/abstractLg2}</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
                <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.series.historyNote">
                   <text:p text:style-name="attribute">Historique</text:p>
-                  <text:p text:style-name="RubricItem">${series/historyNoteLg1}</text:p>
+                  <text:p text:style-name="RubricItem">${series/richContent/historyNoteLg1}</text:p>
                </table:table-cell>
                <table:table-cell table:style-name="separatingColumn" xml:id="lang.2.series.historyNote"/>
                <table:table-cell table:style-name="framedCell" xml:id="lang.En.series.historyNote">
                   <text:p text:style-name="attribute">History</text:p>
-                  <text:p text:style-name="RubricItem">${series/historyNoteLg2}</text:p>
+                  <text:p text:style-name="RubricItem">${series/richContent/historyNoteLg2}</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
@@ -490,23 +489,23 @@
             <table:table-row>
                <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.indicator.abstract">
                   <text:p text:style-name="attribute">Résumé</text:p>
-                  <text:p text:style-name="RubricItem">${indicator/abstractLg1}</text:p>
+                  <text:p text:style-name="RubricItem">${indicator/richContent/abstractLg1}</text:p>
                </table:table-cell>
                <table:table-cell table:style-name="separatingColumn" xml:id="lang.2.indicator.abstract"/>
                <table:table-cell table:style-name="framedCell" xml:id="lang.En.indicator.abstract">
                   <text:p text:style-name="attribute">Summary</text:p>
-                  <text:p text:style-name="RubricItem">${indicator/abstractLg2}</text:p>
+                  <text:p text:style-name="RubricItem">${indicator/richContent/abstractLg2}</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
                <table:table-cell table:style-name="framedCell" xml:id="lang.Fr.indicator.historyNote">
                   <text:p text:style-name="attribute">Historique</text:p>
-                  <text:p text:style-name="RubricItem">${indicator/historyNoteLg1}</text:p>
+                  <text:p text:style-name="RubricItem">${indicator/richContent/historyNoteLg1}</text:p>
                </table:table-cell>
                <table:table-cell table:style-name="separatingColumn" xml:id="lang.2.indicator.historyNote"/>
                <table:table-cell table:style-name="framedCell" xml:id="lang.En.indicator.historyNote">
                   <text:p text:style-name="attribute">History</text:p>
-                  <text:p text:style-name="RubricItem">${indicator/historyNoteLg2}</text:p>
+                  <text:p text:style-name="RubricItem">${indicator/richContent/historyNoteLg2}</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
@@ -645,4 +644,4 @@
          </text:section>
       </office:text>
    </office:body>
-</office:document>
+</office:document-content>

@@ -1,14 +1,5 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.structures.MutualizedComponent;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -31,8 +23,13 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.utils.DateUtils;
 
 import javax.ws.rs.BadRequestException;
 
@@ -214,7 +211,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString("contributor"), model, graph);
 		}
 		repoGestion.loadSimpleObject(codeListIri, model, null);
-		return codeListIri.toString();
+		return ((SimpleIRI)codeListIri).toString();
 	}
 
 

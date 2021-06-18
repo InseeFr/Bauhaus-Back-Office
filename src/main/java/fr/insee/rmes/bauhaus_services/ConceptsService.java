@@ -1,5 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
+import java.io.InputStream;
+import java.util.Map;
+
 import javax.ws.rs.core.Response;
 
 import fr.insee.rmes.exceptions.RmesException;
@@ -41,7 +44,7 @@ public interface ConceptsService {
 	
 	public void setConceptsValidation(String body) throws  RmesException ;
 	
-	public Response getConceptExport(String id, String acceptHeader);
+	public Response getConceptExport(String id, String acceptHeader) throws RmesException;
 	
 	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	
@@ -58,5 +61,7 @@ public interface ConceptsService {
 	public String getRelatedConcepts(String id) throws RmesException;
 
 	public String deleteConcept(String id) throws RmesException;
+
+	Map<String, InputStream> getConceptExportIS(String id) throws RmesException;
 
 }
