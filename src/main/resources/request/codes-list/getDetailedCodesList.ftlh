@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus ?descriptionLg1 ?descriptionLg2
+SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus ?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?list skos:notation '${NOTATION}' ;
@@ -23,8 +23,16 @@ WHERE {
     ?list dc:contributor ?contributor .
     }
     OPTIONAL {
-    ?list dcterms:modified ?modified .
+        ?list dcterms:modified ?modified .
     }
+
+    OPTIONAL {
+        ?list rdfs:seeAlso ?seeAlso .
+        BIND(STRAFTER(STR(?seeAlso),'concept/') AS ?lastClassUriSegment) .
+    }
+
+    BIND(STRAFTER(STR(?list),'${CODE_LIST_BASE_URI}/') AS ?lastListUriSegment) .
+
     ?list skos:prefLabel ?labelLg1 .
     FILTER(lang(?labelLg1) = '${LG1}') .
     OPTIONAL {?list skos:prefLabel ?labelLg2 .
