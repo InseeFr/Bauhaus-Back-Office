@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.text.CaseUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -243,14 +244,16 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 		
 		Map<String, String> xmlContent = convertConceptInXml(concept);	
-		return conceptsExport.exportAsResponse(xmlContent,true,true,true);
+		String fileName = CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false);
+		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 	
 	@Override
 	public InputStream getConceptExportIS(String id) throws RmesException  {
 		ConceptForExport concept = conceptsExport.getConceptData(id);
 		Map<String, String> xmlContent = convertConceptInXml(concept);
-		return conceptsExport.exportAsInputStream(xmlContent,true,true,true);
+		String fileName = CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false);
+		return conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true);
 	}
 
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {

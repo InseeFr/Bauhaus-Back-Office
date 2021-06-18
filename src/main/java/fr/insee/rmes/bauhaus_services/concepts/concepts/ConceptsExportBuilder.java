@@ -211,13 +211,12 @@ public class ConceptsExportBuilder extends RdfService {
 		}
 	}
 
-	public Response exportAsResponse(Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
+	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
 		logger.debug("Begin To export concept");
-		String fileName = "export.odt";
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName+".odt").build();
 
-		InputStream input = exportAsInputStream(xmlContent, includeEmptyFields, lg1, lg2);
+		InputStream input = exportAsInputStream(fileName, xmlContent, includeEmptyFields, lg1, lg2);
 
 		return Response.ok((StreamingOutput) out -> {
 			IOUtils.copy(input, out);
@@ -228,12 +227,11 @@ public class ConceptsExportBuilder extends RdfService {
 
 	}
 
-	public InputStream exportAsInputStream(Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
+	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
 		logger.debug("Begin To export concept");
 
 		File output = null;
-		String fileName = "export.odt";
 		InputStream odtFileIS = null;
 		InputStream xslFileIS = null;
 		InputStream zipToCompleteIS = null;
@@ -254,7 +252,7 @@ public class ConceptsExportBuilder extends RdfService {
 				PrintStream printStream = new PrintStream(osOutputFile);) {
 
 			Path tempDir = Files.createTempDirectory("forExport");
-			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName);
+			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName +".odt");
 
 			// Add two params to xmlContents
 			String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
