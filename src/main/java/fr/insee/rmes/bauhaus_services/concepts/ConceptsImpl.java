@@ -253,11 +253,13 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 	
 	@Override
-	public InputStream getConceptExportIS(String id) throws RmesException  {
+	public Map<String,InputStream> getConceptExportIS(String id) throws RmesException  {
 		ConceptForExport concept = conceptsExport.getConceptData(id);
 		Map<String, String> xmlContent = convertConceptInXml(concept);
 		String fileName = getFileNameForExport(concept);
-		return conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true);
+		Map<String,InputStream> ret = new HashMap<String, InputStream>();
+		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+		return ret;
 	}
 
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
