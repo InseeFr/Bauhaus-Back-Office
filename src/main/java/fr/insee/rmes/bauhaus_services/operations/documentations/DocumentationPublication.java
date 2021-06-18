@@ -31,14 +31,14 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 public class DocumentationPublication extends RdfService {
 
 	@Autowired
-	static RepositoryUtils repoUtils;
+	RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
 	@Autowired 
 	DocumentsPublication documentsPublication;
 
-	static final String[] rubricsNotForPublication = {"S.1.3","S.1.4","S.1.6","S.1.7","validationState"};
+	static final String[] rubricsNotForPublication = {"S.1.3","S.1.4","S.1.5","S.1.6","S.1.7","S.1.8","validationState"};
 
 	public void publishSims(String simsId) throws RmesException {
 
@@ -71,7 +71,7 @@ public class DocumentationPublication extends RdfService {
 					model.add(subject, predicateIRI, object, st.getContext());
 				}
 			}
-			documentsPublication.publishAllDocumentsInSims(simsId,model);
+			documentsPublication.publishAllDocumentsInSims(simsId);
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					Constants.REPOSITORY_EXCEPTION);
@@ -79,6 +79,7 @@ public class DocumentationPublication extends RdfService {
 
 		finally {
 			repoGestion.closeStatements(metadataReportStatements);
+			con.close();
 		}
 
 		RepositoryPublication.publishContext(graph, model, "sims");

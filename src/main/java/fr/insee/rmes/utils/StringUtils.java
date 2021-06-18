@@ -11,7 +11,7 @@ public class StringUtils {
 	}
 
 	public static List<String> stringToList(String value) {
-		List<String> val = new ArrayList<String>();
+		List<String> val = new ArrayList<>();
 		val.add(value);
 		return val;
 	}

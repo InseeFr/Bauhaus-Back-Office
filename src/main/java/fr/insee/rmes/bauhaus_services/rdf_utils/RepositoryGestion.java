@@ -159,8 +159,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate)
 			throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
+		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection() ){
 			// notes to delete
 			for (IRI note : notesToDeleteAndUpdate.get(0)) {
 				conn.remove(note, null, null);
@@ -176,7 +175,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure load concept : " + concept);
 
-		}
+		} 
 	}
 
 	/**
@@ -239,8 +238,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
-		try {
-			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
+		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
 			clearReplaceLinks(object, conn);
 			loadSimpleObject(object, model, conn);
 		} catch (RepositoryException e) {
@@ -304,8 +302,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
-		try {
-			RepositoryConnection conn = REPOSITORY_GESTION.getConnection();
+		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
 			RepositoryResult<Statement> nodes = null;
 			RepositoryResult<Statement> specifications = null;
 			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
@@ -335,9 +332,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
-		RepositoryConnection conn = null;
-		try {
-			conn = REPOSITORY_GESTION.getConnection();
+		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
 			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
 		} catch (RmesException e) {
 			throw e;

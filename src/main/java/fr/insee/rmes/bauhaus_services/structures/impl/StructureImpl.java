@@ -74,10 +74,10 @@ public class StructureImpl  extends RdfService implements StructureService {
 			if(type.equalsIgnoreCase(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())){
 				component.put("type", "attribute");
 			}
-			if(type.equalsIgnoreCase(((SimpleIRI)QB.MEASURE_PROPERTY).toString())){
+			else if(type.equalsIgnoreCase(((SimpleIRI)QB.MEASURE_PROPERTY).toString())){
 				component.put("type", "measure");
 			}
-			if(type.equalsIgnoreCase(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())){
+			else if(type.equalsIgnoreCase(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())){
 				component.put("type", "dimension");
 			}
 
@@ -90,7 +90,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 				try {
 					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString(Constants.CODELIST))));
 				} catch (RmesException e) {
-					logger.error("Cannot fetch code list of the structure " + id);
+					logger.error("Cannot fetch code list of the structure {}" , id);
 					logger.error(e);
 				}
 
@@ -102,7 +102,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
 					component.put(Constants.CONCEPT, concept);
 				} catch (RmesException e) {
-					logger.error("Cannot fetch concept of the structure " + id);
+					logger.error("Cannot fetch concept of the structure {}" , id);
 					logger.error(e);
 				}
 

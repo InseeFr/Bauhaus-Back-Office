@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
-import fr.insee.rmes.persistance.ontologies.QB;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +21,6 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.repository.util.Repositories;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +28,7 @@ import org.json.JSONObject;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.QB;
 
 /**
  * Getters only get on publication base
@@ -59,6 +58,17 @@ public class RepositoryPublication extends RepositoryUtils{
 	 */
 	public static String getResponse(String query) throws RmesException {
 		return getResponse(query, REPOSITORY_PUBLICATION);
+	}
+	
+	/**
+	 * Method which aims to produce response from a sparql query for internal Repository
+	 * 
+	 * @param query
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static String getResponseInternalPublication(String query) throws RmesException {
+		return getResponse(query, REPOSITORY_PUBLICATION_INTERNE);
 	}
 
 	/**
@@ -186,15 +196,14 @@ public class RepositoryPublication extends RepositoryUtils{
 		}
 	}
 
-	public static void clearStructureAndComponentForAllRepositories(Resource structure) {
+	public static void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
 		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION);
 		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION_INTERNE);
 	}
 
-	public static void clearStructureAndComponents(Resource structure, Repository repository) {
+	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
-		try {
-			RepositoryConnection conn = repository.getConnection();
+		try (RepositoryConnection conn = repository.getConnection()){
 			RepositoryResult<Statement> nodes = null;
 			RepositoryResult<Statement> specifications = null;
 			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
@@ -213,12 +222,13 @@ public class RepositoryPublication extends RepositoryUtils{
 				try {
 					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
 					conn.remove(statements);
+					statements.close();
 				} catch (RepositoryException e) {
 					logger.error("RepositoryGestion Error {}", e.getMessage());
 				}
 			});
 		} catch (RepositoryException e) {
-			new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
 		}
 	}
 	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {

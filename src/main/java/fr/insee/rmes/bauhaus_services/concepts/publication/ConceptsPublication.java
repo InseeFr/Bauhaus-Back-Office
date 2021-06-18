@@ -105,6 +105,7 @@ public class ConceptsPublication extends RdfService{
 			
 			repoGestion.closeStatements(statements);
 			publishMemberLinks(concept, model, con);
+			con.close();
 			
 			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
 			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
@@ -165,9 +166,11 @@ public class ConceptsPublication extends RdfService{
 			}
 			model.add(PublicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
+			repoGestion.closeStatements(statements);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 
 		}
+		repoGestion.closeStatements(statements);
 	}
 
 	public void publishMemberLinks(Resource concept, Model model, RepositoryConnection conn) throws RmesException {
@@ -175,6 +178,7 @@ public class ConceptsPublication extends RdfService{
 		try {
 			statements = conn.getStatements(null, SKOS.MEMBER, concept, false);
 		} catch (RepositoryException e) {
+			repoGestion.closeStatements(statements);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
 		try {
@@ -184,9 +188,10 @@ public class ConceptsPublication extends RdfService{
 						PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
+			repoGestion.closeStatements(statements);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
-	}
+		repoGestion.closeStatements(statements);	}
 
 	public void publishCollection(JSONArray collectionsToValidate) throws RmesException {
 
@@ -223,6 +228,7 @@ public class ConceptsPublication extends RdfService{
 				}
 			} finally {
 				repoGestion.closeStatements(statements);
+				con.close();
 			}
 			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
 			RepositoryPublication.publishResource(collectionToPublish, model, "collection");

@@ -1,14 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +39,7 @@ import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XMLUtils;
 
 @Component
 public class DocumentationsRubricsUtils extends RdfService {
@@ -268,7 +266,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), Config.LG1, model, graph);
 			}
-			docUtils.addDocumentsToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
+			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
 		if (rubric.hasRichTextLg2()) {
 			IRI textUriLg2 = RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG2));
@@ -279,7 +277,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), Config.LG2, model, graph);
 			}
-			docUtils.addDocumentsToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
+			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}
 	}
 
@@ -329,7 +327,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 		}
 		if (jsonRubric.has(Constants.LABEL_LG1)) {
 			if(forXml) {
-				documentationRubric.setLabelLg1(solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)));
+				documentationRubric.setLabelLg1(XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)));
 			}
 			else
 			{
@@ -338,7 +336,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 		}
 		if (jsonRubric.has(Constants.LABEL_LG2)) {
 			if(forXml) {
-				documentationRubric.setLabelLg2(solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)));
+				documentationRubric.setLabelLg2(XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)));
 			}
 			else
 			{
@@ -360,27 +358,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 		}
 		return documentationRubric;
 	}
-
-	private String solveSpecialXmlcharacters(String rubric) {
-		String ret = StringEscapeUtils.unescapeXml(rubric);
-		ret = StringEscapeUtils.unescapeHtml4(ret);
-		//ret=rubric
-		
-		final String regex = "&";
-		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern.matcher(ret).replaceAll(Constants.XML_ESPERLUETTE_REPLACEMENT);
-
-		final String regex2 = "<";
-		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern2.matcher(ret).replaceAll(Constants.XML_INF_REPLACEMENT);
-
-		final String regex3 = ">";
-		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
-
-		return new String(ret.getBytes(), StandardCharsets.UTF_8);
-	}
-
+	
 	private void addJsonDocumentToObjectRubric(JSONObject rubric, DocumentationRubric documentationRubric, String documentsWithRubricLang) {
 		List<Document> docs = new ArrayList<>();
 

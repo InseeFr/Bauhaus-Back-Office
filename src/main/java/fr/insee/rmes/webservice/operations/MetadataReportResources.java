@@ -291,6 +291,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	/**
 	 * EXPORT
 	 * @param id
+	 * @param lg1
 	 * @param lg2
 	 * @param includeEmptyMas
 	 * @return response
@@ -323,4 +324,23 @@ public class MetadataReportResources extends OperationsCommonResources {
 		return operationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
 	}
 
+	/**
+	 * EXPORT FOR LABEL
+	 * @param id
+	 * @return response
+	 */	
+
+	@GET
+	@Path("/metadataReport/export/label/{id}")
+	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	public Response getSimsExportForLabel(@Parameter(
+			description = "Identifiant de la documentation (format : [0-9]{4})",
+			required = true,
+			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
+			) throws RmesException {
+
+		return operationsService.exportMetadataReportForLabel(id);	
+	}
+	
 }
