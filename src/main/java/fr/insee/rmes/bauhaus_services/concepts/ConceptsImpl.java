@@ -249,7 +249,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	public String getFileNameForExport(ConceptForExport concept) {
-		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+concept.getId();
+		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
 	}
 	
 	@Override
