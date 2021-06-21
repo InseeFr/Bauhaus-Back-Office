@@ -91,9 +91,9 @@ public class ConceptsExportBuilder extends RdfService {
 			//format specific data
 			concept.setIsValidated(toValidationStatus(concept.getIsValidated(), "concepts"));
 			concept.setDisseminationStatus(toLabel(concept.getDisseminationStatus()));
-			concept.setCreated(concept.getCreated());
-			concept.setModified(concept.getModified());
-			concept.setValid(concept.getValid());
+			concept.setCreated(toDate(concept.getCreated()));
+			concept.setModified(toDate(concept.getModified()));
+			concept.setValid(toDate(concept.getValid()));
 			
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -196,7 +196,10 @@ public class ConceptsExportBuilder extends RdfService {
 	}
 
 	private String toDate(String dateTime) {
-		return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		if (dateTime != null && dateTime.length()>10) {
+			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		}
+		return dateTime;
 	}
 
 	private String toValidationStatus(String boolStatus, String context) {
