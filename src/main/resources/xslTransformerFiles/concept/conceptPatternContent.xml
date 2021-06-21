@@ -257,6 +257,16 @@
                 </style:list-level-properties>
             </text:list-level-style-number>
         </text:list-style>
+        <style:style style:name="Bold" style:family="text">
+            <style:text-properties style:font-weight-complex="bold"
+                style:font-weight-asian="bold"
+                fo:font-weight="bold"/>
+        </style:style>
+        <style:style style:name="Italic" style:family="text">
+            <style:text-properties style:font-style-complex="italic"
+                style:font-style-asian="italic"
+                fo:font-style="italic"/>
+        </style:style>
     </office:automatic-styles>
     <office:body>
         <office:text text:use-soft-page-breaks="true">
