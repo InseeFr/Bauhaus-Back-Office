@@ -197,7 +197,7 @@
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment fo:margin-left="1.27cm"
                         fo:text-indent="-0.635cm"
-                        text:list-tab-stop-position="1.27cm"
+                        text:list-tab-stop-position="0.635cm"
                         text:label-followed-by="listtab"/>
                 </style:list-level-properties>
             </text:list-level-style-bullet>
@@ -296,7 +296,7 @@
                 <table:table-column table:style-name="TableauConceptHead.A"/>
                 <table:table-row>
                     <table:table-cell office:value-type="string">
-                        <text:p text:style-name="TableTitle">Informations générales sur le concept ${concept/id}</text:p>
+                        <text:p text:style-name="TableTitle">Code : ${concept/id}</text:p>
                         <text:p text:style-name="Standard"/>
                     </table:table-cell>
                 </table:table-row>
@@ -305,24 +305,35 @@
                 <table:table-column table:style-name="InfoGenerales.A"/>
                 <table:table-row>
                     <table:table-cell table:style-name="InfoGenerales.A1" office:value-type="string">
-                        <text:p text:style-name="InfoGeHeading">Libellé alternatif (fr) :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg1/altLabelLg1}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Alternative label (en) :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/altLabelLg2/altLabelLg2}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Date de création :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/created}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Date de modification :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/modified}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Statut de diffusion :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/disseminationStatus}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Timbre propriétaire :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/creator}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Timbre gestionnaire :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/contributor}</text:p>
-                        <text:p text:style-name="InfoGeHeading">État du concept :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/isValidated}</text:p>
-                        <text:p text:style-name="InfoGeHeading">Version :</text:p>
-                        <text:p text:style-name="InfoGeContent">${concept/conceptVersion}</text:p>
+                        <text:list text:style-name="L1">
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Libellé alternatif (fr) : ${concept/altLabelLg1/altLabelLg1}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Alternative label (en) : ${concept/altLabelLg2/altLabelLg2}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Date de création : ${concept/created}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Date de modification : ${concept/modified}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Statut de diffusion : ${concept/disseminationStatus}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Timbre propriétaire : ${concept/creator}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Timbre gestionnaire : ${concept/contributor}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">État du concept : ${concept/isValidated}</text:p>
+                            </text:list-item>
+                            <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Version : ${concept/conceptVersion}</text:p>
+                            </text:list-item>
+                        </text:list>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
