@@ -120,7 +120,7 @@ public class ClassificationsQueries {
 	}
 	
 	public static String classificationItemsQuery(String id) {
-		return "SELECT ?id ?labelLg1 ?labelLg2 ?parent \n"
+		return "SELECT ?id ?labelLg1 ?labelLg2 ?parent ?altlabelLg1 ?altlabelLg2 \n"
 			+ "WHERE { \n"
 			+ "?classification rdf:type skos:ConceptScheme . \n"
 			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
