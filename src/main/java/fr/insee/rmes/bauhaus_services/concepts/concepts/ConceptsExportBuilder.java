@@ -205,9 +205,9 @@ public class ConceptsExportBuilder extends RdfService {
 	private String toValidationStatus(String boolStatus, String context) {
 		if (boolStatus.equals("true")) {
 			if (context.equals("concepts")) {
-				return "Validé";
+				return "Publié";
 			} else {
-				return "Validée";
+				return "Publiée";
 			}
 		} else {
 			return "Provisoire";
