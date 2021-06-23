@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -61,6 +62,6 @@ public interface ConceptsService {
 
 	public String deleteConcept(String id) throws RmesException;
 
-	InputStream getConceptExportIS(String id) throws RmesException;
+	Map<String, InputStream> getConceptExportIS(String id) throws RmesException;
 
 }
