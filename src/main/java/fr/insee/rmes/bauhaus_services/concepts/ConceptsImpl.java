@@ -247,6 +247,22 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String fileName = getFileNameForExport(concept);
 		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
+	
+	@Override
+	public InputStream getConceptExportIS(String id) throws RmesException  {
+		ConceptForExport concept = conceptsExport.getConceptData(id);
+		Map<String, String> xmlContent = convertConceptInXml(concept);
+		return conceptsExport.exportAsInputStream(xmlContent,true,true,true);
+	}
+
+	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
+		String conceptXml = XMLUtils.produceXMLResponse(concept);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
+		return xmlContent;
+	}
+	
+	
 
 	public String getFileNameForExport(ConceptForExport concept) {
 		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();

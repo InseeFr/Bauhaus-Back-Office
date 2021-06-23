@@ -30,7 +30,6 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
-
 import javax.ws.rs.BadRequestException;
 
 @Service
