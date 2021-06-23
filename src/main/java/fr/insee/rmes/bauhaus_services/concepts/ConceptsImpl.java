@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.text.CaseUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -243,7 +244,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 		
 		Map<String, String> xmlContent = convertConceptInXml(concept);	
-		return conceptsExport.exportAsResponse(xmlContent,true,true,true);
+		String fileName = getFileNameForExport(concept);
+		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 	
 	@Override
@@ -251,6 +253,29 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		ConceptForExport concept = conceptsExport.getConceptData(id);
 		Map<String, String> xmlContent = convertConceptInXml(concept);
 		return conceptsExport.exportAsInputStream(xmlContent,true,true,true);
+	}
+
+	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
+		String conceptXml = XMLUtils.produceXMLResponse(concept);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
+		return xmlContent;
+	}
+	
+	
+
+	public String getFileNameForExport(ConceptForExport concept) {
+		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
+	}
+	
+	@Override
+	public Map<String,InputStream> getConceptExportIS(String id) throws RmesException  {
+		ConceptForExport concept = conceptsExport.getConceptData(id);
+		Map<String, String> xmlContent = convertConceptInXml(concept);
+		String fileName = getFileNameForExport(concept);
+		Map<String,InputStream> ret = new HashMap<String, InputStream>();
+		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+		return ret;
 	}
 
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {

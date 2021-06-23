@@ -91,9 +91,9 @@ public class ConceptsExportBuilder extends RdfService {
 			//format specific data
 			concept.setIsValidated(toValidationStatus(concept.getIsValidated(), "concepts"));
 			concept.setDisseminationStatus(toLabel(concept.getDisseminationStatus()));
-			concept.setCreated(concept.getCreated());
-			concept.setModified(concept.getModified());
-			concept.setValid(concept.getValid());
+			concept.setCreated(toDate(concept.getCreated()));
+			concept.setModified(toDate(concept.getModified()));
+			concept.setValid(toDate(concept.getValid()));
 			
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -196,28 +196,30 @@ public class ConceptsExportBuilder extends RdfService {
 	}
 
 	private String toDate(String dateTime) {
-		return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		if (dateTime != null && dateTime.length()>10) {
+			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		}
+		return dateTime;
 	}
 
 	private String toValidationStatus(String boolStatus, String context) {
 		if (boolStatus.equals("true")) {
 			if (context.equals("concepts")) {
-				return "Validé";
+				return "Publié";
 			} else {
-				return "Validée";
+				return "Publiée";
 			}
 		} else {
 			return "Provisoire";
 		}
 	}
 
-	public Response exportAsResponse(Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
+	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
 		logger.debug("Begin To export concept");
-		String fileName = "export.odt";
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName+".odt").build();
 
-		InputStream input = exportAsInputStream(xmlContent, includeEmptyFields, lg1, lg2);
+		InputStream input = exportAsInputStream(fileName, xmlContent, includeEmptyFields, lg1, lg2);
 
 		return Response.ok((StreamingOutput) out -> {
 			IOUtils.copy(input, out);
@@ -228,12 +230,11 @@ public class ConceptsExportBuilder extends RdfService {
 
 	}
 
-	public InputStream exportAsInputStream(Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
+	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
 		logger.debug("Begin To export concept");
 
 		File output = null;
-		String fileName = "export.odt";
 		InputStream odtFileIS = null;
 		InputStream xslFileIS = null;
 		InputStream zipToCompleteIS = null;
@@ -254,7 +255,7 @@ public class ConceptsExportBuilder extends RdfService {
 				PrintStream printStream = new PrintStream(osOutputFile);) {
 
 			Path tempDir = Files.createTempDirectory("forExport");
-			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName);
+			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName +".odt");
 
 			// Add two params to xmlContents
 			String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);

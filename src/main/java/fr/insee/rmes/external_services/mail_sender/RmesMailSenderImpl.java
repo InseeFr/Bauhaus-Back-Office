@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -61,8 +62,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		InputStream is = conceptsService.getConceptExportIS(id);
-		return sendMail(mail, is, id);
+		Map<String,InputStream> getFileToJoin = conceptsService.getConceptExportIS(id);
+		String filename = getFileToJoin.entrySet().iterator().next().getKey();
+		InputStream is = getFileToJoin.get(filename);
+		return sendMail(mail, is, filename );
 	}
 	
 	@Override
