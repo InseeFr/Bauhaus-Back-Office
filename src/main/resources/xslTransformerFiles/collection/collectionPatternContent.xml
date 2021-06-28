@@ -372,14 +372,14 @@
                 <table:table-row>
                     <table:table-cell table:style-name="Tableau3Col.A1"
                         office:value-type="string" xml:id="lang.Fr.concepts">
-                        <text:p text:style-name="ContentCellFr">#list(${collection/membersLg1},&apos;L1&apos;)</text:p>
+                        <text:p text:style-name="ContentCellFr">#list(${collection/memberLg1/memberLg1},&apos;L1&apos;)</text:p>
                     </table:table-cell>
                     <table:table-cell office:value-type="string" xml:id="lang.2.concepts">
                         <text:p text:style-name="Standard"/>
                     </table:table-cell>
                     <table:table-cell table:style-name="Tableau3Col.A1"
                         office:value-type="string" xml:id="lang.En.concepts">
-                        <text:p text:style-name="ContentCellEn">#list(${collection/membersLg2},&apos;L1&apos;)</text:p>
+                        <text:p text:style-name="ContentCellEn">#list(${collection/memberLg2/memberLg2},&apos;L1&apos;)</text:p>
                     </table:table-cell>
                 </table:table-row>
             </table:table>
