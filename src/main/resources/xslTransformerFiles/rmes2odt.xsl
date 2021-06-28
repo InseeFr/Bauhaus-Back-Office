@@ -420,6 +420,9 @@
             <xsl:when test="$source = 'collection' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$collections//*[local-name()=$address-complement]//text()"/>
             </xsl:when>
+            <xsl:when test="$source = 'collection'">
+                <xsl:copy-of select="$collections//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+            </xsl:when>
             <xsl:when test="$source = 'series' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$series//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
