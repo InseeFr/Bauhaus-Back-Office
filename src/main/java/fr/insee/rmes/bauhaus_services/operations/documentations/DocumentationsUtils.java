@@ -59,6 +59,7 @@ import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.XMLUtils;
 
 
@@ -492,7 +493,7 @@ public class DocumentationsUtils extends RdfService{
 	}
 
 
-	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -513,7 +514,7 @@ public class DocumentationsUtils extends RdfService{
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries,true);
+			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -530,7 +531,7 @@ public class DocumentationsUtils extends RdfService{
 							indicatorXML,
 							Constants.WASGENERATEDBY).iterator().next(),
 					Constants.ID).iterator().next();
-			series=seriesUtils.getSeriesById(idSeries,true);
+			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -539,7 +540,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.SERIES_UP)) {
 			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase,true));
+					seriesUtils.getSeriesById(idDatabase,EncodingType.XML));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}

@@ -257,7 +257,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		ConceptForExport concept = conceptsExport.getConceptData(id);
 		Map<String, String> xmlContent = convertConceptInXml(concept);
 		String fileName = getFileNameForExport(concept);
-		Map<String,InputStream> ret = new HashMap<String, InputStream>();
+		Map<String,InputStream> ret = new HashMap<>();
 		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
 		return ret;
 	}

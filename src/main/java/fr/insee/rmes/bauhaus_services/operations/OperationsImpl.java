@@ -14,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -53,6 +52,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQuer
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
@@ -133,7 +133,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public Series getSeriesByID(String id) throws RmesException {
-		return seriesUtils.getSeriesById(id,false);
+		return seriesUtils.getSeriesById(id,EncodingType.MARKDOWN);
 	}
 
 	@Override
@@ -141,9 +141,12 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return seriesUtils.getSeriesLabelById(id);
 	}
 
+	/**
+	 * Return the series in a JSONObject encoding in markdown
+	 */
 	@Override
 	public String getSeriesJsonByID(String id) throws RmesException {
-		JSONObject series = seriesUtils.getSeriesJsonById(id);
+		JSONObject series = seriesUtils.getSeriesJsonById(id, EncodingType.MARKDOWN);
 		return series.toString();
 	}
 
@@ -436,28 +439,17 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 */
 	@Override
 	public Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
-
 		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: "+id); 
-		try {
-			return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
-		}
+		return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
+
 	}
 
 	@Override
 	public Response exportMetadataReportForLabel(String id) throws RmesException  {
-
-		try {
 			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error exporting sims"); 
-		}
 	}
 
 }
