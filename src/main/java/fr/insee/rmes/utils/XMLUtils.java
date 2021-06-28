@@ -161,7 +161,8 @@ public class XMLUtils {
 	}
 
 	public static String solveSpecialXmlcharacters(String rubric) {
-		String ret = StringEscapeUtils.unescapeXml(rubric);
+		String ret = rubric.replace("&quot;", Constants.XML_ESPERLUETTE_REPLACEMENT + "quot;"); //Quotes are not authorized in Json
+		ret = StringEscapeUtils.unescapeXml(ret);
 		ret = StringEscapeUtils.unescapeHtml4(ret);
 		//ret=rubric
 		
@@ -176,7 +177,7 @@ public class XMLUtils {
 		final String regex3 = ">";
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
-
+		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 	

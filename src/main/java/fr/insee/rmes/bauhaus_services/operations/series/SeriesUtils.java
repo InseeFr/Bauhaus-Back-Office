@@ -47,6 +47,7 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
@@ -73,15 +74,15 @@ public class SeriesUtils extends RdfService {
 	/*READ*/
 
 	public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
-		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id));	
+		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id, EncodingType.MARKDOWN));	
 	}
 
-	public Series getSeriesById(String id, boolean forXml) throws RmesException {
-		return buildSeriesFromJson(getSeriesJsonById(id),forXml);	
+	public Series getSeriesById(String id, EncodingType encode) throws RmesException {
+		return buildSeriesFromJson(getSeriesJsonById(id, encode),encode);	
 	}
 
 
-	private Series buildSeriesFromJson(JSONObject seriesJson, boolean forXml) throws RmesException {
+	private Series buildSeriesFromJson(JSONObject seriesJson,  EncodingType encode) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
@@ -92,7 +93,7 @@ public class SeriesUtils extends RdfService {
 				id= famOpeSerIndUtils.createId();}
 		Series series = new Series();
 		try {
-			if (forXml) series = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(seriesJson.toString()), Series.class);
+			if (EncodingType.XML.equals(encode)) series = mapper.readValue(XMLUtils.solveSpecialXmlcharacters(seriesJson.toString()), Series.class);
 			else series = mapper.readValue(seriesJson.toString(), Series.class);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -104,14 +105,16 @@ public class SeriesUtils extends RdfService {
 	}
 
 
-	public JSONObject getSeriesJsonById(String id) throws RmesException {
+	public JSONObject getSeriesJsonById(String id, EncodingType encode) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id));
 		// check that the series exist
 		if (JSONUtils.isEmpty(series)) {
 			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found",
 					"The series " + id + " cannot be found.");
 		}
-		XhtmlToMarkdownUtils.convertJSONObject(series);
+		if (EncodingType.MARKDOWN.equals(encode)) {
+			XhtmlToMarkdownUtils.convertJSONObject(series);
+		}	
 		series.put(Constants.ID, id);
 		addSeriesOperations(id, series);
 		addSeriesFamily(id, series);
@@ -315,7 +318,7 @@ public class SeriesUtils extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
 		}
-		Series series = buildSeriesFromJson(new JSONObject(body),false);
+		Series series = buildSeriesFromJson(new JSONObject(body),EncodingType.MARKDOWN);
 		checkSimsWithOperations(series);
 
 		// Tester l'existence de la famille
@@ -378,7 +381,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	public boolean hasSims(String seriesId) throws RmesException {
-		JSONObject series = getSeriesJsonById(seriesId);
+		JSONObject series = getSeriesJsonById(seriesId, EncodingType.MARKDOWN);
 		String idSims;
 		try {
 			idSims = series.getString(Constants.ID_SIMS);
@@ -389,7 +392,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	public boolean hasOperations(String seriesId) throws RmesException {
-		JSONObject series = getSeriesJsonById(seriesId);
+		JSONObject series = getSeriesJsonById(seriesId, EncodingType.MARKDOWN);
 		JSONArray operations;
 		try {
 			operations = series.getJSONArray(Constants.OPERATIONS);
