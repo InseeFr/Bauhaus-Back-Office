@@ -18,7 +18,7 @@
     <xsl:param name="codeListsFile"/>
     <xsl:param name="msdFile"/>
     <xsl:param name="conceptFile"/>
-    <xsl:param name="collectionsFile"/>
+    <xsl:param name="collectionFile"/>
     <xsl:param name="parametersFile"/>
 
     <!-- the params with the content of the files -->
@@ -114,8 +114,8 @@
     </xsl:param>
     <xsl:param name="collections" as="node()">
         <xsl:choose>
-            <xsl:when test="doc-available($collectionsFile)">
-                <xsl:copy-of select="document($collectionsFile)"/>
+            <xsl:when test="doc-available($collectionFile)">
+                <xsl:copy-of select="document($collectionFile)"/>
             </xsl:when>
             <xsl:otherwise>
                 <Collections/>

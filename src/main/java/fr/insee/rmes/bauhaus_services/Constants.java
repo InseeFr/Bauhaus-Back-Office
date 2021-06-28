@@ -17,6 +17,7 @@ public class Constants {
 	public static final String CREATORS = "creators";
 	public static final String CONTRIBUTOR = "contributor";
 	public static final String CONTRIBUTORS = "contributors";
+	public static final String COLLECTION = "collection";
 
 
 	/*D*/
@@ -79,6 +80,7 @@ public class Constants {
 	public static final String PREF_LABEL_LG2 = "prefLabelLg2";
 	public static final String PUBLISHER = "publisher";
 	public static final String PUBLISHERS = "publishers";
+	public static final String PARAMETERS_FILE = "parametersFile";
 
 
 	/*R*/
@@ -88,7 +90,6 @@ public class Constants {
 	
 	/*S*/
 	public static final String SERIES_UP = "SERIES";
-	public static final String SERIES = "SERIES";
 	public static final String SEEALSO = "seeAlso";
 	public static final String STAMP = "stamp";
 	
