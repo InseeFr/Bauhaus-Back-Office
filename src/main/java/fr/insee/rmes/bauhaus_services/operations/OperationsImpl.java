@@ -39,8 +39,6 @@ import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.external_services.export.ExportUtils;
-import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
@@ -53,6 +51,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.indicators.Indicators
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
+import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
@@ -66,9 +65,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
-
-	@Autowired
-	Jasper jasper;
 
 	@Autowired
 	VarBookExportBuilder varBookExport;
@@ -196,7 +192,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		}
 
 		InputStream is = transformFileOutputStreamInInputStream(os);
-		String fileName = "Codebook"+ExportUtils.getExtension(acceptHeader);
+		String fileName = "Codebook"+ ExportUtils.getExtension(acceptHeader);
 		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
 		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
 	}

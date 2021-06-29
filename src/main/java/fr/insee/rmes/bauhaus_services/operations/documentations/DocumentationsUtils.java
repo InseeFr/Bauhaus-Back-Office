@@ -560,8 +560,6 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-
-		
 		Map<String,String> xmlContent = new HashMap<>();
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
@@ -570,8 +568,7 @@ public class DocumentationsUtils extends RdfService{
 		xmlContent.put("codeListsFile",  codeListsXML);
 		xmlContent.put("organizationsFile",  organizationsXML);
 		
-		
-		return docExport.export(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
@@ -616,7 +613,7 @@ public class DocumentationsUtils extends RdfService{
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 
-		if (!Constants.SERIES.equals(targetType)) {
+		if (!Constants.SERIES_UP.equals(targetType)) {
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 
