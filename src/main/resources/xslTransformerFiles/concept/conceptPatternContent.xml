@@ -401,7 +401,7 @@
                     <table:table-cell table:style-name="Tableau3Col.A1"
                         office:value-type="string" xml:id="lang.Fr.replacedlinks">
                         <text:p text:style-name="HeadingParagraph">Concept remplacé :</text:p>
-                        <text:p text:style-name="ContentCellFr">#list(${concept/replacesLg1/replacesLg1},&apos;L1&apos;)</text:p>
+                        <text:p text:style-name="ContentCellFr">#list(${concept/succeedLg1/succeedLg1},&apos;L1&apos;)</text:p>
                     </table:table-cell>
                     <table:table-cell office:value-type="string" xml:id="lang.2.replacedlinks">
                         <text:p text:style-name="Standard"/>
@@ -409,7 +409,7 @@
                     <table:table-cell table:style-name="Tableau3Col.A1"
                         office:value-type="string" xml:id="lang.En.replacedlinks">
                         <text:p text:style-name="HeadingParagraph">Replaced concept :</text:p>
-                        <text:p text:style-name="ContentCellEn">#list(${concept/replacesLg2/replacesLg2},&apos;L1&apos;)</text:p>
+                        <text:p text:style-name="ContentCellEn">#list(${concept/succeedLg2/succeedLg2},&apos;L1&apos;)</text:p>
                     </table:table-cell>
                 </table:table-row>
                 <table:table-row>
