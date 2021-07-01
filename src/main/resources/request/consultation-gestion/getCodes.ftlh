@@ -1,4 +1,4 @@
-SELECT ?uri ?code ?prefLabelLg1 ?prefLabelLg2 ?parents
+SELECT ?uri ?code ?prefLabelLg1 ?prefLabelLg2 ?parents ?ordre
 FROM <${CODELIST_GRAPH}>
 WHERE {
     ?uriListe rdf:type skos:ConceptScheme .
@@ -14,4 +14,9 @@ WHERE {
         ?uri skos:broader ?parentsParent .
         ?parentsParent skos:notation ?parents
     } .
+    OPTIONAL {
+        ?uriListe ?predicatRdfSeq ?uriCode .
+        filter(contains(str(?predicatRdfSeq), "http://www.w3.org/1999/02/22-rdf-syntax-ns#_" )) .
+        bind(strafter(str(?predicatRdfSeq),"http://www.w3.org/1999/02/22-rdf-syntax-ns#_") as ?ordre) .
+    }
 }
