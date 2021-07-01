@@ -453,7 +453,7 @@
                 </xsl:call-template>
             </xsl:when>
             <xsl:when test="$source = 'identifiedSims'">
-                <xsl:variable name="simsRubrics" select="$sims//rubrics[idAttribute = substring-before($address-complement,'/')]" as="node()*"/>
+                <xsl:variable name="simsRubrics" select="$sims//rubrics[idAttribute = substring-before($address-complement,'/')][1]" as="node()*"/>
                 <xsl:variable name="rubric-element" select="substring-after($address-complement,'/')"/>
                 <xsl:choose>
                     <xsl:when test="not($simsRubrics//*)"/>
