@@ -15,7 +15,7 @@ WHERE {
         ?parentsParent skos:notation ?parents
     } .
     OPTIONAL {
-        ?uriListe ?predicatRdfSeq ?uriCode .
+        ?uriListe ?predicatRdfSeq ?uri .
         filter(contains(str(?predicatRdfSeq), "http://www.w3.org/1999/02/22-rdf-syntax-ns#_" )) .
         bind(strafter(str(?predicatRdfSeq),"http://www.w3.org/1999/02/22-rdf-syntax-ns#_") as ?ordre) .
     }
