@@ -266,7 +266,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), Config.LG1, model, graph);
 			}
-			docUtils.addDocumentsToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
+			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
 		if (rubric.hasRichTextLg2()) {
 			IRI textUriLg2 = RdfUtils.toURI(attributeUri.stringValue().concat("/").concat(Constants.TEXT_LG2));
@@ -277,7 +277,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), Config.LG2, model, graph);
 			}
-			docUtils.addDocumentsToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
+			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}
 	}
 

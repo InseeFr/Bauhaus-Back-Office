@@ -85,6 +85,7 @@ public class CodeListQueries {
 	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = getInitParams();
 		params.put("NOTATION", notation);
+		params.put("CODE_LIST_BASE_URI", Config.CODE_LIST_BASE_URI);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodesList.ftlh", params);
 	}
 

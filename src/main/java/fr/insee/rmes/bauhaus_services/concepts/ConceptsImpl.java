@@ -1,23 +1,25 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.text.CaseUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
@@ -28,11 +30,12 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.export.Jasper;
+import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.XMLUtils;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -51,9 +54,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	@Autowired 
 	ConceptsExportBuilder conceptsExport;
-
-	@Autowired
-	Jasper jasper;
+	
+	@Autowired 
+	CollectionExportBuilder collectionExport;
 
 	@Autowired
 	MailSenderContract mailSender;
@@ -231,20 +234,47 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public Response getConceptExport(String id, String acceptHeader)  {
-		JSONObject concept;
+	public Response getConceptExport(String id, String acceptHeader) throws RmesException  {
+		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
-		InputStream is = jasper.exportConcept(concept, acceptHeader);
-		String fileName = FilesUtils.cleanFileNameAndAddExtension(concept.getString(Constants.PREF_LABEL_LG1), jasper.getExtension(acceptHeader)) ;
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, acceptHeader)
-				.header("Content-Disposition", content)
-				.build();
+		
+		Map<String, String> xmlContent = convertConceptInXml(concept);	
+		String fileName = getFileNameForExport(concept);
+		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
+
+	private String getFileNameForExport(ConceptForExport concept) {
+		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
+	}
+	
+	@Override
+	public Map<String,InputStream> getConceptExportIS(String id) throws RmesException  {
+		ConceptForExport concept = conceptsExport.getConceptData(id);
+		Map<String, String> xmlContent = convertConceptInXml(concept);
+		String fileName = getFileNameForExport(concept);
+		Map<String,InputStream> ret = new HashMap<>();
+		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+		return ret;
+	}
+
+	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
+		String conceptXml = XMLUtils.produceXMLResponse(concept);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("conceptFile",  conceptXml.replace("ConceptForExport", "Concept"));
+		return xmlContent;
+	}
+	
+	private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
+		String collectionXml = XMLUtils.produceXMLResponse(collection);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExport", "Collection"));
+		return xmlContent;
+	}
+	
 
 	/**
 	 * Validate collection(s)
@@ -259,22 +289,31 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	/**
 	 * Export collection(s)
+	 * @throws RmesException 
 	 */
 	@Override
-	public Response getCollectionExport(String id, String acceptHeader){
-		JSONObject collection = null;
+	public Response getCollectionExport(String id, String acceptHeader) throws RmesException{
+		CollectionForExport collection;
 		try {
-			collection = conceptsExport.getCollectionData(id);
+			collection = collectionExport.getCollectionData(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
-		InputStream is = jasper.exportCollection(collection, acceptHeader);
-		String fileName = collection.getString(Constants.PREF_LABEL_LG1) + jasper.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
-		return Response.ok(is, acceptHeader)
-				.header("Content-Disposition", content)
-				.build();
+		Map<String, String> xmlContent = convertCollectionInXml(collection);	
+		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
+		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
+	
+	@Override
+	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {
+		CollectionForExport collection = collectionExport.getCollectionData(id);
+		Map<String, String> xmlContent = convertCollectionInXml(collection);
+		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
+		Map<String,InputStream> ret = new HashMap<>();
+		ret.put(fileName, collectionExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+		return ret;
+	}
+	
 
 	/**
 	 * Send concept

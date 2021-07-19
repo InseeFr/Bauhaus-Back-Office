@@ -36,12 +36,14 @@ public class ClassificationsQueries {
 			// AltLabel
 			+ "{OPTIONAL{ \n"
 			+ "SELECT (group_concat(?altLg1;separator=' || ') as ?altLabelLg1) WHERE { \n"
+			+ "?classification rdf:type skos:ConceptScheme . \n"
 			+ "?classification skos:altLabel ?altLg1 . \n"
 			+ "FILTER (lang(?altLg1) = '" + Config.LG1 + "')  . \n"
 			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
 			+ "}}} \n"
 			+ "{OPTIONAL{ \n"
 			+ "SELECT (group_concat(?altLg2;separator=' || ') as ?altLabelLg2) WHERE { \n"
+			+ "?classification rdf:type skos:ConceptScheme . \n"
 			+ "?classification skos:altLabel ?altLg2 . \n"
 			+ "FILTER (lang(?altLg2) = '" + Config.LG2 + "')  . \n"
 			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
@@ -118,7 +120,7 @@ public class ClassificationsQueries {
 	}
 	
 	public static String classificationItemsQuery(String id) {
-		return "SELECT ?id ?labelLg1 ?labelLg2 ?parent \n"
+		return "SELECT ?id ?labelLg1 ?labelLg2 ?parent ?altlabelLg1 ?altlabelLg2 \n"
 			+ "WHERE { \n"
 			+ "?classification rdf:type skos:ConceptScheme . \n"
 			+ "FILTER(REGEX(STR(?classification),'/codes/" + id + "/')) . \n"
@@ -127,6 +129,10 @@ public class ClassificationsQueries {
 			+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
 			+ "OPTIONAL{?item skos:prefLabel ?labelLg2 . \n"
 			+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') } \n"
+			+ "OPTIONAL{?item skos:altLabel ?altlabelLg1 . \n"
+			+ "FILTER (lang(?altlabelLg1) = '" + Config.LG1 + "') } \n"
+			+ "OPTIONAL{?item skos:altLabel ?altlabelLg2 . \n"
+			+ "FILTER (lang(?altlabelLg2) = '" + Config.LG2 + "') } \n"
 			+ "?item skos:notation ?id . \n"
 			+ "OPTIONAL{?item skos:broader ?broader . \n"
 			+ "?broader skos:notation ?parent} \n"

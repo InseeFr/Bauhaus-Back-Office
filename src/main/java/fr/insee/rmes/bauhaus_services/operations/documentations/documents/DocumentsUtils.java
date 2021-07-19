@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -72,12 +71,18 @@ public class DocumentsUtils  extends RdfService  {
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
 
-	public void addDocumentsToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
+	public void addDocumentsAndLinksToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
 			throws RmesException {
 		if (documents != null && !documents.isEmpty()) {
 			for (Document doc : documents) {
 				IRI url = RdfUtils.toURI(doc.getUrl());
-				IRI docUri = getDocumentUri(url);
+				IRI docUri ;
+				if (StringUtils.isNotEmpty(doc.getUri())){
+					docUri = RdfUtils.toURI(doc.getUri());
+				}
+				else{
+					docUri = getDocumentUri(url);
+				}
 				RdfUtils.addTripleUri(textUri, INSEE.ADDITIONALMATERIAL, docUri, model, graph);
 			}
 		}
@@ -573,9 +578,11 @@ public class DocumentsUtils  extends RdfService  {
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
 		try {
 			return Response.ok( (StreamingOutput) output -> {
-	                InputStream input = new FileInputStream( path.toFile() );
+	                InputStream input = Files.newInputStream(path);
 	                IOUtils.copy(input, output);
+	                input.close();
 	                output.flush();   
+	                output.close();
 	        } ).header( "Content-Disposition", content ).build();
 		 } catch ( Exception e ) { 
          	logger.error(e.getMessage());
