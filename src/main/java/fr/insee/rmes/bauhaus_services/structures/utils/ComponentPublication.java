@@ -58,6 +58,7 @@ public class ComponentPublication extends RdfService {
 		
 		} finally {
 			repoGestion.closeStatements(statements);
+			con.close();
 		}
 		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
 		RepositoryPublication.publishResource(componentToPublishRessource, model, ((SimpleIRI) type).toString());

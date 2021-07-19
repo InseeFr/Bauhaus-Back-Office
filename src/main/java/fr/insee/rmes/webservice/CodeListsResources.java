@@ -1,12 +1,11 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +22,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 
 @Component
 @Path("/codeList")
@@ -43,6 +44,32 @@ public class CodeListsResources {
 	@Autowired
 	CodeListService codeListService;
 
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setCodesList", summary = "Create a codes list")
+	public Response setCodesList(@RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@PUT
+	@Path("/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setCodesList", summary = "Create a codes list")
+	public Response updateCodesList(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -53,7 +80,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getAllCodesLists();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -68,7 +95,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesListForSearch();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -83,7 +110,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesList(notation);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -98,7 +125,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getCodeListJson(notation);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
@@ -115,8 +142,10 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getCode(notation, code);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
+
+
 }

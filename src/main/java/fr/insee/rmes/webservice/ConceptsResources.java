@@ -316,7 +316,7 @@ public class ConceptsResources   {
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
-	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.getConceptExport(id, acceptHeader);
 	}
 
@@ -393,7 +393,7 @@ public class ConceptsResources   {
 	@Path("/collection/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public Response getCollectionExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) {
+	public Response getCollectionExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 

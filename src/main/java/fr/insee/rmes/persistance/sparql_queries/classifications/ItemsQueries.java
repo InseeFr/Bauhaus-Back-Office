@@ -10,7 +10,7 @@ public class ItemsQueries {
 	
 	public static String itemQuery(String classificationId, String itemId) {
 		return "SELECT ?classificationId ?itemId ?prefLabelLg1 ?prefLabelLg2 ?isValidated \n"
-				+ "?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion \n"
+				+ "?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion ?altLabelLg1 ?altLabelLg2\n"
 				+ "WHERE { \n"
 				+ "?item skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n"
@@ -18,6 +18,10 @@ public class ItemsQueries {
 				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
 				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
 				+ "BIND('" + classificationId + "' as ?classificationId) \n"
+				+ "OPTIONAL {?item skos:altLabel ?altLabelLg1 . \n"
+				+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "')} . \n"
+				+ "OPTIONAL {?item skos:altLabel ?altLabelLg2 . \n"
+				+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "')} . \n"
 				+ "OPTIONAL {?item skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "')} . \n"
 				+ "?item skos:notation ?itemId . \n"
@@ -56,9 +60,11 @@ public class ItemsQueries {
 				+ "?additionalContentNoteLg1 ?additionalContentNoteLg2 ?exclusionNoteLg1 ?exclusionNoteLg2 \n"
 				+ "?changeNoteLg1 ?changeNoteLg2 ?changeNoteDate \n"
 				+ "WHERE { \n" 
-				+ "?item skos:notation '" + itemId + "' . \n"
+				//+ "?item skos:notation '" + itemId + "' . \n" 
 				+ "?item skos:inScheme ?classification . \n"
 				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
+				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
+
 				// definitionLg1
 				+ "OPTIONAL {?item skos:definition ?defLg1 . \n"
 				+ "?defLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -25,7 +26,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
@@ -33,7 +34,6 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.mail_sender.SendRequest.Recipients;
 import fr.insee.rmes.model.mail_sender.Mail;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
@@ -46,7 +46,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
-	Jasper jasper;
+	ConceptsService conceptsService;
 	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
@@ -58,9 +58,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		JSONObject json = conceptsExport.getConceptData(id);
-		InputStream is = jasper.exportConcept(json, "Mail");
-		return sendMail(mail, is, json);
+		Map<String,InputStream> getFileToJoin = conceptsService.getConceptExportIS(id);
+		String filename = getFileToJoin.entrySet().iterator().next().getKey();
+		InputStream is = getFileToJoin.get(filename);
+		return sendMail(mail, is, filename );
 	}
 	
 	@Override
@@ -70,15 +71,14 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		JSONObject json = conceptsExport.getCollectionData(id);
-		InputStream is = jasper.exportCollection(json, "Mail");
-		return sendMail(mail, is, json);
+		Map<String,InputStream> getFileToJoin = conceptsService.getCollectionExportIS(id);
+		String filename = getFileToJoin.entrySet().iterator().next().getKey();
+		InputStream is = getFileToJoin.get(filename);
+		return sendMail(mail, is, filename);
 	}
 		
-	private boolean sendMail(Mail mail, InputStream is, JSONObject json) {
-			
-		String fileName = json.getString(Constants.PREF_LABEL_LG1);
-		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
+	private boolean sendMail(Mail mail, InputStream is, String fileName) {
+					fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
@@ -121,7 +121,6 @@ public class RmesMailSenderImpl implements MailSenderContract {
 				authentificationFeature);
 			
 		// Multipart
-		
 		client.register(MultiPartFeature.class);
 		
 		FormDataMultiPart mp = new FormDataMultiPart();

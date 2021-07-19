@@ -196,15 +196,14 @@ public class RepositoryPublication extends RepositoryUtils{
 		}
 	}
 
-	public static void clearStructureAndComponentForAllRepositories(Resource structure) {
+	public static void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
 		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION);
 		clearStructureAndComponents(structure, REPOSITORY_PUBLICATION_INTERNE);
 	}
 
-	public static void clearStructureAndComponents(Resource structure, Repository repository) {
+	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();
-		try {
-			RepositoryConnection conn = repository.getConnection();
+		try (RepositoryConnection conn = repository.getConnection()){
 			RepositoryResult<Statement> nodes = null;
 			RepositoryResult<Statement> specifications = null;
 			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
@@ -223,12 +222,13 @@ public class RepositoryPublication extends RepositoryUtils{
 				try {
 					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
 					conn.remove(statements);
+					statements.close();
 				} catch (RepositoryException e) {
 					logger.error("RepositoryGestion Error {}", e.getMessage());
 				}
 			});
 		} catch (RepositoryException e) {
-			new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
 		}
 	}
 	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {

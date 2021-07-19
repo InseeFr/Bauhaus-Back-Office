@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
@@ -170,7 +172,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
-                listCode.put("notation", component.getString("listeCodeNotation"));
+                listCode.put("id", component.getString("listeCodeNotation"));
                 component.put("listCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
@@ -241,6 +243,20 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             codesList.put("dateMiseAJour", defaultDate);
         }
 
+        JSONArray levels = repoGestion.getResponseAsArray(buildRequest("getCodesListLevel.ftlh", params));
+        if(levels.length() > 0){
+            JSONArray formattedLevels = new JSONArray();
+            for(int i = 0; i < levels.length(); i++){
+                JSONObject level = new JSONObject();
+                level.put("id", levels.getJSONObject(i).getString("idNiveau"));
+                level.put("label", this.formatLabel(levels.getJSONObject(i)));
+                if (levels.getJSONObject(i).has("idNiveauSuivant")) {
+                    level.put("niveauxSuivants", new JSONArray().put(new JSONObject().put("id", levels.getJSONObject(i).get("idNiveauSuivant"))));
+                }
+                formattedLevels.put(level);
+            }
+            codesList.put("niveaux", formattedLevels);
+        }
         codesList.put("codes", this.getCodes(notation));
 
         return codesList.toString();
@@ -254,30 +270,94 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         params.put("LG2", Config.LG2);
 
         JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
+        JSONArray levels =  repoGestion.getResponseAsArray(buildRequest("getCodeLevel.ftlh", params));
+
+        JSONObject childrenMapping = new JSONObject();
+
+        JSONObject formattedCodes = new JSONObject();
 
         for (int i = 0; i < codes.length(); i++) {
             JSONObject code = codes.getJSONObject(i);
-            code.put("label", this.formatLabel(code));
-            code.remove("prefLabelLg1");
-            code.remove("prefLabelLg2");
+
+            if(code.has(Constants.PARENTS)){
+                JSONArray children = new JSONArray();
+                String parentCode = code.getString(Constants.PARENTS);
+                if(childrenMapping.has(parentCode)){
+                    children = childrenMapping.getJSONArray(parentCode);
+                }
+                children.put(code.get("code"));
+                childrenMapping.put(parentCode, children);
+            }
+
+            JSONArray codeLevels = new JSONArray();
+            for(int j = 0; j < levels.length(); j++){
+                if(levels.getJSONObject(j).getString(Constants.URI).equalsIgnoreCase(code.getString(Constants.URI))){
+                    codeLevels.put(new JSONObject().put("id", levels.getJSONObject(j).getString("idNiveau")));
+                }
+            }
+            if(codeLevels.length() > 0){
+                code.put("niveaux", codeLevels);
+            }
+
+            if(formattedCodes.has(code.getString(Constants.URI))){
+                JSONObject c = formattedCodes.getJSONObject(code.getString(Constants.URI));
+
+                if(code.has(Constants.PARENTS)){
+                    JSONArray parents = c.getJSONArray(Constants.PARENTS);
+                    parents.put(code.getString(Constants.PARENTS));
+                    c.put(Constants.PARENTS, parents);
+                }
+            } else {
+                code.put("label", this.formatLabel(code));
+                code.remove(Constants.PREF_LABEL_LG1);
+                code.remove(Constants.PREF_LABEL_LG2);
+
+                if(code.has(Constants.PARENTS)){
+                    JSONArray parents = new JSONArray();
+                    parents.put(code.getString(Constants.PARENTS));
+                    code.put(Constants.PARENTS, parents);
+                } else {
+                    code.put(Constants.PARENTS, new JSONArray());
+                }
+                formattedCodes.put(code.getString(Constants.URI), code);
+            }
         }
 
-        return codes;
+        JSONArray result = new JSONArray();
+        Iterator<String> keys = formattedCodes.keys();
+
+        while(keys.hasNext()) {
+            String key = keys.next();
+            JSONObject code = formattedCodes.getJSONObject(key);
+            if(childrenMapping.has(code.getString("code"))){
+                code.put("enfants", childrenMapping.getJSONArray(code.getString("code")));
+            }
+            if(code.getJSONArray(Constants.PARENTS).length() == 0){
+                code.remove(Constants.PARENTS);
+            }
+            result.put(code);
+        }
+        return result;
     }
 
     private JSONArray formatLabel(JSONObject obj) {
         JSONArray label = new JSONArray();
 
-        JSONObject lg1 = new JSONObject();
-        JSONObject lg2 = new JSONObject();
 
-        lg1.put("langue", Config.LG1);
-        lg2.put("langue", Config.LG2);
-        lg1.put("contenu", obj.getString("prefLabelLg1"));
-        lg2.put("contenu", obj.getString("prefLabelLg2"));
+        if(obj.has("prefLabelLg1")){
+            JSONObject lg1 = new JSONObject();
+            lg1.put("langue", Config.LG1);
+            lg1.put("contenu", obj.getString("prefLabelLg1"));
+            label.put(lg1);
 
-        label.put(lg1);
-        label.put(lg2);
+        }
+        if(obj.has("prefLabelLg2")){
+            JSONObject lg2 = new JSONObject();
+            lg2.put("langue", Config.LG2);
+            lg2.put("contenu", obj.getString("prefLabelLg2"));
+            label.put(lg2);
+        }
+
 
         return label;
     }
