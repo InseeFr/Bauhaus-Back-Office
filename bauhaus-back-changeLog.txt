@@ -1,3 +1,8 @@
+3.0.6 : - Passage de l'export des concepts et collections de JasperReport à XSLT
+		- Montée de version spring (4 à 5)
+		- Ajout des altlabel dans les postes des nomenclatures
+		- Corrections de bugs dans la partie opérations (droits, création de série, aide, export)
+		- Correction de l'authentification (bug visible sur la pagination des recherches avancées)
 3.0.5 : - Correction d'un bug qui ouvrait une connexion à chaque requete + bugs mineurs
 		- Initialisation de dockerisation
 		- Changement du richtext dans les concepts (gras, italisque)

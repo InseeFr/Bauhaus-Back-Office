@@ -93,6 +93,83 @@
                 <style:columns fo:column-count="1" fo:column-gap="0cm"/>
             </style:section-properties>
         </style:style>
+        <style:style style:name="Bold" style:family="text">
+            <style:text-properties style:font-weight-complex="bold"
+                style:font-weight-asian="bold"
+                fo:font-weight="bold"/>
+        </style:style>
+        <style:style style:name="Italic" style:family="text">
+            <style:text-properties style:font-style-complex="italic"
+                style:font-style-asian="italic"
+                fo:font-style="italic"/>
+        </style:style>
+        <text:list-style style:name="L1">
+            <text:list-level-style-bullet text:bullet-char="•"
+                text:style-name="Bullet_20_Symbols"
+                text:level="1">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.27cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.27cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:bullet-char="◦"
+                text:style-name="Bullet_20_Symbols"
+                text:level="2">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.905cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.905cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+            <text:list-level-style-bullet text:bullet-char="▪"
+                text:style-name="Bullet_20_Symbols"
+                text:level="3">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="2.54cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="2.54cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-bullet>
+        </text:list-style>
+        <text:list-style style:name="L2">
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="1"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.27cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.27cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="2"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="1.905cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="1.905cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+            <text:list-level-style-number text:style-name="Numbering_20_Symbols"
+                text:level="3"
+                style:num-format="1"
+                style:num-suffix=".">
+                <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
+                    <style:list-level-label-alignment fo:margin-left="2.54cm"
+                        fo:text-indent="-0.635cm"
+                        text:list-tab-stop-position="2.54cm"
+                        text:label-followed-by="listtab"/>
+                </style:list-level-properties>
+            </text:list-level-style-number>
+        </text:list-style>
     </office:automatic-styles>
     <office:body>
         <office:text text:use-soft-page-breaks="true">
@@ -336,7 +413,7 @@
                     text:name="__RefHeading___Toc1321_1782290185"/>Objectifs détaillés des enquêtes et principaux thèmes abordés<text:bookmark-end
                     text:name="__RefHeading___Toc1321_1782290185"/></text:h>
             <text:p text:style-name="Heading">Résumé :</text:p>
-            <text:p text:style-name="Text_20_body">${series/abstractLg1}</text:p>
+            <text:p text:style-name="Text_20_body">${series/richContent/abstractLg1}</text:p>
             <text:p text:style-name="Text_20_body"/>
             <text:h text:style-name="Heading_20_2" text:outline-level="2"><text:bookmark-start
                     text:name="__RefHeading___Toc1323_1782290185"/>Instances de concertation avec les partenaires sociaux<text:bookmark-end

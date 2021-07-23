@@ -243,6 +243,20 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             codesList.put("dateMiseAJour", defaultDate);
         }
 
+        JSONArray levels = repoGestion.getResponseAsArray(buildRequest("getCodesListLevel.ftlh", params));
+        if(levels.length() > 0){
+            JSONArray formattedLevels = new JSONArray();
+            for(int i = 0; i < levels.length(); i++){
+                JSONObject level = new JSONObject();
+                level.put("id", levels.getJSONObject(i).getString("idNiveau"));
+                level.put("label", this.formatLabel(levels.getJSONObject(i)));
+                if (levels.getJSONObject(i).has("idNiveauSuivant")) {
+                    level.put("niveauxSuivants", new JSONArray().put(new JSONObject().put("id", levels.getJSONObject(i).get("idNiveauSuivant"))));
+                }
+                formattedLevels.put(level);
+            }
+            codesList.put("niveaux", formattedLevels);
+        }
         codesList.put("codes", this.getCodes(notation));
 
         return codesList.toString();
@@ -256,6 +270,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         params.put("LG2", Config.LG2);
 
         JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
+        JSONArray levels =  repoGestion.getResponseAsArray(buildRequest("getCodeLevel.ftlh", params));
 
         JSONObject childrenMapping = new JSONObject();
 
@@ -274,6 +289,15 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
                 childrenMapping.put(parentCode, children);
             }
 
+            JSONArray codeLevels = new JSONArray();
+            for(int j = 0; j < levels.length(); j++){
+                if(levels.getJSONObject(j).getString(Constants.URI).equalsIgnoreCase(code.getString(Constants.URI))){
+                    codeLevels.put(new JSONObject().put("id", levels.getJSONObject(j).getString("idNiveau")));
+                }
+            }
+            if(codeLevels.length() > 0){
+                code.put("niveaux", codeLevels);
+            }
 
             if(formattedCodes.has(code.getString(Constants.URI))){
                 JSONObject c = formattedCodes.getJSONObject(code.getString(Constants.URI));
@@ -319,16 +343,21 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     private JSONArray formatLabel(JSONObject obj) {
         JSONArray label = new JSONArray();
 
-        JSONObject lg1 = new JSONObject();
-        JSONObject lg2 = new JSONObject();
 
-        lg1.put("langue", Config.LG1);
-        lg2.put("langue", Config.LG2);
-        lg1.put("contenu", obj.getString("prefLabelLg1"));
-        lg2.put("contenu", obj.getString("prefLabelLg2"));
+        if(obj.has("prefLabelLg1")){
+            JSONObject lg1 = new JSONObject();
+            lg1.put("langue", Config.LG1);
+            lg1.put("contenu", obj.getString("prefLabelLg1"));
+            label.put(lg1);
 
-        label.put(lg1);
-        label.put(lg2);
+        }
+        if(obj.has("prefLabelLg2")){
+            JSONObject lg2 = new JSONObject();
+            lg2.put("langue", Config.LG2);
+            lg2.put("contenu", obj.getString("prefLabelLg2"));
+            label.put(lg2);
+        }
+
 
         return label;
     }

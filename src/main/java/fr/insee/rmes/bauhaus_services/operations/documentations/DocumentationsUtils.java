@@ -59,6 +59,7 @@ import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.XMLUtils;
 
 
@@ -492,7 +493,7 @@ public class DocumentationsUtils extends RdfService{
 	}
 
 
-	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws IOException, RmesException {
+	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
 
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
@@ -513,7 +514,7 @@ public class DocumentationsUtils extends RdfService{
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
 			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries,true);
+			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -530,7 +531,7 @@ public class DocumentationsUtils extends RdfService{
 							indicatorXML,
 							Constants.WASGENERATEDBY).iterator().next(),
 					Constants.ID).iterator().next();
-			series=seriesUtils.getSeriesById(idSeries,true);
+			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
@@ -539,7 +540,7 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetType.equals(Constants.SERIES_UP)) {
 			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase,true));
+					seriesUtils.getSeriesById(idDatabase,EncodingType.XML));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
 		}
@@ -559,19 +560,15 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-
-		
 		Map<String,String> xmlContent = new HashMap<>();
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);
 		xmlContent.put("indicatorFile",  indicatorXML);
-	//	xmlContent.put("msdFile",  msdXML);
 		xmlContent.put("codeListsFile",  codeListsXML);
 		xmlContent.put("organizationsFile",  organizationsXML);
 		
-		
-		return docExport.export(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
@@ -616,7 +613,7 @@ public class DocumentationsUtils extends RdfService{
 		String[] target = getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 
-		if (!Constants.SERIES.equals(targetType)) {
+		if (!Constants.SERIES_UP.equals(targetType)) {
 			throw new RmesNotAcceptableException(ErrorCodes.SIMS_DELETION_FOR_NON_SERIES, "Only a sims that documents a series can be deleted", id);
 		}
 

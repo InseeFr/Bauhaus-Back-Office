@@ -26,7 +26,7 @@ import fr.insee.rmes.config.auth.security.keycloak.RmesKeycloakConfigResolver;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled=true)
+@EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled = true)
 @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
 @Conditional(value = OpenIDConnectAuthCondition.class)
 public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapter {
