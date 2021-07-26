@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -116,4 +118,41 @@ public class ExportUtils {
 			}
 		}
 	}
+	
+	public Response exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
+		logger.debug("Begin To export temp files as Response");
+		ContentDisposition content = ContentDisposition.type("attachment").fileName("xmlFiles.zip").build();
+		Path tempDir;
+
+		try {
+			tempDir = Files.createTempDirectory("xmlFiles");
+		
+			// Add all files in a tempDirectory
+			xmlContent.forEach((paramName, xmlData) -> {	
+				try {
+					Path tempFile = Files.createTempFile(tempDir, paramName, Constants.DOT_XML);
+					Files.write(tempFile, xmlData.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+				} catch (IOException e) {
+					logger.error(e.getMessage());
+				}
+			});
+			
+			//zip tempDirectory
+			FilesUtils.zipDirectory(tempDir.toFile()); 
+			
+			logger.debug("End To export temp files as Response");
+			
+			return Response.ok(new File(tempDir+"/"+tempDir.getFileName()+".zip")).header("Content-Disposition", content)
+			  .header("Content-Type","application/octet-stream")
+			  .build();
+			
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
+		}
+
+
+	}
+	
+	
+	
 }

@@ -494,7 +494,19 @@ public class DocumentationsUtils extends RdfService{
 
 
 	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
+		Map<String,String> xmlContent = new HashMap<>();
+		String targetType = getXmlContent(id, xmlContent);
+		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+	}
+	
 
+	public Response exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+		Map<String,String> xmlContent = new HashMap<>();
+		String targetType = getXmlContent(id, xmlContent);
+		return docExport.exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
+	}
+
+	public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
 		Series series;
@@ -560,15 +572,14 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-		Map<String,String> xmlContent = new HashMap<>();
+
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);
 		xmlContent.put("indicatorFile",  indicatorXML);
 		xmlContent.put("codeListsFile",  codeListsXML);
 		xmlContent.put("organizationsFile",  organizationsXML);
-		
-		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+		return targetType;
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
@@ -631,5 +642,6 @@ public class DocumentationsUtils extends RdfService{
 		return result;
 
 	}
+
 
 }
