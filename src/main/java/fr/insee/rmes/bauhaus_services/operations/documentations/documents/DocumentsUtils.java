@@ -362,6 +362,42 @@ public class DocumentsUtils  extends RdfService  {
 					jsonResultat);
 		}
 	}
+	/**
+	 * Check that if the file is referenced to by some sims, user has rights on these sims
+	 * @param docId
+	 * @throws RmesException
+	 */
+	private void checkRightsToModifyFile(String docId) throws RmesException {
+		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
+		if (sims.length() == 0) return; //document's file isn't linked to a sims
+		for (int i = 0; i < sims.length(); i++) {
+			String simsUri = ((JSONObject) sims.get(i)).get("text").toString();
+			
+			Pattern p = Pattern.compile("(.*)attribut/([0-9]{4})/(.*)");
+			Matcher m = p.matcher(simsUri);
+			String simsId = null ;
+			if(m.matches()) {
+				simsId = m.group(2);
+			}
+			String[] target = documentationsUtils.getDocumentationTargetTypeAndId(simsId);
+			//target[0] =  targetType / target[1] idTarget
+			IRI targetIri = null ;
+			
+			switch(target[0]) {
+				case Constants.OPERATION_UP : targetIri = RdfUtils.objectIRI(ObjectType.OPERATION, target[1]); break;
+				case Constants.SERIES_UP : targetIri = RdfUtils.objectIRI(ObjectType.SERIES, target[1]); break;
+				case Constants.INDICATOR_UP : targetIri = RdfUtils.objectIRI(ObjectType.INDICATOR, target[1]); break;
+				default : break;
+			} 
+					
+			if (!stampsRestrictionsService.canModifySims(targetIri)) {
+				throw new RmesUnauthorizedException(ErrorCodes.SIMS_MODIFICATION_RIGHTS_DENIED,
+						"Only an admin, CNIS, or a manager can modify this sims.", simsUri);
+			}		
+		}
+		
+	}
+	
 
 
 	public String changeFile(String docId, InputStream documentFile, String documentName) throws RmesException {
@@ -375,9 +411,9 @@ public class DocumentsUtils  extends RdfService  {
 
 		String docUrl = getDocumentUrlFromDocument(jsonDoc);
 
-		// check that the file is not linked to any sims
-		checkDocumentReference(docId, jsonDoc.getString(Constants.URI)); 
-
+		// check rights
+		checkRightsToModifyFile(docId);		
+		
 		// Warning if different file extension
 		String oldExt = StringUtils.substringAfterLast(docUrl, ".");
 		String newExt = StringUtils.substringAfterLast(documentName, ".");
