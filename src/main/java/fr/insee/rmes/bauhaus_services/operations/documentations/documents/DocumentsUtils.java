@@ -526,7 +526,7 @@ public class DocumentsUtils  extends RdfService  {
 		Matcher m = p.matcher(fileName);
 		if (m.find()) {
 			logger.info("There is a forbidden character in the FileName ");
-			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARATER_NAME,
+			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
 					"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
 					fileName);
 		}

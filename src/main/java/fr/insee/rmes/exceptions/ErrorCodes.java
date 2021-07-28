@@ -119,7 +119,7 @@ public class ErrorCodes {
 
 	// DOCUMENTS
 	public static final int DOCUMENT_EMPTY_NAME = 361;
-	public static final int DOCUMENT_FORBIDDEN_CHARATER_NAME = 362;
+	public static final int DOCUMENT_FORBIDDEN_CHARACTER_NAME = 362;
 
 	// LINKS
 	public static final int LINK_EMPTY_URL = 461;
