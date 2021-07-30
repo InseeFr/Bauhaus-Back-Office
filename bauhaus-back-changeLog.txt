@@ -1,3 +1,4 @@
+3.0.7 : Changement du lien vers l'aide dans l'offre de services
 3.0.6 : - Passage de l'export des concepts et collections de JasperReport à XSLT
 		- Montée de version spring (4 à 5)
 		- Ajout des altlabel dans les postes des nomenclatures
