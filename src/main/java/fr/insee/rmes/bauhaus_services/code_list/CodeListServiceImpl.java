@@ -127,10 +127,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!codeList.has("id")) {
 			throw new BadRequestException("The id of the list should be defined");
 		}
-		if (!codeList.has("labelLg1")) {
+		if (!codeList.has(Constants.LABEL_LG1)) {
 			throw new BadRequestException("The labelLg1 of the list should be defined");
 		}
-		if (!codeList.has("labelLg2")) {
+		if (!codeList.has(Constants.LABEL_LG2)) {
 			throw new BadRequestException("The labelLg2 of the list should be defined");
 		}
 		if (!codeList.has("lastClassUriSegment")) {
@@ -180,10 +180,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri) throws RmesException {
 
+		String codeListId = codesList.getString("id");
+
 		model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
 
 		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, SKOS.CONCEPT_SCHEME, model, graph);
-		model.add(codeListIri, SKOS.NOTATION, RdfUtils.setLiteralString(codesList.getString("id")), graph);
+		model.add(codeListIri, SKOS.NOTATION, RdfUtils.setLiteralString(codeListId), graph);
 
 		IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString("lastClassUriSegment"));
 		RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
@@ -194,24 +196,116 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleUri(codeListIri, INSEE.DISSEMINATIONSTATUS, codesList.getString("disseminationStatus"), model, graph);
 		}
 
-		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString("labelLg1"), Config.LG1), graph);
-		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString("labelLg2"), Config.LG2), graph);
+		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG1), Config.LG1), graph);
+		model.add(codeListIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(codesList.getString(Constants.LABEL_LG2), Config.LG2), graph);
 
 
-		if(codesList.has("descriptionLg1")){
-			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString("descriptionLg1"), Config.LG1), graph);
+		if(codesList.has(Constants.DESCRIPTION_LG1)){
+			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG1), Config.LG1), graph);
 		}
-		if(codesList.has("descriptionLg2")){
-			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString("descriptionLg2"), Config.LG2), graph);
+		if(codesList.has(Constants.DESCRIPTION_LG2)){
+			model.add(codeListIri, SKOS.DEFINITION, RdfUtils.setLiteralString(codesList.getString(Constants.DESCRIPTION_LG2), Config.LG2), graph);
 		}
-		if(codesList.has("creator")){
-			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString("creator"), model, graph);
+		if(codesList.has(Constants.CREATOR)){
+			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
 		}
-		if(codesList.has("contributor")){
-			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString("contributor"), model, graph);
+		if(codesList.has(Constants.CONTRIBUTOR)){
+			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString(Constants.CONTRIBUTOR), model, graph);
 		}
+
+		CodeList original = getCodeList(codeListId);
+		if(original.getCodes() != null) {
+			original.getCodes().forEach(code -> {
+				IRI codeIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + code.getCode());
+				try {
+					repoGestion.deleteObject(codeIri, null);
+				} catch (RmesException e) {
+					e.printStackTrace();
+				}
+			});
+		}
+		createCodeTriplet(graph, codesList, codeListIri);
+
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return ((SimpleIRI)codeListIri).toString();
+	}
+
+	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri) {
+		if(codesList.has("codes")){
+			JSONObject parentsModel = new JSONObject();
+
+			JSONObject codes = codesList.getJSONObject("codes");
+			codes.keySet().forEach(key -> {
+				try {
+					JSONObject code = codes.getJSONObject(key);
+
+					Model codeListModel = new LinkedHashModel();
+					IRI codeIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + code.get("code"));
+
+					createMainCodeTriplet(graph, codeListIri, code, codeListModel, codeIri);
+
+					if(code.has("parents")){
+						JSONArray parents = code.getJSONArray("parents");
+						parents.forEach( (parent) -> {
+							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + parent);
+							RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeListModel, graph);
+
+							if(parentsModel.has((String) parent)){
+								parentsModel.getJSONArray((String) parent).put(codeIri.toString());
+							} else {
+								parentsModel.put((String) parent, new JSONArray().put(codeListIri.toString()));
+							}
+						});
+					}
+					repoGestion.loadSimpleObject(codeIri, codeListModel, null);
+				} catch (Exception e) {
+					logger.debug(e.getMessage());
+					e.printStackTrace();
+				}
+			});
+
+			createParentChildRelationForCodes(graph, codesList, parentsModel);
+
+		}
+	}
+
+	private void createParentChildRelationForCodes(Resource graph, JSONObject codesList, JSONObject parentsModel) {
+		parentsModel.keySet().forEach(key -> {
+			Model parentModel = new LinkedHashModel();
+			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + key);
+			JSONArray children = parentsModel.getJSONArray(key);
+			children.forEach(child -> {
+				RdfUtils.addTripleUri(parentIRI, SKOS.NARROWER, (String) child, parentModel, graph);
+			});
+			try {
+				repoGestion.getConnection().add(parentModel);
+			} catch (RmesException e) {
+				logger.debug(e.getMessage());
+				e.printStackTrace();
+			}
+
+		});
+	}
+
+	private void createMainCodeTriplet(Resource graph, IRI codeListIri, JSONObject code, Model codeListModel, IRI codeIri) {
+		RdfUtils.addTripleUri(codeIri, SKOS.IN_SCHEME, codeListIri, codeListModel, graph);
+		if(code.has("code")){
+			RdfUtils.addTripleString(codeIri, SKOS.NOTATION, code.getString("code"), codeListModel, graph);
+		}
+
+		if(code.has(Constants.LABEL_LG1)){
+			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG1), Config.LG1), graph);
+		}
+		if(code.has(Constants.LABEL_LG2)){
+			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG2), Config.LG2), graph);
+		}
+
+		if(code.has(Constants.DESCRIPTION_LG1)){
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG1), Config.LG1), graph);
+		}
+		if(code.has(Constants.DESCRIPTION_LG2)){
+			codeListModel.add(codeIri, SKOS.DEFINITION, RdfUtils.setLiteralString(code.getString(Constants.DESCRIPTION_LG2), Config.LG2), graph);
+		}
 	}
 
 
