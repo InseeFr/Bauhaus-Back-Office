@@ -124,7 +124,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	public void validateCodeList(JSONObject codeList){
-		if (!codeList.has("id")) {
+		if (!codeList.has(Constants.ID)) {
 			throw new BadRequestException("The id of the list should be defined");
 		}
 		if (!codeList.has(Constants.LABEL_LG1)) {
@@ -180,7 +180,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri) throws RmesException {
 
-		String codeListId = codesList.getString("id");
+		String codeListId = codesList.getString(Constants.ID);
 
 		model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
 
@@ -313,7 +313,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONArray codesList = new JSONArray();
 		for (int i = 0 ; i < codes.length(); i++) {
 			JSONObject code = codes.getJSONObject(i);
-			if(code.getString("id").equalsIgnoreCase(list.getString("id"))){
+			if(code.getString(Constants.ID).equalsIgnoreCase(list.getString(Constants.ID))){
 				codesList.put(code);
 			}
 		}
