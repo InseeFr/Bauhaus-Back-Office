@@ -81,6 +81,20 @@ public class ConsultationGestion {
     }
 
     @GET()
+    @Path("/composants")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "getAllStructures", summary = "Get all components")
+    public Response getAllComponents() {
+        String jsonResultat;
+        try {
+            jsonResultat = consultationGestionService.getAllComponents();
+        } catch (RmesException e) {
+            return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+    }
+
+    @GET()
     @Path("/structure/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructure", summary = "Get a structure")
