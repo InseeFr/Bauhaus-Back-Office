@@ -164,6 +164,28 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         return components.toString();
     }
 
+    @Override
+    public String getComponent(String id) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("ID", id);
+        params.put("LG1", Config.LG1);
+        params.put("LG2", Config.LG2);
+
+        JSONObject component =  repoGestion.getResponseAsObject(buildRequest("getComponent.ftlh", params));
+
+        component.put("label", this.formatLabel(component));
+        component.remove("prefLabelLg1");
+        component.remove("prefLabelLg2");
+
+        if(component.has("statutValidation")){
+            String validationState = component.getString("statutValidation");
+            component.put("statutValidation", this.getValidationState(validationState));
+        }
+        return component.toString();
+    }
+
     private void getStructureComponents(String id, JSONObject structure) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
