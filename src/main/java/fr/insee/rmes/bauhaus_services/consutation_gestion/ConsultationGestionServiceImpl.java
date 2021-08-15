@@ -193,7 +193,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
                 listCode.put("id", component.getString("listeCodeNotation"));
-                component.put("listCode", listCode);
+                component.put("listeCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
             }
