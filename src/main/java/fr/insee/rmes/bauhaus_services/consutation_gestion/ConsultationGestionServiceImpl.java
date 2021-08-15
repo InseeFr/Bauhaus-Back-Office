@@ -46,6 +46,11 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         concept.put("label", labels);
 
+        if(concept.has("statutValidation")){
+            String validationState = concept.getString("statutValidation");
+            concept.put("statutValidation", this.getValidationState(validationState));
+        }
+
         JSONArray conceptsSdmx = repoGestion.getResponseAsArray(buildRequest("getConceptsSdmx.ftlh", params));
         if(conceptsSdmx.length() > 0){
             concept.put("conceptsSdmx", conceptsSdmx);
@@ -79,10 +84,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     }
 
     private String getValidationState(String validationState){
-        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState)){
+        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState) || "true".equalsIgnoreCase(validationState)){
             return "Publiée";
         }
-        if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState)){
+        if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState) || "false".equalsIgnoreCase(validationState)){
             return "Provisoire, déjà publiée";
         }
         if(ValidationStatus.UNPUBLISHED.toString().equalsIgnoreCase(validationState)){
