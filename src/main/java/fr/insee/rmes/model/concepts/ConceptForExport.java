@@ -11,14 +11,14 @@ import fr.insee.rmes.bauhaus_services.Constants;
 public class ConceptForExport {
 
 	//GENERAL
-	private String id;//
-	private String prefLabelLg1;//
-	private String prefLabelLg2;//
+	private String id;
+	private String prefLabelLg1;
+	private String prefLabelLg2;
 	private List<String> altLabelLg1;
 	private List<String> altLabelLg2;
-	private String creator;//
-	private String contributor;//
-	private String disseminationStatus;//
+	private String creator;
+	private String contributor;
+	private String disseminationStatus;
 	
 	private Boolean creation;
 	private String additionalMaterial;
@@ -26,12 +26,12 @@ public class ConceptForExport {
 	private Boolean versioning;
 
 	//DATE
-	private String created;//
-	private String modified;//
+	private String created;
+	private String modified;
 	
 	//STATUS
-	private String isValidated;//
-	private String conceptVersion;//
+	private String isValidated;
+	private String conceptVersion;
 	
 	//LINKS
 	private List<String> narrowerLg1;
@@ -74,25 +74,27 @@ public class ConceptForExport {
 		for (int i = 0; i < links.length(); i++) {
 			JSONObject jsonO = (JSONObject) links.get(i);
 			String typeOfLink = jsonO.getString("typeOfLink");
+			String lg1 = jsonO.has(Constants.PREF_LABEL_LG1) ? jsonO.getString(Constants.PREF_LABEL_LG1) : null;
+			String lg2 =  jsonO.has(Constants.PREF_LABEL_LG2) ? jsonO.getString(Constants.PREF_LABEL_LG2) : null;
 			if (typeOfLink.equals("narrower")) {
-				narrowerLg1.add(jsonO.getString(Constants.PREF_LABEL_LG1));
-				narrowerLg2.add(jsonO.getString(Constants.PREF_LABEL_LG2));
+				narrowerLg1.add(lg1);
+				narrowerLg2.add(lg2);
 			}
 			else if (typeOfLink.equals("broader")) {
-				broaderLg1.add(jsonO.getString(Constants.PREF_LABEL_LG1));
-				broaderLg2.add(jsonO.getString(Constants.PREF_LABEL_LG2));
+				broaderLg1.add(lg1);
+				broaderLg2.add(lg2);
 			}
 			else if (typeOfLink.equals("references")) {
-				referencesLg1.add(jsonO.getString(Constants.PREF_LABEL_LG1));
-				referencesLg2.add(jsonO.getString(Constants.PREF_LABEL_LG2));
+				referencesLg1.add(lg1);
+				referencesLg2.add(lg2);
 			}
 			else if (typeOfLink.equals("succeed")) {
-				succeedLg1.add(jsonO.getString(Constants.PREF_LABEL_LG1));
-				succeedLg2.add(jsonO.getString(Constants.PREF_LABEL_LG2));
+				succeedLg1.add(lg1);
+				succeedLg2.add(lg2);
 			}
 			else if (typeOfLink.equals("related")) {
-				relatedLg1.add(jsonO.getString(Constants.PREF_LABEL_LG1));
-				relatedLg2.add(jsonO.getString(Constants.PREF_LABEL_LG2));
+				relatedLg1.add(lg1);
+				relatedLg2.add(lg2);
 			}
 		}
 		

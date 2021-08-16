@@ -25,6 +25,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
+import fr.insee.rmes.utils.EncodingType;
 
 @Repository
 public class SeriesPublication extends RdfService {
@@ -41,7 +42,7 @@ public class SeriesPublication extends RdfService {
 	public void publishSeries(String seriesId) throws RmesException {
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
-		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId);
+		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId, EncodingType.XML);
 		String familyId = serieJson.getJSONObject(Constants.FAMILY).getString(Constants.ID);
 		String status= famOpeSerUtils.getValidationStatus(familyId);
 		

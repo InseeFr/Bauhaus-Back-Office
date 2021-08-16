@@ -12,7 +12,7 @@ import fr.insee.rmes.config.auth.security.conditions.NoOpenIDConnectAuthConditio
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = false)
+@EnableGlobalMethodSecurity(securedEnabled=false, prePostEnabled = true)
 @Conditional(value = NoOpenIDConnectAuthCondition.class)
 public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 
