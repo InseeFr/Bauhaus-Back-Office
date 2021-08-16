@@ -169,6 +169,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
         params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("CONCEPTS_BASE_URI", Config.CONCEPTS_BASE_URI);
         params.put("ID", id);
         params.put("LG1", Config.LG1);
         params.put("LG2", Config.LG2);
