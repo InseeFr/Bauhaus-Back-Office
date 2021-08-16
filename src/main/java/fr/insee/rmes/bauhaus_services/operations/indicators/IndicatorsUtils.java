@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -63,7 +64,9 @@ public class IndicatorsUtils  extends RdfService {
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
 
-	
+	@Autowired
+	private DocumentationsUtils documentationsUtils;
+
 	public Indicator getIndicatorById(String id) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
 	}
@@ -240,6 +243,8 @@ public class IndicatorsUtils  extends RdfService {
 			logger.error(e.getMessage());
 		}
 		String status=getValidationStatus(id);
+
+		documentationsUtils.updateDocumentationTitle(indicator.getIdSims(), indicator.getPrefLabelLg1(), indicator.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
 		} else {

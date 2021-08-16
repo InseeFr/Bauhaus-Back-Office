@@ -7,7 +7,7 @@ import org.springframework.core.env.Environment;
 public class Config {
 
 	private static final  Logger logger = LogManager.getLogger(Config.class);
-	
+
 	public static String APP_HOST = "";
 
 	public static String ENV = "";
@@ -46,6 +46,8 @@ public class Config {
 	public static String MSD_CONCEPTS_GRAPH= "";
 	public static String DOCUMENTATIONS_GEO_GRAPH = "";
 	public static String DOCUMENTATIONS_GEO_BASE_URI = "";
+	public static String DOCUMENTATIONS_TITLE_PREFIX_LG1 = "";
+	public static String DOCUMENTATIONS_TITLE_PREFIX_LG2 = "";
 
 	public static String LINKS_BASE_URI = "";
 	public static String DOCUMENTS_GRAPH = "";
@@ -53,6 +55,7 @@ public class Config {
 	public static String DOCUMENTS_STORAGE_PUBLICATION_EXTERNE = "";
 	public static String DOCUMENTS_STORAGE_PUBLICATION_INTERNE = "";
 	public static String DOCUMENTS_BASEURL = "";
+
 
 	public static String PRODUCTS_GRAPH = "";
 
@@ -217,6 +220,9 @@ public class Config {
 
 		Config.DOCUMENTATIONS_GEO_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documentation.geographie.baseURI");
 		Config.DOCUMENTATIONS_GEO_GRAPH = BASE_GRAPH +  env.getProperty("fr.insee.rmes.bauhaus.documentation.geographie.graph");
+
+		Config.DOCUMENTATIONS_TITLE_PREFIX_LG1 = env.getProperty("fr.insee.rmes.bauhaus.documentation.titlePrefixLg1");
+		Config.DOCUMENTATIONS_TITLE_PREFIX_LG2 = env.getProperty("fr.insee.rmes.bauhaus.documentation.titlePrefixLg2");
 
 		Config.DOCUMENTS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.documents.baseURI");
 		Config.LINKS_BASE_URI = env.getProperty("fr.insee.rmes.bauhaus.links.baseURI");
