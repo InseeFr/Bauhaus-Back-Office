@@ -335,7 +335,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String getCodeUri(String notationCodeList, String notationCode) throws RmesException{
-			if (StringUtils.isEmpty(notationCodeList) ||StringUtils.isEmpty(notationCode)) {return null;}
+			if (StringUtils.isEmpty(notationCodeList) || StringUtils.isEmpty(notationCode)) {return null;}
 			JSONObject code = repoGestion.getResponseAsObject(CodeListQueries.getCodeUriByNotation(notationCodeList,notationCode));
 			return QueryUtils.correctEmptyGroupConcat(code.getString(Constants.URI));
 	}

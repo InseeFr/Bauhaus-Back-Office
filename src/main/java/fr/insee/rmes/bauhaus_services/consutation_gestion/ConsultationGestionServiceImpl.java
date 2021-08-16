@@ -46,6 +46,11 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         concept.put("label", labels);
 
+        if(concept.has("statutValidation")){
+            String validationState = concept.getString("statutValidation");
+            concept.put("statutValidation", this.getValidationState(validationState));
+        }
+
         JSONArray conceptsSdmx = repoGestion.getResponseAsArray(buildRequest("getConceptsSdmx.ftlh", params));
         if(conceptsSdmx.length() > 0){
             concept.put("conceptsSdmx", conceptsSdmx);
@@ -79,10 +84,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     }
 
     private String getValidationState(String validationState){
-        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState)){
+        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(validationState) || "true".equalsIgnoreCase(validationState)){
             return "Publiée";
         }
-        if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState)){
+        if(ValidationStatus.MODIFIED.toString().equalsIgnoreCase(validationState) || "false".equalsIgnoreCase(validationState)){
             return "Provisoire, déjà publiée";
         }
         if(ValidationStatus.UNPUBLISHED.toString().equalsIgnoreCase(validationState)){
@@ -144,6 +149,44 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         return structure.toString();
     }
 
+    @Override
+    public String getAllComponents() throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+        JSONArray components =  repoGestion.getResponseAsArray(buildRequest("getComponents.ftlh", params));
+
+        for (int i = 0; i < components.length(); i++) {
+            JSONObject component = components.getJSONObject(i);
+            String validationState = component.getString("statutValidation");
+            component.put("statutValidation", this.getValidationState(validationState));
+        }
+
+        return components.toString();
+    }
+
+    @Override
+    public String getComponent(String id) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("CONCEPTS_BASE_URI", Config.CONCEPTS_BASE_URI);
+        params.put("ID", id);
+        params.put("LG1", Config.LG1);
+        params.put("LG2", Config.LG2);
+
+        JSONObject component =  repoGestion.getResponseAsObject(buildRequest("getComponent.ftlh", params));
+
+        component.put("label", this.formatLabel(component));
+        component.remove("prefLabelLg1");
+        component.remove("prefLabelLg2");
+
+        if(component.has("statutValidation")){
+            String validationState = component.getString("statutValidation");
+            component.put("statutValidation", this.getValidationState(validationState));
+        }
+        return component.toString();
+    }
+
     private void getStructureComponents(String id, JSONObject structure) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
@@ -173,7 +216,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
                 listCode.put("id", component.getString("listeCodeNotation"));
-                component.put("listCode", listCode);
+                component.put("listeCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
             }
