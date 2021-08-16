@@ -33,7 +33,7 @@ WHERE {
 
     OPTIONAL {
         ?uriComposant qb:concept ?uriConcept .
-        BIND(STRAFTER(STR(?uriConcept), "/concepts/definition/") AS ?idConcept)
+        BIND(STRAFTER(STR(?uriConcept), "${CONCEPTS_BASE_URI}/") AS ?idConcept)
     }
     OPTIONAL {
         ?uriComposant rdfs:range ?representation .
