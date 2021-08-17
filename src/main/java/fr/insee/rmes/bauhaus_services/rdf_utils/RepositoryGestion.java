@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -383,4 +384,15 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 
+	public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
+		try {
+			RepositoryConnection connection = REPOSITORY_GESTION.getConnection();
+			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
+			connection.add(model);
+			connection.close();
+		} catch (RepositoryException e) {
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_LOAD_OBJECT);
+		}
+	}
 }

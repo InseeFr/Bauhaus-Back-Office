@@ -7,6 +7,7 @@ import fr.insee.rmes.utils.EncodingType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.common.xml.DocumentUtil;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -172,6 +173,7 @@ public class OperationsUtils extends RdfService{
 		}
 
 		String status= famOpeSerIndUtils.getValidationStatus(id);
+		documentationsUtils.updateDocumentationTitle(operation.getIdSims(), operation.getPrefLabelLg1(), operation.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
 		} else {

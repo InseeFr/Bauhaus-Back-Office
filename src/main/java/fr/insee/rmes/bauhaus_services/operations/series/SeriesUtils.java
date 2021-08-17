@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,6 +70,9 @@ public class SeriesUtils extends RdfService {
 	@Autowired
 	SeriesPublication seriesPublication;
 
+	@Autowired
+	private DocumentationsUtils documentationsUtils;
+	
 	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
@@ -372,6 +376,7 @@ public class SeriesUtils extends RdfService {
 		checkSimsWithOperations(series);
 
 		String status = famOpeSerIndUtils.getValidationStatus(id);
+		documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
 		if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 		} else {
