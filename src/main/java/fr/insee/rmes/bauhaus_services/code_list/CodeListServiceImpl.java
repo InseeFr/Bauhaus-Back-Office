@@ -229,7 +229,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				try {
 					repoGestion.deleteObject(codeIri, null);
 				} catch (RmesException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
 			});
 		}
@@ -269,7 +269,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					repoGestion.loadSimpleObject(codeIri, codeListModel, null);
 				} catch (Exception e) {
 					logger.debug(e.getMessage());
-					e.printStackTrace();
 				}
 			});
 
@@ -290,9 +289,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				repoGestion.getConnection().add(parentModel);
 			} catch (RmesException e) {
 				logger.debug(e.getMessage());
-				e.printStackTrace();
 			}
-
 		});
 	}
 

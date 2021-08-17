@@ -48,9 +48,9 @@ public class CollectionExportBuilder extends RdfService {
 			collection.addMembers(members);
 
 			// format specific data
-			collection.setCreated(toDate(collection.getCreated()));
-			collection.setModified(toDate(collection.getModified()));
-			collection.setIsValidated(toValidationStatus(collection.getIsValidated()));
+			collection.setCreated(ExportUtils.toDate(collection.getCreated()));
+			collection.setModified(ExportUtils.toDate(collection.getModified()));
+			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
 
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -59,20 +59,7 @@ public class CollectionExportBuilder extends RdfService {
 		return collection;
 	}
 
-	private String toDate(String dateTime) {
-		if (dateTime != null && dateTime.length() > 10) {
-			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
-		}
-		return dateTime;
-	}
 
-	private String toValidationStatus(String boolStatus) {
-		if (boolStatus.equals("true")) {
-				return "Publiée";
-		} else {
-			return "Provisoire";
-		}
-	}
 		
 
 	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {

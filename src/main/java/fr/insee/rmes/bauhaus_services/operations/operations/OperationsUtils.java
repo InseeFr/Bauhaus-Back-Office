@@ -2,12 +2,8 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import java.io.IOException;
 
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
-import fr.insee.rmes.utils.EncodingType;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.common.xml.DocumentUtil;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -42,6 +38,8 @@ import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.utils.EncodingType;
 
 @Component
 public class OperationsUtils extends RdfService{

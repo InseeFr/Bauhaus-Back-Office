@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
@@ -152,6 +153,25 @@ public class ExportUtils {
 
 	}
 	
+	public static String toLabel(String dsURL) {
+		return DisseminationStatus.getEnumLabel(dsURL);
+	}
+
+	public static String toDate(String dateTime) {
+		if (dateTime != null && dateTime.length() > 10) {
+			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		}
+		return dateTime;
+	}
+
+	public static String toValidationStatus(String boolStatus, boolean fem) {
+		if (boolStatus.equals("true")) {
+				return fem ? "Publiée" : "Publié";
+		} else {
+			return "Provisoire";
+		}
+	}
+
 	
 	
 }
