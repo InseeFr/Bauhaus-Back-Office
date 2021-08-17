@@ -644,9 +644,6 @@ public class DocumentationsUtils extends RdfService{
 		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG1 + " " + prefLabeLg1, Config.LG1, model, graph);
 		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG2 + " " + prefLabelLg2, Config.LG2, model, graph);
 
-		RepositoryConnection connection = repoGestion.getConnection();
-		connection.remove(simsUri, RDFS.LABEL, null, graph);
-		connection.add(model);
-		connection.close();
+		repoGestion.overrideTriplets(simsUri, model, graph);
 	}
 }
