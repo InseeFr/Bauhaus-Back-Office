@@ -34,7 +34,6 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.export.Jasper;
 import fr.insee.rmes.external_services.mail_sender.SendRequest.Recipients;
 import fr.insee.rmes.model.mail_sender.Mail;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
@@ -48,9 +47,6 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Autowired
 	ConceptsService conceptsService;
-	
-	@Autowired
-	Jasper jasper;
 	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
@@ -75,15 +71,14 @@ public class RmesMailSenderImpl implements MailSenderContract {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		JSONObject json = conceptsExport.getCollectionData(id);
-		InputStream is = jasper.exportCollection(json, "Mail");
-		return sendMail(mail, is, "json"); //TODO change send mail for collection
+		Map<String,InputStream> getFileToJoin = conceptsService.getCollectionExportIS(id);
+		String filename = getFileToJoin.entrySet().iterator().next().getKey();
+		InputStream is = getFileToJoin.get(filename);
+		return sendMail(mail, is, filename);
 	}
 		
 	private boolean sendMail(Mail mail, InputStream is, String fileName) {
-			
-		//String fileName = json.getString(Constants.PREF_LABEL_LG1);
-		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
+					fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
@@ -126,7 +121,6 @@ public class RmesMailSenderImpl implements MailSenderContract {
 				authentificationFeature);
 			
 		// Multipart
-		
 		client.register(MultiPartFeature.class);
 		
 		FormDataMultiPart mp = new FormDataMultiPart();

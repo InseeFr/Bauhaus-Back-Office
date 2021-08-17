@@ -310,7 +310,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 * @throws RmesException
 	 */
 
-	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, Boolean forXml) {
+	public DocumentationRubric buildRubricFromJson(JSONObject jsonRubric, boolean forXml) {
 		DocumentationRubric documentationRubric = new DocumentationRubric();
 		if (jsonRubric.has(Constants.ID_ATTRIBUTE)) {
 			documentationRubric.setIdAttribute(jsonRubric.getString(Constants.ID_ATTRIBUTE));
