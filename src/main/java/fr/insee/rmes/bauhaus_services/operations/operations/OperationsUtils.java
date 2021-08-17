@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 import java.io.IOException;
 
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.utils.EncodingType;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.common.xml.DocumentUtil;
@@ -135,7 +137,7 @@ public class OperationsUtils extends RdfService{
 		// Tester que la série n'a pas de Sims
 		if (seriesUtils.hasSims(idSeries)){
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					seriesUtils.getSeriesJsonById(idSeries).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
+					seriesUtils.getSeriesJsonById(idSeries, EncodingType.MARKDOWN).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
 		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits

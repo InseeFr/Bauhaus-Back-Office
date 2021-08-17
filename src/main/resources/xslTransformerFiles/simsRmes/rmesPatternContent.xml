@@ -221,10 +221,7 @@
                                 fo:font-weight="bold"/>
       </style:style>
       <style:style style:name="Italic" style:family="text">
-         <style:text-properties style:font-weight-complex="normal"
-                                style:font-weight-asian="normal"
-                                fo:font-weight="normal"
-                                style:font-style-complex="italic"
+         <style:text-properties style:font-style-complex="italic"
                                 style:font-style-asian="italic"
                                 fo:font-style="italic"/>
       </style:style>

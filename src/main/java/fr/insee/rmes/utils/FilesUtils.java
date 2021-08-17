@@ -5,19 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.zip.FileSource;
@@ -50,48 +43,67 @@ public class FilesUtils {
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
 		fileName = fileName.toLowerCase().trim();
 		fileName = StringUtils.normalizeSpace(fileName);
-		fileName = fileName.replace(" ","-");
-		fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "") ;
+		fileName = fileName.replace(" ", "-");
+		fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "");
 		if (extension.startsWith(".")) {
-			fileName += extension ;
-		}else {
-			fileName += "." + extension ;
+			fileName += extension;
+		} else {
+			fileName += "." + extension;
 		}
 		return fileName;
 	}
 
-	public static File zipFile(File inputFile) throws IOException {
-		Map<String, String> env = new HashMap<>(); 
-		env.put("create", "true");
-		// locate file system by using the syntax 
-		// defined in java.net.JarURLConnection
-		URI uri = URI.create("jar:file:/codeSamples/zipfs/zipfstest.zip");
-
-		FileSystem zipfs = null;
-
-		try{ 
-			zipfs = FileSystems.newFileSystem(uri, env); 
-			String sourcePath = inputFile.getPath();
-			Path source = Paths.get(sourcePath);
-			Path pathInZipfile = zipfs.getPath(UriUtils.getLastPartFromUri(sourcePath));  
-			// copy a file into the zip file
-			Files.copy( source,pathInZipfile, 
-					StandardCopyOption.REPLACE_EXISTING ); 
-			return pathInZipfile.toFile();}
-		finally { if (zipfs != null) zipfs.close();}
-	}
-
-
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
-		ZipEntrySource entry =  new FileSource(fileToAdd.getName(), fileToAdd);
+		ZipEntrySource entry = new FileSource(fileToAdd.getName(), fileToAdd);
 		ZipUtil.addEntry(zipArchive, entry);
 	}
-
 
 	private FilesUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
+	public static void zipDirectory(File directoryToZip) throws IOException {
+		FileOutputStream fos = new FileOutputStream(directoryToZip + "/" + directoryToZip.getName() + ".zip");
+		ZipOutputStream zipOut = new ZipOutputStream(fos);
 
+		zipFile(directoryToZip, directoryToZip.getName(), zipOut);
+		
+		try {
+			fos.close();
+			zipOut.close();
+		}catch(IOException e ) {
+			log.warn("outputStream already closed");
+		}
+		
+	}
+
+	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
+		if (fileToZip.isHidden() || fileName.endsWith(".zip")) {
+			return;
+		}
+		if (fileToZip.isDirectory()) {
+			if (fileName.endsWith("/")) {
+				zipOut.putNextEntry(new ZipEntry(fileName));
+				zipOut.closeEntry();
+			} else {
+				zipOut.putNextEntry(new ZipEntry(fileName + "/"));
+				zipOut.closeEntry();
+			}
+			File[] children = fileToZip.listFiles();
+			for (File childFile : children) {
+				zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
+			}
+			return;
+		}
+		try (FileInputStream fis = new FileInputStream(fileToZip)) {
+			ZipEntry zipEntry = new ZipEntry(fileName);
+			zipOut.putNextEntry(zipEntry);
+			byte[] bytes = new byte[1024];
+			int length;
+			while ((length = fis.read(bytes)) >= 0) {
+				zipOut.write(bytes, 0, length);
+			}
+		}
+	}
 
 }
