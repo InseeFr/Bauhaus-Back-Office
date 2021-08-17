@@ -21,7 +21,6 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
