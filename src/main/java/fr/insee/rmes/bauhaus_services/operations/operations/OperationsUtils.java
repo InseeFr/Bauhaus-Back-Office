@@ -76,7 +76,7 @@ public class OperationsUtils extends RdfService{
 		operation.put("series", series);
 	}
 	
-	public IRI getSeriesUri(String idOperation) throws RmesException{
+	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
 		if (series != null && series.has("id"))		return RdfUtils.objectIRI(ObjectType.SERIES, series.getString("id"));
 		return null;
@@ -157,7 +157,7 @@ public class OperationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String id, String body) throws RmesException {
-		IRI seriesURI=getSeriesUri(id);
+		IRI seriesURI=getSeriesUriByOperationId(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
@@ -205,35 +205,32 @@ public class OperationsUtils extends RdfService{
 	}
 
 
-	public String setOperationValidation(String id)  throws RmesException  {
+	public String setOperationValidation(String idOperation)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
-		//TODO: check : is it the Series id or the Ope id ?
-		IRI seriesURI = getSeriesUri(id);
+		IRI seriesURI = getSeriesUriByOperationId(idOperation);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
 
 		//PUBLISH
-		operationPublication.publishOperation(id);
+		operationPublication.publishOperation(idOperation);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
-		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, id);
+		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, idOperation);
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
 		model.remove(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
 		logger.info("Validate operation : {}", operationURI);
 		repoGestion.objectValidation(operationURI, model);
 
-		return id;
+		return idOperation;
 	}
 
 
 
 	public MSD getMSD() throws RmesException {
-		//		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();		
 		return documentationsUtils.buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
-
 	}
 
 }

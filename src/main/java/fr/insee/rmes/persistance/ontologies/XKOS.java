@@ -13,6 +13,11 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  * @author Franck Cotton
  */
 public class XKOS {
+	
+	  private XKOS() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	/**
 	 * The XKOS namespace: http://rdf-vocabulary.ddialliance.org/xkos#

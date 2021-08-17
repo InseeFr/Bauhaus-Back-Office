@@ -1,6 +1,11 @@
 package fr.insee.rmes.config.auth.roles;
 
 public class Roles {
+	
+	  private Roles() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	public static final String ADMIN = "Administrateur_RMESGNCS";
 	public static final String USER = "Utilisateur_RMESGNCS";

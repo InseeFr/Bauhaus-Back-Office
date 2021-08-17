@@ -41,6 +41,10 @@ import fr.insee.rmes.utils.DateUtils;
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
 
+	private static final String CODES = "codes";
+
+	private static final String LAST_LIST_URI_SEGMENT = "lastListUriSegment";
+
 	static final Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
 	
 	@Autowired	
@@ -56,7 +60,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		codeList.put("notation",notation);
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation));
 		if (items.length() != 0){
-			codeList.put("codes", items);
+			codeList.put(CODES, items);
 		}
 		return QueryUtils.correctEmptyGroupConcat(codeList.toString());
 	}
@@ -109,7 +113,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			});
 
 
-			codeList.put("codes", formattedCodes);
+			codeList.put(CODES, formattedCodes);
 		}
 
 		return codeList.toString();
@@ -122,7 +126,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		for (int i = 0 ; i < lists.length(); i++) {
 			JSONObject list = lists.getJSONObject(i);
-			list.put("codes", this.getCodesForList(codes, list));
+			list.put(CODES, this.getCodesForList(codes, list));
 		}
 
 		return lists.toString();
@@ -141,7 +145,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!codeList.has("lastClassUriSegment")) {
 			throw new BadRequestException("The lastClassUriSegment of the list should be defined");
 		}
-		if (!codeList.has("lastListUriSegment")) {
+		if (!codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new BadRequestException("The lastListUriSegment of the list should be defined");
 		}
 	}
@@ -154,7 +158,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		this.validateCodeList(codesList);
 
-		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment"));
+		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
@@ -172,7 +176,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		this.validateCodeList(codesList);
 
-		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment"));
+		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
@@ -221,7 +225,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		CodeList original = getCodeList(codeListId);
 		if(original.getCodes() != null) {
 			original.getCodes().forEach(code -> {
-				IRI codeIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + code.getCode());
+				IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.getCode());
 				try {
 					repoGestion.deleteObject(codeIri, null);
 				} catch (RmesException e) {
@@ -236,29 +240,29 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri) {
-		if(codesList.has("codes")){
+		if(codesList.has(CODES)){
 			JSONObject parentsModel = new JSONObject();
 
-			JSONObject codes = codesList.getJSONObject("codes");
+			JSONObject codes = codesList.getJSONObject(CODES);
 			codes.keySet().forEach(key -> {
 				try {
 					JSONObject code = codes.getJSONObject(key);
 
 					Model codeListModel = new LinkedHashModel();
-					IRI codeIri = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + code.get("code"));
+					IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.get("code"));
 
 					createMainCodeTriplet(graph, codeListIri, code, codeListModel, codeIri);
 
 					if(code.has("parents")){
 						JSONArray parents = code.getJSONArray("parents");
-						parents.forEach( (parent) -> {
-							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + parent);
+						parents.forEach( parent -> {
+							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + parent);
 							RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeListModel, graph);
 
 							if(parentsModel.has((String) parent)){
-								parentsModel.getJSONArray((String) parent).put(codeIri.toString());
+								parentsModel.getJSONArray((String) parent).put(((SimpleIRI) codeIri).toString());
 							} else {
-								parentsModel.put((String) parent, new JSONArray().put(codeListIri.toString()));
+								parentsModel.put((String) parent, new JSONArray().put(((SimpleIRI) codeListIri).toString()));
 							}
 						});
 					}
@@ -277,11 +281,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private void createParentChildRelationForCodes(Resource graph, JSONObject codesList, JSONObject parentsModel) {
 		parentsModel.keySet().forEach(key -> {
 			Model parentModel = new LinkedHashModel();
-			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString("lastListUriSegment") + "/" + key);
+			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + key);
 			JSONArray children = parentsModel.getJSONArray(key);
-			children.forEach(child -> {
-				RdfUtils.addTripleUri(parentIRI, SKOS.NARROWER, (String) child, parentModel, graph);
-			});
+			children.forEach(child -> 
+				RdfUtils.addTripleUri(parentIRI, SKOS.NARROWER, (String) child, parentModel, graph)
+			);
 			try {
 				repoGestion.getConnection().add(parentModel);
 			} catch (RmesException e) {
@@ -346,7 +350,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String geCodesListByIRI(String IRI) throws RmesException {
-		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(IRI)).toString();
+	public String geCodesListByIRI(String iri) throws RmesException {
+		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(iri)).toString();
 	}
 }

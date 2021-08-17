@@ -37,6 +37,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 
 public class XMLUtils {
 
+	private static final String AMP = "&amp;";
 	static final Logger logger = LogManager.getLogger(XMLUtils.class);
 	
 	  private XMLUtils() {
@@ -130,11 +131,11 @@ public class XMLUtils {
 
 		final String regex = "&";
 		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern.matcher(ret).replaceAll("&amp;");
+		ret = pattern.matcher(ret).replaceAll(AMP);
 		
 		final String regex2 = "&amp;amp;";
 		final Pattern pattern2 = Pattern.compile(regex2, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern2.matcher(ret).replaceAll("&amp;");
+		ret = pattern2.matcher(ret).replaceAll(AMP);
 		
 		final String regex3 = "&amp;gt;";
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
@@ -146,7 +147,7 @@ public class XMLUtils {
 		
 		final String regex5 = Constants.XML_ESPERLUETTE_REPLACEMENT;
 		final Pattern pattern5 = Pattern.compile(regex5, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
-		ret = pattern5.matcher(ret).replaceAll("&amp;");
+		ret = pattern5.matcher(ret).replaceAll(AMP);
 		
 		final String regex6 = Constants.XML_SUP_REPLACEMENT;
 		final Pattern pattern6 = Pattern.compile(regex6, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);

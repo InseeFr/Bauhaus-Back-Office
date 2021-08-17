@@ -7,6 +7,11 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class GEO {
+	
+	  private GEO() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
     public static final String NAMESPACE = "http://www.opengis.net/ont/geosparql#";
 

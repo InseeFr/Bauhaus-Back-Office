@@ -147,34 +147,11 @@ public class DocumentsPublication  extends RdfService{
 					+ "FILTER (?document = <"+document+">) "
 					+ "}");
 
-
 			if (tuples.length()==0) {
 				throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Document not found", documentId);
 			}
 			
-			Resource newSubject = PublicationUtils.tranformBaseURIToPublish(document);
-			Value object ;
-			
-			for (int i = 0; i < tuples.length(); i++) {				
-				JSONObject tuple = (JSONObject) tuples.get(i);
-				String predicatString = tuple.getString("predicat");
-				IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
-				if (predicatString.endsWith("url")) {
-					String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
-					logger.info("Publishing document : {}",newUrl);
-					object = RdfUtils.toURI(newUrl);
-				} else {
-					String objectString = tuple.getString("obj");
-					try {					
-						object = RdfUtils.toURI(objectString);
-						object = PublicationUtils.tranformBaseURIToPublish((Resource) object);
-
-					}catch(IllegalArgumentException iAe) {
-						object = RdfUtils.setLiteralString(objectString);
-					}
-				}
-				model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
-			}
+			transformTuplesToPublish(filename, model, document, tuples);
 		} catch (RepositoryException e) {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
@@ -182,6 +159,32 @@ public class DocumentsPublication  extends RdfService{
 		}
 		return model;
 		
+	}
+
+	private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
+		Resource newSubject = PublicationUtils.tranformBaseURIToPublish(document);
+		Value object ;
+		
+		for (int i = 0; i < tuples.length(); i++) {				
+			JSONObject tuple = (JSONObject) tuples.get(i);
+			String predicatString = tuple.getString("predicat");
+			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+			if (predicatString.endsWith("url")) {
+				String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+				logger.info("Publishing document : {}",newUrl);
+				object = RdfUtils.toURI(newUrl);
+			} else {
+				String objectString = tuple.getString("obj");
+				try {					
+					object = RdfUtils.toURI(objectString);
+					object = PublicationUtils.tranformBaseURIToPublish((Resource) object);
+
+				}catch(IllegalArgumentException iAe) {
+					object = RdfUtils.setLiteralString(objectString);
+				}
+			}
+			model.add(newSubject, predicate, object, RdfUtils.documentsGraph());
+		}
 	}
 	
 	private Model getLinkModelToPublish(String linkId) throws RmesException {

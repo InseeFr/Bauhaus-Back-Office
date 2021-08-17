@@ -38,6 +38,8 @@ import fr.insee.rmes.persistance.ontologies.QB;
  */
 public class RepositoryPublication extends RepositoryUtils{
 
+	private static final String THREE_PARAMS_LOG = "{} {} {}";
+
 	private static final String CONNECTION_TO = "Connection to ";
 
 	private static final String FAILED = " failed";
@@ -149,7 +151,7 @@ public class RepositoryPublication extends RepositoryUtils{
 			logger.info("Publication of concept : {}", concept);
 		} catch (RepositoryException e) {
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
-			logger.error("{} {} {}", CONNECTION_TO , repo, FAILED);
+			logger.error(THREE_PARAMS_LOG, CONNECTION_TO , repo, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
@@ -170,7 +172,7 @@ public class RepositoryPublication extends RepositoryUtils{
 			logger.info("Publication of Resource {} : {}" ,type, resource);
 		} catch (RepositoryException e) {
 			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
-			logger.error("{} {} {}", CONNECTION_TO, repo, FAILED);
+			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
@@ -191,7 +193,7 @@ public class RepositoryPublication extends RepositoryUtils{
 			logger.info("Publication of Graph {} : {}" ,type, context);
 		} catch (RepositoryException e) {
 			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
-			logger.error("{} {} {}", CONNECTION_TO, repo, FAILED);
+			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}

@@ -10,6 +10,11 @@ import fr.insee.rmes.bauhaus_services.Constants;
 
 public class SCHEMA {
 	
+	  private SCHEMA() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String NAMESPACE = "http://schema.org/";
 
 	/**

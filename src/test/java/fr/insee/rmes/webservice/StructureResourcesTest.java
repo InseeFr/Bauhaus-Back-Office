@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 import static org.mockito.Mockito.when;
 
-public class StructureResourcesTest {
+class StructureResourcesTest {
 
     @InjectMocks
     private StructureResources structureResources;
@@ -28,7 +28,7 @@ public class StructureResourcesTest {
     }
 
     @Test
-    public void shouldReturn500IfRmesException() throws RmesException {
+    void shouldReturn500IfRmesException() throws RmesException {
         when(structureService.getStructuresForSearch()).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
         Response response = structureResources.getStructuresForSearch();
         Assertions.assertEquals(500, response.getStatus());

@@ -15,7 +15,11 @@ import java.util.Iterator;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
-    @Override
+
+    String defaultDate = "2020-01-01T00:00:00.000";
+
+	
+	@Override
     public String getDetailedConcept(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("LG1", Config.LG1);
@@ -28,23 +32,23 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
 
 
-        String labelLg1 = concept.getString("prefLabelLg1");
+        String labelLg1 = concept.getString(Constants.PREF_LABEL_LG1);
         JSONObject labelLg1Object = new JSONObject();
         labelLg1Object.put("langue", Config.LG1);
         labelLg1Object.put("contenu", labelLg1);
         labels.put(labelLg1Object);
-        concept.remove("prefLabelLg1");
+        concept.remove(Constants.PREF_LABEL_LG1);
 
-        if(concept.has("prefLabelLg2")){
-            String labelLg2 = concept.getString("prefLabelLg2");
+        if(concept.has(Constants.PREF_LABEL_LG2)){
+            String labelLg2 = concept.getString(Constants.PREF_LABEL_LG2);
             JSONObject labelLg2Object = new JSONObject();
             labelLg2Object.put("langue", Config.LG2);
             labelLg2Object.put("contenu", labelLg2);
             labels.put(labelLg2Object);
-            concept.remove("prefLabelLg2");
+            concept.remove(Constants.PREF_LABEL_LG2);
         }
 
-        concept.put("label", labels);
+        concept.put(Constants.LABEL, labels);
 
         if(concept.has("statutValidation")){
             String validationState = concept.getString("statutValidation");
@@ -76,8 +80,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         for (int i = 0; i < structures.length(); i++) {
             JSONObject structure = structures.getJSONObject(i);
-            String validationState = structure.getString("statutValidation");
-            structure.put("statutValidation", this.getValidationState(validationState));
+            String validationState = structure.getString(Constants.STATUT_VALIDATION);
+            structure.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
         }
 
         return structures.toString();
@@ -99,7 +103,6 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     @Override
     public String getAllCodesLists() throws RmesException {
-        String defaultDate = "2020-01-01T00:00:00.000";
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
@@ -110,9 +113,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             if(!codesList.has("dateMiseAJour")){
                 codesList.put("dateMiseAJour", defaultDate);
             }
-            if(codesList.has("statutValidation")){
-                String validationState = codesList.getString("statutValidation");
-                codesList.put("statutValidation", this.getValidationState(validationState));
+            if(codesList.has(Constants.STATUT_VALIDATION)){
+                String validationState = codesList.getString(Constants.STATUT_VALIDATION);
+                codesList.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
             }
         }
         return codesLists.toString();
@@ -120,7 +123,6 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     @Override
     public String getStructure(String id) throws RmesException {
-        String defaultDate = "2020-01-01T00:00:00.000";
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
         params.put("STRUCTURE_ID", id);
@@ -133,9 +135,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         structure.remove("prefLabelLg1");
         structure.remove("prefLabelLg2");
 
-        if(structure.has("statutValidation")){
-            String validationState = structure.getString("statutValidation");
-            structure.put("statutValidation", this.getValidationState(validationState));
+        if(structure.has(Constants.STATUT_VALIDATION)){
+            String validationState = structure.getString(Constants.STATUT_VALIDATION);
+            structure.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
         }
 
         if(!structure.has("dateCréation")){
@@ -260,8 +262,6 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     @Override
     public String getCodesList(String notation) throws RmesException {
-        String defaultDate = "2020-01-01T00:00:00.000";
-
         HashMap<String, Object> params = new HashMap<>();
         params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
         params.put("NOTATION", notation);
@@ -274,9 +274,9 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         codesList.remove("prefLabelLg1");
         codesList.remove("prefLabelLg2");
 
-        if(codesList.has("statutValidation")){
-            String validationState = codesList.getString("statutValidation");
-            codesList.put("statutValidation", this.getValidationState(validationState));
+        if(codesList.has(Constants.STATUT_VALIDATION)){
+            String validationState = codesList.getString(Constants.STATUT_VALIDATION);
+            codesList.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
         }
 
         if(!codesList.has("dateCréation")){

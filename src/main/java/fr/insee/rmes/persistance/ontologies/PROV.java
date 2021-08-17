@@ -8,6 +8,11 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class PROV {
 	
+	  private PROV() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String NAMESPACE = "http://www.w3.org/ns/prov#";
 
 	/**

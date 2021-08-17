@@ -55,4 +55,9 @@ public class FamOpeSerQueries {
 	private static String buildOperationRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
+	
+	  private FamOpeSerQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 }

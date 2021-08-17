@@ -425,7 +425,7 @@ public class DocumentsUtils  extends RdfService  {
 		String newUrl = null;
 
 		// Same documentName -> keep the same URL
-		if (oldName.equals(documentName)) {
+		if (oldName.equals(documentName)) {		
 			logger.info("Replacing file {} at the same Url", documentName);
 			uploadFile(documentFile, documentName, docUrl, true);
 		}
@@ -459,7 +459,7 @@ public class DocumentsUtils  extends RdfService  {
 		}
 		try {
 			Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING); 
-			// throws an error if a file already exists under this name
+			// don't throw an error if a file already exists under this name
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}

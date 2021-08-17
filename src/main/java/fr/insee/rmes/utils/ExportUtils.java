@@ -94,7 +94,7 @@ public class ExportUtils {
 				PrintStream printStream = new PrintStream(osOutputFile);) {
 
 			Path tempDir = Files.createTempDirectory("forExport");
-			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName + ODT_EXTENSION);
+			Path finalPath = Paths.get(tempDir.toString() , fileName + ODT_EXTENSION);
 
 			// transform
 			XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
@@ -141,8 +141,7 @@ public class ExportUtils {
 			FilesUtils.zipDirectory(tempDir.toFile()); 
 			
 			logger.debug("End To export temp files as Response");
-			
-			return Response.ok(new File(tempDir+"/"+tempDir.getFileName()+".zip")).header("Content-Disposition", content)
+			return Response.ok(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile()).header("Content-Disposition", content)
 			  .header("Content-Type","application/octet-stream")
 			  .build();
 			

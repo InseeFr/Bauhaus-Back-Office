@@ -202,7 +202,7 @@ public class DocumentationsUtils extends RdfService{
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
 		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUri(idTarget);
+			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
 			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
@@ -265,7 +265,7 @@ public class DocumentationsUtils extends RdfService{
 		/* Check rights */
 		IRI seriesOrIndicatorUri = targetUri;
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUri(targetId);
+			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(targetId);
 		}
 		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -478,7 +478,7 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				IRI seriesUri = operationsUtils.getSeriesUri(idOperation);
+				IRI seriesUri = operationsUtils.getSeriesUriByOperationId(idOperation);
 				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
 				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
