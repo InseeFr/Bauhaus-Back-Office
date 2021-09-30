@@ -68,5 +68,9 @@ public class LevelsQueries {
 				+ "} \n"
 				+ "ORDER BY ?id ";
 	}
+	
+	  private LevelsQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
 
 }

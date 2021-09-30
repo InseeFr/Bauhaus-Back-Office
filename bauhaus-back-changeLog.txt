@@ -1,3 +1,9 @@
+3.0.8 : - Suppression de la page blanche à la première connexion
+		- Titres spécifiques aux pages (pour l'historique des navigateurs notamment)
+		- Améliorations des sims : 
+				recherche des documents et liens avec la langue, 
+				rapport qualité mis à jour quand l'opération change de label
+		- Corrections mineures pour Sonar
 3.0.7 : Changement du lien vers l'aide dans l'offre de services
 3.0.6 : - Passage de l'export des concepts et collections de JasperReport à XSLT
 		- Montée de version spring (4 à 5)

@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import java.util.Arrays;
-
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -32,7 +30,7 @@ public class StructurePublication extends RdfService {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					String pred = ((SimpleIRI) st.getPredicate()).toString();
-					if (Arrays.stream(denyList).anyMatch(entry -> pred.endsWith(entry))) {
+					if (PublicationUtils.stringEndsWithItemFromList(pred,denyList)) {
 						// nothing, wouldn't copy this attr
 					} else if(pred.endsWith("component")){
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),

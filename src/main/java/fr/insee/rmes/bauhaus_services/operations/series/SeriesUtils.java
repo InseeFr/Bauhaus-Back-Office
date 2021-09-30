@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
@@ -69,6 +70,9 @@ public class SeriesUtils extends RdfService {
 	@Autowired
 	SeriesPublication seriesPublication;
 
+	@Autowired
+	private DocumentationsUtils documentationsUtils;
+	
 	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
@@ -372,6 +376,7 @@ public class SeriesUtils extends RdfService {
 		checkSimsWithOperations(series);
 
 		String status = famOpeSerIndUtils.getValidationStatus(id);
+		documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
 		if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
 		} else {

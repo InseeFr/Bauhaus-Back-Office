@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,7 +29,6 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.QB;
 
 @Component
 @DependsOn("AppContext")
@@ -301,33 +299,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
-		List<Resource> toRemove = new ArrayList<>();
-		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
-			RepositoryResult<Statement> nodes = null;
-			RepositoryResult<Statement> specifications = null;
-			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
-			while (nodes.hasNext()) {
-				Resource node = (Resource) nodes.next().getObject();
-				toRemove.add(node);
-				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
-				while (specifications.hasNext()) {
-					toRemove.add((Resource) specifications.next().getObject());
-				}
-				specifications.close();
-
-			}
-			nodes.close();
-			toRemove.forEach(res -> {
-				try {
-					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
-					conn.remove(statements);
-				} catch (RepositoryException e) {
-					logger.error("RepositoryGestion Error {}", e.getMessage());
-				}
-			});
-		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure deletion : " + structure);
-		}
+		clearStructureAndComponents(structure, REPOSITORY_GESTION);
 	}
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
@@ -383,4 +355,15 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 
+	public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
+		try {
+			RepositoryConnection connection = REPOSITORY_GESTION.getConnection();
+			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
+			connection.add(model);
+			connection.close();
+		} catch (RepositoryException e) {
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), FAILURE_LOAD_OBJECT);
+		}
+	}
 }
