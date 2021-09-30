@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.core.Response;
@@ -9,6 +11,8 @@ import javax.ws.rs.core.Response;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -17,12 +21,14 @@ import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.QB;
 
 
 public abstract class RepositoryUtils {
@@ -272,6 +278,37 @@ public abstract class RepositoryUtils {
 		Set<String> set = json.keySet();
 		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(Constants.VALUE)));
 		return jsonResults;
+	}
+	
+	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
+		List<Resource> toRemove = new ArrayList<>();
+		try (RepositoryConnection conn = repository.getConnection()){
+			RepositoryResult<Statement> nodes = null;
+			RepositoryResult<Statement> specifications = null;
+			nodes = conn.getStatements(structure, QB.COMPONENT, null, false);
+			while (nodes.hasNext()) {
+				Resource node = (Resource) nodes.next().getObject();
+				toRemove.add(node);
+				specifications = conn.getStatements(node, QB.COMPONENT, null, false);
+				while (specifications.hasNext()) {
+					toRemove.add((Resource) specifications.next().getObject());
+				}
+				specifications.close();
+
+			}
+			nodes.close();
+			toRemove.forEach(res -> {
+				try {
+					RepositoryResult<Statement> statements = conn.getStatements(res, null, null, false);
+					conn.remove(statements);
+					statements.close();
+				} catch (RepositoryException e) {
+					logger.error("Repository {} Error {}",repository, e.getMessage());
+				}
+			});
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Failure deletion : " + structure);
+		}
 	}
 	
 

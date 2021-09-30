@@ -57,4 +57,9 @@ public class NotesQueries {
 				+ "<" + note + "> insee:validUntil ?c \n"
 				+ "}";
 	}
+	
+	  private NotesQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 }

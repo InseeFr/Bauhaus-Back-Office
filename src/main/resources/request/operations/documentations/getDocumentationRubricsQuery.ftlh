@@ -1,4 +1,4 @@
-SELECT ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs ?uri
+SELECT distinct ?idAttribute ?value ?labelLg1 ?labelLg2 ?codeList ?rangeType ?hasDocLg1 ?hasDocLg2 ?maxOccurs ?uri
 	FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>
 	FROM <${CODELIST_GRAPH}> 
 	FROM <${ORGANIZATIONS_GRAPH}>
@@ -37,11 +37,11 @@ WHERE {
 				 ?reportAttr ?attr ?textLg2 .
 				 ?textLg2 rdf:type dcmitype:Text .
 				 ?textLg2 dcterms:language <${LG2_CL}> .
+				 BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2) .
 
 						OPTIONAL{ 
-							?textLg2 rdf:value ?labelLg2 
+							?textLg2 rdf:value ?labelLg2 .
 						}
-						BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2)
 			 }
 			 
 			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 

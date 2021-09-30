@@ -83,4 +83,9 @@ public class OperationsQueries {
 				+ "GROUP BY ?id ?labelLg1 ?labelLg2 \n"
 				+ "ORDER BY ?labelLg1 ";
 	}
+	
+	  private OperationsQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 }

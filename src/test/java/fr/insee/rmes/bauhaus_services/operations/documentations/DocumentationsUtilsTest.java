@@ -18,7 +18,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 
-public class DocumentationsUtilsTest {
+class DocumentationsUtilsTest {
 
 	@InjectMocks
 	@Spy

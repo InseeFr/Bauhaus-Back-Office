@@ -35,6 +35,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @Path("/healthcheck")
 public class HealthcheckApi {
 	
+	private static final String CONNEXION_LDAP = "- Connexion LDAP";
+
 	private static final String OK_STATE = ": OK \n";
 
 	private static final String KO_STATE = ": KO \n";
@@ -74,14 +76,14 @@ public class HealthcheckApi {
     	try {
 			String result = userService.checkLdapConnexion();
 	    	if ("OK".equals(result)) {
-	    		stateResult.add("- Connexion LDAP").add(OK_STATE);
+	    		stateResult.add(CONNEXION_LDAP).add(OK_STATE);
 	    	}else {
 				errorMessage.add("- No functional error but return an empty string \n");
-	    		stateResult.add("- Connexion LDAP").add(KO_STATE);
+	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
 	    	}
 		} catch (RmesException e) {
 			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult.add("- Connexion LDAP").add(KO_STATE);
+			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
 		}
 
     	

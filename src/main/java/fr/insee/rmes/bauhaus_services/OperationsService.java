@@ -143,8 +143,6 @@ public interface OperationsService {
 
 	String publishMetadataReport(String id) throws RmesException;
 	
-	Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
-
 	String getMetadataReportOwner(String id) throws RmesException;
 
 	String getMSDJson() throws RmesException;
@@ -152,7 +150,12 @@ public interface OperationsService {
 	String getMetadataReportDefaultValue() throws IOException;
 
 	Status deleteMetadataReport(String id) throws RmesException;
+	
+	/** export **/
+	Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
 
 	Response exportMetadataReportForLabel(String id) throws RmesException;
+
+	Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
 
 }

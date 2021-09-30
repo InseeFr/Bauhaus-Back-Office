@@ -44,7 +44,8 @@ import fr.insee.rmes.utils.DateUtils;
 @Component
 public class StructureUtils extends RdfService {
 
-    static final Logger logger = LogManager.getLogger(StructureUtils.class);
+    private static final String IO_EXCEPTION = "IOException";
+	static final Logger logger = LogManager.getLogger(StructureUtils.class);
     public static final String ATTACHMENT = "attachment";
     public static final String REQUIRED = "required";
     public static final String ORDER = "order";
@@ -134,12 +135,11 @@ public class StructureUtils extends RdfService {
         try {
             structure = mapper.readValue(body, Structure.class);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
         validateStructure(structure);
         structure.setCreated(DateUtils.getCurrentDate());
         structure.setUpdated(DateUtils.getCurrentDate());
-        //structure.setDisseminationStatus(DisseminationStatus.PUBLIC_GENERIC.getUrl());
         String id = generateNextId();
         structure.setId(id);
         createRdfStructure(structure, ValidationStatus.UNPUBLISHED);
@@ -174,7 +174,7 @@ public class StructureUtils extends RdfService {
         try {
             structure = mapper.readerForUpdating(structure).readValue(body);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
 
 
@@ -210,15 +210,14 @@ public class StructureUtils extends RdfService {
     }
 
     private void checkUnicityForStructure(Structure structure) throws RmesException {
-        List<ComponentDefinition> componentsWithoutId = structure.getComponentDefinitions().stream().filter((ComponentDefinition cd) -> {
-            return cd.getComponent().getId() == null;
-        }).collect(Collectors.toList());
+        List<ComponentDefinition> componentsWithoutId = structure.getComponentDefinitions().stream().filter((ComponentDefinition cd) -> 
+            cd.getComponent().getId() == null
+        ).collect(Collectors.toList());
 
-        if(componentsWithoutId.size() == 0){
-            String[] ids = structure.getComponentDefinitions().stream().map(cd -> {
-                return cd.getComponent().getId();
-            }).map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
-            Boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
+        if(componentsWithoutId.isEmpty()){
+            String[] ids = structure.getComponentDefinitions().stream().map(cd -> cd.getComponent().getId())
+            		.map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
+            boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
                 throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
                         "A structure with the same components already exists", "");
@@ -393,7 +392,7 @@ public class StructureUtils extends RdfService {
         try {
             structureObject = mapper.readerForUpdating(structureObject).readValue(structure.toString());
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
 
         IRI structureIri = RdfUtils.structureIRI(structureObject.getId());

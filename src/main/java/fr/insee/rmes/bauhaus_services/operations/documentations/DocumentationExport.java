@@ -45,6 +45,18 @@ public class DocumentationExport {
 			
 		return null;
 	}
+	
+	public Response exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+			boolean lg2) throws RmesException {
+		//Add two params to xmlContents
+		String msdXML = documentationsUtils.buildShellSims();
+		xmlContent.put("msdFile", msdXML);
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
+		xmlContent.put("parametersFile", parametersXML);
+
+		return exportUtils.exportFilesAsResponse(xmlContent);
+
+	}
 
 
 }

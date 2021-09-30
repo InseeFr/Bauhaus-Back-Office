@@ -12,6 +12,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +49,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class StructureResources {
 
     private static final String TEXT_PLAIN = "text/plain";
+	static final Logger logger = LogManager.getLogger(StructureResources.class);
+
+    
     @Autowired
     StructureService structureService;
 
@@ -109,7 +114,7 @@ public class StructureResources {
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
         } catch( Exception e ) {
-            System.out.println(e);
+        	logger.error(e);
         }
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }

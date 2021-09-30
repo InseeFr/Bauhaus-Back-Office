@@ -448,4 +448,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
 	}
 
+	@Override
+	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+		return documentationsUtils.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
+	}
+
 }

@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
@@ -92,7 +95,7 @@ public class ExportUtils {
 				PrintStream printStream = new PrintStream(osOutputFile);) {
 
 			Path tempDir = Files.createTempDirectory("forExport");
-			Path finalPath = Paths.get(tempDir.toString() + "/" + fileName + ODT_EXTENSION);
+			Path finalPath = Paths.get(tempDir.toString() , fileName + ODT_EXTENSION);
 
 			// transform
 			XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
@@ -116,4 +119,59 @@ public class ExportUtils {
 			}
 		}
 	}
+	
+	public Response exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
+		logger.debug("Begin To export temp files as Response");
+		ContentDisposition content = ContentDisposition.type("attachment").fileName("xmlFiles.zip").build();
+		Path tempDir;
+
+		try {
+			tempDir = Files.createTempDirectory("xmlFiles");
+		
+			// Add all files in a tempDirectory
+			xmlContent.forEach((paramName, xmlData) -> {	
+				try {
+					Path tempFile = Files.createTempFile(tempDir, paramName, Constants.DOT_XML);
+					Files.write(tempFile, xmlData.getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
+				} catch (IOException e) {
+					logger.error(e.getMessage());
+				}
+			});
+			
+			//zip tempDirectory
+			FilesUtils.zipDirectory(tempDir.toFile()); 
+			
+			logger.debug("End To export temp files as Response");
+			return Response.ok(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile()).header("Content-Disposition", content)
+			  .header("Content-Type","application/octet-stream")
+			  .build();
+			
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
+		}
+
+
+	}
+	
+	public static String toLabel(String dsURL) {
+		return DisseminationStatus.getEnumLabel(dsURL);
+	}
+
+	public static String toDate(String dateTime) {
+		if (dateTime != null && dateTime.length() > 10) {
+			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
+		}
+		return dateTime;
+	}
+
+	public static String toValidationStatus(String boolStatus, boolean fem) {
+		if (boolStatus.equals("true")) {
+				return fem ? "Publiée" : "Publié";
+		} else {
+			return "Provisoire";
+		}
+	}
+
+	
+	
 }

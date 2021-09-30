@@ -202,7 +202,7 @@ public class DocumentationsUtils extends RdfService{
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
 		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUri(idTarget);
+			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
 			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
@@ -265,7 +265,7 @@ public class DocumentationsUtils extends RdfService{
 		/* Check rights */
 		IRI seriesOrIndicatorUri = targetUri;
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUri(targetId);
+			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(targetId);
 		}
 		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -478,7 +478,7 @@ public class DocumentationsUtils extends RdfService{
 			String idIndicator = target.getString(Constants.ID_INDICATOR);
 
 			if (idOperation != null && !idOperation.isEmpty()) {
-				IRI seriesUri = operationsUtils.getSeriesUri(idOperation);
+				IRI seriesUri = operationsUtils.getSeriesUriByOperationId(idOperation);
 				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
 			} else if (idSerie != null && !idSerie.isEmpty()) {
 				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
@@ -494,7 +494,19 @@ public class DocumentationsUtils extends RdfService{
 
 
 	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
+		Map<String,String> xmlContent = new HashMap<>();
+		String targetType = getXmlContent(id, xmlContent);
+		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+	}
+	
 
+	public Response exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+		Map<String,String> xmlContent = new HashMap<>();
+		String targetType = getXmlContent(id, xmlContent);
+		return docExport.exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
+	}
+
+	public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
 		Series series;
@@ -560,15 +572,14 @@ public class DocumentationsUtils extends RdfService{
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-		Map<String,String> xmlContent = new HashMap<>();
+
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);
 		xmlContent.put("indicatorFile",  indicatorXML);
 		xmlContent.put("codeListsFile",  codeListsXML);
 		xmlContent.put("organizationsFile",  organizationsXML);
-		
-		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+		return targetType;
 	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
@@ -632,4 +643,16 @@ public class DocumentationsUtils extends RdfService{
 
 	}
 
+
+	public void updateDocumentationTitle(String idSims, String prefLabeLg1, String prefLabelLg2) throws RmesException {
+		Model model = new LinkedHashModel();
+		IRI simsUri = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, idSims);
+		Resource graph = RdfUtils.simsGraph(idSims);
+
+		/*Optional*/
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG1 + " " + prefLabeLg1, Config.LG1, model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG2 + " " + prefLabelLg2, Config.LG2, model, graph);
+
+		repoGestion.overrideTriplets(simsUri, model, graph);
+	}
 }

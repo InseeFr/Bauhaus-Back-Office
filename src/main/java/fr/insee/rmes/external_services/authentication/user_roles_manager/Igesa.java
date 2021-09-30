@@ -19,6 +19,11 @@ import org.apache.logging.log4j.Logger;
 import fr.insee.rmes.config.Config;
 
 public class Igesa {
+	
+	  private Igesa() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	static final Logger logger = LogManager.getLogger(Igesa.class);
 

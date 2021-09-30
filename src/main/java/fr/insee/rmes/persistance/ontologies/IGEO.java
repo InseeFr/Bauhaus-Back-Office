@@ -7,6 +7,11 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class IGEO {
+	
+	  private IGEO() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
     public static final String NAMESPACE = "http://rdf.insee.fr/def/geo#";
 

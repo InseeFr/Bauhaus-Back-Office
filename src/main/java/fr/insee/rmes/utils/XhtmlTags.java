@@ -2,6 +2,11 @@ package fr.insee.rmes.utils;
 
 public final class XhtmlTags {
 
+	  private XhtmlTags() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String OPENLIST = "<ul>";
 	public static final String CLOSELIST = "</ul>";
 	public static final String OPENLISTITEM = "<li>";
