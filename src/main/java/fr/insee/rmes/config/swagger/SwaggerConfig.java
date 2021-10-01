@@ -30,7 +30,7 @@ public class SwaggerConfig extends ResourceConfig   {
 		super();
 		OpenAPI openApi = new OpenAPI();
 
-		Info info = new Info().title("Bauhaus API").version("3.0.7").description("Rest Endpoints and services Integration used by Bauhaus");
+		Info info = new Info().title("Bauhaus API").version("3.0.8").description("Rest Endpoints and services Integration used by Bauhaus");
 		openApi.info(info);
 
 		Server server = new Server();
