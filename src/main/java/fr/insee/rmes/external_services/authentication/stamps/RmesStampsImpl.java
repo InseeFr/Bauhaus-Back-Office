@@ -28,13 +28,16 @@ public class RmesStampsImpl implements StampsService {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionService; 
 	
+	@Autowired
+	LdapConnexion ldapConnexion;
+	
 	@Override
 	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<>();
 		try {
 			if(Config.LDAP_URL != null && !Config.LDAP_URL.isEmpty()) {
 				// Connexion à la racine de l'annuaire
-				DirContext context = LdapConnexion.getLdapContext();
+				DirContext context = ldapConnexion.getLdapContext();
 
 				// Spécification des critères pour la recherche des unités
 				SearchControls controls = new SearchControls();

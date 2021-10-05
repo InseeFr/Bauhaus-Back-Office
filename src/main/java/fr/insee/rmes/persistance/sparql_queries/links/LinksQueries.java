@@ -13,5 +13,10 @@ public class LinksQueries {
 				+ "?concept ?b <" + ((SimpleIRI)conceptURI).toString() + "> \n"
 				+ " }}";
 	}
+	
+	  private LinksQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 }

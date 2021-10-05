@@ -87,6 +87,11 @@ public class FreemarkerConfig {
 		}
 		return cfg;
 	}
+	
+	  private FreemarkerConfig() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	
 

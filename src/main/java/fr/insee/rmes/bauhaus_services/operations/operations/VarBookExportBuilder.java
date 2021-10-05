@@ -190,27 +190,16 @@ public class VarBookExportBuilder {
 	}
 
 	private static Document getDocument(String xml) throws RmesException {
-		InputStream stream = null;
 		DocumentBuilder db;
 		Document xmlInitial = null;
 
-		try {
-			stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+		try (InputStream stream = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))) {
 			db = DocumentBuilders.createSaferDocumentBuilder(DocumentBuilderFactory::isIgnoringElementContentWhitespace);
 			xmlInitial = db.parse(stream);
-			stream.close();
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
 					e.getClass() + " Can't parse xml");
-		} finally {
-			try {
-				if (stream != null) {
-					stream.close();
-				}
-			} catch (IOException e) {
-				logger.error(e.getMessage());
-			}
-		}
+		} 
 		return xmlInitial;
 	}
 

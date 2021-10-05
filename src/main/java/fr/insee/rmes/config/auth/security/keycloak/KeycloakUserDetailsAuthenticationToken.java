@@ -1,6 +1,7 @@
 package fr.insee.rmes.config.auth.security.keycloak;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.keycloak.adapters.OidcKeycloakAccount;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -25,5 +26,25 @@ public class KeycloakUserDetailsAuthenticationToken extends KeycloakAuthenticati
     public Object getPrincipal() {
         return user;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Objects.hash(user);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		KeycloakUserDetailsAuthenticationToken other = (KeycloakUserDetailsAuthenticationToken) obj;
+		return Objects.equals(user, other.user);
+	}
 
 }

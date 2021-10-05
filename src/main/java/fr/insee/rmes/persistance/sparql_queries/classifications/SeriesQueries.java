@@ -74,4 +74,9 @@ public class SeriesQueries {
 			+ "ORDER BY ?labelLg1 ";	
 	}
 	
+	  private SeriesQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 }

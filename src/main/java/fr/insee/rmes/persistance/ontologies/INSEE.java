@@ -10,7 +10,12 @@ import fr.insee.rmes.bauhaus_services.Constants;
 
 public class INSEE {
 	
+	  private INSEE() {
+		    throw new IllegalStateException("Utility class");
+	}
+	
 	public static final String NAMESPACE = "http://rdf.insee.fr/def/base#";
+
 
 	/**
 	 * The recommended prefix for the INSEE namespace: "insee"

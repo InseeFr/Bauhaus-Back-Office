@@ -24,6 +24,7 @@ public class Operation {
 	@Schema(description = "Series")
 	public IdLabelTwoLangs series;
 	
+	@Schema(description = "Sims Id")
 	public String idSims;
 
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,

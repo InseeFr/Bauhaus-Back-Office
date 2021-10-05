@@ -294,6 +294,10 @@ public class IndicatorsQueries {
 				+ "}";
 	}
 
+	  private IndicatorsQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 	
 	
 
