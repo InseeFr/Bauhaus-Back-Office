@@ -17,9 +17,14 @@ public class DateUtils {
     private static final Logger logger = LogManager.getLogger(DateUtils.class);
 
     private static List<String> dateFormats;
+    
+	  private DateUtils() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
     private static void init() {
-        if (dateFormats == null || dateFormats.size() == 0) {
+        if (dateFormats == null || dateFormats.isEmpty()) {
             dateFormats = new ArrayList<>();
             dateFormats.add("yyyy-MM-dd HH:mm:ssxx");
             dateFormats.add("yyyy-MM-dd");

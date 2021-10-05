@@ -10,6 +10,11 @@ import java.util.Optional;
 import java.util.Properties;
 
 public class PropertiesUtils {
+	
+	  private PropertiesUtils() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
     private static final Properties propsForReadPropertyFromFile=new Properties();
 

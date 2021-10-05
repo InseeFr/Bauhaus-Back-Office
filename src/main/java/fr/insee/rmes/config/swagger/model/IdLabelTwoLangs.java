@@ -3,6 +3,8 @@ package fr.insee.rmes.config.swagger.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class IdLabelTwoLangs {
+	
+	private static String classLink = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
 
 	@Schema(description = "Id", required = true)
 	public String id;
@@ -29,7 +31,7 @@ public class IdLabelTwoLangs {
 	}
 
 	public static String getClassIdLabelTwoLangs() {
-		return "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
+		return classLink;
 	}
 	
 	public String getLabelLg1() {

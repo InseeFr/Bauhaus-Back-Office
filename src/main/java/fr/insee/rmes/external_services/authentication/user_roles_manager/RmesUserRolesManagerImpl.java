@@ -24,6 +24,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -35,6 +36,9 @@ import fr.insee.rmes.utils.JSONComparator;
 
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
+	
+	@Autowired
+	LdapConnexion ldapConnexion;
 
 	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
@@ -103,7 +107,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 		try {
 			// Connexion à la racine de l'annuaire
-			DirContext context = LdapConnexion.getLdapContext();
+			DirContext context = ldapConnexion.getLdapContext();
 
 			// Spécification des critères pour la recherche des unités
 			SearchControls controls = new SearchControls();

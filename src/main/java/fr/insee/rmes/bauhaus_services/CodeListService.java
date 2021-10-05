@@ -13,7 +13,7 @@ public interface CodeListService {
 
 	String getAllCodesLists() throws RmesException;
 
-	String geCodesListByIRI(String IRI) throws RmesException;
+	String geCodesListByIRI(String iri) throws RmesException;
 
 	String getDetailedCodesList(String notation) throws RmesException;
 

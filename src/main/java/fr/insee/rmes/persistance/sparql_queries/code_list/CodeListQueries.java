@@ -112,6 +112,10 @@ public class CodeListQueries {
 		params.put("LG2", Config.LG2);
 		return params;
 	}
+	
+	  private CodeListQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
 
 
 }

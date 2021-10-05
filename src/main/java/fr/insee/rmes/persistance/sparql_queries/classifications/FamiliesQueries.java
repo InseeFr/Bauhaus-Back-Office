@@ -38,4 +38,9 @@ public class FamiliesQueries {
 			+ "ORDER BY ?labelLg1 ";	
 	}
 	
+	  private FamiliesQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 }

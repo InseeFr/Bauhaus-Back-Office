@@ -51,11 +51,15 @@ public class JSONUtils {
 	 * @return
 	 */
 	public static List<String> jsonArrayToList(JSONArray jsonArray) {
-		List<String> result = IntStream.range(0, jsonArray.length())
+		return IntStream.range(0, jsonArray.length())
 		        .mapToObj(jsonArray::get)
 		        .map(Object::toString)
 		        .collect(Collectors.toList());
-		return result;
 	}
+	
+	  private JSONUtils() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 	
 }

@@ -8,6 +8,11 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class DCMITYPE {
 	
+	private DCMITYPE() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String NAMESPACE = "http://purl.org/dc/dcmitype/";
 
 	/**

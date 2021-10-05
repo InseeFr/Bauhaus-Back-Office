@@ -87,6 +87,9 @@ public class OrganizationQueries {
 				+ "} \n" ;
 	}
 
+	  private OrganizationQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
 
 
 }
