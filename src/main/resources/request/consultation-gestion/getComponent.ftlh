@@ -1,7 +1,7 @@
 SELECT ?id (?uriComposant as ?uri) ?type ?notation
     ?dateMiseAJour ?statutValidation ?prefLabelLg1 ?prefLabelLg2
     ?uriConcept ?idConcept ?representation
-    ?uriListeCode ?idListeCode ?version
+    ?uriListeCode ?idListeCode ?version ?uriComponentParentId
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODELIST_GRAPH}>
 WHERE {
@@ -30,6 +30,11 @@ WHERE {
 
     ?uriComposant rdfs:label ?prefLabelLg2 .
     FILTER (lang(?prefLabelLg2) = '${LG2}') .
+
+    OPTIONAL {
+        ?uriComposant skos:broader ?uriComponentParent .
+        ?uriComponentParent dcterms:identifier ?uriComponentParentId .
+    }
 
     OPTIONAL {
         ?uriComposant qb:concept ?uriConcept .
