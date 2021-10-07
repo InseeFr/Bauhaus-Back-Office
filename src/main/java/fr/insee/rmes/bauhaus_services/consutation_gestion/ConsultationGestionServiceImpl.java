@@ -135,6 +135,13 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         structure.remove("prefLabelLg1");
         structure.remove("prefLabelLg2");
 
+
+        if(structure.has("idParent")){
+            String idParent = structure.getString("idParent");
+            JSONObject parent = new JSONObject();
+            parent.put("id", idParent);
+            structure.put("parent", parent);
+        }
         if(structure.has(Constants.STATUT_VALIDATION)){
             String validationState = structure.getString(Constants.STATUT_VALIDATION);
             structure.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
@@ -182,9 +189,60 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         component.remove("prefLabelLg1");
         component.remove("prefLabelLg2");
 
+        if(component.has("uriComponentParentId")){
+            JSONObject parent = new JSONObject();
+            parent.put("id", component.getString("uriComponentParentId"));
+            component.remove("uriComponentParentId");
+            component.put("parent", parent);
+        }
+
+        JSONArray flatChildren = repoGestion.getResponseAsArray(buildRequest("getComponentChildren.ftlh", params));
+
+        JSONArray children = new JSONArray();
+        for (int i = 0; i < flatChildren.length(); i++) {
+            String childrenId = flatChildren.getJSONObject(i).getString("uriComponentChildId");
+            children.put(new JSONObject().put("id", childrenId));
+        }
+        if(children.length() > 0) {
+            component.put("children", children);
+        }
+
         if(component.has("statutValidation")){
             String validationState = component.getString("statutValidation");
             component.put("statutValidation", this.getValidationState(validationState));
+        }
+
+        if(component.has("uriListeCode")){
+            component.put("representation", "liste de code");
+
+            JSONArray codes = getCodes(component.getString("idListeCode"));
+            JSONObject listCode = new JSONObject();
+            listCode.put("uri", component.getString("uriListeCode"));
+            listCode.put("id", component.getString("idListeCode"));
+            listCode.put("codes", codes);
+            component.put("listeCode", listCode);
+            component.remove("uriListeCode");
+            component.remove("idListeCode");
+        }
+
+        if(component.has("uriConcept")){
+
+            JSONObject concept = new JSONObject();
+            concept.put("uri", component.getString("uriConcept"));
+            concept.put("id", component.getString("idConcept"));
+            component.put("concept", concept);
+            component.remove("uriConcept");
+            component.remove("idConcept");
+        }
+
+        if(component.has("representation")){
+            if(component.getString("representation").endsWith("date")){
+                component.put("representation", "date");
+            } else if(component.getString("representation").endsWith("int")){
+                component.put("representation", "entier");
+            } else if(component.getString("representation").endsWith("float")){
+                component.put("representation", "décimal");
+            }
         }
         return component.toString();
     }
@@ -215,9 +273,11 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             if(component.has("listeCodeUri")){
                 component.put("representation", "liste de code");
 
+                JSONArray codes = getCodes(component.getString("listeCodeNotation"));
                 JSONObject listCode = new JSONObject();
                 listCode.put("uri", component.getString("listeCodeUri"));
                 listCode.put("id", component.getString("listeCodeNotation"));
+                listCode.put("codes", codes);
                 component.put("listeCode", listCode);
                 component.remove("listeCodeUri");
                 component.remove("listeCodeNotation");
@@ -244,7 +304,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
 
             String idComponent = component.getString("id");
-            component.remove("id");
+
             if(idComponent.startsWith("a")){
                 attributes.put(component);
             }

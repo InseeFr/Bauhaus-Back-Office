@@ -113,9 +113,7 @@ public class StructureResources {
             jsonResultat = structureService.publishStructureById(id);
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
-        } catch( Exception e ) {
-        	logger.error(e);
-        }
+        } 
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
