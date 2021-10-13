@@ -18,8 +18,8 @@ import fr.insee.rmes.exceptions.RmesException;
 public class LdapConnexion {
 	
 	static final Logger logger = LogManager.getLogger(LdapConnexion.class);
-
-	public static DirContext getLdapContext() throws NamingException, RmesException {
+	
+	public DirContext getLdapContext() throws NamingException, RmesException {
 		if(Config.LDAP_URL != null && !Config.LDAP_URL.isEmpty()) {
 			logger.info("Connection to LDAP : {}", Config.LDAP_URL);
 			// Connexion à la racine de l'annuaire

@@ -87,5 +87,10 @@ public class CollectionsQueries {
 				+ "FILTER(STRENDS(STR(?collection),'/concepts/definitions/" + id + "')) . \n"
 				+ "}";
 	}
+	
+	  private CollectionsQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 }

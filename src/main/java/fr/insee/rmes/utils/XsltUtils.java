@@ -31,7 +31,10 @@ public class XsltUtils {
 
 	private static final Logger logger = LoggerFactory.getLogger(XsltUtils.class);
 
-	
+	  private XsltUtils() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 	public static void xsltTransform(Map<String, String> xmlContent, InputStream odtFileIS, InputStream xslFileIS,
 			PrintStream printStream, Path tempDir) throws TransformerException {

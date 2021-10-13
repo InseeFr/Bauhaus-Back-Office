@@ -326,22 +326,12 @@ public class DocumentationsRubricsUtils extends RdfService {
 			}
 		}
 		if (jsonRubric.has(Constants.LABEL_LG1)) {
-			if(forXml) {
-				documentationRubric.setLabelLg1(XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)));
-			}
-			else
-			{
-				documentationRubric.setLabelLg1(jsonRubric.getString(Constants.LABEL_LG1));
-			}
+			String labelLg1 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG1)) : jsonRubric.getString(Constants.LABEL_LG1);
+			documentationRubric.setLabelLg1(labelLg1);
 		}
 		if (jsonRubric.has(Constants.LABEL_LG2)) {
-			if(forXml) {
-				documentationRubric.setLabelLg2(XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)));
-			}
-			else
-			{
-				documentationRubric.setLabelLg2(jsonRubric.getString(Constants.LABEL_LG2));
-			}
+			String labelLg2 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)) : jsonRubric.getString(Constants.LABEL_LG2);
+			documentationRubric.setLabelLg2(labelLg2);
 		}
 		if (jsonRubric.has("codeList")) {
 			documentationRubric.setCodeList(jsonRubric.getString("codeList"));

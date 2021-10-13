@@ -253,10 +253,6 @@ public class Series {
 		this.accrualPeriodicityList = accrualPeriodicityList;
 	}
 
-//	public void setPublishers(OperationsLink[] publishers) {
-//		this.publishers = Arrays.asList(publishers);
-//	}
-
 	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}

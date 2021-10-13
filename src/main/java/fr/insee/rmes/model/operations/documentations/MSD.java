@@ -13,7 +13,7 @@ public class MSD {
 	private List<MAS> masList;
 
 	public MSD() {
-		this.masList = new ArrayList<MAS>();
+		this.masList = new ArrayList<>();
 	}
 	
 	public MSD(List<MAS> masList) {

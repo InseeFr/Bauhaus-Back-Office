@@ -45,7 +45,8 @@ import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class StructureComponentUtils extends RdfService {
-    static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
+    private static final String IO_EXCEPTION = "IOException";
+	static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
@@ -66,7 +67,7 @@ public class StructureComponentUtils extends RdfService {
     }
 
     private void addCodeListRange(JSONObject response) {
-        if (response.has("codeList")) {
+        if (response.has(Constants.CODELIST)) {
             response.put("range", ((SimpleIRI)INSEE.CODELIST).toString());
         }
     }
@@ -80,7 +81,7 @@ public class StructureComponentUtils extends RdfService {
         try {
             component = deserializeBody(body);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
 
         if (component.getId() == null || !component.getId().equals(componentId)) {
@@ -106,7 +107,7 @@ public class StructureComponentUtils extends RdfService {
         try {
             component = deserializeBody(body);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
 
         }
         return createComponent(component);
@@ -138,7 +139,7 @@ public class StructureComponentUtils extends RdfService {
 
 
         if(StringUtils.isNotEmpty(component.getConcept()) && StringUtils.isNotEmpty(component.getCodeList())){
-            Boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
+            boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
 
             if(componentsWithSameCodelistAndConcept){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
@@ -301,7 +302,7 @@ public class StructureComponentUtils extends RdfService {
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component, "codeList") && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString("codeList")))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
         }
 
@@ -310,7 +311,7 @@ public class StructureComponentUtils extends RdfService {
         try {
             mutualizedComponent = deserializeBody(component.toString());
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
         }
         mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
 
