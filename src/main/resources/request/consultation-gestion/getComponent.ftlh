@@ -1,7 +1,7 @@
 SELECT ?id (?uriComposant as ?uri) ?type ?notation
     ?dateMiseAJour ?statutValidation ?prefLabelLg1 ?prefLabelLg2
     ?uriConcept ?idConcept ?representation
-    ?uriListeCode ?idListeCode ?version ?uriComponentParentId
+    ?uriListeCode ?idListeCode ?version ?uriComponentParentId ?uriComponentParentNotation
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODELIST_GRAPH}>
 WHERE {
@@ -34,6 +34,7 @@ WHERE {
     OPTIONAL {
         ?uriComposant skos:broader ?uriComponentParent .
         ?uriComponentParent dcterms:identifier ?uriComponentParentId .
+        ?uriComponentParent skos:notation ?uriComponentParentNotation .
     }
 
     OPTIONAL {
