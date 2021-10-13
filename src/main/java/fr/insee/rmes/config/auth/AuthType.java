@@ -10,4 +10,9 @@ public class AuthType {
 		else return "NoAuthImpl";
 	}
 	
+	private AuthType() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 }

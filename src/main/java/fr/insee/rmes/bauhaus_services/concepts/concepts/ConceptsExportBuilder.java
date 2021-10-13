@@ -19,7 +19,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.JSONUtils;
@@ -73,11 +72,11 @@ public class ConceptsExportBuilder extends RdfService {
 			concept.addNotes(notes);
 
 			// format specific data
-			concept.setIsValidated(toValidationStatus(concept.getIsValidated()));
-			concept.setDisseminationStatus(toLabel(concept.getDisseminationStatus()));
-			concept.setCreated(toDate(concept.getCreated()));
-			concept.setModified(toDate(concept.getModified()));
-			concept.setValid(toDate(concept.getValid()));
+			concept.setIsValidated(ExportUtils.toValidationStatus(concept.getIsValidated(),false));
+			concept.setDisseminationStatus(ExportUtils.toLabel(concept.getDisseminationStatus()));
+			concept.setCreated(ExportUtils.toDate(concept.getCreated()));
+			concept.setModified(ExportUtils.toDate(concept.getModified()));
+			concept.setValid(ExportUtils.toDate(concept.getValid()));
 
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -85,27 +84,6 @@ public class ConceptsExportBuilder extends RdfService {
 		return concept;
 
 	}
-
-	private String toLabel(String dsURL) {
-		return DisseminationStatus.getEnumLabel(dsURL);
-	}
-
-	private String toDate(String dateTime) {
-		if (dateTime != null && dateTime.length() > 10) {
-			return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
-		}
-		return dateTime;
-	}
-
-	private String toValidationStatus(String boolStatus) {
-		if (boolStatus.equals("true")) {
-				return "Publié";
-		} else {
-			return "Provisoire";
-		}
-	}
-
-
 
 	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		// Add two params to xmlContents

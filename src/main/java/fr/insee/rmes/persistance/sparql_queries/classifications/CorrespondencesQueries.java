@@ -149,5 +149,10 @@ public class CorrespondencesQueries {
 				+ "LIMIT 1";
 	}
 	
+	  private CorrespondencesQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 
 }

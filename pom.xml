@@ -4,7 +4,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-	<version>3.0.6</version>
+	<version>3.0.8</version>
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -414,7 +414,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.7.2</version>
+			<version>1.14.2</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/jaxen/jaxen -->

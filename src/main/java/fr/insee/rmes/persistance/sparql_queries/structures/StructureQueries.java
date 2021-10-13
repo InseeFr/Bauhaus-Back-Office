@@ -122,4 +122,9 @@ public class StructureQueries {
 
 		return params;
 	}
+	
+	  private StructureQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 }

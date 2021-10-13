@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CodeListItem {
 
+	private static String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
 	@Schema(description = "Code", required = true)
 	private String code;
@@ -51,7 +52,7 @@ public class CodeListItem {
 	}
 
 	public static String getClassOperationsLink() {
-		return "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
+		return classLink;
 
 	}
 }

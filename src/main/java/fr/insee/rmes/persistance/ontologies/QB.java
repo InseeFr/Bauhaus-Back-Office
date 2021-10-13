@@ -9,6 +9,11 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class QB {
 	
+	  private QB() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String NAMESPACE = "http://purl.org/linked-data/cube#";
 
 	/**

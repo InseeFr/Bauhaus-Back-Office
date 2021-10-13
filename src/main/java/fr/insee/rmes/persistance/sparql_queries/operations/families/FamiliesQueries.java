@@ -100,5 +100,10 @@ public class FamiliesQueries {
 				+ " ORDER BY ?subjectUri"
 				;
 	}
+	
+	  private FamiliesQueries() {
+		    throw new IllegalStateException("Utility class");
+	}
+
 
 }

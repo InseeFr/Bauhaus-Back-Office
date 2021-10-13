@@ -8,6 +8,11 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class PAV {
 	
+	  private PAV() {
+		    throw new IllegalStateException("Utility class");
+	}
+
+	
 	public static final String NAMESPACE = "http://purl.org/pav/";
 
 	/**
