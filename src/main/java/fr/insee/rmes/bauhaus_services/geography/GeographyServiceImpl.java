@@ -11,6 +11,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
@@ -102,7 +103,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		String uriFeature = feature.getString(Constants.URI);
 		JSONArray unions = repoGestion.getResponseAsArray(GeoQueries.getUnionsForAFeatureQuery(uriFeature));
 		feature.put("unions", unions);
-		JSONObject diff = repoGestion.getResponseAsObject(GeoQueries.getDifferenceForAFeatureQuery(uriFeature));
+		JSONArray diff = repoGestion.getResponseAsArray(GeoQueries.getDifferenceForAFeatureQuery(uriFeature));
 		feature.put("difference", diff);
 	}
 
@@ -139,15 +140,23 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		}
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 		/*Const*/
-		model.add(geoIRI, RDF.TYPE, GEO.FEATURE, RdfUtils.simsGeographyGraph());
+		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
 		/*Required*/
-		model.add(geoIRI, IGEO.NOM, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), Config.LG1), RdfUtils.simsGeographyGraph());
-		model.add(geoIRI, IGEO.CODE_INSEE, RdfUtils.setLiteralString(geoFeature.getCode()), RdfUtils.simsGeographyGraph());
+		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), Config.LG1), RdfUtils.simsGeographyGraph());
+
 		/*Optional*/
 		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), Config.LG2, model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), Config.LG1, model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), Config.LG2, model, RdfUtils.simsGeographyGraph());
-	
+
+
+		geoFeature.getUnions().forEach(feature -> {
+			RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph());
+
+		});
+		geoFeature.getDifference().forEach(feature -> {
+			RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph());
+		});
 		repoGestion.loadSimpleObject(geoIRI, model);
 	}
 

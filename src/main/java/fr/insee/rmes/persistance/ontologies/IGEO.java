@@ -21,6 +21,7 @@ public class IGEO {
 	
 	public static final IRI NOM;
 	public static final IRI CODE_INSEE;
+	public static final IRI TERRITOIRE_STATISTIQUE;
 
 	
 	static {
@@ -28,7 +29,8 @@ public class IGEO {
 
 		NOM = f.createIRI(NAMESPACE, "nom");
 		CODE_INSEE = f.createIRI(NAMESPACE, "codeINSEE");
-	
+		TERRITOIRE_STATISTIQUE = f.createIRI(NAMESPACE, "TerritoireStatistique");
+
 	}
 
 }

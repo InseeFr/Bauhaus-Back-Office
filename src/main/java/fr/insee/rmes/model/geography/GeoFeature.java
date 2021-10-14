@@ -8,7 +8,7 @@ public class GeoFeature {
 	private String labelLg1;
 	private String labelLg2;
 	private List<GeoFeature> unions;
-	private GeoFeature difference;
+	private List<GeoFeature> difference;
 	private String code;
 	private String uri;
 	private String descriptionLg1;
@@ -38,10 +38,10 @@ public class GeoFeature {
 	public void setUnions(List<GeoFeature> unions) {
 		this.unions = unions;
 	}
-	public GeoFeature getDifference() {
+	public List<GeoFeature> getDifference() {
 		return difference;
 	}
-	public void setDifference(GeoFeature difference) {
+	public void setDifference(List<GeoFeature> difference) {
 		this.difference = difference;
 	}
 
