@@ -192,19 +192,15 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         if(component.has("uriComponentParentId")){
             JSONObject parent = new JSONObject();
             parent.put("id", component.getString("uriComponentParentId"));
+            parent.put("notation", component.getString("uriComponentParentNotation"));
             component.remove("uriComponentParentId");
+            component.remove("uriComponentParentNotation");
             component.put("parent", parent);
         }
 
         JSONArray flatChildren = repoGestion.getResponseAsArray(buildRequest("getComponentChildren.ftlh", params));
-
-        JSONArray children = new JSONArray();
-        for (int i = 0; i < flatChildren.length(); i++) {
-            String childrenId = flatChildren.getJSONObject(i).getString("uriComponentChildId");
-            children.put(new JSONObject().put("id", childrenId));
-        }
-        if(children.length() > 0) {
-            component.put("children", children);
+        if(flatChildren.length() > 0) {
+            component.put("enfants", flatChildren);
         }
 
         if(component.has("statutValidation")){
