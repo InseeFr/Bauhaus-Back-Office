@@ -125,12 +125,12 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-		createRdfGeoFeature(geoFeature);
+		String iri = createRdfGeoFeature(geoFeature);
 		logger.info("Create geofeature : {} - {}", id , geoFeature.getLabelLg1());
-		return id.toString();
+		return iri;
 	}
 	
-	public void createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
+	public String createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
 		Model model = new LinkedHashModel();
 		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getId())) {
 			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
@@ -158,6 +158,8 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 			RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph());
 		});
 		repoGestion.loadSimpleObject(geoIRI, model);
+
+		return geoIRI.toString();
 	}
 
 }
