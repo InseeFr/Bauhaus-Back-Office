@@ -105,6 +105,12 @@ public class CodeListQueries {
 		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodes.ftlh", params);
 	}
 
+	public static String getCodesSeq(String notation) throws RmesException {
+		HashMap<String, Object> params = getInitParams();
+		params.put("NOTATION", notation);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getCodesSeq.ftlh", params);
+	}
+
 	private static HashMap<String, Object> getInitParams() {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);

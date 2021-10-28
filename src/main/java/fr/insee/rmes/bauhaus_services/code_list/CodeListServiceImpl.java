@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,11 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -85,36 +91,70 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
 		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation));
 
+		JSONObject parents = new JSONObject();
+
 		if(codes.length() > 0){
 			JSONObject formattedCodes = new JSONObject();
 			codes.forEach(c -> {
 				JSONObject tempCode = (JSONObject) c;
 				String code = tempCode.getString("code");
-
-				if(!formattedCodes.has(code)){
-					if(tempCode.has(Constants.PARENTS)){
-						JSONArray parents = new JSONArray();
-						parents.put(tempCode.getString(Constants.PARENTS));
-						tempCode.put(Constants.PARENTS, parents);
+				if(tempCode.has(Constants.PARENTS)){
+					String parentCode = tempCode.getString(Constants.PARENTS);
+					if(!parents.has(parentCode)){
+						parents.put(parentCode, new JSONArray().put(code));
+						formattedCodes.put(code, tempCode);
+					} else {
+						parents.put(parentCode, parents.getJSONArray(parentCode).put(code));
 					}
-
-					formattedCodes.put(code, tempCode);
-				} else {
-					JSONObject previousCode = formattedCodes.getJSONObject(code);
-
-					JSONArray parents = new JSONArray();
-					if(previousCode.has(Constants.PARENTS)){
-						parents = previousCode.getJSONArray(Constants.PARENTS);
-					}
-					parents.put(tempCode.getString(Constants.PARENTS));
-					previousCode.put(Constants.PARENTS, parents);
-					formattedCodes.put(code, previousCode);
+					tempCode.remove(Constants.PARENTS);
 				}
+				formattedCodes.put(code, tempCode);
 			});
 
 
+			if(parents.length() > 0){
+				JSONArray seq =  repoGestion.getResponseAsArray(CodeListQueries.getCodesSeq(notation));
+				if(seq.length() > 0){
+					int startPosition = 0;
+					for(int i = 0; i < seq.length(); i++){
+						JSONObject code = seq.getJSONObject(i);
+						if(parents.has(code.getString("code"))){
+							for(int j = startPosition; j < i; j++){
+								String childCode = seq.getJSONObject(j).getString("code");
+
+								JSONObject child = formattedCodes.getJSONObject(childCode);
+
+								if(!child.has(Constants.PARENTS)){
+									child.put(Constants.PARENTS, new JSONArray());
+								}
+								child.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", code.getString("code")).put("position", j - startPosition + 1));
+								formattedCodes.put(childCode, child);
+							}
+							startPosition = i + 1;
+						}
+					}
+				} else {
+					parents.keySet().forEach(key -> {
+						List<Object> children = parents.getJSONArray(key).toList();
+						children.sort((o1, o2) -> o1.toString().compareTo(o2.toString()));
+
+						for(int i = 0; i < children.size(); i++){
+							String child = children.get(i).toString();
+							JSONObject codeObject = formattedCodes.getJSONObject(child);
+							if(!codeObject.has(Constants.PARENTS)){
+								codeObject.put(Constants.PARENTS, new JSONArray());
+							}
+							codeObject.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", key).put("position", i + 1));
+							formattedCodes.put(child, codeObject);
+						}
+					});
+				}
+
+			}
 			codeList.put(CODES, formattedCodes);
 		}
+
+
 
 		return codeList.toString();
 	}
