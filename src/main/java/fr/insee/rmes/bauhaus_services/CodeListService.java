@@ -11,13 +11,13 @@ public interface CodeListService {
 
 	String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-	String getAllCodesLists() throws RmesException;
+	String getAllCodesLists(boolean partial) throws RmesException;
 
 	String geCodesListByIRI(String iri) throws RmesException;
 
-	String getDetailedCodesList(String notation) throws RmesException;
+	String getDetailedCodesList(String notation, boolean partial) throws RmesException;
 
-    String getDetailedCodesListForSearch() throws RmesException;
+    String getDetailedCodesListForSearch(boolean partial) throws RmesException;
 
     String setCodesList(String body) throws RmesException;
 

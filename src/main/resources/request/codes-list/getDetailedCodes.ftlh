@@ -1,7 +1,11 @@
 SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
+<#if PARTIAL>
+    ?list skos:member ?codeUri .
+<#else>
     ?codeUri skos:inScheme ?list .
+</#if>
     ?list skos:notation '${NOTATION}' .
     ?codeUri skos:notation ?code .
     ?codeUri skos:prefLabel ?labelLg1 .

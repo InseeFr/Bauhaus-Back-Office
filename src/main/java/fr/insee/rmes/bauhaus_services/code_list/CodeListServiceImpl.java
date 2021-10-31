@@ -60,7 +60,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String getCodeListJson(String notation) throws RmesException{
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
-		codeList.put("notation",notation);
+		codeList.put(Constants.NOTATION,notation);
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation));
 		if (items.length() != 0){
 			codeList.put(CODES, items);
@@ -84,82 +84,96 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getDetailedCodesList(String notation) throws RmesException {
+	public String getDetailedCodesList(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
-		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation));
+		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, partial));
 
-		JSONObject parents = new JSONObject();
+		if(!partial){
+			JSONObject parents = new JSONObject();
 
-		if(codes.length() > 0){
+			if(codes.length() > 0){
+				JSONObject formattedCodes = new JSONObject();
+				codes.forEach(c -> {
+					JSONObject tempCode = (JSONObject) c;
+					String code = tempCode.getString("code");
+					if(tempCode.has(Constants.PARENTS)){
+						String parentCode = tempCode.getString(Constants.PARENTS);
+						if(!parents.has(parentCode)){
+							parents.put(parentCode, new JSONArray().put(code));
+							formattedCodes.put(code, tempCode);
+						} else {
+							parents.put(parentCode, parents.getJSONArray(parentCode).put(code));
+						}
+						tempCode.remove(Constants.PARENTS);
+					}
+					formattedCodes.put(code, tempCode);
+				});
+
+
+				if(parents.length() > 0){
+					JSONArray seq =  repoGestion.getResponseAsArray(CodeListQueries.getCodesSeq(notation));
+					if(seq.length() > 0){
+						int startPosition = 0;
+						for(int i = 0; i < seq.length(); i++){
+							JSONObject code = seq.getJSONObject(i);
+							if(parents.has(code.getString("code"))){
+								for(int j = startPosition; j < i; j++){
+									String childCode = seq.getJSONObject(j).getString("code");
+
+									JSONObject child = formattedCodes.getJSONObject(childCode);
+
+									if(!child.has(Constants.PARENTS)){
+										child.put(Constants.PARENTS, new JSONArray());
+									}
+									child.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", code.getString("code")).put("position", j - startPosition + 1));
+									formattedCodes.put(childCode, child);
+								}
+								startPosition = i + 1;
+							}
+						}
+					} else {
+						parents.keySet().forEach(key -> {
+							List<Object> children = parents.getJSONArray(key).toList();
+							children.sort((o1, o2) -> o1.toString().compareTo(o2.toString()));
+
+							for(int i = 0; i < children.size(); i++){
+								String child = children.get(i).toString();
+								JSONObject codeObject = formattedCodes.getJSONObject(child);
+								if(!codeObject.has(Constants.PARENTS)){
+									codeObject.put(Constants.PARENTS, new JSONArray());
+								}
+								codeObject.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", key).put("position", i + 1));
+								formattedCodes.put(child, codeObject);
+							}
+						});
+					}
+
+				}
+				codeList.put(CODES, formattedCodes);
+			}
+
+
+		}
+		else {
 			JSONObject formattedCodes = new JSONObject();
 			codes.forEach(c -> {
 				JSONObject tempCode = (JSONObject) c;
 				String code = tempCode.getString("code");
-				if(tempCode.has(Constants.PARENTS)){
-					String parentCode = tempCode.getString(Constants.PARENTS);
-					if(!parents.has(parentCode)){
-						parents.put(parentCode, new JSONArray().put(code));
-						formattedCodes.put(code, tempCode);
-					} else {
-						parents.put(parentCode, parents.getJSONArray(parentCode).put(code));
-					}
+				if (tempCode.has(Constants.PARENTS)) {
 					tempCode.remove(Constants.PARENTS);
 				}
 				formattedCodes.put(code, tempCode);
 			});
-
-
-			if(parents.length() > 0){
-				JSONArray seq =  repoGestion.getResponseAsArray(CodeListQueries.getCodesSeq(notation));
-				if(seq.length() > 0){
-					int startPosition = 0;
-					for(int i = 0; i < seq.length(); i++){
-						JSONObject code = seq.getJSONObject(i);
-						if(parents.has(code.getString("code"))){
-							for(int j = startPosition; j < i; j++){
-								String childCode = seq.getJSONObject(j).getString("code");
-
-								JSONObject child = formattedCodes.getJSONObject(childCode);
-
-								if(!child.has(Constants.PARENTS)){
-									child.put(Constants.PARENTS, new JSONArray());
-								}
-								child.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", code.getString("code")).put("position", j - startPosition + 1));
-								formattedCodes.put(childCode, child);
-							}
-							startPosition = i + 1;
-						}
-					}
-				} else {
-					parents.keySet().forEach(key -> {
-						List<Object> children = parents.getJSONArray(key).toList();
-						children.sort((o1, o2) -> o1.toString().compareTo(o2.toString()));
-
-						for(int i = 0; i < children.size(); i++){
-							String child = children.get(i).toString();
-							JSONObject codeObject = formattedCodes.getJSONObject(child);
-							if(!codeObject.has(Constants.PARENTS)){
-								codeObject.put(Constants.PARENTS, new JSONArray());
-							}
-							codeObject.getJSONArray(Constants.PARENTS).put(new JSONObject().put("code", key).put("position", i + 1));
-							formattedCodes.put(child, codeObject);
-						}
-					});
-				}
-
-			}
 			codeList.put(CODES, formattedCodes);
 		}
-
-
 
 		return codeList.toString();
 	}
 
 	@Override
-	public String getDetailedCodesListForSearch() throws RmesException {
-		JSONArray lists =  repoGestion.getResponseAsArray(CodeListQueries.getCodesListsForSearch());
-		JSONArray codes =  repoGestion.getResponseAsArray(CodeListQueries.getCodesForSearch());
+	public String getDetailedCodesListForSearch(boolean partial) throws RmesException {
+		JSONArray lists =  repoGestion.getResponseAsArray(CodeListQueries.getCodesListsForSearch(partial));
+		JSONArray codes =  repoGestion.getResponseAsArray(CodeListQueries.getCodesForSearch(partial));
 
 		for (int i = 0 ; i < lists.length(); i++) {
 			JSONObject list = lists.getJSONObject(i);
@@ -420,8 +434,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getAllCodesLists() throws RmesException {
-		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists()).toString();
+	public String getAllCodesLists(boolean partial) throws RmesException {
+		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
 	}
 
 	@Override
