@@ -17,7 +17,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,10 +38,8 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -58,8 +55,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
-	
-	
+
+
 	@Override
 	public String getCodeListJson(String notation) throws RmesException{
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
@@ -273,48 +270,89 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				}
 			});
 		}
-		createCodeTriplet(graph, codesList, codeListIri);
+		createCodeTriplet(graph, codesList, codeListIri, model);
 
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return ((SimpleIRI)codeListIri).toString();
 	}
 
-	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri) {
+	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, Model codeListModel) {
 		if(codesList.has(CODES)){
 			JSONObject parentsModel = new JSONObject();
 
 			JSONObject codes = codesList.getJSONObject(CODES);
-			codes.keySet().forEach(key -> {
+			for (String key : codes.keySet()) {
 				try {
 					JSONObject code = codes.getJSONObject(key);
 
-					Model codeListModel = new LinkedHashModel();
+					Model codeModel = new LinkedHashModel();
 					IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.get("code"));
 
-					createMainCodeTriplet(graph, codeListIri, code, codeListModel, codeIri);
+					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri);
 
-					if(code.has("parents")){
-						JSONArray parents = code.getJSONArray("parents");
-						parents.forEach( parent -> {
+					if (code.has("parents")) {
+						JSONArray parentsWithPosition = code.getJSONArray("parents");
+						parentsWithPosition.forEach(parentWithPosition -> {
+							String parent = ((JSONObject) parentWithPosition).getString("code");
 							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + parent);
-							RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeListModel, graph);
+							RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeModel, graph);
 
-							if(parentsModel.has((String) parent)){
-								parentsModel.getJSONArray((String) parent).put(((SimpleIRI) codeIri).toString());
+							if (parentsModel.has(parent)) {
+								parentsModel.getJSONArray(parent).put(codeIri.toString());
 							} else {
-								parentsModel.put((String) parent, new JSONArray().put(((SimpleIRI) codeListIri).toString()));
+								parentsModel.put(parent, new JSONArray().put(codeIri.toString()));
 							}
 						});
 					}
-					repoGestion.loadSimpleObject(codeIri, codeListModel, null);
+					repoGestion.loadSimpleObject(codeIri, codeModel, null);
 				} catch (Exception e) {
 					logger.debug(e.getMessage());
 				}
-			});
+			}
 
+			createCodesSeq(graph, codeListIri, parentsModel, codeListModel, codesList);
 			createParentChildRelationForCodes(graph, codesList, parentsModel);
 
 		}
+	}
+
+	private void createCodesSeq(Resource graph, IRI codeListIri, JSONObject parentsModel, Model codeListModel, JSONObject codesList) {
+		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, RDF.SEQ, codeListModel, graph);
+		JSONObject codes = codesList.getJSONObject("codes");
+
+		AtomicInteger i = new AtomicInteger();
+		parentsModel.keySet().forEach(key -> {
+			JSONArray children = parentsModel.getJSONArray(key);
+			List<Object> childrenList = children.toList();
+			childrenList.sort((child1, child2) -> {
+				JSONObject parent1 = findParentPositionForCode(child1, key, codes, codeListIri);
+				JSONObject parent2 = findParentPositionForCode(child2, key, codes, codeListIri)	;	;
+				return parent1.getInt("position") - parent2.getInt("position");
+			});
+			childrenList.forEach(child -> {
+				IRI childIri = RdfUtils.createIRI((String) child);
+				RdfUtils.addTripleUri(codeListIri, RdfUtils.createIRI(RDF.NAMESPACE + "_" + i), childIri, codeListModel, graph);
+				i.getAndIncrement();
+			});
+			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + key);
+			RdfUtils.addTripleUri(codeListIri, RdfUtils.createIRI(RDF.NAMESPACE + "_" + i), parentIRI, codeListModel, graph);
+
+			i.getAndIncrement();
+		});
+	}
+
+	private JSONObject findParentPositionForCode(Object child, String parentCode, JSONObject codes, IRI codeListIri) {
+		JSONArray parents = codes
+								.getJSONObject(((String) child).replace(codeListIri.toString() + "/", ""))
+								.getJSONArray("parents");
+		JSONObject parentWithPosition = new JSONObject();
+		for (int i = 0; i < parents.length(); i++){
+			if(parents.getJSONObject(i).getString("code").equalsIgnoreCase(parentCode)){
+				parentWithPosition = parents.getJSONObject(i);
+				break;
+			}
+		}
+		return parentWithPosition;
 	}
 
 	private void createParentChildRelationForCodes(Resource graph, JSONObject codesList, JSONObject parentsModel) {
