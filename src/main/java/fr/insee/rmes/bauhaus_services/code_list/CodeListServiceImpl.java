@@ -291,7 +291,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri);
 
 					if (code.has("parents")) {
-						JSONArray parentsWithPosition = code.getJSONArray("parents");
+						JSONArray parentsWithPosition = code.getJSONArray(Constants.PARENTS);
 						parentsWithPosition.forEach(parentWithPosition -> {
 							String parent = ((JSONObject) parentWithPosition).getString("code");
 							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + parent);
@@ -344,7 +344,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private JSONObject findParentPositionForCode(Object child, String parentCode, JSONObject codes, IRI codeListIri) {
 		JSONArray parents = codes
 								.getJSONObject(((String) child).replace(codeListIri.toString() + "/", ""))
-								.getJSONArray("parents");
+								.getJSONArray(Constants.PARENTS);
 		JSONObject parentWithPosition = new JSONObject();
 		for (int i = 0; i < parents.length(); i++){
 			if(parents.getJSONObject(i).getString("code").equalsIgnoreCase(parentCode)){
