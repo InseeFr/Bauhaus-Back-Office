@@ -19,7 +19,7 @@ public interface CodeListService {
 
     String getDetailedCodesListForSearch(boolean partial) throws RmesException;
 
-    String setCodesList(String body) throws RmesException;
+    String setCodesList(String body, boolean partial) throws RmesException;
 
-	String setCodesList(String id, String body)  throws RmesException;
+	String setCodesList(String id, String body, boolean partial)  throws RmesException;
 }

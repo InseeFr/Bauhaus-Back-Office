@@ -1,4 +1,4 @@
-SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents
+SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents <#if PARTIAL> ?codeUri </#if>
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
 <#if PARTIAL>
