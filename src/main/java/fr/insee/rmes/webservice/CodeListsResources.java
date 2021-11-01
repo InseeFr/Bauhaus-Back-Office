@@ -50,7 +50,7 @@ public class CodeListsResources {
 	public Response setCodesList(@RequestBody(description = "Code List", required = true) String body) {
 		String id = null;
 		try {
-			id = codeListService.setCodesList(body);
+			id = codeListService.setCodesList(body, false);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
@@ -64,7 +64,35 @@ public class CodeListsResources {
 	public Response updateCodesList(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
 		String id = null;
 		try {
-			id = codeListService.setCodesList(id, body);
+			id = codeListService.setCodesList(id, body, false);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@POST
+	@Path("/partial")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
+	public Response createPartialCodeList(@RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(body, true);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@PUT
+	@Path("/partial/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setCodesList", summary = "Create a codes list")
+	public Response updatePartialCodeList(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(id, body, true);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}

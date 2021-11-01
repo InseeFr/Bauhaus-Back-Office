@@ -183,7 +183,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return lists.toString();
 	}
 
-	public void validateCodeList(JSONObject codeList){
+	public void validateCodeList(JSONObject codeList, boolean partial){
 		if (!codeList.has(Constants.ID)) {
 			throw new BadRequestException("The id of the list should be defined");
 		}
@@ -193,7 +193,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!codeList.has(Constants.LABEL_LG2)) {
 			throw new BadRequestException("The labelLg2 of the list should be defined");
 		}
-		if (!codeList.has("lastClassUriSegment")) {
+		if (!partial && !codeList.has("lastClassUriSegment")) {
 			throw new BadRequestException("The lastClassUriSegment of the list should be defined");
 		}
 		if (!codeList.has(LAST_LIST_URI_SEGMENT)) {
@@ -201,13 +201,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 	}
 	@Override
-	public String setCodesList(String body) throws RmesException {
+	public String setCodesList(String body, boolean partial) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		JSONObject codesList = new JSONObject(body);
 
-		this.validateCodeList(codesList);
+		this.validateCodeList(codesList, partial);
 
 		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
@@ -215,17 +215,17 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		Resource graph = RdfUtils.codesListGraph();
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, DateUtils.getCurrentDate(), model, graph);
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
-		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri);
+		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, partial);
 	}
 
 	@Override
-	public String setCodesList(String id, String body) throws RmesException {
+	public String setCodesList(String id, String body, boolean partial) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(
 				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		JSONObject codesList = new JSONObject(body);
 
-		this.validateCodeList(codesList);
+		this.validateCodeList(codesList, partial);
 
 		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
@@ -235,22 +235,29 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.CREATED, codesList.getString("created"), model, graph);
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
 
-		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri);
+		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, partial);
 	}
 
-	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri) throws RmesException {
+	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {
 
 		String codeListId = codesList.getString(Constants.ID);
 
 		model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
 
-		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, SKOS.CONCEPT_SCHEME, model, graph);
+		if(partial){
+			RdfUtils.addTripleUri(codeListIri, RDF.TYPE, SKOS.COLLECTION, model, graph);
+		} else {
+			RdfUtils.addTripleUri(codeListIri, RDF.TYPE, SKOS.CONCEPT_SCHEME, model, graph);
+		}
 		model.add(codeListIri, SKOS.NOTATION, RdfUtils.setLiteralString(codeListId), graph);
 
-		IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString("lastClassUriSegment"));
-		RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
-		RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
-		RdfUtils.addTripleUri(owlClassUri, RDFS.SEEALSO, codeListIri, model, graph);
+		if(!partial){
+			IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString("lastClassUriSegment"));
+			RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
+			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
+			RdfUtils.addTripleUri(owlClassUri, RDFS.SEEALSO, codeListIri, model, graph);
+		}
+
 
 		if(codesList.has("disseminationStatus")){
 			RdfUtils.addTripleUri(codeListIri, INSEE.DISSEMINATIONSTATUS, codesList.getString("disseminationStatus"), model, graph);
@@ -273,18 +280,29 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString(Constants.CONTRIBUTOR), model, graph);
 		}
 
-		CodeList original = getCodeList(codeListId);
-		if(original.getCodes() != null) {
-			original.getCodes().forEach(code -> {
-				IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.getCode());
-				try {
-					repoGestion.deleteObject(codeIri, null);
-				} catch (RmesException e) {
-					logger.error(e.getMessage());
+		if(partial){
+			if(codesList.has(CODES)) {
+				JSONObject codes = codesList.getJSONObject(CODES);
+				for (String key : codes.keySet()) {
+					JSONObject code = codes.getJSONObject(key);
+					RdfUtils.addTripleUri(codeListIri, SKOS.MEMBER, RdfUtils.createIRI(code.getString("codeUri")), model, graph);
 				}
-			});
+			}
+		} else {
+			CodeList original = getCodeList(codeListId);
+			if(original.getCodes() != null) {
+				original.getCodes().forEach(code -> {
+					IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.getCode());
+					try {
+						repoGestion.deleteObject(codeIri, null);
+					} catch (RmesException e) {
+						logger.error(e.getMessage());
+					}
+				});
+			}
+			createCodeTriplet(graph, codesList, codeListIri, model);
 		}
-		createCodeTriplet(graph, codesList, codeListIri, model);
+
 
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return ((SimpleIRI)codeListIri).toString();
