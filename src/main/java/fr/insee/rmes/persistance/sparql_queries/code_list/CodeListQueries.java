@@ -1,5 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
+import fr.insee.rmes.bauhaus_services.ConceptsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -15,12 +17,13 @@ public class CodeListQueries {
 		return FreeMarkerUtils.buildRequest("codes-list/", "isCodesListValidated.ftlh", params);
 	}
 
-	public static String getAllCodesLists() throws RmesException {
+	public static String getAllCodesLists(boolean partial) throws RmesException {
 
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
+		params.put("PARTIAL", partial);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {
@@ -89,20 +92,29 @@ public class CodeListQueries {
 		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodesList.ftlh", params);
 	}
 
-	public static String getCodesListsForSearch() throws RmesException {
+	public static String getCodesListsForSearch(boolean partial) throws RmesException {
 		HashMap<String, Object> params = getInitParams();
+		params.put("PARTIAL", partial);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodesListForSearch.ftlh", params);
 	}
 
-	public static String getCodesForSearch() throws RmesException {
+	public static String getCodesForSearch(boolean partial) throws RmesException {
 		HashMap<String, Object> params = getInitParams();
+		params.put("PARTIAL", partial);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getCodesForSearch.ftlh", params);
 	}
 
-	public static String getDetailedCodes(String notation) throws RmesException {
+	public static String getDetailedCodes(String notation, boolean partial) throws RmesException {
 		HashMap<String, Object> params = getInitParams();
 		params.put("NOTATION", notation);
+		params.put("PARTIAL", partial);
 		return FreeMarkerUtils.buildRequest("codes-list/", "getDetailedCodes.ftlh", params);
+	}
+
+	public static String getCodesSeq(String notation) throws RmesException {
+		HashMap<String, Object> params = getInitParams();
+		params.put("NOTATION", notation);
+		return FreeMarkerUtils.buildRequest("codes-list/", "getCodesSeq.ftlh", params);
 	}
 
 	private static HashMap<String, Object> getInitParams() {
