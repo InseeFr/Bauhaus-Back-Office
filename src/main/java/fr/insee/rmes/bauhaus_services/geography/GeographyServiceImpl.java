@@ -76,7 +76,9 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		}
 		return feature;
 	}
-	
+
+
+
 	@Override
 	public JSONObject getGeoFeatureById(String id) throws RmesException {
 		return getGeoFeature(getGeoUriFromId(id));
@@ -105,6 +107,26 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		feature.put("unions", unions);
 		JSONArray diff = repoGestion.getResponseAsArray(GeoQueries.getDifferenceForAFeatureQuery(uriFeature));
 		feature.put("difference", diff);
+	}
+
+	@Override
+	public void updateFeature(String id, String body) throws RmesException {
+		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new geo feature.");
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		GeoFeature geoFeature = new GeoFeature();
+		try {
+			geoFeature = mapper.readValue(body,GeoFeature.class);
+			geoFeature.setId(id.toString());
+			if (geoFeature.getCode()==null) {
+				geoFeature.setCode(geoFeature.getId());
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+		createRdfGeoFeature(geoFeature);
 	}
 
 	@Override

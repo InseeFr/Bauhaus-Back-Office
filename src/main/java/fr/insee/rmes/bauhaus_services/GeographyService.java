@@ -20,5 +20,5 @@ public interface GeographyService {
 	JSONObject getGeoFeature(IRI uri) throws RmesException;
 
 
-
+    void updateFeature(String id, String body) throws RmesException;
 }
