@@ -1,14 +1,12 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import fr.insee.rmes.model.operations.documentations.Document;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,8 +82,8 @@ public class GeographyResources {
 	@POST
 	@Path("/territory")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "createFeature", summary = "Create feature")
-	public Response createFamily(
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
+	public Response createGeography(
 			@RequestBody(description = "Geo Feature to create", required = true, 
             content = @Content(schema = @Schema(implementation = GeoFeature.class))) String body) {
 		String id = null;
@@ -96,6 +94,21 @@ public class GeographyResources {
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
-	
-	
+
+	@Secured({ Roles.SPRING_ADMIN })
+	@PUT
+	@Path("/territory/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "updateGeography", summary = "Update geography ")
+	public Response updateGeography(
+			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@RequestBody(description = "Geo Feature to update", required = true)
+			@Parameter(schema = @Schema(implementation= GeoFeature.class)) String body) {
+		try {
+			geoService.updateFeature(id, body);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(Response.Status.OK).build();
+	}
 }
