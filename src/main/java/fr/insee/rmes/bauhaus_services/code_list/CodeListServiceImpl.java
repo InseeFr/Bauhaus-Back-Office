@@ -38,8 +38,11 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -132,6 +135,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 							}
 						}
 					} else {
+						// If we do not have a Seq, we have to sort alphabetically.
 						parents.keySet().forEach(key -> {
 							List<Object> children = parents.getJSONArray(key).toList();
 							children.sort((o1, o2) -> o1.toString().compareTo(o2.toString()));
@@ -149,25 +153,50 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					}
 
 				}
+
+				// Here will order all root codes. Codes without parents
+				orderRootCodes(formattedCodes);
+
 				codeList.put(CODES, formattedCodes);
 			}
-
-
 		}
 		else {
-			JSONObject formattedCodes = new JSONObject();
-			codes.forEach(c -> {
-				JSONObject tempCode = (JSONObject) c;
-				String code = tempCode.getString("code");
-				if (tempCode.has(Constants.PARENTS)) {
-					tempCode.remove(Constants.PARENTS);
-				}
-				formattedCodes.put(code, tempCode);
-			});
-			codeList.put(CODES, formattedCodes);
+			formatCodesForPartialList(codeList, codes);
 		}
 
 		return codeList.toString();
+	}
+
+	/**
+	 * Format the codes list for a partial code list.
+	 * We just need to remove the parents property.
+	 *
+	 * @param codeList
+	 * @param codes
+	 */
+	private void formatCodesForPartialList(JSONObject codeList, JSONArray codes) {
+		JSONObject formattedCodes = new JSONObject();
+		codes.forEach(c -> {
+			JSONObject tempCode = (JSONObject) c;
+			String code = tempCode.getString("code");
+			if (tempCode.has(Constants.PARENTS)) {
+				tempCode.remove(Constants.PARENTS);
+			}
+			formattedCodes.put(code, tempCode);
+		});
+		codeList.put(CODES, formattedCodes);
+	}
+
+	private void orderRootCodes(JSONObject formattedCodes) {
+		List<String> rootCodes = formattedCodes.keySet().stream().filter(key -> {
+			return !formattedCodes.getJSONObject(key).has(Constants.PARENTS);
+		}).sorted(Comparator.comparing(code -> code)).collect(Collectors.toList());
+		if(rootCodes.size() > 0) {
+			for(int i = 0; i < rootCodes.size(); i++) {
+				JSONObject parent = new JSONObject().put("code", "").put("position", i + 1);
+				formattedCodes.getJSONObject(rootCodes.get(i)).put(Constants.PARENTS, new JSONArray().put(parent));
+			}
+		}
 	}
 
 	@Override
@@ -325,15 +354,18 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					if (code.has("parents")) {
 						JSONArray parentsWithPosition = code.getJSONArray(Constants.PARENTS);
 						parentsWithPosition.forEach(parentWithPosition -> {
-							String parent = ((JSONObject) parentWithPosition).getString("code");
-							IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + parent);
-							RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeModel, graph);
+							String parentCode = ((JSONObject) parentWithPosition).getString("code");
+							if(!parentCode.equalsIgnoreCase("")){
+								IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + parentCode);
+								RdfUtils.addTripleUri(codeIri, SKOS.BROADER, parentIRI, codeModel, graph);
 
-							if (parentsModel.has(parent)) {
-								parentsModel.getJSONArray(parent).put(codeIri.toString());
-							} else {
-								parentsModel.put(parent, new JSONArray().put(codeIri.toString()));
+								if (parentsModel.has(parentCode)) {
+									parentsModel.getJSONArray(parentCode).put(codeIri.toString());
+								} else {
+									parentsModel.put(parentCode, new JSONArray().put(codeIri.toString()));
+								}
 							}
+
 						});
 					}
 					repoGestion.loadSimpleObject(codeIri, codeModel, null);
@@ -348,6 +380,14 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 	}
 
+	/**
+	 * We will create triplets to define the Sequence of codes
+	 * @param graph
+	 * @param codeListIri
+	 * @param parentsModel
+	 * @param codeListModel
+	 * @param codesList
+	 */
 	private void createCodesSeq(Resource graph, IRI codeListIri, JSONObject parentsModel, Model codeListModel, JSONObject codesList) {
 		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, RDF.SEQ, codeListModel, graph);
 		JSONObject codes = codesList.getJSONObject("codes");
