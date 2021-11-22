@@ -161,6 +161,13 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 not found", CAN_T_READ_REQUEST_BODY);
 		}
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
+
+		//We check the unicity of the label
+		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeoQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
+		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
+			throw new RmesUnauthorizedException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The label already exists", new JSONArray());
+		}
+
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
 		/*Required*/
