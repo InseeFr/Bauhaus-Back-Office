@@ -1,7 +1,7 @@
 SELECT ?id (?uriComposant as ?uri) ?type ?notation
     ?dateMiseAJour ?statutValidation ?prefLabelLg1 ?prefLabelLg2
     ?uriConcept ?idConcept ?representation
-    ?uriListeCode ?idListeCode ?version ?uriComponentParentId ?uriComponentParentNotation
+    ?uriListeCode ?idListeCode ?version ?uriComponentParentId ?uriComponentParentNotation ?dateCreation
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODELIST_GRAPH}>
 WHERE {
@@ -37,6 +37,9 @@ WHERE {
         ?uriComponentParent skos:notation ?uriComponentParentNotation .
     }
 
+    OPTIONAL {
+        ?uriComposant dcterms:created ?dateCreation .
+    }
     OPTIONAL {
         ?uriComposant qb:concept ?uriConcept .
         BIND(STRAFTER(STR(?uriConcept), "${CONCEPTS_BASE_URI}/") AS ?idConcept)
