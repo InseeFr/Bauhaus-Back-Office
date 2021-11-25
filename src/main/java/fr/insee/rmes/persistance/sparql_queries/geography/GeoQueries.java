@@ -78,6 +78,10 @@ public class GeoQueries {
 	 }
 
 
+    public static String checkUnicityTerritory(String labelLg1) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("LABEL", labelLg1);
 
-	
+		return  buildRequest("checkUnicityTerritory.ftlh", params);
+    }
 }
