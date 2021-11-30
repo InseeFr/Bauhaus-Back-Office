@@ -158,4 +158,5 @@ public interface OperationsService {
 
 	Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
 
+	String getOperationsWithReport(String id) throws RmesException;
 }

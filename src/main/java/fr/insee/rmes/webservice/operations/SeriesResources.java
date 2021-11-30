@@ -150,6 +150,21 @@ public class SeriesResources extends OperationsCommonResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
+	@GET
+	@Path("/series/{id}/operationsWithReport")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsWithReport", summary = "Operations with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
+	public Response getOperationsWithReport(@PathParam(Constants.ID) String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getOperationsWithReport(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+
 
 	/**
 	 * CREATE
