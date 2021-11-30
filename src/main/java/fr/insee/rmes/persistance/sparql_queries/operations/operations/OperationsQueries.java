@@ -83,6 +83,27 @@ public class OperationsQueries {
 				+ "GROUP BY ?id ?labelLg1 ?labelLg2 \n"
 				+ "ORDER BY ?labelLg1 ";
 	}
+
+	public static String operationsWithSimsQuery(String idSeries) {
+		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?idSims \n"
+				+ "WHERE {  \n"
+				+ "?operation a insee:StatisticalOperation . \n"
+				+ "?series dcterms:hasPart ?operation \n "
+				+ "FILTER(STRENDS(STR(?series),'/operations/serie/" + idSeries+ "')) . \n"
+
+				+ "?operation skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
+				+ "?operation skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') \n"
+
+				+ "BIND(STRAFTER(STR(?operation),'/operations/operation/') AS ?id) . \n"
+				+ "?report rdf:type sdmx-mm:MetadataReport ."
+				+ " ?report sdmx-mm:target ?operation "
+				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n"
+				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?idSims \n"
+				+ "ORDER BY ?labelLg1 ";
+	}
 	
 	  private OperationsQueries() {
 		    throw new IllegalStateException("Utility class");

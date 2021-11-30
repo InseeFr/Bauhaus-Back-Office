@@ -159,6 +159,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
+	public String getOperationsWithReport(String idSeries) throws RmesException {
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithSimsQuery(idSeries));
+		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+	}
+
+	@Override
 	public String createSeries(String body) throws RmesException {
 		// TODO: check if there is already a series with the same name ?
 		return seriesUtils.createSeries(body);
@@ -452,5 +459,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
 		return documentationsUtils.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
 	}
+
+
 
 }
