@@ -234,10 +234,11 @@ public class SeriesQueries {
 	 * @return String
 	 * @throws RmesException
 	 */	
-	public static String seriesWithStampQuery(String stamp) throws RmesException {
+	public static String seriesWithStampQuery(String stamp, boolean isAdmin) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(STAMP, stamp);
-		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);	
+		params.put("ADMIN", isAdmin);
+		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);
 	}
 	
 	

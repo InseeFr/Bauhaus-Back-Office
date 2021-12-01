@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -90,6 +91,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
 
+	@Autowired
+	StampsRestrictionsService stampsRestrictionsService;
+
+
 	/***************************************************************************************************
 	 * SERIES
 	 * 
@@ -118,7 +123,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp)).toString();
+		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin())).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
