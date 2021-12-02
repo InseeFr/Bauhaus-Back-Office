@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import java.io.IOException;
 
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -96,7 +97,7 @@ public class FamiliesUtils  extends RdfService {
 		if (!familyExists) {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
-
+		family.setUpdated(DateUtils.getCurrentDate());
 		String status= famOpeSerUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
@@ -125,6 +126,8 @@ public class FamiliesUtils  extends RdfService {
 		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
 		repoGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
@@ -143,6 +146,8 @@ public class FamiliesUtils  extends RdfService {
 		try {
 			family = mapper.readValue(body,Family.class);
 			family.setId(id);
+			family.setCreated(DateUtils.getCurrentDate());
+			family.setUpdated(DateUtils.getCurrentDate());
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 			logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
 		} catch (IOException e) {
