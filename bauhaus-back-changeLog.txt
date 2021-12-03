@@ -1,3 +1,8 @@
+3.0.9 : - Amélioration de la consultation: Ajout des parents/enfants
+		- Fin des développements pour "Géographie"
+		- Correction d'un bug lors de l'exportation des indicateurs en odt
+		- Récupération du créateur de la série lors de l'appel depuis une de ses opérations
+		- Prise en compte du changement de l'ontologie "Géographie" pour "France" (GEO\Pays)
 3.0.8 : - Suppression de la page blanche à la première connexion
 		- Titres spécifiques aux pages (pour l'historique des navigateurs notamment)
 		- Améliorations des sims : 
