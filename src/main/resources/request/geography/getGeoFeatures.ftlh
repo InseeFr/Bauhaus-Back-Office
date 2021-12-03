@@ -37,7 +37,15 @@ FROM <${GEO_SIMS_GRAPH}>
 			?uri a 	igeo:TerritoireFrancais .
 			BIND("Territoire Français" AS ?typeTerritory)
 
-	}	
+	}
+		UNION
+	
+	{
+			?uri rdfs:label ?labelLg1 .
+			?uri a 	igeo:Pays .
+			BIND("pays" AS ?typeTerritory)
+
+	}		
 			
 			
 			BIND(REPLACE( STR(?uri) , '(.*/)(\\w.*$)', '$2' ) AS ?id)

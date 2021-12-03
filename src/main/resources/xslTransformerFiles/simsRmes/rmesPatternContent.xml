@@ -519,7 +519,7 @@
             <table:table-row>
                <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
                   <text:p text:style-name="attribute">Organismes responsables</text:p>
-                  <text:p text:style-name="RubricItem">#list(${indicator/publishers},'L1')</text:p>
+                  <text:p text:style-name="RubricItem">#list(${indicator/publishers/labelLg1},'L1')</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
@@ -531,7 +531,7 @@
             <table:table-row>
                <table:table-cell table:style-name="framedCell" table:number-columns-spanned="3">
                   <text:p text:style-name="attribute">Partenaires</text:p>
-                  <text:p text:style-name="RubricItem">#list(${indicator/contributors},'L1')</text:p>
+                  <text:p text:style-name="RubricItem">#list(${indicator/contributors/labelLg1},'L1')</text:p>
                </table:table-cell>
             </table:table-row>
             <table:table-row>
