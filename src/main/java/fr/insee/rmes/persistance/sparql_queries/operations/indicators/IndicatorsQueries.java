@@ -180,12 +180,15 @@ public class IndicatorsQueries {
 			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/"+Config.PRODUCTS_BASE_URI+"/') AS ?id) . ");
 		}
 
-		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ");
+		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified");
+		addClauseToWhereClause( "OPTIONAL { ?indic dcterms:created ?created } .  \n ");
+		addClauseToWhereClause( "OPTIONAL { ?indic dcterms:modified ?modified } .  \n ");
+
 		addClauseToWhereClause( "?indic skos:prefLabel ?prefLabelLg1 \n");
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') \n ");
 		addClauseToWhereClause( "OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \n");
 		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
-		
+
 
 
 		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");

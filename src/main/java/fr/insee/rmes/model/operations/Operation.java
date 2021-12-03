@@ -27,6 +27,12 @@ public class Operation {
 	@Schema(description = "Sims Id")
 	public String idSims;
 
+	@Schema(description =  "Creation date")
+	private String created;
+
+	@Schema(description =  "Update date")
+	private String updated;
+
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
 			IdLabelTwoLangs series, String idSims) {
 		super();
@@ -112,4 +118,19 @@ public class Operation {
 	}
 
 
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
+	}
 }
