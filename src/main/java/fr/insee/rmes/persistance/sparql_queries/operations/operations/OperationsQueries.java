@@ -19,7 +19,7 @@ public class OperationsQueries {
 	}
 
 	public static String operationQuery(String id){
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims ?validationState \n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims ?validationState ?created ?modified \n"
 				+ "WHERE { "
 					+ "GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 					+ "?operation skos:prefLabel ?prefLabelLg1 . \n" 
@@ -35,7 +35,8 @@ public class OperationsQueries {
 					+ "OPTIONAL {?operation skos:altLabel ?altLabelLg2 . \n"
 					+ "FILTER (lang(?altLabelLg2) = '" + Config.LG2 + "') } . \n" 
 					+ "}"
-					
+					+ "OPTIONAL { ?operation dcterms:created ?created } . \n"
+					+ "OPTIONAL { ?operation dcterms:modified ?modified } . \n"
 					+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
 					+ " ?report sdmx-mm:target ?operation "
 					+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"

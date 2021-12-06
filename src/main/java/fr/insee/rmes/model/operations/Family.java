@@ -29,8 +29,14 @@ public class Family {
 
 	@Schema(description = "Series")
 	public List<IdLabelTwoLangs> series;
-	
-	
+
+	@Schema(description =  "Creation date")
+	private String created;
+
+	@Schema(description =  "Update date")
+	private String updated;
+
+
 	public Family() {
 		//empty constructor for Jackson mapper
 	}
@@ -60,6 +66,19 @@ public class Family {
 	}
 
 
+    public void setCreated(String currentDate) {
+		this.created = currentDate;
+    }
 
-	
+	public void setUpdated(String currentDate) {
+		this.updated = currentDate;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public String getCreated() {
+		return created;
+	}
 }

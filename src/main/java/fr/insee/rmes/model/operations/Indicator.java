@@ -73,7 +73,13 @@ public class Indicator {
 	@Schema(description="Id of Sims documentation")
 	public String idSims;
 
-	@Schema(description = "validationState")
+	@Schema(description =  "Creation date")
+	private String created;
+
+	@Schema(description =  "Update date")
+	private String updated;
+
+  @Schema(description = "validationState")
 	public String validationState;
 
 	public Indicator(String id) {
@@ -292,4 +298,19 @@ public class Indicator {
 	}
 
 
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
+	}
 }
