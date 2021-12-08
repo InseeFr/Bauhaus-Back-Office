@@ -79,6 +79,9 @@ public class Indicator {
 	@Schema(description =  "Update date")
 	private String updated;
 
+  @Schema(description = "validationState")
+	public String validationState;
+
 	public Indicator(String id) {
 		this.id=id;
 	}
@@ -180,6 +183,14 @@ public class Indicator {
 		return creators;
 	}
 
+	public String getValidationState() {
+		return validationState;
+	}
+
+	public void setValidationState(String validationState) {
+		this.validationState = validationState;
+	}
+
 	public void setPublishers(List<OperationsLink> publishers) {
 		this.publishers = publishers;
 	}
@@ -260,7 +271,7 @@ public class Indicator {
 	public int hashCode() {
 		return Objects.hash(abstractLg1, abstractLg2, accrualPeriodicityCode, accrualPeriodicityList, altLabelLg1,
 				altLabelLg2, contributors, creators, historyNoteLg1, historyNoteLg2, id, idSims, isReplacedBy,
-				prefLabelLg1, prefLabelLg2, publishers, replaces, seeAlso, wasGeneratedBy);
+				prefLabelLg1, prefLabelLg2, publishers, replaces, seeAlso, wasGeneratedBy,validationState);
 	}
 
 	@Override
@@ -282,7 +293,8 @@ public class Indicator {
 				&& Objects.equals(idSims, other.idSims) && Objects.equals(isReplacedBy, other.isReplacedBy)
 				&& Objects.equals(prefLabelLg1, other.prefLabelLg1) && Objects.equals(prefLabelLg2, other.prefLabelLg2)
 				&& Objects.equals(publishers, other.publishers) && Objects.equals(replaces, other.replaces)
-				&& Objects.equals(seeAlso, other.seeAlso) && Objects.equals(wasGeneratedBy, other.wasGeneratedBy);
+				&& Objects.equals(seeAlso, other.seeAlso) && Objects.equals(wasGeneratedBy, other.wasGeneratedBy)
+				&& Objects.equals(validationState, other.validationState);
 	}
 
 
