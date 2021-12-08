@@ -9,6 +9,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -123,8 +128,20 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin())).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		JSONArray series = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
+		List<JSONObject> seriesList = new ArrayList<JSONObject>();
+		for (int i = 0; i < series.length(); i++) {
+			seriesList.add(series.getJSONObject(i));
+		}
+		seriesList.sort(new Comparator<JSONObject>() {
+			@Override
+			public int compare(JSONObject o1, JSONObject o2) {
+				String key1 = Normalizer.normalize(o1.getString("label"), Normalizer.Form.NFD);
+				String key2 = Normalizer.normalize(o2.getString("label"), Normalizer.Form.NFD);
+				return key1.compareTo(key2);
+			}
+		});
+		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
 	}
 
 	@Override
