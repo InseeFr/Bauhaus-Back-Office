@@ -334,7 +334,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 
 		repoGestion.loadSimpleObject(codeListIri, model, null);
-		return ((SimpleIRI)codeListIri).toString();
+		return codeListId;
 	}
 
 	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, Model codeListModel) {
