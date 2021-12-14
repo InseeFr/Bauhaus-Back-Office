@@ -4,7 +4,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-	<version>3.0.9</version>
+	<version>3.0.10</version>
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -42,7 +42,7 @@
 		<swagger.core.version>2.0.9</swagger.core.version>
 		<spring.version>5.2.16.RELEASE</spring.version>
 		<spring.security.version>5.3.10.RELEASE</spring.security.version>
-		<log4j2.version>2.13.3</log4j2.version>
+		<log4j2.version>2.15.0</log4j2.version>
 		<junit.version>5.7.0</junit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
