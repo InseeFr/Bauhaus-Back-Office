@@ -130,7 +130,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 				
 		String result = client.target(Config.SPOC_SERVICE_URL)
 				.request()
-				.post(Entity.entity(mp, MediaType.MULTIPART_FORM_DATA_TYPE),String.class); 	
+				.post(Entity.entity(mp, MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("utf-8")),String.class);
 		return isMailSent(result);
 	}
 
