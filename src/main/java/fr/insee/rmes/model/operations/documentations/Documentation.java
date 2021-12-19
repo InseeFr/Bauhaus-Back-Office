@@ -2,6 +2,7 @@ package fr.insee.rmes.model.operations.documentations;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +14,12 @@ public class Documentation {
 	private String idOperation;
 	private String idSeries;
 	private String idIndicator;
+
+	@Schema(description =  "Creation date")
+	private String created;
+
+	@Schema(description =  "Update date")
+	private String updated;
 
 	private String labelLg1;
 	private String labelLg2;
@@ -76,4 +83,19 @@ public class Documentation {
 		this.idOperation = idOperation;
 	}
 
+	public String getCreated() {
+		return created;
+	}
+
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
+	}
 }
