@@ -1,12 +1,18 @@
-SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator ?validationState
+SELECT ?labelLg1 ?labelLg2 ?idOperation ?idSeries ?idIndicator ?validationState ?created ?updated
 FROM <${DOCUMENTATIONS_GRAPH}/${idSims}>  
 WHERE {  
 	?report rdf:type sdmx-mm:MetadataReport . 				
 		
 	OPTIONAL{ ?report sdmx-mm:target ?operation .  BIND(STRAFTER(STR(?operation),'/operation/') AS ?idOperation) . } 
 	OPTIONAL{ ?report sdmx-mm:target ?series .  BIND(STRAFTER(STR(?series),'/serie/') AS ?idSeries) . } 
-	OPTIONAL{ ?report sdmx-mm:target ?indicator .  BIND(STRAFTER(STR(?indicator),'/indicateur/') AS ?idIndicator) . } 
-			
+	OPTIONAL{ ?report sdmx-mm:target ?indicator .  BIND(STRAFTER(STR(?indicator),'/indicateur/') AS ?idIndicator) . }
+	OPTIONAL {
+		?report dcterms:created ?created .
+	} .
+
+	OPTIONAL {
+		?report dcterms:modified ?updated .
+	} .
 	
 	
 	 OPTIONAL{ ?report rdfs:label ?labelLg1 . 
