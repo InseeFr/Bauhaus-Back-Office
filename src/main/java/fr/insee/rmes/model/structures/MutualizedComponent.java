@@ -26,6 +26,11 @@ public class MutualizedComponent {
     private String contributor;
     private String disseminationStatus;
 
+    private String minLength;
+    private String maxLength;
+    private String minInclusive;
+    private String maxInclusive;
+    private String pattern;
 
     public MutualizedComponent() throws RmesException {
         //nothing to do
@@ -157,5 +162,45 @@ public class MutualizedComponent {
 
     public void setDisseminationStatus(String disseminationStatus) {
         this.disseminationStatus = disseminationStatus;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
+
+    public String getMaxInclusive() {
+        return maxInclusive;
+    }
+
+    public void setMaxInclusive(String maxInclusive) {
+        this.maxInclusive = maxInclusive;
+    }
+
+    public String getMinInclusive() {
+        return minInclusive;
+    }
+
+    public void setMinInclusive(String minInclusive) {
+        this.minInclusive = minInclusive;
+    }
+
+    public String getMaxLength() {
+        return maxLength;
+    }
+
+    public void setMaxLength(String maxLength) {
+        this.maxLength = maxLength;
+    }
+
+    public String getMinLength() {
+        return minLength;
+    }
+
+    public void setMinLength(String minLength) {
+        this.minLength = minLength;
     }
 }
