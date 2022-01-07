@@ -349,6 +349,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					RdfUtils.addTripleUri(codeListIri, SKOS.MEMBER, RdfUtils.createIRI(code.getString("codeUri")), model, graph);
 				}
 			}
+			if(codesList.has("iriParent")){
+				RdfUtils.addTripleUri(codeListIri, PROV.WAS_DERIVED_FROM, codesList.getString("iriParent"), model, graph);
+			}
 		} else {
 			CodeList original = getCodeList(codeListId);
 			if(original.getCodes() != null) {
