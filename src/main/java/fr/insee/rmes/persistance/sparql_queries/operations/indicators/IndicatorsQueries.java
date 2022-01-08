@@ -301,7 +301,19 @@ public class IndicatorsQueries {
 		    throw new IllegalStateException("Utility class");
 	}
 
-	
-	
 
+	public static String indicatorsWithSimsQuery() {
+		//Config.OPERATIONS_GRAPH
+		return "SELECT DISTINCT ?labelLg1 ?idSims \n"
+				+ "WHERE { \n"
+				+ "?indic a insee:StatisticalIndicator . \n"
+				+ "?indic skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') \n"
+			 	+ "?report rdf:type sdmx-mm:MetadataReport . \n"
+				+ "?report sdmx-mm:target ?indic \n"
+				+ "BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
+				+ "} \n"
+				+ "GROUP BY ?labelLg1 ?idSims \n"
+				+ "ORDER BY ?label ";
+	}
 }

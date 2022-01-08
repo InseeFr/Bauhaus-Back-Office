@@ -331,6 +331,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
+	public String getIndicatorsWithSims() throws RmesException {
+		logger.info("Starting to get indicators list with sims");
+		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsWithSimsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	@Override
 	public String getIndicatorsForSearch() throws RmesException {
 		return indicatorsUtils.getIndicatorsForSearch();
 	}
