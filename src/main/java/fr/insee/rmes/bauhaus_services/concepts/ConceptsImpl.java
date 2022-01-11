@@ -234,7 +234,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public Response getConceptExport(String id, String acceptHeader) throws RmesException  {
+	public Response exportConcept(String id, String acceptHeader) throws RmesException  {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
