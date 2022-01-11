@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
@@ -50,6 +51,15 @@ public class IndicatorsResources extends OperationsCommonResources {
 		String jsonResultat = operationsService.getIndicators();
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 
+	}
+
+	@GET
+	@Path("/indicators/withSims")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
+	public Response getIndicatorsWIthSims() throws RmesException {
+		String jsonResultat = operationsService.getIndicatorsWithSims();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
 	@GET
