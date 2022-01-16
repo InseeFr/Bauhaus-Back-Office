@@ -317,6 +317,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return familiesUtils.createFamily(body);
 	}
 
+	public String getSeriesWithReport(String idFamily) throws RmesException {
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.seriesWithSimsQuery(idFamily));
+		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+	}
+
+
 	/***************************************************************************************************
 	 * INDICATORS
 	 * @throws RmesException 
