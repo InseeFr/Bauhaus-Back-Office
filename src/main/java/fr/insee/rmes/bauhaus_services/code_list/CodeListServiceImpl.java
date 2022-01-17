@@ -257,10 +257,19 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!partial && !codeList.has("lastClassUriSegment")) {
 			throw new BadRequestException("The lastClassUriSegment of the list should be defined");
 		}
-		if (!codeList.has(LAST_LIST_URI_SEGMENT)) {
+		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new BadRequestException("The lastListUriSegment of the list should be defined");
 		}
 	}
+
+	private IRI generateIri(JSONObject codesList, boolean partial) {
+		if(partial){
+			return RdfUtils.codeListIRI(codesList.getString(Constants.ID));
+		} else {
+			return RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
+		}
+	}
+
 	@Override
 	public String setCodesList(String body, boolean partial) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -270,7 +279,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		this.validateCodeList(codesList, partial);
 
-		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
+		IRI codeListIri = this.generateIri(codesList, partial);
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
@@ -288,7 +297,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		this.validateCodeList(codesList, partial);
 
-		IRI codeListIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT));
+		IRI codeListIri = this.generateIri(codesList, partial);
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();
