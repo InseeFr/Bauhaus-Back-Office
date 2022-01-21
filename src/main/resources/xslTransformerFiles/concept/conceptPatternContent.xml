@@ -307,6 +307,9 @@
                     <table:table-cell table:style-name="InfoGenerales.A1" office:value-type="string">
                         <text:list text:style-name="L1">
                             <text:list-item>
+                                <text:p text:style-name="InfoGeContent">Identifiant : ${concept/id}</text:p>
+                            </text:list-item>
+                            <text:list-item>
                                 <text:p text:style-name="InfoGeContent">Libellé alternatif (fr) : ${concept/altLabelLg1/altLabelLg1}</text:p>
                             </text:list-item>
                             <text:list-item>

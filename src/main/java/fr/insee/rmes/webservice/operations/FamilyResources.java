@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import fr.insee.rmes.model.operations.Operation;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
@@ -53,6 +54,20 @@ public class FamilyResources extends OperationsCommonResources {
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
 	public Response getFamiliesForSearch() throws RmesException {
 		String jsonResultat = operationsService.getFamiliesForSearch();
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/families/{id}/seriesWithReport")
+	@Produces(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithReport", summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
+	public Response getSeriesWithReport(@PathParam(Constants.ID) String id) {
+		String jsonResultat;
+		try {
+			jsonResultat = operationsService.getSeriesWithReport(id);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 

@@ -140,11 +140,15 @@ public class XMLUtils {
 		final String regex3 = "&amp;gt;";
 		final Pattern pattern3 = Pattern.compile(regex3, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern3.matcher(ret).replaceAll("&gt;");
-		
+
 		final String regex4 = "&amp;lt;";
 		final Pattern pattern4 = Pattern.compile(regex4, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern4.matcher(ret).replaceAll("&lt;");
-		
+
+		final String regex8 = "&amp;quot;";
+		final Pattern pattern8 = Pattern.compile(regex8, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+		ret = pattern8.matcher(ret).replaceAll("&quot;");
+
 		final String regex5 = Constants.XML_ESPERLUETTE_REPLACEMENT;
 		final Pattern pattern5 = Pattern.compile(regex5, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern5.matcher(ret).replaceAll(AMP);
@@ -156,8 +160,7 @@ public class XMLUtils {
 		final String regex7 = Constants.XML_INF_REPLACEMENT;
 		final Pattern pattern7 = Pattern.compile(regex7, Pattern.MULTILINE | Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
 		ret = pattern7.matcher(ret).replaceAll("&lt;");
-		
-		
+
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 
