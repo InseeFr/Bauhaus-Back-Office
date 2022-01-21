@@ -85,6 +85,12 @@ public class Series {
 	
 	@Schema(description= "SIMS id")
 	public String idSims;
+
+	@Schema(description =  "Creation date")
+	private String created;
+
+	@Schema(description =  "Update date")
+	private String updated;
 	
 	/*
 	 * Getters
@@ -287,5 +293,19 @@ public class Series {
 	}
 
 
+	public String getCreated() {
+		return created;
+	}
 
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	public String getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(String updated) {
+		this.updated = updated;
+	}
 }

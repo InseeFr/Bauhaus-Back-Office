@@ -50,7 +50,7 @@ public class CodeListsResources {
 	public Response setCodesList(@RequestBody(description = "Code List", required = true) String body) {
 		String id = null;
 		try {
-			id = codeListService.setCodesList(body);
+			id = codeListService.setCodesList(body, false);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
@@ -64,7 +64,35 @@ public class CodeListsResources {
 	public Response updateCodesList(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
 		String id = null;
 		try {
-			id = codeListService.setCodesList(id, body);
+			id = codeListService.setCodesList(id, body, false);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@POST
+	@Path("/partial")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
+	public Response createPartialCodeList(@RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(body, true);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@PUT
+	@Path("/partial/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "setCodesList", summary = "Create a codes list")
+	public Response updatePartialCodeList(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
+		String id = null;
+		try {
+			id = codeListService.setCodesList(id, body, true);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
@@ -78,7 +106,22 @@ public class CodeListsResources {
 	public Response getallCodesLists() {
 		String jsonResultat;
 		try {
-			jsonResultat = codeListService.getAllCodesLists();
+			jsonResultat = codeListService.getAllCodesLists(false);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/partial")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getallPartialCodesLists", summary = "Partial List of codes",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
+	public Response getallPartialCodesLists() {
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getAllCodesLists(true);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
@@ -93,7 +136,22 @@ public class CodeListsResources {
 	public Response getDetailedCodesLisForSearch() {
 		String jsonResultat;
 		try {
-			jsonResultat = codeListService.getDetailedCodesListForSearch();
+			jsonResultat = codeListService.getDetailedCodesListForSearch(false);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/partial/search")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+	public Response getDetailedPartialCodesLisForSearch() {
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getDetailedCodesListForSearch(true);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
@@ -108,7 +166,22 @@ public class CodeListsResources {
 	public Response getDetailedCodesListByNotation(@PathParam("notation") String notation) {
 		String jsonResultat;
 		try {
-			jsonResultat = codeListService.getDetailedCodesList(notation);
+			jsonResultat = codeListService.getDetailedCodesList(notation, false);
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+
+	@GET
+	@Path("/partial/{notation}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+	public Response getDetailedPartialCodesListByNotation(@PathParam("notation") String notation) {
+		String jsonResultat;
+		try {
+			jsonResultat = codeListService.getDetailedCodesList(notation, true);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}

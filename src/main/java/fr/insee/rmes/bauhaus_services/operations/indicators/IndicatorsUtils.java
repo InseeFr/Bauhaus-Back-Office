@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -216,6 +217,8 @@ public class IndicatorsUtils  extends RdfService {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+		indicator.setCreated(DateUtils.getCurrentDate());
+		indicator.setUpdated(DateUtils.getCurrentDate());
 		createRdfIndicator(indicator,ValidationStatus.UNPUBLISHED);
 		logger.info("Create indicator : {} - {}" , indicator.getId() , indicator.getPrefLabelLg1());
 		return indicator.getId();
@@ -242,6 +245,9 @@ public class IndicatorsUtils  extends RdfService {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
+
+		indicator.setUpdated(DateUtils.getCurrentDate());
+
 		String status=getValidationStatus(id);
 
 		documentationsUtils.updateDocumentationTitle(indicator.getIdSims(), indicator.getPrefLabelLg1(), indicator.getPrefLabelLg2());
@@ -283,6 +289,8 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), Config.LG2, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), Config.LG1, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), Config.LG2, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleDateTime(indicURI, DCTERMS.CREATED, indicator.getCreated(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, RdfUtils.operationsGraph());
 
 		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), Config.LG1, model, RdfUtils.productsGraph());
 		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), Config.LG2, model, RdfUtils.productsGraph());

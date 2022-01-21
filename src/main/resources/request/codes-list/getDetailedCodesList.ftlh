@@ -1,4 +1,5 @@
-SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus ?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment
+SELECT DISTINCT ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus
+?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment ?iriParent
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?list skos:notation '${NOTATION}' ;
@@ -31,6 +32,9 @@ WHERE {
         BIND(STRAFTER(STR(?seeAlso),'concept/') AS ?lastClassUriSegment) .
     }
 
+    OPTIONAL {
+        ?list prov:wasDerivedFrom ?iriParent .
+    } .
     BIND(STRAFTER(STR(?list),'${CODE_LIST_BASE_URI}/') AS ?lastListUriSegment) .
 
     ?list skos:prefLabel ?labelLg1 .

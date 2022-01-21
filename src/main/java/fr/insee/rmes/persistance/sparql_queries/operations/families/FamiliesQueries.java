@@ -43,8 +43,9 @@ public class FamiliesQueries {
 				+ "ORDER BY ?label ";
 	}
 
+
 	public static String familyQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState\n"
+		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState ?created ?modified\n"
 				+ "WHERE { GRAPH <"+Config.OPERATIONS_GRAPH+"> { \n"
 				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
 				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
@@ -54,6 +55,8 @@ public class FamiliesQueries {
 				+ "OPTIONAL {?family skos:prefLabel ?prefLabelLg2 . \n"
 				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n" 
 				+ "OPTIONAL {?family insee:validationState ?validationState} . \n"
+				+ "OPTIONAL { ?family dcterms:created ?created } . \n"
+				+ "OPTIONAL { ?family dcterms:modified ?modified } . \n"
 				+ "OPTIONAL {?family dcterms:abstract ?abstractLg1 . \n"
 				+ "FILTER (lang(?abstractLg1) = '" + Config.LG1 + "') } . \n" 
 				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 . \n"

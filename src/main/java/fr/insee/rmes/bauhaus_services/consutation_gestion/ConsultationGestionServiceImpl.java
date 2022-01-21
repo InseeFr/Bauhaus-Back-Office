@@ -232,13 +232,40 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         }
 
         if(component.has("representation")){
-            if(component.getString("representation").endsWith("date")){
+            if(component.getString("representation").endsWith("dateTime")){
+                component.put("representation", "date et heure");
+            } else if(component.getString("representation").endsWith("date")){
                 component.put("representation", "date");
-            } else if(component.getString("representation").endsWith("int")){
+            } else if(component.getString("representation").endsWith("integer")){
                 component.put("representation", "entier");
-            } else if(component.getString("representation").endsWith("float")){
+            } else if(component.getString("representation").endsWith("double")){
                 component.put("representation", "décimal");
+            } else if(component.getString("representation").endsWith("string")){
+                component.put("representation", "texte");
+            } else if(component.getString("representation").endsWith("paysOuTerritoire")){
+                component.put("representation", "Pays ou territoire");
             }
+        }
+
+        if(component.has("minLength") || component.has("maxLength") || component.has("minInclusive") || component.has("maxInclusive") || component.has("pattern")){
+            JSONObject format = new JSONObject();
+
+            if (component.has("minLength")) {
+                format.put("longueurMin", component.get("minLength"));
+            }
+            if (component.has("maxLength")) {
+                format.put("longueurMax", component.get("maxLength"));
+            }
+            if (component.has("minInclusive")) {
+                format.put("valeurMin", component.get("minInclusive"));
+            }
+            if (component.has("maxInclusive")) {
+                format.put("valeurMax", component.get("maxInclusive"));
+            }
+            if (component.has("pattern")) {
+                format.put("expressionReguliere", component.get("pattern"));
+            }
+            component.put("format", format);
         }
         return component.toString();
     }
@@ -372,7 +399,6 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         JSONArray levels =  repoGestion.getResponseAsArray(buildRequest("getCodeLevel.ftlh", params));
 
         JSONObject childrenMapping = new JSONObject();
-
         JSONObject formattedCodes = new JSONObject();
 
         for (int i = 0; i < codes.length(); i++) {

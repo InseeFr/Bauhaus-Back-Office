@@ -87,6 +87,8 @@ public interface OperationsService {
 
 	String getIndicators() throws RmesException;
 
+	String getIndicatorsWithSims() throws RmesException;
+
 	String getIndicatorsForSearch() throws RmesException;
 
 	String getIndicatorJsonByID(String id) throws RmesException;
@@ -157,5 +159,7 @@ public interface OperationsService {
 	Response exportMetadataReportForLabel(String id) throws RmesException;
 
 	Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
+
+	String getOperationsWithReport(String id) throws RmesException;
 
 }

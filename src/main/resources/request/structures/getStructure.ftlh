@@ -17,16 +17,15 @@ WHERE {
     } .
 
     OPTIONAL {
+        ?structure dcterms:modified ?modified .
+    } .
+
+    OPTIONAL {
         ?structure dc:creator ?creator .
     } .
 
     OPTIONAL {
         ?structure dc:contributor ?contributor .
-    } .
-
-    OPTIONAL {
-
-        ?structure dcterms:modified ?modified .
     } .
 
     OPTIONAL {

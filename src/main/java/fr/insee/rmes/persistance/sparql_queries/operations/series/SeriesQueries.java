@@ -62,11 +62,16 @@ public class SeriesQueries {
 			addClauseToWhereClause("BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . ");
 		}
 
-		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ");
+		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified");
 		addClauseToWhereClause("?series skos:prefLabel ?prefLabelLg1 \n");
+		addClauseToWhereClause( "OPTIONAL { ?series dcterms:created ?created } .  \n ");
+		addClauseToWhereClause( "OPTIONAL { ?series dcterms:modified ?modified } .  \n ");
+
 		addClauseToWhereClause("FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "')  \n ");
 		addClauseToWhereClause("OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
 		addClauseToWhereClause("FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
+
+
 
 		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
 		addOptionalClause("skos:altLabel", "?altLabel");
@@ -234,10 +239,11 @@ public class SeriesQueries {
 	 * @return String
 	 * @throws RmesException
 	 */	
-	public static String seriesWithStampQuery(String stamp) throws RmesException {
+	public static String seriesWithStampQuery(String stamp, boolean isAdmin) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(STAMP, stamp);
-		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);	
+		params.put("ADMIN", isAdmin);
+		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);
 	}
 	
 	

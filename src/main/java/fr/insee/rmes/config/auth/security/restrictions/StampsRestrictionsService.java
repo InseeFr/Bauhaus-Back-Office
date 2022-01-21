@@ -31,8 +31,9 @@ public interface StampsRestrictionsService {
 
 	boolean canModifyConcept(IRI uri) throws RmesException;
 
-	
-	
+	boolean isAdmin();
+
+
 	/*
 	 * INDICATORS
 	 */

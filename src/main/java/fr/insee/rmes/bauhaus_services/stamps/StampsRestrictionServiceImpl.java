@@ -104,7 +104,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		this.fakeUser = new User(roles, userObject.getString("stamp"));
 	}
 
-	private boolean isAdmin() {
+	public boolean isAdmin() {
 		User user = getUser();
 		return (isAdmin(user));
 	}
