@@ -27,8 +27,6 @@ public class RdfUtils {
 	
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
-	static final Logger logger = LogManager.getLogger(RdfUtils.class);
-	
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
 	private static final String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
@@ -259,17 +257,9 @@ public class RdfUtils {
 			model.add(objectURI, predicat, toURI(value), graph);
 		}
 	}
-	
-	public static void addTripleBNode(IRI objectURI, IRI predicat, BNode value, Model model,Resource graph) {
-		if (value != null) {
-			model.add(objectURI, predicat, value, graph);
-		}
-	}
-	
-	public static void addTripleBNode(BNode bnode, IRI predicat, String value,String lang, Model model,Resource graph) {
-		if (value != null  && !value.isEmpty()) {
-				model.add(bnode, predicat, RdfUtils.setLiteralString(value, lang), graph);
-		}
+
+	public static IRI createXSDIRI(String suffix){
+		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
 	
 	private RdfUtils() {

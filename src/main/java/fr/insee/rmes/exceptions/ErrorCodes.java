@@ -111,6 +111,7 @@ public class ErrorCodes {
 	//GEOFEATURES
 	public static final int GEOFEATURE_UNKNOWN = 845;
 	public static final int GEOFEATURE_INCORRECT_BODY = 846;
+	public static final int GEOFEATURE_EXISTING_LABEL = 847;
 
 	
 	/*

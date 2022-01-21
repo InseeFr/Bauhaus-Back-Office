@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -48,10 +49,6 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
-import fr.insee.rmes.utils.EncodingType;
-import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
 public class SeriesUtils extends RdfService {
@@ -224,6 +221,8 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleString(seriesURI, SKOS.PREF_LABEL, series.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(seriesURI, SKOS.ALT_LABEL, series.getAltLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, RdfUtils.operationsGraph());
 
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), Config.LG2, model, RdfUtils.operationsGraph());
@@ -332,6 +331,9 @@ public class SeriesUtils extends RdfService {
 		}
 
 		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
+		series.setCreated(DateUtils.getCurrentDate());
+		series.setUpdated(DateUtils.getCurrentDate());
+
 		createRdfSeries(series, familyURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
 
@@ -374,6 +376,8 @@ public class SeriesUtils extends RdfService {
 		}
 
 		checkSimsWithOperations(series);
+
+		series.setUpdated(DateUtils.getCurrentDate());
 
 		String status = famOpeSerIndUtils.getValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());

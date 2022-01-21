@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import java.io.IOException;
 
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -142,6 +143,9 @@ public class OperationsUtils extends RdfService{
 		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
 		}
+		operation.setCreated(DateUtils.getCurrentDate());
+		operation.setUpdated(DateUtils.getCurrentDate());
+
 		createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
 
@@ -170,6 +174,8 @@ public class OperationsUtils extends RdfService{
 			logger.error(e.getMessage());
 		}
 
+		operation.setUpdated(DateUtils.getCurrentDate());
+
 		String status= famOpeSerIndUtils.getValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(operation.getIdSims(), operation.getPrefLabelLg1(), operation.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
@@ -193,6 +199,8 @@ public class OperationsUtils extends RdfService{
 		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), Config.LG1, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getUpdated(), model, RdfUtils.operationsGraph());
 
 		if (serieUri != null) {
 			//case CREATION : link operation to series
