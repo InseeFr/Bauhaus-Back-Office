@@ -12,7 +12,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -132,7 +131,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		try {
 			statements = con.getStatements(null, predicate, object, false);
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get " +((SimpleIRI)predicate).toString() + " statements : " + object);
+			throwsRmesException(e, "Failure get " +RdfUtils.toString(predicate) + " statements : " + object);
 		}
 		return statements;
 	}

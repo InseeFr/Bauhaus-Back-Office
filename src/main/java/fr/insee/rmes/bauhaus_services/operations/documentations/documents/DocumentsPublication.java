@@ -108,7 +108,7 @@ public class DocumentsPublication  extends RdfService{
 			}
 			while (documentStatements.hasNext()) {
 				Statement st = documentStatements.next();
-				if (((SimpleIRI)st.getPredicate()).toString().endsWith("url")) {
+				if (RdfUtils.toString(st.getPredicate()).endsWith("url")) {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());

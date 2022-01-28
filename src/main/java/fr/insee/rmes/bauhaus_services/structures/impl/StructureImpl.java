@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -71,13 +71,13 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 			// We first have to rename the type property
 			String type = (String) component.get("type");
-			if(type.equalsIgnoreCase(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())){
+			if(type.equalsIgnoreCase(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))){
 				component.put("type", "attribute");
 			}
-			else if(type.equalsIgnoreCase(((SimpleIRI)QB.MEASURE_PROPERTY).toString())){
+			else if(type.equalsIgnoreCase(RdfUtils.toString(QB.MEASURE_PROPERTY))){
 				component.put("type", "measure");
 			}
-			else if(type.equalsIgnoreCase(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())){
+			else if(type.equalsIgnoreCase(RdfUtils.toString(QB.DIMENSION_PROPERTY))){
 				component.put("type", "dimension");
 			}
 

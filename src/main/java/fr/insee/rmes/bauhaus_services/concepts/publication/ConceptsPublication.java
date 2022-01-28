@@ -9,7 +9,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -61,7 +60,7 @@ public class ConceptsPublication extends RdfService{
 					Statement st = statements.next();
 					subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					graph = st.getContext();
-					String predicat = ((SimpleIRI)st.getPredicate()).toString();
+					String predicat = RdfUtils.toString(st.getPredicate());
 					// Notes, transform URI and get attributs
 					if (PublicationUtils.stringEndsWithItemFromList(predicat,notes)) {
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
@@ -142,7 +141,7 @@ public class ConceptsPublication extends RdfService{
 			Resource graph = null;
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				String predicat = ((SimpleIRI)st.getPredicate()).toString();
+				String predicat = RdfUtils.toString(st.getPredicate());
 				subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 				graph = st.getContext();
 				if (predicat.endsWith("conceptVersion")) {
@@ -209,12 +208,12 @@ public class ConceptsPublication extends RdfService{
 					while (statements.hasNext()) {
 						Statement st = statements.next();
 						// Other URI to transform
-						if (((SimpleIRI)st.getPredicate()).toString().endsWith("member")) {
+						if (RdfUtils.toString(st.getPredicate()).endsWith("member")) {
 							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 									PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-						} else if (((SimpleIRI)st.getPredicate()).toString().endsWith("isValidated")
-								|| ((SimpleIRI)st.getPredicate()).toString().endsWith(Constants.CREATOR)
-								|| ((SimpleIRI)st.getPredicate()).toString().endsWith("contributor")) {
+						} else if (RdfUtils.toString(st.getPredicate()).endsWith("isValidated")
+								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CREATOR))
+								|| (RdfUtils.toString(st.getPredicate()).endsWith("contributor"))) {
 							// nothing, wouldn't copy this attr
 						}
 						// Literals

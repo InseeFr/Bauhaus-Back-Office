@@ -1,12 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
-import fr.insee.rmes.bauhaus_services.ConceptsService;
-import fr.insee.rmes.bauhaus_services.Constants;
+import java.util.HashMap;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-
-import java.util.HashMap;
 
 public class CodeListQueries {
 
