@@ -314,6 +314,6 @@ public class IndicatorsQueries {
 				+ "BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
 				+ "} \n"
 				+ "GROUP BY ?labelLg1 ?idSims \n"
-				+ "ORDER BY ?label ";
+				+ "ORDER BY ?labelLg1 ";
 	}
 }
