@@ -45,7 +45,10 @@ import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class StructureComponentUtils extends RdfService {
-    private static final String IO_EXCEPTION = "IOException";
+    private static final String MAX_LENGTH = "maxLength";
+	private static final String MIN_LENGTH = "minLength";
+	private static final String PATTERN = "pattern";
+	private static final String IO_EXCEPTION = "IOException";
 	static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
@@ -195,27 +198,27 @@ public class StructureComponentUtils extends RdfService {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
 
             if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DATE))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("pattern"), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
             }
             if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DATETIME))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("pattern"), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
             }
             if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.INT))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minLength"), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxLength"), component.getMaxLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxLength(), Config.LG1, model, graph);
             }
             if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DOUBLE))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minLength"), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxLength"), component.getMaxLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxLength(), Config.LG1, model, graph);
             }
             if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.STRING))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minLength"), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxLength"), component.getMaxLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("pattern"), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
             }
         }
 

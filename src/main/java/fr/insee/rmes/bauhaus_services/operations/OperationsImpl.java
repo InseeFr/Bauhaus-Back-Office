@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -39,7 +38,6 @@ import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -95,9 +93,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
 
-	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
-
 
 	/***************************************************************************************************
 	 * SERIES
@@ -128,18 +123,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
 		JSONArray series = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
-		List<JSONObject> seriesList = new ArrayList<JSONObject>();
+		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
 		}
-		seriesList.sort(new Comparator<JSONObject>() {
-			@Override
-			public int compare(JSONObject o1, JSONObject o2) {
+		seriesList.sort(( o1,  o2) -> {
 				String key1 = Normalizer.normalize(o1.getString("label"), Normalizer.Form.NFD);
 				String key2 = Normalizer.normalize(o2.getString("label"), Normalizer.Form.NFD);
 				return key1.compareTo(key2);
-			}
-		});
+			});
 		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
 	}
 
