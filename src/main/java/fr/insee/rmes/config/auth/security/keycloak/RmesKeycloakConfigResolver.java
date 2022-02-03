@@ -11,7 +11,6 @@ import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.adapters.OIDCHttpFacade;
 
-import fr.insee.rmes.config.auth.security.KeycloakSecurityContext;
 import fr.insee.rmes.utils.FilesUtils;
 
 public class RmesKeycloakConfigResolver implements KeycloakConfigResolver {

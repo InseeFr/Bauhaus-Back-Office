@@ -99,8 +99,10 @@ public class ConceptsPublication extends RdfService{
 							graph);
 				}
 			} catch (RepositoryException e) {
+				repoGestion.closeStatements(statements);
+				con.close();
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-			}
+			} 
 			
 			repoGestion.closeStatements(statements);
 			publishMemberLinks(concept, model, con);
