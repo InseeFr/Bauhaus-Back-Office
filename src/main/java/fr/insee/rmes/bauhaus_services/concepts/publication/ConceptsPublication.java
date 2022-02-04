@@ -10,6 +10,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -50,7 +51,7 @@ public class ConceptsPublication extends RdfService{
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
-			String[] links = {"inScheme","disseminationStatus","references","replaces","related"};
+			String[] links = {"inScheme","disseminationStatus","references","isReplacedBy"};
 			String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,"contributor"};
 
 			try {
@@ -74,8 +75,17 @@ public class ConceptsPublication extends RdfService{
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 					}
-					// Broader links
-					else if (predicat.endsWith("broader")) {
+					else if (predicat.endsWith("related")) {
+						hasBroader = true;
+						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								graph);
+						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
+					} else if (predicat.endsWith("replaces")) {
+						hasBroader = true;
+						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								graph);
+						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
+					} else if (predicat.endsWith("broader")) {
 						hasBroader = true;
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);

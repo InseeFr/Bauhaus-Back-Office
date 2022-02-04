@@ -26,6 +26,11 @@ WHERE {
 			}
 			UNION
 			{
+				?concept dcterms:isReplacedBy ?conceptlinked .
+				BIND('succeededBy' AS ?typeOfLink)
+			}
+			UNION
+			{
 				?concept skos:related ?conceptlinked .
 				BIND('related' AS ?typeOfLink)
 			}
