@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.code_list;
 
 import javax.ws.rs.BadRequestException;
 
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -270,6 +272,15 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 	}
 
+	private boolean checkCodeListUnicity(boolean partial, JSONObject codeList, String iri) throws RmesException {
+		String id = codeList.getString(Constants.ID);
+		if(!partial) {
+			IRI seeAlso = RdfUtils.codeListIRI("concept/" + codeList.getString("lastClassUriSegment"));
+			return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, seeAlso.toString(), partial));
+		}
+		return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, "", partial));
+	}
+
 	@Override
 	public String setCodesList(String body, boolean partial) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -280,6 +291,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		this.validateCodeList(codesList, partial);
 
 		IRI codeListIri = this.generateIri(codesList, partial);
+
+		if(this.checkCodeListUnicity(partial, codesList, codeListIri.toString())){
+			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_UNICITY,
+					"The identifier, IRI and OWL class should be unique", "");
+		}
+
 		repoGestion.clearStructureNodeAndComponents(codeListIri);
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.codesListGraph();

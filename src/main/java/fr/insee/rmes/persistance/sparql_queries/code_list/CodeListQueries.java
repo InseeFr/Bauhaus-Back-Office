@@ -130,4 +130,13 @@ public class CodeListQueries {
 	}
 
 
+	public static String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
+		HashMap<String, Object> params = getInitParams();
+		params.put("ID", id);
+		params.put("IRI", iri);
+		params.put("SEE_ALSO", seeAlso);
+		params.put("PARTIAL", partial);
+
+		return FreeMarkerUtils.buildRequest("codes-list/", "checkCodeListUnicity.ftlh", params);
+	}
 }
