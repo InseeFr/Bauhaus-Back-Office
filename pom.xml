@@ -33,10 +33,12 @@
 		</developer>
 	</developers>
 
+
+
 	<properties>
 		<final.war.name>bauhaus</final.war.name>
 
-		<jersey.version>2.19</jersey.version>
+		<jersey.version>2.32</jersey.version>
 		<jackson.version>2.10.1</jackson.version>
 		<rdf4j.version>3.5.0</rdf4j.version>
 		<swagger.core.version>2.0.9</swagger.core.version>
@@ -76,6 +78,8 @@
 			<url>https://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
+	
+
 
 	<dependencies>
 		<dependency>
@@ -138,7 +142,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
-			<artifactId>jersey-spring3</artifactId>
+			<artifactId>jersey-spring5</artifactId>
 			<version>${jersey.version}</version>
 			<exclusions>
 				<exclusion>
@@ -160,6 +164,10 @@
 				<exclusion>
 					<groupId>org.springframework</groupId>
 					<artifactId>spring-context</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-aop</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
