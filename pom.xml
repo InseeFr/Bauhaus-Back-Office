@@ -39,7 +39,7 @@
 		<final.war.name>bauhaus</final.war.name>
 
 		<jersey.version>2.32</jersey.version>
-		<jackson.version>2.10.1</jackson.version>
+		<jackson.version>2.13.1</jackson.version>
 		<rdf4j.version>3.5.0</rdf4j.version>
 		<swagger.core.version>2.0.9</swagger.core.version>
 		<spring.version>5.3.14</spring.version>
@@ -232,10 +232,6 @@
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
