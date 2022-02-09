@@ -1,8 +1,25 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.operations;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class OperationsQueries {
+	static Map<String,Object> params ;
+
+	private static void initParams() {
+		params = new HashMap<>();
+		params.put("OPERATIONS_GRAPH",Config.OPERATIONS_GRAPH);
+		params.put("LG1", Config.LG1);
+		params.put("LG2", Config.LG2);
+	}
+
+	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("operations/series/", fileName, params);
+	}
 
 	public static String operationsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
@@ -110,4 +127,9 @@ public class OperationsQueries {
 		    throw new IllegalStateException("Utility class");
 	}
 
+	public static String seriesWithSimsQuery(String idFamily) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("ID_FAMILY", idFamily);
+		return buildIndicatorRequest("getSeriesWithSimsQuery.ftlh", params);
+	}
 }

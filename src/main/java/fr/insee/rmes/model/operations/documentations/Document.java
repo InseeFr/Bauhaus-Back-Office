@@ -1,7 +1,6 @@
 package fr.insee.rmes.model.operations.documentations;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,12 +23,12 @@ public class Document {
 	}
 	
 	public Document(String id) {
-		this.uri = ((SimpleIRI)RdfUtils.documentIRI(id)).toString();
+		this.uri = RdfUtils.toString(RdfUtils.documentIRI(id));
 	}
 
 	public Document(String id, boolean isLink) {
-		if (isLink) {this.uri = ((SimpleIRI)RdfUtils.linkIRI(id)).toString();}
-		else {this.uri = ((SimpleIRI)RdfUtils.documentIRI(id)).toString();}
+		if (isLink) {this.uri = RdfUtils.toString(RdfUtils.linkIRI(id));}
+		else {this.uri = RdfUtils.toString(RdfUtils.documentIRI(id));}
 	}
 	
 	public String getLabelLg1() {

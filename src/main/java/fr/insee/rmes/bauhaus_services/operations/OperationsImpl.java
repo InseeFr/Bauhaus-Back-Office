@@ -11,15 +11,12 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
@@ -96,9 +93,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
 
-	@Autowired
-	StampsRestrictionsService stampsRestrictionsService;
-
 
 	/***************************************************************************************************
 	 * SERIES
@@ -129,18 +123,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
 		JSONArray series = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
-		List<JSONObject> seriesList = new ArrayList<JSONObject>();
+		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
 		}
-		seriesList.sort(new Comparator<JSONObject>() {
-			@Override
-			public int compare(JSONObject o1, JSONObject o2) {
+		seriesList.sort(( o1,  o2) -> {
 				String key1 = Normalizer.normalize(o1.getString("label"), Normalizer.Form.NFD);
 				String key2 = Normalizer.normalize(o2.getString("label"), Normalizer.Form.NFD);
 				return key1.compareTo(key2);
-			}
-		});
+			});
 		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
 	}
 
@@ -316,6 +307,13 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String createFamily(String body) throws RmesException {
 		return familiesUtils.createFamily(body);
 	}
+
+	public String getSeriesWithReport(String idFamily) throws RmesException {
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.seriesWithSimsQuery(idFamily));
+		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
+	}
+
 
 	/***************************************************************************************************
 	 * INDICATORS

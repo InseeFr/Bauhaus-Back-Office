@@ -10,6 +10,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Variant;
 
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -127,10 +128,12 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		mp.bodyPart(new FormDataBodyPart(FormDataContentDisposition.name("request").build(),request,MediaType.APPLICATION_XML_TYPE));
 		final StreamDataBodyPart bodyPart = new StreamDataBodyPart("attachments", is, fileName);
 		mp.bodyPart(bodyPart);
-				
+
+		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE, Config.LG1, "utf-8");
+		Entity<FormDataMultiPart> entity = Entity.entity(mp, variant);
 		String result = client.target(Config.SPOC_SERVICE_URL)
 				.request()
-				.post(Entity.entity(mp, MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("utf-8")),String.class);
+				.post(entity,String.class);
 		return isMailSent(result);
 	}
 

@@ -6,7 +6,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -32,7 +32,7 @@ public class ComponentPublication extends RdfService {
 			try {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = ((SimpleIRI) st.getPredicate()).toString();
+					String pred = RdfUtils.toString(st.getPredicate());
 					if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
 						// nothing, wouldn't copy this attr
 					}else if (pred.endsWith("attribute")
@@ -61,7 +61,7 @@ public class ComponentPublication extends RdfService {
 			con.close();
 		}
 		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
-		RepositoryPublication.publishResource(componentToPublishRessource, model, ((SimpleIRI) type).toString());
+		RepositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
 		
 	}
 

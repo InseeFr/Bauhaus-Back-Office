@@ -32,6 +32,8 @@ public interface OperationsService {
 
 	String createFamily(String body) throws RmesException;
 
+	String getSeriesWithReport(String id) throws RmesException;
+
 	/******************************************************************************************
 	 * SERIES
 	 * *******************************************************************************************/

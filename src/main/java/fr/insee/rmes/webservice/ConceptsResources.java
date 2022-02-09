@@ -315,9 +315,9 @@ public class ConceptsResources   {
 	@GET
 	@Path("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getConceptExport", summary = "Blob of concept")
-	public Response getConceptExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
-			return conceptsService.getConceptExport(id, acceptHeader);
+	@Operation(operationId = "exportConcept", summary = "Blob of concept")
+	public Response exportConcept(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
+			return conceptsService.exportConcept(id, acceptHeader);
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_CONCEPT_CREATOR })

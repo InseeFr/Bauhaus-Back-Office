@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -18,7 +19,6 @@ public class LinksUtils {
 
 		// Create links
 		links.forEach(link -> {
-
 			if (link.getTypeOfLink().equals("narrower")) {
 				addTripleNarrower(conceptURI, link.getIds(), model);
 			}
@@ -36,10 +36,16 @@ public class LinksUtils {
 			}
 			else if (link.getTypeOfLink().equals("closeMatch")){
 				addTripleCloseMatch(conceptURI, link.getUrn(), model);
+			} else if (link.getTypeOfLink().equals("succeededBy")){
+				addTripleReplacedByMatch(conceptURI, link.getIds(), model);
 			}
 			
 		});
 
+	}
+
+	private void addTripleReplacedByMatch(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
+		conceptsIDToLink.forEach(conceptIDToLink -> model.add(conceptURI, DCTERMS.IS_REPLACED_BY, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph()));
 	}
 
 	private void addTripleCloseMatch(IRI conceptURI, List<String> urn, Model model) {
@@ -48,15 +54,15 @@ public class LinksUtils {
 
 	private void addTripleBroader(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
 		conceptsIDToLink.forEach(conceptIDToLink -> {
-			model.add(conceptURI, SKOS.NARROWER, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
-			model.add(RdfUtils.conceptIRI(conceptIDToLink), SKOS.BROADER, conceptURI, RdfUtils.conceptGraph());
+			model.add(conceptURI, SKOS.BROADER, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), SKOS.NARROWER, conceptURI, RdfUtils.conceptGraph());
 		});
 	}
 
 	private void addTripleNarrower(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
 		conceptsIDToLink.forEach(conceptIDToLink -> {
-			model.add(conceptURI, SKOS.BROADER, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
-			model.add(RdfUtils.conceptIRI(conceptIDToLink), SKOS.NARROWER, conceptURI, RdfUtils.conceptGraph());
+			model.add(conceptURI, SKOS.NARROWER, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), SKOS.BROADER, conceptURI, RdfUtils.conceptGraph());
 		});
 	}
 
@@ -67,14 +73,18 @@ public class LinksUtils {
 	}
 
 	private void addTripleSucceed(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> 
+		conceptsIDToLink.forEach(conceptIDToLink -> {
 			model.add(conceptURI, DCTERMS.REPLACES, RdfUtils.conceptIRI(conceptIDToLink),
-					RdfUtils.conceptGraph()));
+					RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), DCTERMS.IS_REPLACED_BY, conceptURI, RdfUtils.conceptGraph());
+		});
 	}
 
 	private void addTripleRelated(IRI conceptURI, List<String> conceptsIDToLink, Model model) {
-		conceptsIDToLink.forEach(conceptIDToLink -> 
-			model.add(conceptURI, SKOS.RELATED, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph()));
+		conceptsIDToLink.forEach(conceptIDToLink -> {
+			model.add(conceptURI, SKOS.RELATED, RdfUtils.conceptIRI(conceptIDToLink), RdfUtils.conceptGraph());
+			model.add(RdfUtils.conceptIRI(conceptIDToLink), SKOS.RELATED, conceptURI, RdfUtils.conceptGraph());
+		});
 	}
 	
 }
