@@ -159,7 +159,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	public String setClassificationValidation(String classifId) throws RmesException {
 
 		//GET graph 
-		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.classificationGraphQuery(classifId));
+		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classifId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
 		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classifId);} 
 		String graph = listGraph.getString("graph");
