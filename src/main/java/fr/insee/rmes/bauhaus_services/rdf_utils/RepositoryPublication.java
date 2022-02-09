@@ -7,6 +7,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Response.Status.Family;
 
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,6 +129,8 @@ public class RepositoryPublication extends RepositoryUtils{
 	
 	private static void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
 			List<Resource> topConceptOfToDelete, Repository repo) throws RmesException {
+
+
 		if (repo == null) {return ;}
 
 		try {
@@ -203,7 +206,7 @@ public class RepositoryPublication extends RepositoryUtils{
 
 	private static void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.MEMBER, DCTERMS.REFERENCES,
-				DCTERMS.REPLACES, SKOS.RELATED);
+				DCTERMS.REPLACES, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 
 		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements = null;

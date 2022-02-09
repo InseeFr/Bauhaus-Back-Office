@@ -1,4 +1,4 @@
-SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents <#if PARTIAL> ?codeUri </#if>
+SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents ?codeUri
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
 <#if PARTIAL>
@@ -15,13 +15,14 @@ WHERE {
 
 
     OPTIONAL {
-    ?codeUri skos:broader ?parentsParent .
-    ?parentsParent skos:notation ?parents
+        ?codeUri skos:broader ?parentsParent .
+        ?parentsParent skos:notation ?parents
     } .
 
     OPTIONAL {?codeUri skos:definition ?descriptionLg1 .
     FILTER(lang(?descriptionLg1) = '${LG1}') } .
     OPTIONAL {?codeUri skos:definition ?descriptionLg2 .
     FILTER (lang(?descriptionLg2) = '${LG2}') } .
+
 }
 ORDER BY ?labelLg1
