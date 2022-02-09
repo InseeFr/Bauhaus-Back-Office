@@ -76,6 +76,9 @@ public class ErrorCodes {
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
 	public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
 
+	public static final int CODE_LIST_UNICITY = 1101;
+
+
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
 	 */
