@@ -7,7 +7,6 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -56,7 +55,7 @@ public class DocumentationPublication extends RdfService {
 			while (metadataReportStatements.hasNext()) {
 				Statement st = metadataReportStatements.next();
 				// Triplets that don't get published
-				String predicate = ((SimpleIRI)st.getPredicate()).toString();
+				String predicate = RdfUtils.toString(st.getPredicate());
 				if (!isTripletForPublication(predicate)) {
 					// nothing, wouldn't copy this attr
 				} else {

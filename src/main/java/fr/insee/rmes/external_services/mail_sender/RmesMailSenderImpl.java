@@ -130,7 +130,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		mp.bodyPart(bodyPart);
 
 		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE, Config.LG1, "utf-8");
-		Entity entity = Entity.entity(mp, variant);
+		Entity<FormDataMultiPart> entity = Entity.entity(mp, variant);
 		String result = client.target(Config.SPOC_SERVICE_URL)
 				.request()
 				.post(entity,String.class);

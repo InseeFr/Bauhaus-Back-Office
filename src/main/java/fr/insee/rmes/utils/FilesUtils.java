@@ -26,7 +26,7 @@ public class FilesUtils {
 		try {
 			is = new FileInputStream(file);
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			log.error("fileToIS" + e.getMessage());
 		}
 		return is;
 	}

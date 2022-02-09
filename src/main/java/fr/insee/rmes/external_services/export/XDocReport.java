@@ -123,13 +123,15 @@ public class XDocReport {
 	@Deprecated
 	//TODO use this for default value when template is ok
 	private IXDocReport getReportTemplate(String odtTemplate) throws IOException, XDocReportException {
-		InputStream is = getClass().getClassLoader().getResourceAsStream("xdocreport/"+odtTemplate);
-		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
+		try(InputStream is = getClass().getClassLoader().getResourceAsStream("xdocreport/"+odtTemplate)){
+				return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
+		}
 	}
 
 	private IXDocReport getReportTemplate(File odtTemplate) throws IOException, XDocReportException {
-		InputStream is = new FileInputStream(odtTemplate);
-		return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
+		try(InputStream is = new FileInputStream(odtTemplate)){
+			return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
+		}
 
 	}
 
