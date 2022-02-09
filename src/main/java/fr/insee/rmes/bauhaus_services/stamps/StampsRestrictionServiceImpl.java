@@ -345,6 +345,11 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		return (isAdmin(user) || isSeriesContributor(user) || isIndicatorContributor(user));
 	}
 
+	@Override
+	public boolean canValidateClassification(IRI uri) throws RmesException {
+		return isAdmin();
+	}
+
 	
 
 }

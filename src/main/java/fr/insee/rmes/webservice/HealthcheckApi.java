@@ -88,8 +88,8 @@ public class HealthcheckApi {
 
     	
     	//print result in log
-         logger.info("{}",stateResult);
-         logger.info("End healthcheck");
+         logger.debug("{}",stateResult);
+         logger.debug("End healthcheck");
          
     	if (!"".equals(errorMessage.toString())) {
     		logger.error("{}",errorMessage);

@@ -2,13 +2,25 @@ package fr.insee.rmes.bauhaus_services.classifications;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.CorrespondencesQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.FamiliesQueries;
@@ -19,6 +31,9 @@ import fr.insee.rmes.persistance.sparql_queries.classifications.SeriesQueries;
 @Service
 public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
 
+	@Autowired
+	private ClassificationPublication classificationPublication;
+	
 	static final Logger logger = LogManager.getLogger(ClassificationsImpl.class);
 	
 	@Override
@@ -138,5 +153,36 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	public String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException{
 		logger.info("Starting to get correspondence association : {} - {}" , correspondenceId , associationId);
 		return repoGestion.getResponseAsObject(CorrespondencesQueries.correspondenceAssociationQuery(correspondenceId, associationId)).toString();
+	}
+
+	@Override
+	public String setClassificationValidation(String classifId) throws RmesException {
+
+		//GET graph 
+		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.classificationGraphQuery(classifId));
+		logger.debug("JSON for listGraph id : {}", listGraph);
+		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classifId);} 
+		String graph = listGraph.getString("graph");
+		String classifUriString = listGraph.getString("uri");
+		Resource graphIri = RdfUtils.createIRI(graph);
+		
+		
+		if(!stampsRestrictionsService.canValidateClassification((SimpleIRI) graphIri)) {
+			throw new RmesUnauthorizedException(ErrorCodes.CLASSIFICATION_VALIDATION_RIGHTS_DENIED, "Only authorized users can validate classifications.");
+		}
+
+		//PUBLISH
+		classificationPublication.publishClassification(graphIri);
+
+		//UPDATE GESTION TO MARK AS PUBLISHED
+		Model model = new LinkedHashModel();
+		IRI classifURI = RdfUtils.toURI(classifUriString);
+		model.add(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
+		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
+		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
+		logger.info("Validate classification : {}", classifUriString);
+		repoGestion.objectValidation(classifURI, model);
+
+		return classifId;
 	}
 }

@@ -75,6 +75,10 @@ public class ErrorCodes {
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
 	public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
+	
+	// CLASSIFICATIONS
+	public static final int CLASSIFICATION_VALIDATION_RIGHTS_DENIED = 1103 ;
+	
 
 	public static final int CODE_LIST_UNICITY = 1101;
 
@@ -115,6 +119,10 @@ public class ErrorCodes {
 	public static final int GEOFEATURE_UNKNOWN = 845;
 	public static final int GEOFEATURE_INCORRECT_BODY = 846;
 	public static final int GEOFEATURE_EXISTING_LABEL = 847;
+	
+	//CLASSIFICATIONS
+	public static final int CLASSIFICATION_UNKNOWN_ID = 1141;
+
 
 	
 	/*

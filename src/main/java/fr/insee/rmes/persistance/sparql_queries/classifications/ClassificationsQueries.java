@@ -18,6 +18,16 @@ public class ClassificationsQueries {
 			+ "ORDER BY ?label ";	
 	}
 	
+	public static String classificationGraphQuery(String classifId) {
+		return "SELECT DISTINCT ?graph ?uri \n"
+			+ "WHERE { GRAPH ?graph { \n"
+			+ "	?uri rdf:type skos:ConceptScheme . \n"
+			+ "	FILTER(REGEX(STR(?uri),'/codes/" + classifId + "/')) . \n"
+			+ "}} "
+			+ "ORDER BY ?graph ?uri";	
+
+	}
+	
 	public static String classificationQuery(String id) {
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?seriesLg1 ?seriesLg2 ?idSeries \n"
 			+ "?afterLg1 ?afterLg2 ?idAfter ?beforeLg1 ?beforeLg2 ?idBefore ?variantLg1 ?variantLg2 ?idVariant \n"
