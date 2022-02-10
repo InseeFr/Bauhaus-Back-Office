@@ -11,7 +11,7 @@
 		</Console>
 
 
-		<RollingFile name="RollingFile" fileName="D://logs/bauhaus.log"
+		<RollingFile name="RollingFile" fileName="C://logs/bauhaus.log"
 			filePattern="D://logs/bauhaus-%d{MM-dd-yyyy}-%i.log.gz"
 			ignoreExceptions="false">
 			<PatternLayout>
