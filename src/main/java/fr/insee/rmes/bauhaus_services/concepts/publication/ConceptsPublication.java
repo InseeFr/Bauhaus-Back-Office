@@ -75,12 +75,10 @@ public class ConceptsPublication extends RdfService{
 								graph);
 					}
 					else if (predicat.endsWith("related")) {
-						hasBroader = true;
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
 					} else if (predicat.endsWith("replaces")) {
-						hasBroader = true;
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
