@@ -1,5 +1,6 @@
 3.0.13 : - Tentatives pour supprimer les erreurs trop de fichiers ouverts
 		 - Quelques mises à jour de dépendances
+		 - Suppression du cache pour les concepts (front)
 3.0.9 : - Amélioration de la consultation: Ajout des parents/enfants
 		- Fin des développements pour "Géographie"
 		- Correction d'un bug lors de l'exportation des indicateurs en odt

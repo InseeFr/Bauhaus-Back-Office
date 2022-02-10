@@ -1,6 +1,8 @@
 package fr.insee.rmes.webservice;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -11,10 +13,12 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
@@ -167,6 +171,27 @@ public class ClassificationsResources {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+	}
+	
+	/**
+	 * PUBLISH
+	 * @param id
+	 * @return response
+	 */
+	@Secured({ Roles.SPRING_ADMIN })
+	@PUT
+	@Path("/classification/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setClassifValidation", summary = "Classification validation")
+	public Response setOperationValidation(
+			@PathParam(Constants.ID) String id) throws RmesException {
+		try {
+			classificationsService.setClassificationValidation(id);
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		}
+		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
 	@GET

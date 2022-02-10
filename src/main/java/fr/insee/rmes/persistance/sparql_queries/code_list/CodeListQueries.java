@@ -138,8 +138,8 @@ public class CodeListQueries {
 		params.put("ID", id);
 		params.put("IRI", iri);
 		params.put("SEE_ALSO", seeAlso);
-		params.put("PARTIAL", partial);
+		params.put(PARTIAL, partial);
 
-		return FreeMarkerUtils.buildRequest("codes-list/", "checkCodeListUnicity.ftlh", params);
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "checkCodeListUnicity.ftlh", params);
 	}
 }

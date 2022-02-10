@@ -282,7 +282,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		String id = codeList.getString(Constants.ID);
 		if(!partial) {
 			IRI seeAlso = RdfUtils.codeListIRI("concept/" + codeList.getString("lastClassUriSegment"));
-			return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, seeAlso.toString(), partial));
+			return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, RdfUtils.toString(seeAlso), partial));
 		}
 		return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, "", partial));
 	}
@@ -298,7 +298,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		IRI codeListIri = this.generateIri(codesList, partial);
 
-		if(this.checkCodeListUnicity(partial, codesList, codeListIri.toString())){
+		if(this.checkCodeListUnicity(partial, codesList, RdfUtils.toString(codeListIri))){
 			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_UNICITY,
 					"The identifier, IRI and OWL class should be unique", "");
 		}

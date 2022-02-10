@@ -13,11 +13,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.json.JSONArray;
@@ -51,6 +54,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
+	
+
+	static final Logger logger = LogManager.getLogger(RmesMailSenderImpl.class);
 		
 	@Override
 	public boolean sendMailConcept(String id, String body) throws  RmesException  {
@@ -61,8 +67,11 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		Map<String,InputStream> getFileToJoin = conceptsService.getConceptExportIS(id);
 		String filename = getFileToJoin.entrySet().iterator().next().getKey();
-		InputStream is = getFileToJoin.get(filename);
-		return sendMail(mail, is, filename );
+		try(InputStream is = getFileToJoin.get(filename)){
+			return sendMail(mail, is, filename );
+		} catch (IOException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+		}
 	}
 	
 	@Override
@@ -74,12 +83,24 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		Mail mail = prepareMail(body);
 		Map<String,InputStream> getFileToJoin = conceptsService.getCollectionExportIS(id);
 		String filename = getFileToJoin.entrySet().iterator().next().getKey();
-		InputStream is = getFileToJoin.get(filename);
-		return sendMail(mail, is, filename);
+		try(InputStream is = getFileToJoin.get(filename)){
+			return sendMail(mail, is, filename);
+		}catch (IOException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+		}
 	}
 		
 	private boolean sendMail(Mail mail, InputStream is, String fileName) {
-					fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
+		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
+		String encodedFileName = fileName ;
+				//new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+		/*try {
+			encodedFileName = URLEncoder.encode(fileName, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+		}*/
+		
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
@@ -98,7 +119,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		// création des destinataires
 		Recipient destinataire1 = new Recipient();
 		destinataire1.setAddress(mail.getRecipient());
-		destinataire1.getAttachments().add(fileName);
+		destinataire1.getAttachments().add(encodedFileName);
 		Recipients destinataires = new Recipients();
 		destinataires.getRecipient().add(destinataire1);
 
@@ -118,22 +139,26 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		// création d'un client authentifié pour SPOC	
 		HttpAuthenticationFeature authentificationFeature = HttpAuthenticationFeature
 				.basic(Config.SPOC_USER, Config.SPOC_PASSWORD);
-		Client client = ClientBuilder.newClient().register(
-				authentificationFeature);
-			
+		Client client = ClientBuilder.newClient()
+				.register(authentificationFeature);
+		
 		// Multipart
 		client.register(MultiPartFeature.class);
 		
-		FormDataMultiPart mp = new FormDataMultiPart();
+		MultiPart mp = new FormDataMultiPart();
 		mp.bodyPart(new FormDataBodyPart(FormDataContentDisposition.name("request").build(),request,MediaType.APPLICATION_XML_TYPE));
-		final StreamDataBodyPart bodyPart = new StreamDataBodyPart("attachments", is, fileName);
-		mp.bodyPart(bodyPart);
 
-		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE, Config.LG1, "utf-8");
-		Entity<FormDataMultiPart> entity = Entity.entity(mp, variant);
-		String result = client.target(Config.SPOC_SERVICE_URL)
-				.request()
-				.post(entity,String.class);
+		final StreamDataBodyPart bodyPart = new StreamDataBodyPart("attachments", is, encodedFileName);
+		mp.bodyPart(bodyPart);
+		
+
+
+		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), Config.LG1, "utf-8");
+		Entity<MultiPart> entity = Entity.entity(mp, variant);
+		String result = client
+							.target(Config.SPOC_SERVICE_URL)
+							.request()
+							.post(entity,String.class);
 		return isMailSent(result);
 	}
 
