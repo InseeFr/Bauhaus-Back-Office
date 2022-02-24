@@ -299,9 +299,9 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
         IRI componentIri;
-        if (type.equalsIgnoreCase(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentIri =  RdfUtils.structureComponentAttributeIRI(id);
-        } else if (type.equalsIgnoreCase(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        } else if (type.equalsIgnoreCase(QB.MEASURE_PROPERTY.stringValue())) {
             componentIri =  RdfUtils.structureComponentMeasureIRI(id);
         } else {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);
@@ -339,13 +339,13 @@ public class StructureComponentUtils extends RdfService {
         String type = component.getString("type");
         String id = component.getString("id");
 
-        if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equals(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
         }
-        else if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        else if (type.equals(QB.MEASURE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id), QB.MEASURE_PROPERTY);
         }
-        else if (type.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+        else if (type.equals(QB.DIMENSION_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
         }
 
