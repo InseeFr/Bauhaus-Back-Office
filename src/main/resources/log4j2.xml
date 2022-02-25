@@ -12,7 +12,7 @@
 
 
 		<RollingFile name="RollingFile" fileName="C://logs/bauhaus.log"
-			filePattern="D://logs/bauhaus-%d{MM-dd-yyyy}-%i.log.gz"
+			filePattern="C://logs/bauhaus-%d{MM-dd-yyyy}-%i.log.gz"
 			ignoreExceptions="false">
 			<PatternLayout>
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Pattern>
