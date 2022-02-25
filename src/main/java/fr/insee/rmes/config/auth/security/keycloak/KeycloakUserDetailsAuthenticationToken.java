@@ -16,7 +16,7 @@ public class KeycloakUserDetailsAuthenticationToken extends KeycloakAuthenticati
     private final User user;
 
     public KeycloakUserDetailsAuthenticationToken(User user, OidcKeycloakAccount account, Collection<GrantedAuthority> authorities) {
-        super(account, authorities);
+        super(account, true, authorities);
         Assert.notNull(user, "User required");
         this.user = user;
         this.user.setAuthorities(authorities);
