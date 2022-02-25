@@ -1,3 +1,4 @@
+3.0.14 : Passage à Keycloak 17
 3.0.13 : - Tentatives pour supprimer les erreurs trop de fichiers ouverts
 		 - Quelques mises à jour de dépendances
 		 - Suppression du cache pour les concepts (front)
