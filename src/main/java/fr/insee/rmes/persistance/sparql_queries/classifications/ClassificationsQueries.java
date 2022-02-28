@@ -1,6 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import java.util.HashMap;
+
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 
 public class ClassificationsQueries {
 	
@@ -16,6 +20,12 @@ public class ClassificationsQueries {
 			+ "FILTER(REGEX(STR(?graph), '/codes/') ) \n"
 			+ "} \n"
 			+ "ORDER BY ?label ";	
+	}
+	
+	public static String getGraphUriById(String classifId) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("classifId", classifId);
+		return FreeMarkerUtils.buildRequest("classifications/", "getGraphUriById.ftlh", params);
 	}
 	
 	public static String classificationQuery(String id) {

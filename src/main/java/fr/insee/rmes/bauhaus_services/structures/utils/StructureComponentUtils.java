@@ -194,28 +194,22 @@ public class StructureComponentUtils extends RdfService {
             } else {
                 RdfUtils.addTripleUri(componentURI, RDFS.RANGE, SKOS.CONCEPT, model, graph);
             }
-        } else {
+        } else if (component.getRange() != null) {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
 
-            if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DATE))) {
+            if (component.getRange().equals(XSD.DATE.stringValue())) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
             }
-            if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DATETIME))) {
+            else if (component.getRange().equals(XSD.DATETIME.stringValue())) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
             }
-            if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.INT))) {
+            else if (component.getRange().equals(XSD.INT.stringValue()) || component.getRange().equals(RdfUtils.toString(XSD.DOUBLE))) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxLength(), Config.LG1, model, graph);
             }
-            if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.DOUBLE))) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxLength(), Config.LG1, model, graph);
-            }
-            if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(XSD.STRING))) {
+            else if (component.getRange().equals(XSD.STRING.stringValue())) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
@@ -305,9 +299,9 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesException(ErrorCodes.COMPONENT_FORBIDDEN_DELETE, "You cannot delete a validated component", new JSONArray());
         }
         IRI componentIri;
-        if (type.equalsIgnoreCase(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentIri =  RdfUtils.structureComponentAttributeIRI(id);
-        } else if (type.equalsIgnoreCase(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        } else if (type.equalsIgnoreCase(QB.MEASURE_PROPERTY.stringValue())) {
             componentIri =  RdfUtils.structureComponentMeasureIRI(id);
         } else {
             componentIri =  RdfUtils.structureComponentDimensionIRI(id);
@@ -345,13 +339,13 @@ public class StructureComponentUtils extends RdfService {
         String type = component.getString("type");
         String id = component.getString("id");
 
-        if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equals(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
         }
-        else if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        else if (type.equals(QB.MEASURE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentMeasureIRI(id), QB.MEASURE_PROPERTY);
         }
-        else if (type.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+        else if (type.equals(QB.DIMENSION_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
         }
 
