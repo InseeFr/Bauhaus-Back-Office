@@ -105,6 +105,12 @@ public class Config {
 	public static String IGESA_APP_ID = "";
 	public static String IGESA_USER = "";
 	public static String IGESA_PASSWORD = "";
+	
+	public static String SUGOI_URL = "";
+	public static String SUGOI_USER = "";
+	public static String SUGOI_PASSWORD = "";
+	public static String SUGOI_APP = "";
+	public static String SUGOI_REALM = "";
 
 	public static String SWAGGER_HOST = "";
 	public static String SWAGGER_BASEPATH = "";
@@ -184,6 +190,13 @@ public class Config {
 		Config.IGESA_APP_ID = env.getProperty("fr.insee.rmes.bauhaus.igesa.id");
 		Config.IGESA_USER = env.getProperty("fr.insee.rmes.bauhaus.igesa.user");
 		Config.IGESA_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.igesa.password");
+		
+		Config.SUGOI_URL = env.getProperty("fr.insee.rmes.bauhaus.sugoi.url");
+		Config.SUGOI_USER = env.getProperty("fr.insee.rmes.bauhaus.sugoi.user");
+		Config.SUGOI_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.sugoi.password");
+		Config.SUGOI_APP = env.getProperty("fr.insee.rmes.bauhaus.sugoi.application");
+		Config.SUGOI_REALM = env.getProperty("fr.insee.rmes.bauhaus.sugoi.realm");
+
 
 		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");
 		Config.SWAGGER_BASEPATH = env.getProperty("fr.insee.rmes.bauhaus.api.basepath");

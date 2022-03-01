@@ -18,21 +18,21 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.xpath.XPath;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.LdapConnexion;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiModel.Application;
 import fr.insee.rmes.utils.JSONComparator;
+import groovy.xml.SAXBuilder;
 
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
@@ -43,6 +43,9 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
+	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
+	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
+	private static final String SUGOI_SEARCH = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
 
 	private static final String IGESA_ADD_USER_PATH_FMT = Config.IGESA_URL + "/gestion/ajout/personne/application/"
 			+ Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
@@ -74,27 +77,33 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		try {
 			Client client = ClientBuilder.newClient();
 
-			String xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
-					.request(MediaType.APPLICATION_XML).get(String.class);
+//			String xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
+//					.request(MediaType.APPLICATION_XML).get(String.class);
+			
+			String jsonResponse = client.target(SUGOI_SEARCH).request(MediaType.APPLICATION_JSON).get(String.class);
 
-			Document doc = new SAXBuilder().build(new StringReader(xmlResponse));
-			List<Element> l = (XPath.selectNodes(doc, ROLES_XPATH));
-			for (Element e : l) {
-				JSONObject jsonO = new JSONObject();
-				jsonO.put(Constants.ID, XPath.newInstance(ROLE_ID_XPATH).valueOf(e));
-				jsonO.put(Constants.LABEL, XPath.newInstance(ROLE_LABEL_XPATH).valueOf(e));
-				List<Element> p = (XPath.selectNodes(e, ROLE_PERSONS_XPATH));
-				JSONArray persons = new JSONArray();
-				for (Element person : p) {
-					JSONObject jsonOO = new JSONObject();
-					jsonOO.put(Constants.ID, XPath.newInstance(ROLE_PERSON_IDEP_XPATH).valueOf(person));
-					jsonOO.put(Constants.LABEL, XPath.newInstance(ROLE_ID_XPATH).valueOf(person));
-					jsonOO.put("stamp", XPath.newInstance(ROLE_PERSON_STAMP_XPATH).valueOf(person));
-					persons.put(jsonOO);
-				}
-				jsonO.put("persons", persons);
-				roles.put(jsonO);
-			}
+			ObjectMapper mapper = new ObjectMapper();
+			Application application = mapper.readValue(jsonResponse, Application.class);
+			
+			
+//			Document doc = new SAXBuilder().build(new StringReader(xmlResponse));
+//			List<Element> l = (XPath.selectNodes(doc, ROLES_XPATH));
+//			for (Element e : l) {
+//				JSONObject jsonO = new JSONObject();
+//				jsonO.put(Constants.ID, XPath.newInstance(ROLE_ID_XPATH).valueOf(e));
+//				jsonO.put(Constants.LABEL, XPath.newInstance(ROLE_LABEL_XPATH).valueOf(e));
+//				List<Element> p = (XPath.selectNodes(e, ROLE_PERSONS_XPATH));
+//				JSONArray persons = new JSONArray();
+//				for (Element person : p) {
+//					JSONObject jsonOO = new JSONObject();
+//					jsonOO.put(Constants.ID, XPath.newInstance(ROLE_PERSON_IDEP_XPATH).valueOf(person));
+//					jsonOO.put(Constants.LABEL, XPath.newInstance(ROLE_ID_XPATH).valueOf(person));
+//					jsonOO.put("stamp", XPath.newInstance(ROLE_PERSON_STAMP_XPATH).valueOf(person));
+//					persons.put(jsonOO);
+//				}
+//				jsonO.put("persons", persons);
+//				roles.put(jsonO);
+//			}
 		} catch (Exception e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to getRoles");
 		}
