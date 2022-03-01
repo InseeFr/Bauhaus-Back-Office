@@ -95,6 +95,10 @@ public class UserSugoi {
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+    
+    public String getCompleteName() {
+    	return getFirstName()+" "+getLastName();
+    }
 
     @JsonProperty("mail")
     public String getMail() {

@@ -192,7 +192,7 @@ public class Config {
 		Config.IGESA_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.igesa.password");
 		
 		Config.SUGOI_URL = env.getProperty("fr.insee.rmes.bauhaus.sugoi.url");
-		Config.SUGOI_USER = env.getProperty("fr.insee.rmes.bauhaus.sugoi.user");
+		Config.SUGOI_USER = env.getProperty("fr.insee.rmes.bauhaus.sugoi.id");
 		Config.SUGOI_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.sugoi.password");
 		Config.SUGOI_APP = env.getProperty("fr.insee.rmes.bauhaus.sugoi.application");
 		Config.SUGOI_REALM = env.getProperty("fr.insee.rmes.bauhaus.sugoi.realm");
