@@ -41,6 +41,8 @@ import fr.insee.rmes.utils.JSONComparator;
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	
+	private static final int NB_USERS_EXPECTED = 20000;
+
 	@Autowired
 	LdapConnexion ldapConnexion;
 
@@ -77,7 +79,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Override
 	public String getRoles() throws RmesException {
 		if (mapUsers == null || mapUsers.isEmpty()) {getAgentsSugoi();}
-		logger.info("mapUsers size : {}", mapUsers.size());
+		logger.info("mapUsers size : {} / {} max", mapUsers.size(), NB_USERS_EXPECTED);
 		JSONArray roles = new JSONArray();
 		try {
 			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
@@ -92,7 +94,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 				JSONArray persons = new JSONArray();
 				if (g.getUsers() != null) {
 					for (UserSugoi u : g.getUsers()) {
-						UserSugoi completeUser = mapUsers.get(u.getUsername());
+						UserSugoi completeUser = mapUsers.get(u.getUsername().toLowerCase());
 						if (completeUser != null ) {
 							JSONObject jsonUser = new JSONObject();
 							jsonUser.put(Constants.ID, u.getUsername());
@@ -146,11 +148,14 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	
 	
 	public String getAgentsSugoi() throws RmesException {
-		mapUsers = new HashMap<>();
+		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
 
 		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
-		String jsonResponse = client.target(SUGOI_SEARCH_USERS).queryParam("size", 6000).request(MediaType.APPLICATION_JSON).get(String.class);
+		String jsonResponse = client.target(SUGOI_SEARCH_USERS)
+									.queryParam("size", NB_USERS_EXPECTED)
+									.request(MediaType.APPLICATION_JSON)
+									.get(String.class);
 
 		ObjectMapper mapper = new ObjectMapper();
 		UsersSugoi users;
@@ -164,7 +169,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 					jsonUser.put(Constants.STAMP, u.getAttributes().getInseeTimbre());
 				}
 				agents.add(jsonUser);
-				mapUsers.put(u.getUsername(), u);
+				mapUsers.put(u.getUsername().toLowerCase(), u);
 			}
 		} catch (JsonProcessingException e) {
 			logger.error("Get agents via Sugoi failed : {}", e.getMessage());
