@@ -1,7 +1,9 @@
 SELECT ?id (?uriComposant as ?uri) ?type ?notation
     ?dateMiseAJour ?statutValidation ?prefLabelLg1 ?prefLabelLg2
     ?uriConcept ?idConcept ?representation
-    ?uriListeCode ?idListeCode ?version ?uriComponentParentId ?uriComponentParentNotation ?dateCreation
+    ?uriListeCode ?idListeCode
+    ?uriParentListCode ?idParentListCode
+    ?version ?uriComponentParentId ?uriComponentParentNotation ?dateCreation
     ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODELIST_GRAPH}>
@@ -51,6 +53,10 @@ WHERE {
     OPTIONAL {
         ?uriComposant qb:codeList ?uriListeCode .
         ?uriListeCode skos:notation ?idListeCode .
+    }
+    OPTIONAL {
+        ?uriListeCode prov:wasDerivedFrom ?uriParentListCode .
+        ?uriParentListCode skos:notation ?idParentListCode .
     }
     OPTIONAL {
         ?uriComposant pav:version ?version .
