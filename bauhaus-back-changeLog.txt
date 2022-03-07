@@ -1,3 +1,8 @@
+3.0.16 : - Front : Correction d'un problème de chargement lors de la modification d'un rapport qualité
+3.0.15 : - Correctif de la boucle infinie à l'affichage des séries (opStat - front)
+		 - Correctif sur les concepts (top concept)
+		 - Front : mise à jour des dépendances	
+3.0.14 : --- utilisé en preprod ---
 3.0.13 : - Tentatives pour supprimer les erreurs trop de fichiers ouverts
 		 - Quelques mises à jour de dépendances
 		 - Suppression du cache pour les concepts (front)
