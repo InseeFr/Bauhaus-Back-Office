@@ -111,6 +111,10 @@ public class Config {
 	public static String SUGOI_PASSWORD = "";
 	public static String SUGOI_APP = "";
 	public static String SUGOI_REALM = "";
+	
+	public static String APIRH_URL="";
+	public static String APIRH_USER="";
+	public static String APIRH_PASSWORD="";
 
 	public static String SWAGGER_HOST = "";
 	public static String SWAGGER_BASEPATH = "";
@@ -196,6 +200,8 @@ public class Config {
 		Config.SUGOI_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.sugoi.password");
 		Config.SUGOI_APP = env.getProperty("fr.insee.rmes.bauhaus.sugoi.application");
 		Config.SUGOI_REALM = env.getProperty("fr.insee.rmes.bauhaus.sugoi.realm");
+		
+		Config.APIRH_URL=env.getProperty("fr.insee.rmes.bauhaus.apirh.url");
 
 
 		Config.SWAGGER_HOST = env.getProperty("fr.insee.rmes.bauhaus.api.host");

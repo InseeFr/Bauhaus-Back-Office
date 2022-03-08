@@ -4,7 +4,9 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface StampsService {
 	
-	public String getStamps() throws RmesException;
-
 	public String getStamp() throws RmesException;
+	
+	public String getStampsApiRH() throws RmesException;
+	
+
 }

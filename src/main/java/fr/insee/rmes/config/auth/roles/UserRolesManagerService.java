@@ -10,7 +10,7 @@ public interface UserRolesManagerService {
 	
 	public String getRoles() throws RmesException;
 	
-	public String getAgents() throws RmesException;
+	public String getAgentsSugoi() throws RmesException;
 	
 	public void setAddRole(String role, String user);
 	

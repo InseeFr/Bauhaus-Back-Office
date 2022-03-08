@@ -114,39 +114,6 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		return roles.toString();
 	}
 
-	@Override
-	public String getAgents() throws RmesException {
-		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
-		try {
-			// Connexion à la racine de l'annuaire
-			DirContext context = ldapConnexion.getLdapContext();
-
-			// Spécification des critères pour la recherche des unités
-			SearchControls controls = new SearchControls();
-			controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			controls.setReturningAttributes(new String[] { ROLE_ID_XPATH,ROLE_PERSON_IDEP_XPATH });
-			String filter = "(&(objectClass=inseePerson)(!(inseeFonction=Enqueteur de l'INSEE*)))";
-
-			// Exécution de la recherche et parcours des résultats
-			NamingEnumeration<SearchResult> results = context.search("o=insee,c=fr", filter, controls);
-			while (results.hasMore()) {
-				SearchResult entree = results.next();
-				JSONObject jsonO = new JSONObject();
-				jsonO.put(Constants.LABEL, entree.getAttributes().get(ROLE_ID_XPATH).get().toString());
-				jsonO.put(Constants.ID, entree.getAttributes().get(ROLE_PERSON_IDEP_XPATH).get().toString());
-				agents.add(jsonO);
-			}
-			context.close();
-			logger.info("Get agents succeed");
-		} catch (NamingException e) {
-			logger.error("Get agents failed : {}", e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents failed");
-		}
-		return agents.toString();
-	}
-	
-	
 	public String getAgentsSugoi() throws RmesException {
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
