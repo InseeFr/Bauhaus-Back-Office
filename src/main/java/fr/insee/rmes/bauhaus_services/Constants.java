@@ -91,7 +91,7 @@ public class Constants {
 	/*S*/
 	public static final String SERIES_UP = "SERIES";
 	public static final String SEEALSO = "seeAlso";
-	public static final String STAMP = "stamp";
+	public static final String STAMP = "timbre";
 	public static final String STATUT_VALIDATION = "statutValidation";
 
 	

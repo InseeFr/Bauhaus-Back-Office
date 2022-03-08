@@ -109,11 +109,11 @@ public class PublicResources {
 	@GET
 	@Path("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
-	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
+	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json" ))})
 	public Response getStamps() {
 			String entity = null;
 			try {
-				entity = stampsService.getStamps();
+				entity = stampsService.getStampsApiRH();
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
@@ -158,7 +158,7 @@ public class PublicResources {
 	public Response getAgents() {
 		String entity = null;
 		try {
-			entity = userRolesManagerService.getAgents();
+			entity = userRolesManagerService.getAgentsSugoi();
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
