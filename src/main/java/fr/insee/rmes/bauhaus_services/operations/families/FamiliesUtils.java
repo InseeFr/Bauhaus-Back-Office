@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import java.io.IOException;
 
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -35,6 +35,7 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -49,6 +50,9 @@ public class FamiliesUtils  extends RdfService {
 	
 	@Autowired
 	FamilyPublication familyPublication;
+	
+	@Autowired
+	ParentUtils ownersUtils;
 
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
@@ -98,7 +102,7 @@ public class FamiliesUtils  extends RdfService {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 		family.setUpdated(DateUtils.getCurrentDate());
-		String status= famOpeSerUtils.getValidationStatus(id);
+		String status= ownersUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		} else {

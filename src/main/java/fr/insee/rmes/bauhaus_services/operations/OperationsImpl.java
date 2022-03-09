@@ -4,18 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,37 +22,26 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
-import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.external_services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
-import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -68,9 +54,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
-
-	@Autowired
-	VarBookExportBuilder varBookExport;
 
 	@Autowired
 	XDocReport xdr;
@@ -86,13 +69,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
-
-	@Autowired
-	DocumentationsUtils documentationsUtils;
-
-	@Autowired
-	MetadataStructureDefUtils msdUtils;
-
 
 	/***************************************************************************************************
 	 * SERIES
@@ -373,120 +349,5 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setIndicator(String body) throws RmesException {
 		return indicatorsUtils.setIndicator(body);
 	}
-
-
-	/***************************************************************************************************
-	 * DOCUMENTATION
-	 * @throws RmesException 
-	 *****************************************************************************************************/
-
-	@Override
-	public String getMSDJson() throws RmesException {
-		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
-	@Override
-	public String getMetadataReportDefaultValue() throws IOException {
-		return StreamUtils.copyToString(this.simsDefaultValue.getInputStream(), Charset.defaultCharset());
-	}
-
-	@Override
-	public MSD getMSD() throws RmesException {
-		return operationsUtils.getMSD();
-	}
-
-	@Override
-	public String getMetadataAttribute(String id) throws RmesException {
-		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
-		return attribute.toString();
-	}
-
-	@Override
-	public String getMetadataAttributes() throws RmesException {
-		String attributes = msdUtils.getMetadataAttributes().toString();
-		return QueryUtils.correctEmptyGroupConcat(attributes);
-	}
-
-	@Override
-	public String getMetadataReport(String id) throws RmesException {
-		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
-		XhtmlToMarkdownUtils.convertJSONObject(documentation);
-		return documentation.toString();
-	}
-
-	@Override
-	public Documentation getFullSimsForXml(String id) throws RmesException {
-		return  documentationsUtils.getFullSimsForXml(id);
-	}
-
-	@Override
-	public String getFullSimsForJson(String id) throws RmesException {
-		return  documentationsUtils.getFullSimsForJson(id).toString();
-	}
-
-	@Override
-	public String getMetadataReportOwner(String id) throws RmesException {
-		return documentationsUtils.getDocumentationOwnersByIdSims(id);
-	}
-
-
-	/**
-	 * CREATE
-	 */
-	@Override
-	public String createMetadataReport(String body) throws RmesException {
-		return documentationsUtils.setMetadataReport(null, body, true);
-	}
-
-
-	/**
-	 * UPDATE
-	 */
-	@Override
-	public String setMetadataReport(String id, String body) throws RmesException {
-		return documentationsUtils.setMetadataReport(id, body, false);
-	}
-
-	/**
-	 * DELETE
-	 */
-	@Override
-	public Status deleteMetadataReport(String id) throws RmesException {
-		return documentationsUtils.deleteMetadataReport(id);
-	}
-
-	/**
-	 * PUBLISH
-	 */
-	@Override
-	public String publishMetadataReport(String id) throws RmesException {
-		return documentationsUtils.publishMetadataReport(id);
-	}
-
-	/**
-	 * EXPORT
-	 */
-	@Override
-	public Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
-		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
-				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
-				"at least one language must be selected for export",
-				"in export of sims: "+id); 
-		return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
-
-	}
-
-	@Override
-	public Response exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
-	}
-
-	@Override
-	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		return documentationsUtils.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
-	}
-
-
 
 }

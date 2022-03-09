@@ -100,6 +100,8 @@ public class Config {
 	public static String BROKER_PASSWORD = "";
 
 	public static String LDAP_URL = "";
+	public static String stampClaim;
+	public static String roleClaim;
 
 	public static String IGESA_URL = "";
 	public static String IGESA_APP_ID = "";
@@ -185,6 +187,8 @@ public class Config {
 		Config.BROKER_PASSWORD = env.getProperty("fr.insee.rmes.bauhaus.broker.password");
 
 		Config.LDAP_URL = env.getProperty("fr.insee.rmes.bauhaus.ldap.url");
+		Config.stampClaim = env.getProperty("jwt.stamp-claim");
+		Config.stampClaim = env.getProperty("jwt.role-claim}");
 
 		Config.IGESA_URL = env.getProperty("fr.insee.rmes.bauhaus.igesa.url");
 		Config.IGESA_APP_ID = env.getProperty("fr.insee.rmes.bauhaus.igesa.id");

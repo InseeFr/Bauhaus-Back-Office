@@ -321,7 +321,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public boolean setConceptSend(String id, String body) throws  RmesException  {
-		return mailSender.sendMailConcept(id, body);
+		Map<String,InputStream> getFileToJoin = getConceptExportIS(id);
+		return mailSender.sendMailConcept(id, body, getFileToJoin);
 	}
 
 	/**
@@ -331,7 +332,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public boolean setCollectionSend(String id, String body) throws  RmesException  {
-		return mailSender.sendMailCollection(id, body);
+		Map<String,InputStream> getFileToJoin = getCollectionExportIS(id);
+		return mailSender.sendMailCollection(id, body, getFileToJoin);
 	}
 
 }

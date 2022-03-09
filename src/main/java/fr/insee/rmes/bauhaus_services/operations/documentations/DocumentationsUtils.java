@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
@@ -80,7 +81,7 @@ public class DocumentationsUtils extends RdfService{
 
 	@Autowired
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
-
+	
 	@Autowired
 	private IndicatorsUtils indicatorsUtils;
 
@@ -98,6 +99,9 @@ public class DocumentationsUtils extends RdfService{
 
 	@Autowired
 	CodeListServiceImpl codeListServiceImpl;
+	
+	@Autowired
+	ParentUtils parentUtils;
 
 	/**
 	 * GETTER
@@ -142,7 +146,7 @@ public class DocumentationsUtils extends RdfService{
 		sims.setLabelLg1(jsonSims.getString(Constants.LABEL_LG1));
 		sims.setLabelLg2(jsonSims.getString(Constants.LABEL_LG2));
 
-		String[] target = getDocumentationTargetTypeAndId(idSims);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(idSims);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
@@ -203,7 +207,7 @@ public class DocumentationsUtils extends RdfService{
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
 		if (RdfUtils.toString(targetUri).contains(Config.OPERATIONS_BASE_URI)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(idTarget);
+			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
 			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
@@ -250,7 +254,7 @@ public class DocumentationsUtils extends RdfService{
 		Resource graph = RdfUtils.simsGraph(id);
 
 		// Find target
-		String[] target = getDocumentationTargetTypeAndId(id);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String targetId = target[1];
 		IRI targetUri = null;
@@ -269,7 +273,7 @@ public class DocumentationsUtils extends RdfService{
 		/* Check rights */
 		IRI seriesOrIndicatorUri = targetUri;
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(targetId);
+			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(targetId);
 		}
 		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -277,10 +281,7 @@ public class DocumentationsUtils extends RdfService{
 		}
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status = famOpeSerUtils.getValidationStatus(targetId);
-		if (status.equals(Constants.UNDEFINED)) {
-			status = indicatorsUtils.getValidationStatus(targetId);
-		}
+		String status = parentUtils.getValidationStatus(targetId);
 		if (PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
 					"This metadataReport cannot be published before its target is published. ",
@@ -450,59 +451,13 @@ public class DocumentationsUtils extends RdfService{
 		return String.valueOf(newId);
 	}
 
-	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
-		logger.info("Search Sims Target Type and id");
-
-		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
-		String idDatabase = null;
-		String targetType = null;
-		if (existingIdTarget != null ) {
-			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
-
-			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get(Constants.ID_SERIES);
-
-				if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-					idDatabase = (String) existingIdTarget.get(Constants.ID_INDICATOR);
-					targetType = Constants.INDICATOR_UP;
-				} else {
-					targetType = Constants.SERIES_UP;
-				}
-			} else {
-				targetType = Constants.OPERATION_UP;
-			}
-		}
-		return new String[] { targetType, idDatabase };	
-	}
-
-	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
-		logger.info("Search Sims Owners' Stamps");
-		String stamps = null;
-		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
-		if (target != null) {
-			String idOperation = target.getString(Constants.ID_OPERATION);
-			String idSerie = target.getString(Constants.ID_SERIES);
-			String idIndicator = target.getString(Constants.ID_INDICATOR);
-
-			if (idOperation != null && !idOperation.isEmpty()) {
-				IRI seriesUri = operationsUtils.getSeriesUriByOperationId(idOperation);
-				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
-			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
-			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
-			} else {
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
-						"Check your documentation creation");
-			}
-		}
-		return stamps;
-	}
-
+	
 
 	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
+		String msdXML = buildShellSims();
+		xmlContent.put("msdFile", msdXML);
 		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
 	}
 	
@@ -510,6 +465,8 @@ public class DocumentationsUtils extends RdfService{
 	public Response exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
+		String msdXML = buildShellSims();
+		xmlContent.put("msdFile", msdXML);
 		return docExport.exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
 	}
 
@@ -521,7 +478,7 @@ public class DocumentationsUtils extends RdfService{
 		String seriesXML = emptyXML;
 		String indicatorXML;
 
-		String[] target = getDocumentationTargetTypeAndId(id);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
@@ -621,14 +578,19 @@ public class DocumentationsUtils extends RdfService{
 
 		return msd ;
 	}
+	
+
+	public MSD getMSD() throws RmesException {
+		return buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
+	}
 
 	public String buildShellSims() throws RmesException {
-		MSD msd= operationsUtils.getMSD();
+		MSD msd= getMSD();
 		return XMLUtils.produceXMLResponse(msd);
 	}
 
 	public Status deleteMetadataReport(String id) throws RmesException {
-		String[] target = getDocumentationTargetTypeAndId(id);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 
 		if (!Constants.SERIES_UP.equals(targetType)) {
@@ -662,4 +624,5 @@ public class DocumentationsUtils extends RdfService{
 
 		repoGestion.overrideTriplets(simsUri, model, graph);
 	}
+	
 }

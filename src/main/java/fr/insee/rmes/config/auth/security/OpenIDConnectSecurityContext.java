@@ -4,18 +4,18 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import javax.ws.rs.HttpMethod;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,12 +31,9 @@ import fr.insee.rmes.config.auth.user.UserProvider;
 @Conditional(value = OpenIDConnectAuthCondition.class)
 public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  {
 	
-	private static final Logger log = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
+//	private static final Logger log = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
 	
-	@Value("${jwt.stamp-claim}")
-	private String stampClaim;
-	@Value("${jwt.role-claim}")
-	private String roleClaim;
+
 
 //	@Autowired
 //	RmesAuthenticationEntryPoint entryPoint;
@@ -58,7 +55,8 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 				.and()
 				.oauth2ResourceServer()
 	//				.authenticationEntryPoint(entryPoint )
-				.jwt().jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
+				.jwt()
+				.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
 		if (Config.REQUIRES_SSL)
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 	
@@ -69,7 +67,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	public UserProvider getUserProvider() {
 		return auth -> {
 			final Jwt jwt = (Jwt) auth.getPrincipal();
-			return new User(jwt.getClaimAsStringList(roleClaim), jwt.getClaimAsString(stampClaim));
+			return new User(jwt.getClaimAsStringList(Config.roleClaim), jwt.getClaimAsString(Config.stampClaim));
 		};
 	}
 
@@ -83,5 +81,15 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
+	
+	 @Bean
+	    public NimbusJwtDecoder nimbusJwtDecoder(){
+	        RestTemplate rest = new RestTemplate();
+	        rest.getInterceptors().add((request, body, execution) -> 
+	            execution.execute(request, body)
+	        );
+	        return NimbusJwtDecoder.withJwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne")
+	                .restOperations(rest).build();
+	    }
 
 }

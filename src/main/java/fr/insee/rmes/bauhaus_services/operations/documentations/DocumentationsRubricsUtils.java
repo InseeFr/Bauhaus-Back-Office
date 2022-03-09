@@ -154,7 +154,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 		}
 		rubric.remove(hasDocLg);
 	}
-
+	
 
 	/**
 	 * From Object to RDF

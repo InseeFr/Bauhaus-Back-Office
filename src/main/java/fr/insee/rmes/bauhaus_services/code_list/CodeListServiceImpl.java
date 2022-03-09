@@ -51,9 +51,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	static final Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
 	
-	@Autowired	
-	LangService codeListUtils;
-	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
 

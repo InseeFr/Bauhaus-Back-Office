@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -39,14 +38,6 @@ public class FamOpeSerIndUtils  extends RdfService {
 
 	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
 		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
-	}
-	
-	public String getValidationStatus(String id) throws RmesException{
-		try {		
-			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
-			return Constants.UNDEFINED;
-		}
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {

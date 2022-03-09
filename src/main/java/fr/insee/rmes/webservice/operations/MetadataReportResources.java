@@ -61,7 +61,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
 			try {
-				msd = operationsService.getMSD();
+				msd = documentationsService.getMSD();
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
@@ -70,7 +70,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 
 		else {
 			try {
-				jsonResultat = operationsService.getMSDJson();
+				jsonResultat = documentationsService.getMSDJson();
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
@@ -86,7 +86,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	public Response getMetadataAttribute(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
-			jsonResultat = operationsService.getMetadataAttribute(id);
+			jsonResultat = documentationsService.getMetadataAttribute(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -101,7 +101,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	public Response getMetadataAttributes() {
 		String jsonResultat;
 		try {
-			jsonResultat = operationsService.getMetadataAttributes();
+			jsonResultat = documentationsService.getMetadataAttributes();
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -118,7 +118,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	public Response getMetadataReport(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
-			jsonResultat = operationsService.getMetadataReport(id);
+			jsonResultat = documentationsService.getMetadataReport(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -132,7 +132,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public Response getMetadataReportDefaultValue() throws IOException {
-		return Response.status(HttpStatus.SC_OK).entity(operationsService.getMetadataReportDefaultValue()).build();
+		return Response.status(HttpStatus.SC_OK).entity(documentationsService.getMetadataReportDefaultValue()).build();
 	}
 
 	@GET
@@ -153,7 +153,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
 			try {
-				fullsims = operationsService.getFullSimsForXml(id);
+				fullsims = documentationsService.getFullSimsForXml(id);
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
@@ -163,7 +163,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 
 		else {
 			try {
-				jsonResultat = operationsService.getFullSimsForJson(id);
+				jsonResultat = documentationsService.getFullSimsForJson(id);
 			} catch (RmesException e) {
 				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 			}
@@ -190,7 +190,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	public Response getMetadataReportOwner(@PathParam(Constants.ID) String id) {
 		String jsonResultat;
 		try {
-			jsonResultat = operationsService.getMetadataReportOwner(id);
+			jsonResultat = documentationsService.getMetadataReportOwner(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -213,7 +213,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		logger.info("POST Metadata report");
 		String id = null;
 		try {
-			id = operationsService.createMetadataReport(body);
+			id = documentationsService.createMetadataReport(body);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -237,7 +237,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@RequestBody(description = "Report to update", required = true,
 			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
 		try {
-			operationsService.setMetadataReport(id, body);
+			documentationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -258,7 +258,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@PathParam(Constants.ID) String id) {
 		Status result=Status.NO_CONTENT;
 		try {
-			result = operationsService.deleteMetadataReport(id);
+			result = documentationsService.deleteMetadataReport(id);
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}
@@ -280,7 +280,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	public Response setSimsValidation(
 			@PathParam(Constants.ID) String id) throws RmesException {
 		try {
-			operationsService.publishMetadataReport(id);
+			documentationsService.publishMetadataReport(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
@@ -321,7 +321,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}
-		return operationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
+		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
 	}
 
 	/**
@@ -340,7 +340,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathParam(Constants.ID) String id
 			) throws RmesException {
 
-		return operationsService.exportMetadataReportForLabel(id);	
+		return documentationsService.exportMetadataReportForLabel(id);	
 	}
 	
 	/**
@@ -376,7 +376,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}
-		return operationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);	
+		return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);	
 	}
 	
 }

@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,6 +33,10 @@ public class OperationsCommonResources {
 
 	@Autowired
 	protected OperationsService operationsService;
+	
+	@Autowired
+	protected OperationsDocumentationsService documentationsService;
+
 
 
 	protected Response returnRmesException(RmesException e) {

@@ -1,6 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.6.4</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	
+	
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
@@ -67,7 +76,7 @@
 
 	</properties>
 
-	<repositories>
+<!-- 	<repositories>
 		<repository>
 			<id>repository.spring.release</id>
 			<name>Spring GA Repository</name>
@@ -78,16 +87,33 @@
 			<name>JBoss repository</name>
 			<url>https://repository.jboss.org/nexus/content/groups/public</url>
 		</repository>
-	</repositories>
+	</repositories> -->
 	
 
 
 	<dependencies>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jersey</artifactId>
+		</dependency>
+	
+	
+	
+		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+<!-- 			<version>${jackson.version}</version>
+ -->		</dependency>
 		<dependency>
 			<groupId>org.zeroturnaround</groupId>
 			<artifactId>zt-zip</artifactId>
@@ -103,8 +129,8 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-			<version>${jersey.version}</version>
-		<!-- 	<exclusions>
+<!-- 			<version>${jersey.version}</version>
+ -->		<!-- 	<exclusions>
 				<exclusion>
 					<groupId>jakarta.xml.bind</groupId>
 					<artifactId>jakarta.xml.bind-api</artifactId>
@@ -114,13 +140,13 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-multipart</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
+<!-- 			<version>${jersey.version}</version>
+ -->		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-			<version>${jersey.version}</version>
-			<exclusions>
+<!-- 			<version>${jersey.version}</version>
+ -->			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
@@ -142,8 +168,8 @@
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<version>2.3.3</version>
-		</dependency> 
+<!-- 			<version>2.3.3</version>
+ -->		</dependency> 
 		<dependency>
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
@@ -174,8 +200,8 @@
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-			<version>5.0.0</version>
-			<scope>provided</scope>
+<!-- 			<version>5.0.0</version>
+ -->			<scope>provided</scope>
 		</dependency>
 
 		<!-- Runtime, com.sun.xml.bind module -->
@@ -183,8 +209,8 @@
 		<dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring5</artifactId>
-			<version>${jersey.version}</version>
-			<exclusions>
+<!-- 			<version>${jersey.version}</version>
+ -->			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
 					<artifactId>spring</artifactId>
@@ -211,7 +237,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${spring.version}</version>
@@ -247,11 +273,11 @@
 			<version>${spring.security.version}</version>
 		</dependency>
 
-		<!-- OIDC -->
+		OIDC
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-jose</artifactId>
-		    <version>5.6.2</version>
+		    <version>${spring.security.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
@@ -261,9 +287,19 @@
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-resource-server</artifactId>
-		    <version>5.6.2</version>
+		    <version>${spring.security.version}</version>
 		</dependency>
-
+ -->
+ 
+		 <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+ 
 
 		<!-- -->
 
@@ -287,36 +323,36 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
+<!-- 			<version>${junit.version}</version>
+ -->			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
+<!-- 			<version>${junit.version}</version>
+ -->			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
+<!-- 			<version>${junit.version}</version>
+ -->			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>3.1.0</version>
-			<scope>test</scope>
+<!-- 			<version>3.1.0</version>
+ -->			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>3.1.0</version>
-			<scope>test</scope>
+<!-- 			<version>3.1.0</version>
+ -->			<scope>test</scope>
 		</dependency>
 
 		<!-- SLF4J / LOG4J -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>${log4j2.version}</version>
@@ -330,12 +366,17 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j18-impl</artifactId>
 			<version>${log4j2.version}</version>
+		</dependency> -->
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId><!-- Used by Log4jServletContainerInitializer -->
 			<artifactId>javax.servlet-api</artifactId>
-			<version>4.0.0</version>
-			<scope>provided</scope>
+<!-- 			<version>4.0.0</version>
+ -->			<scope>provided</scope>
 		</dependency>
 
 		<!-- SWAGGER -->
@@ -405,8 +446,8 @@
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-client</artifactId>
-			<version>5.15.10</version>
-			<exclusions>
+<!-- 			<version>5.15.10</version>
+ -->			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
@@ -416,8 +457,8 @@
 		<dependency>
 		    <groupId>jakarta.jms</groupId>
 		    <artifactId>jakarta.jms-api</artifactId>
-		    <version>2.0.3</version>
-		</dependency>
+<!-- 		    <version>2.0.3</version>
+ -->		</dependency>
 
 		<!-- SAXON FOR XSLT -->
 		<dependency>
@@ -436,8 +477,8 @@
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
-			<version>2.3.28</version><!-- change in FreemarkerConfig too -->
-		</dependency>
+<!-- 			<version>2.3.28</version>change in FreemarkerConfig too
+ -->		</dependency>
 
 		<dependency>
 			<groupId>fr.opensagres.xdocreport</groupId>
@@ -552,7 +593,7 @@
 		<finalName>${final.war.name}</finalName>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
-			<plugin>
+<!-- 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>3.3.0</version>
 				<configuration>
@@ -568,7 +609,13 @@
 					<target>11</target>
 				</configuration>
 			</plugin>
-
+ -->
+ 
+ 			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>	
+			
 			<!-- Plugin lancement des tests -->
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>

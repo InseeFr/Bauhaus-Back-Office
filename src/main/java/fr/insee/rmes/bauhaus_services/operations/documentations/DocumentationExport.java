@@ -15,8 +15,6 @@ import fr.insee.rmes.utils.XsltUtils;
 @Component
 public class DocumentationExport {
 
-	@Autowired
-	private DocumentationsUtils documentationsUtils;
 	
 	@Autowired
 	ExportUtils exportUtils;
@@ -30,9 +28,7 @@ public class DocumentationExport {
 	
 	public Response exportAsResponse(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2, String goal) throws RmesException {
-		//Add two params to xmlContents
-		String msdXML = documentationsUtils.buildShellSims();
-		xmlContent.put("msdFile", msdXML);
+		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put("parametersFile", parametersXML);
 		if (Constants.GOAL_RMES.equals(goal)) {
@@ -48,9 +44,7 @@ public class DocumentationExport {
 	
 	public Response exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
-		//Add two params to xmlContents
-		String msdXML = documentationsUtils.buildShellSims();
-		xmlContent.put("msdFile", msdXML);
+		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put("parametersFile", parametersXML);
 

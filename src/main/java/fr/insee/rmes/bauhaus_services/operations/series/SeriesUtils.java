@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
@@ -66,13 +67,19 @@ public class SeriesUtils extends RdfService {
 
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
+	
+
+	@Autowired
+	ParentUtils ownersUtils;
 
 	@Autowired
 	SeriesPublication seriesPublication;
+	
+	
 
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
-	
+
 	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
 
 	/*READ*/
@@ -197,14 +204,7 @@ public class SeriesUtils extends RdfService {
 		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
 		series.put(Constants.CREATORS, creators);
 	}
-	
-	public JSONArray getSeriesCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
-	}
-	
-	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
-	}
+
 
 	/*WRITE*/
 
@@ -382,7 +382,7 @@ public class SeriesUtils extends RdfService {
 
 		series.setUpdated(DateUtils.getCurrentDate());
 
-		String status = famOpeSerIndUtils.getValidationStatus(id);
+		String status = ownersUtils.getFamOpSerValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(series.getIdSims(), series.getPrefLabelLg1(), series.getPrefLabelLg2());
 		if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfSeries(series, null, ValidationStatus.UNPUBLISHED);
@@ -390,17 +390,6 @@ public class SeriesUtils extends RdfService {
 			createRdfSeries(series, null, ValidationStatus.MODIFIED);
 		}
 		logger.info("Update series : {} - {}", series.getId(), series.getPrefLabelLg1());
-	}
-
-	public boolean hasSims(String seriesId) throws RmesException {
-		JSONObject series = getSeriesJsonById(seriesId, EncodingType.MARKDOWN);
-		String idSims;
-		try {
-			idSims = series.getString(Constants.ID_SIMS);
-		} catch (JSONException e) {
-			return false;
-		}
-		return idSims != null && !idSims.isEmpty();
 	}
 
 	public boolean hasOperations(String seriesId) throws RmesException {
@@ -416,7 +405,8 @@ public class SeriesUtils extends RdfService {
 
 	public String setSeriesValidation(String id) throws RmesException {
 		Model model = new LinkedHashModel();
-		seriesPublication.publishSeries(id);
+		JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
+		seriesPublication.publishSeries(id, serieJson);
 
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
 		if (!stampsRestrictionsService.canValidateSeries(seriesURI)) {

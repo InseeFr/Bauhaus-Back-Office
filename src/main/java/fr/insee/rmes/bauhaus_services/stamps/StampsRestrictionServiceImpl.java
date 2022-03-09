@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -30,7 +31,10 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
 
 
 @Service
-public class StampsRestrictionServiceImpl extends RdfService implements StampsRestrictionsService {
+public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
+	
+	@Autowired
+	protected RepositoryGestion repoGestion;
 	
 	static final Logger logger = LogManager.getLogger(StampsRestrictionServiceImpl.class);
 

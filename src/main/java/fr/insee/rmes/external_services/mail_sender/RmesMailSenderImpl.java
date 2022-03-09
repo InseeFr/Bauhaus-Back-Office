@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
@@ -50,22 +49,18 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
-	ConceptsService conceptsService;
-	
-	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 	
 
 	static final Logger logger = LogManager.getLogger(RmesMailSenderImpl.class);
 		
 	@Override
-	public boolean sendMailConcept(String id, String body) throws  RmesException  {
+	public boolean sendMailConcept(String id, String body, Map<String,InputStream> getFileToJoin) throws  RmesException  {
 		IRI conceptURI = RdfUtils.conceptIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		Map<String,InputStream> getFileToJoin = conceptsService.getConceptExportIS(id);
 		String filename = getFileToJoin.entrySet().iterator().next().getKey();
 		try(InputStream is = getFileToJoin.get(filename)){
 			return sendMail(mail, is, filename );
@@ -75,13 +70,12 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	}
 	
 	@Override
-	public boolean sendMailCollection(String id, String body) throws  RmesException  {
+	public boolean sendMailCollection(String id, String body, Map<String,InputStream> getFileToJoin) throws  RmesException  {
 		IRI collectionURI = RdfUtils.collectionIRI(id);
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
 		Mail mail = prepareMail(body);
-		Map<String,InputStream> getFileToJoin = conceptsService.getCollectionExportIS(id);
 		String filename = getFileToJoin.entrySet().iterator().next().getKey();
 		try(InputStream is = getFileToJoin.get(filename)){
 			return sendMail(mail, is, filename);

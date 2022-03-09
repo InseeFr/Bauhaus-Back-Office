@@ -172,6 +172,12 @@ public class SeriesQueries {
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
 	}
 	
+	public static String checkIfSeriesHasSims(String uriSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_SERIES, uriSeries);
+		return buildSeriesRequest("checkIfSeriesHasSimsQuery.ftlh", params);	
+	}
+	
 	
 	/**
 	 * @param idSeries

@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -65,12 +65,14 @@ public class DocumentsUtils  extends RdfService  {
 
 	@Autowired
 	private LangService langService;
+//	@Autowired
+//	DocumentationsUtils documentationsUtils;
 	@Autowired
-	DocumentationsUtils documentationsUtils;
+	ParentUtils ownersUtils;
+	
 	/*
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
-
 	public void addDocumentsAndLinksToRubric(Model model, Resource graph, List<Document> documents, IRI textUri)
 			throws RmesException {
 		if (documents != null && !documents.isEmpty()) {
@@ -152,7 +154,7 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
-	public void formatDateInJsonObject(JSONObject doc) {
+	private void formatDateInJsonObject(JSONObject doc) {
 		if (doc.has(Constants.UPDATED_DATE)) {
 			String formatedDate = DateUtils.getDate(doc.getString(Constants.UPDATED_DATE));
 			doc.remove(Constants.UPDATED_DATE);
@@ -260,7 +262,7 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 
-	public void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
+	private void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
 		JSONObject existingUriJson = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url));
 		if (existingUriJson.length() > 0) {
 			String uri = existingUriJson.getString("document");
@@ -323,7 +325,7 @@ public class DocumentsUtils  extends RdfService  {
 
 		for (int i = 0; i < sims.length(); i++) {
 			JSONObject sim = sims.getJSONObject(i);
-			sim.put("creators", new JSONArray(documentationsUtils.getDocumentationOwnersByIdSims(sim.getString("id"))));
+			sim.put("creators", new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString("id"))));
 		}
 
 		jsonDocs.put("sims", sims);
@@ -379,7 +381,7 @@ public class DocumentsUtils  extends RdfService  {
 			if(m.matches()) {
 				simsId = m.group(2);
 			}
-			String[] target = documentationsUtils.getDocumentationTargetTypeAndId(simsId);
+			String[] target = ownersUtils.getDocumentationTargetTypeAndId(simsId);
 			//target[0] =  targetType / target[1] idTarget
 			IRI targetIri = null ;
 			

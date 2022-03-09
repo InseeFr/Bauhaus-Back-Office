@@ -105,7 +105,7 @@ public class HealthcheckApi {
          logger.debug("End healthcheck");
          
     	if (!"".equals(errorMessage.toString())) {
-    		logger.error("{}",errorMessage);
+    		logger.error("Errors message : \n {}",errorMessage);
     		return Response.serverError().entity(stateResult.merge(errorMessage).toString()).build();
     	}
     	else {
