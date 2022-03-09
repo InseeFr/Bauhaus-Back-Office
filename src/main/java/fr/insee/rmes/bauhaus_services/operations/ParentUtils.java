@@ -14,7 +14,10 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotAcceptableException;
+import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -63,6 +66,21 @@ public class ParentUtils extends RdfService{
 	public boolean checkIfSeriesHasSims(String uriSeries) throws RmesException {
 		return repoGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesHasSims(uriSeries));
 	}
+	
+	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
+		String uriParent = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.SERIES, idParent));
+		if (!checkIfParentExists(uriParent) || checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
+				"Cannot create Sims for a series which already has operations", idParent);
+	}
+	
+	public boolean checkIfParentExists(String uriParent) throws RmesException {
+		return repoGestion.getResponseAsBoolean(ParentQueries.checkIfExists(uriParent));
+	}
+	
+	public boolean checkIfSeriesHasOperation(String uriParent) throws RmesException {
+		return repoGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesHasOperation(uriParent));
+	}
+	
 	
 	public String getValidationStatus(String targetId) throws RmesException {
 		String status = getFamOpSerValidationStatus(targetId);

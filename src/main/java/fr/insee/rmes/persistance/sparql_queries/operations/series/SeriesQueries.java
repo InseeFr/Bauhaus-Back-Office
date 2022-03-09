@@ -179,6 +179,13 @@ public class SeriesQueries {
 	}
 	
 	
+	public static String checkIfSeriesHasOperation(String uriSeries) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_SERIES, uriSeries);
+		return buildSeriesRequest("checkIfSeriesHasOperationQuery.ftlh", params);	
+	}
+	
+	
 	/**
 	 * @param idSeries
 	 * @return String

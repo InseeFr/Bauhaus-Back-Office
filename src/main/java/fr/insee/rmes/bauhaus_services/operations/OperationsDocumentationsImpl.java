@@ -16,6 +16,7 @@ import org.springframework.util.StreamUtils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
@@ -46,6 +47,9 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Autowired
 	DocumentationsUtils documentationsUtils;
+	
+	@Autowired
+	DocumentationExport documentationsExport;
 
 	@Autowired
 	MetadataStructureDefUtils msdUtils;
@@ -152,18 +156,18 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: "+id); 
-		return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
+		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
 
 	}
 
 	@Override
 	public Response exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
+			return documentationsExport.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
 	}
 
 	@Override
 	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		return documentationsUtils.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
+		return documentationsExport.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
 	}
 
 
