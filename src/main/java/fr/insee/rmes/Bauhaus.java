@@ -13,7 +13,6 @@ public class Bauhaus extends SpringBootServletInitializer {
 	
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		application.allowCircularReferences(true);
 		return application.sources(Bauhaus.class);
 	}
 
