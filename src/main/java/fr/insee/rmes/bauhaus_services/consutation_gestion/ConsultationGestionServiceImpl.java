@@ -259,6 +259,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             JSONObject concept = new JSONObject();
             concept.put("uri", component.getString("uriConcept"));
             concept.put("id", component.getString("idConcept"));
+            this.addCloseMatch(concept);
             component.put("concept", concept);
             component.remove("uriConcept");
             component.remove("idConcept");
@@ -289,6 +290,25 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             component.put("format", format);
         }
         return component.toString();
+    }
+
+    private void addCloseMatch(JSONObject concept) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("CONCEPT_ID", concept.getString("id"));
+        JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", params));
+        if(closeMatch.length() > 0){
+            JSONArray formattedCloseMatchArray  = new JSONArray();
+            for(int i = 0; i < closeMatch.length(); i++){
+                String iri = ((JSONObject) closeMatch.get(i)).getString("closeMatch").replace("urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=", "");;
+                JSONObject relation = new JSONObject();
+                relation.put("agence", iri.substring(0, iri.indexOf(":")));
+                relation.put("id", iri.substring(iri.lastIndexOf(".") + 1));
+                formattedCloseMatchArray.put(relation);
+            }
+            concept.put("conceptsSdmx", formattedCloseMatchArray);
+        }
+
     }
 
     private void getStructureComponents(String id, JSONObject structure) throws RmesException {
