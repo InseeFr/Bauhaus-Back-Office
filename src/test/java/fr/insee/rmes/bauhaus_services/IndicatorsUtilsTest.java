@@ -37,7 +37,7 @@ class IndicatorsUtilsTest {
     @BeforeEach
     public void init() {
     	famOpeSerIndUtilsMock = Mockito.spy(new FamOpeSerIndUtils());
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         
         try {
 			initIndicator();

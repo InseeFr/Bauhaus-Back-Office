@@ -76,20 +76,6 @@
 
 	</properties>
 
-<!-- 	<repositories>
-		<repository>
-			<id>repository.spring.release</id>
-			<name>Spring GA Repository</name>
-			<url>https://repo.spring.io/release</url>
-		</repository>
-		<repository>
-			<id>repository.jboss.org-public</id>
-			<name>JBoss repository</name>
-			<url>https://repository.jboss.org/nexus/content/groups/public</url>
-		</repository>
-	</repositories> -->
-	
-
 
 	<dependencies>
 		<dependency>
@@ -112,41 +98,25 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-<!-- 			<version>${jackson.version}</version>
- -->		</dependency>
+		</dependency>
 		<dependency>
 			<groupId>org.zeroturnaround</groupId>
 			<artifactId>zt-zip</artifactId>
 			<version>1.14</version>
 			<type>jar</type>
-			<!-- <exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions> -->
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.containers</groupId>
 			<artifactId>jersey-container-servlet-core</artifactId>
-<!-- 			<version>${jersey.version}</version>
- -->		<!-- 	<exclusions>
-				<exclusion>
-					<groupId>jakarta.xml.bind</groupId>
-					<artifactId>jakarta.xml.bind-api</artifactId>
-				</exclusion>
-			</exclusions> -->
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-multipart</artifactId>
-<!-- 			<version>${jersey.version}</version>
- -->		</dependency>
+		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-json-jackson</artifactId>
-<!-- 			<version>${jersey.version}</version>
- -->			<exclusions>
+			<exclusions>
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-core</artifactId>
@@ -159,58 +129,30 @@
 					<groupId>com.fasterxml.jackson.jaxrs</groupId>
 					<artifactId>jackson-jaxrs-json-provider</artifactId>
 				</exclusion>
-				<!-- <exclusion>
-					<groupId>jakarta.xml.bind</groupId>
-					<artifactId>jakarta.xml.bind-api</artifactId>
-				</exclusion> -->
 			</exclusions>
 		</dependency> 
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-<!-- 			<version>2.3.3</version>
- -->		</dependency> 
+		</dependency> 
 		<dependency>
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
 		  <version>2.3.3</version>
 		  <scope>runtime</scope>
-<!-- 		  <exclusions>
-		  	<exclusion>
-		  		<groupId>jakarta.xml.bind</groupId>
-		  		<artifactId>jakarta.xml.bind-api</artifactId>
-		  	</exclusion>
-		  </exclusions> -->
 		</dependency>
-<!-- 				<dependency>
-		  <groupId>javax.xml.bind</groupId>
-		  <artifactId>jaxb-api</artifactId>
-		  <version>2.3.0</version>
-		</dependency>
-		<dependency>
-		  <groupId>com.sun.xml.bind</groupId>
-		  <artifactId>jaxb-core</artifactId>
-		  <version>2.3.0</version>
-		</dependency>
-		<dependency>
-		  <groupId>com.sun.xml.bind</groupId>
-		  <artifactId>jaxb-impl</artifactId>
-		  <version>2.3.0</version>
-		</dependency> -->
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
-<!-- 			<version>5.0.0</version>
- -->			<scope>provided</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Runtime, com.sun.xml.bind module -->
 
-		<dependency>
+<!-- <dependency>
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring5</artifactId>
-<!-- 			<version>${jersey.version}</version>
- -->			<exclusions>
+			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
 					<artifactId>spring</artifactId>
@@ -237,59 +179,8 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<version>${spring.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-			<version>${spring.security.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-			<version>${spring.security.version}</version>
-		</dependency>
-
-		OIDC
-		<dependency>
-		    <groupId>org.springframework.security</groupId>
-		    <artifactId>spring-security-oauth2-jose</artifactId>
-		    <version>${spring.security.version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.security</groupId>
-		    <artifactId>spring-security-jwt</artifactId>
-		    <version>1.1.1.RELEASE</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.security</groupId>
-		    <artifactId>spring-security-oauth2-resource-server</artifactId>
-		    <version>${spring.security.version}</version>
-		</dependency>
- -->
+ -->				
+		
  
 		 <dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -323,50 +214,30 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
-<!-- 			<version>${junit.version}</version>
- -->			<scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
-<!-- 			<version>${junit.version}</version>
- -->			<scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-<!-- 			<version>${junit.version}</version>
- -->			<scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-<!-- 			<version>3.1.0</version>
- -->			<scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-<!-- 			<version>3.1.0</version>
- -->			<scope>test</scope>
+		<scope>test</scope>
 		</dependency>
 
 		<!-- SLF4J / LOG4J -->
-		<!-- <dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-core</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-web</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j18-impl</artifactId>
-			<version>${log4j2.version}</version>
-		</dependency> -->
 		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -375,8 +246,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId><!-- Used by Log4jServletContainerInitializer -->
 			<artifactId>javax.servlet-api</artifactId>
-<!-- 			<version>4.0.0</version>
- -->			<scope>provided</scope>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- SWAGGER -->
@@ -391,21 +261,18 @@
 					</artifactId>
 					<groupId>org.glassfish.jersey.containers</groupId>
 				</exclusion>
-			<!-- 	<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jakarta.xml.bind</groupId>
-					<artifactId>jakarta.xml.bind-api</artifactId>
-				</exclusion> -->
 			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
-			<artifactId>swagger-jaxrs2-servlet-initializer</artifactId>
+			<artifactId>swagger-core</artifactId>
 			<version>${swagger.core.version}</version>
 		</dependency>
+		<dependency>
+        	<groupId>io.swagger.core.v3</groupId>
+        	<artifactId>swagger-annotations</artifactId>
+        	<version>${swagger.core.version}</version>
+   		</dependency>
 
 		<!-- RDF -->
 		<dependency>

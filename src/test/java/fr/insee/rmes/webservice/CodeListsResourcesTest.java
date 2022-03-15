@@ -41,7 +41,7 @@ class CodeListsResourcesTest {
     @BeforeEach
     public void init() {
     	codeListService = Mockito.spy(new CodeListServiceImpl());
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     //getCodeListByNotation//
