@@ -11,7 +11,7 @@ import javax.ws.rs.HttpMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -32,8 +32,7 @@ import fr.insee.rmes.config.auth.user.UserProvider;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled = true)
-//@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.env}'.equals('prod')")
-@ConditionalOnProperty(name = "fr.insee.rmes.bauhaus.env", havingValue = "prod")
+@ConditionalOnExpression("'PROD'.equals('${fr.insee.rmes.bauhaus.env}')")
 public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  {
 	
 	private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
@@ -57,13 +56,12 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 				.anyRequest().authenticated()
 				.and()
 				.oauth2ResourceServer()
-	//				.authenticationEntryPoint(entryPoint )
 				.jwt()
 				.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
 		if (Config.REQUIRES_SSL)
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
-		logger.debug("OpenID authentication activated");
+		logger.debug("OpenID authentication activated ");
 	
 	}
 	
