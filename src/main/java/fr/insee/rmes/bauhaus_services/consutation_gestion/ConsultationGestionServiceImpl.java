@@ -299,7 +299,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         if(closeMatch.length() > 0){
             JSONArray formattedCloseMatchArray  = new JSONArray();
             for(int i = 0; i < closeMatch.length(); i++){
-                String iri = ((JSONObject) closeMatch.get(i)).getString("closeMatch").replace("urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=", "");;
+                String iri = ((JSONObject) closeMatch.get(i)).getString("closeMatch").replace("urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=", "");
                 JSONObject relation = new JSONObject();
                 relation.put("agence", iri.substring(0, iri.indexOf(":")));
                 relation.put("id", iri.substring(iri.lastIndexOf(".") + 1));
