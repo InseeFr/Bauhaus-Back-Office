@@ -40,14 +40,18 @@
 			<name>Olivier Pucher</name>
 			<email>olivier.pucher@insee.fr</email>
 		</developer>
+		<developer>
+			<name>Jérôme Bourgeois</name>
+			<email>jerome.bourgeois@insee.fr</email>
+		</developer>
 	</developers>
-
 
 
 	<properties>
 		<final.war.name>bauhaus</final.war.name>
+		<java.version>11</java.version>
 
-		<jersey.version>2.32</jersey.version>
+		<jersey.version>2.35</jersey.version>
 		<jackson.version>2.13.1</jackson.version>
 		<rdf4j.version>3.7.3</rdf4j.version>
 		<swagger.core.version>2.1.12</swagger.core.version>
@@ -56,6 +60,7 @@
 		<log4j2.version>2.17.1</log4j2.version>
 		<xdocreport.version>2.0.3</xdocreport.version>
 		<junit.version>5.8.2</junit.version>
+		<jacoco.version>0.8.5</jacoco.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 
@@ -92,9 +97,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jersey</artifactId>
 		</dependency>
-	
-	
-	
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
@@ -106,35 +108,9 @@
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-servlet-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
 			<artifactId>jersey-media-multipart</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-json-jackson</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-annotations</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.jaxrs</groupId>
-					<artifactId>jackson-jaxrs-json-provider</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency> 
-		<dependency>
-			<groupId>jakarta.xml.bind</groupId>
-			<artifactId>jakarta.xml.bind-api</artifactId>
-		</dependency> 
 		<dependency>
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
@@ -147,41 +123,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Runtime, com.sun.xml.bind module -->
-
-<!-- <dependency>
-			<groupId>org.glassfish.jersey.ext</groupId>
-			<artifactId>jersey-spring5</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-web</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-beans</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-context</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-aop</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
- -->				
-		
- 
+		<!-- SECURITY -->
 		 <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
@@ -212,33 +154,12 @@
 
 		<!-- test -->
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-		<scope>test</scope>
 		</dependency>
 
 		<!-- SLF4J / LOG4J -->
-		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
@@ -279,27 +200,11 @@
 			<groupId>org.eclipse.rdf4j</groupId>
 			<artifactId>rdf4j-repository-http</artifactId>
 			<version>${rdf4j.version}</version>
-			<!-- <exclusions>
-				<exclusion>
-					<groupId>javax.xml.bind</groupId>
-					<artifactId>jaxb-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions> -->
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
 			<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
 			<version>${rdf4j.version}</version>
-			<!-- <exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions> -->
 		</dependency>
 
 		<dependency>
@@ -332,7 +237,7 @@
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
 			<version>11.1.1</version>
-	<exclusions>
+			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
@@ -344,9 +249,7 @@
 		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
-<!-- 			<version>2.3.28</version>change in FreemarkerConfig too
- -->		</dependency>
-
+ 		</dependency>
 		<dependency>
 			<groupId>fr.opensagres.xdocreport</groupId>
 			<artifactId>fr.opensagres.xdocreport.document.odt</artifactId>
@@ -368,90 +271,17 @@
 				</exclusion>
 			</exclusions> 
 		</dependency>
-<!-- 		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-			<version>2.12.2</version>
- 			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-				<exclusion>
-				  <groupId>xml-resolver</groupId>
-    				<artifactId>xml-resolver</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency> -->
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>itextpdf</artifactId>
 			<version>5.5.13.2</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/jdom/jdom -->
-<!-- 		<dependency>
-			<groupId>jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>1.0</version>
-		</dependency> -->
-<!-- 		<dependency>
-            <groupId>fr.insee.igesa</groupId>
-            <artifactId>igesa-xml-beans</artifactId>
-            <version>2.0</version>
-        </dependency> -->
-		
-		
-		<!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
-		<dependency>
-			<groupId>org.jsoup</groupId>
-			<artifactId>jsoup</artifactId>
-			<version>1.14.3</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
-		<!-- Used for LDAP connexion -->
-	<!-- 	<dependency>
-			<groupId>jaxen</groupId>
-			<artifactId>jaxen</artifactId>
-			<version>1.1.1</version>
-			<exclusions>
-						<exclusion>
-							<groupId>xml-apis</groupId>
-							<artifactId>xml-apis</artifactId>
-						</exclusion>
-					<exclusion>
-							<groupId>xerces</groupId>
-							<artifactId>xercesImpl</artifactId>
-						</exclusion> 
-					<exclusion>
-						<groupId>xerces</groupId>
-						<artifactId>xmlParserAPIs</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>jdom</groupId>
-						<artifactId>jdom</artifactId>
-					</exclusion>
-			</exclusions>
-		</dependency> -->
-
 		<!-- XHTML to Markdown parser -->
 		<dependency>
 			<groupId>com.vladsch.flexmark</groupId>
 			<artifactId>flexmark-all</artifactId>
 			<version>0.64.0</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-text</artifactId>
-			<version>1.9</version>
-		</dependency>
-		<dependency>
-		    <groupId>commons-io</groupId>
-		    <artifactId>commons-io</artifactId>
-		    <version>2.11.0</version>
 		</dependency>
 	</dependencies>
 
@@ -483,114 +313,43 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>	
 			
-			<!-- Plugin lancement des tests -->
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-					</includes>
-				</configuration>
-			</plugin>
+			<!-- Plugin tests -->
+ 			<plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <!-- Prepare the property pointing to the JaCoCo runtime agent which is
+                         passed as VM argument when the Maven Surefire plugin is executed. -->
+                    <execution>
+                        <id>pre-unit-test</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Set the name of the property containing the settings for JaCoCo
+                                 runtime agent. -->
+                            <propertyName>surefireArgLine</propertyName>
+                            <append>true</append>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
 			<plugin>
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
-			</plugin>
-
-
-			<!-- Plugin pour prise en compte des tests sur SonarQube plate-forme innovation -->
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>jacoco-site</id>
-						<phase>test</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-				</executions>
+				<version>${version.maven-sonar}</version>
 			</plugin>
 
 		</plugins>
-		<pluginManagement>
-			<plugins>
-
-				<!-- Pour l'exécution des tests unitaires -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${maven-surefire-plugin.version}</version>
-					<!-- https://carlobertoldi.wordpress.com/2012/03/12/maven-unit-tests-and-those-funny-characters/ -->
-					<configuration>
-						<junitArtifactName>junit:junit</junitArtifactName>
-						<encoding>UTF-8</encoding>
-						<inputEncoding>UTF-8</inputEncoding>
-						<outputEncoding>UTF-8</outputEncoding>
-						<!-- permet la surcharge de maven-surefire-plugin tout en fonctionnant 
-							avec jacoco -->
-						<!-- <argLine>${argLine}</argLine> MAVEN surcharge with properties -->
-					</configuration>
-
-					<executions>
-						<execution>
-							<id>test</id>
-							<phase>test</phase>
-							<goals>
-								<goal>test</goal>
-							</goals>
-							<configuration>
-								<skip>false</skip>
-								<includes>
-									<include>**/*Test.java</include>
-								</includes>
-								<encoding>UTF-8</encoding>
-							</configuration>
-
-						</execution>
-					</executions>
-				</plugin>
-
-
-				<plugin>
-					<groupId>org.sonarsource.scanner.maven</groupId>
-					<artifactId>sonar-maven-plugin</artifactId>
-					<version>${version.maven-sonar}</version>
-				</plugin>
-
-
-				<!-- Plugin pour prise en compte des tests sur SonarQube plate-forme 
-					innovation -->
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>${version.maven-jacoco}</version>
-					<executions>
-						<execution>
-							<id>default-prepare-agent</id>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-						</execution>
-						<execution>
-							<id>report</id>
-							<phase>report</phase>
-							<goals>
-								<goal>report-aggregate</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-
-			</plugins>
-		</pluginManagement>
 	</build>
 
 </project>

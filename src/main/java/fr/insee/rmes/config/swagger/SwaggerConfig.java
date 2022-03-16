@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
@@ -27,12 +28,15 @@ import io.swagger.v3.oas.models.servers.Server;
 public class SwaggerConfig extends ResourceConfig   {
 
 	private static final  Logger logger = LogManager.getLogger(SwaggerConfig.class);
+	
+	@Value("${fr.insee.rmes.bauhaus.version}")
+	private String projectVersion;
 
 	public SwaggerConfig(@Context ServletConfig servletConfig) {
 		super();
 		OpenAPI openApi = new OpenAPI();
 
-		Info info = new Info().title("Bauhaus API").version("3.0.9").description("Rest Endpoints and services Integration used by Bauhaus");
+		Info info = new Info().title("Bauhaus API").version(projectVersion).description("Rest Endpoints and services Integration used by Bauhaus");
 		openApi.info(info);
 
 		Server server = new Server();
