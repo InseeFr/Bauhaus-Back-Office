@@ -43,7 +43,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         logger.info("Starting to get one mutualized component");
         JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
         if(response.keySet().isEmpty()){
-            throw new NotFoundException("This component do not exist");
+            throw new NotFoundException("This component does not exist");
         }
         return structureComponentUtils.formatComponent(id, response);
     }
@@ -67,7 +67,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public void deleteComponent(String id) throws RmesException {
         JSONObject response = this.getComponentObject(id);
         if(response.keySet().isEmpty()){
-            throw new NotFoundException("This component do not exist");
+            throw new NotFoundException("This component does not exist");
         }
         String type = response.getString("type");
         structureComponentUtils.deleteComponent(response, id, type);
