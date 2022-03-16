@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -163,7 +164,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 		logger.debug("JSON for listGraph id : {}", listGraph);
 		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classifId);} 
 		String graph = listGraph.getString("graph");
-		String classifUriString = listGraph.getString("uri");
+		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
 		
 		

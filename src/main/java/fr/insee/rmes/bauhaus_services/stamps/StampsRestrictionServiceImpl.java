@@ -105,7 +105,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
 		JSONArray roles = userObject.getJSONArray("roles");
 
-		this.fakeUser = new User(roles, userObject.getString("stamp"));
+		this.fakeUser = new User(roles, userObject.getString(Constants.STAMP));
 	}
 
 	public boolean isAdmin() {

@@ -57,8 +57,8 @@ public class ParentUtils extends RdfService{
 	
 	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
-		if (series != null && series.has("id"))		
-			return RdfUtils.objectIRI(ObjectType.SERIES, series.getString("id"));
+		if (series != null && series.has(Constants.ID))		
+			return RdfUtils.objectIRI(ObjectType.SERIES, series.getString(Constants.ID));
 		return null;
 	}
 	

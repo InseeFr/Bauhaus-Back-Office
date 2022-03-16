@@ -108,7 +108,7 @@ public class DocumentsPublication  extends RdfService{
 			}
 			while (documentStatements.hasNext()) {
 				Statement st = documentStatements.next();
-				if (RdfUtils.toString(st.getPredicate()).endsWith("url")) {
+				if (RdfUtils.toString(st.getPredicate()).endsWith(Constants.URL)) {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
@@ -169,7 +169,7 @@ public class DocumentsPublication  extends RdfService{
 			JSONObject tuple = (JSONObject) tuples.get(i);
 			String predicatString = tuple.getString("predicat");
 			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
-			if (predicatString.endsWith("url")) {
+			if (predicatString.endsWith(Constants.URL)) {
 				String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
 				object = RdfUtils.toURI(newUrl);

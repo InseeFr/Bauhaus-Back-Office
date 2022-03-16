@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
@@ -104,8 +105,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 			seriesList.add(series.getJSONObject(i));
 		}
 		seriesList.sort(( o1,  o2) -> {
-				String key1 = Normalizer.normalize(o1.getString("label"), Normalizer.Form.NFD);
-				String key2 = Normalizer.normalize(o2.getString("label"), Normalizer.Form.NFD);
+				String key1 = Normalizer.normalize(o1.getString(Constants.LABEL), Normalizer.Form.NFD);
+				String key2 = Normalizer.normalize(o2.getString(Constants.LABEL), Normalizer.Form.NFD);
 				return key1.compareTo(key2);
 			});
 		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());

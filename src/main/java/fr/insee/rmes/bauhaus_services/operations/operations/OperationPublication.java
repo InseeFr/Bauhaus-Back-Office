@@ -31,7 +31,7 @@ public class OperationPublication extends RdfService{
 	ParentUtils ownersUtils;
 
 
-	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, "contributor" };
+	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 
 	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
 		Model model = new LinkedHashModel();

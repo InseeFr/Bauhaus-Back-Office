@@ -69,7 +69,7 @@ public class OperationsUtils extends RdfService{
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
-		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(series.getString("id")));
+		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(series.getString(Constants.ID)));
 		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
 	}

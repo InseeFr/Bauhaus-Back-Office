@@ -333,8 +333,8 @@ public class DocumentationsRubricsUtils extends RdfService {
 			String labelLg2 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)) : jsonRubric.getString(Constants.LABEL_LG2);
 			documentationRubric.setLabelLg2(labelLg2);
 		}
-		if (jsonRubric.has("codeList")) {
-			documentationRubric.setCodeList(jsonRubric.getString("codeList"));
+		if (jsonRubric.has(Constants.CODELIST)) {
+			documentationRubric.setCodeList(jsonRubric.getString(Constants.CODELIST));
 		}
 		if (jsonRubric.has(Constants.RANGE_TYPE)) {
 			documentationRubric.setRangeType(jsonRubric.getString(Constants.RANGE_TYPE));

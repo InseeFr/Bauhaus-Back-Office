@@ -50,8 +50,8 @@ public class ConceptsPublication extends RdfService{
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, concept);
 			
 			String[] notes = {"scopeNote","definition","editorialNote"} ;
-			String[] links = {"inScheme","disseminationStatus","references","isReplacedBy"};
-			String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,"contributor"};
+			String[] links = {"inScheme","disseminationStatus","references",Constants.ISREPLACEDBY};
+			String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
 
 			try {
 				boolean hasBroader = false;
@@ -78,7 +78,7 @@ public class ConceptsPublication extends RdfService{
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
-					} else if (predicat.endsWith("replaces")) {
+					} else if (predicat.endsWith(Constants.REPLACES)) {
 						model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								graph);
 						model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
@@ -223,7 +223,7 @@ public class ConceptsPublication extends RdfService{
 									PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 						} else if (RdfUtils.toString(st.getPredicate()).endsWith("isValidated")
 								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CREATOR))
-								|| (RdfUtils.toString(st.getPredicate()).endsWith("contributor"))) {
+								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CONTRIBUTOR))) {
 							// nothing, wouldn't copy this attr
 						}
 						// Literals
@@ -240,7 +240,7 @@ public class ConceptsPublication extends RdfService{
 				con.close();
 			}
 			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
-			RepositoryPublication.publishResource(collectionToPublish, model, "collection");
+			RepositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
 			// if (creation)
 			// notification.notifyCollectionCreation(collectionId,
 			// collection.toString());

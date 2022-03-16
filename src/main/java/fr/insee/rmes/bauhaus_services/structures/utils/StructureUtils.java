@@ -369,7 +369,7 @@ public class StructureUtils extends RdfService {
     }
 
     public String publishStructure(JSONObject structure) throws RmesException {
-        if(structure.isNull("creator") || "".equals(structure.getString("creator"))){
+        if(structure.isNull(Constants.CREATOR) || "".equals(structure.getString(Constants.CREATOR))){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
@@ -377,10 +377,10 @@ public class StructureUtils extends RdfService {
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        String id = structure.getString("id");
+        String id = structure.getString(Constants.ID);
         JSONArray ids = repoGestion.getResponseAsArray(StructureQueries.getUnValidatedComponent(id));
         for (int i = 0; i < ids.length(); i++) {
-            String idComponent = ((JSONObject) ids.get(i)).getString("id");
+            String idComponent = ((JSONObject) ids.get(i)).getString(Constants.ID);
             try {
                 structureComponent.publishComponent(idComponent);
             } catch (RmesException e) {

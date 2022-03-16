@@ -265,7 +265,7 @@ public class DocumentsUtils  extends RdfService  {
 	private void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
 		JSONObject existingUriJson = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url));
 		if (existingUriJson.length() > 0) {
-			String uri = existingUriJson.getString("document");
+			String uri = existingUriJson.getString(Constants.DOCUMENT);
 			String existingId = getIdFromUri(uri);
 			if (!existingId.equals(id)) {
 				throw new RmesNotAcceptableException(errorCode,errorMessage, uri);
@@ -325,7 +325,7 @@ public class DocumentsUtils  extends RdfService  {
 
 		for (int i = 0; i < sims.length(); i++) {
 			JSONObject sim = sims.getJSONObject(i);
-			sim.put("creators", new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString("id"))));
+			sim.put(Constants.CREATORS, new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
 		}
 
 		jsonDocs.put("sims", sims);
@@ -360,7 +360,7 @@ public class DocumentsUtils  extends RdfService  {
 		if (jsonResultat.length() > 0) {
 			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
 					"The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
-					+ " sims, including: " + ((JSONObject) jsonResultat.get(0)).get("text").toString(),
+					+ " sims, including: " + ((JSONObject) jsonResultat.get(0)).get(Constants.TEXT).toString(),
 					jsonResultat);
 		}
 	}
@@ -373,7 +373,7 @@ public class DocumentsUtils  extends RdfService  {
 		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
 		if (sims.length() == 0) return; //document's file isn't linked to a sims
 		for (int i = 0; i < sims.length(); i++) {
-			String simsUri = ((JSONObject) sims.get(i)).get("text").toString();
+			String simsUri = ((JSONObject) sims.get(i)).get(Constants.TEXT).toString();
 			
 			Pattern p = Pattern.compile("(.*)attribut/([0-9]{4})/(.*)");
 			Matcher m = p.matcher(simsUri);

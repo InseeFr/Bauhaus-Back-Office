@@ -65,12 +65,12 @@ public class SeriesPublication extends RdfService {
 					
 					// Other URI to transform
 					if (pred.endsWith("isPartOf") ||
-							pred.endsWith("seeAlso") ||
-							pred.endsWith("replaces") ||
-							pred.endsWith("isReplacedBy")||
-							pred.endsWith("dataCollector") || 
-							pred.endsWith("contributor")  ||
-							pred.endsWith("publisher")  ||
+							pred.endsWith(Constants.SEEALSO) ||
+							pred.endsWith(Constants.REPLACES) ||
+							pred.endsWith(Constants.ISREPLACEDBY)||
+							pred.endsWith(Constants.DATA_COLLECTOR) || 
+							pred.endsWith(Constants.CONTRIBUTOR)  ||
+							pred.endsWith(Constants.PUBLISHER)  ||
 							pred.endsWith("accrualPeriodicity")||
 							pred.endsWith("type")   ) {
 						transformSubjectAndObject(model, st);

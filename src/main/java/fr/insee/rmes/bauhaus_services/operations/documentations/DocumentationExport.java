@@ -66,7 +66,7 @@ public class DocumentationExport {
 			boolean lg2, String goal) throws RmesException {
 		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put("parametersFile", parametersXML);
+		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 		if (Constants.GOAL_RMES.equals(goal)) {
 			return exportUtils.exportAsResponse("export.odt", xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
@@ -82,7 +82,7 @@ public class DocumentationExport {
 			boolean lg2) throws RmesException {
 		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-		xmlContent.put("parametersFile", parametersXML);
+		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 
 		return exportUtils.exportFilesAsResponse(xmlContent);
 

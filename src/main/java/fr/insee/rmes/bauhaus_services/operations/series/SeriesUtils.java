@@ -99,8 +99,8 @@ public class SeriesUtils extends RdfService {
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
 
 		String id;
-		if (seriesJson.has("id") && !seriesJson.getString("id").isEmpty()) {
-			id= seriesJson.getString("id");} else {
+		if (seriesJson.has(Constants.ID) && !seriesJson.getString(Constants.ID).isEmpty()) {
+			id= seriesJson.getString(Constants.ID);} else {
 				id= famOpeSerIndUtils.createId();}
 		Series series = new Series();
 		try {

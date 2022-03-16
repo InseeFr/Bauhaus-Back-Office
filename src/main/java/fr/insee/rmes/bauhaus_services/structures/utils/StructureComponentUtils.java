@@ -311,7 +311,7 @@ public class StructureComponentUtils extends RdfService {
 
     public String publishComponent(JSONObject component) throws RmesException {
 
-        if(jsonObjecthasPropertyNullOrEmpty(component, "creator")){
+        if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
@@ -319,7 +319,7 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
         }
 
@@ -337,7 +337,7 @@ public class StructureComponentUtils extends RdfService {
         mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
 
         String type = component.getString("type");
-        String id = component.getString("id");
+        String id = component.getString(Constants.ID);
 
         if (type.equals(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
