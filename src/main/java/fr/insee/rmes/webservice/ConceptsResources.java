@@ -1,13 +1,7 @@
 package fr.insee.rmes.webservice;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,7 +12,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -51,8 +51,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * @author N. Laval
  *
  */
-@Component
-@Path("/concepts")
+@RestController
+@RequestMapping("/concepts")
 @Tag(name="Concepts", description="Concept API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
@@ -70,7 +70,6 @@ public class ConceptsResources   {
 	@Autowired
 	ConceptsService conceptsService;
 
-	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
@@ -84,12 +83,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/linkedConcepts/{id}")
+	@GetMapping("/linkedConcepts/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getRelatedConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
-	public Response getRelatedConcepts(@PathParam(Constants.ID) String id) {
+	public Response getRelatedConcepts(@PathVariable(Constants.ID) String id) {
 		String resultat;
 		try {
 			resultat = conceptsService.getRelatedConcepts(id);
@@ -101,11 +99,10 @@ public class ConceptsResources   {
 	
 	
 	//@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
-	@DELETE
-	@Path("/{id}")
+	@DeleteMapping("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
-	public Response deleteConcept(@PathParam(Constants.ID) String id) {
+	public Response deleteConcept(@PathVariable(Constants.ID) String id) {
 		try {
 			conceptsService.deleteConcept(id);
 		} catch (RmesException e) {
@@ -114,8 +111,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 	
-	@GET
-	@Path("/advanced-search")
+	@GetMapping("/advanced-search")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptsSearch", summary = "Rich list of concepts", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
@@ -129,12 +125,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/concept/{id}")
+	@GetMapping("/concept/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptByID", summary = "Concept", 
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
-	public Response getConceptByID(@PathParam(Constants.ID) String id) {
+	public Response getConceptByID(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptByID(id);
@@ -144,8 +139,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/toValidate")
+	@GetMapping("/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptsToValidate", summary = "List of concepts to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
@@ -159,12 +153,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/concept/{id}/links")
+	@GetMapping("/concept/{id}/links")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptLinksByID", summary = "List of linked concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
-	public Response getConceptLinksByID(@PathParam(Constants.ID) String id) {
+	public Response getConceptLinksByID(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptLinksByID(id);
@@ -174,12 +167,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/concept/{id}/notes/{conceptVersion}")
+	@GetMapping("/concept/{id}/notes/{conceptVersion}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getConceptNotesByID", summary = "Last notes of the concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
-	public Response getConceptNotesByID(@PathParam(Constants.ID) String id, @PathParam("conceptVersion") int conceptVersion) {
+	public Response getConceptNotesByID(@PathVariable(Constants.ID) String id, @PathVariable("conceptVersion") int conceptVersion) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
@@ -189,8 +181,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/collections")
+	@GetMapping("/collections")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCollections", summary = "List of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
@@ -204,8 +195,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/collections/dashboard")
+	@GetMapping("/collections/dashboard")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
@@ -219,8 +209,7 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/collections/toValidate")
+	@GetMapping("/collections/toValidate")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCollectionsToValidate", summary = "List of collections to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
@@ -234,12 +223,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/collection/{id}")
+	@GetMapping("/collection/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getCollectionByID", summary = "Collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
-	public Response getCollectionByID(@PathParam(Constants.ID) String id) {
+	public Response getCollectionByID(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getCollectionByID(id);
@@ -249,12 +237,11 @@ public class ConceptsResources   {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 
-	@GET
-	@Path("/collection/{id}/members")
+	@GetMapping("/collection/{id}/members")
 	@Operation(operationId = "getCollectionMembersByID", summary = "List of collection member concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCollectionMembersByID(@PathParam(Constants.ID) String id) {
+	public Response getCollectionMembersByID(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = conceptsService.getCollectionMembersByID(id);
@@ -265,8 +252,7 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
-	@POST
-	@Path("/concept")
+	@PostMapping("/concept")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public Response setConcept(@RequestBody(description = "Concept", required = true) String body) {
@@ -280,12 +266,11 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
-	@PUT
-	@Path("/concept/{id}")
+	@PutMapping("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public Response setConcept(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = "Concept", required = true) String body) {
 		try {
 			conceptsService.setConcept(id, body);
@@ -297,8 +282,7 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPT_CREATOR })
-	@PUT
-	@Path("/validate")
+	@PutMapping("/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public Response setConceptsValidation(
@@ -312,23 +296,21 @@ public class ConceptsResources   {
 		}
 	}
 
-	@GET
-	@Path("/concept/export/{id}")
+	@GetMapping("/concept/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
-	public Response exportConcept(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
+	public Response exportConcept(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.exportConcept(id, acceptHeader);
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_CONCEPT_CREATOR })
-	@POST
-	@Path("/concept/send/{id}")
+	@PostMapping("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	@Operation(operationId = "setConceptSend", summary = "Send concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setConceptSend(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
@@ -341,8 +323,7 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
-	@POST
-	@Path("/collection")
+	@PostMapping("/collection")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollection", summary = "Create collection")
 	public Response setCollection(@RequestBody(description = "Collection", required = true) String body) {
@@ -355,12 +336,11 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
-	@PUT
-	@Path("/collection/{id}")
+	@PutMapping("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public Response setCollection(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = "Collection", required = true) String body) throws RmesException {
 		try {
 			conceptsService.setCollection(id, body);
@@ -373,8 +353,7 @@ public class ConceptsResources   {
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_COLLECTION_CREATOR })
-	@PUT
-	@Path("/collections/validate")
+	@PutMapping("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public Response setCollectionsValidation(
@@ -389,23 +368,21 @@ public class ConceptsResources   {
 		}
 	}
 
-	@GET
-	@Path("/collection/export/{id}")
+	@GetMapping("/collection/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public Response getCollectionExport(@PathParam(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
+	public Response getCollectionExport(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
-	@POST
-	@Path("/collection/send/{id}")
+	@PostMapping("/collection/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
 	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public Response setCollectionSend(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);

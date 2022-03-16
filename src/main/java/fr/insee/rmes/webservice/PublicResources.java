@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -19,7 +17,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,8 +51,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  *         produces: - application/json
  *
  */
-@Component
-@Path("/")
+@RestController
+@RequestMapping("/")
 @Tag(name="Application", description="Application API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
@@ -73,8 +73,7 @@ public class PublicResources {
 	@Autowired
 	StampsService stampsService;
 
-	@GET
-	@Path("/init")
+	@GetMapping("/init")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getInit", summary = "Initial properties", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
 	public Response getProperties() throws RmesException {
@@ -106,8 +105,7 @@ public class PublicResources {
 		} 
 	}
 
-	@GET
-	@Path("/stamps")
+	@GetMapping("/stamps")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public Response getStamps() {
@@ -120,9 +118,7 @@ public class PublicResources {
 			return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
-	
-	@GET
-	@Path("/disseminationStatus")
+	@GetMapping("/disseminationStatus")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})
 	public Response getDisseminationStatus() {
@@ -137,8 +133,7 @@ public class PublicResources {
 		return Response.status(HttpStatus.SC_OK).entity(dsList.toString()).build();
 	}
 
-	@GET
-	@Path("/roles")
+	@GetMapping("/roles")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Roles.class))))})
 	public Response getRoles() {
@@ -151,8 +146,7 @@ public class PublicResources {
 		return Response.status(HttpStatus.SC_OK).entity(entity).build();
 	}
 
-	@GET
-	@Path("/agents")
+	@GetMapping("/agents")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public Response getAgents() {

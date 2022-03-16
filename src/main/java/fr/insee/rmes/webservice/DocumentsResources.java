@@ -4,12 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -22,14 +16,19 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -45,9 +44,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  *
  */
-@Hidden
-@Component
-@Path("/documents")
+@RestController
+@RequestMapping("/documents")
 @Tag(name=Constants.DOCUMENT, description="Document API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
@@ -73,7 +71,6 @@ public class DocumentsResources {
 	 * Get the list of all documents and links
 	 * @return
 	 */
-	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
@@ -97,12 +94,11 @@ public class DocumentsResources {
 	 * @param id
 	 * @return
 	 */
-	@GET
-	@Path("/document/{id}")
+	@GetMapping("/document/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getDocument", summary = "Get a Document",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
-	public Response getDocument(@PathParam(Constants.ID) String id) {
+	public Response getDocument(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getDocument(id).toString();
@@ -112,11 +108,10 @@ public class DocumentsResources {
 		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
 	}
 	
-	@GET
-	@Path("/document/{id}/file")
+	@GetMapping("/document/{id}/file")
 	@Produces("*/*")
 	@Operation(operationId = "downloadDocument", summary = "Download the Document file")																 
-	public Response downloadDocument(@PathParam(Constants.ID) String id) {
+	public Response downloadDocument(@PathVariable(Constants.ID) String id) {
 		try {
 			return documentsService.downloadDocument(id);
 		} catch (RmesException e) {
@@ -134,8 +129,7 @@ public class DocumentsResources {
 	 * Create a new document
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@POST
-	@Path("/document")
+	@PostMapping("/document")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	public Response setDocument(
@@ -159,12 +153,11 @@ public class DocumentsResources {
 	 * Update informations about a document
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PUT
-	@Path("/document/{id}")
+	@PutMapping("/document/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public Response setDocument(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = Constants.DOCUMENT, required = true)
 			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
 		try {
@@ -182,15 +175,14 @@ public class DocumentsResources {
 	 * Change the file of a document
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PUT
-	@Path("/document/{id}/file")
+	@PutMapping("/document/{id}/file")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "changeDocument", summary = "Change document file" )
 	public Response changeDocument(
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
 			@FormDataParam(value = "file") InputStream documentFile,
 			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
 			) throws RmesException {
 		String url = null;
 		String documentName = fileDisposition.getFileName();
@@ -206,10 +198,9 @@ public class DocumentsResources {
 	 * Delete a document
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@DELETE
-	@Path("/document/{id}")
+	@DeleteMapping("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
-	public Response deleteDocument(@PathParam(Constants.ID) String id) {
+	public Response deleteDocument(@PathVariable(Constants.ID) String id) {
 		Status status = null;
 		try {
 			status = documentsService.deleteDocument(id);
@@ -229,12 +220,11 @@ public class DocumentsResources {
 	 * @param id
 	 * @return
 	 */
-	@GET
-	@Path("/link/{id}")
+	@GetMapping("/link/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getLink", summary = "Get a Link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
-	public Response getLink(@PathParam(Constants.ID) String id) {
+	public Response getLink(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getLink(id).toString();
@@ -248,8 +238,7 @@ public class DocumentsResources {
 	 * Create a new link
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@POST
-	@Path("/link")
+	@PostMapping("/link")
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
 	@Operation(operationId = "setDocument", summary = "Create link" )
 	public Response setLink(
@@ -269,12 +258,11 @@ public class DocumentsResources {
 	 * Update informations about a link
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PUT
-	@Path("/link/{id}")
+	@PutMapping("/link/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setLinkById", summary = "Update link")
 	public Response setLink(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@RequestBody(description = "Link", required = true)
 			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
 		try {
@@ -290,10 +278,9 @@ public class DocumentsResources {
 	 * Delete a link
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@DELETE
-	@Path("/link/{id}")
+	@DeleteMapping("/link/{id}")
 	@Operation(operationId = "deleteLink", summary = "Delete a link")
-	public Response deleteLink(@PathParam(Constants.ID) String id) {
+	public Response deleteLink(@PathVariable(Constants.ID) String id) {
 		Status status = null;
 		try {
 			status = documentsService.deleteLink(id);

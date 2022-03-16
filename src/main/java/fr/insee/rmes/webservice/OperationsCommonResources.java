@@ -1,12 +1,13 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
@@ -16,7 +17,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
-@Path("/operations")
+@RestController
+@RequestMapping("/operations")
 @Tag(name="Operations", description="Operation API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 

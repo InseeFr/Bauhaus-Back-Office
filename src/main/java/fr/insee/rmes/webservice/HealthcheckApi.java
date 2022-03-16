@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.StringJoiner;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -15,6 +13,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
@@ -32,7 +33,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	    @ApiResponse(responseCode = "406", description = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
 	    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
 	})
-@Path("/healthcheck")
+@RestController
+@RequestMapping("healthcheck")
 public class HealthcheckApi {
 	
 	private static final String CONNEXION_LDAP = "- Connexion LDAP";
@@ -51,7 +53,7 @@ public class HealthcheckApi {
 	
 	private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
 
-    @GET
+    @GetMapping("")
     @Produces({
         MediaType.TEXT_PLAIN
     })

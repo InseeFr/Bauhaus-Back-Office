@@ -1,12 +1,6 @@
 package fr.insee.rmes.webservice;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -15,7 +9,13 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
@@ -23,7 +23,6 @@ import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.Structure;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,9 +32,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Hidden
-@Component
-@Path("/structures")
+@RestController
+@RequestMapping("/structures")
 @Tag(name = "Data structure definitions", description = "Structure API")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),
@@ -59,7 +57,6 @@ public class StructureResources {
     StructureComponent structureComponentService;
 
 
-    @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructures", summary = "List of Structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
@@ -73,8 +70,7 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET()
-    @Path("/search")
+    @GetMapping("/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructuresForSearch", summary = "List of Structures for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
@@ -88,12 +84,11 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/structure/{id}")
+    @GetMapping("/structure/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructureById", summary = "Get a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
-    public Response getStructureById(@PathParam(Constants.ID) String id) {
+    public Response getStructureById(@PathVariable(Constants.ID) String id) {
         String jsonResultat = null;
         try {
             jsonResultat = structureService.getStructureById(id);
@@ -103,11 +98,10 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/structure/{id}/publish")
+    @GetMapping("/structure/{id}/publish")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
-    public Response publishStructureById(@PathParam(Constants.ID) String id) {
+    public Response publishStructureById(@PathVariable(Constants.ID) String id) {
         String jsonResultat = null;
         try {
             jsonResultat = structureService.publishStructureById(id);
@@ -117,12 +111,11 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/structure/{id}/details")
+    @GetMapping("/structure/{id}/details")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
-    public Response getStructureByIdDetails(@PathParam(Constants.ID) String id) {
+    public Response getStructureByIdDetails(@PathVariable(Constants.ID) String id) {
         String jsonResultat = null;
         try {
             jsonResultat = structureService.getStructureByIdWithDetails(id);
@@ -132,8 +125,7 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @POST
-    @Path("/structure")
+    @PostMapping("/structure")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "setStructure", summary = "Create a structure")
     public Response setStructure(@RequestBody(description = "Structure", required = true) String body) {
@@ -146,11 +138,10 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(id).build();
     }
 
-    @PUT
-    @Path("/structure/{structureId}")
+    @PutMapping("/structure/{structureId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "setStructure", summary = "Update a structure")
-    public Response setStructure(@PathParam("structureId") String structureId, @RequestBody(description = "Structure", required = true) String body) {
+    public Response setStructure(@PathVariable("structureId") String structureId, @RequestBody(description = "Structure", required = true) String body) {
         String id = null;
         try {
             id = structureService.setStructure(structureId, body);
@@ -160,10 +151,9 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(id).build();
     }
 
-    @DELETE
-    @Path("/structure/{structureId}")
+    @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public Response deleteStructure(@PathParam("structureId") String structureId) {
+    public Response deleteStructure(@PathVariable("structureId") String structureId) {
         try {
             structureService.deleteStructure(structureId);
         } catch (RmesException e) {
@@ -172,8 +162,7 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(structureId).build();
     }
 
-    @GET
-    @Path("/components/search")
+    @GetMapping("/components/search")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getComponentsForSearch", summary = "Get all mutualized components for advanced search")
     public Response getComponentsForSearch() {
@@ -186,8 +175,7 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/components")
+    @GetMapping("/components")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getComponents", summary = "Get all mutualized components")
     public Response getComponents() {
@@ -200,11 +188,10 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/components/{id}")
+    @GetMapping("/components/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getComponentById", summary = "Get all mutualized components")
-    public Response getComponentById(@PathParam(Constants.ID) String id) {
+    public Response getComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
         try {
             jsonResultat = structureComponentService.getComponent(id);
@@ -214,11 +201,10 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @GET
-    @Path("/components/{id}/publish")
+    @GetMapping("/components/{id}/publish")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "publishComponentById", summary = "Publish a component")
-    public Response publishComponentById(@PathParam(Constants.ID) String id) {
+    public Response publishComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
         try {
             jsonResultat = structureComponentService.publishComponent(id);
@@ -228,11 +214,10 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
     }
 
-    @DELETE
-    @Path("/components/{id}")
+    @DeleteMapping("/components/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
-    public Response deleteComponentById(@PathParam(Constants.ID) String id) {
+    public Response deleteComponentById(@PathVariable(Constants.ID) String id) {
         try {
             structureComponentService.deleteComponent(id);
         } catch (RmesException e) {
@@ -240,12 +225,11 @@ public class StructureResources {
         }
         return Response.status(HttpStatus.SC_OK).build();
     }
-
-    @PUT
-    @Path("/components/{id}")
+    
+    @PutMapping("/components/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "updateComponent", summary = "Update a component")
-    public Response updateComponentById(@PathParam(Constants.ID) String componentId, @RequestBody(description = "Component", required = true) String body) {
+    public Response updateComponentById(@PathVariable(Constants.ID) String componentId, @RequestBody(description = "Component", required = true) String body) {
         String id = null;
         try {
             id = structureComponentService.updateComponent(componentId, body);
@@ -255,8 +239,7 @@ public class StructureResources {
         return Response.status(HttpStatus.SC_OK).entity(id).build();
     }
 
-    @POST
-    @Path("/components")
+    @PostMapping("/components")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "createComponent", summary = "create a component")
     public Response createComponent(@RequestBody(description = "Component", required = true) String body) {

@@ -6,12 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -23,7 +18,12 @@ import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -40,19 +40,16 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
-@Component
 @Qualifier("Operation")
-@Path("/operations")
+@RestController
+@RequestMapping("/operations")
 public class OperationsResources extends OperationsCommonResources {
 
 	/***************************************************************************************************
 	 * OPERATIONS
 	 ******************************************************************************************************/
 
-
-
-	@GET
-	@Path("/operations")
+	@GetMapping("/operations")
 	@Produces(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
@@ -62,13 +59,11 @@ public class OperationsResources extends OperationsCommonResources {
 
 	}
 
-
-	@GET
-	@Path("/operation/{id}")
+	@GetMapping("/operation/{id}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
 	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json",*/ schema = @Schema(implementation = Operation.class)))})
-	public Response getOperationByID(@PathParam(Constants.ID) String id,
+	public Response getOperationByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
 		String resultat;
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
@@ -87,9 +82,7 @@ public class OperationsResources extends OperationsCommonResources {
 		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
 	}
 
-
-	@POST
-	@Path("/operation/codebook")
+	@PostMapping("/operation/codebook")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
@@ -116,12 +109,11 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
-	@PUT
-	@Path("/operation/{id}")
+	@PutMapping("/operation/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public Response setOperationById(
-			@PathParam(Constants.ID) String id, 
+			@PathVariable(Constants.ID) String id, 
 			@RequestBody(description = "Operation to update", required = true, 
 			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
@@ -138,8 +130,7 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
-	@POST
-	@Path("/operation")
+	@PostMapping("/operation")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public Response createOperation(
@@ -160,12 +151,11 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
-	@PUT
-	@Path("/operation/validate/{id}")
+	@PutMapping("/operation/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public Response setOperationValidation(
-			@PathParam(Constants.ID) String id) throws RmesException {
+			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setOperationValidation(id);
 		} catch (RmesException e) {
