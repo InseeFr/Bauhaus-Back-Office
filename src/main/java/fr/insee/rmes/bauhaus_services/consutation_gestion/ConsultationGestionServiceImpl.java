@@ -6,12 +6,16 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.persistance.ontologies.IGEO;
+import fr.insee.rmes.persistance.ontologies.QB;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
@@ -129,26 +133,46 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         params.put("LG1", Config.LG1);
         params.put("LG2", Config.LG2);
 
-        JSONObject structure =  repoGestion.getResponseAsObject(buildRequest("getStructure.ftlh", params));
+        JSONArray structureArray =  repoGestion.getResponseAsArray(buildRequest("getStructure.ftlh", params));
+        JSONObject structure = (JSONObject) structureArray.get(0);
 
         structure.put("label", this.formatLabel(structure));
         structure.remove("prefLabelLg1");
         structure.remove("prefLabelLg2");
 
 
-        if(structure.has("idParent")){
-            String idParent = structure.getString("idParent");
+        if(structureArray.length() > 1){
+            JSONArray necessairePour = new JSONArray();
+            for (int i = 0; i < structureArray.length(); i++) {
+                necessairePour.put(structureArray.getJSONObject(i).getString("necessairePour"));
+
+            }
+
+            structure.put("necessairePour", necessairePour);
+        }
+        if(structure.has("idRelation")){
+            String iri = structure.getString("idRelation").replace("urn:sdmx:org.sdmx.infomodel.metadatastructure.MetadataStructure=", "");
+            JSONObject relation = new JSONObject();
+            relation.put("id", iri.substring(iri.indexOf(":") + 1, iri.indexOf("(") ));
+            relation.put("agence", iri.substring(0, iri.indexOf(":")));
+            relation.put("version", iri.substring(iri.indexOf("(") + 1, iri.indexOf(")")));
+            structure.put("dsdSdmx", relation);
+        }
+        if(structure.has("idParent") && structure.has("uriParent")){
             JSONObject parent = new JSONObject();
-            parent.put("id", idParent);
+            parent.put("id", structure.getString("idParent"));
+            parent.put("uri", structure.getString("uriParent"));
             structure.put("parent", parent);
+            structure.remove("idParent");
+            structure.remove("uriParent");
         }
         if(structure.has(Constants.STATUT_VALIDATION)){
             String validationState = structure.getString(Constants.STATUT_VALIDATION);
             structure.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
         }
 
-        if(!structure.has("dateCréation")){
-            structure.put("dateCréation", defaultDate);
+        if(!structure.has("dateCreation")){
+            structure.put("dateCreation", defaultDate);
         }
         if(!structure.has("dateMiseAJour")){
             structure.put("dateMiseAJour", defaultDate);
@@ -216,6 +240,15 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             listCode.put("uri", component.getString("uriListeCode"));
             listCode.put("id", component.getString("idListeCode"));
             listCode.put("codes", codes);
+
+
+            if(component.has("uriParentListCode") && component.has("idParentListeCode")){
+                listCode.put("listePrincipale", new JSONObject()
+                        .append("id", component.getString("idParentListeCode"))
+                        .append("uri", component.getString("uriParentListCode")));
+                component.remove("uriParentListCode");
+                component.remove("idParentListeCode");
+            }
             component.put("listeCode", listCode);
             component.remove("uriListeCode");
             component.remove("idListeCode");
@@ -226,25 +259,14 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             JSONObject concept = new JSONObject();
             concept.put("uri", component.getString("uriConcept"));
             concept.put("id", component.getString("idConcept"));
+            this.addCloseMatch(concept);
             component.put("concept", concept);
             component.remove("uriConcept");
             component.remove("idConcept");
         }
 
         if(component.has("representation")){
-            if(component.getString("representation").endsWith("dateTime")){
-                component.put("representation", "date et heure");
-            } else if(component.getString("representation").endsWith("date")){
-                component.put("representation", "date");
-            } else if(component.getString("representation").endsWith("integer")){
-                component.put("representation", "entier");
-            } else if(component.getString("representation").endsWith("double")){
-                component.put("representation", "décimal");
-            } else if(component.getString("representation").endsWith("string")){
-                component.put("representation", "texte");
-            } else if(component.getString("representation").endsWith("paysOuTerritoire")){
-                component.put("representation", "Pays ou territoire");
-            }
+            component.put("representation", component.getString("representation").replace(IGEO.NAMESPACE, "").replace("http://www.w3.org/2001/XMLSchema#", ""));
         }
 
         if(component.has("minLength") || component.has("maxLength") || component.has("minInclusive") || component.has("maxInclusive") || component.has("pattern")){
@@ -270,6 +292,25 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         return component.toString();
     }
 
+    private void addCloseMatch(JSONObject concept) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("CONCEPT_ID", concept.getString("id"));
+        JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", params));
+        if(closeMatch.length() > 0){
+            JSONArray formattedCloseMatchArray  = new JSONArray();
+            for(int i = 0; i < closeMatch.length(); i++){
+                String iri = ((JSONObject) closeMatch.get(i)).getString("closeMatch").replace("urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=", "");;
+                JSONObject relation = new JSONObject();
+                relation.put("agence", iri.substring(0, iri.indexOf(":")));
+                relation.put("id", iri.substring(iri.lastIndexOf(".") + 1));
+                formattedCloseMatchArray.put(relation);
+            }
+            concept.put("conceptsSdmx", formattedCloseMatchArray);
+        }
+
+    }
+
     private void getStructureComponents(String id, JSONObject structure) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
@@ -293,6 +334,12 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             component.remove("prefLabelLg1");
             component.remove("prefLabelLg2");
 
+            if(component.has("attachement")){
+                component.put("attachement", component.getString("attachement").replace(QB.NAMESPACE, ""));
+            }
+            if(component.has("obligatoire")){
+                component.put("obligatoire", component.getString("obligatoire").equalsIgnoreCase("true") ? "oui": "non");
+            }
             if(component.has("listeCodeUri")){
                 component.put("representation", "liste de code");
 
@@ -317,13 +364,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
 
             if(component.has("representation")){
-                if(component.getString("representation").endsWith("date")){
-                    component.put("representation", "date");
-                } else if(component.getString("representation").endsWith("int")){
-                    component.put("representation", "entier");
-                } else if(component.getString("representation").endsWith("float")){
-                    component.put("representation", "décimal");
-                }
+                component.put("representation", component.getString("representation").replace(IGEO.NAMESPACE, "").replace("http://www.w3.org/2001/XMLSchema#", ""));
             }
 
             String idComponent = component.getString("id");
@@ -362,8 +403,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             codesList.put(Constants.STATUT_VALIDATION, this.getValidationState(validationState));
         }
 
-        if(!codesList.has("dateCréation")){
-            codesList.put("dateCréation", defaultDate);
+        if(!codesList.has("dateCreation")){
+            codesList.put("dateCreation", defaultDate);
         }
         if(!codesList.has("dateMiseAJour")){
             codesList.put("dateMiseAJour", defaultDate);
