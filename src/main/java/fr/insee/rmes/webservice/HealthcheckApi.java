@@ -85,6 +85,19 @@ public class HealthcheckApi {
 			errorMessage.add("- "+e.getMessage()+ " \n");
 			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
 		}
+    	
+    	try {
+			String result = userService.checkSugoiConnexion();
+	    	if ("OK".equals(result)) {
+	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(OK_STATE);
+	    	}else {
+				errorMessage.add("- Sugoi No functional error but return an empty string \n");
+	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
+	    	}
+		} catch (RmesException e) {
+			errorMessage.add("- "+e.getMessage()+ " \n");
+			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
+		}
 
     	
     	//print result in log

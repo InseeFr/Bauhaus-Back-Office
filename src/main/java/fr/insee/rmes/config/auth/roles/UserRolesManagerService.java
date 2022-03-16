@@ -15,5 +15,7 @@ public interface UserRolesManagerService {
 	public void setAddRole(String role, String user);
 	
 	public void setDeleteRole(String roles, String user);
+
+	public String checkSugoiConnexion() throws RmesException;
 	
 }
