@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
+import org.apache.http.HttpStatus;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -42,7 +44,13 @@ class DocumentationsUtilsTest {
         when(mockDocumentationsRubricsUtils.buildRubricFromJson(Mockito.any(),true)).thenReturn(new DocumentationRubric());
 		
 		String source="{\"rubrics\":[],\"idSeries\":\"\",\"labelLg2\":\"Metadata report 9999\",\"labelLg1\":\"Rapport de métadonnées 9999\",\"idOperation\":\"s8888\",\"idIndicator\":\"\",\"id\":\"9999\"}";
-		JSONObject jsonDocumentation = new JSONObject(source);
+		JSONObject jsonDocumentation;
+		try {
+			jsonDocumentation = new JSONObject(source);
+		} catch (JSONException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+					"JSONException");
+		}
 		Documentation sims = documentationsUtils.buildDocumentationFromJson(jsonDocumentation,true);
 		if (!sims.getId().equals("9999")) {
 			fail("false id");
