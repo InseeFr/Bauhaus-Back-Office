@@ -78,9 +78,7 @@
 		<argLine>-Xms256m -Xmx512m -XX:MaxPermSize=128m -ea
 			-Dfile.encoding=UTF-8</argLine>
 		<sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-
 	</properties>
-
 
 	<dependencies>
 		<dependency>
@@ -262,7 +260,6 @@
 			<version>0.64.0</version>
 		</dependency>
 	</dependencies>
-
 
 	<build>
 		<finalName>${final.war.name}</finalName>
