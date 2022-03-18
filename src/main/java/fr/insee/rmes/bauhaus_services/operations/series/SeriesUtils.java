@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -49,6 +47,11 @@ import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.EncodingType;
+import fr.insee.rmes.utils.JSONUtils;
+import fr.insee.rmes.utils.XMLUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
 public class SeriesUtils extends RdfService {
@@ -200,7 +203,7 @@ public class SeriesUtils extends RdfService {
 	}
 	
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)iri).toString()));
+		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
 	}
 
 	/*WRITE*/

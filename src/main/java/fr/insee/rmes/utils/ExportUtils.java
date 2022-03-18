@@ -58,7 +58,7 @@ public class ExportUtils {
 
 		InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
 		logger.debug("End To export {} as Response", objectType);
-
+		
 		return Response.ok((StreamingOutput) out -> {
 			IOUtils.copy(input, out);
 			out.flush();
@@ -114,6 +114,8 @@ public class ExportUtils {
 					odtFileIS.close();
 				if (xslFileIS != null)
 					xslFileIS.close();
+				if (zipToCompleteIS != null)
+					zipToCompleteIS.close();
 			} catch (IOException ioe) {
 				logger.error(ioe.getMessage());
 			}
@@ -148,7 +150,7 @@ public class ExportUtils {
 			
 		} catch (IOException e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
-		}
+		} 
 
 
 	}

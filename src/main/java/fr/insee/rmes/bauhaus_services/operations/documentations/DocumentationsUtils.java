@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +18,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -61,6 +59,7 @@ import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.XMLUtils;
 
@@ -203,7 +202,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-		if (((SimpleIRI) targetUri).toString().contains(Config.OPERATIONS_BASE_URI)) {
+		if (RdfUtils.toString(targetUri).contains(Config.OPERATIONS_BASE_URI)) {
 			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {

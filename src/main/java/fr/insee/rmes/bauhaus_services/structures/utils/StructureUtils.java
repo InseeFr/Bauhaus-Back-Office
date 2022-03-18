@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
 
-import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +14,11 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.model.vocabulary.*;
+import org.eclipse.rdf4j.model.vocabulary.DC;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -286,7 +289,7 @@ public class StructureUtils extends RdfService {
 
         IRI componentSpecificationIRI;
 
-        componentSpecificationIRI = getComponentDefinitionIRI(((SimpleIRI)structureIRI).toString(), componentDefinition.getId());
+        componentSpecificationIRI = getComponentDefinitionIRI(RdfUtils.toString(structureIRI), componentDefinition.getId());
 
 
         model.add(structureIRI, QB.COMPONENT, componentSpecificationIRI, graph);
@@ -305,11 +308,11 @@ public class StructureUtils extends RdfService {
         }
 
         MutualizedComponent component = componentDefinition.getComponent();
-        if (component.getType().equals(((SimpleIRI)QB.DIMENSION_PROPERTY).toString())) {
+        if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
 
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
-        if (component.getType().equals(((SimpleIRI)QB.ATTRIBUTE_PROPERTY).toString())) {
+        if (component.getType().equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
             for(String attachment : componentDefinition.getAttachment()){
                 IRI attachmentIRI ;
                 try {
@@ -324,7 +327,7 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.ATTRIBUTE, getAttributeIRI(component.getId()), graph);
             model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
         }
-        if (component.getType().equals(((SimpleIRI)QB.MEASURE_PROPERTY).toString())) {
+        if (component.getType().equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
         repoGestion.loadSimpleObject(componentSpecificationIRI, model);

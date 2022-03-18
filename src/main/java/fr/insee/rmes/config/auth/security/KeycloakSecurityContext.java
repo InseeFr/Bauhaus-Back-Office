@@ -45,6 +45,7 @@ public class KeycloakSecurityContext extends KeycloakWebSecurityConfigurerAdapte
 			.antMatchers("/swagger-ui/*").permitAll()
 			.antMatchers("/api/openapi.json").permitAll()
 			.antMatchers("/api/documents/document/*/file").permitAll()
+			.antMatchers("/api/operations/operation/codebook").permitAll()
 			.anyRequest().authenticated();
 	}
 

@@ -86,5 +86,11 @@ public interface StampsRestrictionsService {
 	 * DOCUMENTS
 	 */
 	boolean canManageDocumentsAndLinks() throws RmesException;
+	
+	/*
+	 * CLASSIFICATIONS
+	 */
+	boolean canValidateClassification(IRI uri) throws RmesException;
+
 
 }

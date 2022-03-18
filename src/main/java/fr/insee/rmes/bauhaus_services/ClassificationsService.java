@@ -41,4 +41,6 @@ public interface ClassificationsService {
 	public String getCorrespondenceAssociations(String id) throws RmesException;
 	
 	public String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException;
+
+	public String setClassificationValidation(String id) throws RmesException;
 }
