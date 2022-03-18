@@ -500,20 +500,22 @@
                                 </xsl:element>
                                 <xsl:value-of select="concat(' (',lang,')')"/>
                             </xsl:element>
-                            <xsl:element name="text:p">
-                                <xsl:attribute name="text:style-name" select="$style"/>
-                                <xsl:choose>
-                                    <xsl:when test="ends-with($rubric-element,'1')">
-                                        <xsl:value-of select="descriptionLg1"/>
-                                    </xsl:when>
-                                    <xsl:when test="not(descriptionLg2/text()!='')">
-                                        <xsl:value-of select="descriptionLg1"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="descriptionLg2"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:element>
+                            <xsl:if test="descriptionLg1/text()!='' or descriptionLg2/text()!=''">
+                                <xsl:element name="text:p">
+                                    <xsl:attribute name="text:style-name" select="$style"/>
+                                    <xsl:choose>
+                                        <xsl:when test="ends-with($rubric-element,'1')">
+                                            <xsl:value-of select="descriptionLg1"/>
+                                        </xsl:when>
+                                        <xsl:when test="not(descriptionLg2/text()!='')">
+                                            <xsl:value-of select="descriptionLg1"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="descriptionLg2"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:element>
+                            </xsl:if>
                         </xsl:for-each>
                         <xsl:choose>
                             <xsl:when test="$count-documents = 0"/>
@@ -566,20 +568,22 @@
                                     </text:span>
                                 </xsl:if>
                             </xsl:element>
-                            <xsl:element name="text:p">
-                                <xsl:attribute name="text:style-name" select="$style"/>
-                                <xsl:choose>
-                                    <xsl:when test="ends-with($rubric-element,'1')">
-                                        <xsl:value-of select="descriptionLg1"/>
-                                    </xsl:when>
-                                    <xsl:when test="not(descriptionLg2/text()!='')">
-                                        <xsl:value-of select="descriptionLg1"/>
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        <xsl:value-of select="descriptionLg2"/>
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </xsl:element>
+                            <xsl:if test="descriptionLg1/text()!='' or descriptionLg2/text()!=''">
+                                <xsl:element name="text:p">
+                                    <xsl:attribute name="text:style-name" select="$style"/>
+                                    <xsl:choose>
+                                        <xsl:when test="ends-with($rubric-element,'1')">
+                                            <xsl:value-of select="descriptionLg1"/>
+                                        </xsl:when>
+                                        <xsl:when test="not(descriptionLg2/text()!='')">
+                                            <xsl:value-of select="descriptionLg1"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="descriptionLg2"/>
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </xsl:element>
+                            </xsl:if>
                             <text:p text:style-name="{$style}"><xsl:value-of select="tokenize(url/text(),'/')[last()]"/></text:p>
                         </xsl:for-each>
                     </xsl:when>

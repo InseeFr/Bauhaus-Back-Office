@@ -119,7 +119,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		GeoFeature geoFeature = new GeoFeature();
 		try {
 			geoFeature = mapper.readValue(body,GeoFeature.class);
-			geoFeature.setId(id.toString());
+			geoFeature.setId(id);
 			if (geoFeature.getCode()==null) {
 				geoFeature.setCode(geoFeature.getId());
 			}
@@ -188,7 +188,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		});
 		repoGestion.loadSimpleObject(geoIRI, model);
 
-		return geoIRI.toString();
+		return RdfUtils.toString(geoIRI);
 	}
 
 }

@@ -5,7 +5,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -42,7 +41,7 @@ public class FamilyPublication extends RdfService {
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = ((SimpleIRI) st.getPredicate()).toString();
+					String pred = RdfUtils.toString(st.getPredicate());
 					// Triplets that don't get published
 					if (pred.endsWith("isValidated")
 							|| pred.endsWith("validationState")

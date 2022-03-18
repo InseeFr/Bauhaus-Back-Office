@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.security.core.Authentication;
@@ -19,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -42,7 +42,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 		if (isAdmin(user)) {
 			return true;
 		}
-		String uriAsString = "<" + ((SimpleIRI)uri).toString() + ">";
+		String uriAsString = "<" + RdfUtils.toString(uri) + ">";
 		JSONObject owner = repoGestion.getResponseAsObject(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
 		if (!owner.getString(Constants.OWNER).equals(user.getStamp())) {
@@ -58,7 +58,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 			return true;
 		}
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
+		uris.forEach(u -> sb.append("<" + RdfUtils.toString(u) + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptsOwner = true;
@@ -189,7 +189,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptOwner(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
+		uris.forEach(u -> sb.append("<" + RdfUtils.toString(u) + "> "));
 		String uriAsString = sb.toString();
 		JSONArray owners = repoGestion.getResponseAsArray(ConceptsQueries.getOwner(uriAsString));
 		Boolean isConceptOwner = true;
@@ -204,7 +204,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	private boolean isConceptManager(List<IRI> uris) throws RmesException {
 		User user = getUser();
 		StringBuilder sb = new StringBuilder();
-		uris.forEach(u -> sb.append("<" + ((SimpleIRI)u).toString() + "> "));
+		uris.forEach(u -> sb.append("<" + RdfUtils.toString(u) + "> "));
 		String uriAsString = sb.toString();
 		JSONArray managers = repoGestion.getResponseAsArray(ConceptsQueries.getManager(uriAsString));
 		Boolean isConceptManager = true;
@@ -218,7 +218,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 
 	public boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(((SimpleIRI)uri).toString()));
+		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(uri)));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
 			if (managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {
@@ -230,7 +230,7 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 
 	private boolean isIndicatorManager(IRI iri) throws RmesException {
 		User user = getUser();
-		String uriAsString = "<" + ((SimpleIRI)iri).toString() + "> ";
+		String uriAsString = "<" + RdfUtils.toString(iri) + "> ";
 		JSONArray creators = repoGestion.getResponseAsArray(IndicatorsQueries.getCreatorsByIndicatorUri(uriAsString));
 		Boolean isIndicatorManager = false;
 		if (creators.length() > 0) {
@@ -343,6 +343,11 @@ public class StampsRestrictionServiceImpl extends RdfService implements StampsRe
 	public boolean canManageDocumentsAndLinks() throws RmesException {
 		User user = getUser();
 		return (isAdmin(user) || isSeriesContributor(user) || isIndicatorContributor(user));
+	}
+
+	@Override
+	public boolean canValidateClassification(IRI uri) throws RmesException {
+		return isAdmin();
 	}
 
 	

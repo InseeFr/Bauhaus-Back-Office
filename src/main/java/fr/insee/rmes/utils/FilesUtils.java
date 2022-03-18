@@ -9,6 +9,7 @@ import java.text.Normalizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class FilesUtils {
 		try {
 			is = new FileInputStream(file);
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			log.error("fileToIS : {}", e.getMessage());
 		}
 		return is;
 	}
@@ -38,6 +39,12 @@ public class FilesUtils {
 			IOUtils.copy(in, out);
 		}
 		return tempFile;
+	}
+	
+	public static File streamToFile(InputStream in, String fileName) throws IOException {
+		if (fileName.contains(".")) {
+			return streamToFile(in, FilenameUtils.getBaseName(fileName), FilenameUtils.getExtension(fileName));
+		}else return null;
 	}
 
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {

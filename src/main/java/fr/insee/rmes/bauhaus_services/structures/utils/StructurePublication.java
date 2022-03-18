@@ -5,7 +5,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -29,7 +29,7 @@ public class StructurePublication extends RdfService {
 
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = ((SimpleIRI) st.getPredicate()).toString();
+					String pred = RdfUtils.toString(st.getPredicate());
 					if (PublicationUtils.stringEndsWithItemFromList(pred,denyList)) {
 						// nothing, wouldn't copy this attr
 					} else if(pred.endsWith("component")){
