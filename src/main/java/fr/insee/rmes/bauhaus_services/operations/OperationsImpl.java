@@ -12,15 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -48,8 +49,6 @@ import fr.insee.rmes.utils.ExportUtils;
 public class OperationsImpl  extends RdfService implements OperationsService {
 
 	private static final String ATTACHMENT = "attachment";
-
-	private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
 	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
 
@@ -180,7 +179,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
+	public ResponseEntity<Object> getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
 		OutputStream os;
 		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
 			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
@@ -190,8 +189,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 		InputStream is = transformFileOutputStreamInInputStream(os);
 		String fileName = "Codebook"+ ExportUtils.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
+		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+	    responseHeaders.set(HttpHeaders.ACCEPT,  acceptHeader);
+	    responseHeaders.setContentDisposition(content);
+		return ResponseEntity.ok().headers(responseHeaders).body(is);
 	}
 
 	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {

@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -22,6 +18,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -297,7 +294,7 @@ public class DocumentationsUtils extends RdfService{
 		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
 					"id Operation/Series/Indicator doesn't match with an existing Operation/Series/Indicator");
 		}
 		return target;
@@ -317,13 +314,13 @@ public class DocumentationsUtils extends RdfService{
 		// Check idSims
 		if (idRequest == null || idSims == null || !idRequest.equals(idSims)) {
 			logger.error("Can't update a documentation if idSims or id don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "idSims can't be null, and must be the same in request",
 					"idSims in param : " + idRequest + " /id in body : " + idSims);
 		}
 		// Check id Operation/Serie/Indicator
 		if (idTarget == null) {
 			logger.error("Can't update a documentation if id Operation/Serie/Indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
 					"id Operation/Serie/Indicator or id is null");
 		}
 		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
@@ -344,7 +341,7 @@ public class DocumentationsUtils extends RdfService{
 		}
 		if (!idTarget.equals(idDatabase)) {
 			logger.error("id Operation/Serie/Indicator and idSims don't match");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match",
 					"Documentation linked to Operation/Serie/Indicator : " + existingIdTarget);
 		}
 	}
@@ -359,13 +356,13 @@ public class DocumentationsUtils extends RdfService{
 	private String checkTargetHasNoSimsAndcreateSimsId(String idTarget) throws RmesException {
 		if (idTarget == null) {
 			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id operation/serie/indicator can't be null",
 					"id is null");
 		}
 		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has(Constants.ID_SIMS)) {
 			logger.error("Documentation already exists");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
 					"Maybe this is an update");
 		}
 		return createSimsID();
@@ -461,7 +458,7 @@ public class DocumentationsUtils extends RdfService{
 	}
 
 
-	public Status deleteMetadataReport(String id) throws RmesException {
+	public HttpStatus deleteMetadataReport(String id) throws RmesException {
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 
@@ -475,8 +472,8 @@ public class DocumentationsUtils extends RdfService{
 		}		
 		Resource graph = RdfUtils.simsGraph(id);
 
-		Response.Status result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
-		if (result.equals(Status.OK)) {
+		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+		if (result.equals(HttpStatus.OK)) {
 			result = RepositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));	
 		}
 

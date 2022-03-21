@@ -11,13 +11,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -32,6 +29,9 @@ import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -338,7 +338,7 @@ public class DocumentsUtils  extends RdfService  {
 	 * @return
 	 * @throws RmesException
 	 */
-	public Status deleteDocument(String docId, boolean isLink) throws RmesException {
+	public HttpStatus deleteDocument(String docId, boolean isLink) throws RmesException {
 		JSONObject jsonDoc = getDocument(docId, isLink);
 		String uri = jsonDoc.getString(Constants.URI);
 		String url = getDocumentUrlFromDocument(jsonDoc);
@@ -407,7 +407,7 @@ public class DocumentsUtils  extends RdfService  {
 		JSONObject jsonDoc = getDocument(docId, false);
 		// Cannot upload file for a Link = if not found it's probably a link
 		if (!jsonDoc.has(Constants.URL)) {
-			throw new RmesException(HttpStatus.SC_NOT_ACCEPTABLE,
+			throw new RmesException(HttpStatus.NOT_ACCEPTABLE.value(),
 					"Document not found. Warning : Links have no attached file. Cannot upload file " + documentName + " for this document: ", docId);
 		}
 
@@ -510,7 +510,7 @@ public class DocumentsUtils  extends RdfService  {
 		repoGestion.loadSimpleObject(docUri, model);
 	}
 
-	private Response.Status changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
+	private HttpStatus changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
 		return repoGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId, docUrl, newUrl));
 	}
 
@@ -612,24 +612,28 @@ public class DocumentsUtils  extends RdfService  {
 	 * @return Response containing the file (inputStream)
 	 * @throws RmesException
 	 */
-	public Response downloadDocumentFile(String id) throws RmesException {
+	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id, false);
 
 		String url = getDocumentUrlFromDocument(jsonDoc);
 		String fileName = getDocumentNameFromUrl(url);
 		Path path = Paths.get(url);
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+	    responseHeaders.set("Content-Disposition",  content.toString());
 		try {
-			return Response.ok( (StreamingOutput) output -> {
+			return ResponseEntity.ok()
+						.headers(responseHeaders)
+						.body((StreamingOutput) output -> {
 	                InputStream input = Files.newInputStream(path);
 	                IOUtils.copy(input, output);
 	                input.close();
 	                output.flush();   
 	                output.close();
-	        } ).header( "Content-Disposition", content ).build();
+	        });			
 		 } catch ( Exception e ) { 
          	logger.error(e.getMessage());
-         	throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Error downloading file"); 
+         	throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file"); 
          }
 	}
 
@@ -640,7 +644,7 @@ public class DocumentsUtils  extends RdfService  {
 		if (dir.exists()) {
 			path = Paths.get(Config.DOCUMENTS_STORAGE_GESTION);
 		} else {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Storage folder not found",
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
 					"Config.DOCUMENTS_STORAGE");
 		}
 		return path;

@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.transform.TransformerException;
 
@@ -22,6 +21,8 @@ import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -51,7 +52,7 @@ public class ExportUtils {
 		}
 	}
 
-	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+	public ResponseEntity<Object> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
 		logger.debug("Begin To export {} as Response", objectType);
 		fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
 		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName + ODT_EXTENSION).build();
@@ -59,12 +60,16 @@ public class ExportUtils {
 		InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
 		logger.debug("End To export {} as Response", objectType);
 		
-		return Response.ok((StreamingOutput) out -> {
-			IOUtils.copy(input, out);
-			out.flush();
-			input.close();
-			out.close();
-		}).header("Content-Disposition", content).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+	    responseHeaders.set("Content-Disposition",  content.toString());
+		return ResponseEntity.ok()
+						.headers(responseHeaders)
+						.body((StreamingOutput) out -> {
+							IOUtils.copy(input, out);
+							out.flush();
+							input.close();
+							out.close();
+						});		
 
 	}
 	
@@ -122,7 +127,7 @@ public class ExportUtils {
 		}
 	}
 	
-	public Response exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
+	public ResponseEntity<Object> exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
 		logger.debug("Begin To export temp files as Response");
 		ContentDisposition content = ContentDisposition.type("attachment").fileName("xmlFiles.zip").build();
 		Path tempDir;
@@ -144,9 +149,13 @@ public class ExportUtils {
 			FilesUtils.zipDirectory(tempDir.toFile()); 
 			
 			logger.debug("End To export temp files as Response");
-			return Response.ok(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile()).header("Content-Disposition", content)
-			  .header("Content-Type","application/octet-stream")
-			  .build();
+			
+			HttpHeaders responseHeaders = new HttpHeaders();
+		    responseHeaders.set("Content-Disposition",  content.toString());
+		    responseHeaders.set("Content-Type",  "application/octet-stream");
+			return ResponseEntity.ok()
+							.headers(responseHeaders)
+							.body(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile());			
 			
 		} catch (IOException e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());

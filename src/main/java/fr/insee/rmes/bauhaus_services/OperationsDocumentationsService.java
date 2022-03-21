@@ -2,8 +2,8 @@ package fr.insee.rmes.bauhaus_services;
 
 import java.io.IOException;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -42,14 +42,14 @@ public interface OperationsDocumentationsService {
 
 	String getMetadataReportDefaultValue() throws IOException;
 
-	Status deleteMetadataReport(String id) throws RmesException;
+	HttpStatus deleteMetadataReport(String id) throws RmesException;
 	
 	/** export **/
-	Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
+	ResponseEntity<Object> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
 
-	Response exportMetadataReportForLabel(String id) throws RmesException;
+	ResponseEntity<Object> exportMetadataReportForLabel(String id) throws RmesException;
 
-	Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
+	ResponseEntity<Object> exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException;
 
 
 }

@@ -3,14 +3,13 @@ package fr.insee.rmes.bauhaus_services.operations;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 
@@ -135,7 +134,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * DELETE
 	 */
 	@Override
-	public Status deleteMetadataReport(String id) throws RmesException {
+	public HttpStatus deleteMetadataReport(String id) throws RmesException {
 		return documentationsUtils.deleteMetadataReport(id);
 	}
 
@@ -151,7 +150,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * EXPORT
 	 */
 	@Override
-	public Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
+	public ResponseEntity<Object> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
 		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
@@ -161,12 +160,12 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	}
 
 	@Override
-	public Response exportMetadataReportForLabel(String id) throws RmesException  {
+	public ResponseEntity<Object> exportMetadataReportForLabel(String id) throws RmesException  {
 			return documentationsExport.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
 	}
 
 	@Override
-	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+	public ResponseEntity<Object> exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
 		return documentationsExport.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
 	}
 

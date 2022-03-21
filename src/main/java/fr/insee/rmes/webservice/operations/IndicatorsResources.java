@@ -4,12 +4,11 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,62 +34,62 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @Qualifier("Indicator")
 @RestController
-@RequestMapping("/operations")
+@RequestMapping(value="/operations")
 public class IndicatorsResources extends OperationsCommonResources {
 
 	
 	/***************************************************************************************************
 	 * INDICATORS
 	 ******************************************************************************************************/
-	@GetMapping("/indicators")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/indicators")
+	@Produces(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public Response getIndicators() throws RmesException {
+	public ResponseEntity<Object> getIndicators() throws RmesException {
 		String jsonResultat = operationsService.getIndicators();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 
 	}
 
-	@GetMapping("/indicators/withSims")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/indicators/withSims")
+	@Produces(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
-	public Response getIndicatorsWIthSims() throws RmesException {
+	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
 		String jsonResultat = operationsService.getIndicatorsWithSims();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@GetMapping("/indicators/advanced-search")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/indicators/advanced-search")
+	@Produces(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
-	public Response getIndicatorsForSearch() throws RmesException {
+	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
 		String jsonResultat = operationsService.getIndicatorsForSearch();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 
 	}
 
-	@GetMapping("/indicator/{id}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@GetMapping(value="/indicator/{id}")
+	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
-	public Response getIndicatorByID(@PathVariable(Constants.ID) String id,
+	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
 		String resultat;
-		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+		if (header != null && header.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(operationsService.getIndicatorById(id));
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 			}
 		} else {
 			try {
 				resultat = operationsService.getIndicatorJsonByID(id);
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 			}
 		}
-		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(resultat);
 	}
 
 	/**
@@ -100,19 +99,19 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PutMapping("/indicator/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value="/indicator/{id}")
+	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
-	public Response setIndicatorById(
+	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
 			@RequestBody(description = "Indicator to update", required = true,
 			content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(Status.NO_CONTENT).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -121,17 +120,17 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PutMapping("/indicator/validate/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value="/indicator/validate/{id}")
+	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
-	public Response setIndicatorValidation(
+	public ResponseEntity<Object> setIndicatorValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setIndicatorValidation(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	/**
@@ -140,21 +139,21 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PostMapping("/indicator")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value="/indicator")
+	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
-	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN))})
-	public Response setIndicator(@RequestBody(description = "Indicator to create", required = true,
+	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
+	public ResponseEntity<Object> setIndicator(@RequestBody(description = "Indicator to create", required = true,
 	content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
 		logger.info("POST indicator");
 		String id = null;
 		try {
 			id = operationsService.setIndicator(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		if (id == null) {return Response.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).entity(id).build();}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 

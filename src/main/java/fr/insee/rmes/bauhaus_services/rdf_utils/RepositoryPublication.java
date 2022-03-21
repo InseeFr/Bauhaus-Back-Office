@@ -3,11 +3,6 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Response.Status.Family;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -23,6 +18,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
@@ -112,9 +108,9 @@ public class RepositoryPublication extends RepositoryUtils{
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public static Response.Status executeUpdate(String updateQuery) throws RmesException {
-		Status status = executeUpdate(updateQuery, REPOSITORY_PUBLICATION_INTERNE);
-		if (status.getFamily()==Family.SUCCESSFUL || status==Status.EXPECTATION_FAILED) {
+	public static HttpStatus executeUpdate(String updateQuery) throws RmesException {
+		HttpStatus status = executeUpdate(updateQuery, REPOSITORY_PUBLICATION_INTERNE);
+		if (status.is2xxSuccessful() ) {
 			status = executeUpdate(updateQuery, REPOSITORY_PUBLICATION);
 		}
 		return status;
@@ -152,7 +148,7 @@ public class RepositoryPublication extends RepositoryUtils{
 		} catch (RepositoryException e) {
 			logger.error("Publication of concept : {} {} {}", concept, FAILED,  e.getMessage());
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO , repo, FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
 
@@ -173,7 +169,7 @@ public class RepositoryPublication extends RepositoryUtils{
 		} catch (RepositoryException e) {
 			logger.error("Publication of Resource {} : {} {}" ,type, resource, FAILED);
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
 	
@@ -194,7 +190,7 @@ public class RepositoryPublication extends RepositoryUtils{
 		} catch (RepositoryException e) {
 			logger.error("Publication of Graph {} : {} {}" ,type, context, FAILED);
 			logger.error(THREE_PARAMS_LOG, CONNECTION_TO, repo, FAILED);
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), CONNECTION_TO + repo + FAILED);
 		}
 	}
 
@@ -212,12 +208,12 @@ public class RepositoryPublication extends RepositoryUtils{
 			try {
 				statements = conn.getStatements(null, predicat, concept, false);
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 			try {
 				conn.remove(statements);
 			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
 		}
 	}

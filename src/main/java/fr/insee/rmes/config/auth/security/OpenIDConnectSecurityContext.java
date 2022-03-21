@@ -61,7 +61,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 		if (Config.REQUIRES_SSL)
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
-		logger.debug("OpenID authentication activated ");
+		logger.info("OpenID authentication activated ");
 	
 	}
 	
@@ -77,6 +77,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
+		logger.info("Allowed origins : {}", allowedOrigin);
 		configuration.setAllowedOrigins(allowedOrigin.stream().collect(Collectors.toList()));
 		configuration.setAllowedMethods(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new

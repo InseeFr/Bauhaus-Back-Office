@@ -1,14 +1,11 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,111 +55,104 @@ public class ClassificationsResources {
 	@Autowired
 	ClassificationsService classificationsService;
 
-	@GetMapping("/families")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/families", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassificationFamilies", summary = "List of classification families", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getFamilies()  {
+	public ResponseEntity<Object> getFamilies()  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getFamilies();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/family/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/family/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getFamily", summary = "Classification family", 
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = FamilyClass.class)))})
-	public Response getFamily(@PathVariable(Constants.ID) String id)  {
+	public ResponseEntity<Object> getFamily(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getFamily(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/family/{id}/members")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/family/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getFamilyMembers", summary = "Members of family", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
-	public Response getFamilyMembers(@PathVariable(Constants.ID) String id)  {
+	public ResponseEntity<Object> getFamilyMembers(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getFamilyMembers(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@GetMapping("/series")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassificationSeries", summary = "List of classification series", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getSeries()  {
+	public ResponseEntity<Object> getSeries()  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getSeries();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/series/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getOneSeries(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/series/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getOneSeries(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getOneSeries(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/series/{id}/members")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/series/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getSeriesMembers", summary = "Members of series", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Members.class))))})
-	public Response getSeriesMembers(@PathVariable(Constants.ID) String id)  {
+	public ResponseEntity<Object> getSeriesMembers(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getSeriesMembers(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="",produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassifications", summary = "List of classifications", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getClassifications()  {
+	public ResponseEntity<Object> getClassifications()  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassifications();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassification(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/classification/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassification(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassification(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	/**
@@ -171,152 +161,140 @@ public class ClassificationsResources {
 	 * @return response
 	 */
 	@Secured({ Roles.SPRING_ADMIN })
-	@PutMapping("/classification/validate/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value="/classification/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setClassifValidation", summary = "Classification validation")
-	public Response setOperationValidation(
+	public ResponseEntity<Object> setOperationValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			classificationsService.setClassificationValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
-	@GetMapping("/classification/{id}/items")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationItems(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/classification/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationItems(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationItems(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{id}/levels")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevels(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/classification/{id}/levels", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationLevels(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationLevels(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{id}/level/{levelId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevel(@PathVariable(Constants.ID) String id, @PathVariable("levelId") String levelId)  {
+	@GetMapping(value="/classification/{id}/level/{levelId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationLevel(@PathVariable(Constants.ID) String id, @PathVariable("levelId") String levelId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationLevel(id, levelId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{classificationId}/level/{levelId}/members")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationLevelMembers(@PathVariable("classificationId") String classificationId, @PathVariable("levelId") String levelId)  {
+	@GetMapping(value="/classification/{classificationId}/level/{levelId}/members", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationLevelMembers(@PathVariable("classificationId") String classificationId, @PathVariable("levelId") String levelId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{classificationId}/item/{itemId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationItem(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId)  {
+	@GetMapping(value="/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationItem(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationItem(classificationId, itemId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{classificationId}/item/{itemId}/notes/{conceptVersion}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationItemNotes(@PathVariable("classificationId") String classificationId,
+	@GetMapping(value="/classification/{classificationId}/item/{itemId}/notes/{conceptVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationItemNotes(@PathVariable("classificationId") String classificationId,
 			@PathVariable("itemId") String itemId, @PathVariable("conceptVersion") int conceptVersion)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationItemNotes(classificationId, itemId, conceptVersion);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/classification/{classificationId}/item/{itemId}/narrowers")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getClassificationItemNarrowers(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId)  {
+	@GetMapping(value="/classification/{classificationId}/item/{itemId}/narrowers", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getClassificationItemNarrowers(@PathVariable("classificationId") String classificationId, @PathVariable("itemId") String itemId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/correspondences")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondences()  {
+	@GetMapping(value="/correspondences", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getCorrespondences()  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondences();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/correspondence/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondence(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/correspondence/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getCorrespondence(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondence(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/correspondence/{id}/associations")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondenceAssociations(@PathVariable(Constants.ID) String id)  {
+	@GetMapping(value="/correspondence/{id}/associations", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getCorrespondenceAssociations(@PathVariable(Constants.ID) String id)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociations(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/correspondence/{correspondenceId}/association/{associationId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getCorrespondenceItem(@PathVariable("correspondenceId") String correspondenceId,
+	@GetMapping(value="/correspondence/{correspondenceId}/association/{associationId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> getCorrespondenceItem(@PathVariable("correspondenceId") String correspondenceId,
 			@PathVariable("associationId") String associationId)  {
 		String jsonResultat;
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociation(correspondenceId, associationId);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 }

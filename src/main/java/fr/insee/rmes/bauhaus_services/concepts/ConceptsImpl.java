@@ -4,17 +4,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.commons.text.CaseUtils;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
@@ -133,10 +131,10 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 					details);
 		}
 		/* deletion */
-		Response.Status result= conceptsUtils.deleteConcept(id);
+		HttpStatus result= conceptsUtils.deleteConcept(id);
 		String successMessage=THE_CONCEPT+id+" has been deleted from graph "+RdfUtils.conceptGraph();
-		if (result!= Status.OK) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,"Unexpected return message: ",result.toString());
+		if (result!= HttpStatus.OK) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
 		} else { 
 			return successMessage;
 		}
@@ -233,12 +231,12 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public Response exportConcept(String id, String acceptHeader) throws RmesException  {
+	public ResponseEntity<Object> exportConcept(String id, String acceptHeader) throws RmesException  {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
 		
 		Map<String, String> xmlContent = convertConceptInXml(concept);	
@@ -291,12 +289,12 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException 
 	 */
 	@Override
-	public Response getCollectionExport(String id, String acceptHeader) throws RmesException{
+	public ResponseEntity<Object> getCollectionExport(String id, String acceptHeader) throws RmesException{
 		CollectionForExport collection;
 		try {
 			collection = collectionExport.getCollectionData(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
 		Map<String, String> xmlContent = convertCollectionInXml(collection);	
 		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();

@@ -1,11 +1,11 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,9 +41,9 @@ public class OperationsCommonResources {
 
 
 
-	protected Response returnRmesException(RmesException e) {
+	protected ResponseEntity<Object> returnRmesException(RmesException e) {
 		logger.error(e.getMessage(), e);
-		return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+		return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 	}
 
 }

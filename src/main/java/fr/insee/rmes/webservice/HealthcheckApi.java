@@ -7,12 +7,12 @@ import java.util.StringJoiner;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,7 +57,7 @@ public class HealthcheckApi {
     @Produces({
         MediaType.TEXT_PLAIN
     })
-    public Response getHealthcheck() {
+    public ResponseEntity<Object> getHealthcheck() {
     	
     	StringJoiner errorMessage = new StringJoiner(" ");
     	StringJoiner stateResult = new StringJoiner(" ");
@@ -94,11 +94,11 @@ public class HealthcheckApi {
 	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(OK_STATE);
 	    	}else {
 				errorMessage.add("- Sugoi No functional error but return an empty string \n");
-	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
+	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(KO_STATE);
 	    	}
 		} catch (RmesException e) {
 			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
+			stateResult.add(CONNEXION_LDAP+" - Sugoi").add(KO_STATE);
 		}
 
     	
@@ -108,10 +108,10 @@ public class HealthcheckApi {
          
     	if (!"".equals(errorMessage.toString())) {
     		logger.error("Errors message : \n {}",errorMessage);
-    		return Response.serverError().entity(stateResult.merge(errorMessage).toString()).build();
+    		return ResponseEntity.internalServerError().body(stateResult.merge(errorMessage).toString());
     	}
     	else {
-    		return Response.ok(stateResult.toString()).build();
+    		return ResponseEntity.ok(stateResult.toString());
     	}
     }
 

@@ -5,18 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,51 +46,49 @@ public class OperationsResources extends OperationsCommonResources {
 	 * OPERATIONS
 	 ******************************************************************************************************/
 
-	@GetMapping("/operations")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value="/operations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public Response getOperations() throws RmesException {
+	public ResponseEntity<Object> getOperations() throws RmesException {
 		String jsonResultat = operationsService.getOperations();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 
 	}
 
-	@GetMapping("/operation/{id}")
-	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@GetMapping(value="/operation/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", 
 	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json",*/ schema = @Schema(implementation = Operation.class)))})
-	public Response getOperationByID(@PathVariable(Constants.ID) String id,
+	public ResponseEntity<Object> getOperationByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
 		String resultat;
-		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+		if (header != null && header.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(operationsService.getOperationById(id));
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 			}
 		} else {
 			try {
 				resultat = operationsService.getOperationJsonByID(id);
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 			}
 		}
-		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
+		return ResponseEntity.status(HttpStatus.OK).body(resultat);
 	}
 
-	@PostMapping("/operation/codebook")
-	@Produces({ MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text" })
+	@PostMapping(value="/operation/codebook", 
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" } ,
+			produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
-	public Response getCodeBook( @HeaderParam("Accept") String acceptHeader, 
+	public ResponseEntity<Object> getCodeBook( @HeaderParam("Accept") String acceptHeader, 
 			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
 	@FormDataParam("file") InputStream isDDI,
 	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
 	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
 		File codeBookFile = FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
-		Response response;
+		ResponseEntity<Object> response;
 		try {
 			response = operationsService.getCodeBookExport(ddi,codeBookFile, acceptHeader);
 		} catch (RmesException e) {
@@ -109,19 +104,18 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
-	@PutMapping("/operation/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value="/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
-	public Response setOperationById(
+	public ResponseEntity<Object> setOperationById(
 			@PathVariable(Constants.ID) String id, 
 			@RequestBody(description = "Operation to update", required = true, 
 			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(Status.NO_CONTENT).build();
+		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -130,19 +124,18 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
-	@PostMapping("/operation")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value="/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
-	public Response createOperation(
+	public ResponseEntity<Object> createOperation(
 			@RequestBody(description = "Operation to create", required = true, 
 			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
 		String id = null;
 		try {
 			id = operationsService.createOperation(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	/**
@@ -151,17 +144,16 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
-	@PutMapping("/operation/validate/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value="/operation/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
-	public Response setOperationValidation(
+	public ResponseEntity<Object> setOperationValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setOperationValidation(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 }

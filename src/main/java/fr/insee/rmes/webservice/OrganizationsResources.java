@@ -4,12 +4,12 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,43 +51,43 @@ public class OrganizationsResources {
 	@GetMapping("/organization/{identifier}")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Operation(operationId = "getOrganizationByIdentifier", summary = "Organization" , responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Organization.class)))})
-	public Response getOrganizationByIdentifier(@PathVariable("identifier") String identifier,
+	public ResponseEntity<Object> getOrganizationByIdentifier(@PathVariable("identifier") String identifier,
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
 		String resultat;
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(organizationsService.getOrganization(identifier));
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
 		}
 		else try {
 			resultat = organizationsService.getOrganizationJsonString(identifier);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
 	}
 
 	@GetMapping("/organizations")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Operation(operationId = "getOrganizations", summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getOrganizations(
+	public ResponseEntity<Object> getOrganizations(
 			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
 		String resultat;
 		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(organizationsService.getOrganizations());
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
 		}
 		else try {
 			resultat = organizationsService.getOrganizationsJson();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(resultat).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
 	}
 
 }

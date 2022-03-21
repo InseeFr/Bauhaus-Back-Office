@@ -3,13 +3,12 @@ package fr.insee.rmes.webservice;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -74,22 +73,22 @@ public class UserResources {
 	@GetMapping("/stamp")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getStamp", summary = "User's stamp", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-	public Response getStamp() {
+	public ResponseEntity<Object> getStamp() {
 			String stamp = null;
 			try {
 				stamp = stampsService.getStamp();
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
-			return Response.status(HttpStatus.SC_OK).entity(stamp).build();
+			return ResponseEntity.status(HttpStatus.SC_OK).body(stamp);
 	}
 
 	@PostMapping("/login")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "login", summary = "Fake Login", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))})
-	public Response login(@RequestBody(description = "Component", required = true) String user) throws JsonProcessingException {
+	public ResponseEntity<Object> login(@RequestBody(description = "Component", required = true) String user) throws JsonProcessingException {
 		stampsRestrictionService.setFakeUser(user);
-		return Response.status(HttpStatus.SC_OK).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).build();
 	}
 	
 	
@@ -97,17 +96,17 @@ public class UserResources {
 	@PostMapping("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setAddRole", summary = "Add role")
-	public Response setAddRole(@PathVariable("role") String role, @PathVariable("user") String user) {
+	public ResponseEntity<Object> setAddRole(@PathVariable("role") String role, @PathVariable("user") String user) {
 		userRolesManagerService.setAddRole(role, user);
-		return Response.status(Status.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
 	}
 
 	@Secured({ Roles.SPRING_ADMIN })
 	@PostMapping("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
-	public Response setDeleteRole(@PathVariable("role") String role, @PathVariable("user") String user) {
+	public ResponseEntity<Object> setDeleteRole(@PathVariable("role") String role, @PathVariable("user") String user) {
 		userRolesManagerService.setDeleteRole(role, user);
-		return Response.status(Status.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
 	}
 }

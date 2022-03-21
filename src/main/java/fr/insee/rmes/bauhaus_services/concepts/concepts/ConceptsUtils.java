@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,6 +16,7 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -115,7 +112,7 @@ public class ConceptsUtils extends RdfService {
 		try {
 			concept =  mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		return concept;
@@ -198,9 +195,9 @@ public class ConceptsUtils extends RdfService {
 		return repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
-	public Response.Status deleteConcept(String id) throws RmesException{
-		Response.Status result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
-		if (result.equals(Status.OK)) {
+	public HttpStatus deleteConcept(String id) throws RmesException{
+		HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+		if (result.equals(HttpStatus.OK)) {
 			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;

@@ -2,6 +2,7 @@ package fr.insee.rmes.exceptions;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 
 public class RmesException extends Exception {
 
@@ -65,6 +66,12 @@ public class RmesException extends Exception {
 		det.put(CODE, errorCode);
 		det.put(MESSAGE, message);
 		this.details=det.toString();
+	}
+
+	public RmesException(HttpStatus status, String message, String details) {
+		super();
+		this.status = status.value();
+		this.details = createDetails(null, message, details);
 	}
 
 	public RestMessage toRestMessage(){

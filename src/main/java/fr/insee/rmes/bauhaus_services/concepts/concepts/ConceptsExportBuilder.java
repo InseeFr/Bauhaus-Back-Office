@@ -3,12 +3,11 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -85,7 +84,7 @@ public class ConceptsExportBuilder extends RdfService {
 
 	}
 
-	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+	public ResponseEntity<Object>  exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
