@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,9 +21,9 @@ import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,7 +49,8 @@ public class CodeListsResources {
 
 	@PostMapping(value="/{id}", consumes=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCodesList", summary = "Create a codes list")
-	public ResponseEntity<Object> setCodesList(@RequestBody(description = "Code List", required = true) String body) {
+	public ResponseEntity<Object> setCodesList(
+			@Parameter(description = "Code List", required = true) @RequestBody String body) {
 		String id = null;
 		try {
 			id = codeListService.setCodesList(body, false);
@@ -60,7 +62,9 @@ public class CodeListsResources {
 
 	@PutMapping(value="/{id}", consumes=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCodesList", summary = "Create a codes list")
-	public ResponseEntity<Object> updateCodesList(@PathVariable(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
+	public ResponseEntity<Object> updateCodesList(
+			@PathVariable(Constants.ID) String componentId, 
+			@Parameter(description = "Code List", required = true) @RequestBody String body) {
 		String id = null;
 		try {
 			id = codeListService.setCodesList(id, body, false);
@@ -72,7 +76,8 @@ public class CodeListsResources {
 
 	@PostMapping(value="/partial", consumes=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
-	public ResponseEntity<Object> createPartialCodeList(@RequestBody(description = "Code List", required = true) String body) {
+	public ResponseEntity<Object> createPartialCodeList(
+			@Parameter(description = "Code List", required = true) @RequestBody String body) {
 		String id = null;
 		try {
 			id = codeListService.setCodesList(body, true);
@@ -84,7 +89,9 @@ public class CodeListsResources {
 
 	@PutMapping(value="/partial/{id}", consumes=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCodesList", summary = "Create a codes list")
-	public ResponseEntity<Object> updatePartialCodeList(@PathVariable(Constants.ID) String componentId, @RequestBody(description = "Code List", required = true) String body) {
+	public ResponseEntity<Object> updatePartialCodeList(
+			@PathVariable(Constants.ID) String componentId, 
+			@Parameter(description = "Code List", required = true) @RequestBody String body) {
 		String id = null;
 		try {
 			id = codeListService.setCodesList(id, body, true);

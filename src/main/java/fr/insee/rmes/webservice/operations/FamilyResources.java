@@ -37,9 +37,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 public class FamilyResources extends OperationsCommonResources {
 
 	
-
-String JSON_TYPE = MediaType.APPLICATION_JSON.getType();
-	
 	@GetMapping("/families")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})

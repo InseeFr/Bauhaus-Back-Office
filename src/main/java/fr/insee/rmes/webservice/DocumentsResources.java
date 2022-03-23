@@ -156,8 +156,7 @@ public class DocumentsResources {
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public ResponseEntity<Object> setDocument(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = Constants.DOCUMENT, required = true)
-			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
+			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))@RequestBody String body) {
 		try {
 			documentsService.setDocument(id, body);
 		} catch (RmesException e) {
@@ -265,8 +264,7 @@ public class DocumentsResources {
 	@Operation(operationId = "setLinkById", summary = "Update link")
 	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Link", required = true)
-			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
+			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class)) @RequestBody String body) {
 		try {
 			documentsService.setLink(id, body);
 		} catch (RmesException e) {

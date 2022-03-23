@@ -65,8 +65,7 @@ public class DocumentsUtils  extends RdfService  {
 
 	@Autowired
 	private LangService langService;
-//	@Autowired
-//	DocumentationsUtils documentationsUtils;
+
 	@Autowired
 	ParentUtils ownersUtils;
 	

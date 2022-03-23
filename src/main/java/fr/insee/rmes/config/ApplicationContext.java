@@ -40,13 +40,6 @@ public class ApplicationContext {
 		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
 		return HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).setSSLSocketFactory(sslsf);
 	}
-	
-//	@Bean
-//	public RestTemplate restTemplate() throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException {
-//		CloseableHttpClient httpClient = httpClientBuilder().build();
-//		ClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-//		return new RestTemplate(requestFactory);
-//	}
 
 	@PostConstruct
 	public void setUp() {

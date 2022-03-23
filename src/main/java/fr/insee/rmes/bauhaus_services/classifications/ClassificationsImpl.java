@@ -111,7 +111,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	
 	@Override
 	public String getClassificationItem(String classificationId, String itemId) throws RmesException{
-		logger.info("Starting to get classification item");
+		logger.info("Starting to get classification item {} from {}", itemId, classificationId);
 		JSONObject item = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
 		JSONArray altLabels = repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
 		if(altLabels.length() != 0) {
@@ -122,13 +122,13 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	
 	@Override
 	public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
-		logger.info("Starting to get classification item notes");
+		logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
 		return repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion)).toString();
 	}
 	
 	@Override
 	public String getClassificationItemNarrowers(String classificationId, String itemId) throws RmesException {
-		logger.info("Starting to get classification item members");
+		logger.info("Starting to get classification item members {} from {}", itemId, classificationId);
 		return repoGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
 	}
 	

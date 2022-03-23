@@ -149,7 +149,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 		logger.info("POST indicator");
 		String id = null;
 		try {
-			id = operationsService.setIndicator(body);
+			id = operationsService.setIndicator(body); 
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}

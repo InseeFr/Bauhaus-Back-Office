@@ -24,6 +24,7 @@ import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.Structure;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -127,7 +128,8 @@ public class StructureResources {
     @PostMapping("/structure")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "setStructure", summary = "Create a structure")
-    public ResponseEntity<Object> setStructure(@RequestBody(description = "Structure", required = true) String body) {
+    public ResponseEntity<Object> setStructure(
+    		@Parameter(description = "Structure", required = true) @RequestBody String body) {
         String id = null;
         try {
             id = structureService.setStructure(body);
@@ -140,7 +142,9 @@ public class StructureResources {
     @PutMapping("/structure/{structureId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "setStructure", summary = "Update a structure")
-    public ResponseEntity<Object> setStructure(@PathVariable("structureId") String structureId, @RequestBody(description = "Structure", required = true) String body) {
+    public ResponseEntity<Object> setStructure(
+    		@PathVariable("structureId") String structureId, 
+    		@Parameter(description = "Structure", required = true) @RequestBody String body) {
         String id = null;
         try {
             id = structureService.setStructure(structureId, body);
@@ -228,7 +232,8 @@ public class StructureResources {
     @PutMapping("/components/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "updateComponent", summary = "Update a component")
-    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String componentId, @RequestBody(description = "Component", required = true) String body) {
+    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String componentId, 
+    		@Parameter(description = "Component", required = true) @RequestBody String body) {
         String id = null;
         try {
             id = structureComponentService.updateComponent(componentId, body);
@@ -241,7 +246,8 @@ public class StructureResources {
     @PostMapping("/components")
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(operationId = "createComponent", summary = "create a component")
-    public ResponseEntity<Object> createComponent(@RequestBody(description = "Component", required = true) String body) {
+    public ResponseEntity<Object> createComponent(
+    		@Parameter(description = "Component", required = true) @RequestBody String body) {
         String id = null;
         try {
             id = structureComponentService.createComponent(body);

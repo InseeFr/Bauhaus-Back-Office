@@ -25,6 +25,7 @@ import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -86,7 +87,9 @@ public class UserResources {
 	@PostMapping("/login")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "login", summary = "Fake Login", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))})
-	public ResponseEntity<Object> login(@RequestBody(description = "Component", required = true) String user) throws JsonProcessingException {
+	public ResponseEntity<Object> login(
+			@Parameter(description = "Component", required = true) @RequestBody String user) 
+			throws JsonProcessingException {
 		stampsRestrictionService.setFakeUser(user);
 		return ResponseEntity.status(HttpStatus.SC_OK).build();
 	}
