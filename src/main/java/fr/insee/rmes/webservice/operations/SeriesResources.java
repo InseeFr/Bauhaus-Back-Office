@@ -29,7 +29,7 @@ import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
@@ -119,8 +119,8 @@ public class SeriesResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
 	public ResponseEntity<Object> setSeriesById(
 			@PathVariable(Constants.ID) String id, 
-			@RequestBody(description = "Series to update", required = true,
-			content = @Content(schema = @Schema(implementation = Series.class)))String body) {
+			@Parameter(description = "Series to update", required = true,
+			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) {
 		try {
 			operationsService.setSeries(id, body);
 		} catch (RmesException e) {
@@ -166,8 +166,8 @@ public class SeriesResources extends OperationsCommonResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
 	public ResponseEntity<Object> createSeries(
-			@RequestBody(description = "Series to create", required = true, 
-			content = @Content(schema = @Schema(implementation = Series.class))) String body) {
+			@Parameter(description = "Series to create", required = true, 
+			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) {
 		String id = null;
 		try {
 			id = operationsService.createSeries(body);

@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -85,8 +85,8 @@ public class GeographyResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
-			@RequestBody(description = "Geo Feature to create", required = true, 
-            content = @Content(schema = @Schema(implementation = GeoFeature.class))) String body) {
+			@Parameter(description = "Geo Feature to create", required = true, 
+            content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {
 		String id = null;
 		try {
 			id = geoService.createFeature(body);
@@ -102,8 +102,7 @@ public class GeographyResources {
 	@Operation(operationId = "updateGeography", summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Geo Feature to update", required = true)
-			@Parameter(schema = @Schema(implementation= GeoFeature.class)) String body) {
+			@Parameter(description = "Geo Feature to update", required = true, schema = @Schema(implementation= GeoFeature.class)) @RequestBody String body) {
 		try {
 			geoService.updateFeature(id, body);
 		} catch (RmesException e) {

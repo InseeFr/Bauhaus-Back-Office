@@ -33,7 +33,7 @@ import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
@@ -108,8 +108,8 @@ public class OperationsResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public ResponseEntity<Object> setOperationById(
 			@PathVariable(Constants.ID) String id, 
-			@RequestBody(description = "Operation to update", required = true, 
-			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
+			@Parameter(description = "Operation to update", required = true, 
+			content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
@@ -127,8 +127,8 @@ public class OperationsResources extends OperationsCommonResources {
 	@PostMapping(value="/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public ResponseEntity<Object> createOperation(
-			@RequestBody(description = "Operation to create", required = true, 
-			content = @Content(schema = @Schema(implementation = Operation.class))) String body) {
+			@Parameter(description = "Operation to create", required = true, 
+			content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) {
 		String id = null;
 		try {
 			id = operationsService.createOperation(body);

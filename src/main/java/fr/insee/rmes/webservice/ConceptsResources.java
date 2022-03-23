@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,7 +39,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -242,7 +242,8 @@ public class ConceptsResources   {
 	@PostMapping("/concept")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
-	public ResponseEntity<Object> setConcept(@RequestBody(description = "Concept", required = true) String body) {
+	public ResponseEntity<Object> setConcept(
+			@Parameter(description = "Concept", required = true) @RequestBody String body) {
 		String id = null;
 		try {
 			id = conceptsService.setConcept(body);
@@ -258,7 +259,7 @@ public class ConceptsResources   {
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Concept", required = true) String body) {
+			@Parameter(description = "Concept", required = true) @RequestBody String body) {
 		try {
 			conceptsService.setConcept(id, body);
 		} catch (RmesException e) {
@@ -273,7 +274,7 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
-			@RequestBody(description = "Concept id array to validate", required = true) String body) throws RmesException {
+			@Parameter(description = "Concept", required = true) @RequestBody String body) throws RmesException {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return ResponseEntity.noContent().build();
@@ -297,7 +298,7 @@ public class ConceptsResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public ResponseEntity<Object> setConceptSend(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
+			@Parameter(description = "Mail informations", required = true) String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : {}" , id);
@@ -312,7 +313,8 @@ public class ConceptsResources   {
 	@PostMapping("/collection")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
-	public ResponseEntity<Object> setCollection(@RequestBody(description = "Collection", required = true) String body) {
+	public ResponseEntity<Object> setCollection(
+			@Parameter(description = "Collection", required = true) @RequestBody String body) {
 		try {
 			conceptsService.setCollection(body);
 		} catch (RmesException e) {
@@ -327,7 +329,7 @@ public class ConceptsResources   {
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Collection", required = true) String body) throws RmesException {
+			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {
 		try {
 			conceptsService.setCollection(id, body);
 			logger.info("Update collection : {}" , id);
@@ -343,7 +345,7 @@ public class ConceptsResources   {
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(
-			@RequestBody(description = "Collection id array to validate", required = true) String body) throws RmesException {
+			@Parameter(description = "Collection id array to validate", required = true) @RequestBody String body) throws RmesException {
 		try {
 			conceptsService.setCollectionsValidation(body);
 			logger.info("Validated concepts : {}" , body);
@@ -366,7 +368,7 @@ public class ConceptsResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public ResponseEntity<Object> setCollectionSend(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@RequestBody(description = "Mail informations", required = true) String body) throws RmesException {
+			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
 			logger.info("Send concept : {}" , id);

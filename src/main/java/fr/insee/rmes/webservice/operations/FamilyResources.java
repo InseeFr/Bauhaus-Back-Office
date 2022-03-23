@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,10 +20,10 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.webservice.OperationsCommonResources;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
@@ -87,8 +88,7 @@ String JSON_TYPE = MediaType.APPLICATION_JSON.getType();
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update family" )
 	public ResponseEntity<Object> setFamilyById(
 			@PathVariable(Constants.ID) String id, 
-			@RequestBody(description = "Family to update", required = true,
-			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+			@Parameter(description = "Family to update", required = true, content = @Content(schema = @Schema(implementation = Family.class))) @RequestBody String body) {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
@@ -107,8 +107,8 @@ String JSON_TYPE = MediaType.APPLICATION_JSON.getType();
 	@PostMapping("/family")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
 	public ResponseEntity<Object> createFamily(
-			@RequestBody(description = "Family to create", required = true, 
-			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
+			@RequestBody String body) {
 		String id = null;
 		try {
 			id = operationsService.createFamily(body);

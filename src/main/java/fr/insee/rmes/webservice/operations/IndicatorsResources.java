@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,6 @@ import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
@@ -104,8 +104,8 @@ public class IndicatorsResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
 	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
-			@RequestBody(description = "Indicator to update", required = true,
-			content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
+			@Parameter(description = "Indicator to update", required = true,
+			content = @Content(schema = @Schema(implementation = Indicator.class))) @RequestBody String body) {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
@@ -143,8 +143,9 @@ public class IndicatorsResources extends OperationsCommonResources {
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
-	public ResponseEntity<Object> setIndicator(@RequestBody(description = "Indicator to create", required = true,
-	content = @Content(schema = @Schema(implementation = Indicator.class))) String body) {
+	public ResponseEntity<Object> setIndicator(
+			@Parameter(description = "Indicator to create", required = true,
+	content = @Content(schema = @Schema(implementation = Indicator.class))) @RequestBody String body) {
 		logger.info("POST indicator");
 		String id = null;
 		try {

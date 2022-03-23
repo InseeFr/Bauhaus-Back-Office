@@ -33,7 +33,7 @@ import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 
@@ -198,8 +198,9 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
-	public ResponseEntity<Object> setMetadataReport(@RequestBody(description = "Metadata report to create", required = true,
-	content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+	public ResponseEntity<Object> setMetadataReport(
+			@Parameter(description = "Metadata report to create", required = true,
+	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		logger.info("POST Metadata report");
 		String id = null;
 		try {
@@ -223,8 +224,8 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
 	public ResponseEntity<Object> setMetadataReportById(
 			@PathVariable(Constants.ID) String id, 
-			@RequestBody(description = "Report to update", required = true,
-			content = @Content(schema = @Schema(implementation = Documentation.class))) String body) {
+			@Parameter(description = "Report to update", required = true,
+			content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		try {
 			documentationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {

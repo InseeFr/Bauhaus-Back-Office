@@ -54,9 +54,12 @@ public class ConceptsUtils extends RdfService {
 
 	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
-		String notation = json.getString(Constants.NOTATION);
-		int id = Integer.parseInt(notation.substring(1))+1;
-		return "c" + id;
+		if (json != null && !json.isEmpty()) {
+			String notation = json.getString(Constants.NOTATION);
+			int id = Integer.parseInt(notation.substring(1))+1;
+			return "c" + id;
+		}
+		return "c0001";
 	}
 
 	public JSONObject getConceptById(String id)  throws RmesException{
