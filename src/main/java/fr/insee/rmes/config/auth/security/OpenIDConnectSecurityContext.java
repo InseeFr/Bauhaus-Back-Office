@@ -45,18 +45,19 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 
 		http.cors(withDefaults())
 				.authorizeRequests()
-				.antMatchers("/api/init").permitAll()
-				.antMatchers("/api/healthcheck").permitAll()
+				.antMatchers("/init").permitAll()
+				.antMatchers("/healthcheck").permitAll()
 				.antMatchers("/swagger-ui/*").permitAll()
-				.antMatchers("/api/openapi.json").permitAll()
-				.antMatchers("/api/documents/document/*/file").permitAll()
-				.antMatchers("/api/operations/operation/codebook").permitAll()
+				.antMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
+				.antMatchers("/openapi.json").permitAll()
+				.antMatchers("/documents/document/*/file").permitAll()
+				.antMatchers("/operations/operation/codebook").permitAll()
 				.antMatchers(HttpMethod.OPTIONS).permitAll()
 				.anyRequest().authenticated()
 				.and()
 				.oauth2ResourceServer()
-				.jwt()
-				.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
+				.jwt();
+				//.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
 		if (Config.REQUIRES_SSL)
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
