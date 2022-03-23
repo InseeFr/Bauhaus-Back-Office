@@ -69,7 +69,7 @@ public class OrganizationsResources {
 		return ResponseEntity.status(HttpStatus.SC_OK).body(resultat);
 	}
 
-	@GetMapping("/organizations")
+	@GetMapping("")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Operation(operationId = "getOrganizations", summary = "List of organizations" , responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getOrganizations(

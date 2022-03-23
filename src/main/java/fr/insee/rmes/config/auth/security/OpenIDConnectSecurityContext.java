@@ -80,6 +80,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 		logger.info("Allowed origins : {}", allowedOrigin);
 		configuration.setAllowedOrigins(allowedOrigin.stream().collect(Collectors.toList()));
 		configuration.setAllowedMethods(List.of("*"));
+		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new
 				UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

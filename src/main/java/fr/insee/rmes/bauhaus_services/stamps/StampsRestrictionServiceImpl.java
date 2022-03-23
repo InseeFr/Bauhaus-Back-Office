@@ -75,7 +75,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	public User getUser() {
-		if (Config.ENV.equals("pre-prod") || Config.ENV.equals("prod")) {
+		if (Config.ENV.equals("pre-prod") || Config.ENV.equals("prod") ||  Config.ENV.equals("PROD")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			User currentUser = (User) authentication.getPrincipal();
 			logger.info("Current user has stamp {}", currentUser.getStamp());

@@ -37,13 +37,11 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
-		http.authorizeRequests().anyRequest().permitAll();
+		http.cors(withDefaults())
+		.authorizeRequests().anyRequest().permitAll();
 		if (Config.REQUIRES_SSL) {
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		}
-		http.cors(withDefaults());
-		
-		
 		
 		logger.info("Default authentication activated - no auth ");
 	}
@@ -54,6 +52,7 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 		logger.info("Allowed origins : {}", allowedOrigin);
 		configuration.setAllowedOrigins(allowedOrigin.stream().collect(Collectors.toList()));
 		configuration.setAllowedMethods(List.of("*"));
+		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new
 				UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
