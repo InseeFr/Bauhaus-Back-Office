@@ -61,10 +61,10 @@ public class GeoQueries {
 	
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("COG_GRAPH", Config.GEOGRAPHY_GRAPH);
-		params.put("GEO_SIMS_GRAPH", Config.DOCUMENTATIONS_GEO_GRAPH);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
+		params.put("COG_GRAPH", Config.getGeographyGraph());
+		params.put("GEO_SIMS_GRAPH", Config.getDocumentationsGeoGraph());
 	}
 	
 	

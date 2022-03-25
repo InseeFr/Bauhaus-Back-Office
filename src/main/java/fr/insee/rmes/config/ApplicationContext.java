@@ -43,7 +43,6 @@ public class ApplicationContext {
 
 	@PostConstruct
 	public void setUp() {
-		Config.setConfig(env);
 		Config.printMajorConfig();
 	}
 

@@ -38,8 +38,8 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
-	public static final Repository REPOSITORY_GESTION = initRepository(Config.SESAME_SERVER_GESTION,
-			Config.REPOSITORY_ID_GESTION);
+	public static final Repository REPOSITORY_GESTION = initRepository(Config.getSesameServerGestion(),
+			Config.getRepositoryIdGestion());
 
 
 	

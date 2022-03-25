@@ -40,8 +40,8 @@ public class RepositoryPublication extends RepositoryUtils{
 
 	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
 
-	public static final Repository REPOSITORY_PUBLICATION = initRepository(Config.SESAME_SERVER_PUBLICATION, Config.REPOSITORY_ID_PUBLICATION);
-	public static final Repository REPOSITORY_PUBLICATION_INTERNE = initRepository(Config.SESAME_SERVER_PUBLICATION_INTERNE, Config.REPOSITORY_ID_PUBLICATION_INTERNE);
+	public static final Repository REPOSITORY_PUBLICATION = initRepository(Config.getSesameServerPublication(), Config.getRepositoryIdPublication());
+	public static final Repository REPOSITORY_PUBLICATION_INTERNE = initRepository(Config.getSesameServerPublicationInterne(), Config.getRepositoryIdPublicationInterne());
 
 	
 	

@@ -79,12 +79,12 @@ public class PublicResources {
 	public ResponseEntity<Object> getProperties() throws RmesException {
 		JSONObject props = new JSONObject();
 		try {
-			props.put("appHost", Config.APP_HOST);
-			props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
-			props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
-			props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
-			props.put("lg1", Config.LG1);
-			props.put("lg2", Config.LG2);
+			props.put("appHost", Config.getAppHost());
+			props.put("defaultContributor", Config.getDefaultContributor());
+			props.put("defaultMailSender", Config.getDefaultMailSender());
+			props.put("maxLengthScopeNote", Config.getMaxLengthScopeNote());
+			props.put("lg1", Config.getLg1());
+			props.put("lg2", Config.getLg2());
 			props.put("authType", AuthType.getAuthType());
 			props.put("modules", getActiveModules());
 		} catch (Exception e) {
@@ -95,7 +95,7 @@ public class PublicResources {
 	}
 
 	private List<String> getActiveModules() {
-        String dirPath = Config.DOCUMENTS_STORAGE_GESTION + "/BauhausActiveModules.txt";
+        String dirPath = Config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
         File file = new File(dirPath);
         try {
 			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list

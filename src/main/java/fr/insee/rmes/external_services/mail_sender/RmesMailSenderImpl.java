@@ -132,7 +132,7 @@ public class RmesMailSenderImpl implements MailSenderContract {
 
 		// création d'un client authentifié pour SPOC	
 		HttpAuthenticationFeature authentificationFeature = HttpAuthenticationFeature
-				.basic(Config.SPOC_USER, Config.SPOC_PASSWORD);
+				.basic(Config.getSpocUser(), Config.getSpocPassword());
 		Client client = ClientBuilder.newClient()
 				.register(authentificationFeature);
 		
@@ -147,10 +147,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 
 
-		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), Config.LG1, "utf-8");
+		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), Config.getLg1(), "utf-8");
 		Entity<MultiPart> entity = Entity.entity(mp, variant);
 		String result = client
-							.target(Config.SPOC_SERVICE_URL)
+							.target(Config.getSpocServiceUrl())
 							.request()
 							.post(entity,String.class);
 		return isMailSent(result);

@@ -14,8 +14,8 @@ public class ParentQueries {
 
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
 	}
 	
 	/**

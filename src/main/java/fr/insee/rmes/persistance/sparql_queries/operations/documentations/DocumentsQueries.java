@@ -73,7 +73,7 @@ public class DocumentsQueries {
 		params.put("idRubric", idRubric);
 		params.put("type", getDocType(isLink) );
 		params.put("LANG", uriLang);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
+		params.put("DOCUMENTATIONS_GRAPH", Config.getDocumentationsGraph());
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
 
@@ -81,7 +81,7 @@ public class DocumentsQueries {
 		if (isLink == null) {
 			return "";
 		}
-		return (Boolean.TRUE.equals(isLink) ? Config.LINKS_BASE_URI :Config.DOCUMENTS_BASE_URI);
+		return (Boolean.TRUE.equals(isLink) ? Config.getLinksBaseUri() :Config.getDocumentsBaseUri());
 	}
 	
 	
@@ -111,9 +111,9 @@ public class DocumentsQueries {
 
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("DOCUMENTS_GRAPH", Config.DOCUMENTS_GRAPH);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
+		params.put("DOCUMENTS_GRAPH", Config.getDocumentsGraph());
 
 	}
 	

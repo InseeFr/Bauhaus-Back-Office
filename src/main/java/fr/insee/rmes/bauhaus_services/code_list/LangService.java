@@ -27,14 +27,14 @@ public class LangService extends RdfService {
 	 */
 	public String getLanguage1() throws RmesException {
 		if (language1 == null) {
-			language1 = getLanguage(Config.LG1);
+			language1 = getLanguage(Config.getLg1());
 		}
 		return language1;
 	}
 
 	public String getLanguage2() throws RmesException {
 		if (language2 == null) {
-			language2 = getLanguage(Config.LG2);
+			language2 = getLanguage(Config.getLg2());
 		}
 		return language2;
 	}
@@ -43,7 +43,7 @@ public class LangService extends RdfService {
 	if (lg==null || lg.equals("")) {
 			return "";
 	}
-		return lg.equals(Config.LG1) ? getLanguage1() : getLanguage2();
+		return lg.equals(Config.getLg1()) ? getLanguage1() : getLanguage2();
 	}
 	
 

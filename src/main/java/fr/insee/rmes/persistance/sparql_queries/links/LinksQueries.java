@@ -9,7 +9,7 @@ public class LinksQueries {
 	
 	public static String getLinksToDelete(IRI conceptURI) {
 		return "SELECT ?concept \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getConceptsGraph()+"> { \n"
 				+ "?concept ?b <" + RdfUtils.toString(conceptURI) + "> \n"
 				+ " }}";
 	}

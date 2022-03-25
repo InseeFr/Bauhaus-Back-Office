@@ -27,11 +27,11 @@ public class OpenApiConfiguration   {
 	@Bean
 	public OpenAPI customOpenAPI() {
 		Server server = new Server();
-		server.setUrl(Config.SWAGGER_URL);
+		server.setUrl(Config.getSwaggerUrl());
 		logger.info("______________________________________________________________________");
-		logger.info("____________________SWAGGER HOST : {}_________________________________________________", Config.SWAGGER_HOST);
-		logger.info("____________________SWAGGER BASEPATH : {} _________________________________________________", Config.SWAGGER_BASEPATH);
-		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", Config.SWAGGER_URL);
+		logger.info("____________________SWAGGER HOST : {}_________________________________________________", Config.getSwaggerHost());
+		logger.info("____________________SWAGGER BASEPATH : {} _________________________________________________", Config.getSwaggerBasepath());
+		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", Config.getSwaggerUrl());
 		logger.info("______________________________________________________________________");
 		return new OpenAPI()
 				.addServersItem(server)

@@ -17,7 +17,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return Config.LG1;}
+		public String lang() {return Config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -26,7 +26,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return Config.LG2;}
+		public String lang() {return Config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -35,7 +35,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return Config.LG1;}
+		public String lang() {return Config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -44,7 +44,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return Config.LG2;}
+		public String lang() {return Config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -53,7 +53,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return Config.LG1;}
+		public String lang() {return Config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
@@ -62,7 +62,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return Config.LG2;}
+		public String lang() {return Config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 

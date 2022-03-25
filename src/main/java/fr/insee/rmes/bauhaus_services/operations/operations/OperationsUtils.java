@@ -187,12 +187,12 @@ public class OperationsUtils extends RdfService{
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), Config.LG1), RdfUtils.operationsGraph());
+		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), Config.getLg1()), RdfUtils.operationsGraph());
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), Config.LG1, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), Config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), Config.getLg1(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), Config.getLg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getUpdated(), model, RdfUtils.operationsGraph());
 

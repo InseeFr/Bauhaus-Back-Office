@@ -17,23 +17,23 @@ import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
 
 public enum ObjectType {
-	CONCEPT(Constants.CONCEPT, SKOS.CONCEPT,  Config.CONCEPTS_BASE_URI),
-	COLLECTION(Constants.COLLECTION, SKOS.COLLECTION,  Config.COLLECTIONS_BASE_URI),
-	FAMILY(Constants.FAMILY, INSEE.FAMILY, Config.OP_FAMILIES_BASE_URI),
-	SERIES("series", INSEE.SERIES, Config.OP_SERIES_BASE_URI),
-	OPERATION("operation", INSEE.OPERATION, Config.OPERATIONS_BASE_URI),
-	INDICATOR("indicator", INSEE.INDICATOR, Config.PRODUCTS_BASE_URI),
-	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.DOCUMENTATIONS_BASE_URI),
-	DOCUMENT(Constants.DOCUMENT, FOAF.DOCUMENT, Config.DOCUMENTS_BASE_URI ),
-	LINK("link", FOAF.DOCUMENT, Config.LINKS_BASE_URI ),
-	GEO_STAT_TERRITORY("geoFeature", GEO.FEATURE, Config.DOCUMENTATIONS_GEO_BASE_URI),
+	CONCEPT(Constants.CONCEPT, SKOS.CONCEPT,  Config.getConceptsBaseUri()),
+	COLLECTION(Constants.COLLECTION, SKOS.COLLECTION,  Config.getCollectionsBaseUri()),
+	FAMILY(Constants.FAMILY, INSEE.FAMILY, Config.getOpFamiliesBaseUri()),
+	SERIES("series", INSEE.SERIES, Config.getOpSeriesBaseUri()),
+	OPERATION("operation", INSEE.OPERATION, Config.getOperationsBaseUri()),
+	INDICATOR("indicator", INSEE.INDICATOR, Config.getProductsBaseUri()),
+	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, Config.getDocumentationsBaseUri()),
+	DOCUMENT(Constants.DOCUMENT, FOAF.DOCUMENT, Config.getDocumentsBaseUri() ),
+	LINK("link", FOAF.DOCUMENT, Config.getLinksBaseUri() ),
+	GEO_STAT_TERRITORY("geoFeature", GEO.FEATURE, Config.getDocumentationsGeoBaseUri()),
 	ORGANIZATION("organization",ORG.ORGANIZATION, ""),
-	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, Config.STRUCTURES_BASE_URI),
-	CODE_LIST(Constants.CODELIST, QB.CODE_LIST, Config.CODE_LIST_BASE_URI),
+	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, Config.getStructuresBaseUri()),
+	CODE_LIST(Constants.CODELIST, QB.CODE_LIST, Config.getCodeListBaseUri()),
 
-	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, Config.STRUCTURES_COMPONENTS_BASE_URI  + "mesure"),
-	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, Config.STRUCTURES_COMPONENTS_BASE_URI + "attribut"),
-	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.STRUCTURES_COMPONENTS_BASE_URI + "dimension"),
+	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, Config.getStructuresComponentsBaseUri()  + "mesure"),
+	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, Config.getStructuresComponentsBaseUri() + "attribut"),
+	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, Config.getStructuresComponentsBaseUri() + "dimension"),
 
 
 	UNDEFINED(Constants.UNDEFINED,null, "");
@@ -60,11 +60,11 @@ public enum ObjectType {
 	}
 	
 	public String getBaseUri() {
-		return Config.BASE_URI_GESTION + this.baseUri;
+		return Config.getBaseUriGestion() + this.baseUri;
 	}
 	
 	public String getBaseUriPublication() {
-		return Config.BASE_URI_PUBLICATION + this.baseUri;
+		return Config.getBaseUriPublication() + this.baseUri;
 	}
 	
 	
@@ -132,7 +132,7 @@ public enum ObjectType {
 	 */
 	public static String getCompleteUriGestion(String labelType, String id) {
 		String baseUri = getBaseUri(labelType);
-		return Config.BASE_URI_GESTION + baseUri + "/" + id;
+		return Config.getBaseUriGestion() + baseUri + "/" + id;
 	}
 }
 

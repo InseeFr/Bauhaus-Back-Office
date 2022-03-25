@@ -35,7 +35,7 @@ public class RmesStampsImpl implements StampsService {
 	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<>();
 		try {
-			if(Config.LDAP_URL != null && !Config.LDAP_URL.isEmpty()) {
+			if(Config.getLdapUrl() != null && !Config.getLdapUrl().isEmpty()) {
 				// Connexion à la racine de l'annuaire
 				DirContext context = ldapConnexion.getLdapContext();
 

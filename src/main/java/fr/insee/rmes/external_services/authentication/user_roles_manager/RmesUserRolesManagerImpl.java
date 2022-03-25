@@ -1,6 +1,5 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -48,17 +47,10 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
-	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
-	private static final String SUGOI_SEARCH_APP = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
-	private static final String SUGOI_SEARCH_USERS = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + "/users" ;
-
-
-	private static final String IGESA_ADD_USER_PATH_FMT = Config.IGESA_URL + "/gestion/ajout/personne/application/"
-			+ Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
-	private static final String IGESA_DELETE_USER_PATH_FMT = Config.IGESA_URL
-			+ "/gestion/suppression/personne/application/" + Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
+	private static final String SUGOI_SEARCH_APP = Config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + Config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH + Config.getSugoiApp() ;
+	private static final String SUGOI_SEARCH_USERS = Config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + Config.getSugoiRealm() + "/users" ;
 
 	private static final String ROLE_ID_XPATH = "cn";
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
@@ -67,10 +59,10 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	
 	@Override
 	public String getAuth(String body) {
-		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) {
+		if (body.equals(Config.getPasswordGestionnaire())) {
 			return "GESTIONNAIRE";
 		}
-		if (body.equals(Config.PASSWORD_PRODUCTEUR)) {
+		if (body.equals(Config.getPasswordProducteur())) {
 			return "PRODUCTEUR";
 		}
 		return "NONE";
@@ -82,7 +74,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		logger.info("mapUsers size : {} / {} max", mapUsers.size(), NB_USERS_EXPECTED);
 		JSONArray roles = new JSONArray();
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
+			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));	
 			String jsonResponse = client.target(SUGOI_SEARCH_APP).request(MediaType.APPLICATION_JSON).get(String.class);
 
 			ObjectMapper mapper = new ObjectMapper();
@@ -117,7 +109,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Override
 	public String getAgents() throws RmesException {
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
+		logger.info("Connection to LDAP : {}", Config.getLdapUrl());
 		try {
 			// Connexion à la racine de l'annuaire
 			DirContext context = ldapConnexion.getLdapContext();
@@ -151,7 +143,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
 
-		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
+		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));	
 		String jsonResponse = client.target(SUGOI_SEARCH_USERS)
 									.queryParam("size", NB_USERS_EXPECTED)
 									.request(MediaType.APPLICATION_JSON)
@@ -180,38 +172,24 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Override
 	public void setAddRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
-		Igesa.post(url);
+		//String url = null;// = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
+		//Igesa.post(url);
 	}
 
 	@Override
 	public void setDeleteRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
-		Igesa.post(url);
+		//String url = null;// = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
+		//Igesa.post(url);
 	}
 
-	@Override
-	public String checkLdapConnexion() throws RmesException {
-		//IGESA
-		String xmlResponse ="";
-		try {
-			Client client = ClientBuilder.newClient();
-
-			xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
-					.request(MediaType.APPLICATION_XML).get(String.class);
-		} catch (Exception e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target IGESA");
-		}
-		return StringUtils.isEmpty(xmlResponse)? "KO" :  "OK";
-	}
 	
 	@Override
 	public String checkSugoiConnexion() throws RmesException {
 		String jsonResponse ="";
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));
+			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));
 
-			jsonResponse = client.target(Config.SUGOI_URL + "whoami")
+			jsonResponse = client.target(Config.getSugoiUrl() + "whoami")
 					.request(MediaType.APPLICATION_JSON).get(String.class);
 		} catch (Exception e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target SUGOI");

@@ -27,47 +27,47 @@ public class RdfUtils {
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-	private static final String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
+	private static final String CONCEPTS_SCHEME = Config.getBaseUriGestion() + Config.getConceptsScheme();
 	
 	public static Resource blankNode(){
 		return factory.createBNode();
 	}
 	
 	public static Resource conceptGraph(){
-		return factory.createIRI(Config.CONCEPTS_GRAPH);
+		return factory.createIRI(Config.getConceptsGraph());
 	}
 
 	public static Resource documentsGraph() {
-		return factory.createIRI(Config.DOCUMENTS_GRAPH);
+		return factory.createIRI(Config.getDocumentsGraph());
 	}
 	
 	public static Resource operationsGraph(){
-		return factory.createIRI(Config.OPERATIONS_GRAPH);
+		return factory.createIRI(Config.getOperationsGraph());
 	}
 
 
 	public static Resource productsGraph(){
-		return factory.createIRI(Config.PRODUCTS_GRAPH);
+		return factory.createIRI(Config.getProductsGraph());
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(Config.DOCUMENTATIONS_GRAPH +"/"+ id);
+		return factory.createIRI(Config.getDocumentationsGraph() +"/"+ id);
 	}
 	
 
 	public static Resource simsGeographyGraph(){
-		return factory.createIRI(Config.DOCUMENTATIONS_GEO_GRAPH);
+		return factory.createIRI(Config.getDocumentationsGeoGraph());
 	}
 	
 	public static Resource structureGraph(){
-		return factory.createIRI(Config.STRUCTURES_GRAPH);
+		return factory.createIRI(Config.getStructuresGraph());
 	}
 	public static Resource codesListGraph(){
-		return factory.createIRI(Config.CODELIST_GRAPH);
+		return factory.createIRI(Config.getCodeListGraph());
 	}
 	
 	public static Resource structureComponentGraph(){
-		return factory.createIRI(Config.STRUCTURES_COMPONENTS_GRAPH);
+		return factory.createIRI(Config.getStructuresComponentsGraph());
 	}
 	
 	public static Resource conceptScheme(){

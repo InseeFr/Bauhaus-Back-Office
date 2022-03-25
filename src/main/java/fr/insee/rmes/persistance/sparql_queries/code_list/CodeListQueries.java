@@ -15,7 +15,7 @@ public class CodeListQueries {
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.CODELIST_GRAPH);
+		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
 		params.put("IRI", codesListUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "isCodesListValidated.ftlh", params);
 	}
@@ -23,55 +23,55 @@ public class CodeListQueries {
 	public static String getAllCodesLists(boolean partial) throws RmesException {
 
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.CODELIST_GRAPH);
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {
 		return "SELECT ?code ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
 				+ "?item skos:notation ?code . \n"
 				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
 				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "') . \n"
 				+ " }}";
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
 		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
-				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?codeList skos:prefLabel ?codeListLabelLg1 . \n"
-				+ "FILTER (lang(?codeListLabelLg1) = '" + Config.LG1 + "') . \n"
+				+ "FILTER (lang(?codeListLabelLg1) = '" + Config.getLg1() + "') . \n"
 				+ "?codeList skos:prefLabel ?codeListLabelLg2 . \n"
-				+ "FILTER (lang(?codeListLabelLg2) = '" + Config.LG2 + "') . \n"
+				+ "FILTER (lang(?codeListLabelLg2) = '" + Config.getLg2() + "') . \n"
 				+ " }}";
 	}
 
 	public static String getCodeByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?labelLg1 ?labelLg2  \n"
-				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
 				+ "?item skos:notation '"+notationCode +"' . \n"
 				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.LG1 + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
 				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.LG2 + "') . \n"
+				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "') . \n"
 				+ " }}";
 	}
 	
 	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <"+Config.CODELIST_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?uri skos:inScheme ?codeList . \n"
@@ -81,17 +81,17 @@ public class CodeListQueries {
 
 	public static String geCodesListByIRI(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.CODELIST_GRAPH);
+		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
 		params.put("CODE_LIST", id);
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
 	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = getInitParams();
 		params.put(NOTATION, notation);
-		params.put("CODE_LIST_BASE_URI", Config.CODE_LIST_BASE_URI);
+		params.put("CODE_LIST_BASE_URI", Config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
@@ -122,9 +122,9 @@ public class CodeListQueries {
 
 	private static HashMap<String, Object> getInitParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.CODELIST_GRAPH);
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
 		return params;
 	}
 	

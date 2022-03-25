@@ -38,7 +38,7 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.cors(withDefaults())
 		.authorizeRequests().anyRequest().permitAll();
-		if (Config.REQUIRES_SSL) {
+		if (Config.isRequiresSsl()) {
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		}
 		

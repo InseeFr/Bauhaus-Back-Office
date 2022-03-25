@@ -58,7 +58,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 				.oauth2ResourceServer()
 				.jwt();
 				//.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
-		if (Config.REQUIRES_SSL)
+		if (Config.isRequiresSsl())
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
 		logger.info("OpenID authentication activated ");
@@ -70,7 +70,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	public UserProvider getUserProvider() {
 		return auth -> {
 			final Jwt jwt = (Jwt) auth.getPrincipal();
-			return new User(jwt.getClaimAsStringList(Config.roleClaim), jwt.getClaimAsString(Config.stampClaim));
+			return new User(jwt.getClaimAsStringList(Config.getRoleclaim()), jwt.getClaimAsString(Config.getStampclaim()));
 		};
 	}
 

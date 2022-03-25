@@ -80,8 +80,8 @@ public class DocumentsPublication  extends RdfService{
 
 	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
 		Path file = Paths.get(originalPath);
-		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
-		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
+		Path targetPathInt = Paths.get(Config.getDocumentsStoragePublicationInterne());
+		Path targetPathExt = Paths.get(Config.getDocumentsStoragePublicationExterne());
 
 		try {
 			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -112,7 +112,7 @@ public class DocumentsPublication  extends RdfService{
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+					String newUrl = Config.getDocumentsBaseurl() + "/"+ filename;
 					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
@@ -170,7 +170,7 @@ public class DocumentsPublication  extends RdfService{
 			String predicatString = tuple.getString("predicat");
 			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
 			if (predicatString.endsWith(Constants.URL)) {
-				String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+				String newUrl = Config.getDocumentsBaseurl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
 				object = RdfUtils.toURI(newUrl);
 			} else {

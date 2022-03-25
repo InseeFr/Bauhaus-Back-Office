@@ -178,7 +178,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(Config.OPERATIONS_BASE_URI)) {
+		if (RdfUtils.toString(targetUri).contains(Config.getOperationsBaseUri())) {
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
@@ -384,8 +384,8 @@ public class DocumentationsUtils extends RdfService{
 		model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.LG2, model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.getLg2(), model, graph);
 
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
@@ -488,8 +488,8 @@ public class DocumentationsUtils extends RdfService{
 		Resource graph = RdfUtils.simsGraph(idSims);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG1 + " " + prefLabeLg1, Config.LG1, model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG2 + " " + prefLabelLg2, Config.LG2, model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.getDocumentationsTitlePrefixLg1() + " " + prefLabeLg1, Config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.getDocumentationsTitlePrefixLg2() + " " + prefLabelLg2, Config.getLg2(), model, graph);
 
 		repoGestion.overrideTriplets(simsUri, model, graph);
 	}

@@ -43,8 +43,8 @@ public class StructureQueries {
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
-		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
-		params.put("CONCEPT_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CODES_LISTS_GRAPH", Config.getCodeListGraph());
+		params.put("CONCEPT_GRAPH", Config.getConceptsGraph());
 		params.put("TYPE", type);
 		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
@@ -103,7 +103,7 @@ public class StructureQueries {
 
 	public static String getUriClasseOwl(String codeList) throws RmesException {
 		HashMap<String, Object> params = initParams();
-		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODES_LISTS_GRAPH", Config.getCodeListGraph());
 		params.put("CODES_LIST", codeList);
 
 		return buildRequest("getUriClasseOwl.ftlh", params);
@@ -115,10 +115,10 @@ public class StructureQueries {
 
 	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
-		params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.getStructuresComponentsGraph());
+		params.put("STRUCTURES_GRAPH", Config.getStructuresGraph());
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
 
 		return params;
 	}

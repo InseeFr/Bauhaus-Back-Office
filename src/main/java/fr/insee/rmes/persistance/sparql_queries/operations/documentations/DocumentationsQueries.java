@@ -34,9 +34,9 @@ public class DocumentationsQueries {
 		Map<String,Object> params = initParams();
 		params.put("idMas", idMas);
 		params.put("uniqueAttr","true");
-		params.put("MSD_GRAPH",Config.MSD_GRAPH);
-		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
-		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
+		params.put("MSD_GRAPH",Config.getMsdGraph());
+		params.put("CODELIST_GRAPH",Config.getCodeListGraph());
+		params.put("MSD_CONCEPTS_GRAPH", Config.getMsdConceptsGraph());
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
@@ -109,8 +109,8 @@ public class DocumentationsQueries {
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
 		
-		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
-		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
+		params.put("ORGANIZATIONS_GRAPH", Config.getOrganizationsGraph());
+		params.put("ORG_INSEE_GRAPH", Config.getOrgInseeGraph());
 		
 		params.put("LG1_CL",clLg1);
 		params.put("LG2_CL",clLg2);
@@ -129,19 +129,19 @@ public class DocumentationsQueries {
 	public static String getPublicationState(String id) throws RmesException{
 		Map<String,Object> params = initParams();
 		params.put(Constants.ID_SIMS, id);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
+		params.put("DOCUMENTATIONS_GRAPH", Config.getDocumentationsGraph());
 		return buildRequest("getPublicationStatusQuery.ftlh", params);	
 	}
 	
 	
 	private static Map<String,Object> initParams() {
 		Map<String,Object> params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
-		params.put("MSD_GRAPH",Config.MSD_GRAPH);
-		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
-		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
+		params.put("DOCUMENTATIONS_GRAPH", Config.getDocumentationsGraph());
+		params.put("MSD_GRAPH",Config.getMsdGraph());
+		params.put("CODELIST_GRAPH",Config.getCodeListGraph());
+		params.put("MSD_CONCEPTS_GRAPH", Config.getMsdConceptsGraph());
 		return params;
 	}
 	

@@ -21,9 +21,9 @@ public class FamOpeSerQueries {
 
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("OPERATIONS_GRAPH",Config.OPERATIONS_GRAPH);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
+		params.put("OPERATIONS_GRAPH",Config.getOperationsGraph());
 	}
 	
 	/**

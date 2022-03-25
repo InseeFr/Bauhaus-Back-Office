@@ -20,7 +20,7 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class RmesNotificationsImpl implements NotificationsContract {
 	
-	private static final String BROKER_URL = "failover:(" + Config.BROKER_URL + ")?randomize=false";
+	private static final String BROKER_URL = "failover:(" + Config.getBrokerUrl() + ")?randomize=false";
 	
     private static final Boolean NON_TRANSACTED = false;
     private static final long DELAY = 1;
@@ -54,7 +54,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
 	
 	public void sendMessageToBrocker(String message) throws RmesException {
         String url = BROKER_URL;
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(Config.BROKER_USER, Config.BROKER_PASSWORD, url);
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(Config.getBrokerUser(), Config.getBrokerPassword(), url);
         connectionFactory.setTrustedPackages(Arrays.asList("fr.insee.rmes"));
         Connection connection = null;
 

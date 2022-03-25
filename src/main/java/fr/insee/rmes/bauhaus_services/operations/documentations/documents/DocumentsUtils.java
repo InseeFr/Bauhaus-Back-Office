@@ -489,16 +489,16 @@ public class DocumentsUtils  extends RdfService  {
 		String uriString = document.getUrl();
 		RdfUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
 		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
-			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), Config.LG1, model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), Config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
-			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), Config.LG2, model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), Config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
-			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), Config.LG1, model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), Config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
-			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), Config.LG2, model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), Config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLangue())) {
 			RdfUtils.addTripleString(docUri, DC.LANGUAGE, document.getLangue(), model, graph);
@@ -639,9 +639,9 @@ public class DocumentsUtils  extends RdfService  {
 
 	private Path getGestionStorageFolderPath() throws RmesException {
 		Path path = null;
-		File dir = new File(Config.DOCUMENTS_STORAGE_GESTION);
+		File dir = new File(Config.getDocumentsStorageGestion());
 		if (dir.exists()) {
-			path = Paths.get(Config.DOCUMENTS_STORAGE_GESTION);
+			path = Paths.get(Config.getDocumentsStorageGestion());
 		} else {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
 					"Config.DOCUMENTS_STORAGE");

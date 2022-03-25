@@ -15,8 +15,8 @@ public abstract class PublicationUtils {
 	}
 
 	public static Resource tranformBaseURIToPublish(Resource resource) {
-		if (!resource.toString().contains(Config.BASE_URI_GESTION)) return resource;
-		String newResource = resource.toString().replace(Config.BASE_URI_GESTION, Config.BASE_URI_PUBLICATION);
+		if (!resource.toString().contains(Config.getBaseUriGestion())) return resource;
+		String newResource = resource.toString().replace(Config.getBaseUriGestion(), Config.getBaseUriPublication());
 		return RdfUtils.toURI(newResource);
 	}
 	

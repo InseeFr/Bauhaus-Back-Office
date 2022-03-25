@@ -25,10 +25,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 	@Override
     public String getDetailedConcept(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
         params.put("ID", id);
-        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("CONCEPTS_GRAPH", Config.getConceptsGraph());
 
         JSONObject concept = repoGestion.getResponseAsObject(buildRequest("getDetailedConcept.ftlh", params));
         JSONArray labels = new JSONArray();
@@ -37,7 +37,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         String labelLg1 = concept.getString(Constants.PREF_LABEL_LG1);
         JSONObject labelLg1Object = new JSONObject();
-        labelLg1Object.put("langue", Config.LG1);
+        labelLg1Object.put("langue", Config.getLg1());
         labelLg1Object.put("contenu", labelLg1);
         labels.put(labelLg1Object);
         concept.remove(Constants.PREF_LABEL_LG1);
@@ -45,7 +45,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         if(concept.has(Constants.PREF_LABEL_LG2)){
             String labelLg2 = concept.getString(Constants.PREF_LABEL_LG2);
             JSONObject labelLg2Object = new JSONObject();
-            labelLg2Object.put("langue", Config.LG2);
+            labelLg2Object.put("langue", Config.getLg2());
             labelLg2Object.put("contenu", labelLg2);
             labels.put(labelLg2Object);
             concept.remove(Constants.PREF_LABEL_LG2);
@@ -69,16 +69,16 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     @Override
     public String getAllConcepts() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
-        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
+        params.put("CONCEPTS_GRAPH", Config.getConceptsGraph());
         return repoGestion.getResponseAsArray(buildRequest("getAllConcepts.ftlh", params)).toString();
     }
 
     @Override
     public String getAllStructures() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
+        params.put("STRUCTURES_GRAPH", Config.getStructuresGraph());
         JSONArray structures =  repoGestion.getResponseAsArray(buildRequest("getStructures.ftlh", params));
 
         for (int i = 0; i < structures.length(); i++) {
@@ -108,7 +108,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     public String getAllCodesLists() throws RmesException {
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("CODELIST_GRAPH", Config.getCodeListGraph());
 
         JSONArray codesLists =  repoGestion.getResponseAsArray(buildRequest("getAllCodesLists.ftlh", params));
         for (int i = 0; i < codesLists.length(); i++) {
@@ -127,10 +127,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     @Override
     public String getStructure(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
+        params.put("STRUCTURES_GRAPH", Config.getStructuresGraph());
         params.put("STRUCTURE_ID", id);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
 
         JSONArray structureArray =  repoGestion.getResponseAsArray(buildRequest("getStructure.ftlh", params));
         JSONObject structure = (JSONObject) structureArray.get(0);
@@ -184,7 +184,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     @Override
     public String getAllComponents() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.getStructuresComponentsGraph());
         JSONArray components =  repoGestion.getResponseAsArray(buildRequest("getComponents.ftlh", params));
 
         for (int i = 0; i < components.length(); i++) {
@@ -199,12 +199,12 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     @Override
     public String getComponent(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
-        params.put("CONCEPTS_BASE_URI", Config.CONCEPTS_BASE_URI);
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.getStructuresComponentsGraph());
+        params.put("CODELIST_GRAPH", Config.getCodeListGraph());
+        params.put("CONCEPTS_BASE_URI", Config.getConceptsBaseUri());
         params.put("ID", id);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
 
         JSONObject component =  repoGestion.getResponseAsObject(buildRequest("getComponent.ftlh", params));
 
@@ -293,7 +293,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     private void addCloseMatch(JSONObject concept) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+        params.put("CONCEPTS_GRAPH", Config.getConceptsGraph());
         params.put("CONCEPT_ID", concept.getString("id"));
         JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", params));
         if(closeMatch.length() > 0){
@@ -312,14 +312,14 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     private void getStructureComponents(String id, JSONObject structure) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
-        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
-        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("STRUCTURES_GRAPH", Config.getStructuresGraph());
+        params.put("STRUCTURES_COMPONENTS_GRAPH", Config.getStructuresComponentsGraph());
+        params.put("CONCEPTS_GRAPH", Config.getConceptsGraph());
+        params.put("CODELIST_GRAPH", Config.getCodeListGraph());
 
         params.put("STRUCTURE_ID", id);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
 
         JSONArray components = repoGestion.getResponseAsArray(buildRequest("getStructureComponents.ftlh", params));
 
@@ -386,10 +386,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     @Override
     public String getCodesList(String notation) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("CODELIST_GRAPH", Config.getCodeListGraph());
         params.put("NOTATION", notation);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
 
         JSONObject codesList =  repoGestion.getResponseAsObject(buildRequest("getCodesList.ftlh", params));
 
@@ -430,10 +430,10 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     private JSONArray getCodes(String notation) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
+        params.put("CODELIST_GRAPH", Config.getCodeListGraph());
         params.put("NOTATION", notation);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
+        params.put("LG1", Config.getLg1());
+        params.put("LG2", Config.getLg2());
 
         JSONArray codes =  repoGestion.getResponseAsArray(buildRequest("getCodes.ftlh", params));
         JSONArray levels =  repoGestion.getResponseAsArray(buildRequest("getCodeLevel.ftlh", params));
@@ -511,14 +511,14 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
         if(obj.has("prefLabelLg1")){
             JSONObject lg1 = new JSONObject();
-            lg1.put("langue", Config.LG1);
+            lg1.put("langue", Config.getLg1());
             lg1.put("contenu", obj.getString("prefLabelLg1"));
             label.put(lg1);
 
         }
         if(obj.has("prefLabelLg2")){
             JSONObject lg2 = new JSONObject();
-            lg2.put("langue", Config.LG2);
+            lg2.put("langue", Config.getLg2());
             lg2.put("contenu", obj.getString("prefLabelLg2"));
             label.put(lg2);
         }

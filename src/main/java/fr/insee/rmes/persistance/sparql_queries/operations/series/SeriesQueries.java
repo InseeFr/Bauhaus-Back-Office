@@ -67,9 +67,9 @@ public class SeriesQueries {
 		addClauseToWhereClause( "OPTIONAL { ?series dcterms:created ?created } .  \n ");
 		addClauseToWhereClause( "OPTIONAL { ?series dcterms:modified ?modified } .  \n ");
 
-		addClauseToWhereClause("FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "')  \n ");
+		addClauseToWhereClause("FILTER (lang(?prefLabelLg1) = '" + Config.getLg1() + "')  \n ");
 		addClauseToWhereClause("OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
-		addClauseToWhereClause("FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } \n ");
+		addClauseToWhereClause("FILTER (lang(?prefLabelLg2) = '" + Config.getLg2() + "') } \n ");
 
 
 
@@ -88,9 +88,9 @@ public class SeriesQueries {
 
 	private static void addOptionalClause(String predicate, String variableName) {
 		addClauseToWhereClause("OPTIONAL{?series " + predicate + " " + variableName + "Lg1 \n");
-		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg1) = '" + Config.LG1 + "') } \n ");
+		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg1) = '" + Config.getLg1() + "') } \n ");
 		addClauseToWhereClause("OPTIONAL{?series " + predicate + " " + variableName + "Lg2 \n");
-		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg2) = '" + Config.LG2 + "') } \n ");
+		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg2) = '" + Config.getLg2() + "') } \n ");
 	}
 
 	private static void addGetSimsId() {
@@ -138,11 +138,11 @@ public class SeriesQueries {
 	
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put(OPERATIONS_GRAPH, Config.OPERATIONS_GRAPH);
-		params.put(ORGANIZATIONS_GRAPH, Config.ORGANIZATIONS_GRAPH);
-		params.put(ORG_INSEE_GRAPH, Config.ORG_INSEE_GRAPH);
+		params.put("LG1", Config.getLg1());
+		params.put("LG2", Config.getLg2());
+		params.put(OPERATIONS_GRAPH, Config.getOperationsGraph());
+		params.put(ORGANIZATIONS_GRAPH, Config.getOrganizationsGraph());
+		params.put(ORG_INSEE_GRAPH, Config.getOrgInseeGraph());
 	}
 	
 	private static String buildSeriesRequest(String fileName, Map<String, Object> params) throws RmesException  {
@@ -217,7 +217,7 @@ public class SeriesQueries {
 	public static String getOperations(String idSeries) throws RmesException {
 		if (params==null) {initParams();}
 		params.put(ID_SERIES, idSeries);
-		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);
+		params.put(PRODUCTS_GRAPH, Config.getProductsGraph());
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);	
 	}
 	
@@ -233,7 +233,7 @@ public class SeriesQueries {
 		if(Constants.ORGANIZATIONS.equals(resultType)) {
 			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
 		}
-		params.put(PRODUCTS_GRAPH, Config.PRODUCTS_GRAPH);		
+		params.put(PRODUCTS_GRAPH, Config.getProductsGraph());		
 		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);	
 	}
 	

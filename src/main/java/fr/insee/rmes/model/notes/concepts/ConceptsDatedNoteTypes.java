@@ -12,7 +12,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return Config.LG1;}
+		public String lang() {return Config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
@@ -21,7 +21,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return Config.LG2;}
+		public String lang() {return Config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 

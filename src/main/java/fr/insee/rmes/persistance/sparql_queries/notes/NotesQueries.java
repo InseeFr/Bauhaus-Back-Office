@@ -35,7 +35,7 @@ public class NotesQueries {
 		
 	public static String getHistoricalNotes(String conceptId, String maxVersion) {
 		return "SELECT ?note ?predicat \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+Config.getConceptsGraph()+"> { \n"
 			//	+ "?concept skos:notation '" + conceptId + "' . \n"
 				
 				+ "?concept ?predicat ?note . \n"
