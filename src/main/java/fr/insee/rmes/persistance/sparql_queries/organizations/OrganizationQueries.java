@@ -1,13 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.organizations;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class OrganizationQueries {
+public class OrganizationQueries extends GenericQueries{
 
 	public static String organizationQuery(String identifier) {
 		return "SELECT  ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso \n"
-				+ "FROM <"+Config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+Config.getOrgInseeGraph()+"> \n "
+				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
+				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
 				//id
@@ -15,9 +15,9 @@ public class OrganizationQueries {
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "')} \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
 				+ "OPTIONAL {?organization skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "') }\n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') }\n"
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
 				//type (exclude org:Organization and org:OrganizationUnit)
@@ -38,8 +38,8 @@ public class OrganizationQueries {
 
 	public static String organizationsQuery() {
 		return "SELECT DISTINCT ?id ?label ?altLabel \n"
-				+ "FROM <"+Config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+Config.getOrgInseeGraph()+"> \n "
+				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
+				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
 				//id
@@ -47,7 +47,7 @@ public class OrganizationQueries {
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + Config.getLg1() + "')} \n"
+				+ "FILTER (lang(?label) = '" + config.getLg1() + "')} \n"
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
 				+ "} \n" 
@@ -57,8 +57,8 @@ public class OrganizationQueries {
 
 	public static String organizationsTwoLangsQuery() {
 		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
-				+ "FROM <"+Config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+Config.getOrgInseeGraph()+"> \n "
+				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
+				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
 				//id
@@ -66,9 +66,9 @@ public class OrganizationQueries {
 
 				//labels
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "')} \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "')} \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} \n"
 				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
 
 				+ "} \n" 
@@ -78,8 +78,8 @@ public class OrganizationQueries {
 
 	public static String getUriById(String identifier) {
 		return "SELECT  ?uri \n"
-				+ "FROM <"+Config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+Config.getOrgInseeGraph()+"> \n "
+				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
+				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
 				+ "WHERE { \n"
 				+ "?uri dcterms:identifier '"+ identifier +"' . \n"

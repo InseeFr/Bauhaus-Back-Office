@@ -31,7 +31,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
@@ -237,16 +236,16 @@ public class StructureUtils extends RdfService {
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
         model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
-        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.getLg1()), graph);
+        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), config.getLg1()), graph);
         model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), Config.getLg2(), model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), Config.getLg1(), model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), Config.getLg2(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), config.getLg2(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);

@@ -1,8 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class ItemsQueries {
+public class ItemsQueries extends GenericQueries{
 	
 	private ItemsQueries() {
 		throw new IllegalStateException("Utility class");
@@ -13,17 +13,17 @@ public class ItemsQueries {
 				+ "?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion ?altLabelLg1 ?altLabelLg2\n"
 				+ "WHERE { \n"
 				+ "?item skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.getLg1() + "') \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n"
 				+ "?item skos:inScheme ?classification . \n"
 				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
 				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
 				+ "BIND('" + classificationId + "' as ?classificationId) \n"
 				+ "OPTIONAL {?item skos:altLabel ?altLabelLg1 . \n"
-				+ "FILTER (lang(?altLabelLg1) = '" + Config.getLg1() + "')} . \n"
+				+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "')} . \n"
 				+ "OPTIONAL {?item skos:altLabel ?altLabelLg2 . \n"
-				+ "FILTER (lang(?altLabelLg2) = '" + Config.getLg2() + "')} . \n"
+				+ "FILTER (lang(?altLabelLg2) = '" + config.getLg2() + "')} . \n"
 				+ "OPTIONAL {?item skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.getLg2() + "')} . \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "')} . \n"
 				+ "?item skos:notation ?itemId . \n"
 				+ "?item insee:isValidated ?isValidated . \n"
 				+ "OPTIONAL {?item ?versionnedNote ?versionnedNoteURI . \n"
@@ -31,11 +31,11 @@ public class ItemsQueries {
 				// Parent
 				+ "OPTIONAL {?item skos:broader ?broaderURI . \n"
 				+ "?broaderURI skos:prefLabel ?broaderLg1 . \n"
-				+ "FILTER (lang(?broaderLg1) = '" + Config.getLg1() + "') \n"
+				+ "FILTER (lang(?broaderLg1) = '" + config.getLg1() + "') \n"
 				+ "?broaderURI skos:notation ?idBroader . } \n"
 				+ "OPTIONAL {?item skos:broader ?broaderURI . \n"
 				+ "?broaderURI skos:prefLabel ?broaderLg2 . \n"
-				+ "FILTER (lang(?broaderLg2) = '" + Config.getLg2() + "') } \n"
+				+ "FILTER (lang(?broaderLg2) = '" + config.getLg2() + "') } \n"
 				+ "} \n"
 				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
 				+ "LIMIT 1";	
@@ -48,10 +48,10 @@ public class ItemsQueries {
 				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
 				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
 				+ "OPTIONAL {?shortLabel skosxl:literalForm ?shortLabelLg1 . \n"
-				+ "FILTER (lang(?shortLabelLg1) = '" + Config.getLg1() + "')} \n"
+				+ "FILTER (lang(?shortLabelLg1) = '" + config.getLg1() + "')} \n"
 				+ "?shortLabel xkos:maxLength ?length . \n"
 				+ "OPTIONAL {?shortLabel skosxl:literalForm ?shortLabelLg2 . \n"
-				+ "FILTER (lang(?shortLabelLg2) = '" + Config.getLg2() + "')} \n"
+				+ "FILTER (lang(?shortLabelLg2) = '" + config.getLg2() + "')} \n"
 				+ "}";
 	}
 	
@@ -67,73 +67,73 @@ public class ItemsQueries {
 
 				// definitionLg1
 				+ "OPTIONAL {?item skos:definition ?defLg1 . \n"
-				+ "?defLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?defLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?defLg1 evoc:noteLiteral ?definitionLg1 . \n"
 				+ "?defLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				// definitionLg2
 				+ "OPTIONAL {?item skos:definition ?defLg2 . \n"
-				+ "?defLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?defLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?defLg2 evoc:noteLiteral ?definitionLg2 . \n"
 				+ "?defLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				//scopeNoteLg1
 				+ "OPTIONAL {?item skos:scopeNote ?scopeLg1 . \n"
-				+ "?scopeLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?scopeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 . \n"
 				+ "?scopeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				// scopeNoteLg2
 				+ "OPTIONAL {?item skos:scopeNote ?scopeLg2 . \n"
-				+ "?scopeLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?scopeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 . \n"
 				+ "?scopeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// coreContentNoteLg1
 				+ "OPTIONAL {?item xkos:coreContentNote ?coreContentLg1 . \n"
-				+ "?coreContentLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?coreContentLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?coreContentLg1 evoc:noteLiteral ?coreContentNoteLg1 . \n"
 				+ "?coreContentLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// coreContentNoteLg2
 				+ "OPTIONAL {?item xkos:coreContentNote ?coreContentLg2 . \n"
-				+ "?coreContentLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?coreContentLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?coreContentLg2 evoc:noteLiteral ?coreContentNoteLg2 . \n"
 				+ "?coreContentLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// additionalContentNoteLg1
 				+ "OPTIONAL {?item xkos:additionalContentNote ?additionalContentLg1 . \n"
-				+ "?additionalContentLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?additionalContentLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?additionalContentLg1 evoc:noteLiteral ?additionalContentNoteLg1 . \n"
 				+ "?additionalContentLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// additionalContentNoteLg2
 				+ "OPTIONAL {?item xkos:additionalContentNote ?additionalContentLg2 . \n"
-				+ "?additionalContentLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?additionalContentLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?additionalContentLg2 evoc:noteLiteral ?additionalContentNoteLg2 . \n"
 				+ "?additionalContentLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// exclusionNoteLg1
 				+ "OPTIONAL {?item xkos:exclusionNote ?exclusionLg1 . \n"
-				+ "?exclusionLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?exclusionLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?exclusionLg1 evoc:noteLiteral ?exclusionNoteLg1 . \n"
 				+ "?exclusionLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// exclusionNoteLg2
 				+ "OPTIONAL {?item xkos:exclusionNote ?exclusionLg2 . \n"
-				+ "?exclusionLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?exclusionLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?exclusionLg2 evoc:noteLiteral ?exclusionNoteLg2 . \n"
 				+ "?exclusionLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// Note changement Lg1
 				+ "OPTIONAL {?item skos:changeNote ?noteChangeLg1 . \n"
 				+ "?noteChangeLg1 dcterms:issued ?changeNoteDate . \n"
-				+ "?noteChangeLg1 dcterms:language '" + Config.getLg1() + "'^^xsd:language . \n"
+				+ "?noteChangeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
 				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
 				// Note changement Lg2
 				+ "OPTIONAL {?item skos:changeNote ?noteChangeLg2 . \n"
-				+ "?noteChangeLg2 dcterms:language '" + Config.getLg2() + "'^^xsd:language . \n"
+				+ "?noteChangeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
 				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
 				+ "} \n";	
@@ -148,10 +148,10 @@ public class ItemsQueries {
 				+ "FILTER(REGEX(STR(?classificationNarrower),'/codes/" + classificationId + "/')) \n"
 				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
 				+ "?narrower skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
 				+ "?narrower skos:notation ?id . \n"
 				+ "OPTIONAL {?narrower skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "')} \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} \n"
 				+ "}"
 				+ "ORDER BY ?id ";
 	}

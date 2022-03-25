@@ -61,7 +61,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			try {
 				msd = documentationsService.getMSD();
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 			return ResponseEntity.ok(XMLUtils.produceResponse(msd, header));
 		}
@@ -70,7 +70,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			try {
 				jsonResultat = documentationsService.getMSDJson();
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		}
@@ -85,7 +85,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			jsonResultat = documentationsService.getMetadataAttribute(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -99,7 +99,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			jsonResultat = documentationsService.getMetadataAttributes();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -115,7 +115,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			jsonResultat = documentationsService.getMetadataReport(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -148,7 +148,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			try {
 				fullsims = documentationsService.getFullSimsForXml(id);
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 
 			return ResponseEntity.ok(XMLUtils.produceResponse(fullsims, header));
@@ -158,7 +158,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			try {
 				jsonResultat = documentationsService.getFullSimsForJson(id);
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		}
@@ -183,7 +183,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			jsonResultat = documentationsService.getMetadataReportOwner(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -206,7 +206,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			id = documentationsService.createMetadataReport(body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
@@ -229,7 +229,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			documentationsService.setMetadataReport(id, body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.noContent().build();
 	}
@@ -249,7 +249,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			result = documentationsService.deleteMetadataReport(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(result.value()).build();
 	}

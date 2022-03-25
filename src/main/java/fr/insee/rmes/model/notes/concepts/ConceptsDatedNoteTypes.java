@@ -2,6 +2,7 @@ package fr.insee.rmes.model.notes.concepts;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.config.Config;
 
@@ -12,7 +13,7 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return Config.getLg1();}
+		public String lang() {return config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
@@ -21,12 +22,15 @@ public enum ConceptsDatedNoteTypes {
 		@Override
 		public String pathComponent() {return "changeNote";}
 		@Override
-		public String lang() {return Config.getLg2();}
+		public String lang() {return config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.CHANGE_NOTE;}
 
 	};
 
+	@Autowired 
+	static Config config;
+	
 	private String text;
 
 	ConceptsDatedNoteTypes(String text) {

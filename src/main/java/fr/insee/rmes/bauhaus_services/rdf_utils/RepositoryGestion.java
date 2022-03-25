@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -18,6 +20,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,8 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 @DependsOn("AppContext")
 public class RepositoryGestion extends RepositoryUtils {
 
+	@Autowired
+	Config config;
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
@@ -38,11 +43,14 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
-	public static final Repository REPOSITORY_GESTION = initRepository(Config.getSesameServerGestion(),
-			Config.getRepositoryIdGestion());
+	private Repository repositoryGestionInstance = null;
 
+	@PostConstruct
+	public void init() {
+		repositoryGestionInstance = initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion());
+	}
 
-	
 	/**
 	 * Method which aims to produce response from a sparql query
 	 *
@@ -51,7 +59,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public String getResponse(String query) throws RmesException {
-		return getResponse(query, REPOSITORY_GESTION);
+		return getResponse(query, repositoryGestionInstance);
 	}
 
 	/**
@@ -62,7 +70,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		return executeUpdate(updateQuery, REPOSITORY_GESTION);
+		return executeUpdate(updateQuery, repositoryGestionInstance);
 	}
 
 	/**
@@ -73,15 +81,15 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
-		return getResponseAsObject(query, REPOSITORY_GESTION);
+		return getResponseAsObject(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsArray(String query) throws RmesException {
-		return getResponseAsArray(query, REPOSITORY_GESTION);
+		return getResponseAsArray(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsJSONList(String query) throws RmesException {
-		return getResponseAsJSONList(query, REPOSITORY_GESTION);
+		return getResponseAsJSONList(query, repositoryGestionInstance);
 	}
 
 	/**
@@ -93,7 +101,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws JSONException
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
-		return getResponseForAskQuery(query, REPOSITORY_GESTION);
+		return getResponseForAskQuery(query, repositoryGestionInstance);
 	}
 
 	public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
@@ -154,7 +162,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate)
 			throws RmesException {
-		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection() ){
+		try (RepositoryConnection conn = repositoryGestionInstance.getConnection() ){
 			// notes to delete
 			for (IRI note : notesToDeleteAndUpdate.get(0)) {
 				conn.remove(note, null, null);
@@ -182,7 +190,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	public void loadSimpleObject(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = REPOSITORY_GESTION.getConnection();
+				conn = repositoryGestionInstance.getConnection();
 			}
 			conn.remove(object, null, null);
 			conn.add(model);
@@ -198,7 +206,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = REPOSITORY_GESTION.getConnection();
+				conn = repositoryGestionInstance.getConnection();
 			}
 			conn.remove(object, null, null);
 			conn.close();
@@ -219,7 +227,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	public void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = REPOSITORY_GESTION.getConnection();
+				conn = repositoryGestionInstance.getConnection();
 			}
 			conn.clear(graph);
 			conn.add(model);
@@ -233,7 +241,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
-		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
+		try (RepositoryConnection conn = repositoryGestionInstance.getConnection()){
 			clearReplaceLinks(object, conn);
 			loadSimpleObject(object, model, conn);
 		} catch (RepositoryException e) {
@@ -243,7 +251,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
 		try {
-			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			RepositoryConnection conn = repositoryGestionInstance.getConnection();
 			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
 				conn.remove(item, INSEE.IS_VALIDATED, null);
@@ -257,7 +265,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
 		try {
-			RepositoryConnection conn = RepositoryGestion.REPOSITORY_GESTION.getConnection();
+			RepositoryConnection conn = repositoryGestionInstance.getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
 			conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
 			conn.add(model);
@@ -296,12 +304,12 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
-		clearStructureAndComponents(structure, REPOSITORY_GESTION);
+		clearStructureAndComponents(structure, repositoryGestionInstance);
 	}
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
 		List<IRI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
-		try (RepositoryConnection conn = REPOSITORY_GESTION.getConnection()){
+		try (RepositoryConnection conn = repositoryGestionInstance.getConnection()){
 			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
 		} catch (RmesException e) {
 			throw e;
@@ -348,13 +356,13 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public RepositoryConnection getConnection() throws RmesException {
-		return getConnection(RepositoryGestion.REPOSITORY_GESTION);
+		return getConnection(repositoryGestionInstance);
 	}
 
 
 	public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
 		try {
-			RepositoryConnection connection = REPOSITORY_GESTION.getConnection();
+			RepositoryConnection connection = repositoryGestionInstance.getConnection();
 			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
 			connection.add(model);
 			connection.close();

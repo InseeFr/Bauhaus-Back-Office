@@ -31,11 +31,14 @@ public class RmesStampsImpl implements StampsService {
 	@Autowired
 	LdapConnexion ldapConnexion;
 	
+	@Autowired
+	static Config config;
+	
 	@Override
 	public String getStamps() throws RmesException {
 		TreeSet<String> stamps = new TreeSet<>();
 		try {
-			if(Config.getLdapUrl() != null && !Config.getLdapUrl().isEmpty()) {
+			if(config.getLdapUrl() != null && !config.getLdapUrl().isEmpty()) {
 				// Connexion à la racine de l'annuaire
 				DirContext context = ldapConnexion.getLdapContext();
 

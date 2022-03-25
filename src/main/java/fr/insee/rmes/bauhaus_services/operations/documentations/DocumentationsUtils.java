@@ -34,7 +34,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -178,7 +177,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(Config.getOperationsBaseUri())) {
+		if (RdfUtils.toString(targetUri).contains(config.getOperationsBaseUri())) {
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
@@ -384,8 +383,8 @@ public class DocumentationsUtils extends RdfService{
 		model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.getLg1(), model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.getLg2(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), config.getLg2(), model, graph);
 
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
@@ -488,8 +487,8 @@ public class DocumentationsUtils extends RdfService{
 		Resource graph = RdfUtils.simsGraph(idSims);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.getDocumentationsTitlePrefixLg1() + " " + prefLabeLg1, Config.getLg1(), model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.getDocumentationsTitlePrefixLg2() + " " + prefLabelLg2, Config.getLg2(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg1() + " " + prefLabeLg1, config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg2() + " " + prefLabelLg2, config.getLg2(), model, graph);
 
 		repoGestion.overrideTriplets(simsUri, model, graph);
 	}

@@ -13,6 +13,8 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
@@ -21,57 +23,65 @@ import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
+@Service
 public class RdfUtils {
+	
+	public RdfUtils() {
+		super();
+		// Spring constructor
+	}
+
+	@Autowired
+	static Config config;
 	
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-	private static final String CONCEPTS_SCHEME = Config.getBaseUriGestion() + Config.getConceptsScheme();
-	
+
 	public static Resource blankNode(){
 		return factory.createBNode();
 	}
 	
 	public static Resource conceptGraph(){
-		return factory.createIRI(Config.getConceptsGraph());
+		return factory.createIRI(config.getConceptsGraph());
 	}
 
 	public static Resource documentsGraph() {
-		return factory.createIRI(Config.getDocumentsGraph());
+		return factory.createIRI(config.getDocumentsGraph());
 	}
 	
 	public static Resource operationsGraph(){
-		return factory.createIRI(Config.getOperationsGraph());
+		return factory.createIRI(config.getOperationsGraph());
 	}
 
 
 	public static Resource productsGraph(){
-		return factory.createIRI(Config.getProductsGraph());
+		return factory.createIRI(config.getProductsGraph());
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(Config.getDocumentationsGraph() +"/"+ id);
+		return factory.createIRI(config.getDocumentationsGraph() +"/"+ id);
 	}
 	
 
 	public static Resource simsGeographyGraph(){
-		return factory.createIRI(Config.getDocumentationsGeoGraph());
+		return factory.createIRI(config.getDocumentationsGeoGraph());
 	}
 	
 	public static Resource structureGraph(){
-		return factory.createIRI(Config.getStructuresGraph());
+		return factory.createIRI(config.getStructuresGraph());
 	}
 	public static Resource codesListGraph(){
-		return factory.createIRI(Config.getCodeListGraph());
+		return factory.createIRI(config.getCodeListGraph());
 	}
 	
 	public static Resource structureComponentGraph(){
-		return factory.createIRI(Config.getStructuresComponentsGraph());
+		return factory.createIRI(config.getStructuresComponentsGraph());
 	}
 	
 	public static Resource conceptScheme(){
-		return factory.createIRI(CONCEPTS_SCHEME);
+		return factory.createIRI(config.getBaseUriGestion() + config.getConceptsScheme());
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
@@ -264,10 +274,6 @@ public class RdfUtils {
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
 	
-	private RdfUtils() {
-	    throw new IllegalStateException("Utility class");
-	}
 
-	
 
 }

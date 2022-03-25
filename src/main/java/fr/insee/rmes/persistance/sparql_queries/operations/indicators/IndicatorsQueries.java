@@ -7,10 +7,10 @@ import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class IndicatorsQueries {
+public class IndicatorsQueries extends GenericQueries{
 
 	static Map<String,Object> params ;
 
@@ -23,9 +23,9 @@ public class IndicatorsQueries {
 	
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
-		params.put("PRODUCTS_GRAPH",Config.getProductsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("PRODUCTS_GRAPH",config.getProductsGraph());
 	}
 	
 	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException  {
@@ -44,13 +44,13 @@ public class IndicatorsQueries {
 	
 	public static String indicatorsQuery() {
 		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <"+Config.getProductsGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n" 
 				+ "?indic skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + Config.getLg1() + "') \n"
-				+ "BIND(STRAFTER(STR(?indic),'/"+Config.getProductsBaseUri()+"/') AS ?id) . \n"
+				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
+				+ "BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . \n"
 				+ "OPTIONAL{?indic skos:altLabel ?altLabelLg1 . "
-				+ "FILTER (lang(?altLabelLg1) = '" + Config.getLg1() + "') } \n "
+				+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "') } \n "
 				+ "}} \n" 
 				+ "GROUP BY ?id ?label ?altLabelLg1 \n"
 				+ "ORDER BY ?label ";
@@ -61,7 +61,7 @@ public class IndicatorsQueries {
 			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers  ?idSims  ?validationState  "
 			+ "WHERE {  \r\n" 
 			+ "?indic a insee:StatisticalIndicator ."
-			+ "BIND(STRAFTER(STR(?indic),'/"+Config.getProductsBaseUri()+"/') AS ?id) . "
+			+ "BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . "
 					+ "?indic skos:prefLabel ?prefLabelLg1 \r\n" 
 			+ "FILTER (lang(?prefLabelLg1) = 'fr') \r\n" 
 			+ " OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \r\n" 
@@ -121,9 +121,9 @@ public class IndicatorsQueries {
 
 	public static String getCreatorsById(String id) {
 		return "SELECT ?creators\n"
-				+ "WHERE { GRAPH <"+Config.getProductsGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
-				+" FILTER(STRENDS(STR(?indic),'/"+Config.getProductsBaseUri()+"/" + id+ "')) . \n" 
+				+" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" 
 				+"?indic dc:creator ?creators . \n"
 				+ "} }"
 				;
@@ -131,9 +131,9 @@ public class IndicatorsQueries {
 	
 	public static String getPublishersById(String id) {
 		return "SELECT ?publishers\n"
-				+ "WHERE { GRAPH <"+Config.getProductsGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"  
-				+" FILTER(STRENDS(STR(?indic),'/"+Config.getProductsBaseUri()+"/" + id+ "')) . \n" 
+				+" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" 
 				+"?indic dcterms:publisher ?publishers . \n"
 				+ "} }"
 				;
@@ -144,13 +144,13 @@ public class IndicatorsQueries {
 				+ "WHERE { \n" 
 				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
 				+ "?uriLinked skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
 				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "')} . \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} . \n"
 				+ "?uriLinked rdf:type ?typeOfObject . \n"
 				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 				
-				+ "FILTER(STRENDS(STR(?indic),'/"+Config.getProductsBaseUri()+"/" + id + "')) . \n"
+				+ "FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id + "')) . \n"
 
 				+ "} \n"
 				+ "ORDER BY ?labelLg1";
@@ -162,11 +162,11 @@ public class IndicatorsQueries {
 				+"?indicator <"+linkPredicate+"> ?uri . \n"
 				+ "?uri dcterms:identifier  ?id . \n"
 				+ "?uri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
 				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "')} . \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} . \n"
 				
-				+ "FILTER(STRENDS(STR(?indicator),'/"+Config.getProductsBaseUri()+"/" + idIndicator + "')) . \n"
+				+ "FILTER(STRENDS(STR(?indicator),'/"+config.getProductsBaseUri()+"/" + idIndicator + "')) . \n"
 
 				+ "} \n"
 				+ "ORDER BY ?id";
@@ -174,10 +174,10 @@ public class IndicatorsQueries {
 
 	private static void getSimpleAttr(String id) {
 		if(id != null) {
-			addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/"+Config.getProductsBaseUri()+"/" + id+ "')) . \n" );
+			addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" );
 		} else {
 			addClauseToWhereClause("?indic a insee:StatisticalIndicator .");
-			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/"+Config.getProductsBaseUri()+"/') AS ?id) . ");
+			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . ");
 		}
 
 		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified");
@@ -185,9 +185,9 @@ public class IndicatorsQueries {
 		addClauseToWhereClause( "OPTIONAL { ?indic dcterms:modified ?modified } .  \n ");
 
 		addClauseToWhereClause( "?indic skos:prefLabel ?prefLabelLg1 \n");
-		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + Config.getLg1() + "') \n ");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n ");
 		addClauseToWhereClause( "OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \n");
-		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + Config.getLg2() + "') } \n ");
+		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } \n ");
 
 
 
@@ -206,9 +206,9 @@ public class IndicatorsQueries {
 
 	private static void addOptionalClause(String predicate, String variableName){
 		addClauseToWhereClause( "OPTIONAL{?indic "+predicate+" "+variableName + "Lg1 \n");
-		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg1) = '" + Config.getLg1() + "') } \n ");
+		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg1) = '" + config.getLg1() + "') } \n ");
 		addClauseToWhereClause( "OPTIONAL{?indic "+predicate+" "+variableName + "Lg2 \n");
-		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + Config.getLg2() + "') } \n ");
+		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + config.getLg2() + "') } \n ");
 	}
 
 	private static void getCodesLists() {
@@ -263,11 +263,11 @@ public class IndicatorsQueries {
 	
 	public static String lastID() {
 		return "SELECT ?id \n"
-				+ "WHERE { GRAPH <"+Config.getProductsGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
 				+ "?uri ?b ?c .\n "
 				+ "BIND(REPLACE( STR(?uri) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
 				+ "BIND(SUBSTR( ?id , 2 ) AS ?intid) . \n"
-				+ "FILTER regex(STR(?uri),'/"+Config.getProductsBaseUri()+"/') . \n"
+				+ "FILTER regex(STR(?uri),'/"+config.getProductsBaseUri()+"/') . \n"
 				+ "}} \n"
 				+ "ORDER BY DESC(xsd:integer(?intid)) \n"
 				+ "LIMIT 1";
@@ -276,9 +276,9 @@ public class IndicatorsQueries {
 	public static String checkIfExists(String id) {
 		return "ASK \n"
 				+ "WHERE  \n"
-				+ "{ graph <"+Config.getProductsGraph()+">    \n"
+				+ "{ graph <"+config.getProductsGraph()+">    \n"
 				+ "{?uri ?b ?c .\n "
-				+ "FILTER(STRENDS(STR(?uri),'/"+Config.getProductsBaseUri()+"/" + id + "')) . }\n"
+				+ "FILTER(STRENDS(STR(?uri),'/"+config.getProductsBaseUri()+"/" + id + "')) . }\n"
 				+ "}";
 		  	
 	}
@@ -303,12 +303,12 @@ public class IndicatorsQueries {
 
 
 	public static String indicatorsWithSimsQuery() {
-		//Config.OPERATIONS_GRAPH
+		//config.OPERATIONS_GRAPH
 		return "SELECT DISTINCT ?labelLg1 ?idSims \n"
 				+ "WHERE { \n"
 				+ "?indic a insee:StatisticalIndicator . \n"
 				+ "?indic skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
 			 	+ "?report rdf:type sdmx-mm:MetadataReport . \n"
 				+ "?report sdmx-mm:target ?indic \n"
 				+ "BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"

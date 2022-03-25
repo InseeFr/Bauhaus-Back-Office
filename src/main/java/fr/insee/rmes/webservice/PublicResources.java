@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -63,7 +62,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class PublicResources {
+public class PublicResources extends GenericResources  {
 
 	static final Logger logger = LogManager.getLogger(PublicResources.class);
 
@@ -79,13 +78,13 @@ public class PublicResources {
 	public ResponseEntity<Object> getProperties() throws RmesException {
 		JSONObject props = new JSONObject();
 		try {
-			props.put("appHost", Config.getAppHost());
-			props.put("defaultContributor", Config.getDefaultContributor());
-			props.put("defaultMailSender", Config.getDefaultMailSender());
-			props.put("maxLengthScopeNote", Config.getMaxLengthScopeNote());
-			props.put("lg1", Config.getLg1());
-			props.put("lg2", Config.getLg2());
-			props.put("authType", AuthType.getAuthType());
+			props.put("appHost", config.getAppHost());
+			props.put("defaultContributor", config.getDefaultContributor());
+			props.put("defaultMailSender", config.getDefaultMailSender());
+			props.put("maxLengthScopeNote", config.getMaxLengthScopeNote());
+			props.put("lg1", config.getLg1());
+			props.put("lg2", config.getLg2());
+			props.put("authType", AuthType.getAuthType(config));
 			props.put("modules", getActiveModules());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -95,7 +94,7 @@ public class PublicResources {
 	}
 
 	private List<String> getActiveModules() {
-        String dirPath = Config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
+        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
         File file = new File(dirPath);
         try {
 			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list

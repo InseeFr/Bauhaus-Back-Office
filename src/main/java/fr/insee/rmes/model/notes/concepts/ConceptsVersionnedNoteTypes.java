@@ -6,18 +6,21 @@ import java.util.Map;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
 
 /**
  * Énumération correspondant aux différents types de notes explicatives.
  */
+@Component
 public enum ConceptsVersionnedNoteTypes {
 	SCOPENOTELG1("scopeNoteLg1") {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return Config.getLg1();}
+		public String lang() {return config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -26,7 +29,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definitionCourte";}
 		@Override
-		public String lang() {return Config.getLg2();}
+		public String lang() {return config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.SCOPE_NOTE;}
 
@@ -35,7 +38,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return Config.getLg1();}
+		public String lang() {return config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -44,7 +47,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "definition";}
 		@Override
-		public String lang() {return Config.getLg2();}
+		public String lang() {return config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.DEFINITION;}
 
@@ -53,7 +56,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return Config.getLg1();}
+		public String lang() {return config.getLg1();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
@@ -62,7 +65,7 @@ public enum ConceptsVersionnedNoteTypes {
 		@Override
 		public String pathComponent() {return "noteEditoriale";}
 		@Override
-		public String lang() {return Config.getLg2();}
+		public String lang() {return config.getLg2();}
 		@Override
 		public IRI owlProperty() {return SKOS.EDITORIAL_NOTE;}
 
@@ -71,6 +74,9 @@ public enum ConceptsVersionnedNoteTypes {
 	private static final Map<String, ConceptsVersionnedNoteTypes> map = new HashMap<>();
 	
 	private String text;
+	
+	@Autowired 
+	static Config config;
 
 	ConceptsVersionnedNoteTypes(String text) {
 		this.text = text;

@@ -40,7 +40,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class CodeListsResources {
+public class CodeListsResources extends GenericResources  {
 
 	static final Logger logger = LogManager.getLogger(CodeListsResources.class);
 
@@ -55,7 +55,7 @@ public class CodeListsResources {
 		try {
 			id = codeListService.setCodesList(body, false);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -69,7 +69,7 @@ public class CodeListsResources {
 		try {
 			id = codeListService.setCodesList(id, body, false);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -82,7 +82,7 @@ public class CodeListsResources {
 		try {
 			id = codeListService.setCodesList(body, true);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -96,7 +96,7 @@ public class CodeListsResources {
 		try {
 			id = codeListService.setCodesList(id, body, true);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -109,7 +109,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getAllCodesLists(false);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -122,7 +122,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getAllCodesLists(true);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -135,7 +135,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesListForSearch(false);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -148,7 +148,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesListForSearch(true);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -161,7 +161,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesList(notation, false);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -174,7 +174,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getDetailedCodesList(notation, true);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -187,7 +187,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getCodeListJson(notation);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -200,7 +200,7 @@ public class CodeListsResources {
 		try {
 			jsonResultat = codeListService.getCode(notation, code);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}

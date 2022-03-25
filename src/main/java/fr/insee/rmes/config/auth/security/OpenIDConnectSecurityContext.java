@@ -9,6 +9,7 @@ import javax.ws.rs.HttpMethod;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,9 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}")
 	private Optional<String> allowedOrigin;
 	
+	@Autowired
+	Config config;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.sessionManagement().disable();
@@ -58,7 +62,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 				.oauth2ResourceServer()
 				.jwt();
 				//.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
-		if (Config.isRequiresSsl())
+		if (config.isRequiresSsl())
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
 		logger.info("OpenID authentication activated ");
@@ -70,7 +74,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	public UserProvider getUserProvider() {
 		return auth -> {
 			final Jwt jwt = (Jwt) auth.getPrincipal();
-			return new User(jwt.getClaimAsStringList(Config.getRoleclaim()), jwt.getClaimAsString(Config.getStampclaim()));
+			return new User(jwt.getClaimAsStringList(config.getRoleclaim()), jwt.getClaimAsString(config.getStampclaim()));
 		};
 	}
 

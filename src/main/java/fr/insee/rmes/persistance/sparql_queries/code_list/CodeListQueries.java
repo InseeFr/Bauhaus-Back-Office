@@ -1,12 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.code_list;
 
+
 import java.util.HashMap;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class CodeListQueries {
+public class CodeListQueries extends GenericQueries {
 
 	private static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
 	private static final String CODES_LIST = "codes-list/";
@@ -15,7 +16,7 @@ public class CodeListQueries {
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("IRI", codesListUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "isCodesListValidated.ftlh", params);
 	}
@@ -23,55 +24,55 @@ public class CodeListQueries {
 	public static String getAllCodesLists(boolean partial) throws RmesException {
 
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 	public static String getCodeListItemsByNotation(String notation) {
 		return "SELECT ?code ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
 				+ "?item skos:notation ?code . \n"
 				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
 				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "') . \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
 				+ " }}";
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
 		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
-				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
 				+ "?codeList skos:prefLabel ?codeListLabelLg1 . \n"
-				+ "FILTER (lang(?codeListLabelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?codeListLabelLg1) = '" + config.getLg1() + "') . \n"
 				+ "?codeList skos:prefLabel ?codeListLabelLg2 . \n"
-				+ "FILTER (lang(?codeListLabelLg2) = '" + Config.getLg2() + "') . \n"
+				+ "FILTER (lang(?codeListLabelLg2) = '" + config.getLg2() + "') . \n"
 				+ " }}";
 	}
 
 	public static String getCodeByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?labelLg1 ?labelLg2  \n"
-				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?item skos:inScheme ?codeList . \n"
 				+ "?item skos:notation '"+notationCode +"' . \n"
 				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
 				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + Config.getLg2() + "') . \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
 				+ " }}";
 	}
 	
 	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"
-				+ "WHERE { GRAPH <"+Config.getCodeListGraph()+"> { \n"
+				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
 				+ "?uri skos:inScheme ?codeList . \n"
@@ -81,50 +82,50 @@ public class CodeListQueries {
 
 	public static String geCodesListByIRI(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("CODE_LIST", id);
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
 	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
-		params.put("CODE_LIST_BASE_URI", Config.getCodeListBaseUri());
+		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+		HashMap<String, Object> params = initParams();
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesListForSearch.ftlh", params);
 	}
 
-	public static String getCodesForSearch(boolean partial) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+	public static String getCodesForSearch( boolean partial) throws RmesException {
+		HashMap<String, Object> params = initParams();
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesForSearch.ftlh", params);
 	}
 
-	public static String getDetailedCodes(String notation, boolean partial) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+	public static String getDetailedCodes( String notation, boolean partial) throws RmesException {
+		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
 	}
 
-	public static String getCodesSeq(String notation) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+	public static String getCodesSeq( String notation) throws RmesException {
+		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesSeq.ftlh", params);
 	}
 
-	private static HashMap<String, Object> getInitParams() {
+	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, Config.getCodeListGraph());
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		return params;
 	}
 	
@@ -134,7 +135,7 @@ public class CodeListQueries {
 
 
 	public static String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+		HashMap<String, Object> params = initParams();
 		params.put("ID", id);
 		params.put("IRI", iri);
 		params.put("SEE_ALSO", seeAlso);

@@ -62,7 +62,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class ConceptsResources   {
+public class ConceptsResources  extends GenericResources   {
 	
 	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
 	
@@ -77,7 +77,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConcepts();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -90,7 +90,7 @@ public class ConceptsResources   {
 		try {
 			resultat = conceptsService.getRelatedConcepts(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(resultat);
 	}
@@ -103,7 +103,7 @@ public class ConceptsResources   {
 		try {
 			conceptsService.deleteConcept(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -116,7 +116,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptsSearch();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -129,7 +129,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptByID(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -142,7 +142,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptsToValidate();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -155,7 +155,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptLinksByID(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -168,7 +168,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -181,7 +181,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollections();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -194,7 +194,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionsDashboard();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -207,7 +207,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionsToValidate();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -220,7 +220,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionByID(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -233,7 +233,7 @@ public class ConceptsResources   {
 		try {
 			jsonResultat = conceptsService.getCollectionMembersByID(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -248,7 +248,7 @@ public class ConceptsResources   {
 		try {
 			id = conceptsService.setConcept(body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -263,7 +263,7 @@ public class ConceptsResources   {
 		try {
 			conceptsService.setConcept(id, body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		logger.info("Update concept : {}" , id);
 		return ResponseEntity.noContent().build();
@@ -318,7 +318,7 @@ public class ConceptsResources   {
 		try {
 			conceptsService.setCollection(body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.noContent().build();
 	}

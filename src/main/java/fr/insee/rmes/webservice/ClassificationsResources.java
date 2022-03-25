@@ -48,7 +48,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @ApiResponse(responseCode = "404", description = "Not found"),
 @ApiResponse(responseCode = "406", description = "Not Acceptable"),
 @ApiResponse(responseCode = "500", description = "Internal server error") })
-public class ClassificationsResources {
+public class ClassificationsResources extends GenericResources {
 
 	static final Logger logger = LogManager.getLogger(ClassificationsResources.class);
 
@@ -169,7 +169,7 @@ public class ClassificationsResources {
 			classificationsService.setClassificationValidation(id);
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -180,7 +180,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItems(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -191,7 +191,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevels(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -202,7 +202,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevel(id, levelId);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -213,7 +213,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -224,7 +224,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItem(classificationId, itemId);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -236,7 +236,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItemNotes(classificationId, itemId, conceptVersion);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -247,7 +247,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getClassificationItemNarrowers(classificationId, itemId);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -258,7 +258,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondences();
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -269,7 +269,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondence(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -280,7 +280,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociations(id);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
@@ -292,7 +292,7 @@ public class ClassificationsResources {
 		try {
 			jsonResultat = classificationsService.getCorrespondenceAssociation(correspondenceId, associationId);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}

@@ -3,20 +3,26 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import java.util.Arrays;
 
 import org.eclipse.rdf4j.model.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 
+@Service
 public abstract class PublicationUtils {
+	
+	@Autowired
+	static Config config;
 
 	private PublicationUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
 	public static Resource tranformBaseURIToPublish(Resource resource) {
-		if (!resource.toString().contains(Config.getBaseUriGestion())) return resource;
-		String newResource = resource.toString().replace(Config.getBaseUriGestion(), Config.getBaseUriPublication());
+		if (!resource.toString().contains(config.getBaseUriGestion())) return resource;
+		String newResource = resource.toString().replace(config.getBaseUriGestion(), config.getBaseUriPublication());
 		return RdfUtils.toURI(newResource);
 	}
 	

@@ -18,6 +18,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -32,6 +33,10 @@ import fr.insee.rmes.exceptions.RmesException;
  */
 public class RepositoryPublication extends RepositoryUtils{
 
+
+	@Autowired
+	static Config config;
+	
 	private static final String THREE_PARAMS_LOG = "{} {} {}";
 
 	private static final String CONNECTION_TO = "Connection to ";
@@ -40,8 +45,8 @@ public class RepositoryPublication extends RepositoryUtils{
 
 	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
 
-	public static final Repository REPOSITORY_PUBLICATION = initRepository(Config.getSesameServerPublication(), Config.getRepositoryIdPublication());
-	public static final Repository REPOSITORY_PUBLICATION_INTERNE = initRepository(Config.getSesameServerPublicationInterne(), Config.getRepositoryIdPublicationInterne());
+	public static final Repository REPOSITORY_PUBLICATION = initRepository(config.getRdfServerPublication(), config.getRepositoryIdPublication());
+	public static final Repository REPOSITORY_PUBLICATION_INTERNE = initRepository(config.getRdfServerPublicationInterne(), config.getRepositoryIdPublicationInterne());
 
 	
 	

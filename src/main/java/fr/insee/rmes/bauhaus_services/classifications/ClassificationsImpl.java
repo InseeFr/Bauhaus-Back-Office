@@ -24,10 +24,10 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.CorrespondencesQueries;
-import fr.insee.rmes.persistance.sparql_queries.classifications.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.LevelsQueries;
-import fr.insee.rmes.persistance.sparql_queries.classifications.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifSeriesQueries;
 
 @Service
 public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
@@ -40,37 +40,37 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
-		return repoGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery()).toString();
 	}
 	
 	@Override
 	public String getFamily(String id) throws RmesException {
 		logger.info("Starting to get classification family");
-		return repoGestion.getResponseAsObject(FamiliesQueries.familyQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassifFamiliesQueries.familyQuery(id)).toString();
 	}
 	
 	@Override
 	public String getFamilyMembers(String id) throws RmesException {
 		logger.info("Starting to get classification family members");
-		return repoGestion.getResponseAsArray(FamiliesQueries.familyMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familyMembersQuery(id)).toString();
 	}
 	
 	@Override
 	public String getSeries() throws RmesException {
 		logger.info("Starting to get classifications series");
-		return repoGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery()).toString();
 	}
 	
 	@Override
 	public String getOneSeries(String id) throws RmesException {
 		logger.info("Starting to get a classification series");
-		return repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassifSeriesQueries.oneSeriesQuery(id)).toString();
 	}
 	
 	@Override
 	public String getSeriesMembers(String id) throws RmesException {
 		logger.info("Starting to get members of a classification series");
-		return repoGestion.getResponseAsArray(SeriesQueries.seriesMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesMembersQuery(id)).toString();
 	}
 	
 	@Override

@@ -44,38 +44,31 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Autowired
 	LdapConnexion ldapConnexion;
+	
+	@Autowired
+	static Config config;
 
 	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
-	private static final String SUGOI_SEARCH_APP = Config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + Config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH + Config.getSugoiApp() ;
-	private static final String SUGOI_SEARCH_USERS = Config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + Config.getSugoiRealm() + "/users" ;
 
 	private static final String ROLE_ID_XPATH = "cn";
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
 	
 	private Map<String,UserSugoi> mapUsers;
 	
-	@Override
-	public String getAuth(String body) {
-		if (body.equals(Config.getPasswordGestionnaire())) {
-			return "GESTIONNAIRE";
-		}
-		if (body.equals(Config.getPasswordProducteur())) {
-			return "PRODUCTEUR";
-		}
-		return "NONE";
-	}
 
 	@Override
 	public String getRoles() throws RmesException {
+		 String searchAppSugoiTarget = config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH + config.getSugoiApp() ;
+		
 		if (mapUsers == null || mapUsers.isEmpty()) {getAgentsSugoi();}
 		logger.info("mapUsers size : {} / {} max", mapUsers.size(), NB_USERS_EXPECTED);
 		JSONArray roles = new JSONArray();
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));	
-			String jsonResponse = client.target(SUGOI_SEARCH_APP).request(MediaType.APPLICATION_JSON).get(String.class);
+			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(config.getSugoiUser(), config.getSugoiPassword()));	
+			String jsonResponse = client.target(searchAppSugoiTarget).request(MediaType.APPLICATION_JSON).get(String.class);
 
 			ObjectMapper mapper = new ObjectMapper();
 			Application application = mapper.readValue(jsonResponse, Application.class);
@@ -109,7 +102,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Override
 	public String getAgents() throws RmesException {
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-		logger.info("Connection to LDAP : {}", Config.getLdapUrl());
+		logger.info("Connection to LDAP : {}", config.getLdapUrl());
 		try {
 			// Connexion à la racine de l'annuaire
 			DirContext context = ldapConnexion.getLdapContext();
@@ -140,11 +133,12 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	
 	
 	public String getAgentsSugoi() throws RmesException {
+		String searchUserSugoiTarget = config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + "/users" ;
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
 
-		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));	
-		String jsonResponse = client.target(SUGOI_SEARCH_USERS)
+		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(config.getSugoiUser(), config.getSugoiPassword()));	
+		String jsonResponse = client.target(searchUserSugoiTarget)
 									.queryParam("size", NB_USERS_EXPECTED)
 									.request(MediaType.APPLICATION_JSON)
 									.get(String.class);
@@ -187,9 +181,9 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	public String checkSugoiConnexion() throws RmesException {
 		String jsonResponse ="";
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.getSugoiUser(), Config.getSugoiPassword()));
+			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(config.getSugoiUser(), config.getSugoiPassword()));
 
-			jsonResponse = client.target(Config.getSugoiUrl() + "whoami")
+			jsonResponse = client.target(config.getSugoiUrl() + "whoami")
 					.request(MediaType.APPLICATION_JSON).get(String.class);
 		} catch (Exception e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target SUGOI");

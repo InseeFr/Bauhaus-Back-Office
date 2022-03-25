@@ -5,10 +5,11 @@ import java.util.Map;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class GeoQueries {
+
+public class GeoQueries extends GenericQueries{
 	
 	static Map<String,Object> params ;
 	
@@ -61,10 +62,10 @@ public class GeoQueries {
 	
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
-		params.put("COG_GRAPH", Config.getGeographyGraph());
-		params.put("GEO_SIMS_GRAPH", Config.getDocumentationsGeoGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("COG_GRAPH", config.getGeographyGraph());
+		params.put("GEO_SIMS_GRAPH", config.getDocumentationsGeoGraph());
 	}
 	
 	

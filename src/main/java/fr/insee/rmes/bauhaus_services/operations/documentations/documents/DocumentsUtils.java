@@ -43,7 +43,6 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
@@ -489,16 +488,16 @@ public class DocumentsUtils  extends RdfService  {
 		String uriString = document.getUrl();
 		RdfUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
 		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
-			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), Config.getLg1(), model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
-			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), Config.getLg2(), model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
-			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), Config.getLg1(), model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
-			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), Config.getLg2(), model, graph);
+			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLangue())) {
 			RdfUtils.addTripleString(docUri, DC.LANGUAGE, document.getLangue(), model, graph);
@@ -639,12 +638,12 @@ public class DocumentsUtils  extends RdfService  {
 
 	private Path getGestionStorageFolderPath() throws RmesException {
 		Path path = null;
-		File dir = new File(Config.getDocumentsStorageGestion());
+		File dir = new File(config.getDocumentsStorageGestion());
 		if (dir.exists()) {
-			path = Paths.get(Config.getDocumentsStorageGestion());
+			path = Paths.get(config.getDocumentsStorageGestion());
 		} else {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
-					"Config.DOCUMENTS_STORAGE");
+					"config.DOCUMENTS_STORAGE");
 		}
 		return path;
 	}

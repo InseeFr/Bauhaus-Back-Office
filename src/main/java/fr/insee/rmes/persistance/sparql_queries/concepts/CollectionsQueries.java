@@ -1,8 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class CollectionsQueries {
+public class CollectionsQueries extends GenericQueries{
 	
 	public static String collectionsQuery() {
 		return "SELECT DISTINCT ?id ?label \n"
@@ -10,7 +10,7 @@ public class CollectionsQueries {
 			+ "?collection rdf:type skos:Collection . \n"
 			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
 			+ "?collection dcterms:title ?label . \n"
-			+ "FILTER (lang(?label) = '" + Config.getLg1() + "') } \n"
+			+ "FILTER (lang(?label) = '" + config.getLg1() + "') } \n"
 			+ "ORDER BY ?label ";	
 	}
 	
@@ -25,7 +25,7 @@ public class CollectionsQueries {
 			+ "OPTIONAL {?collection dcterms:modified ?modified} . \n"
 			+ "?collection insee:isValidated ?isValidated \n"
 			+ "OPTIONAL {?collection dc:creator ?creator} . \n"
-			+ "FILTER (lang(?label) = '" + Config.getLg1() + "')"
+			+ "FILTER (lang(?label) = '" + config.getLg1() + "')"
 			+ "?collection skos:member ?member . \n"
 			+ " } \n"
 			+ "GROUP BY ?id ?label ?created ?modified ?isValidated ?creator \n"
@@ -40,7 +40,7 @@ public class CollectionsQueries {
 			+ "?collection dcterms:title ?label . \n"
 			+ "?collection dc:creator ?creator . \n"
 			+ "?collection insee:isValidated 'false'^^xsd:boolean . \n"
-			+ "FILTER (lang(?label) = '" + Config.getLg1() + "') } \n"
+			+ "FILTER (lang(?label) = '" + config.getLg1() + "') } \n"
 			+ "ORDER BY ?label ";	
 	}
 	
@@ -52,15 +52,15 @@ public class CollectionsQueries {
 				+ "FILTER(STRENDS(STR(?collection),'/concepts/definitions/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
 				+ "?collection dcterms:title ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
 				+ "OPTIONAL {?collection dcterms:title ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.getLg2() + "')} . \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "')} . \n"
 				+ "?collection dcterms:created ?created . \n"
 				+ "OPTIONAL {?collection dcterms:modified ?modified} . \n"
 				+ "OPTIONAL {?collection dcterms:description ?descriptionLg1 ."
-				+ "FILTER (lang(?descriptionLg1) = '" + Config.getLg1() + "') } \n"
+				+ "FILTER (lang(?descriptionLg1) = '" + config.getLg1() + "') } \n"
 				+ "OPTIONAL {?collection dcterms:description ?descriptionLg2 ."
-				+ "FILTER (lang(?descriptionLg2) = '" + Config.getLg2() + "') } . \n"
+				+ "FILTER (lang(?descriptionLg2) = '" + config.getLg2() + "') } . \n"
 				+ "?collection insee:isValidated ?isValidated \n"
 				+ "OPTIONAL {?collection dc:creator ?creator} . \n"
 				+ "?collection dc:contributor ?contributor . \n"
@@ -75,9 +75,9 @@ public class CollectionsQueries {
 				+ "?collection skos:member ?member . \n"
 				+ "?member skos:notation ?id . \n"
 				+ "?member skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.getLg1() + "') . \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
 				+ "OPTIONAL {?member skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.getLg2() + "')} \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "')} \n"
 				+ "}";
 	}
 	

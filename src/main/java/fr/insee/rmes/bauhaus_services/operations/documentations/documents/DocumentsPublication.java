@@ -32,7 +32,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -80,8 +79,8 @@ public class DocumentsPublication  extends RdfService{
 
 	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
 		Path file = Paths.get(originalPath);
-		Path targetPathInt = Paths.get(Config.getDocumentsStoragePublicationInterne());
-		Path targetPathExt = Paths.get(Config.getDocumentsStoragePublicationExterne());
+		Path targetPathInt = Paths.get(config.getDocumentsStoragePublicationInterne());
+		Path targetPathExt = Paths.get(config.getDocumentsStoragePublicationExterne());
 
 		try {
 			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -112,7 +111,7 @@ public class DocumentsPublication  extends RdfService{
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					String newUrl = Config.getDocumentsBaseurl() + "/"+ filename;
+					String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
@@ -170,7 +169,7 @@ public class DocumentsPublication  extends RdfService{
 			String predicatString = tuple.getString("predicat");
 			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
 			if (predicatString.endsWith(Constants.URL)) {
-				String newUrl = Config.getDocumentsBaseurl() + "/"+ filename;
+				String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
 				object = RdfUtils.toURI(newUrl);
 			} else {

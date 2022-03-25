@@ -8,10 +8,10 @@ import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class DocumentsQueries {
+public class DocumentsQueries extends GenericQueries{
 	
 	static Map<String,Object> params ;
 	
@@ -73,7 +73,7 @@ public class DocumentsQueries {
 		params.put("idRubric", idRubric);
 		params.put("type", getDocType(isLink) );
 		params.put("LANG", uriLang);
-		params.put("DOCUMENTATIONS_GRAPH", Config.getDocumentationsGraph());
+		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
 		return  buildRequest("getDocumentQuery.ftlh", params);
 	}
 
@@ -81,7 +81,7 @@ public class DocumentsQueries {
 		if (isLink == null) {
 			return "";
 		}
-		return (Boolean.TRUE.equals(isLink) ? Config.getLinksBaseUri() :Config.getDocumentsBaseUri());
+		return (Boolean.TRUE.equals(isLink) ? config.getLinksBaseUri() :config.getDocumentsBaseUri());
 	}
 	
 	
@@ -111,9 +111,9 @@ public class DocumentsQueries {
 
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.getLg1());
-		params.put("LG2", Config.getLg2());
-		params.put("DOCUMENTS_GRAPH", Config.getDocumentsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("DOCUMENTS_GRAPH", config.getDocumentsGraph());
 
 	}
 	

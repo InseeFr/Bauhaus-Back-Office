@@ -27,7 +27,7 @@ import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 
 
 @Service
@@ -39,6 +39,9 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	static final Logger logger = LogManager.getLogger(StampsRestrictionServiceImpl.class);
 
 	private User fakeUser;
+	
+	@Autowired
+	static Config config;
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -75,7 +78,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	public User getUser() {
-		if (Config.getEnv().equals("pre-prod") || Config.getEnv().equals("prod") ||  Config.getEnv().equals("PROD")) {
+		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") ||  config.getEnv().equals("PROD")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			User currentUser = (User) authentication.getPrincipal();
 			logger.info("Current user has stamp {}", currentUser.getStamp());
@@ -222,7 +225,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
 	public boolean isSeriesManager(IRI uri) throws RmesException {
 		User user = getUser();
-		JSONArray managers = repoGestion.getResponseAsArray(SeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(uri)));
+		JSONArray managers = repoGestion.getResponseAsArray(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(uri)));
 		Boolean isSeriesManager = false;
 		for (int i = 0; i < managers.length(); i++) {
 			if (managers.getJSONObject(i).getString(Constants.CREATORS).equals(user.getStamp())) {

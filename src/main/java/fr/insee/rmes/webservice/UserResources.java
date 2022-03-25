@@ -58,7 +58,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class UserResources {
+public class UserResources  extends GenericResources {
 
 	static final Logger logger = LogManager.getLogger(UserResources.class);
 

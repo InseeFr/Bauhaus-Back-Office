@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,8 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultSecurityContext.class);
 
+	@Autowired
+	static Config config;
 	
 	@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}")
 	private Optional<String> allowedOrigin;
@@ -38,7 +41,7 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 		http.csrf().disable();
 		http.cors(withDefaults())
 		.authorizeRequests().anyRequest().permitAll();
-		if (Config.isRequiresSsl()) {
+		if (config.isRequiresSsl()) {
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		}
 		

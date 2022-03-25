@@ -23,15 +23,15 @@ public class OpenApiConfiguration   {
 	
 	@Value("${fr.insee.rmes.bauhaus.version}")
 	private String projectVersion;
-
+	
 	@Bean
-	public OpenAPI customOpenAPI() {
+	public OpenAPI customOpenAPI(Config config) {
 		Server server = new Server();
-		server.setUrl(Config.getSwaggerUrl());
+		server.setUrl(config.getSwaggerUrl());
 		logger.info("______________________________________________________________________");
-		logger.info("____________________SWAGGER HOST : {}_________________________________________________", Config.getSwaggerHost());
-		logger.info("____________________SWAGGER BASEPATH : {} _________________________________________________", Config.getSwaggerBasepath());
-		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", Config.getSwaggerUrl());
+		logger.info("____________________SWAGGER HOST : {}_________________________________________________", config.getSwaggerHost());
+		logger.info("____________________SWAGGER BASEPATH : {} _________________________________________________", config.getSwaggerBasepath());
+		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", config.getSwaggerUrl());
 		logger.info("______________________________________________________________________");
 		return new OpenAPI()
 				.addServersItem(server)

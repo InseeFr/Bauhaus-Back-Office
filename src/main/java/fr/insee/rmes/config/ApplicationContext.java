@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.core.env.Environment;
 
 @Configuration("AppContext")
 @PropertySource(value =  "classpath:bauhaus-core.properties")
@@ -29,9 +28,7 @@ import org.springframework.core.env.Environment;
 public class ApplicationContext {
 
 	@Autowired
-	Environment env;
-	
-
+	Config config;
 	
 	@Bean
 	public HttpClientBuilder httpClientBuilder()
@@ -43,7 +40,7 @@ public class ApplicationContext {
 
 	@PostConstruct
 	public void setUp() {
-		Config.printMajorConfig();
+		config.printMajorConfig();
 	}
 
 	

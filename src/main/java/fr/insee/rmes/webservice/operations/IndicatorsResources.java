@@ -80,13 +80,13 @@ public class IndicatorsResources extends OperationsCommonResources {
 			try {
 				resultat=XMLUtils.produceXMLResponse(operationsService.getIndicatorById(id));
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 		} else {
 			try {
 				resultat = operationsService.getIndicatorJsonByID(id);
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(resultat);
@@ -109,7 +109,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 		try {
 			operationsService.setIndicator(id, body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.noContent().build();
 	}
@@ -151,7 +151,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 		try {
 			id = operationsService.setIndicator(body); 
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
 		return ResponseEntity.status(HttpStatus.OK).body(id);

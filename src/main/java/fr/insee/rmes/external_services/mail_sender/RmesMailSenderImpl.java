@@ -46,6 +46,9 @@ import fr.insee.rmes.utils.FilesUtils;
 public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Autowired
+	static Config config;
+	
+	@Autowired
 	ConceptsExportBuilder conceptsExport;
 	
 	@Autowired
@@ -126,13 +129,13 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		NameValuePairType nameValuePairTypeSmtpFrom = new NameValuePairType();
 		nameValuePairTypeSmtpFrom.setName("mail.smtp.from");
 		nameValuePairTypeSmtpFrom.setValue(mail.getSender());
-		ServiceConfiguration config = new ServiceConfiguration();
-		config.getSMTPProperties().add(nameValuePairTypeSmtpFrom);
-		request.setServiceConfiguration(config);
+		ServiceConfiguration configService = new ServiceConfiguration();
+		configService.getSMTPProperties().add(nameValuePairTypeSmtpFrom);
+		request.setServiceConfiguration(configService);
 
 		// création d'un client authentifié pour SPOC	
 		HttpAuthenticationFeature authentificationFeature = HttpAuthenticationFeature
-				.basic(Config.getSpocUser(), Config.getSpocPassword());
+				.basic(config.getSpocUser(), config.getSpocPassword());
 		Client client = ClientBuilder.newClient()
 				.register(authentificationFeature);
 		
@@ -147,10 +150,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		
 
 
-		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), Config.getLg1(), "utf-8");
+		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), config.getLg1(), "utf-8");
 		Entity<MultiPart> entity = Entity.entity(mp, variant);
 		String result = client
-							.target(Config.getSpocServiceUrl())
+							.target(config.getSpocServiceUrl())
 							.request()
 							.post(entity,String.class);
 		return isMailSent(result);

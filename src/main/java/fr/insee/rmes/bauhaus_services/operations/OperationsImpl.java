@@ -38,10 +38,10 @@ import fr.insee.rmes.external_services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
 
@@ -79,7 +79,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -91,14 +91,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray seriesArray = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery());
+		JSONArray seriesArray = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
 		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray series = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
+		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
@@ -252,14 +252,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
-		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
 		logger.info("Starting to get families list for search");
-		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesSearchQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesSearchQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 

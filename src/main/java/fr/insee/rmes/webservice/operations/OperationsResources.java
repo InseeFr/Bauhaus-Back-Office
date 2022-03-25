@@ -65,13 +65,13 @@ public class OperationsResources extends OperationsCommonResources {
 			try {
 				resultat=XMLUtils.produceXMLResponse(operationsService.getOperationById(id));
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 		} else {
 			try {
 				resultat = operationsService.getOperationJsonByID(id);
 			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+				return returnRmesException(e);
 			}
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(resultat);
@@ -113,7 +113,7 @@ public class OperationsResources extends OperationsCommonResources {
 		try {
 			operationsService.setOperation(id, body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.noContent().build();
 	}
@@ -133,7 +133,7 @@ public class OperationsResources extends OperationsCommonResources {
 		try {
 			id = operationsService.createOperation(body);
 		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}

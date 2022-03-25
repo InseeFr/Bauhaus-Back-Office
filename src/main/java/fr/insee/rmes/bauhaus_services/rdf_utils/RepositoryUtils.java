@@ -28,7 +28,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 
-
 public abstract class RepositoryUtils {
 	
 	private static final String BINDINGS = "bindings";

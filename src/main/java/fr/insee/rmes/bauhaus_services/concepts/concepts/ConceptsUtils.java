@@ -30,7 +30,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -67,8 +66,8 @@ public class ConceptsUtils extends RdfService {
 			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		}
 		JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.getLg1()));
-		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.getLg2()));
+		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg1()));
+		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg2()));
 		if(altLabelLg1.length() != 0) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
@@ -140,23 +139,23 @@ public class ConceptsUtils extends RdfService {
 		model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(false), RdfUtils.conceptGraph());
 		/*Required*/
 		model.add(conceptURI, SKOS.NOTATION, RdfUtils.setLiteralString(concept.getId()), RdfUtils.conceptGraph());
-		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), Config.getLg1()), RdfUtils.conceptGraph());
+		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), config.getLg1()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CREATOR, RdfUtils.setLiteralString(concept.getCreator()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(concept.getContributor()), RdfUtils.conceptGraph());
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, RdfUtils.toURI(concept.getDisseminationStatus()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(concept.getCreated()), RdfUtils.conceptGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.getLg2(), model, RdfUtils.conceptGraph());
+		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();
 		List<String> altLabelsLg2 =  concept.getAltLabelLg2();
 		if (altLabelsLg1!=null) {
 			for (String altLabelLg1 : altLabelsLg1) {
-				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.getLg1(), model, RdfUtils.conceptGraph());
+				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, config.getLg1(), model, RdfUtils.conceptGraph());
 			}
 		}
 		if (altLabelsLg2!=null) {
 			for (String altLabelLg2 : altLabelsLg2) {
-				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.getLg2(), model, RdfUtils.conceptGraph());
+				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, config.getLg2(), model, RdfUtils.conceptGraph());
 			}		
 		}
 		RdfUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, RdfUtils.conceptGraph());

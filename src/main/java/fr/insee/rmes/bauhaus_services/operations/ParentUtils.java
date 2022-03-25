@@ -22,7 +22,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.documentations.Docume
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 
 @Component
 public class ParentUtils extends RdfService{
@@ -64,7 +64,7 @@ public class ParentUtils extends RdfService{
 	
 
 	public boolean checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		return repoGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesHasSims(uriSeries));
+		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasSims(uriSeries));
 	}
 	
 	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
@@ -78,7 +78,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public boolean checkIfSeriesHasOperation(String uriParent) throws RmesException {
-		return repoGestion.getResponseAsBoolean(SeriesQueries.checkIfSeriesHasOperation(uriParent));
+		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation(uriParent));
 	}
 	
 	
@@ -114,11 +114,11 @@ public class ParentUtils extends RdfService{
 	
 	
 	public JSONArray getSeriesCreators(String id) throws RmesException {
-		return  repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(id));
+		return  repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(id));
 	}
 	
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
+		return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri(RdfUtils.toString(iri)));
 	}
 	
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {

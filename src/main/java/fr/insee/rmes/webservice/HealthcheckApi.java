@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	})
 @RestController
 @RequestMapping("healthcheck")
-public class HealthcheckApi {
+public class HealthcheckApi  extends GenericResources {
 	
 	private static final String CONNEXION_LDAP = "- Connexion LDAP";
 
@@ -69,9 +68,9 @@ public class HealthcheckApi {
     	
     	//Test access to storage
     	stateResult = stateResult.add("Document storage \n");
-    	checkDocumentStorage(Config.getDocumentsStorageGestion(),"Gestion", stateResult, errorMessage);
-    	checkDocumentStorage(Config.getDocumentsStoragePublicationExterne(),"Publication Externe", stateResult, errorMessage);
-    	checkDocumentStorage(Config.getDocumentsStoragePublicationInterne(),"Publication Interne", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStorageGestion(),"Gestion", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStoragePublicationExterne(),"Publication Externe", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStoragePublicationInterne(),"Publication Interne", stateResult, errorMessage);
     	
     	//Test LDAP connexion
     	stateResult = stateResult.add("LDAP connexion \n");
