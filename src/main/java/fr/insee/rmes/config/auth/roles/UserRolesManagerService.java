@@ -1,5 +1,10 @@
 package fr.insee.rmes.config.auth.roles;
 
+import java.io.IOException;
+
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.client.ClientProtocolException;
+
 import fr.insee.rmes.exceptions.RmesException;
 
 public interface UserRolesManagerService {
@@ -12,9 +17,9 @@ public interface UserRolesManagerService {
 	
 	public String getAgents() throws RmesException;
 	
-	public void setAddRole(String role, String user);
+	public void setAddRole(String role, String user) throws AuthenticationException, ClientProtocolException, IOException ;
 	
-	public void setDeleteRole(String roles, String user);
+	public void setDeleteRole(String roles, String user) throws AuthenticationException, ClientProtocolException, IOException;
 
 	public String checkSugoiConnexion() throws RmesException;
 	

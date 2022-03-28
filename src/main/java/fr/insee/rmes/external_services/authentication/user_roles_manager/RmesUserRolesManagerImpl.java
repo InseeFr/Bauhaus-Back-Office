@@ -1,5 +1,6 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
@@ -54,11 +57,13 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	private static final String SUGOI_SEARCH_APP = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
 	private static final String SUGOI_SEARCH_USERS = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + "/users" ;
 
-
-	private static final String IGESA_ADD_USER_PATH_FMT = Config.IGESA_URL + "/gestion/ajout/personne/application/"
-			+ Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
-	private static final String IGESA_DELETE_USER_PATH_FMT = Config.IGESA_URL
-			+ "/gestion/suppression/personne/application/" + Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
+	private static final String SUGOI_ADD_USER_PATH_FMT = Config.SUGOI_URL+ "/v2/realms/"+ Config.SUGOI_REALM+"/applications/"+Config.SUGOI_APP+"/groups/{1}/members/{0}";
+	private static final String SUGOI_DELETE_USER_PATH_FMT = Config.SUGOI_URL+ "/v2/realms/"+ Config.SUGOI_REALM+"/applications/"+Config.SUGOI_APP+"/groups/{1}/members/{0}";
+			
+	//private static final String IGESA_ADD_USER_PATH_FMT = Config.IGESA_URL + "/gestion/ajout/personne/application/"
+		//	+ Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
+	//private static final String IGESA_DELETE_USER_PATH_FMT = Config.IGESA_URL
+		//	+ "/gestion/suppression/personne/application/" + Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
 
 	private static final String ROLE_ID_XPATH = "cn";
 	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
@@ -179,31 +184,38 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	}
 
 	@Override
-	public void setAddRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
-		Igesa.post(url);
-	}
-
-	@Override
-	public void setDeleteRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
-		Igesa.post(url);
-	}
-
-	@Override
-	public String checkLdapConnexion() throws RmesException {
-		//IGESA
-		String xmlResponse ="";
+	public void setAddRole(String role, String user) throws AuthenticationException, ClientProtocolException, IOException{
+		String url = MessageFormat.format(SUGOI_ADD_USER_PATH_FMT, user, role);
 		try {
-			Client client = ClientBuilder.newClient();
-
-			xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
-					.request(MediaType.APPLICATION_XML).get(String.class);
-		} catch (Exception e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target IGESA");
+			Sugoi.put(url);
+		} catch (AuthenticationException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return StringUtils.isEmpty(xmlResponse)? "KO" :  "OK";
 	}
+
+	@Override
+	public void setDeleteRole(String role, String user) throws AuthenticationException, ClientProtocolException, IOException {
+		String url = MessageFormat.format(SUGOI_DELETE_USER_PATH_FMT, user, role);
+		try {
+			Sugoi.delete(url);
+		} catch (AuthenticationException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	
+	  @Override public String checkLdapConnexion() throws RmesException { //IGESA
+	  String xmlResponse =""; try { Client client = ClientBuilder.newClient();
+	  
+	  xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH +
+	  Config.IGESA_APP_ID) .request(MediaType.APPLICATION_XML).get(String.class); }
+	  catch (Exception e) { throw new
+	  RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),
+	  "Fail to target IGESA"); } return StringUtils.isEmpty(xmlResponse)? "KO" :
+	  "OK"; }
+	 
 	
 	@Override
 	public String checkSugoiConnexion() throws RmesException {

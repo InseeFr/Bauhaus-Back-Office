@@ -1,5 +1,7 @@
 package fr.insee.rmes.webservice;
 
+import java.io.IOException;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -15,6 +17,8 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.config.auth.user.User;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +103,7 @@ public class UserResources {
 	@Path("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setAddRole", summary = "Add role")
-	public Response setAddRole(@PathParam("role") String role, @PathParam("user") String user) {
+	public Response setAddRole(@PathParam("role") String role, @PathParam("user") String user) throws AuthenticationException, ClientProtocolException, IOException {
 		userRolesManagerService.setAddRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -109,7 +113,7 @@ public class UserResources {
 	@Path("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
-	public Response setDeleteRole(@PathParam("role") String role, @PathParam("user") String user) {
+	public Response setDeleteRole(@PathParam("role") String role, @PathParam("user") String user) throws AuthenticationException, ClientProtocolException, IOException {
 		userRolesManagerService.setDeleteRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
