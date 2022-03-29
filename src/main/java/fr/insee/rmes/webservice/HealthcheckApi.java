@@ -36,7 +36,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping("healthcheck")
 public class HealthcheckApi  extends GenericResources {
 	
-	private static final String CONNEXION_LDAP = "- Connexion LDAP";
+	private static final String CONNEXION_LDAP = "- Connexion LDAP - Sugoi";
 
 	private static final String OK_STATE = ": OK \n";
 
@@ -78,14 +78,14 @@ public class HealthcheckApi  extends GenericResources {
     	try {
 			String result = userService.checkSugoiConnexion();
 	    	if ("OK".equals(result)) {
-	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(OK_STATE);
+	    		stateResult.add(CONNEXION_LDAP).add(OK_STATE);
 	    	}else {
 				errorMessage.add("- Sugoi No functional error but return an empty string \n");
-	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(KO_STATE);
+	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
 	    	}
 		} catch (RmesException e) {
 			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult.add(CONNEXION_LDAP+" - Sugoi").add(KO_STATE);
+			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
 		}
 
     	

@@ -46,7 +46,7 @@ import fr.insee.rmes.utils.FilesUtils;
 public class RmesMailSenderImpl implements MailSenderContract {
 	
 	@Autowired
-	static Config config;
+	Config config;
 	
 	@Autowired
 	ConceptsExportBuilder conceptsExport;

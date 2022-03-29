@@ -46,7 +46,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	LdapConnexion ldapConnexion;
 	
 	@Autowired
-	static Config config;
+	Config config;
 
 	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 

@@ -13,7 +13,6 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
@@ -26,14 +25,8 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 @Service
 public class RdfUtils {
 	
-	public RdfUtils() {
-		super();
-		// Spring constructor
-	}
+	private static Config config;
 
-	@Autowired
-	static Config config;
-	
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
@@ -272,6 +265,10 @@ public class RdfUtils {
 
 	public static IRI createXSDIRI(String suffix){
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
+	}
+
+	public static void setConfig(Config config) {
+		RdfUtils.config = config;
 	}
 	
 

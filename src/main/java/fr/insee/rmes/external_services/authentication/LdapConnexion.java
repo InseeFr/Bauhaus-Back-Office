@@ -19,7 +19,7 @@ import fr.insee.rmes.exceptions.RmesException;
 public class LdapConnexion {
 	
 	@Autowired
-	static Config config;
+	Config config;
 	
 	static final Logger logger = LogManager.getLogger(LdapConnexion.class);
 	

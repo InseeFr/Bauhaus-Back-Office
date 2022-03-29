@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import fr.insee.rmes.config.Config;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
@@ -17,6 +19,12 @@ import io.swagger.v3.oas.models.servers.Server;
 @ApplicationPath("/")
 @DependsOn("AppContext")
 @Configuration
+@SecurityScheme(//add Authorize button in swagger
+	    name = "bearerAuth",
+	    type = SecuritySchemeType.HTTP,
+	    bearerFormat = "JWT",
+	    scheme = "bearer"
+	)
 public class OpenApiConfiguration   {
 
 	private static final  Logger logger = LogManager.getLogger(OpenApiConfiguration.class);

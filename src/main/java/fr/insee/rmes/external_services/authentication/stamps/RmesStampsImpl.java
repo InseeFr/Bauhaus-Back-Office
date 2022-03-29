@@ -32,7 +32,7 @@ public class RmesStampsImpl implements StampsService {
 	LdapConnexion ldapConnexion;
 	
 	@Autowired
-	static Config config;
+	Config config;
 	
 	@Override
 	public String getStamps() throws RmesException {

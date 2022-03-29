@@ -19,8 +19,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -61,7 +59,6 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 				.and()
 				.oauth2ResourceServer()
 				.jwt();
-				//.jwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne");
 		if (config.isRequiresSsl())
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		
@@ -91,14 +88,4 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 		return source;
 	}
 	
-	 @Bean
-	    public NimbusJwtDecoder nimbusJwtDecoder(){
-	        RestTemplate rest = new RestTemplate();
-	        rest.getInterceptors().add((request, body, execution) -> 
-	            execution.execute(request, body)
-	        );
-	        return NimbusJwtDecoder.withJwkSetUri("https://auth.insee.test/auth/realms/agents-insee-interne")
-	                .restOperations(rest).build();
-	    }
-
 }

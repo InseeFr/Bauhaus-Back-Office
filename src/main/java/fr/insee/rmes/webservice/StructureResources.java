@@ -56,7 +56,7 @@ public class StructureResources  extends GenericResources {
     @Autowired
     StructureComponent structureComponentService;
 
-
+    @GetMapping
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getStructures", summary = "List of Structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})

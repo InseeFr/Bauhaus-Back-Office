@@ -101,7 +101,7 @@ public class CodeListsResources extends GenericResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@GetMapping(value="/codeslists", produces=MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(produces=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getAllCodesLists", summary = "List of codes",
 			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
 	public ResponseEntity<Object> getallCodesLists() {

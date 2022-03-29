@@ -24,6 +24,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.UserProvider;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
@@ -41,7 +42,10 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	private User fakeUser;
 	
 	@Autowired
-	static Config config;
+	Config config;
+	
+	@Autowired
+	private UserProvider userProvider;
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -80,7 +84,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public User getUser() {
 		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") ||  config.getEnv().equals("PROD")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-			User currentUser = (User) authentication.getPrincipal();
+			User currentUser = userProvider.getUser(authentication);
 			logger.info("Current user has stamp {}", currentUser.getStamp());
 			return currentUser;
 		}
