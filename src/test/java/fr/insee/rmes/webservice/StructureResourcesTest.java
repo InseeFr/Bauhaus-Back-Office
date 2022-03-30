@@ -31,6 +31,6 @@ class StructureResourcesTest {
     void shouldReturn500IfRmesException() throws RmesException {
         when(structureService.getStructuresForSearch()).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
         ResponseEntity<?> response = structureResources.getStructuresForSearch();
-        Assertions.assertEquals(500, response.getStatusCode());
+        Assertions.assertEquals(500, response.getStatusCode().value());
     }
 }

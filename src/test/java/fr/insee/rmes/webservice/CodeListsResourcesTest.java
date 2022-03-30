@@ -18,7 +18,9 @@ import org.springframework.http.ResponseEntity;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 
 
 class CodeListsResourcesTest {
@@ -39,7 +41,9 @@ class CodeListsResourcesTest {
 
     @BeforeEach
     public void init() {
+    	Config config = new Config();
     	codeListService = Mockito.spy(new CodeListServiceImpl());
+    	CodeListQueries.setConfig(config);
         MockitoAnnotations.openMocks(this);
     }
 
