@@ -96,7 +96,7 @@ public class ConsultationGestion extends GenericResources  {
     public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
         try {
-            jsonResultat = consultationGestionService.getComponent(id);
+            jsonResultat = consultationGestionService.getComponent(id).toString();
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

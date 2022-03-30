@@ -202,11 +202,12 @@ public class StructureComponentUtils extends RdfService {
             else if (component.getRange().equals(XSD.DATETIME.stringValue())) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
             }
-            else if (component.getRange().equals(XSD.INT.stringValue()) || component.getRange().equals(XSD.DOUBLE.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinLength(), config.getLg1(), model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxLength(), config.getLg1(), model, graph);
+            else if (component.getRange().equals(XSD.INTEGER.stringValue()) || component.getRange().equals(XSD.DOUBLE.stringValue())) {
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinInclusive(), config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxInclusive(), config.LG1, model, graph);
+
             }
             else if (component.getRange().equals(XSD.STRING.stringValue())) {
                 RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
