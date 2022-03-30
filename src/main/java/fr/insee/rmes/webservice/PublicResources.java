@@ -151,7 +151,7 @@ public class PublicResources extends GenericResources  {
 	public ResponseEntity<Object>  getAgents() {
 		String entity = null;
 		try {
-			entity = userRolesManagerService.getAgents();
+			entity = userRolesManagerService.getAgentsSugoi();
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}

@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -100,7 +102,11 @@ public class UserResources  extends GenericResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setAddRole", summary = "Add role")
 	public ResponseEntity<Object> setAddRole(@PathVariable("role") String role, @PathVariable("user") String user) {
-		userRolesManagerService.setAddRole(role, user);
+		try {
+			userRolesManagerService.setAddRole(role, user);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+		}		
 		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
 	}
 
@@ -109,7 +115,11 @@ public class UserResources  extends GenericResources {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
 	public ResponseEntity<Object> setDeleteRole(@PathVariable("role") String role, @PathVariable("user") String user) {
-		userRolesManagerService.setDeleteRole(role, user);
+		try {
+			userRolesManagerService.setDeleteRole(role, user);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+		}	
 		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
 	}
 }
