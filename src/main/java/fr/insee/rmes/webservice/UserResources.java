@@ -10,10 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import fr.insee.rmes.config.auth.user.User;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,13 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -99,7 +100,7 @@ public class UserResources {
 	@Path("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setAddRole", summary = "Add role")
-	public Response setAddRole(@PathParam("role") String role, @PathParam("user") String user) {
+	public Response setAddRole(@PathParam("role") String role, @PathParam("user") String user) throws  RmesException {
 		userRolesManagerService.setAddRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
@@ -109,7 +110,7 @@ public class UserResources {
 	@Path("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
-	public Response setDeleteRole(@PathParam("role") String role, @PathParam("user") String user) {
+	public Response setDeleteRole(@PathParam("role") String role, @PathParam("user") String user) throws  RmesException {
 		userRolesManagerService.setDeleteRole(role, user);
 		return Response.status(Status.NO_CONTENT).build();
 	}
