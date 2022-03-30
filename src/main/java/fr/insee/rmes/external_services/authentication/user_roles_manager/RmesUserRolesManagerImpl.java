@@ -1,5 +1,6 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -47,10 +48,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
-	private static final String SUGOI_SEARCH_APP = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
-	private static final String SUGOI_SEARCH_USERS = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + "/users" ;
 
-	private static final String SUGOI_ADD_OR_DELETE_USER_PATH_FMT = Config.SUGOI_URL+ "/v2/realms/"+ Config.SUGOI_REALM+SUGOI_APP_SEARCH_PATH+Config.SUGOI_APP+"/groups/{1}/members/{0}";
 			
 	private Map<String,UserSugoi> mapUsers;
 	
@@ -131,14 +129,18 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Override
 	public void setAddRole(String role, String user) throws  RmesException{
-		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+		String url = MessageFormat.format(getUserPath(), user, role);
 		Sugoi.put(url);
 	}
 
 	@Override
 	public void setDeleteRole(String role, String user) throws  RmesException {
-		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+		String url = MessageFormat.format(getUserPath(), user, role);
 			Sugoi.delete(url);
+	}
+	
+	private String getUserPath() {
+		return config.getSugoiUrl() + "/v2"+ SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH+ config.getSugoiApp()+"/groups/{1}/members/{0}";
 	}
 
 	

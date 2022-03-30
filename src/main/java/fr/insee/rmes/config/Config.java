@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 @Configuration
@@ -254,6 +255,7 @@ public class Config {
 	private void init() {
 		GenericQueries.setConfig(this);
 		RdfUtils.setConfig(this);
+		Sugoi.setConfig(this);
 	}
 
 	/******************************************************/
