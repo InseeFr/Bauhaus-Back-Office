@@ -17,11 +17,13 @@ import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 @RestController
 @RequestMapping("/consultation-gestion")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Consultation Gestion", description = "Consultation Gestion API")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),

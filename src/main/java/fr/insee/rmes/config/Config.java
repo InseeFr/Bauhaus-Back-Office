@@ -28,7 +28,7 @@ public class Config {
 	private String env;
 
 	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
-	private final boolean REQUIRES_SSL = false;
+	private boolean requiresSsl = false;
 
 	@Value("${fr.insee.rmes.bauhaus.lg1}")
 	private String lg1;
@@ -271,7 +271,7 @@ public class Config {
 	}
 
 	public boolean isRequiresSsl() {
-		return REQUIRES_SSL;
+		return requiresSsl;
 	}
 
 	public String getLg1() {
@@ -535,7 +535,7 @@ public class Config {
 	}
 
 	public String getSwaggerUrl() {
-		return (REQUIRES_SSL ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
+		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
 }

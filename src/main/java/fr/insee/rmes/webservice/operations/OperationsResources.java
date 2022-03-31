@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,12 +34,13 @@ import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 
 @Qualifier("Operation")
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 public class OperationsResources extends OperationsCommonResources {
 
@@ -81,11 +83,13 @@ public class OperationsResources extends OperationsCommonResources {
 			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" } ,
 			produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
-	public ResponseEntity<Object> getCodeBook( @HeaderParam("Accept") String acceptHeader, 
+	public ResponseEntity<Object> getCodeBook( 
+			@HeaderParam("Accept") String acceptHeader, 
 			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
-	@FormDataParam("file") InputStream isDDI,
-	@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
-	@FormDataParam(value = "dicoVar") InputStream isCodeBook) throws IOException, RmesException {
+			@FormDataParam("file") InputStream isDDI,
+			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
+			@FormDataParam(value = "dicoVar") InputStream isCodeBook) 
+				throws IOException, RmesException {
 		String ddi = IOUtils.toString(isDDI, StandardCharsets.UTF_8); 
 		File codeBookFile = FilesUtils.streamToFile(isCodeBook, "dicoVar",".odt");
 		ResponseEntity<Object> response;
