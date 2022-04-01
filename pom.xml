@@ -42,7 +42,7 @@
 		<jackson.version>2.13.1</jackson.version>
 		<rdf4j.version>3.7.3</rdf4j.version>
 		<swagger.core.version>2.1.12</swagger.core.version>
-		<spring.version>5.3.14</spring.version>
+		<spring.version>5.3.18</spring.version>
 		<spring.security.version>5.6.1</spring.security.version>
 		<log4j2.version>2.17.1</log4j2.version>
 		<xdocreport.version>2.0.3</xdocreport.version>
