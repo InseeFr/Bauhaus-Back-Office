@@ -73,18 +73,6 @@ public class HealthcheckApi {
     	
     	//Test LDAP connexion
     	stateResult = stateResult.add("LDAP connexion \n");
-    	try {
-			String result = userService.checkLdapConnexion();
-	    	if ("OK".equals(result)) {
-	    		stateResult.add(CONNEXION_LDAP).add(OK_STATE);
-	    	}else {
-				errorMessage.add("- No functional error but return an empty string \n");
-	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
-	    	}
-		} catch (RmesException e) {
-			errorMessage.add("- "+e.getMessage()+ " \n");
-			stateResult.add(CONNEXION_LDAP).add(KO_STATE);
-		}
     	
     	try {
 			String result = userService.checkSugoiConnexion();

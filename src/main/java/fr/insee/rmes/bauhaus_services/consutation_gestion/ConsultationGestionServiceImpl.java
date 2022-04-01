@@ -14,8 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
@@ -198,7 +196,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
     }
 
     @Override
-    public String getComponent(String id) throws RmesException {
+    public JSONObject getComponent(String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
         params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
@@ -289,7 +287,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
             component.put("format", format);
         }
-        return component.toString();
+        return component;
     }
 
     private void addCloseMatch(JSONObject concept) throws RmesException {
@@ -315,12 +313,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
         params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
-        params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
-        params.put("CODELIST_GRAPH", Config.CODELIST_GRAPH);
-
         params.put("STRUCTURE_ID", id);
-        params.put("LG1", Config.LG1);
-        params.put("LG2", Config.LG2);
 
         JSONArray components = repoGestion.getResponseAsArray(buildRequest("getStructureComponents.ftlh", params));
 
@@ -329,45 +322,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         JSONArray attributes = new JSONArray();
 
         for (int i = 0; i < components.length(); i++) {
-            JSONObject component = components.getJSONObject(i);
-            component.put("label", this.formatLabel(component));
-            component.remove("prefLabelLg1");
-            component.remove("prefLabelLg2");
-
-            if(component.has("attachement")){
-                component.put("attachement", component.getString("attachement").replace(QB.NAMESPACE, ""));
-            }
-            if(component.has("obligatoire")){
-                component.put("obligatoire", component.getString("obligatoire").equalsIgnoreCase("true") ? "oui": "non");
-            }
-            if(component.has("listeCodeUri")){
-                component.put("representation", "liste de code");
-
-                JSONArray codes = getCodes(component.getString("listeCodeNotation"));
-                JSONObject listCode = new JSONObject();
-                listCode.put("uri", component.getString("listeCodeUri"));
-                listCode.put("id", component.getString("listeCodeNotation"));
-                listCode.put("codes", codes);
-                component.put("listeCode", listCode);
-                component.remove("listeCodeUri");
-                component.remove("listeCodeNotation");
-            }
-
-            if(component.has("conceptUri")){
-
-                JSONObject concept = new JSONObject();
-                concept.put("uri", component.getString("conceptUri"));
-                concept.put("id", component.getString("conceptId"));
-                component.put("concept", concept);
-                component.remove("conceptUri");
-                component.remove("conceptId");
-            }
-
-            if(component.has("representation")){
-                component.put("representation", component.getString("representation").replace(IGEO.NAMESPACE, "").replace("http://www.w3.org/2001/XMLSchema#", ""));
-            }
-
-            String idComponent = component.getString("id");
+            String idComponent = components.getJSONObject(i).getString("id");
+            JSONObject component = getComponent(idComponent);
 
             if(idComponent.startsWith("a")){
                 attributes.put(component);

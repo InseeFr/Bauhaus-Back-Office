@@ -155,10 +155,10 @@ public class PublicResources {
 	@Path("/agents")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getAgents() {
+	public Response getAgentsSugoi() {
 		String entity = null;
 		try {
-			entity = userRolesManagerService.getAgents();
+			entity = userRolesManagerService.getAgentsSugoi();
 		} catch (RmesException e) {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
 		}

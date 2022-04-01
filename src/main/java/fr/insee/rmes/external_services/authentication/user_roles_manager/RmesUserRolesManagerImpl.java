@@ -5,11 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -46,23 +41,15 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Autowired
 	LdapConnexion ldapConnexion;
 
-	static final Logger logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
+	static final Logger  logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
-	private static final String IGESA_APP_SEARCH_PATH = "/recherche/application/";
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
 	private static final String SUGOI_SEARCH_APP = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
 	private static final String SUGOI_SEARCH_USERS = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + "/users" ;
 
-
-	private static final String IGESA_ADD_USER_PATH_FMT = Config.IGESA_URL + "/gestion/ajout/personne/application/"
-			+ Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
-	private static final String IGESA_DELETE_USER_PATH_FMT = Config.IGESA_URL
-			+ "/gestion/suppression/personne/application/" + Config.IGESA_APP_ID + "/groupe/{1}/utilisateur/{0}";
-
-	private static final String ROLE_ID_XPATH = "cn";
-	private static final String ROLE_PERSON_IDEP_XPATH = "uid";
-	
+	private static final String SUGOI_ADD_OR_DELETE_USER_PATH_FMT = Config.SUGOI_URL+ "/v2/realms/"+ Config.SUGOI_REALM+SUGOI_APP_SEARCH_PATH+Config.SUGOI_APP+"/groups/{1}/members/{0}";
+			
 	private Map<String,UserSugoi> mapUsers;
 	
 	@Override
@@ -114,53 +101,28 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		return roles.toString();
 	}
 
-	@Override
-	public String getAgents() throws RmesException {
-		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-		logger.info("Connection to LDAP : {}", Config.LDAP_URL);
-		try {
-			// Connexion à la racine de l'annuaire
-			DirContext context = ldapConnexion.getLdapContext();
-
-			// Spécification des critères pour la recherche des unités
-			SearchControls controls = new SearchControls();
-			controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			controls.setReturningAttributes(new String[] { ROLE_ID_XPATH,ROLE_PERSON_IDEP_XPATH });
-			String filter = "(&(objectClass=inseePerson)(!(inseeFonction=Enqueteur de l'INSEE*)))";
-
-			// Exécution de la recherche et parcours des résultats
-			NamingEnumeration<SearchResult> results = context.search("o=insee,c=fr", filter, controls);
-			while (results.hasMore()) {
-				SearchResult entree = results.next();
-				JSONObject jsonO = new JSONObject();
-				jsonO.put(Constants.LABEL, entree.getAttributes().get(ROLE_ID_XPATH).get().toString());
-				jsonO.put(Constants.ID, entree.getAttributes().get(ROLE_PERSON_IDEP_XPATH).get().toString());
-				agents.add(jsonO);
-			}
-			context.close();
-			logger.info("Get agents succeed");
-		} catch (NamingException e) {
-			logger.error("Get agents failed : {}", e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents failed");
-		}
-		return agents.toString();
-	}
+	
 	
 	
 	public String getAgentsSugoi() throws RmesException {
+		logger.info("get list of agents via Sugoi : {}", SUGOI_SEARCH_USERS);
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
+		
+		
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
-
+		
 		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
 		String jsonResponse = client.target(SUGOI_SEARCH_USERS)
 									.queryParam("size", NB_USERS_EXPECTED)
 									.request(MediaType.APPLICATION_JSON)
 									.get(String.class);
+		logger.info("list of agents in json size {}", jsonResponse.length());
 
 		ObjectMapper mapper = new ObjectMapper();
 		UsersSugoi users;
 		try {
 			users = mapper.readValue(jsonResponse, UsersSugoi.class);
+			
 			for (UserSugoi u : users.getResults()) {
 				JSONObject jsonUser = new JSONObject();
 				jsonUser.put(Constants.ID, u.getUsername());
@@ -171,6 +133,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 				agents.add(jsonUser);
 				mapUsers.put(u.getUsername().toLowerCase(), u);
 			}
+			logger.info("nb agents : {}", agents.size());
 		} catch (JsonProcessingException e) {
 			logger.error("Get agents via Sugoi failed : {}", e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents via Sugoi failed");
@@ -179,31 +142,17 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	}
 
 	@Override
-	public void setAddRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_ADD_USER_PATH_FMT, user, role);
-		Igesa.post(url);
+	public void setAddRole(String role, String user) throws  RmesException{
+		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+		Sugoi.put(url);
 	}
 
 	@Override
-	public void setDeleteRole(String role, String user) {
-		String url = MessageFormat.format(IGESA_DELETE_USER_PATH_FMT, user, role);
-		Igesa.post(url);
+	public void setDeleteRole(String role, String user) throws  RmesException {
+		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+			Sugoi.delete(url);
 	}
 
-	@Override
-	public String checkLdapConnexion() throws RmesException {
-		//IGESA
-		String xmlResponse ="";
-		try {
-			Client client = ClientBuilder.newClient();
-
-			xmlResponse = client.target(Config.IGESA_URL + IGESA_APP_SEARCH_PATH + Config.IGESA_APP_ID)
-					.request(MediaType.APPLICATION_XML).get(String.class);
-		} catch (Exception e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target IGESA");
-		}
-		return StringUtils.isEmpty(xmlResponse)? "KO" :  "OK";
-	}
 	
 	@Override
 	public String checkSugoiConnexion() throws RmesException {

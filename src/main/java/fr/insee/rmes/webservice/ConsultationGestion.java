@@ -101,7 +101,7 @@ public class ConsultationGestion {
     public Response getComponentById(@PathParam(Constants.ID) String id) {
         String jsonResultat;
         try {
-            jsonResultat = consultationGestionService.getComponent(id);
+            jsonResultat = consultationGestionService.getComponent(id).toString();
         } catch (RmesException e) {
             return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
         }
