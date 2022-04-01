@@ -105,6 +105,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	
 	
 	public String getAgentsSugoi() throws RmesException {
+		logger.info("get list of agents via Sugoi : {}", SUGOI_SEARCH_USERS);
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
 		
 		
@@ -115,7 +116,8 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 									.queryParam("size", NB_USERS_EXPECTED)
 									.request(MediaType.APPLICATION_JSON)
 									.get(String.class);
-		
+		logger.info("list of agents in json size {}", jsonResponse.length());
+
 		ObjectMapper mapper = new ObjectMapper();
 		UsersSugoi users;
 		try {
@@ -131,6 +133,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 				agents.add(jsonUser);
 				mapUsers.put(u.getUsername().toLowerCase(), u);
 			}
+			logger.info("nb agents : {}", agents.size());
 		} catch (JsonProcessingException e) {
 			logger.error("Get agents via Sugoi failed : {}", e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents via Sugoi failed");
