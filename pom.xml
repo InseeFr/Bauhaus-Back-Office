@@ -13,7 +13,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-	<version>3.0.17</version>
+	<version>3.0.18</version>
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -54,8 +54,8 @@
 		<springdoc-openapi-ui.version>1.6.6</springdoc-openapi-ui.version>
 		<jackson.version>2.13.1</jackson.version>
 		<rdf4j.version>3.7.3</rdf4j.version>
-		<swagger.version>2.1.12</swagger.version>
-		<spring.version>5.3.14</spring.version>
+		<swagger.core.version>2.1.12</swagger.core.version>
+		<spring.version>5.3.18</spring.version>
 		<spring.security.version>5.6.1</spring.security.version>
 		<log4j2.version>2.17.1</log4j2.version>
 		<xdocreport.version>2.0.3</xdocreport.version>
