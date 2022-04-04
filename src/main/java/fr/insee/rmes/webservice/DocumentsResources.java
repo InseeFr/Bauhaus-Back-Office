@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,7 +125,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Create a new document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	@PostMapping(value = "/document", 
 	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
@@ -153,8 +154,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Update informations about a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PutMapping("/document/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/document/{id}")
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public ResponseEntity<Object> setDocument(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
@@ -173,8 +175,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Change the file of a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@Operation(operationId = "changeDocument", summary = "Change document file" )
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@Operation(operationId = "changeDocument", summary = "Change document file" )
 	@PutMapping(value = "/document/{id}/file", 
 	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
 			MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -199,8 +202,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Delete a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@DeleteMapping("/document/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
 	public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) {
 		HttpStatus status = null;
@@ -238,8 +242,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Create a new link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PostMapping(value = "/link", 
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PostMapping(value = "/link", 
 		consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
 				MediaType.APPLICATION_OCTET_STREAM_VALUE,
 				"application/vnd.oasis.opendocument.text",
@@ -261,8 +266,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Update informations about a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PutMapping("/link/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/link/{id}")
 	@Operation(operationId = "setLinkById", summary = "Update link")
 	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
@@ -279,8 +285,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Delete a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@DeleteMapping("/link/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/link/{id}")
 	@Operation(operationId = "deleteLink", summary = "Delete a link")
 	public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) {
 		HttpStatus status = null;

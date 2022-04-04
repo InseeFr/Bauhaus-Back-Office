@@ -2,7 +2,9 @@ package fr.insee.rmes.config.auth.security;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.ws.rs.HttpMethod;
@@ -12,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -71,7 +75,24 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	public UserProvider getUserProvider() {
 		return auth -> {
 			final Jwt jwt = (Jwt) auth.getPrincipal();
-			return new User(jwt.getClaimAsStringList(config.getRoleclaim()), jwt.getClaimAsString(config.getStampclaim()));
+			Map<String,Object> claims = jwt.getClaims();
+			logger.debug(claims.get(config.getRoleclaim()).toString());
+			JsonParser parser = JsonParserFactory.getJsonParser();
+			Map<String, Object> listeRoles = parser.parseMap(claims.get(config.getRoleclaim()).toString());
+			List<String> roles = Arrays.asList(
+								listeRoles.get("roles").toString()
+									.substring(1,listeRoles.get("roles").toString().length() - 1) //remove []
+									.replace(" ", "") //remove all spaces
+									.split(",")
+							);
+		
+//TODO	change way to have roles 	 
+//			List<String> roles2 =
+//			 auth.getAuthorities().stream()
+//             .map(GrantedAuthority::getAuthority)
+//             .map(String::toUpperCase)
+//             .collect(Collectors.toList());
+			return new User(roles, jwt.getClaimAsString(config.getStampclaim()));
 		};
 	}
 

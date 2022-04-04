@@ -41,8 +41,6 @@ public class User {
 	public Collection<GrantedAuthority> getAuthorities() {
         return authorities;
     }
-    public void setAuthorities(Collection<GrantedAuthority> authorities) {
-        this.authorities = authorities;
-    }
+
 	
 }

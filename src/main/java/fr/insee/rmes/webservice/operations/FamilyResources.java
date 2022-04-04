@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
@@ -82,7 +81,7 @@ public class FamilyResources extends OperationsCommonResources {
 	 * @return response
 	 */
 
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PutMapping("/family/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update family" )
 	public ResponseEntity<Object> setFamilyById(
@@ -102,7 +101,7 @@ public class FamilyResources extends OperationsCommonResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PostMapping("/family")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
 	public ResponseEntity<Object> createFamily(
@@ -117,7 +116,7 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PutMapping("/family/validate/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Family validation")
 	public ResponseEntity<Object> setFamilyValidation(

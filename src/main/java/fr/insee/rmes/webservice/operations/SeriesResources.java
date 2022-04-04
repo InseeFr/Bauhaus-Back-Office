@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.exceptions.RmesException;
@@ -115,7 +114,9 @@ public class SeriesResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() "
+			+ "|| @AuthorizeMethodDecider.isCnis()")
 	@PutMapping("/series/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
@@ -163,7 +164,7 @@ public class SeriesResources extends OperationsCommonResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
 	@PostMapping("/series")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
@@ -184,7 +185,8 @@ public class SeriesResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@PutMapping("/series/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")

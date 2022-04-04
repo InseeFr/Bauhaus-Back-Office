@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
@@ -107,7 +106,9 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_CNIS })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() "
+			+ "|| @AuthorizeMethodDecider.isCnis()")
 	@PutMapping(value="/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public ResponseEntity<Object> setOperationById(
@@ -127,7 +128,8 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@PostMapping(value="/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public ResponseEntity<Object> createOperation(
@@ -147,7 +149,8 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@PutMapping(value="/operation/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public ResponseEntity<Object> setOperationValidation(

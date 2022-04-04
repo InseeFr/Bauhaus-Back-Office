@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -195,7 +194,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() || @AuthorizeMethodDecider.isIndicatorContributor() || @AuthorizeMethodDecider.isSeriesContributor()")
 	@PostMapping("/metadataReport")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
@@ -220,7 +219,10 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR, Roles.SPRING_CNIS })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() "
+			+ "|| @AuthorizeMethodDecider.isCnis()")
 	@PutMapping("/metadataReport/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
@@ -241,7 +243,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param id
 	 * @return
 	 */
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
 	@DeleteMapping("/metadataReport/delete/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
@@ -263,7 +265,9 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */	
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@PutMapping("/metadataReport/validate/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")

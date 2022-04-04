@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.User;
@@ -97,7 +96,7 @@ public class UserResources  extends GenericResources {
 	}
 	
 	
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PostMapping("/private/add/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setAddRole", summary = "Add role")
@@ -110,7 +109,7 @@ public class UserResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
 	}
 
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PostMapping("/private/delete/role/{role}/user/{user}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")

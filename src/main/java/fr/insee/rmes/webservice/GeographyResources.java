@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.geography.GeoFeature;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,7 +81,7 @@ public class GeographyResources  extends GenericResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
 	@PostMapping("/territory")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
@@ -98,7 +97,7 @@ public class GeographyResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.SC_OK).body(id);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
 	@PutMapping("/territory/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "updateGeography", summary = "Update geography ")

@@ -1,13 +1,10 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.Arrays;
 
 import javax.ws.rs.core.MediaType;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -17,6 +14,7 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -41,17 +39,19 @@ public class Sugoi {
 			httpMethod.setHeader("Accept", MediaType.APPLICATION_JSON);
 			httpMethod.setHeader("Content-type", MediaType.APPLICATION_JSON);
 			httpMethod.addHeader(new BasicScheme().authenticate(creds, httpMethod, null));
-			logger.debug("Sugoi method with creds : {}", httpMethod);
+			logger.debug("Sugoi method with creds : {}", Arrays.toString(httpMethod.getAllHeaders()));
 			/* Creation client http */
 			HttpClient httpclient = HttpClientBuilder.create().build();
 			logger.debug("Sugoi httpClient : {}", httpclient);
 			/* getResponse */
 			HttpResponse response = httpclient.execute(httpMethod);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			readBuffer(reader);
+			int status = response.getStatusLine().getStatusCode();
+			if (status <200 || status>299) {
+				throw new RmesException(status, "Error editing data with Sugoi", "Sugoi error");
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(),e.getClass().getName());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(),e.getClass().getName());
 			
 		}
 	}
@@ -66,22 +66,6 @@ public class Sugoi {
 		logger.info("Sugoi, delete : {}", url);
 		HttpDelete httpDelete = new HttpDelete(url);
 		execute(httpDelete);
-	}
-
-	private static String readBuffer(BufferedReader reader) {
-		StringBuilder builder = new StringBuilder();
-		String aux = "";
-
-		try {
-			while ((aux = reader.readLine()) != null) {
-				builder.append(aux);
-			}
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		String result = builder.toString();
-		logger.info(result);
-		return result;
 	}
 	
 	public static void setConfig(Config config) {

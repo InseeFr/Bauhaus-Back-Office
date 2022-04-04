@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.CollectionById;
@@ -98,7 +97,9 @@ public class ConceptsResources  extends GenericResources   {
 	}
 	
 	
-	//@Secured({ Constants.SPRING_ADMIN, Constants.SPRING_CONCEPTS_CONTRIBUTOR, Constants.SPRING_COLLECTIONS_CREATOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isCollectionCreator() "
+			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) {
@@ -240,7 +241,8 @@ public class ConceptsResources  extends GenericResources   {
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
 	@PostMapping("/concept")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
@@ -255,7 +257,8 @@ public class ConceptsResources  extends GenericResources   {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
 	@PutMapping("/concept/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
@@ -271,8 +274,8 @@ public class ConceptsResources  extends GenericResources   {
 		return ResponseEntity.noContent().build();
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPT_CREATOR })
-	@PutMapping("/validate")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptCreator() ")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
@@ -292,7 +295,9 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.exportConcept(id, acceptHeader);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_CONCEPT_CREATOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
+			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
 	@PostMapping("/concept/send/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Produces(MediaType.TEXT_PLAIN_VALUE)
@@ -311,7 +316,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
 	@PostMapping("/collection")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
@@ -325,7 +331,9 @@ public class ConceptsResources  extends GenericResources   {
 		return ResponseEntity.noContent().build();
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
+			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
 	@PutMapping("/collection/{id}")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
@@ -342,7 +350,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_COLLECTION_CREATOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")	
 	@PutMapping("/collections/validate")
 	@Consumes(MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
@@ -364,7 +373,9 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_CONCEPTS_CONTRIBUTOR, Roles.SPRING_COLLECTION_CREATOR })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
+			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
 	@PostMapping(value="/collection/send/{id}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
 	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
