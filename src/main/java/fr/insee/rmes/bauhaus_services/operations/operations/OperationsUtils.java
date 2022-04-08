@@ -126,11 +126,11 @@ public class OperationsUtils extends RdfService{
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		// Tester que la série n'a pas de Sims
-		if (parentUtils.checkIfSeriesHasSims(idSeries)) {
+		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
+		if (parentUtils.checkIfSeriesHasSims(seriesURI.stringValue())) {
 			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
 					idSeries +" ; "+operation.getPrefLabelLg1());
 		}
-		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
 		// Vérifier droits
 		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");

@@ -1,7 +1,10 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
@@ -17,7 +20,6 @@ import fr.insee.rmes.persistance.ontologies.ORG;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 
-@Component
 public enum ObjectType {
 	CONCEPT{
 		@Override
@@ -158,10 +160,28 @@ public enum ObjectType {
 		public String getBaseUri() {return "";}
 	};
 	
+	private static Config config;
 	
-	@Autowired 
-	static Config config;
+	protected void setConfig(Config configParam) {
+		config = configParam;
+	}
 	
+  
+    @Component
+    public static class ConfigServiceInjector {
+        @Autowired
+        private Config config;
+
+        @PostConstruct
+        public void postConstruct() {
+        	 for (ObjectType objectType : EnumSet.allOf(ObjectType.class))
+             	objectType.setConfig(config);
+        }
+    }
+
+	
+
+
 
 	ObjectType(){
 	}
@@ -197,7 +217,7 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static IRI getUri(String labelType) {
+	public static IRI getUriByLabel(String labelType) {
 		return getEnum(labelType).getUri();
 	}
 	
@@ -206,7 +226,7 @@ public enum ObjectType {
 	 * @param label
 	 * @return
 	 */
-	public static String getBaseUri(String labelType) {
+	public static String getBaseUriByLabel(String labelType) {
 		return getEnum(labelType).getBaseUri();
 	}
 
@@ -235,12 +255,18 @@ public enum ObjectType {
 	 * @return
 	 */
 	public static String getCompleteUriGestion(String labelType, String id) {
-		String baseUri = getBaseUri(labelType);
+		String baseUri = getBaseUriByLabel(labelType);
 		return config.getBaseUriGestion() + baseUri + "/" + id;
 	}
-	
+
+
+
 	public String getBaseUriPublication(){
 		return config.getBaseUriPublication() + this.getBaseUri() ;
+	}
+
+	public String getBaseUriGestion() {
+		return config.getBaseUriGestion() + this.getBaseUri() ;
 	}
 
 }

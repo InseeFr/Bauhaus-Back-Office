@@ -78,7 +78,7 @@ public class RdfUtils {
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
-		return factory.createIRI(objType.getBaseUri() + "/" + id);
+		return factory.createIRI(objType.getBaseUriGestion() + "/" + id);
 	}
 	
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
@@ -142,7 +142,7 @@ public class RdfUtils {
 
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUri() 
+				ObjectType.CONCEPT.getBaseUriGestion() 
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -152,7 +152,7 @@ public class RdfUtils {
 	public static IRI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUri()
+				ObjectType.CONCEPT.getBaseUriGestion()
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
