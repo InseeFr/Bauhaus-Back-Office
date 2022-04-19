@@ -124,10 +124,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 
 			JSONArray seq =  repoGestion.getResponseAsArray(CodeListQueries.getCodesSeq(notation));
-
-			int rootPosition = 1;
+	
 			if(seq.length() > 0){
-				formatCodeListBySeq(parents, formattedCodes, seq, rootPosition);
+				formatCodeListBySeq(parents, formattedCodes, seq);
 			} else {
 				formatCodeListWithoutSeq(parents, formattedCodes);
 			}
@@ -152,8 +151,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		orderRootCodes(formattedCodes);
 	}
 
-	private void formatCodeListBySeq(Map<String, List<String>> parents, JSONObject formattedCodes, JSONArray seq, int rootPosition) {
-		int startPosition = 0;
+	private void formatCodeListBySeq(Map<String, List<String>> parents, JSONObject formattedCodes, JSONArray seq) {
 		for(int i = 0; i < seq.length(); i++){
 			JSONObject codeAndPosition = seq.getJSONObject(i);
 			String code = codeAndPosition.getString(CODE);
@@ -231,7 +229,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return lists.toString();
 	}
 
-	public void validateCodeList(JSONObject codeList, boolean partial){
+	public void validateCodeList(JSONObject codeList, boolean partial) throws RmesUnauthorizedException {
 		if (!codeList.has(Constants.ID)) {
 			throw new BadRequestException("The id of the list should be defined");
 		}
@@ -246,6 +244,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new BadRequestException("The lastListUriSegment of the list should be defined");
+		}
+		if(!codeList.has(CODES) || codeList.getJSONArray(CODES).length() == 0){
+			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
 
