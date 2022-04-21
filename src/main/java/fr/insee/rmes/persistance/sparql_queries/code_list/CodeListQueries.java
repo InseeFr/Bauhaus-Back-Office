@@ -111,6 +111,7 @@ public class CodeListQueries {
 		HashMap<String, Object> params = getInitParams();
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
+		params.put("CODE_LIST_BASE_URI", Config.CODE_LIST_BASE_URI);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
 	}
 
