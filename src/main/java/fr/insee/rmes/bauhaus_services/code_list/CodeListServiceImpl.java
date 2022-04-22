@@ -49,6 +49,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private static final String LAST_LIST_URI_SEGMENT = "lastListUriSegment";
 
+	private static final String LAST_CODE_URI_SEGMENT = "lastCodeUriSegment";
+
 	static final Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
 	
 	@Autowired	
@@ -124,10 +126,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 
 			JSONArray seq =  repoGestion.getResponseAsArray(CodeListQueries.getCodesSeq(notation));
-
-			int rootPosition = 1;
+	
 			if(seq.length() > 0){
-				formatCodeListBySeq(parents, formattedCodes, seq, rootPosition);
+				formatCodeListBySeq(parents, formattedCodes, seq);
 			} else {
 				formatCodeListWithoutSeq(parents, formattedCodes);
 			}
@@ -152,8 +153,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		orderRootCodes(formattedCodes);
 	}
 
-	private void formatCodeListBySeq(Map<String, List<String>> parents, JSONObject formattedCodes, JSONArray seq, int rootPosition) {
-		int startPosition = 0;
+	private void formatCodeListBySeq(Map<String, List<String>> parents, JSONObject formattedCodes, JSONArray seq) {
 		for(int i = 0; i < seq.length(); i++){
 			JSONObject codeAndPosition = seq.getJSONObject(i);
 			String code = codeAndPosition.getString(CODE);
@@ -231,7 +231,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return lists.toString();
 	}
 
-	public void validateCodeList(JSONObject codeList, boolean partial){
+	public void validateCodeList(JSONObject codeList, boolean partial) throws RmesUnauthorizedException {
 		if (!codeList.has(Constants.ID)) {
 			throw new BadRequestException("The id of the list should be defined");
 		}
@@ -246,6 +246,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new BadRequestException("The lastListUriSegment of the list should be defined");
+		}
+		if(!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().size() == 0){
+			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
 
@@ -370,13 +373,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					}
 				});
 			}
-			createCodeTriplet(graph, codesList, codeListIri, model);
+			createCodeTriplet(graph, codesList, codeListIri, model, owlClassUri);
 		}
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return codeListId;
 	}
 
-	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, Model codeListModel) {
+	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, Model codeListModel, IRI uriOwlClass) {
 		if(codesList.has(CODES)){
 			JSONObject parentsModel = new JSONObject();
 
@@ -386,9 +389,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					JSONObject code = codes.getJSONObject(key);
 
 					Model codeModel = new LinkedHashModel();
-					IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.get(CODE));
+					IRI codeIri = RdfUtils.codeListIRI(code.getString(LAST_CODE_URI_SEGMENT) + "/" + code.get(CODE));
 
-					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri);
+					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri, uriOwlClass);
 
 					if (code.has(Constants.PARENTS)) {
 						JSONArray parentsWithPosition = code.getJSONArray(Constants.PARENTS);
@@ -500,11 +503,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		});
 	}
 
-	private void createMainCodeTriplet(Resource graph, IRI codeListIri, JSONObject code, Model codeListModel, IRI codeIri) {
+	private void createMainCodeTriplet(Resource graph, IRI codeListIri, JSONObject code, Model codeListModel, IRI codeIri, IRI uriOwlClass) {
 		RdfUtils.addTripleUri(codeIri, SKOS.IN_SCHEME, codeListIri, codeListModel, graph);
 		if(code.has(CODE)){
 			RdfUtils.addTripleString(codeIri, SKOS.NOTATION, code.getString(CODE), codeListModel, graph);
 		}
+		RdfUtils.addTripleUri(codeIri, RDF.TYPE, SKOS.CONCEPT, codeListModel, graph);
+		RdfUtils.addTripleUri(codeIri, RDF.TYPE, uriOwlClass, codeListModel, graph);
 
 		if(code.has(Constants.LABEL_LG1)){
 			codeListModel.add(codeIri, SKOS.PREF_LABEL, RdfUtils.setLiteralString(code.getString(Constants.LABEL_LG1), Config.LG1), graph);
