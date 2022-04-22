@@ -283,18 +283,23 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
             if (component.has("minLength")) {
                 format.put("longueurMin", component.get("minLength"));
+                component.remove("minLength");
             }
             if (component.has("maxLength")) {
                 format.put("longueurMax", component.get("maxLength"));
+                component.remove("maxLength");
             }
             if (component.has("minInclusive")) {
                 format.put("valeurMin", component.get("minInclusive"));
+                component.remove("minInclusive");
             }
             if (component.has("maxInclusive")) {
                 format.put("valeurMax", component.get("maxInclusive"));
+                component.remove("maxInclusive");
             }
             if (component.has("pattern")) {
                 format.put("expressionReguliere", component.get("pattern"));
+                component.remove("pattern");
             }
             component.put("format", format);
         }
