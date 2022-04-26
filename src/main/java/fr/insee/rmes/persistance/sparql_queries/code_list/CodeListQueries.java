@@ -143,4 +143,10 @@ public class CodeListQueries {
 
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "checkCodeListUnicity.ftlh", params);
 	}
+
+	public static String getPartialCodeListByParentUri(String iri) throws RmesException {
+		HashMap<String, Object> params = getInitParams();
+		params.put("IRI", iri);
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
+	}
 }

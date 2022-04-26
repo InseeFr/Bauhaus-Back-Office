@@ -71,6 +71,19 @@ public class CodeListsResources {
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
 	}
 
+	@DELETE
+	@Path("/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
+	public Response deleteCodeList(@PathParam(Constants.ID) String notation) {
+		try {
+			codeListService.deleteCodeList(notation, false);
+			return Response.status(HttpStatus.SC_OK).build();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+	}
+
 	@POST
 	@Path("/partial")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -97,6 +110,19 @@ public class CodeListsResources {
 			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
 		}
 		return Response.status(HttpStatus.SC_OK).entity(id).build();
+	}
+
+	@DELETE
+	@Path("/partial/{id}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
+	public Response deletePartialCodeList(@PathParam(Constants.ID) String notation) {
+		try {
+			codeListService.deleteCodeList(notation, true);
+			return Response.status(HttpStatus.SC_OK).build();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
 	}
 
 	@GET
