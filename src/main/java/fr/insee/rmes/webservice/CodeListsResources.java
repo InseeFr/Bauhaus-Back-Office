@@ -230,6 +230,19 @@ public class CodeListsResources {
 	}
 
 
+	@GET
+	@Path("/partials/{parentCode}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
+	public Response getPartialsByParent(@PathParam("parentCode") String parentIri) {
+		try {
+			String codesLists = codeListService.getPartialCodeListByParent(parentIri);
+			return Response.status(HttpStatus.SC_OK).entity(codesLists).build();
+		} catch (RmesException e) {
+			return Response.status(e.getStatus()).entity(e.getDetails()).type(TEXT_PLAIN).build();
+		}
+	}
 
 	@GET
 	@Path("/{notation}/code/{code}")
