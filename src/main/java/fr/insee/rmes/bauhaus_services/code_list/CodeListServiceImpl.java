@@ -318,6 +318,14 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
+	public String getPartialCodeListByParent(String parentCode) throws RmesException {
+		JSONObject parent = this.getDetailedCodesListJson(parentCode, false);
+		String parentIRI = parent.getString("iri");
+		JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(parentIRI));
+		return partials.toString();
+	}
+
+	@Override
 	public void deleteCodeList(String notation, boolean partial) throws RmesException {
 		JSONObject codesList = getDetailedCodesListJson(notation, partial);
 		String iri = codesList.getString("iri");
