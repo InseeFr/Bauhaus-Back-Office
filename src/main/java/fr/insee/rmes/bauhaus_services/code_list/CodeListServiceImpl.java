@@ -88,6 +88,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String getDetailedCodesList(String notation, boolean partial) throws RmesException {
+		return getDetailedCodesListJson(notation, partial).toString();
+	}
+
+	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
 		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, partial));
 
@@ -98,7 +102,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			formatCodesForPartialList(codeList, codes);
 		}
 
-		return codeList.toString();
+		return codeList;
 	}
 
 	private void formatCodesForFullList(String notation, JSONObject codeList, JSONArray codes) throws RmesException {
@@ -311,6 +315,39 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		RdfUtils.addTripleDateTime(codeListIri, DCTERMS.MODIFIED, DateUtils.getCurrentDate(), model, graph);
 
 		return this.createOrUpdateCodeList(model, graph, codesList, codeListIri, partial);
+	}
+
+	@Override
+	public String getPartialCodeListByParent(String parentCode) throws RmesException {
+		JSONObject parent = this.getDetailedCodesListJson(parentCode, false);
+		String parentIRI = parent.getString("iri");
+		JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(parentIRI));
+		return partials.toString();
+	}
+
+	@Override
+	public void deleteCodeList(String notation, boolean partial) throws RmesException {
+		JSONObject codesList = getDetailedCodesListJson(notation, partial);
+		String iri = codesList.getString("iri");
+
+		if(!codesList.getString("validationState").equalsIgnoreCase("Unpublished")){
+			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+		}
+
+		if(!partial){
+			JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(iri));
+			if(partials.length() > 0){
+				throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
+			}
+
+			JSONObject codes = codesList.getJSONObject(CODES);
+			for (String key : codes.keySet()) {
+				String codeIri = codes.getJSONObject(key).getString("codeUri");
+				repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
+			}
+		}
+
+		repoGestion.deleteObject(RdfUtils.toURI(iri), null);
 	}
 
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {

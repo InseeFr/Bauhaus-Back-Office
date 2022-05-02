@@ -117,6 +117,7 @@ public class StructureQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
 		params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
+		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
 		params.put("LG1", Config.LG1);
 		params.put("LG2", Config.LG2);
 

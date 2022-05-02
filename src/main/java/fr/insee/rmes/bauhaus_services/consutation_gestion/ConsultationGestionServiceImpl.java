@@ -149,17 +149,19 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             structure.put("necessairePour", necessairePour);
         }
         if(structure.has("idRelation")){
-            String iri = structure.getString("idRelation").replace("urn:sdmx:org.sdmx.infomodel.metadatastructure.MetadataStructure=", "");
-            JSONObject relation = new JSONObject();
-            relation.put("id", iri.substring(iri.indexOf(":") + 1, iri.indexOf("(") ));
-            relation.put("agence", iri.substring(0, iri.indexOf(":")));
-            relation.put("version", iri.substring(iri.indexOf("(") + 1, iri.indexOf(")")));
-            structure.put("dsdSdmx", relation);
+            structure.put("dsdSdmx", extractSdmx(structure.getString("idRelation")));
+            structure.remove("idRelation");
         }
         if(structure.has("idParent") && structure.has("uriParent")){
             JSONObject parent = new JSONObject();
             parent.put("id", structure.getString("idParent"));
             parent.put("uri", structure.getString("uriParent"));
+
+            if(structure.has("idParentRelation")){
+                parent.put("dsdSdmx", extractSdmx(structure.getString("idParentRelation")));
+                structure.remove("idParentRelation");
+            }
+
             structure.put("parent", parent);
             structure.remove("idParent");
             structure.remove("uriParent");
@@ -178,6 +180,15 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         
         getStructureComponents(id, structure);
         return structure.toString();
+    }
+
+    private JSONObject extractSdmx(String originalRelation) {
+        String iri = originalRelation.replace("urn:sdmx:org.sdmx.infomodel.metadatastructure.MetadataStructure=", "");
+        JSONObject relation = new JSONObject();
+        relation.put("id", iri.substring(iri.indexOf(":") + 1, iri.indexOf("(") ));
+        relation.put("agence", iri.substring(0, iri.indexOf(":")));
+        relation.put("version", iri.substring(iri.indexOf("(") + 1, iri.indexOf(")")));
+        return relation;
     }
 
     @Override
@@ -240,12 +251,12 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             listCode.put("codes", codes);
 
 
-            if(component.has("uriParentListCode") && component.has("idParentListeCode")){
-                listCode.put("listePrincipale", new JSONObject()
-                        .append("id", component.getString("idParentListeCode"))
+            if(component.has("uriParentListCode") && component.has("idParentListCode")){
+                listCode.put("ParentListeCode", new JSONObject()
+                        .append("id", component.getString("idParentListCode"))
                         .append("uri", component.getString("uriParentListCode")));
                 component.remove("uriParentListCode");
-                component.remove("idParentListeCode");
+                component.remove("idParentListCode");
             }
             component.put("listeCode", listCode);
             component.remove("uriListeCode");
@@ -272,18 +283,23 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
             if (component.has("minLength")) {
                 format.put("longueurMin", component.get("minLength"));
+                component.remove("minLength");
             }
             if (component.has("maxLength")) {
                 format.put("longueurMax", component.get("maxLength"));
+                component.remove("maxLength");
             }
             if (component.has("minInclusive")) {
                 format.put("valeurMin", component.get("minInclusive"));
+                component.remove("minInclusive");
             }
             if (component.has("maxInclusive")) {
                 format.put("valeurMax", component.get("maxInclusive"));
+                component.remove("maxInclusive");
             }
             if (component.has("pattern")) {
                 format.put("expressionReguliere", component.get("pattern"));
+                component.remove("pattern");
             }
             component.put("format", format);
         }

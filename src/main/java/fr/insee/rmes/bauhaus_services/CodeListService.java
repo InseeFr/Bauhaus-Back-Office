@@ -21,5 +21,10 @@ public interface CodeListService {
 
     String setCodesList(String body, boolean partial) throws RmesException;
 
-	String setCodesList(String id, String body, boolean partial)  throws RmesException;
+	String setCodesList(String id, String body, boolean partial) throws RmesException;
+
+	String getPartialCodeListByParent(String parentIRI) throws RmesException;
+
+	void deleteCodeList(String notation, boolean partial) throws RmesException;
+
 }
