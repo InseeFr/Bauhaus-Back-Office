@@ -338,8 +338,19 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         JSONArray attributes = new JSONArray();
 
         for (int i = 0; i < components.length(); i++) {
-            String idComponent = components.getJSONObject(i).getString("id");
+            JSONObject componentSpecification = components.getJSONObject(i);
+            String idComponent = componentSpecification.getString("id");
             JSONObject component = getComponent(idComponent);
+
+            if(componentSpecification.has("ordre")){
+                component.put("ordre", componentSpecification.getString("ordre"));
+            }
+            if(componentSpecification.has("attachement")){
+                component.put("attachement", componentSpecification.getString("attachement").replace(QB.NAMESPACE, ""));
+            }
+            if(componentSpecification.has("obligatoire")){
+                component.put("obligatoire", componentSpecification.getString("obligatoire").equalsIgnoreCase("true") ? "oui": "non");
+            }
 
             if(idComponent.startsWith("a")){
                 attributes.put(component);
