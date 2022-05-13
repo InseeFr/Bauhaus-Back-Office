@@ -30,7 +30,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 
-@Component
+@Component("RepositoryGestion")
 @DependsOn("AppContext")
 public class RepositoryGestion extends RepositoryUtils {
 
