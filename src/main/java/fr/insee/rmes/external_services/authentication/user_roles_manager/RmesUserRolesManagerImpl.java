@@ -152,7 +152,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		try {
 			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(config.getSugoiUser(), config.getSugoiPassword()));
 
-			jsonResponse = client.target(config.getSugoiUrl() + "whoami")
+			jsonResponse = client.target(config.getSugoiUrl() + "/whoami")
 					.request(MediaType.APPLICATION_JSON).get(String.class);
 		} catch (Exception e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target SUGOI");
