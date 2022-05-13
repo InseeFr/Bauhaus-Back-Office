@@ -21,6 +21,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.UserProvider;
 
 @Configuration
 @EnableWebSecurity
@@ -31,7 +33,7 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultSecurityContext.class);
 
 	@Autowired
-	static Config config;
+	Config config;
 	
 	@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}")
 	private Optional<String> allowedOrigin;
@@ -59,6 +61,11 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 				UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
+	}
+	
+	@Bean
+	public UserProvider getUserProvider() {
+		return auth -> new User();
 	}
 
 }
