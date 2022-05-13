@@ -4,14 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.ws.rs.core.MediaType;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +51,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
 
+	private static final String CONTENT_TYPE = "content-type";
+
+	
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
 
@@ -179,20 +181,23 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Object> getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
+	public ResponseEntity<Object> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException, IOException  {
 		OutputStream os;
-		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
-			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
-		} else {
+		//if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
+			//os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
+		//} else {
 			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
-		}
+		//}
 
 		InputStream is = transformFileOutputStreamInInputStream(os);
-		String fileName = "Codebook"+ ExportUtils.getExtension(acceptHeader);
+		String fileName = "Codebook"+ ExportUtils.getExtension(accept);
 		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
+		 	
 		HttpHeaders responseHeaders = new HttpHeaders();
-	    responseHeaders.set(HttpHeaders.ACCEPT,  acceptHeader);
+	    responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
 	    responseHeaders.setContentDisposition(content);
+	    responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );//multipart/form-data; charset=utf-8
+	    is.close();
 		return ResponseEntity.ok().headers(responseHeaders).body(is);
 	}
 

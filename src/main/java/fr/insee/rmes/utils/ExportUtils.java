@@ -38,7 +38,7 @@ public class ExportUtils {
 	
 
 	public static String getExtension(String acceptHeader) {
-		if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
+		if (acceptHeader==null) {
 			return ODT_EXTENSION;
 		} else if (acceptHeader.equals("application/octet-stream")) {
 			return ".pdf";
@@ -46,6 +46,8 @@ public class ExportUtils {
 			return ".fodt";
 		} else if (acceptHeader.equals("XML")) {
 			return ".xml";
+		} else if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
+			return ODT_EXTENSION;
 		} else {
 			return ODT_EXTENSION;
 			// default --> odt
