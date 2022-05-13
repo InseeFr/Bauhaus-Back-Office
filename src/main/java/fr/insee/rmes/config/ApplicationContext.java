@@ -16,15 +16,8 @@ import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 
 @Configuration("AppContext")
-@PropertySource(value =  "classpath:bauhaus-core.properties")
-@PropertySource(value =  "classpath:bauhaus-dev.properties")
-@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-dev.properties", ignoreResourceNotFound = true)
-@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-qf.properties", ignoreResourceNotFound = true)
-@PropertySource(value =  "file:${catalina.base}/webapps/bauhaus-production.properties", ignoreResourceNotFound = true)
-@PropertySource(value =  "file:${catalina.base}/webapps/production.properties", ignoreResourceNotFound = true) 
 public class ApplicationContext {
 
 	@Autowired
