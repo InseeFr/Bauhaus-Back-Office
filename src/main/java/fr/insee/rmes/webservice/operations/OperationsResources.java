@@ -2,13 +2,11 @@ package fr.insee.rmes.webservice.operations;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.HttpHeaders;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -81,45 +79,44 @@ public class OperationsResources extends OperationsCommonResources {
 	}
 
 	@PostMapping(value="/operation/codebook",
-			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" } ,
-			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" })
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" },
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
+	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	
 	public  ResponseEntity<Object> getCodeBook( 
 			
 			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))
 			@RequestHeader(required=false) String accept, 			
-			//@HeaderParam("Accept") String acceptHeader,
-			//@Parameter(schema = @Schema(type = "string", format = "String"))
-			//@RequestBody(required=false) String test,
+
+			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
+			@RequestParam(value="file") MultipartFile isDDI, // InputStream isDDI,
 			
-			//@Parameter(schema = @Schema(type = "string", format = "binary", description = "file in DDI"))
-			@RequestParam(value="files") MultipartFile isDDI, // InputStream isDDI,
-			
-			//@Parameter(schema = @Schema(type = "string", format = "binary", description = "file 2"))
-			@RequestParam	(value = "dicoVar") MultipartFile isCodeBook //InputStream isCodeBook
+			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file for structure"))
+			@RequestParam(value = "dicoVar") MultipartFile isCodeBook //InputStream isCodeBook
 			
 
 
 			 
 			) 
-				throws IOException, RmesException {
-		
-		InputStream ddi= isDDI.getInputStream();
-	
-		String ddi2 = IOUtils.toString(ddi, StandardCharsets.UTF_8);  
-		InputStream codeBookFile = isCodeBook.getInputStream() ;
-		File codeBookFile2 = FilesUtils.streamToFile(codeBookFile, "dicoVar",".odt");
-		isDDI.getBytes();
+				throws RmesException {
+		logger.info("Generate CodeBook from DDI {}, {}", isDDI.getOriginalFilename(), isCodeBook.getOriginalFilename());
+		String ddi;
+		File codeBookFile;
+		try {
+			ddi = new String(isDDI.getBytes(), StandardCharsets.UTF_8);
+			codeBookFile = FilesUtils.streamToFile(isCodeBook.getInputStream(), "dicoVar",".odt");
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.BAD_REQUEST, e1.getMessage(), "Files can't be read");
+		}
 		ResponseEntity<Object> response;
 		
 		try {
-			response=operationsService.getCodeBookExport(ddi2,codeBookFile2,accept);
-			
+			logger.debug("Codebook is generated");
+			response=operationsService.getCodeBookExport(ddi,codeBookFile,accept);
 		} 
 		catch (Exception e) {
-			System.out.println(e);
-			return ResponseEntity.ok().body("");
+			return ResponseEntity.internalServerError().body(e.getMessage());
 		}
 		
 		return response;	
