@@ -25,10 +25,10 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -616,9 +616,9 @@ public class DocumentsUtils  extends RdfService  {
 		String url = getDocumentUrlFromDocument(jsonDoc);
 		String fileName = getDocumentNameFromUrl(url);
 		Path path = Paths.get(url);
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName).build();
+		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
-	    responseHeaders.set("Content-Disposition",  content.toString());
+		responseHeaders.setContentDisposition(content);
 		try {
 			return ResponseEntity.ok()
 						.headers(responseHeaders)

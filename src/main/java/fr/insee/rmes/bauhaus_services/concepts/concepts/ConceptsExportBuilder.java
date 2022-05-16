@@ -7,6 +7,7 @@ import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -84,7 +85,7 @@ public class ConceptsExportBuilder extends RdfService {
 
 	}
 
-	public ResponseEntity<Object>  exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+	public ResponseEntity<Resource>  exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);

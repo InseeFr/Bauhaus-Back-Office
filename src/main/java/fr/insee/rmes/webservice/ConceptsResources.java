@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -291,8 +292,8 @@ public class ConceptsResources  extends GenericResources   {
 
 	@GetMapping(value = "/concept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
-	public ResponseEntity<Object> exportConcept(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
-			return conceptsService.exportConcept(id, acceptHeader);
+	public ResponseEntity<?> exportConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
+			return conceptsService.exportConcept(id, accept);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
@@ -369,7 +370,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public ResponseEntity<Object> getCollectionExport(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
+	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
 			return conceptsService.getCollectionExport(id, acceptHeader);
 	}
 

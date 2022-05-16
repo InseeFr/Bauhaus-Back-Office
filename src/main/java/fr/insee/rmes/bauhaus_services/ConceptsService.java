@@ -44,7 +44,7 @@ public interface ConceptsService {
 	
 	public void setConceptsValidation(String body) throws  RmesException ;
 	
-	public ResponseEntity<Object> exportConcept(String id, String acceptHeader) throws RmesException;
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
 	
 	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	
@@ -54,7 +54,7 @@ public interface ConceptsService {
 	
 	public void setCollectionsValidation(String body) throws  RmesException ;
 	
-	public ResponseEntity<Object> getCollectionExport(String id, String acceptHeader) throws RmesException ;
+	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException ;
 	
 	public boolean setCollectionSend(String id, String body) throws  RmesException ;
 

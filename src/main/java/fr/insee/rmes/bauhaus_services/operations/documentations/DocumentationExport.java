@@ -61,7 +61,7 @@ public class DocumentationExport {
 	String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
 	String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
 	
-	public ResponseEntity<Object> exportAsResponse(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+	public ResponseEntity<?> exportAsResponse(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2, String goal) throws RmesException {
 		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
@@ -74,7 +74,7 @@ public class DocumentationExport {
 			return exportUtils.exportAsResponse("export.odt", xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
 		}
 			
-		return null;
+		return ResponseEntity.internalServerError().body("Goal to export is not found");
 	}
 	
 	public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
@@ -88,7 +88,7 @@ public class DocumentationExport {
 	}
 	
 
-	public ResponseEntity<Object> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
+	public ResponseEntity<?> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
 		String msdXML = buildShellSims();

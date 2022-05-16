@@ -150,7 +150,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * EXPORT
 	 */
 	@Override
-	public ResponseEntity<Object> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
+	public ResponseEntity<?> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
 		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
@@ -160,7 +160,7 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	}
 
 	@Override
-	public ResponseEntity<Object> exportMetadataReportForLabel(String id) throws RmesException  {
+	public ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException  {
 			return documentationsExport.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
 	}
 

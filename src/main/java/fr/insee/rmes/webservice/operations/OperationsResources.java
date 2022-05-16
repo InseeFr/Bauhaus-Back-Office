@@ -85,7 +85,7 @@ public class OperationsResources extends OperationsCommonResources {
 	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	
-	public  ResponseEntity<Resource> getCodeBook( 
+	public  ResponseEntity<?> getCodeBook( 
 			
 			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))
 			@RequestHeader(required=false) String accept, 			
@@ -110,13 +110,13 @@ public class OperationsResources extends OperationsCommonResources {
 		ResponseEntity<Resource> response;
 		
 		try {
-			logger.debug("Codebook is generated");
 			response=operationsService.getCodeBookExport(ddi,codeBookFile,accept);
+			logger.debug("Codebook is generated");
 		} 
-		catch (Exception e) {
-			return null;//ResponseEntity.internalServerError().body(e.getMessage());
-		}
-		
+		catch (RmesException e) {
+			logger.error("Failed to generate codebook {}", e.getMessageAndDetails());
+			return returnRmesException(e);
+		}		
 		return response;	
 	}
 

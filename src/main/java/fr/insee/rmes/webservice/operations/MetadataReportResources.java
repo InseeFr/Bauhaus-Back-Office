@@ -293,7 +293,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@GetMapping("/metadataReport/export/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public ResponseEntity<Object> getSimsExport(@Parameter(
+	public ResponseEntity<?> getSimsExport(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id
@@ -324,7 +324,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@GetMapping("/metadataReport/export/label/{id}")
 	@Produces({ MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExportLabel", summary = "Produce a document with a metadata report")
-	public ResponseEntity<Object> getSimsExportForLabel(@Parameter(
+	public ResponseEntity<?> getSimsExportForLabel(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id

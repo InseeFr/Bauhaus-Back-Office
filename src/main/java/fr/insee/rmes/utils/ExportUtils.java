@@ -10,18 +10,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.StreamingOutput;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +35,8 @@ import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
-
+	
+	private static final String ATTACHMENT = "attachment";
 	private static final String ODT_EXTENSION = ".odt";
 	private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
@@ -54,24 +59,40 @@ public class ExportUtils {
 		}
 	}
 
-	public ResponseEntity<Object> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
 		logger.debug("Begin To export {} as Response", objectType);
 		fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName + ODT_EXTENSION).build();
 
 		InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+		if (input == null) throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+
+		ByteArrayResource resource = null;
+		try {
+			resource = new ByteArrayResource(IOUtils.toByteArray(input));
+			input.close();
+		} catch (IOException e) {
+			logger.error("Failed to getBytes of resource");
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+		}
 		logger.debug("End To export {} as Response", objectType);
-		
+
+		//Prepare response headers
+		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName+ODT_EXTENSION).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
-	    responseHeaders.set("Content-Disposition",  content.toString());
+		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setContentDisposition(content);
+		List<String> allowHeaders = new ArrayList<>();
+		allowHeaders.add("Content-Disposition");
+		allowHeaders.add("Access-Control-Allow-Origin");
+		allowHeaders.add("Access-Control-Allow-Credentials");
+		responseHeaders.setAccessControlAllowHeaders(allowHeaders);
+		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
+
 		return ResponseEntity.ok()
 						.headers(responseHeaders)
-						.body((StreamingOutput) out -> {
-							IOUtils.copy(input, out);
-							out.flush();
-							input.close();
-							out.close();
-						});		
+				        .contentLength(resource.contentLength())
+				        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+						.body(resource);		
 
 	}
 	
@@ -131,7 +152,7 @@ public class ExportUtils {
 	
 	public ResponseEntity<Object> exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
 		logger.debug("Begin To export temp files as Response");
-		ContentDisposition content = ContentDisposition.type("attachment").fileName("xmlFiles.zip").build();
+		ContentDisposition content = ContentDisposition.builder("attachment").filename("xmlFiles.zip").build();
 		Path tempDir;
 
 		try {
@@ -153,7 +174,7 @@ public class ExportUtils {
 			logger.debug("End To export temp files as Response");
 			
 			HttpHeaders responseHeaders = new HttpHeaders();
-		    responseHeaders.set("Content-Disposition",  content.toString());
+			responseHeaders.setContentDisposition(content);
 		    responseHeaders.set("Content-Type",  "application/octet-stream");
 			return ResponseEntity.ok()
 							.headers(responseHeaders)

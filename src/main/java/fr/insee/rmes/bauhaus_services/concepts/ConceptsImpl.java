@@ -231,7 +231,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public ResponseEntity<Object> exportConcept(String id, String acceptHeader) throws RmesException  {
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException  {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
@@ -289,7 +289,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException 
 	 */
 	@Override
-	public ResponseEntity<Object> getCollectionExport(String id, String acceptHeader) throws RmesException{
+	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException{
 		CollectionForExport collection;
 		try {
 			collection = collectionExport.getCollectionData(id);
