@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 import java.io.File;
 import java.io.IOException;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
@@ -63,7 +64,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 
-	ResponseEntity<Object> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException, IOException;
+	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException, IOException;
 
 	String getOperations() throws RmesException ;
 

@@ -12,15 +12,18 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -180,12 +183,12 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Object> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException, IOException  {		
+	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException, IOException  {		
 		//Prepare file
 		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		InputStream is = transformFileOutputStreamInInputStream(os);
 		if (is == null) return ResponseEntity.internalServerError().build();
-		byte[]out=org.apache.commons.io.IOUtils.toByteArray(is);
+		ByteArrayResource resource = new ByteArrayResource(IOUtils.toByteArray(is));
 		is.close();
 
 		//Prepare response headers
@@ -196,7 +199,11 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		responseHeaders.setContentDisposition(content);
 		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
 
-		return new ResponseEntity<>(out, responseHeaders, HttpStatus.OK);
+		return ResponseEntity.ok()
+		         .headers(responseHeaders)
+		         .contentLength(resource.contentLength())
+		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+		         .body(resource);//new ResponseEntity<>(out, responseHeaders, HttpStatus.OK);
 		
 	}
 

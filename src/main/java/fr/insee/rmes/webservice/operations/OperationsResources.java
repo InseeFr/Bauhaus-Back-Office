@@ -8,6 +8,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -84,7 +85,7 @@ public class OperationsResources extends OperationsCommonResources {
 	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
 	
-	public  ResponseEntity<Object> getCodeBook( 
+	public  ResponseEntity<Resource> getCodeBook( 
 			
 			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))
 			@RequestHeader(required=false) String accept, 			
@@ -94,9 +95,6 @@ public class OperationsResources extends OperationsCommonResources {
 			
 			@Parameter(schema = @Schema(type = "string", format = "binary", description = "file for structure"))
 			@RequestParam(value = "dicoVar") MultipartFile isCodeBook //InputStream isCodeBook
-			
-
-
 			 
 			) 
 				throws RmesException {
@@ -109,14 +107,14 @@ public class OperationsResources extends OperationsCommonResources {
 		} catch (IOException e1) {
 			throw new RmesException(HttpStatus.BAD_REQUEST, e1.getMessage(), "Files can't be read");
 		}
-		ResponseEntity<Object> response;
+		ResponseEntity<Resource> response;
 		
 		try {
 			logger.debug("Codebook is generated");
 			response=operationsService.getCodeBookExport(ddi,codeBookFile,accept);
 		} 
 		catch (Exception e) {
-			return ResponseEntity.internalServerError().body(e.getMessage());
+			return null;//ResponseEntity.internalServerError().body(e.getMessage());
 		}
 		
 		return response;	
