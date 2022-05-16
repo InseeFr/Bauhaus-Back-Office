@@ -86,7 +86,7 @@ public class RmesException extends Exception {
 		return details;
 	}
 
-	public String getMessageAndDetails2() {
+	public String getMessageAndDetails() {
 		return getMessage() + " " + details;
 	}
 	

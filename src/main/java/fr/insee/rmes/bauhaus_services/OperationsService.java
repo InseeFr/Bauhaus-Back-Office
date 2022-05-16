@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +63,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 
-	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException, IOException;
+	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
 
 	String getOperations() throws RmesException ;
 
