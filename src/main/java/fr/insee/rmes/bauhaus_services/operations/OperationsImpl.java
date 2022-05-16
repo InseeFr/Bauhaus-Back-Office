@@ -203,7 +203,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		         .headers(responseHeaders)
 		         .contentLength(resource.contentLength())
 		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-		         .body(resource);//new ResponseEntity<>(out, responseHeaders, HttpStatus.OK);
+		         .body(resource);
 		
 	}
 
