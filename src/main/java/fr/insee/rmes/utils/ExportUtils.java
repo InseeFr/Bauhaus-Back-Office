@@ -85,7 +85,7 @@ public class ExportUtils {
 		allowHeaders.add("Content-Disposition");
 		allowHeaders.add("Access-Control-Allow-Origin");
 		allowHeaders.add("Access-Control-Allow-Credentials");
-		responseHeaders.setAccessControlAllowHeaders(allowHeaders);
+		responseHeaders.setAccessControlExposeHeaders(allowHeaders);
 		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
 
 		return ResponseEntity.ok()
