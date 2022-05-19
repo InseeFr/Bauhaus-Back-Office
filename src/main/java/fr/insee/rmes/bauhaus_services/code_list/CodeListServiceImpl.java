@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +38,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -259,21 +258,21 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return lists.toString();
 	}
 
-	public void validateCodeList(JSONObject codeList, boolean partial){
+	public void validateCodeList(JSONObject codeList, boolean partial) throws RmesBadRequestException {
 		if (!codeList.has(Constants.ID)) {
-			throw new BadRequestException("The id of the list should be defined");
+			throw new RmesBadRequestException("The id of the list should be defined");
 		}
 		if (!codeList.has(Constants.LABEL_LG1)) {
-			throw new BadRequestException("The labelLg1 of the list should be defined");
+			throw new RmesBadRequestException("The labelLg1 of the list should be defined");
 		}
 		if (!codeList.has(Constants.LABEL_LG2)) {
-			throw new BadRequestException("The labelLg2 of the list should be defined");
+			throw new RmesBadRequestException("The labelLg2 of the list should be defined");
 		}
 		if (!partial && !codeList.has("lastClassUriSegment")) {
-			throw new BadRequestException("The lastClassUriSegment of the list should be defined");
+			throw new RmesBadRequestException("The lastClassUriSegment of the list should be defined");
 		}
 		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
-			throw new BadRequestException("The lastListUriSegment of the list should be defined");
+			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
 	}
 

@@ -5,13 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.StringJoiner;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,10 +50,8 @@ public class HealthcheckApi  extends GenericResources {
 	
 	private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
 
-    @GetMapping("")
-    @Produces({
-        MediaType.TEXT_PLAIN
-    })
+    @GetMapping(value = "", 
+    		produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<Object> getHealthcheck() {
     	
     	StringJoiner errorMessage = new StringJoiner(" ");

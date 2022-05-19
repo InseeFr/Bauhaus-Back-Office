@@ -3,8 +3,6 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.ws.rs.BadRequestException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +29,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -87,7 +86,7 @@ public class StructureComponentUtils extends RdfService {
         }
 
         if (component.getId() == null || !component.getId().equals(componentId)) {
-            throw new BadRequestException("The id of the component should be the same as the one defined in the request");
+            throw new RmesBadRequestException("The id of the component should be the same as the one defined in the request");
         }
 
         validateComponent(component);
@@ -117,7 +116,7 @@ public class StructureComponentUtils extends RdfService {
 
     public String createComponent(MutualizedComponent component) throws RmesException {
         if (component.getId() != null) {
-            throw new BadRequestException("During the creation of a new component, the id property should be null");
+            throw new RmesBadRequestException("During the creation of a new component, the id property should be null");
         }
         String id = generateNextId(component.getType());
 
@@ -250,21 +249,21 @@ public class StructureComponentUtils extends RdfService {
     }
 
 
-    private void validateComponent(MutualizedComponent component) {
+    private void validateComponent(MutualizedComponent component) throws RmesBadRequestException {
         if (component.getIdentifiant() == null) {
-            throw new BadRequestException("The property identifiant is required");
+            throw new RmesBadRequestException("The property identifiant is required");
         }
         if (component.getLabelLg1() == null) {
-            throw new BadRequestException("The property labelLg1 is required");
+            throw new RmesBadRequestException("The property labelLg1 is required");
         }
         if (component.getLabelLg2() == null) {
-            throw new BadRequestException("The property labelLg2 is required");
+            throw new RmesBadRequestException("The property labelLg2 is required");
         }
         if (component.getType() == null) {
-            throw new BadRequestException("The property type is required");
+            throw new RmesBadRequestException("The property type is required");
         }
         if (!Arrays.asList(QB.getURIForComponent()).contains(component.getType())) {
-            throw new BadRequestException("The property type is not valid");
+            throw new RmesBadRequestException("The property type is not valid");
         }
 
     }

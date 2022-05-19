@@ -1,13 +1,10 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,8 +69,8 @@ public class UserResources  extends GenericResources {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionService;
 
-	@GetMapping("/stamp")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/stamp",
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamp", summary = "User's stamp", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public ResponseEntity<Object> getStamp() {
 			String stamp = null;
@@ -85,8 +82,8 @@ public class UserResources  extends GenericResources {
 			return ResponseEntity.status(HttpStatus.SC_OK).body(stamp);
 	}
 
-	@PostMapping("/login")
-	@Produces(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/login",
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "login", summary = "Fake Login", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))})
 	public ResponseEntity<Object> login(
 			@Parameter(description = "Component", required = true) @RequestBody String user) 
@@ -97,8 +94,8 @@ public class UserResources  extends GenericResources {
 	
 	
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-	@PostMapping("/private/add/role/{role}/user/{user}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/private/add/role/{role}/user/{user}",
+			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setAddRole", summary = "Add role")
 	public ResponseEntity<Object> setAddRole(@PathVariable("role") String role, @PathVariable("user") String user) {
 		try {
@@ -110,8 +107,8 @@ public class UserResources  extends GenericResources {
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-	@PostMapping("/private/delete/role/{role}/user/{user}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/private/delete/role/{role}/user/{user}",
+			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setDeleteRole", summary = "Delete role")
 	public ResponseEntity<Object> setDeleteRole(@PathVariable("role") String role, @PathVariable("user") String user) {
 		try {

@@ -1,14 +1,9 @@
 package fr.insee.rmes.webservice;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import javax.ws.rs.Produces;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,7 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
@@ -94,7 +91,7 @@ public class DocumentsResources  extends GenericResources {
 	 */
 	@GetMapping("/document/{id}")
 	@Operation(operationId = "getDocument", summary = "Get a Document",
-	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
+		responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
 	public ResponseEntity<Object> getDocument(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
@@ -105,8 +102,7 @@ public class DocumentsResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 	
-	@GetMapping("/document/{id}/file")
-	@Produces("*/*")
+	@GetMapping(value = "/document/{id}/file", produces = "*/*")
 	@Operation(operationId = "downloadDocument", summary = "Download the Document file")																 
 	public ResponseEntity<Object> downloadDocument(@PathVariable(Constants.ID) String id) {
 		try {
@@ -136,17 +132,18 @@ public class DocumentsResources  extends GenericResources {
 			MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Object> setDocument(
 			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))
-			@FormDataParam(value="body") String body,
+			@RequestParam(value="body") String body,
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
-			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition
-			) throws RmesException {
+			@RequestParam(value = "file") MultipartFile  documentFile
+			) {
 		String id = null;
-		String documentName = fileDisposition.getFileName();
+		String documentName = documentFile.getOriginalFilename();
 		try {
-			id = documentsService.createDocument(body, documentFile, documentName);
+			id = documentsService.createDocument(body, documentFile.getInputStream(), documentName);
 		} catch (RmesException e) {
 			return returnRmesException(e);
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("IOException"+e.getMessage());
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
@@ -185,16 +182,17 @@ public class DocumentsResources  extends GenericResources {
 			MediaType.APPLICATION_JSON_VALUE })
 	public ResponseEntity<Object> changeDocument(
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
-			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
+			@RequestParam(value = "file") MultipartFile documentFile,
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
 			) throws RmesException {
 		String url = null;
-		String documentName = fileDisposition.getFileName();
+		String documentName = documentFile.getOriginalFilename();
 		try {
-			url = documentsService.changeDocument(id, documentFile, documentName);
+			url = documentsService.changeDocument(id, documentFile.getInputStream(), documentName);
 		} catch (RmesException e) {
 			return returnRmesException(e);
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("IOException"+e.getMessage());
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(url);
 	}
@@ -252,7 +250,7 @@ public class DocumentsResources  extends GenericResources {
 	@Operation(operationId = "setDocument", summary = "Create link" )
 	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class))
-			@FormDataParam(value="body") String body
+			@RequestParam(value="body") String body
 			) throws RmesException {
 		String id = null;
 		try {

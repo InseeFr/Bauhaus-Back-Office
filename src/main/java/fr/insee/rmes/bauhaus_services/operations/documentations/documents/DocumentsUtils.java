@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.StreamingOutput;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -28,9 +26,11 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -613,22 +613,31 @@ public class DocumentsUtils  extends RdfService  {
 	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id, false);
 
+		//Build Headers
 		String url = getDocumentUrlFromDocument(jsonDoc);
 		String fileName = getDocumentNameFromUrl(url);
 		Path path = Paths.get(url);
 		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentDisposition(content);
+		
+		//Get document as resource
+		ByteArrayResource resource = null;
+		try {
+			InputStream input = Files.newInputStream(path);	
+			resource = new ByteArrayResource(IOUtils.toByteArray(input));
+			input.close();
+		} catch (IOException e) {
+			logger.error("Failed to getBytes of resource");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+		}
+		
+		//return the response with document
 		try {
 			return ResponseEntity.ok()
 						.headers(responseHeaders)
-						.body((StreamingOutput) output -> {
-	                InputStream input = Files.newInputStream(path);
-	                IOUtils.copy(input, output);
-	                input.close();
-	                output.flush();   
-	                output.close();
-	        });			
+						.contentType(MediaType.APPLICATION_OCTET_STREAM)
+						.body(resource);			
 		 } catch ( Exception e ) { 
          	logger.error(e.getMessage());
          	throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file"); 

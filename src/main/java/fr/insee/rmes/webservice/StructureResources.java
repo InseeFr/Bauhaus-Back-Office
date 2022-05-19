@@ -1,13 +1,10 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,8 +55,7 @@ public class StructureResources  extends GenericResources {
     @Autowired
     StructureComponent structureComponentService;
 
-    @GetMapping
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructures", summary = "List of Structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructures() {
@@ -72,8 +68,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/search")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructuresForSearch", summary = "List of Structures for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructuresForSearch() {
@@ -86,8 +81,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/structure/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructureById", summary = "Get a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
     public ResponseEntity<Object> getStructureById(@PathVariable(Constants.ID) String id) {
@@ -100,8 +94,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/structure/{id}/publish")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) {
         String jsonResultat = null;
@@ -113,8 +106,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/structure/{id}/details")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
     public ResponseEntity<Object> getStructureByIdDetails(@PathVariable(Constants.ID) String id) {
@@ -127,8 +119,8 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @PostMapping("/structure")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @PostMapping(value = "/structure",
+    		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Create a structure")
     public ResponseEntity<Object> setStructure(
     		@Parameter(description = "Structure", required = true) @RequestBody String body) {
@@ -141,8 +133,8 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
-    @PutMapping("/structure/{structureId}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @PutMapping(value = "/structure/{structureId}",
+    		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Update a structure")
     public ResponseEntity<Object> setStructure(
     		@PathVariable("structureId") String structureId, 
@@ -167,8 +159,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
     }
 
-    @GetMapping("/components/search")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponentsForSearch", summary = "Get all mutualized components for advanced search")
     public ResponseEntity<Object> getComponentsForSearch() {
         String jsonResultat;
@@ -180,8 +171,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/components")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/components", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponents", summary = "Get all mutualized components")
     public ResponseEntity<Object> getComponents() {
         String jsonResultat;
@@ -193,8 +183,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/components/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponentById", summary = "Get all mutualized components")
     public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
@@ -206,8 +195,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/components/{id}/publish")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/components/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishComponentById", summary = "Publish a component")
     public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
@@ -219,8 +207,7 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @DeleteMapping("/components/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) String id) {
         try {
@@ -231,8 +218,8 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).build();
     }
     
-    @PutMapping("/components/{id}")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @PutMapping(value = "/components/{id}",
+    		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateComponent", summary = "Update a component")
     public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String componentId, 
     		@Parameter(description = "Component", required = true) @RequestBody String body) {
@@ -245,8 +232,8 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
-    @PostMapping("/components")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @PostMapping(value = "/components",
+    		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createComponent", summary = "create a component")
     public ResponseEntity<Object> createComponent(
     		@Parameter(description = "Component", required = true) @RequestBody String body) {

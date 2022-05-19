@@ -90,10 +90,6 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jersey</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
@@ -193,10 +189,6 @@
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
 			</exclusions> 
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.jersey.media</groupId>
-			<artifactId>jersey-media-multipart</artifactId>
 		</dependency>
 
 		<!-- FREEMARKER (for queries) -->

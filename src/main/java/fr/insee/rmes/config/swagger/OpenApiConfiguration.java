@@ -1,7 +1,5 @@
 package fr.insee.rmes.config.swagger;
 
-import javax.ws.rs.ApplicationPath;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +14,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 
-@ApplicationPath("/")
+//@("/")
 @DependsOn("AppContext")
 @Configuration
 @SecurityScheme(//add Authorize button in swagger

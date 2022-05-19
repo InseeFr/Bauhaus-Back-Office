@@ -2,8 +2,6 @@ package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
 import java.util.Arrays;
 
-import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -15,6 +13,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
@@ -36,8 +35,8 @@ public class Sugoi {
 	      = new UsernamePasswordCredentials(config.getSugoiUser(), config.getSugoiPassword());
 		try {
 
-			httpMethod.setHeader("Accept", MediaType.APPLICATION_JSON);
-			httpMethod.setHeader("Content-type", MediaType.APPLICATION_JSON);
+			httpMethod.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+			httpMethod.setHeader("Content-type", MediaType.APPLICATION_JSON_VALUE);
 			httpMethod.addHeader(new BasicScheme().authenticate(creds, httpMethod, null));
 			logger.debug("Sugoi method with creds : {}", Arrays.toString(httpMethod.getAllHeaders()));
 			/* Creation client http */

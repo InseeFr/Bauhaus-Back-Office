@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +30,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -351,13 +350,13 @@ public class StructureUtils extends RdfService {
     private void validateStructure(Structure structure) throws RmesException {
         checkUnicityForStructure(structure);
         if (structure.getId() == null) {
-            throw new BadRequestException("The property identifiant is required");
+            throw new RmesBadRequestException("The property identifiant is required");
         }
         if (structure.getLabelLg1() == null) {
-            throw new BadRequestException("The property labelLg1 is required");
+            throw new RmesBadRequestException("The property labelLg1 is required");
         }
         if (structure.getLabelLg2() == null) {
-            throw new BadRequestException("The property labelLg2 is required");
+            throw new RmesBadRequestException("The property labelLg2 is required");
         }
     }
 

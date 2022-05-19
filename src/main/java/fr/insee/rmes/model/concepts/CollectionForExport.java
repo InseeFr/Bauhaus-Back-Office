@@ -42,7 +42,7 @@ public class CollectionForExport {
 		for (int i = 0; i < members.length(); i++) {
 			JSONObject member = (JSONObject) members.get(i);
 				membersLg1.add(member.getString(Constants.PREF_LABEL_LG1));
-				membersLg2.add(member.getString(Constants.PREF_LABEL_LG2));
+				if (member.has(Constants.PREF_LABEL_LG2)) membersLg2.add(member.getString(Constants.PREF_LABEL_LG2));
 		}
 	}
 

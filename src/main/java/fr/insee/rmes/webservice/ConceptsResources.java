@@ -1,9 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Produces;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,8 +240,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
-	@PostMapping("/concept")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Concept", required = true) @RequestBody String body) {
@@ -260,8 +255,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
-	@PutMapping("/concept/{id}")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
@@ -277,7 +271,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptCreator() ")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value= "/concepts/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
 			@Parameter(description = "Concept", required = true) @RequestBody String body) throws RmesException {
@@ -299,14 +293,14 @@ public class ConceptsResources  extends GenericResources   {
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
 			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
-	@PostMapping("/concept/send/{id}")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
-	@Produces(MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value = "/concept/send/{id}", 
+					consumes = MediaType.APPLICATION_JSON_VALUE, 
+					produces = MediaType.TEXT_PLAIN_VALUE)
 	@Operation(operationId = "setConceptSend", summary = "Send concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
 	public ResponseEntity<Object> setConceptSend(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) String body) throws RmesException {
+			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : {}" , id);
@@ -319,8 +313,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
-	@PostMapping("/collection")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Collection", required = true) @RequestBody String body) {
@@ -335,8 +328,7 @@ public class ConceptsResources  extends GenericResources   {
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
 			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
-	@PutMapping("/collection/{id}")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
@@ -353,8 +345,7 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")	
-	@PutMapping("/collections/validate")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value= "/collections/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(
 			@Parameter(description = "Collection id array to validate", required = true) @RequestBody String body) throws RmesException {
@@ -370,8 +361,8 @@ public class ConceptsResources  extends GenericResources   {
 
 	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @HeaderParam("Accept") String acceptHeader) throws RmesException {
-			return conceptsService.getCollectionExport(id, acceptHeader);
+	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
+			return conceptsService.getCollectionExport(id, accept);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "

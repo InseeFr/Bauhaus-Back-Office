@@ -1,10 +1,8 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,8 +38,7 @@ public class ConsultationGestion extends GenericResources  {
     ConsultationGestionService consultationGestionService;
 
 
-    @GetMapping("/concept/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/concept/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedConcept", summary = "Get a concept")
     public ResponseEntity<Object> getDetailedConcept(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
@@ -53,8 +50,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/concepts")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/concepts", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllConcepts", summary = "Get all concepts")
     public ResponseEntity<Object> getAllConcepts() {
         String jsonResultat;
@@ -66,8 +62,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/structures")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/structures", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllStructures", summary = "Get all structures")
     public ResponseEntity<Object> getAllStructures() {
         String jsonResultat;
@@ -79,8 +74,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/composants")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/composants", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllComponents", summary = "Get all components")
     public ResponseEntity<Object> getAllComponents() {
         String jsonResultat;
@@ -92,8 +86,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/composant/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/composant/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponentById", summary = "Get a component")
     public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
@@ -105,8 +98,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/structure/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructure", summary = "Get a structure")
     public ResponseEntity<Object> getStructure(@PathVariable(Constants.ID) String id) {
         String jsonResultat;
@@ -118,8 +110,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/listesCodes")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/listesCodes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "Get all codes lists")
     public ResponseEntity<Object> getAllCodesLists() {
         String jsonResultat;
@@ -131,8 +122,7 @@ public class ConsultationGestion extends GenericResources  {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
-    @GetMapping("/listeCode/{notation}")
-    @Produces(MediaType.APPLICATION_JSON)
+    @GetMapping(value = "/listeCode/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodesList", summary = "Get one codes list")
     public ResponseEntity<Object> getCodesList(@PathVariable(Constants.NOTATION) String notation) {
         String jsonResultat;

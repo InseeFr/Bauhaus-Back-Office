@@ -2,30 +2,18 @@ package fr.insee.rmes.external_services.mail_sender;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Variant;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +29,7 @@ import fr.insee.rmes.external_services.mail_sender.SendRequest.Recipients;
 import fr.insee.rmes.model.mail_sender.Mail;
 import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.RestTemplateUtils;
 
 @Service
 public class RmesMailSenderImpl implements MailSenderContract {
@@ -54,6 +43,9 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	@Autowired
 	StampsRestrictionsService stampsRestrictionsService;
 	
+	@Autowired
+	RestTemplateUtils restTemplateUtils;
+	
 
 	static final Logger logger = LogManager.getLogger(RmesMailSenderImpl.class);
 		
@@ -63,6 +55,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(conceptURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
+		return sendMail(body, getFileToJoin);
+	}
+
+	public boolean sendMail(String body, Map<String, InputStream> getFileToJoin) throws RmesException {
 		Mail mail = prepareMail(body);
 		String filename = getFileToJoin.entrySet().iterator().next().getKey();
 		try(InputStream is = getFileToJoin.get(filename)){
@@ -78,26 +74,12 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		if (!stampsRestrictionsService.isConceptOrCollectionOwner(collectionURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.COLLECTION_MAILING_RIGHTS_DENIED,"mailing rights denied",id);
 		}
-		Mail mail = prepareMail(body);
-		String filename = getFileToJoin.entrySet().iterator().next().getKey();
-		try(InputStream is = getFileToJoin.get(filename)){
-			return sendMail(mail, is, filename);
-		}catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
+		return sendMail(body, getFileToJoin);
 	}
 		
 	private boolean sendMail(Mail mail, InputStream is, String fileName) {
 		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
-		String encodedFileName = fileName ;
-				//new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
-		/*try {
-			encodedFileName = URLEncoder.encode(fileName, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-		}*/
-		
+		String encodedFileName = fileName ;	
 		
 		MessageTemplate messagetemplate = new MessageTemplate();
 
@@ -108,10 +90,6 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		messagetemplate.setSender(mail.getSender());
 		messagetemplate.setSubject(mail.getObject());
 		messagetemplate.setContent(mail.getMessage());
-
-		// PJ
-		List<String> attachments = new ArrayList<>();
-		attachments.add(fileName);
 		
 		// création des destinataires
 		Recipient destinataire1 = new Recipient();
@@ -133,30 +111,20 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		configService.getSMTPProperties().add(nameValuePairTypeSmtpFrom);
 		request.setServiceConfiguration(configService);
 
-		// création d'un client authentifié pour SPOC	
-		HttpAuthenticationFeature authentificationFeature = HttpAuthenticationFeature
-				.basic(config.getSpocUser(), config.getSpocPassword());
-		Client client = ClientBuilder.newClient()
-				.register(authentificationFeature);
-		
-		// Multipart
-		client.register(MultiPartFeature.class);
-		
-		MultiPart mp = new FormDataMultiPart();
-		mp.bodyPart(new FormDataBodyPart(FormDataContentDisposition.name("request").build(),request,MediaType.APPLICATION_XML_TYPE));
+		// création d'un client authentifié pour SPOC
+		//Rest Client to get all
+		HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSpocUser(), config.getSpocPassword());
+		restTemplateUtils.addMultipartContentToHeader(headers);
 
-		final StreamDataBodyPart bodyPart = new StreamDataBodyPart("attachments", is, encodedFileName);
-		mp.bodyPart(bodyPart);
+		//Get file as a resource
+		Resource fileResource = new InputStreamResource(is);
 		
+		//Call mail sender services
+		String result = restTemplateUtils.postForEntity(config.getSpocServiceUrl(),request, headers, fileResource);
 
-
-		Variant variant = new Variant(MediaType.MULTIPART_FORM_DATA_TYPE.withCharset("UTF-8"), config.getLg1(), "utf-8");
-		Entity<MultiPart> entity = Entity.entity(mp, variant);
-		String result = client
-							.target(config.getSpocServiceUrl())
-							.request()
-							.post(entity,String.class);
+		
 		return isMailSent(result);
+
 	}
 
 

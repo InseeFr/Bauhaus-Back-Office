@@ -1,13 +1,10 @@
 package fr.insee.rmes.webservice;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,8 +54,7 @@ public class GeographyResources  extends GenericResources {
 	/***************************************************************************************************
 	 * COG
 	 ******************************************************************************************************/
-	@GetMapping("/territories")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/territories", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getGeoFeatures", summary = "List of geofeatures", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=GeoFeature.class))))})
 	public ResponseEntity<Object> getGeoFeatures() throws RmesException {
@@ -66,8 +62,7 @@ public class GeographyResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
 	}
 	
-	@GetMapping("/territory/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getGeoFeature", summary = "Geofeature", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
@@ -82,8 +77,7 @@ public class GeographyResources  extends GenericResources {
 	 * @return response
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
-	@PostMapping("/territory")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
 			@Parameter(description = "Geo Feature to create", required = true, 
@@ -98,8 +92,7 @@ public class GeographyResources  extends GenericResources {
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
-	@PutMapping("/territory/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "updateGeography", summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,

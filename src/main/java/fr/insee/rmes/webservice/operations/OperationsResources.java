@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.core.HttpHeaders;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -61,9 +58,9 @@ public class OperationsResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", responses = {
 			@ApiResponse(content = @Content(/* mediaType = "application/json", */ schema = @Schema(implementation = Operation.class))) })
 	public ResponseEntity<Object> getOperationByID(@PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
 		String resultat;
-		if (header != null && header.equals(MediaType.APPLICATION_XML_VALUE)) {
+		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
 				resultat = XMLUtils.produceXMLResponse(operationsService.getOperationById(id));
 			} catch (RmesException e) {

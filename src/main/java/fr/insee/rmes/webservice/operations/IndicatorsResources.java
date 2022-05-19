@@ -1,10 +1,5 @@
 package fr.insee.rmes.webservice.operations;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.HttpHeaders;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,8 +38,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	/***************************************************************************************************
 	 * INDICATORS
 	 ******************************************************************************************************/
-	@GetMapping(value="/indicators")
-	@Produces(MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public ResponseEntity<Object> getIndicators() throws RmesException {
@@ -52,16 +47,14 @@ public class IndicatorsResources extends OperationsCommonResources {
 
 	}
 
-	@GetMapping(value="/indicators/withSims")
-	@Produces(MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
 	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
 		String jsonResultat = operationsService.getIndicatorsWithSims();
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@GetMapping(value="/indicators/advanced-search")
-	@Produces(MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
@@ -70,14 +63,13 @@ public class IndicatorsResources extends OperationsCommonResources {
 
 	}
 
-	@GetMapping(value="/indicator/{id}")
-	@Produces({MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @HeaderParam(HttpHeaders.ACCEPT) String header) {
+			@Parameter(hidden = true)@RequestHeader(required=false) String accept) {
 		String resultat;
-		if (header != null && header.equals(MediaType.APPLICATION_XML_VALUE)) {
+		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
 				resultat=XMLUtils.produceXMLResponse(operationsService.getIndicatorById(id));
 			} catch (RmesException e) {
@@ -100,8 +92,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() || @AuthorizeMethodDecider.isIndicatorContributor()")
-	@PutMapping(value="/indicator/{id}")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
 	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
@@ -121,8 +112,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() || @AuthorizeMethodDecider.isIndicatorContributor()")
-	@PutMapping(value="/indicator/validate/{id}")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value="/indicator/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
 	public ResponseEntity<Object> setIndicatorValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
@@ -140,8 +130,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() || @AuthorizeMethodDecider.isIndicatorContributor()")
-	@PostMapping(value="/indicator")
-	@Consumes(MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value="/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
 	public ResponseEntity<Object> setIndicator(

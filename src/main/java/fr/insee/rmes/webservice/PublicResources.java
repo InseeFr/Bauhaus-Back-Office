@@ -7,15 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,8 +70,7 @@ public class PublicResources extends GenericResources  {
 	@Autowired
 	StampsService stampsService;
 
-	@GetMapping("/init")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getInit", summary = "Initial properties", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
 	public ResponseEntity<Object> getProperties() throws RmesException {
 		JSONObject props = new JSONObject();
@@ -104,8 +101,7 @@ public class PublicResources extends GenericResources  {
 		} 
 	}
 
-	@GetMapping("/stamps")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public ResponseEntity<Object> getStamps() {
 			String entity = null;
@@ -117,8 +113,7 @@ public class PublicResources extends GenericResources  {
 			return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
-	@GetMapping("/disseminationStatus")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})
 	public ResponseEntity<Object> getDisseminationStatus() {
 		TreeSet<String> dsList = new TreeSet<>();
@@ -132,8 +127,7 @@ public class PublicResources extends GenericResources  {
 		return ResponseEntity.status(HttpStatus.SC_OK).body(dsList.toString());
 	}
 
-	@GetMapping("/roles")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Roles.class))))})
 	public ResponseEntity<Object> getRoles() {
 		String entity = null;
@@ -145,8 +139,7 @@ public class PublicResources extends GenericResources  {
 		return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
-	@GetMapping("/agents")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/agents", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object>  getAgents() {
 		String entity = null;
