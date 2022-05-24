@@ -306,7 +306,7 @@ public class ConceptsResources  extends GenericResources   {
 			logger.info("Send concept : {}" , id);
 			return ResponseEntity.status(HttpStatus.OK).body(isSent);
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
+			logger.error(e.getMessageAndDetails(), e);
 			throw e;
 		}
 	}

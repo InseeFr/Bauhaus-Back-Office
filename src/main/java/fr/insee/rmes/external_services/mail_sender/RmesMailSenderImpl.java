@@ -2,7 +2,12 @@ package fr.insee.rmes.external_services.mail_sender;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -58,10 +63,10 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		return sendMail(body, getFileToJoin);
 	}
 
-	public boolean sendMail(String body, Map<String, InputStream> getFileToJoin) throws RmesException {
+	public boolean sendMail(String body, Map<String, InputStream> fileToJoin) throws RmesException {
 		Mail mail = prepareMail(body);
-		String filename = getFileToJoin.entrySet().iterator().next().getKey();
-		try(InputStream is = getFileToJoin.get(filename)){
+		String filename = fileToJoin.entrySet().iterator().next().getKey();
+		try(InputStream is = fileToJoin.get(filename)){
 			return sendMail(mail, is, filename );
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
@@ -77,10 +82,28 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		return sendMail(body, getFileToJoin);
 	}
 		
-	private boolean sendMail(Mail mail, InputStream is, String fileName) {
+	private boolean sendMail(Mail mail, InputStream is, String fileName) throws RmesException {
 		fileName = FilesUtils.cleanFileNameAndAddExtension(fileName,"odt");
 		String encodedFileName = fileName ;	
 		
+		//get body part
+		String requestXml = getRequestForSpoc(mail, encodedFileName);
+
+		// création d'un client authentifié pour SPOC
+		//Rest Client to get all
+		HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSpocUser(), config.getSpocPassword());
+		restTemplateUtils.addMultipartContentToHeader(headers);
+	
+		//Get file as a resource
+		Resource fileResource = new InputStreamResource(is);
+		
+		//Call mail sender services
+		String result = restTemplateUtils.postForEntity(config.getSpocServiceUrl(),requestXml, headers, is);
+		return isMailSent(result);
+
+	}
+
+	public String getRequestForSpoc(Mail mail, String encodedFileName) {
 		MessageTemplate messagetemplate = new MessageTemplate();
 
 		NameValuePairType nameValuePairType = new NameValuePairType();
@@ -110,21 +133,23 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		ServiceConfiguration configService = new ServiceConfiguration();
 		configService.getSMTPProperties().add(nameValuePairTypeSmtpFrom);
 		request.setServiceConfiguration(configService);
-
-		// création d'un client authentifié pour SPOC
-		//Rest Client to get all
-		HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSpocUser(), config.getSpocPassword());
-		restTemplateUtils.addMultipartContentToHeader(headers);
-
-		//Get file as a resource
-		Resource fileResource = new InputStreamResource(is);
 		
-		//Call mail sender services
-		String result = restTemplateUtils.postForEntity(config.getSpocServiceUrl(),request, headers, fileResource);
+		//Get mailSender as Xml
+		String requestXml = null;
+		try {
+			JAXBContext context = JAXBContext.newInstance(SendRequest.class);
+	        Marshaller m = context.createMarshaller();
+	        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
-		
-		return isMailSent(result);
-
+	        // Write to a string
+	        StringWriter sw = new StringWriter();
+	        m.marshal(request, sw);
+	        requestXml = sw.toString();
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return requestXml;
 	}
 
 
