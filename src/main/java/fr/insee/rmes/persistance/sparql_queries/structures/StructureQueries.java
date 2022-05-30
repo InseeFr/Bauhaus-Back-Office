@@ -117,9 +117,9 @@ public class StructureQueries extends GenericQueries{
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
 		params.put("STRUCTURES_GRAPH", config.getStructuresGraph());
+		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-
 		return params;
 	}
 	

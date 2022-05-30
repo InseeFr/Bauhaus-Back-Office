@@ -185,7 +185,7 @@ public class StructureComponentUtils extends RdfService {
         if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(INSEE.CODELIST))) {
             RdfUtils.addTripleUri(componentURI, RDF.TYPE, QB.CODED_PROPERTY, model, graph);
 
-            JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getCodeList()));
+            JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getFullCodeListValue()));
 
             if(object.has("uriClasseOwl")){
                 RdfUtils.addTripleUri(componentURI, RDFS.RANGE, object.getString("uriClasseOwl"), model, graph);
@@ -215,10 +215,11 @@ public class StructureComponentUtils extends RdfService {
             }
         }
 
-        RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, component.getCodeList(), model, graph);
+
+        String codeListIri = (component.getCodeList() != null && component.getCodeList() != "") ? component.getCodeList() : component.getFullCodeListValue();
+        RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, codeListIri, model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), config.getLg2(), model, graph);
-
         repoGestion.loadSimpleObject(componentURI, model, null);
     }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -76,6 +77,17 @@ public class CodeListsResources extends GenericResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
+	@DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
+	public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
+		try {
+			codeListService.deleteCodeList(notation, false);
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+	}
+
 	@PostMapping(value="/partial", consumes=MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
 	public ResponseEntity<Object> createPartialCodeList(
@@ -101,6 +113,16 @@ public class CodeListsResources extends GenericResources  {
 			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
+	}
+
+	@DeleteMapping(value = "/partial/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
+	public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
+		try {
+			codeListService.deleteCodeList(notation, true);
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (RmesException e) {
+			return returnRmesException(e);		}
 	}
 
 	@GetMapping(produces=MediaType.APPLICATION_JSON_VALUE)
@@ -192,6 +214,18 @@ public class CodeListsResources extends GenericResources  {
 			return returnRmesException(e);
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+	}
+
+	@GetMapping(value="/partials/{parentCode}", produces=MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
+			responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
+	public ResponseEntity<Object> getPartialsByParent(@PathVariable("parentCode") String parentIri) {
+		try {
+			String codesLists = codeListService.getPartialCodeListByParent(parentIri);
+			return ResponseEntity.status(HttpStatus.OK).body(codesLists);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
 	}
 
 	@GetMapping(value="/{notation}/code/{code}", produces=MediaType.APPLICATION_JSON_VALUE)

@@ -1,4 +1,4 @@
-SELECT ?uri ?id ?notation ?prefLabelLg1 ?prefLabelLg2 ?dateCreation ?dateMiseAJour ?dateFinValidité ?statutValidation ?version ?idRelation ?necessairePour ?idParent ?uriParent
+SELECT ?uri ?id ?notation ?prefLabelLg1 ?prefLabelLg2 ?dateCreation ?dateMiseAJour ?dateFinValidité ?statutValidation ?version ?idRelation ?necessairePour ?idParent ?uriParent ?idParentRelation
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
     ?uri rdf:type qb:DataStructureDefinition .
@@ -18,6 +18,10 @@ WHERE {
     OPTIONAL { ?uri dcterms:isRequiredBy ?necessairePour }
     OPTIONAL {
         ?uri prov:wasDerivedFrom ?idParent .
-        ?uriParent dcterms:identifier ?idParent .
+        ?uriParent dcterms:identifier ?idParent
+
+    }
+    OPTIONAL {
+        ?uriParent dcterms:relation ?idParentRelation .
     }
 }
