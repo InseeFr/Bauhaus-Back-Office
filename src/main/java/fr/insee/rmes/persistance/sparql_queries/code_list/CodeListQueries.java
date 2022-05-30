@@ -112,7 +112,7 @@ public class CodeListQueries extends GenericQueries {
 		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
-		params.put("CODE_LIST_BASE_URI", Config.CODE_LIST_BASE_URI);
+		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
 	}
 
@@ -146,7 +146,7 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getPartialCodeListByParentUri(String iri) throws RmesException {
-		HashMap<String, Object> params = getInitParams();
+		HashMap<String, Object> params = initParams();
 		params.put("IRI", iri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
 	}

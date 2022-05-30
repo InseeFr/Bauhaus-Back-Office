@@ -13,6 +13,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.IGEO;
+import fr.insee.rmes.persistance.ontologies.QB;
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
 
