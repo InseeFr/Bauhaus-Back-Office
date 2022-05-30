@@ -36,11 +36,12 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?component qb:codeList ?codeList
-    } .
+        ?component qb:codeList ?codeList .
         OPTIONAL {
             ?codeList prov:wasDerivedFrom ?fullCodeListValue
-        } .
+        }
+    } .
+
     OPTIONAL {
         ?component rdfs:range ?range
     } .
