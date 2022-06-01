@@ -304,7 +304,7 @@ public class ConceptsResources  extends GenericResources   {
 		try {
 			Boolean isSent = conceptsService.setConceptSend(id, body);
 			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent);
+			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
 		} catch (RmesException e) {
 			logger.error(e.getMessageAndDetails(), e);
 			throw e;
@@ -377,7 +377,7 @@ public class ConceptsResources  extends GenericResources   {
 		try {
 			Boolean isSent = conceptsService.setCollectionSend(id, body);
 			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent);
+			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
 		} catch (RmesException e) {
 			logger.error(e.getMessage(), e);
 			throw e;

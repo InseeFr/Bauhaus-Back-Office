@@ -16,10 +16,9 @@ import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -89,21 +88,20 @@ public class RmesMailSenderImpl implements MailSenderContract {
 		//get body part
 		String requestXml = getRequestForSpoc(mail, encodedFileName);
 
-		// création d'un client authentifié pour SPOC
-		//Rest Client to get all
+		//Rest Client to get all, with auth
 		HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSpocUser(), config.getSpocPassword());
-		restTemplateUtils.addMultipartContentToHeader(headers);
-	
-		//Get file as a resource
-		Resource fileResource = new InputStreamResource(is);
+		restTemplateUtils.addAcceptJsonToHeader(headers);
 		
+		//build request content
+		MultiValueMap<String, Object> body = restTemplateUtils.buildBodyAsMap(requestXml, is, encodedFileName);
+			
 		//Call mail sender services
-		String result = restTemplateUtils.postForEntity(config.getSpocServiceUrl(),requestXml, headers, is);
+		String result = restTemplateUtils.postForEntity(config.getSpocServiceUrl(),body, headers);
 		return isMailSent(result);
 
 	}
 
-	public String getRequestForSpoc(Mail mail, String encodedFileName) {
+	private String getRequestForSpoc(Mail mail, String encodedFileName) throws RmesException {
 		MessageTemplate messagetemplate = new MessageTemplate();
 
 		NameValuePairType nameValuePairType = new NameValuePairType();
@@ -146,14 +144,11 @@ public class RmesMailSenderImpl implements MailSenderContract {
 	        m.marshal(request, sw);
 	        requestXml = sw.toString();
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "JAXBException");
 		}
 		return requestXml;
 	}
 
-
-	
 	private Mail prepareMail(String body) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
 		Mail mail = new Mail();
