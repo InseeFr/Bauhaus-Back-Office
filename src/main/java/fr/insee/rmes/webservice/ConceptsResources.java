@@ -271,10 +271,11 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptCreator() ")
-	@PutMapping(value= "/concepts/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value= "/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
-			@Parameter(description = "Concept", required = true) @RequestBody String body) throws RmesException {
+			@Parameter(description = "Id, put '0' if multiple ids", required = true) @PathVariable(Constants.ID) String id,
+			@Parameter(description = "Concept ids", required = true) @RequestBody String body) throws RmesException {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return ResponseEntity.noContent().build();

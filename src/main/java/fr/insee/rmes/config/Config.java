@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
@@ -257,6 +258,7 @@ public class Config {
 		GenericQueries.setConfig(this);
 		RdfUtils.setConfig(this);
 		Sugoi.setConfig(this);
+		PublicationUtils.setConfig(this);
 		RepositoryPublication.setConfig(this);
 	}
 
