@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -192,6 +194,12 @@ public class RepositoryPublication extends RepositoryUtils{
 	public static void publishContext(Resource graph, Model model, String type) throws RmesException {
 		publishContext(graph, model, type, repositoryPublicationInterne);
 		publishContext(graph, model, type, repositoryPublicationExterne);
+	}
+	
+	public HttpStatus persistFile(InputStream input, RDFFormat format) throws RmesException {
+		HttpStatus status = persistFile(input, format, repositoryPublicationInterne);
+		if (status.is2xxSuccessful()) status = persistFile(input, format, repositoryPublicationExterne);
+		return status;
 	}
 	
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {

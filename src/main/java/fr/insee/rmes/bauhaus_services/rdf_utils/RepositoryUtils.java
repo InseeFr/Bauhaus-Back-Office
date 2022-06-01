@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,8 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFParseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -83,6 +87,29 @@ public abstract class RepositoryUtils {
 		}
 		return(HttpStatus.OK);
 	}
+	
+	/**
+	 * Method which aims to load a file in database
+	 * 
+	 * @param updateQuery
+	 * @return String
+	 * @throws RmesException 
+	 */
+	public static HttpStatus persistFile(InputStream input,RDFFormat format, Repository repository) throws RmesException {
+		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
+		try {
+			RepositoryConnection conn = repository.getConnection();
+			// add the RDF data from the inputstream directly to our database
+			conn.add(input, "", format);
+			conn.close();
+		} catch (RepositoryException |RDFParseException |IOException e) {
+			logger.error("{} {} {}","Persist file failed", format, repository);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Persist file failed - "+e.getClass());		
+		}
+		return(HttpStatus.OK);
+	}
+	
 
 	/**
 	 * Method which aims to execute a sparql query

@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -238,6 +240,10 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
 
 		}
+	}
+	
+	public HttpStatus persistFile(InputStream input, RDFFormat format) throws RmesException {
+		return persistFile(input, format, repositoryGestionInstance);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
