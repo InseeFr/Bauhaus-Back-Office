@@ -1,5 +1,6 @@
 package fr.insee.rmes.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -83,7 +84,9 @@ public class RestTemplateUtils {
 			String tempDir = System.getProperty("java.io.tmpdir");
 			Path tempFile = Paths.get(tempDir ,filename);
 			Files.write(tempFile, fileIs.readAllBytes());
-		    return new FileSystemResource(tempFile.toFile());
+			File file = tempFile.toFile();
+			file.deleteOnExit();
+		    return new FileSystemResource(file);
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't convert file to resource IOException", e.getMessage());
 		}
