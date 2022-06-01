@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ import fr.insee.rmes.exceptions.RmesException;
 @Service
 public class RestTemplateUtils {
 	
+	RestTemplate restTemplate = new RestTemplate();
+	
 	public HttpHeaders getHeadersWithBasicAuth(String username, String password) {
 		// HttpHeaders
 		HttpHeaders headers = new HttpHeaders();
@@ -43,18 +46,14 @@ public class RestTemplateUtils {
 	}
 	
 	public HttpHeaders addJsonContentToHeader(HttpHeaders headers) {
-		List<MediaType> acceptHeaders =new ArrayList<>( headers.getAccept());
-		acceptHeaders.add(MediaType.APPLICATION_JSON );
-		headers.setAccept(acceptHeaders);
+		addAcceptJsonToHeader(headers);
 		headers.setContentType(MediaType.APPLICATION_JSON );
 		return headers;
 	}		
 	
 
 	public String getResponseAsString(String target, HttpHeaders headers, Map<String, Object> params) {
-		if (params == null) return getResponseAsString(target, headers);
-		RestTemplate restTemplate = new RestTemplate();
-		
+		if (params == null) return getResponseAsString(target, headers);		
 		// HttpEntity<String>: To get result as String.
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -64,9 +63,7 @@ public class RestTemplateUtils {
 		return response.getBody();
 	}
 
-	public String getResponseAsString(String target, HttpHeaders headers) {
-		RestTemplate restTemplate = new RestTemplate();
-		
+	public String getResponseAsString(String target, HttpHeaders headers) {	
 		// HttpEntity<String>: To get result as String.
 		HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -76,49 +73,54 @@ public class RestTemplateUtils {
 		return response.getBody();
 	}
 
-	public void addMultipartContentToHeader(HttpHeaders headers) {
-	//	headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+	public void addAcceptJsonToHeader(HttpHeaders headers) {
 		List<MediaType> acceptHeaders =new ArrayList<>( headers.getAccept());
 		acceptHeaders.add(MediaType.APPLICATION_JSON );
 		headers.setAccept(acceptHeaders);
-		//headers.setContentType(MediaType.APPLICATION_XML);
-		
 	}
 	
-	  private static Resource getFileAsResource(InputStream fileIs) {
+	  private static Resource getFileAsResource(InputStream fileIs, String filename) throws RmesException {
 		try {
-			Path tempFile = Files.createTempFile("upload-test-file", ".txt");
-			 Files.write(tempFile, fileIs.readAllBytes());
-		      File file = tempFile.toFile();
-		      //to upload in-memory bytes use ByteArrayResource instead
-		      return new FileSystemResource(file);
+			String tempDir = System.getProperty("java.io.tmpdir");
+			Path tempFile = Paths.get(tempDir ,filename);
+			Files.write(tempFile, fileIs.readAllBytes());
+			File file = tempFile.toFile();
+			file.deleteOnExit();
+		    return new FileSystemResource(file);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't convert file to resource IOException", e.getMessage());
 		}
-		return null;
 	     
 	  }
 	
-	public String postForEntity(String target, Object request, HttpHeaders headers, InputStream fileResource) throws RmesException {
-		
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		body.add("attachments", getFileAsResource(fileResource));
-		body.add("request", request);
-		//name("request").build(),request,MediaType.APPLICATION_XML_VALUE)
-		
+	public String postForEntity(String target, MultiValueMap<String, Object> body, HttpHeaders headers) throws RmesException {
+
 		// HttpEntity<MultiValueMap<String, Object>>: To get result as String.
 		HttpEntity<Object> requestEntity = new HttpEntity<>(body, headers);
-
-		// Send request with POST method, and Headers.
-		RestTemplate restTemplate = new RestTemplate();
 		
+		// Send request with POST method, and Headers.
 		try {
 			ResponseEntity<String> response = restTemplate.postForEntity(target, requestEntity, String.class);
 			return response.getBody();
 		}catch(Exception e) {
 			throw new RmesException(HttpStatus.FAILED_DEPENDENCY, "SPOC error, "+ e.getClass(), e.getMessage());
 		}
+	}
+
+	public MultiValueMap<String, Object> buildBodyAsMap(String request, InputStream fileResource, String filename) throws RmesException {
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+		//add file to join to body
+		HttpHeaders fileheaders = new HttpHeaders();
+		fileheaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		body.add("attachments", new HttpEntity<>(getFileAsResource(fileResource, filename), fileheaders));
+		
+		//add xml content to body
+		HttpHeaders contentheaders = new HttpHeaders();
+		contentheaders.setContentType(MediaType.APPLICATION_XML);
+		body.add("request", new HttpEntity<>(request, contentheaders));
+		
+		return body;
 	}
 
 	
