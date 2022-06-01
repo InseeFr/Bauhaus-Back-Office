@@ -1,8 +1,11 @@
 package fr.insee.rmes.model.notes.concepts;
 
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -14,7 +17,6 @@ import fr.insee.rmes.config.Config;
 /**
  * Énumération correspondant aux différents types de notes explicatives.
  */
-@Component
 public enum ConceptsVersionnedNoteTypes {
 	SCOPENOTELG1("scopeNoteLg1") {
 		@Override
@@ -71,12 +73,31 @@ public enum ConceptsVersionnedNoteTypes {
 
 	};
 		
+
+	
+	private static Config config;
+	
+	protected void setConfig(Config configParam) {
+		config = configParam;
+	}
+	
+
+    @Component
+    public static class ConfigServiceInjector {
+        @Autowired
+        private Config config;
+
+        @PostConstruct
+        public void postConstruct() {
+        	 for (ConceptsVersionnedNoteTypes note : EnumSet.allOf(ConceptsVersionnedNoteTypes.class))
+        		 note.setConfig(config);
+        }
+    }
+	
+    
 	private static final Map<String, ConceptsVersionnedNoteTypes> map = new HashMap<>();
 	
 	private String text;
-	
-	@Autowired 
-	static Config config;
 
 	ConceptsVersionnedNoteTypes(String text) {
 		this.text = text;

@@ -14,8 +14,8 @@ import fr.insee.rmes.model.ValidationStatus;
 public abstract class PublicationUtils {
 	
 	@Autowired
-	static Config config;
-
+	private static Config config;
+	
 	private PublicationUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -33,5 +33,10 @@ public abstract class PublicationUtils {
 	public static boolean isPublished(String status) {
 		return status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED);
 	}
+	
+	public static void setConfig(Config config) {
+		PublicationUtils.config = config;
+	}
+	
 	
 }

@@ -1,8 +1,13 @@
 package fr.insee.rmes.model.notes.concepts;
 
+import java.util.EnumSet;
+
+import javax.annotation.PostConstruct;
+
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.config.Config;
 
@@ -28,8 +33,26 @@ public enum ConceptsDatedNoteTypes {
 
 	};
 
-	@Autowired 
-	static Config config;
+	private static Config config;
+	
+	protected void setConfig(Config configParam) {
+		config = configParam;
+	}
+	
+
+    @Component
+    public static class ConfigServiceInjector {
+        @Autowired
+        private Config config;
+
+        @PostConstruct
+        public void postConstruct() {
+        	 for (ConceptsDatedNoteTypes note : EnumSet.allOf(ConceptsDatedNoteTypes.class))
+        		 note.setConfig(config);
+        }
+    }
+	
+    
 	
 	private String text;
 
