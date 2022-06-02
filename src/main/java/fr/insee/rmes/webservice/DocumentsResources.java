@@ -67,6 +67,7 @@ public class DocumentsResources  extends GenericResources {
 	 * Get the list of all documents and links
 	 * @return
 	 */
+	@GetMapping
 	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
 	public ResponseEntity<Object> getDocuments() {
