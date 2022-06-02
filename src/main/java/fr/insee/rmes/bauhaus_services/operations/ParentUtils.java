@@ -69,7 +69,7 @@ public class ParentUtils extends RdfService{
 	
 	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
 		String uriParent = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.SERIES, idParent));
-		if (!checkIfParentExists(uriParent) || checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
+		if (checkIfParentExists(uriParent) && checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
 				"Cannot create Sims for a series which already has operations", idParent);
 	}
 	
