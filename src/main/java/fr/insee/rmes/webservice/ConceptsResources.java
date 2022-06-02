@@ -346,9 +346,10 @@ public class ConceptsResources  extends GenericResources   {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")	
-	@PutMapping(value= "/collections/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value= "/collections/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(
+			@Parameter(description = "Id, put '0' if multiple ids", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Collection id array to validate", required = true) @RequestBody String body) throws RmesException {
 		try {
 			conceptsService.setCollectionsValidation(body);

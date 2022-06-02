@@ -161,7 +161,7 @@ public class RdfUtils {
 	
 	public static IRI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-		return RdfUtils.factory.createIRI(ObjectType.CONCEPT.getBaseUri() + "/" + conceptId + "/" + datableNote.getPath()
+		return RdfUtils.factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion() + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 	}
 	
