@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -144,14 +145,13 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
-		RepositoryResult<Statement> statements = null;
-		try {
-			statements = con. getStatements(null, null, null,context); //get the complete Graph
-		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get following graph : " + context);
+	public File getCompleteGraphInTrig(Resource context) throws RmesException {
+		try (RepositoryConnection conn = repositoryGestionInstance.getConnection() ){
+			return getCompleteGraphInTrig(conn, context);
+		}catch (RepositoryException e) {
+			throwsRmesException(e, "Failure get Graph : " + context);
 		}
-		return statements;
+		return null; 	
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
@@ -377,4 +377,5 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT);
 		}
 	}
+
 }

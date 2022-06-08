@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -25,9 +27,11 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.eclipse.rdf4j.rio.trig.TriGParser;
+import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -147,16 +151,39 @@ public abstract class RepositoryUtils {
 			graphs.forEach(conn::clear);
 			conn.close();
 		} catch (RepositoryException e) {
-			logger.error("Failed to clear graphs", graphs);
+			logger.error("Failed to clear graphs {}", graphs);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failed to clear graphs" + graphs);
 		}
 	}
+	
+	public static RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
+		RepositoryResult<Statement> statements = null;
+		try {
+			statements = con.getStatements(null, null, null,context); //get the complete Graph
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failure get following graph : " + context);
+		}
+		return statements;
+	}
+	
+	public static File getCompleteGraphInTrig(RepositoryConnection connection, Resource context) throws RmesException {
+		String filename = context.toString().replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
+		File tempFile = null;
+		try {
+			tempFile = File.createTempFile(filename, ".trig");
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), "IOException - Failed to create temp file");
+		}
+		try(OutputStream out = new FileOutputStream(tempFile)){		
+			RDFHandler writer =  new TriGWriter(out);
+			connection.export(writer, context);
+			return tempFile;
+		} catch (IOException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException - Failed to getGraph in file");
+		}
+	}
 		
-	//TODO pour exporter
-/*	RDFWriter writer = Rio.createWriter(RDFFormat.NQUADS, outputStream);
-	connection.exportStatements(null, null, null, false, writer);
-	IOUtils.closeQuietly(outputStream);*/
 
 	/**
 	 * Method which aims to execute a sparql query

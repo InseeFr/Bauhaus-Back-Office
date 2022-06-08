@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -8,16 +9,22 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
@@ -73,7 +80,6 @@ public class LoaderResources  extends GenericResources {
 				@RequestPart(value = "database") final String database,
 			@RequestPart(value = "graph", required = false)  final String graph,
 			@RequestPart(value = "file")  final MultipartFile file) {
-
 		try {
 			checkDatabase(database);
 			uploadFile(file, graph, database);
@@ -83,12 +89,28 @@ public class LoaderResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.OK).body("");
 	}
 
+
+	
+	@GetMapping(value = "/downloag/graph", produces = "*/*")
+	@Operation(operationId = "downloadGraph", summary = "Download the Graph")																 
+	public ResponseEntity<Object> downloadDocument(
+			@RequestBody String urlGraph,
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
+				@RequestBody String database) {
+		try {
+			checkDatabase(database);
+			return downloadFile(urlGraph, database);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+	}
+	
 	private void checkDatabase(String database) throws RmesException {
 		if (database == null)  throw new RmesException(HttpStatus.BAD_REQUEST,"Database is missing", "Database is null");
 		if (!database.equals("gestion")&&!database.equals("diffusion")) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown : "+ database, "Database is "+database);
 	}
 
-	public void uploadFile(MultipartFile trigFile, String graph, String database) throws RmesException {
+	private void uploadFile(MultipartFile trigFile, String graph, String database) throws RmesException {
 		String documentName = trigFile.getName();
 		try (InputStream content = trigFile.getInputStream()){
 			RDFFormat format = Rio.getParserFormatForFileName(trigFile.getOriginalFilename()).orElse(RDFFormat.TRIG);
@@ -100,6 +122,36 @@ public class LoaderResources  extends GenericResources {
 		}  catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR,"IOException : file " + documentName, e.getMessage());
 		}	
+	}
+	
+	private ResponseEntity<Object> downloadFile(String graph, String database) throws RmesException{
+		File trigFile ;
+		if (database.equals("gestion")) {
+			trigFile = repoGestion.getCompleteGraphInTrig(RdfUtils.toURI(graph));
+		}else {
+			trigFile = RepositoryPublication.getCompleteGraphInTrig(RdfUtils.toURI(graph));
+		}
+
+		//Build Headers
+		String fileName = graph.replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
+		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.setContentDisposition(content);
+		
+		//Get document as resource
+		Resource resource = new FileSystemResource(trigFile);
+		
+		//return the response with document
+		try {
+			return ResponseEntity.ok()
+						.headers(responseHeaders)
+						.contentType(MediaType.APPLICATION_OCTET_STREAM)
+						.body(resource);			
+		 } catch ( Exception e ) { 
+         	logger.error(e.getMessage());
+         	throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file"); 
+         }
+		
 	}
 	
 }

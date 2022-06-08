@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -198,6 +199,20 @@ public class RepositoryPublication extends RepositoryUtils{
 	
 	public static HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
 		return persistFile(input, format, graph, repositoryPublicationInterne, repositoryPublicationExterne);
+	}
+	
+
+	public static File getCompleteGraphInTrig(Resource context) throws RmesException {
+		try (RepositoryConnection conn = repositoryPublicationExterne.getConnection() ){
+			return getCompleteGraphInTrig(conn, context);
+		}catch (RepositoryException e) {
+			logger.warn("Can not find graph {} in external repository", context);
+			try (RepositoryConnection conn = repositoryPublicationInterne.getConnection() ){
+				return getCompleteGraphInTrig(conn, context);
+			}catch (RepositoryException e2) {
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e2.getMessage(), "Failure get Graph, both in external or internal repositories : " + context);
+			} 
+		} 	
 	}
 	
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
