@@ -10,8 +10,10 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
@@ -24,6 +26,8 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.eclipse.rdf4j.rio.trig.TriGParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -37,6 +41,7 @@ public abstract class RepositoryUtils {
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
+
 	
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
 
@@ -90,18 +95,44 @@ public abstract class RepositoryUtils {
 	
 	/**
 	 * Method which aims to load a file in database
-	 * 
+	 * @param graph 
+	 * @param secondRepo TODO
 	 * @param updateQuery
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public static HttpStatus persistFile(InputStream input,RDFFormat format, Repository repository) throws RmesException {
+	public static HttpStatus persistFile(InputStream input,RDFFormat format, String graph, Repository repository, Repository secondRepo) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}
 		try {
-			RepositoryConnection conn = repository.getConnection();
-			// add the RDF data from the inputstream directly to our database
-			conn.add(input, "", format);
-			conn.close();
+			// add the RDF data from the inputstream directly to our database if ttl
+			if (RDFFormat.TRIG != format) {
+				RepositoryConnection conn = repository.getConnection();
+				conn.add(input, format, RdfUtils.toURI(graph));
+				conn.close();
+				if (secondRepo != null ) {
+					RepositoryConnection conn2 = secondRepo.getConnection();
+					conn2.add(input, format, RdfUtils.toURI(graph));
+					conn2.close();
+				}
+				logger.info("Graph loaded {}",graph);
+			}else { //trig must be parsed before
+				Model model = new LinkedHashModel();
+				TriGParser rdfParser = new TriGParser();
+				rdfParser.setRDFHandler(new StatementCollector(model));
+				rdfParser.parse(input, "");
+				clearGraphs(model.contexts(), repository);
+				RepositoryConnection conn = repository.getConnection();
+				conn.add(model);
+				conn.close();
+				if (secondRepo != null ) {
+					clearGraphs(model.contexts(), secondRepo);
+					RepositoryConnection conn2 = secondRepo.getConnection();
+					conn2.add(model);
+					conn2.close();
+				}
+				logger.info("Graphs loaded {}",model.contexts());
+			}
+
 		} catch (RepositoryException |RDFParseException |IOException e) {
 			logger.error("{} {} {}","Persist file failed", format, repository);
 			logger.error(e.getMessage());
@@ -110,6 +141,22 @@ public abstract class RepositoryUtils {
 		return(HttpStatus.OK);
 	}
 	
+	private static void clearGraphs(Set<Resource> graphs, Repository repository) throws RmesException {
+		try {
+			RepositoryConnection conn = repository.getConnection();
+			graphs.forEach(conn::clear);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error("Failed to clear graphs", graphs);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Failed to clear graphs" + graphs);
+		}
+	}
+		
+	//TODO pour exporter
+/*	RDFWriter writer = Rio.createWriter(RDFFormat.NQUADS, outputStream);
+	connection.exportStatements(null, null, null, false, writer);
+	IOUtils.closeQuietly(outputStream);*/
 
 	/**
 	 * Method which aims to execute a sparql query

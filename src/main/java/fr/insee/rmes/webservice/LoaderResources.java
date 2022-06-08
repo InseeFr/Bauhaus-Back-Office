@@ -3,26 +3,30 @@ package fr.insee.rmes.webservice;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -60,25 +64,19 @@ public class LoaderResources  extends GenericResources {
 	protected RepositoryGestion repoGestion;
 	
 	
-	//TRIG TO DATABASE
-	//@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
-	@Operation(operationId = "uploadTrig", summary = "Upload a trig file in database"  )
-	@PostMapping(value = "/upload/trig"
-			,consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}
-			,produces = {MediaType.MULTIPART_FORM_DATA_VALUE}
-	)
-	public ResponseEntity<Object> uploadTrig(
-//			@Parameter(schema = @Schema(type = "string", format = "String", description = "Content-Type"))
-//			@RequestHeader(required=false) ContentType contentType, 						
-			@Parameter(description = "Trig file", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
-			@RequestParam MultipartFile  trigFile,
-			@Parameter(description = "Database",
-		            schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
-			@RequestParam("database") String database) {
-		
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
+	@Operation(operationId = "uploadFile", summary = "Upload a ttl or trig file in database"  )
+	@PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
+	public ResponseEntity<Object> saveDocument(
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
+				@RequestPart(value = "database") final String database,
+			@RequestPart(value = "graph", required = false)  final String graph,
+			@RequestPart(value = "file")  final MultipartFile file) {
+
 		try {
 			checkDatabase(database);
-			uploadTrigFile(trigFile);
+			uploadFile(file, graph, database);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
@@ -87,20 +85,21 @@ public class LoaderResources  extends GenericResources {
 
 	private void checkDatabase(String database) throws RmesException {
 		if (database == null)  throw new RmesException(HttpStatus.BAD_REQUEST,"Database is missing", "Database is null");
-		if (!database.equals("gestion")||!database.equals("diffusion")) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown", "Database is "+database);
-		
+		if (!database.equals("gestion")&&!database.equals("diffusion")) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown : "+ database, "Database is "+database);
 	}
 
-	public void uploadTrigFile(MultipartFile trigFile) throws RmesException {
+	public void uploadFile(MultipartFile trigFile, String graph, String database) throws RmesException {
 		String documentName = trigFile.getName();
-		
-		try (InputStream content = trigFile.getInputStream()){//= new FileInputStream(trigFile)
-			repoGestion.persistFile(content, RDFFormat.TRIG);
+		try (InputStream content = trigFile.getInputStream()){
+			RDFFormat format = Rio.getParserFormatForFileName(trigFile.getOriginalFilename()).orElse(RDFFormat.TRIG);
+			if (database.equals("gestion")) {
+				repoGestion.persistFile(content, format, graph);
+			}else {
+				RepositoryPublication.persistFile(content, format,graph);
+			}
 		}  catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR,"IOException : file " + documentName, e.getMessage());
-		}
-
-		
+		}	
 	}
 	
 }

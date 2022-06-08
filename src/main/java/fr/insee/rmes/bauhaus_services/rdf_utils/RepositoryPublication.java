@@ -196,10 +196,8 @@ public class RepositoryPublication extends RepositoryUtils{
 		publishContext(graph, model, type, repositoryPublicationExterne);
 	}
 	
-	public HttpStatus persistFile(InputStream input, RDFFormat format) throws RmesException {
-		HttpStatus status = persistFile(input, format, repositoryPublicationInterne);
-		if (status.is2xxSuccessful()) status = persistFile(input, format, repositoryPublicationExterne);
-		return status;
+	public static HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
+		return persistFile(input, format, graph, repositoryPublicationInterne, repositoryPublicationExterne);
 	}
 	
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {

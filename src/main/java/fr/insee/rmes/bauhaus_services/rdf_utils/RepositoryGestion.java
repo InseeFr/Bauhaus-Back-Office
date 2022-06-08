@@ -242,8 +242,8 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 	
-	public HttpStatus persistFile(InputStream input, RDFFormat format) throws RmesException {
-		return persistFile(input, format, repositoryGestionInstance);
+	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
+		return persistFile(input, format, graph, repositoryGestionInstance, null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
