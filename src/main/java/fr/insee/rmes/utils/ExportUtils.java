@@ -1,10 +1,24 @@
 package fr.insee.rmes.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import javax.xml.transform.TransformerException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,25 +27,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.transform.TransformerException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
@@ -175,11 +170,13 @@ public class ExportUtils {
 			
 			HttpHeaders responseHeaders = new HttpHeaders();
 			responseHeaders.setContentDisposition(content);
-		    responseHeaders.set("Content-Type",  "application/octet-stream");
+		    responseHeaders.set("Content-Type",  "application/zip");
+			Resource resource = null;
+			resource= new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toUri());
 			return ResponseEntity.ok()
 							.headers(responseHeaders)
-							.body(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile());			
-			
+							.body(resource);
+
 		} catch (IOException e1) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
 		} 

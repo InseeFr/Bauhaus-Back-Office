@@ -1,23 +1,5 @@
 package fr.insee.rmes.webservice.operations;
 
-import java.io.IOException;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
@@ -31,6 +13,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 
 @Qualifier("Report")
@@ -346,7 +336,13 @@ public class MetadataReportResources extends OperationsCommonResources {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}
-		return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);	
+		try {
+			return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);
+		} catch (RmesException e) {
+			ResponseEntity<Object> test= ResponseEntity.badRequest().build();
+			return test;
+		}
+
 	}
-	
+
 }
