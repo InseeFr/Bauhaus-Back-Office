@@ -339,9 +339,8 @@ public class MetadataReportResources extends OperationsCommonResources {
 		try {
 			return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);
 		} catch (RmesException e) {
-			ResponseEntity<Object> test= ResponseEntity.badRequest().build();
-			return test;
-		}
+			return ResponseEntity.badRequest().build();
+					}
 
 	}
 
