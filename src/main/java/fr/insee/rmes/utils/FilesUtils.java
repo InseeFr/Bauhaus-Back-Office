@@ -100,7 +100,8 @@ public class FilesUtils {
 			File[] children = fileToZip.listFiles();
 			for (File childFile : children) {
 				zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
-			}
+				}
+				zipOut.close();
 			return;
 		}
 		try (FileInputStream fis = new FileInputStream(fileToZip)) {
