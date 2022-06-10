@@ -2,13 +2,20 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +26,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.repository.Repository;
@@ -39,6 +47,7 @@ import org.springframework.http.HttpStatus;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 public abstract class RepositoryUtils {
 	
@@ -157,7 +166,7 @@ public abstract class RepositoryUtils {
 		}
 	}
 	
-	public static RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
+	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		try {
 			statements = con.getStatements(null, null, null,context); //get the complete Graph
@@ -167,8 +176,10 @@ public abstract class RepositoryUtils {
 		return statements;
 	}
 	
-	public static File getCompleteGraphInTrig(RepositoryConnection connection, Resource context) throws RmesException {
-		String filename = context.toString().replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
+	public static File getCompleteGraphInTrig( Repository repository, String context) throws RmesException {
+		RepositoryConnection connection = repository.getConnection();
+		Resource graphToExport =  RdfUtils.toURI(context);
+		String filename = context.replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
 		File tempFile = null;
 		try {
 			tempFile = File.createTempFile(filename, ".trig");
@@ -177,11 +188,90 @@ public abstract class RepositoryUtils {
 		}
 		try(OutputStream out = new FileOutputStream(tempFile)){		
 			RDFHandler writer =  new TriGWriter(out);
-			connection.export(writer, context);
+			connection.export(writer, graphToExport) ;//here if graphToExport is null => return statement without graph
+			connection.close();
 			return tempFile;
 		} catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException - Failed to getGraph in file");
 		}
+	}
+	
+	private static File getCompleteGraphInTrigWithoutException(Repository repo, String context) {
+		try {
+			logger.debug("Begin to get trig file for {}", context);
+			return getCompleteGraphInTrig(repo, context);
+		}catch(RmesException | RepositoryException e) {
+			logger.error("Graph {} can't be writen in a trig - {}, {}", context, e.getClass(), e.getMessage());
+		}
+		return null;
+	}
+	
+	public static File getAllGraphsInZip(Repository repo) throws RmesException {
+		//Get all graphs name
+		String[] graphs = getAllGraphs(repo);
+		if (graphs == null) throw new RmesException(HttpStatus.EXPECTATION_FAILED,"Can't find any graph","Check database");
+		
+		//For each graph, create a trig file with statements
+		final var fileCounter = new AtomicInteger();
+		Stream<File> files = Arrays.stream(graphs).map(graph -> getCompleteGraphInTrigWithoutException(repo, graph)).filter(Objects::nonNull);
+
+		//Compile all trig in a zip
+		File tempZipFile = null;
+		try {
+			tempZipFile = File.createTempFile("exportAll", ".zip");
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), "IOException - Failed to create temp file");
+		}
+		
+		try(OutputStream outZip = new FileOutputStream(tempZipFile)){
+			 ZipOutputStream zos = new ZipOutputStream(outZip);
+			 files.forEach(file -> {
+				fileCounter.incrementAndGet();
+				addFileToZip(zos, file);
+			 });
+	        zos.close();
+			if (graphs.length != fileCounter.get()) throw new RmesException(HttpStatus.EXPECTATION_FAILED,"Some graphs can't be writen in a trig","Error in processing getCompleteGraphInTrig");
+			return tempZipFile;
+		} catch (IOException e) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException - Failed to getGraph in file");
+		}
+		
+    }
+
+	public static void addFileToZip(ZipOutputStream zos, File file) {
+		String filename = file.getName();
+		logger.debug("Add file {} to zip", filename);
+		ZipEntry entry = new ZipEntry(filename);
+		    try {
+				zos.putNextEntry(entry);
+			    if (file.isFile()) {
+			        copyBytes(zos, new FileInputStream(file));
+			    }
+			    zos.closeEntry();
+			} catch (IOException e) {
+				logger.error("IOException - Can't add file {} to zip", filename);
+			}
+
+	}
+		
+		
+		
+	private static void copyBytes(ZipOutputStream zipOut, FileInputStream fileInputStream) throws IOException {
+        byte[] bytes = new byte[1024];
+        int length;
+        while((length = fileInputStream.read(bytes)) >= 0) {
+            zipOut.write(bytes, 0, length);
+        }
+	}
+
+	public static String[] getAllGraphs(Repository repo) throws RmesException {
+		RepositoryConnection connection = repo.getConnection();
+		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());//.evaluate(writer);
+		TupleQueryResult rs = tupleQuery.evaluate();
+		String[] graphs = rs.stream().map(g -> g.getValue("g").stringValue()).toArray(String[]::new);
+		logger.info("Graphs in database : {}", (graphs != null ? graphs.length : "0"));
+		connection.close();
+		return graphs;
 	}
 		
 

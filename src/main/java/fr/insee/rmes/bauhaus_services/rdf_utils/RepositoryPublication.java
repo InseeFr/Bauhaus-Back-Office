@@ -202,17 +202,13 @@ public class RepositoryPublication extends RepositoryUtils{
 	}
 	
 
-	public static File getCompleteGraphInTrig(Resource context) throws RmesException {
-		try (RepositoryConnection conn = repositoryPublicationExterne.getConnection() ){
-			return getCompleteGraphInTrig(conn, context);
-		}catch (RepositoryException e) {
-			logger.warn("Can not find graph {} in external repository", context);
-			try (RepositoryConnection conn = repositoryPublicationInterne.getConnection() ){
-				return getCompleteGraphInTrig(conn, context);
-			}catch (RepositoryException e2) {
-				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e2.getMessage(), "Failure get Graph, both in external or internal repositories : " + context);
-			} 
-		} 	
+	public static File getGraphAsFile(String context) throws RmesException {
+			if (context != null) return getCompleteGraphInTrig(repositoryPublicationExterne, context);
+			return getAllGraphsInZip(repositoryPublicationExterne);
+	}
+	
+	public static String[] getAllGraphs() throws RmesException {
+		return getAllGraphs(repositoryPublicationExterne);
 	}
 	
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {

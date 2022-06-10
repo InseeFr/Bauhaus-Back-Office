@@ -64,6 +64,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class LoaderResources  extends GenericResources {
 
+	private static final String DIFFUSION = "diffusion";
+
+
+	private static final String GESTION = "gestion";
+
+
 	static final Logger logger = LogManager.getLogger(LoaderResources.class);
 
 
@@ -76,7 +82,7 @@ public class LoaderResources  extends GenericResources {
 	@PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
 	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
 	public ResponseEntity<Object> saveDocument(
-			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {GESTION,DIFFUSION},type = "string")) 
 				@RequestPart(value = "database") final String database,
 			@RequestPart(value = "graph", required = false)  final String graph,
 			@RequestPart(value = "file")  final MultipartFile file) {
@@ -91,11 +97,11 @@ public class LoaderResources  extends GenericResources {
 
 
 	
-	@GetMapping(value = "/downloag/graph", produces = "*/*")
+	@GetMapping(value = "/download/graph", produces = "*/*")
 	@Operation(operationId = "downloadGraph", summary = "Download the Graph")																 
 	public ResponseEntity<Object> downloadDocument(
 			@RequestBody String urlGraph,
-			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {GESTION,DIFFUSION},type = "string")) 
 				@RequestBody String database) {
 		try {
 			checkDatabase(database);
@@ -105,16 +111,49 @@ public class LoaderResources  extends GenericResources {
 		}
 	}
 	
+	@GetMapping(value = "/download/graphs", produces = "*/*")
+	@Operation(operationId = "downloadGraphs", summary = "Download all graphs in a zip file")																 
+	public ResponseEntity<Object> downloadDocument(
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {GESTION,DIFFUSION},type = "string")) 
+				@RequestBody String database) {
+		try {
+			checkDatabase(database);
+			return downloadFile(null, database);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+	}
+	
+	
+	@GetMapping(value = "/graphs", produces = "*/*")
+	@Operation(operationId = "getAllGraphs", summary = "Get the list of all graphs in database")																 
+	public ResponseEntity<String> getAllGraphs(
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {GESTION,DIFFUSION},type = "string")) 
+				@RequestBody String database) {
+		String[] graphs;
+		try {
+			checkDatabase(database);
+			if (database.equals(GESTION)) {
+				graphs = repoGestion.getAllGraphs();
+			}else {
+				graphs = RepositoryPublication.getAllGraphs();
+			}
+			return ResponseEntity.ok(String.join("\n", graphs));
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());		}
+	}
+	
+	
 	private void checkDatabase(String database) throws RmesException {
 		if (database == null)  throw new RmesException(HttpStatus.BAD_REQUEST,"Database is missing", "Database is null");
-		if (!database.equals("gestion")&&!database.equals("diffusion")) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown : "+ database, "Database is "+database);
+		if (!database.equals(GESTION)&&!database.equals(DIFFUSION)) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown : "+ database, "Database is "+database);
 	}
 
 	private void uploadFile(MultipartFile trigFile, String graph, String database) throws RmesException {
 		String documentName = trigFile.getName();
 		try (InputStream content = trigFile.getInputStream()){
 			RDFFormat format = Rio.getParserFormatForFileName(trigFile.getOriginalFilename()).orElse(RDFFormat.TRIG);
-			if (database.equals("gestion")) {
+			if (database.equals(GESTION)) {
 				repoGestion.persistFile(content, format, graph);
 			}else {
 				RepositoryPublication.persistFile(content, format,graph);
@@ -123,23 +162,24 @@ public class LoaderResources  extends GenericResources {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR,"IOException : file " + documentName, e.getMessage());
 		}	
 	}
+
 	
 	private ResponseEntity<Object> downloadFile(String graph, String database) throws RmesException{
-		File trigFile ;
-		if (database.equals("gestion")) {
-			trigFile = repoGestion.getCompleteGraphInTrig(RdfUtils.toURI(graph));
+		File outFile ;
+		if (database.equals(GESTION)) {
+			outFile = repoGestion.getGraphAsFile(graph);
 		}else {
-			trigFile = RepositoryPublication.getCompleteGraphInTrig(RdfUtils.toURI(graph));
+			outFile = RepositoryPublication.getGraphAsFile(graph);
 		}
 
 		//Build Headers
-		String fileName = graph.replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
+		String fileName = graph == null ? database.concat(".zip") : graph.replace(RdfUtils.getBaseGraph(),"").replace("/","_").concat(".trig");
 		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentDisposition(content);
 		
 		//Get document as resource
-		Resource resource = new FileSystemResource(trigFile);
+		Resource resource = new FileSystemResource(outFile);
 		
 		//return the response with document
 		try {

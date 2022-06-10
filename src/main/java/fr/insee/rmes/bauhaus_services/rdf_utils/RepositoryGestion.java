@@ -145,13 +145,13 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public File getCompleteGraphInTrig(Resource context) throws RmesException {
-		try (RepositoryConnection conn = repositoryGestionInstance.getConnection() ){
-			return getCompleteGraphInTrig(conn, context);
-		}catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get Graph : " + context);
-		}
-		return null; 	
+	public File getGraphAsFile(String context) throws RmesException {
+			if (context != null) return getCompleteGraphInTrig(repositoryGestionInstance, context);
+			return getAllGraphsInZip(repositoryGestionInstance);
+	}
+	
+	public String[] getAllGraphs() throws RmesException {
+		return getAllGraphs(repositoryGestionInstance);
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
