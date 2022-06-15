@@ -81,7 +81,7 @@ public class LoaderResources  extends GenericResources {
 	@Operation(operationId = "uploadFile", summary = "Upload a ttl or trig file in database"  )
 	@PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
 	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
-	public ResponseEntity<Object> saveDocument(
+	public ResponseEntity<Object> UploadRdf(
 			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {GESTION,DIFFUSION},type = "string")) 
 				@RequestPart(value = "database") final String database,
 			@RequestPart(value = "graph", required = false)  final String graph,
@@ -111,6 +111,7 @@ public class LoaderResources  extends GenericResources {
 		}
 	}
 	
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
 	@GetMapping(value = "/download/graphs", produces = "*/*")
 	@Operation(operationId = "downloadGraphs", summary = "Download all graphs in a zip file")																 
 	public ResponseEntity<Object> downloadDocument(
