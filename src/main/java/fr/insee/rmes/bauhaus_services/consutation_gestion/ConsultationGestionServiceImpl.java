@@ -303,6 +303,26 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
             component.put("format", format);
         }
+
+        if(id.startsWith("m")){
+            JSONArray attributes = repoGestion.getResponseAsArray(buildRequest("getAttributeForMeasure.ftlh", params));
+            if(attributes.length() > 0){
+                JSONArray caracteristiques = new JSONArray();
+                for(int i = 0; i < attributes.length(); i++){
+                    JSONObject attribute = attributes.getJSONObject(i);
+                    if(attribute.has("attributeId")){
+                        JSONObject attributeLink = getComponent(attribute.getString("attributeId"));
+                        JSONObject value = new JSONObject();
+                        value.put("code", attribute.getString("attributeValueCode"));
+                        value.put("uri", attribute.getString("attributeValueIri"));
+                        attributeLink.put("value", value);
+                        caracteristiques.put(attributeLink);
+                    }
+                }
+                component.put("caracteristiques", caracteristiques);
+            }
+        }
+
         return component;
     }
 
