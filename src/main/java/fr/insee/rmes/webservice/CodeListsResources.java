@@ -73,7 +73,6 @@ public class CodeListsResources {
 
 	@DELETE
 	@Path("/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
 	public Response deleteCodeList(@PathParam(Constants.ID) String notation) {
 		try {
@@ -114,7 +113,6 @@ public class CodeListsResources {
 
 	@DELETE
 	@Path("/partial/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
 	@Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
 	public Response deletePartialCodeList(@PathParam(Constants.ID) String notation) {
 		try {
