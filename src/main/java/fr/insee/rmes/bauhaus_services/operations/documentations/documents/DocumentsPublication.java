@@ -32,7 +32,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -80,8 +79,8 @@ public class DocumentsPublication  extends RdfService{
 
 	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
 		Path file = Paths.get(originalPath);
-		Path targetPathInt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE);
-		Path targetPathExt = Paths.get(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE);
+		Path targetPathInt = Paths.get(config.getDocumentsStoragePublicationInterne());
+		Path targetPathExt = Paths.get(config.getDocumentsStoragePublicationExterne());
 
 		try {
 			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
@@ -108,11 +107,11 @@ public class DocumentsPublication  extends RdfService{
 			}
 			while (documentStatements.hasNext()) {
 				Statement st = documentStatements.next();
-				if (RdfUtils.toString(st.getPredicate()).endsWith("url")) {
+				if (RdfUtils.toString(st.getPredicate()).endsWith(Constants.URL)) {
 					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
 							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+					String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
@@ -169,8 +168,8 @@ public class DocumentsPublication  extends RdfService{
 			JSONObject tuple = (JSONObject) tuples.get(i);
 			String predicatString = tuple.getString("predicat");
 			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
-			if (predicatString.endsWith("url")) {
-				String newUrl = Config.DOCUMENTS_BASEURL.trim() + "/"+ filename;
+			if (predicatString.endsWith(Constants.URL)) {
+				String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
 				object = RdfUtils.toURI(newUrl);
 			} else {

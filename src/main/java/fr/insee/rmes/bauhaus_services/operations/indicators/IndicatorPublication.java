@@ -48,12 +48,12 @@ public class IndicatorPublication extends RdfService {
 				if (pred.endsWith("isValidated")
 						|| pred.endsWith("validationState")) {
 					// nothing, wouldn't copy this attr
-				} else if (pred.endsWith("wasGeneratedBy")
-						|| pred.endsWith("seeAlso")
-						|| pred.endsWith("replaces")
-						|| pred.endsWith("isReplacedBy")
-						|| pred.endsWith("contributor")
-						|| pred.endsWith("publisher")
+				} else if (pred.endsWith(Constants.WASGENERATEDBY)
+						|| pred.endsWith(Constants.SEEALSO)
+						|| pred.endsWith(Constants.REPLACES)
+						|| pred.endsWith(Constants.ISREPLACEDBY)
+						|| pred.endsWith(Constants.CONTRIBUTOR)
+						|| pred.endsWith(Constants.PUBLISHER)
 						|| pred.endsWith("accrualPeriodicity")) {
 					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
