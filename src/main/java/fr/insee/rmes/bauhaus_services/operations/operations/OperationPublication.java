@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -26,20 +26,17 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 
 @Component
 public class OperationPublication extends RdfService{
-	
-	@Autowired
-	private FamOpeSerIndUtils famOpeSerUtils;
-	
-	@Autowired
-	private OperationsUtils operationsUtils;
 
-	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, "contributor" };
+	@Autowired
+	ParentUtils ownersUtils;
 
-	public void publishOperation(String operationId) throws RmesException {
+
+	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
+
+	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		JSONObject operationJson = operationsUtils.getOperationJsonById(operationId);
 		
 		checkSeriesIsPublished(operationId, operationJson);
 
@@ -81,7 +78,7 @@ public class OperationPublication extends RdfService{
 	private void checkSeriesIsPublished(String operationId, JSONObject operationJson)
 			throws RmesException {
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
-		String status = famOpeSerUtils.getValidationStatus(seriesId);
+		String status = ownersUtils.getValidationStatus(seriesId);
 
 		if (PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
