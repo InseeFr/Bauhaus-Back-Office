@@ -302,6 +302,26 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             }
             component.put("format", format);
         }
+
+        if(id.startsWith("m")){
+            JSONArray attributes = repoGestion.getResponseAsArray(buildRequest("getAttributeForMeasure.ftlh", params));
+            if(attributes.length() > 0){
+                JSONArray caracteristiques = new JSONArray();
+                for(int i = 0; i < attributes.length(); i++){
+                    JSONObject attribute = attributes.getJSONObject(i);
+                    if(attribute.has("attributeId")){
+                        JSONObject attributeLink = getComponent(attribute.getString("attributeId"));
+                        JSONObject value = new JSONObject();
+                        value.put("code", attribute.getString("attributeValueCode"));
+                        value.put("uri", attribute.getString("attributeValueIri"));
+                        attributeLink.put("value", value);
+                        caracteristiques.put(attributeLink);
+                    }
+                }
+                component.put("caracteristiques", caracteristiques);
+            }
+        }
+
         return component;
     }
 
@@ -427,6 +447,21 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         for (int i = 0; i < codes.length(); i++) {
             JSONObject code = codes.getJSONObject(i);
 
+            HashMap<String, Object> closeMatchParams = new HashMap<>();
+            closeMatchParams.put("CONCEPTS_GRAPH", Config.CODELIST_GRAPH);
+            closeMatchParams.put("CONCEPT_ID", code.getString("code"));
+            JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", closeMatchParams));
+
+            if(closeMatch.length() > 0){
+                JSONArray codesEquivalents = new JSONArray();
+                for(int j = 0; j < closeMatch.length(); j++){
+                    JSONObject codeEquivalent = new JSONObject();
+                    codeEquivalent.put("code", closeMatch.getJSONObject(j).getString("closeMatchNotation"));
+                    codeEquivalent.put("uri", closeMatch.getJSONObject(j).getString("closeMatch"));
+                    codesEquivalents.put(codeEquivalent);
+                }
+                code.put("codesEquivalents", codesEquivalents);
+            }
             if(code.has(Constants.PARENTS)){
                 JSONArray children = new JSONArray();
                 String parentCode = code.getString(Constants.PARENTS);

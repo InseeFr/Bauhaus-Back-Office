@@ -77,6 +77,7 @@ public class CodeListsResources extends GenericResources  {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
+
 	@DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
 	public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
@@ -114,6 +115,7 @@ public class CodeListsResources extends GenericResources  {
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
+
 
 	@DeleteMapping(value = "/partial/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
