@@ -7,24 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -51,8 +48,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  *         produces: - application/json
  *
  */
-@Component
-@Path("/")
+@RestController
+@RequestMapping("/")
 @Tag(name="Application", description="Application API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
@@ -63,7 +60,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class PublicResources {
+public class PublicResources extends GenericResources  {
 
 	static final Logger logger = LogManager.getLogger(PublicResources.class);
 
@@ -73,30 +70,28 @@ public class PublicResources {
 	@Autowired
 	StampsService stampsService;
 
-	@GET
-	@Path("/init")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getInit", summary = "Initial properties", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
-	public Response getProperties() throws RmesException {
+	public ResponseEntity<Object> getProperties() throws RmesException {
 		JSONObject props = new JSONObject();
 		try {
-			props.put("appHost", Config.APP_HOST);
-			props.put("defaultContributor", Config.DEFAULT_CONTRIBUTOR);
-			props.put("defaultMailSender", Config.DEFAULT_MAIL_SENDER);
-			props.put("maxLengthScopeNote", Config.MAX_LENGTH_SCOPE_NOTE);
-			props.put("lg1", Config.LG1);
-			props.put("lg2", Config.LG2);
-			props.put("authType", AuthType.getAuthType());
+			props.put("appHost", config.getAppHost());
+			props.put("defaultContributor", config.getDefaultContributor());
+			props.put("defaultMailSender", config.getDefaultMailSender());
+			props.put("maxLengthScopeNote", config.getMaxLengthScopeNote());
+			props.put("lg1", config.getLg1());
+			props.put("lg2", config.getLg2());
+			props.put("authType", AuthType.getAuthType(config));
 			props.put("modules", getActiveModules());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,e.getMessage(),e.getClass().getSimpleName());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(props.toString()).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(props.toString());
 	}
 
 	private List<String> getActiveModules() {
-        String dirPath = Config.DOCUMENTS_STORAGE_GESTION + "/BauhausActiveModules.txt";
+        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
         File file = new File(dirPath);
         try {
 			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
@@ -106,63 +101,54 @@ public class PublicResources {
 		} 
 	}
 
-	@GET
-	@Path("/stamps")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-	public Response getStamps() {
+	public ResponseEntity<Object> getStamps() {
 			String entity = null;
 			try {
 				entity = stampsService.getStamps();
 			} catch (RmesException e) {
-				return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
-			return Response.status(HttpStatus.SC_OK).entity(entity).build();
+			return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
-	
-	@GET
-	@Path("/disseminationStatus")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getDisseminationStatus", summary = "List of dissemination status", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=LabelUrl.class))))})
-	public Response getDisseminationStatus() {
+	public ResponseEntity<Object> getDisseminationStatus() {
 		TreeSet<String> dsList = new TreeSet<>();
 		for (DisseminationStatus ds : DisseminationStatus.values()) {
 			try {
 				dsList.add(new ObjectMapper().writeValueAsString(ds));
 			} catch (JsonProcessingException e) {
-				return Response.status(500).entity(e.getMessage()).build();
+				return ResponseEntity.status(500).body(e.getMessage());
 			}
 		}
-		return Response.status(HttpStatus.SC_OK).entity(dsList.toString()).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(dsList.toString());
 	}
 
-	@GET
-	@Path("/roles")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Roles.class))))})
-	public Response getRoles() {
+	public ResponseEntity<Object> getRoles() {
 		String entity = null;
 		try {
 			entity = userRolesManagerService.getRoles();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(entity).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
-	@GET
-	@Path("/agents")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping(value = "/agents", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getAgents() {
+	public ResponseEntity<Object>  getAgents() {
 		String entity = null;
 		try {
-			entity = userRolesManagerService.getAgents();
+			entity = userRolesManagerService.getAgentsSugoi();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(entity).build();
+		return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
 }

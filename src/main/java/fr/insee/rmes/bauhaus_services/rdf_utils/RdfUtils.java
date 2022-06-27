@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
@@ -21,61 +22,63 @@ import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
+@Service
 public class RdfUtils {
 	
+	private static Config config;
+
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-	private static final String CONCEPTS_SCHEME = Config.BASE_URI_GESTION + Config.CONCEPTS_SCHEME;
-	
+
 	public static Resource blankNode(){
 		return factory.createBNode();
 	}
 	
 	public static Resource conceptGraph(){
-		return factory.createIRI(Config.CONCEPTS_GRAPH);
+		return factory.createIRI(config.getConceptsGraph());
 	}
 
 	public static Resource documentsGraph() {
-		return factory.createIRI(Config.DOCUMENTS_GRAPH);
+		return factory.createIRI(config.getDocumentsGraph());
 	}
 	
 	public static Resource operationsGraph(){
-		return factory.createIRI(Config.OPERATIONS_GRAPH);
+		return factory.createIRI(config.getOperationsGraph());
 	}
 
 
 	public static Resource productsGraph(){
-		return factory.createIRI(Config.PRODUCTS_GRAPH);
+		return factory.createIRI(config.getProductsGraph());
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(Config.DOCUMENTATIONS_GRAPH +"/"+ id);
+		return factory.createIRI(config.getDocumentationsGraph() +"/"+ id);
 	}
 	
 
 	public static Resource simsGeographyGraph(){
-		return factory.createIRI(Config.DOCUMENTATIONS_GEO_GRAPH);
+		return factory.createIRI(config.getDocumentationsGeoGraph());
 	}
 	
 	public static Resource structureGraph(){
-		return factory.createIRI(Config.STRUCTURES_GRAPH);
+		return factory.createIRI(config.getStructuresGraph());
 	}
 	public static Resource codesListGraph(){
-		return factory.createIRI(Config.CODELIST_GRAPH);
+		return factory.createIRI(config.getCodeListGraph());
 	}
 	
 	public static Resource structureComponentGraph(){
-		return factory.createIRI(Config.STRUCTURES_COMPONENTS_GRAPH);
+		return factory.createIRI(config.getStructuresComponentsGraph());
 	}
 	
 	public static Resource conceptScheme(){
-		return factory.createIRI(CONCEPTS_SCHEME);
+		return factory.createIRI(config.getBaseUriGestion() + config.getConceptsScheme());
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
-		return factory.createIRI(objType.getBaseUri() + "/" + id);
+		return factory.createIRI(objType.getBaseUriGestion() + "/" + id);
 	}
 	
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
@@ -139,7 +142,7 @@ public class RdfUtils {
 
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUri() 
+				ObjectType.CONCEPT.getBaseUriGestion() 
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -149,7 +152,7 @@ public class RdfUtils {
 	public static IRI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUri()
+				ObjectType.CONCEPT.getBaseUriGestion()
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
@@ -158,7 +161,7 @@ public class RdfUtils {
 	
 	public static IRI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-		return RdfUtils.factory.createIRI(ObjectType.CONCEPT.getBaseUri() + "/" + conceptId + "/" + datableNote.getPath()
+		return RdfUtils.factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion() + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 	}
 	
@@ -263,11 +266,11 @@ public class RdfUtils {
 	public static IRI createXSDIRI(String suffix){
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
-	
-	private RdfUtils() {
-	    throw new IllegalStateException("Utility class");
-	}
 
+	public static void setConfig(Config config) {
+		RdfUtils.config = config;
+	}
 	
+
 
 }

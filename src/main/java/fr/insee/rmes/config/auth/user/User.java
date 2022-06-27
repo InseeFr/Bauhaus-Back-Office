@@ -1,6 +1,7 @@
 package fr.insee.rmes.config.auth.user;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,6 +21,11 @@ public class User {
 		this.stamp = stamp;
 	}
 	
+	public User(List<String> roles, String stamp) {
+		this.roles = new JSONArray(roles);
+		this.stamp = stamp;
+	}
+	
 	public JSONArray getRoles() {
 		return roles;
 	}
@@ -35,8 +41,6 @@ public class User {
 	public Collection<GrantedAuthority> getAuthorities() {
         return authorities;
     }
-    public void setAuthorities(Collection<GrantedAuthority> authorities) {
-        this.authorities = authorities;
-    }
+
 	
 }

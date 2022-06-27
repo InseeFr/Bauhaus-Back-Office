@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +12,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 
 
 class CodeListsResourcesTest {
@@ -40,8 +41,10 @@ class CodeListsResourcesTest {
 
     @BeforeEach
     public void init() {
+    	Config config = new Config();
     	codeListService = Mockito.spy(new CodeListServiceImpl());
-        MockitoAnnotations.initMocks(this);
+    	CodeListQueries.setConfig(config);
+        MockitoAnnotations.openMocks(this);
     }
 
     //getCodeListByNotation//
@@ -51,9 +54,9 @@ class CodeListsResourcesTest {
     	when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject());
     	when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
     	
-        Response response = codeListResource.getCodeListByNotation(NOTATION);
-        assertEquals(Status.OK.getStatusCode(), response.getStatus());
-        assertEquals("{\"notation\":\"213\"}", response.getEntity());
+        ResponseEntity<Object> response = codeListResource.getCodeListByNotation(NOTATION);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("{\"notation\":\"213\"}", response.getBody());
     }
 
 
