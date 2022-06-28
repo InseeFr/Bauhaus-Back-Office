@@ -2,16 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -25,33 +18,28 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
+import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
-import fr.insee.rmes.bauhaus_services.organizations.OrganizationsServiceImpl;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
 import fr.insee.rmes.model.operations.documentations.MAS;
@@ -60,8 +48,6 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.EncodingType;
-import fr.insee.rmes.utils.XMLUtils;
 
 
 @Component
@@ -69,35 +55,24 @@ public class DocumentationsUtils extends RdfService{
 
 	static final Logger logger = LogManager.getLogger(DocumentationsUtils.class);
 
-	@Autowired
-	private SeriesUtils seriesUtils;
-
-	@Autowired
-	private OperationsUtils operationsUtils;
-
-	@Autowired
-	private DocumentationExport docExport;
 
 	@Autowired
 	private DocumentationsRubricsUtils documentationsRubricsUtils;
-
-	@Autowired
-	private IndicatorsUtils indicatorsUtils;
-
+	
 	@Autowired
 	private DocumentationPublication documentationPublication;
 
 	@Autowired
-	LangService codeListUtils;
+	LangService langService;
 
 	@Autowired
-	private FamOpeSerIndUtils famOpeSerUtils;
+	OrganizationsService organizationsServiceImpl;
 
 	@Autowired
-	OrganizationsServiceImpl organizationsServiceImpl;
-
+	CodeListService codeListServiceImpl;
+	
 	@Autowired
-	CodeListServiceImpl codeListServiceImpl;
+	ParentUtils parentUtils;
 
 	/**
 	 * GETTER
@@ -142,7 +117,7 @@ public class DocumentationsUtils extends RdfService{
 		sims.setLabelLg1(jsonSims.getString(Constants.LABEL_LG1));
 		sims.setLabelLg2(jsonSims.getString(Constants.LABEL_LG2));
 
-		String[] target = getDocumentationTargetTypeAndId(idSims);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(idSims);
 		String targetType = target[0];
 		String idDatabase = target[1];
 
@@ -192,7 +167,7 @@ public class DocumentationsUtils extends RdfService{
 		if (create) {
 			id = checkTargetHasNoSimsAndcreateSimsId(idTarget);
 			sims.setId(id);
-			checkIfTargetIsASeriesWithOperations(idTarget);
+			parentUtils.checkIfParentIsASeriesWithOperations(idTarget);
 		} else {
 			checkIdsBeforeUpdate(id, sims.getId(), idTarget);
 		}
@@ -202,8 +177,8 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(Config.OPERATIONS_BASE_URI)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(idTarget);
+		if (RdfUtils.toString(targetUri).contains(config.getOperationsBaseUri())) {
+			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
 			if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
@@ -250,7 +225,7 @@ public class DocumentationsUtils extends RdfService{
 		Resource graph = RdfUtils.simsGraph(id);
 
 		// Find target
-		String[] target = getDocumentationTargetTypeAndId(id);
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 		String targetId = target[1];
 		IRI targetUri = null;
@@ -269,7 +244,7 @@ public class DocumentationsUtils extends RdfService{
 		/* Check rights */
 		IRI seriesOrIndicatorUri = targetUri;
 		if (targetType.equals(Constants.OPERATION_UP)) {
-			seriesOrIndicatorUri = operationsUtils.getSeriesUriByOperationId(targetId);
+			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(targetId);
 		}
 		if (!stampsRestrictionsService.canCreateSims(seriesOrIndicatorUri)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_CREATION_RIGHTS_DENIED,
@@ -277,10 +252,7 @@ public class DocumentationsUtils extends RdfService{
 		}
 
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status = famOpeSerUtils.getValidationStatus(targetId);
-		if (status.equals(Constants.UNDEFINED)) {
-			status = indicatorsUtils.getValidationStatus(targetId);
-		}
+		String status = parentUtils.getValidationStatus(targetId);
 		if (PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
 					"This metadataReport cannot be published before its target is published. ",
@@ -309,32 +281,25 @@ public class DocumentationsUtils extends RdfService{
 	private IRI getTarget(Documentation sims) throws RmesException {
 		IRI target = null;
 
-		if (StringUtils.isNotEmpty(sims.getIdOperation())
-				&& famOpeSerUtils.checkIfObjectExists(ObjectType.OPERATION, sims.getIdTarget())) {
+		if (StringUtils.isNotEmpty(sims.getIdOperation())) {
 			target = RdfUtils.objectIRI(ObjectType.OPERATION, sims.getIdTarget());
 		}
-		if (StringUtils.isNotEmpty(sims.getIdSeries()) && famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES, sims.getIdTarget())) {
+		if (StringUtils.isNotEmpty(sims.getIdSeries())) {
 			target = RdfUtils.objectIRI(ObjectType.SERIES, sims.getIdTarget());
 		}
-		if (StringUtils.isNotEmpty(sims.getIdIndicator())
-				&& indicatorsUtils.checkIfIndicatorExists(sims.getIdTarget())) {
+		if (StringUtils.isNotEmpty(sims.getIdIndicator())) {				 
 			target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
+		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",
 					"id Operation/Series/Indicator doesn't match with an existing Operation/Series/Indicator");
 		}
 		return target;
 	}
 
-	private void checkIfTargetIsASeriesWithOperations(String idTarget) throws RmesException {
-		if (famOpeSerUtils.checkIfObjectExists(ObjectType.SERIES, idTarget) && seriesUtils.hasOperations(idTarget)) {
-			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
-					"Cannot create Sims for a series which already has operations", idTarget);
-		}
 
-	}
 
 	/**
 	 * Check the existing id is the same that the id to set
@@ -348,13 +313,13 @@ public class DocumentationsUtils extends RdfService{
 		// Check idSims
 		if (idRequest == null || idSims == null || !idRequest.equals(idSims)) {
 			logger.error("Can't update a documentation if idSims or id don't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "idSims can't be null, and must be the same in request",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "idSims can't be null, and must be the same in request",
 					"idSims in param : " + idRequest + " /id in body : " + idSims);
 		}
 		// Check id Operation/Serie/Indicator
 		if (idTarget == null) {
 			logger.error("Can't update a documentation if id Operation/Serie/Indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator can't be null",
 					"id Operation/Serie/Indicator or id is null");
 		}
 		JSONObject existingIdTarget = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
@@ -375,7 +340,7 @@ public class DocumentationsUtils extends RdfService{
 		}
 		if (!idTarget.equals(idDatabase)) {
 			logger.error("id Operation/Serie/Indicator and idSims don't match");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id Operation/Serie/Indicator and idSims don't match",
 					"Documentation linked to Operation/Serie/Indicator : " + existingIdTarget);
 		}
 	}
@@ -390,13 +355,13 @@ public class DocumentationsUtils extends RdfService{
 	private String checkTargetHasNoSimsAndcreateSimsId(String idTarget) throws RmesException {
 		if (idTarget == null) {
 			logger.error("Can't create a documentation if operation/serie/indicator doesn't exist");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "id operation/serie/indicator can't be null",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "id operation/serie/indicator can't be null",
 					"id is null");
 		}
 		JSONObject existingIdSims = repoGestion.getResponseAsObject(DocumentationsQueries.getSimsByTarget(idTarget));
 		if (existingIdSims != null && existingIdSims.has(Constants.ID_SIMS)) {
 			logger.error("Documentation already exists");
-			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
+			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator already has a documentation",
 					"Maybe this is an update");
 		}
 		return createSimsID();
@@ -418,8 +383,8 @@ public class DocumentationsUtils extends RdfService{
 		model.add(simsUri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(state), graph);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), Config.LG1, model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), Config.LG2, model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, sims.getLabelLg2(), config.getLg2(), model, graph);
 
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.CREATED, sims.getCreated(), model, graph);
 		RdfUtils.addTripleDateTime(simsUri, DCTERMS.MODIFIED, sims.getUpdated(), model, graph);
@@ -450,144 +415,8 @@ public class DocumentationsUtils extends RdfService{
 		return String.valueOf(newId);
 	}
 
-	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {
-		logger.info("Search Sims Target Type and id");
-
-		JSONObject existingIdTarget =  repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));
-		String idDatabase = null;
-		String targetType = null;
-		if (existingIdTarget != null ) {
-			idDatabase = (String) existingIdTarget.get(Constants.ID_OPERATION);
-
-			if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-				idDatabase = (String) existingIdTarget.get(Constants.ID_SERIES);
-
-				if (idDatabase == null || StringUtils.isEmpty(idDatabase)) {
-					idDatabase = (String) existingIdTarget.get(Constants.ID_INDICATOR);
-					targetType = Constants.INDICATOR_UP;
-				} else {
-					targetType = Constants.SERIES_UP;
-				}
-			} else {
-				targetType = Constants.OPERATION_UP;
-			}
-		}
-		return new String[] { targetType, idDatabase };	
-	}
-
-	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {
-		logger.info("Search Sims Owners' Stamps");
-		String stamps = null;
-		JSONObject target = repoGestion.getResponseAsObject(DocumentationsQueries.getTargetByIdSims(idSims));		
-		if (target != null) {
-			String idOperation = target.getString(Constants.ID_OPERATION);
-			String idSerie = target.getString(Constants.ID_SERIES);
-			String idIndicator = target.getString(Constants.ID_INDICATOR);
-
-			if (idOperation != null && !idOperation.isEmpty()) {
-				IRI seriesUri = operationsUtils.getSeriesUriByOperationId(idOperation);
-				stamps = seriesUtils.getSeriesCreators(seriesUri).toString();
-			} else if (idSerie != null && !idSerie.isEmpty()) {
-				stamps = seriesUtils.getSeriesCreators(idSerie).toString();
-			} else if (idIndicator != null && !idIndicator.isEmpty()) {
-				stamps = indicatorsUtils.getIndicatorJsonById(idIndicator).getJSONArray(Constants.CREATORS).toString();
-			} else {
-				throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Documentation has no target",
-						"Check your documentation creation");
-			}
-		}
-		return stamps;
-	}
-
-
-	public Response exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
-		Map<String,String> xmlContent = new HashMap<>();
-		String targetType = getXmlContent(id, xmlContent);
-		return docExport.exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
-	}
 	
 
-	public Response exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		Map<String,String> xmlContent = new HashMap<>();
-		String targetType = getXmlContent(id, xmlContent);
-		return docExport.exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
-	}
-
-	public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
-		String emptyXML=XMLUtils.produceEmptyXML();
-		Operation operation;
-		Series series;
-		String operationXML;
-		String seriesXML = emptyXML;
-		String indicatorXML;
-
-		String[] target = getDocumentationTargetTypeAndId(id);
-		String targetType = target[0];
-		String idDatabase = target[1];
-
-		List<String>neededCodeLists=new ArrayList<>();
-
-		if (targetType.equals(Constants.OPERATION_UP)) {
-			operation=operationsUtils.getOperationById(idDatabase);
-			operationXML = XMLUtils.produceXMLResponse(operation);
-			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(operationXML,Constants.ACCRUAL_PERIODICITY_LIST));
-			String idSeries=operation.getSeries().getId();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
-			seriesXML = XMLUtils.produceXMLResponse(series);
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
-		} else {operationXML = emptyXML;}
-
-
-		if (targetType.equals(Constants.INDICATOR_UP)) {
-			indicatorXML=XMLUtils.produceXMLResponse(
-					indicatorsUtils.getIndicatorById(idDatabase,true));
-			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
-			String idSeries=XMLUtils.getTagValues(
-					XMLUtils.getTagValues(
-							indicatorXML,
-							Constants.WASGENERATEDBY).iterator().next(),
-					Constants.ID).iterator().next();
-			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
-			seriesXML = XMLUtils.produceXMLResponse(series);
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
-		} else {indicatorXML = emptyXML;}
-
-
-		if (targetType.equals(Constants.SERIES_UP)) {
-			seriesXML=XMLUtils.produceXMLResponse(
-					seriesUtils.getSeriesById(idDatabase,EncodingType.XML));
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
-			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.ACCRUAL_PERIODICITY_LIST));
-		}
-
-		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
-
-		String simsXML=XMLUtils.produceResponse(getFullSimsForXml(id), "application/xml");
-		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
-
-		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
-
-		String codeListsXML="";
-		codeListsXML=codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
-
-		for(String code : neededCodeLists) {
-			codeListsXML=codeListsXML.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
-		}
-		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
-
-
-		xmlContent.put("simsFile",  simsXML);
-		xmlContent.put("seriesFile",  seriesXML);
-		xmlContent.put("operationFile",  operationXML);
-		xmlContent.put("indicatorFile",  indicatorXML);
-		xmlContent.put("codeListsFile",  codeListsXML);
-		xmlContent.put("organizationsFile",  organizationsXML);
-		return targetType;
-	}
 
 	public MSD buildMSDFromJson(JSONArray jsonMsd) {
 		List<MAS> msd = new ArrayList<>();
@@ -621,14 +450,15 @@ public class DocumentationsUtils extends RdfService{
 
 		return msd ;
 	}
+	
 
-	public String buildShellSims() throws RmesException {
-		MSD msd= operationsUtils.getMSD();
-		return XMLUtils.produceXMLResponse(msd);
+	public MSD getMSD() throws RmesException {
+		return buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
 	}
 
-	public Status deleteMetadataReport(String id) throws RmesException {
-		String[] target = getDocumentationTargetTypeAndId(id);
+
+	public HttpStatus deleteMetadataReport(String id) throws RmesException {
+		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
 		String targetType = target[0];
 
 		if (!Constants.SERIES_UP.equals(targetType)) {
@@ -641,8 +471,8 @@ public class DocumentationsUtils extends RdfService{
 		}		
 		Resource graph = RdfUtils.simsGraph(id);
 
-		Response.Status result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
-		if (result.equals(Status.OK)) {
+		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
+		if (result.equals(HttpStatus.OK)) {
 			result = RepositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));	
 		}
 
@@ -657,9 +487,10 @@ public class DocumentationsUtils extends RdfService{
 		Resource graph = RdfUtils.simsGraph(idSims);
 
 		/*Optional*/
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG1 + " " + prefLabeLg1, Config.LG1, model, graph);
-		RdfUtils.addTripleString(simsUri, RDFS.LABEL, Config.DOCUMENTATIONS_TITLE_PREFIX_LG2 + " " + prefLabelLg2, Config.LG2, model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg1() + " " + prefLabeLg1, config.getLg1(), model, graph);
+		RdfUtils.addTripleString(simsUri, RDFS.LABEL, config.getDocumentationsTitlePrefixLg2() + " " + prefLabelLg2, config.getLg2(), model, graph);
 
 		repoGestion.overrideTriplets(simsUri, model, graph);
 	}
+	
 }

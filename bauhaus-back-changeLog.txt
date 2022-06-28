@@ -1,3 +1,7 @@
+3.0.18 : - Back : 
+				- Correction de la vulnérabilité Spring https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
+		 		- Changement de gestionnaire de droit (Igesa -> Sugoi)
+		 - Front : Correction de la mise à jour d'un document (fichier physique et RDF peuvent être mis à jour simultanément)
 3.0.17 : - Back : Passage à Java 11
 		 - Front : mise à jour des dépendances
 		 - Ajout de la publication d'une nomenclature

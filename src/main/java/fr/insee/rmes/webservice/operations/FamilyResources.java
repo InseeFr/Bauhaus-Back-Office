@@ -1,85 +1,78 @@
 package fr.insee.rmes.webservice.operations;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import fr.insee.rmes.model.operations.Operation;
-import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
+import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.webservice.OperationsCommonResources;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 
 /***************************************************************************************************
  * FAMILY
  ******************************************************************************************************/
-@Component
+
 @Qualifier("Family")
-@Path("/operations")
+@RestController
+@SecurityRequirement(name = "bearerAuth")
+@RequestMapping(value = "/operations",  produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.TEXT_PLAIN_VALUE })
 public class FamilyResources extends OperationsCommonResources {
 
-	@GET
-	@Path("/families")
-	@Produces(MediaType.APPLICATION_JSON)
+	
+	@GetMapping("/families")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public Response getFamilies() throws RmesException {
+	public ResponseEntity<Object> getFamilies() throws RmesException {
 		String jsonResultat = operationsService.getFamilies();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	@GET
-	@Path("/families/advanced-search")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping("/families/advanced-search")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
-	public Response getFamiliesForSearch() throws RmesException {
+	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
 		String jsonResultat = operationsService.getFamiliesForSearch();
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	@GET
-	@Path("/families/{id}/seriesWithReport")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping("/families/{id}/seriesWithReport")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithReport", summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
-	public Response getSeriesWithReport(@PathParam(Constants.ID) String id) {
+	public ResponseEntity<Object> getSeriesWithReport(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = operationsService.getSeriesWithReport(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	@GET
-	@Path("/family/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping("/family/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilyByID", summary = "Get a family", 
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 			)
-	public Response getFamilyByID(@PathParam(Constants.ID) String id) throws RmesException {
+	public ResponseEntity<Object> getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
 		String jsonResultat = operationsService.getFamilyByID(id);
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
 	/**
@@ -88,21 +81,18 @@ public class FamilyResources extends OperationsCommonResources {
 	 * @return response
 	 */
 
-	@Secured({ Roles.SPRING_ADMIN })
-	@PUT
-	@Path("/family/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PutMapping("/family/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update family" )
-	public Response setFamilyById(
-			@PathParam(Constants.ID) String id, 
-			@RequestBody(description = "Family to update", required = true,
-			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+	public ResponseEntity<Object> setFamilyById(
+			@PathVariable(Constants.ID) String id, 
+			@Parameter(description = "Family to update", required = true, content = @Content(schema = @Schema(implementation = Family.class))) @RequestBody String body) {
 		try {
 			operationsService.setFamily(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(Status.NO_CONTENT).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 
@@ -111,36 +101,32 @@ public class FamilyResources extends OperationsCommonResources {
 	 * @param body
 	 * @return response
 	 */
-	@Secured({ Roles.SPRING_ADMIN })
-	@POST
-	@Path("/family")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PostMapping("/family")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
-	public Response createFamily(
-			@RequestBody(description = "Family to create", required = true, 
-			content = @Content(schema = @Schema(implementation = Family.class))) String body) {
+	public ResponseEntity<Object> createFamily(
+			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
+			@RequestBody String body) {
 		String id = null;
 		try {
 			id = operationsService.createFamily(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@Secured({ Roles.SPRING_ADMIN })
-	@PUT
-	@Path("/family/validate/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PutMapping("/family/validate/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Family validation")
-	public Response setFamilyValidation(
-			@PathParam(Constants.ID) String id) throws RmesException {
+	public ResponseEntity<Object> setFamilyValidation(
+			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setFamilyValidation(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 

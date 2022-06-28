@@ -25,7 +25,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -171,12 +170,12 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
 		/*Required*/
-		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), Config.LG1), RdfUtils.simsGeographyGraph());
+		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), config.getLg1()), RdfUtils.simsGeographyGraph());
 
 		/*Optional*/
-		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), Config.LG2, model, RdfUtils.simsGeographyGraph());
-		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), Config.LG1, model, RdfUtils.simsGeographyGraph());
-		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), Config.LG2, model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), config.getLg1(), model, RdfUtils.simsGeographyGraph());
+		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 
 
 		geoFeature.getUnions().forEach(feature -> {

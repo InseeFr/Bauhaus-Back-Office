@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.BadRequestException;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,8 +29,8 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -237,16 +235,16 @@ public class StructureUtils extends RdfService {
         /*Required*/
         model.add(structureIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(structureId), graph);
         model.add(structureIri, SKOS.NOTATION, RdfUtils.setLiteralString(structure.getIdentifiant()), graph);
-        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), Config.LG1), graph);
+        model.add(structureIri, RDFS.LABEL, RdfUtils.setLiteralString(structure.getLabelLg1(), config.getLg1()), graph);
         model.add(structureIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status.toString()), graph);
 
         /*Optional*/
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.CREATED, structure.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(structureIri, DCTERMS.MODIFIED, structure.getUpdated(), model, graph);
 
-        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), Config.LG2, model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), Config.LG2, model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(structureIri, DCTERMS.IS_REQUIRED_BY, structure.getIsRequiredBy(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
@@ -353,13 +351,13 @@ public class StructureUtils extends RdfService {
     private void validateStructure(Structure structure) throws RmesException {
         checkUnicityForStructure(structure);
         if (structure.getId() == null) {
-            throw new BadRequestException("The property identifiant is required");
+            throw new RmesBadRequestException("The property identifiant is required");
         }
         if (structure.getLabelLg1() == null) {
-            throw new BadRequestException("The property labelLg1 is required");
+            throw new RmesBadRequestException("The property labelLg1 is required");
         }
         if (structure.getLabelLg2() == null) {
-            throw new BadRequestException("The property labelLg2 is required");
+            throw new RmesBadRequestException("The property labelLg2 is required");
         }
     }
 
@@ -370,7 +368,7 @@ public class StructureUtils extends RdfService {
     }
 
     public String publishStructure(JSONObject structure) throws RmesException {
-        if(structure.isNull("creator") || "".equals(structure.getString("creator"))){
+        if(structure.isNull(Constants.CREATOR) || "".equals(structure.getString(Constants.CREATOR))){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
@@ -378,10 +376,10 @@ public class StructureUtils extends RdfService {
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        String id = structure.getString("id");
+        String id = structure.getString(Constants.ID);
         JSONArray ids = repoGestion.getResponseAsArray(StructureQueries.getUnValidatedComponent(id));
         for (int i = 0; i < ids.length(); i++) {
-            String idComponent = ((JSONObject) ids.get(i)).getString("id");
+            String idComponent = ((JSONObject) ids.get(i)).getString(Constants.ID);
             try {
                 structureComponent.publishComponent(idComponent);
             } catch (RmesException e) {

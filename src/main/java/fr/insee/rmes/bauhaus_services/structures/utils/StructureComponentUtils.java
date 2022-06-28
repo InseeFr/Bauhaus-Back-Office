@@ -3,8 +3,6 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.ws.rs.BadRequestException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -30,8 +28,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -88,7 +86,7 @@ public class StructureComponentUtils extends RdfService {
         }
 
         if (component.getId() == null || !component.getId().equals(componentId)) {
-            throw new BadRequestException("The id of the component should be the same as the one defined in the request");
+            throw new RmesBadRequestException("The id of the component should be the same as the one defined in the request");
         }
 
         validateComponent(component);
@@ -118,7 +116,7 @@ public class StructureComponentUtils extends RdfService {
 
     public String createComponent(MutualizedComponent component) throws RmesException {
         if (component.getId() != null) {
-            throw new BadRequestException("During the creation of a new component, the id property should be null");
+            throw new RmesBadRequestException("During the creation of a new component, the id property should be null");
         }
         String id = generateNextId(component.getType());
 
@@ -170,8 +168,8 @@ public class StructureComponentUtils extends RdfService {
         /*Required*/
         model.add(componentURI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(component.getId()), graph);
 
-        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), Config.LG1), graph);
-        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), Config.LG2), graph);
+        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), config.getLg1()), graph);
+        model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), config.getLg2()), graph);
         model.add(componentURI, SKOS.NOTATION, RdfUtils.setLiteralString(component.getIdentifiant()), graph);
         model.add(componentURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status), graph);
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
@@ -198,29 +196,30 @@ public class StructureComponentUtils extends RdfService {
             RdfUtils.addTripleUri(componentURI, RDFS.RANGE, component.getRange(), model, graph);
 
             if (component.getRange().equals(XSD.DATE.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
             }
             else if (component.getRange().equals(XSD.DATETIME.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
             }
             else if (component.getRange().equals(XSD.INTEGER.stringValue()) || component.getRange().equals(XSD.DOUBLE.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinInclusive(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxInclusive(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("minInclusive"), component.getMinInclusive(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI("maxInclusive"), component.getMaxInclusive(), config.getLg1(), model, graph);
+
             }
             else if (component.getRange().equals(XSD.STRING.stringValue())) {
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), Config.LG1, model, graph);
-                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), Config.LG1, model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MIN_LENGTH), component.getMinLength(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(MAX_LENGTH), component.getMaxLength(), config.getLg1(), model, graph);
+                RdfUtils.addTripleString(componentURI, RdfUtils.createXSDIRI(PATTERN), component.getPattern(), config.getLg1(), model, graph);
             }
         }
 
+
         String codeListIri = (component.getCodeList() != null && component.getCodeList() != "") ? component.getCodeList() : component.getFullCodeListValue();
         RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, codeListIri, model, graph);
-        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), Config.LG1, model, graph);
-        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), Config.LG2, model, graph);
-
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), config.getLg2(), model, graph);
         repoGestion.loadSimpleObject(componentURI, model, null);
     }
 
@@ -251,21 +250,21 @@ public class StructureComponentUtils extends RdfService {
     }
 
 
-    private void validateComponent(MutualizedComponent component) {
+    private void validateComponent(MutualizedComponent component) throws RmesBadRequestException {
         if (component.getIdentifiant() == null) {
-            throw new BadRequestException("The property identifiant is required");
+            throw new RmesBadRequestException("The property identifiant is required");
         }
         if (component.getLabelLg1() == null) {
-            throw new BadRequestException("The property labelLg1 is required");
+            throw new RmesBadRequestException("The property labelLg1 is required");
         }
         if (component.getLabelLg2() == null) {
-            throw new BadRequestException("The property labelLg2 is required");
+            throw new RmesBadRequestException("The property labelLg2 is required");
         }
         if (component.getType() == null) {
-            throw new BadRequestException("The property type is required");
+            throw new RmesBadRequestException("The property type is required");
         }
         if (!Arrays.asList(QB.getURIForComponent()).contains(component.getType())) {
-            throw new BadRequestException("The property type is not valid");
+            throw new RmesBadRequestException("The property type is not valid");
         }
 
     }
@@ -312,7 +311,7 @@ public class StructureComponentUtils extends RdfService {
 
     public String publishComponent(JSONObject component) throws RmesException {
 
-        if(jsonObjecthasPropertyNullOrEmpty(component, "creator")){
+        if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
@@ -320,7 +319,7 @@ public class StructureComponentUtils extends RdfService {
             throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
-        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString("concept")))){
+        if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
         }
 
@@ -338,7 +337,7 @@ public class StructureComponentUtils extends RdfService {
         mutualizedComponent.setUpdated(DateUtils.getCurrentDate());
 
         String type = component.getString("type");
-        String id = component.getString("id");
+        String id = component.getString(Constants.ID);
 
         if (type.equals(QB.ATTRIBUTE_PROPERTY.stringValue())) {
             componentPublication.publishComponent(RdfUtils.structureComponentAttributeIRI(id), QB.ATTRIBUTE_PROPERTY);
