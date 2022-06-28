@@ -327,8 +327,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
     private void addCloseMatch(JSONObject concept) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
-        params.put("CONCEPT_ID", concept.getString("id"));
+        params.put("OBJECT_GRAPH", config.getConceptsGraph());
+        params.put("OBJECT_ID", concept.getString("id"));
         JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", params));
         if(closeMatch.length() > 0){
             JSONArray formattedCloseMatchArray  = new JSONArray();
@@ -448,8 +448,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
             JSONObject code = codes.getJSONObject(i);
 
             HashMap<String, Object> closeMatchParams = new HashMap<>();
-            closeMatchParams.put("CONCEPTS_GRAPH", config.getCodeListGraph());
-            closeMatchParams.put("CONCEPT_ID", code.getString("code"));
+            closeMatchParams.put("OBJECT_GRAPH", config.getCodeListGraph());
+            closeMatchParams.put("OBJECT_ID", code.getString("code"));
             JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", closeMatchParams));
 
             if(closeMatch.length() > 0){
