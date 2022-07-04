@@ -122,7 +122,9 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		UsersSugoi users;
 		try {
 			users = mapper.readValue(jsonResponse, UsersSugoi.class);
-			
+			if (users.getResults() ==null || users.getResults().isEmpty()) {
+				logger.error("Failed to get agents via Sugoi. Response is {}", jsonResponse);
+			} 
 			for (UserSugoi u : users.getResults()) {
 				JSONObject jsonUser = new JSONObject();
 				jsonUser.put(Constants.ID, u.getUsername());
