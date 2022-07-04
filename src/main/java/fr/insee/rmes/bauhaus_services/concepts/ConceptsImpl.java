@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,8 @@ import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -231,17 +235,33 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException  {
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException, IOException {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		
-		Map<String, String> xmlContent = convertConceptInXml(concept);	
+
+		Map<String, String> xmlContent = convertConceptInXml(concept);
 		String fileName = getFileNameForExport(concept);
 		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
+	}
+
+	@Override
+	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response) throws RmesException, IOException {
+		Map<String, Map<String, String>> concepts = new HashMap<>();
+		Arrays.asList(ids.split(",")).forEach(id -> {
+			try {
+				ConceptForExport concept = conceptsExport.getConceptData(id);
+				Map<String, String> xmlContent = convertConceptInXml(concept);
+				String fileName = getFileNameForExport(concept);
+				concepts.put(fileName, xmlContent);
+			} catch (RmesException e) {
+
+			}
+		});
+		conceptsExport.exportMultipleConceptAsZip(concepts, true, true, true, response);
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
