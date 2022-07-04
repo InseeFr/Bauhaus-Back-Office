@@ -1,3 +1,6 @@
+3.1.0  : - Back : Passage à Springboot
+		 - Front : Ajout des rubriques essentielles dans les Sims
+				   Quelques mises à jour de dépendances
 3.0.18 : - Back : 
 				- Correction de la vulnérabilité Spring https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
 		 		- Changement de gestionnaire de droit (Igesa -> Sugoi)
