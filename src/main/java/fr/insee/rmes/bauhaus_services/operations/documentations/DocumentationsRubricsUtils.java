@@ -29,7 +29,6 @@ import fr.insee.rmes.bauhaus_services.organizations.OrganizationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
@@ -149,12 +148,12 @@ public class DocumentationsRubricsUtils extends RdfService {
 
 	private void clearDocuments(String idSims, JSONObject rubric, String hasDocLg) throws RmesException {
 		if (rubric.getBoolean(hasDocLg)) {
-			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE), hasDocLg.equals(Constants.HAS_DOC_LG1)? Config.LG1 : Config.LG2);
+			JSONArray listDoc = docUtils.getListDocumentLink(idSims, rubric.getString(Constants.ID_ATTRIBUTE), hasDocLg.equals(Constants.HAS_DOC_LG1)? config.getLg1() : config.getLg2());
 			rubric.put(hasDocLg.equals(Constants.HAS_DOC_LG1)?Constants.DOCUMENTS_LG1 : Constants.DOCUMENTS_LG2, listDoc);
 		}
 		rubric.remove(hasDocLg);
 	}
-
+	
 
 	/**
 	 * From Object to RDF
@@ -248,10 +247,10 @@ public class DocumentationsRubricsUtils extends RdfService {
 			IRI attributeUri) {
 		RdfUtils.addTripleUri(attributeUri, RDF.TYPE, SDMX_MM.REPORTED_ATTRIBUTE, model, graph);
 		if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), Config.LG1, model, graph);
+			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg1(), config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), Config.LG2, model, graph);
+			RdfUtils.addTripleString(attributeUri, predicateUri, rubric.getLabelLg2(), config.getLg2(), model, graph);
 		}
 	}
 
@@ -264,7 +263,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg1, DCTERMS.LANGUAGE, langService.getLanguage1(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
-				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), Config.LG1, model, graph);
+				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
@@ -275,7 +274,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 			RdfUtils.addTripleUri(textUriLg2, DCTERMS.LANGUAGE, langService.getLanguage2(), model, graph);
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
-				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), Config.LG2, model, graph);
+				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}
@@ -333,8 +332,8 @@ public class DocumentationsRubricsUtils extends RdfService {
 			String labelLg2 = forXml ? XMLUtils.solveSpecialXmlcharacters(jsonRubric.getString(Constants.LABEL_LG2)) : jsonRubric.getString(Constants.LABEL_LG2);
 			documentationRubric.setLabelLg2(labelLg2);
 		}
-		if (jsonRubric.has("codeList")) {
-			documentationRubric.setCodeList(jsonRubric.getString("codeList"));
+		if (jsonRubric.has(Constants.CODELIST)) {
+			documentationRubric.setCodeList(jsonRubric.getString(Constants.CODELIST));
 		}
 		if (jsonRubric.has(Constants.RANGE_TYPE)) {
 			documentationRubric.setRangeType(jsonRubric.getString(Constants.RANGE_TYPE));

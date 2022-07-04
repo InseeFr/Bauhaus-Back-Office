@@ -5,18 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,6 +28,7 @@ import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiMo
 import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiModel.UserSugoi;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiModel.UsersSugoi;
 import fr.insee.rmes.utils.JSONComparator;
+import fr.insee.rmes.utils.RestTemplateUtils;
 
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
@@ -40,38 +37,37 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Autowired
 	LdapConnexion ldapConnexion;
+	
+	@Autowired
+	Config config;
+	
+	@Autowired
+	RestTemplateUtils restTemplateUtils;
 
 	static final Logger  logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";
-	private static final String SUGOI_SEARCH_APP = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + SUGOI_APP_SEARCH_PATH + Config.SUGOI_APP ;
-	private static final String SUGOI_SEARCH_USERS = Config.SUGOI_URL + SUGOI_REALM_SEARCH_PATH + Config.SUGOI_REALM + "/users" ;
 
-	private static final String SUGOI_ADD_OR_DELETE_USER_PATH_FMT = Config.SUGOI_URL+ "/v2/realms/"+ Config.SUGOI_REALM+SUGOI_APP_SEARCH_PATH+Config.SUGOI_APP+"/groups/{1}/members/{0}";
 			
 	private Map<String,UserSugoi> mapUsers;
+
 	
-	@Override
-	public String getAuth(String body) {
-		if (body.equals(Config.PASSWORD_GESTIONNAIRE)) {
-			return "GESTIONNAIRE";
-		}
-		if (body.equals(Config.PASSWORD_PRODUCTEUR)) {
-			return "PRODUCTEUR";
-		}
-		return "NONE";
-	}
 
 	@Override
 	public String getRoles() throws RmesException {
+		 String searchAppSugoiTarget = config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH + config.getSugoiApp() ;
+		
 		if (mapUsers == null || mapUsers.isEmpty()) {getAgentsSugoi();}
 		logger.info("mapUsers size : {} / {} max", mapUsers.size(), NB_USERS_EXPECTED);
 		JSONArray roles = new JSONArray();
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
-			String jsonResponse = client.target(SUGOI_SEARCH_APP).request(MediaType.APPLICATION_JSON).get(String.class);
+			//Rest Client to get all
+			HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSugoiUser(), config.getSugoiPassword());
+			restTemplateUtils.addJsonContentToHeader(headers);
+			String jsonResponse = restTemplateUtils.getResponseAsString(searchAppSugoiTarget, headers);
 
+			//mapping to UserSugoi
 			ObjectMapper mapper = new ObjectMapper();
 			Application application = mapper.readValue(jsonResponse, Application.class);
 			for (Group g : application.getGroups()) {
@@ -101,23 +97,27 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 		return roles.toString();
 	}
 
+
 	
-	
-	
+
 	public String getAgentsSugoi() throws RmesException {
-		logger.info("get list of agents via Sugoi : {}", SUGOI_SEARCH_USERS);
+		String searchUserSugoiTarget = config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + "/users" ;
 		mapUsers = new HashMap<>(NB_USERS_EXPECTED);
-		
 		
 		TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
 		
-		Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));	
-		String jsonResponse = client.target(SUGOI_SEARCH_USERS)
-									.queryParam("size", NB_USERS_EXPECTED)
-									.request(MediaType.APPLICATION_JSON)
-									.get(String.class);
+		//Rest Client to get all
+		HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSugoiUser(), config.getSugoiPassword());
+		restTemplateUtils.addJsonContentToHeader(headers);
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("size", NB_USERS_EXPECTED);
+		
+		String jsonResponse = restTemplateUtils.getResponseAsString(searchUserSugoiTarget, headers, params);
+
 		logger.info("list of agents in json size {}", jsonResponse.length());
 
+		//Mapping
 		ObjectMapper mapper = new ObjectMapper();
 		UsersSugoi users;
 		try {
@@ -145,14 +145,18 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 
 	@Override
 	public void setAddRole(String role, String user) throws  RmesException{
-		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+		String url = MessageFormat.format(getUserPath(), user, role);
 		Sugoi.put(url);
 	}
 
 	@Override
 	public void setDeleteRole(String role, String user) throws  RmesException {
-		String url = MessageFormat.format(SUGOI_ADD_OR_DELETE_USER_PATH_FMT, user, role);
+		String url = MessageFormat.format(getUserPath(), user, role);
 			Sugoi.delete(url);
+	}
+	
+	private String getUserPath() {
+		return config.getSugoiUrl() + "/v2"+ SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH+ config.getSugoiApp()+"/groups/{1}/members/{0}";
 	}
 
 	
@@ -160,10 +164,10 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	public String checkSugoiConnexion() throws RmesException {
 		String jsonResponse ="";
 		try {
-			Client client = ClientBuilder.newClient().register(HttpAuthenticationFeature.basic(Config.SUGOI_USER, Config.SUGOI_PASSWORD));
+			HttpHeaders headers = restTemplateUtils.getHeadersWithBasicAuth(config.getSugoiUser(), config.getSugoiPassword());
+			restTemplateUtils.addJsonContentToHeader(headers);		
+			jsonResponse = restTemplateUtils.getResponseAsString(config.getSugoiUrl() + "/whoami", headers);
 
-			jsonResponse = client.target(Config.SUGOI_URL + "whoami")
-					.request(MediaType.APPLICATION_JSON).get(String.class);
 		} catch (Exception e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Fail to target SUGOI");
 		}

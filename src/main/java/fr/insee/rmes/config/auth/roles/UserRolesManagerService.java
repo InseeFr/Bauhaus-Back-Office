@@ -4,10 +4,6 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface UserRolesManagerService {
 	
-	
-	
-	public String getAuth(String body);
-	
 	public String getRoles() throws RmesException;
 	
 	public String getAgentsSugoi() throws RmesException ;

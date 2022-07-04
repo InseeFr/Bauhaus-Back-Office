@@ -5,20 +5,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.StringJoiner;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,10 +30,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	    @ApiResponse(responseCode = "406", description = "L'en-tête HTTP 'Accept' contient une valeur non acceptée"),
 	    @ApiResponse(responseCode = "500", description = "Erreur interne du serveur")
 	})
-@Path("/healthcheck")
-public class HealthcheckApi {
+@RestController
+@RequestMapping("healthcheck")
+public class HealthcheckApi  extends GenericResources {
 	
-	private static final String CONNEXION_LDAP = "- Connexion LDAP";
+	private static final String CONNEXION_LDAP = "- Connexion LDAP - Sugoi";
 
 	private static final String OK_STATE = ": OK \n";
 
@@ -51,11 +50,9 @@ public class HealthcheckApi {
 	
 	private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
 
-    @GET
-    @Produces({
-        MediaType.TEXT_PLAIN
-    })
-    public Response getHealthcheck() {
+    @GetMapping(value = "", 
+    		produces = {MediaType.TEXT_PLAIN_VALUE})
+    public ResponseEntity<Object> getHealthcheck() {
     	
     	StringJoiner errorMessage = new StringJoiner(" ");
     	StringJoiner stateResult = new StringJoiner(" ");
@@ -67,9 +64,9 @@ public class HealthcheckApi {
     	
     	//Test access to storage
     	stateResult = stateResult.add("Document storage \n");
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_GESTION,"Gestion", stateResult, errorMessage);
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_EXTERNE,"Publication Externe", stateResult, errorMessage);
-    	checkDocumentStorage(Config.DOCUMENTS_STORAGE_PUBLICATION_INTERNE,"Publication Interne", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStorageGestion(),"Gestion", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStoragePublicationExterne(),"Publication Externe", stateResult, errorMessage);
+    	checkDocumentStorage(config.getDocumentsStoragePublicationInterne(),"Publication Interne", stateResult, errorMessage);
     	
     	//Test LDAP connexion
     	stateResult = stateResult.add("LDAP connexion \n");
@@ -77,7 +74,7 @@ public class HealthcheckApi {
     	try {
 			String result = userService.checkSugoiConnexion();
 	    	if ("OK".equals(result)) {
-	    		stateResult.add(CONNEXION_LDAP+" - Sugoi").add(OK_STATE);
+	    		stateResult.add(CONNEXION_LDAP).add(OK_STATE);
 	    	}else {
 				errorMessage.add("- Sugoi No functional error but return an empty string \n");
 	    		stateResult.add(CONNEXION_LDAP).add(KO_STATE);
@@ -93,11 +90,11 @@ public class HealthcheckApi {
          logger.debug("End healthcheck");
          
     	if (!"".equals(errorMessage.toString())) {
-    		logger.error("{}",errorMessage);
-    		return Response.serverError().entity(stateResult.merge(errorMessage).toString()).build();
+    		logger.error("Errors message : \n {}",errorMessage);
+    		return ResponseEntity.internalServerError().body(stateResult.merge(errorMessage).toString());
     	}
     	else {
-    		return Response.ok(stateResult.toString()).build();
+    		return ResponseEntity.ok(stateResult.toString());
     	}
     }
 
