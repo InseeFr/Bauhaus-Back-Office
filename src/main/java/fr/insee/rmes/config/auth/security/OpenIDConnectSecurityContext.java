@@ -84,6 +84,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 									.replace(" ", "") //remove all spaces
 									.split(",")
 							);
+			String stamp = claims.get(config.getStampclaim()).toString();
 		
 //TODO	change way to have roles 	 
 //			List<String> roles2 =
@@ -91,7 +92,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 //             .map(GrantedAuthority::getAuthority)
 //             .map(String::toUpperCase)
 //             .collect(Collectors.toList());
-			return new User(roles, jwt.getClaimAsString(config.getStampclaim()));
+			return new User(roles, stamp);
 		};
 	}
 
