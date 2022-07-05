@@ -1,3 +1,4 @@
+3.1.1 : Fix issue with OIDC and stamp
 3.1.0  : - Back : Passage à Springboot
 		 - Front : Ajout des rubriques essentielles dans les Sims
 				   Quelques mises à jour de dépendances
