@@ -13,7 +13,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-	<version>3.1.1</version>
+	<version>3.1.2</version>
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
