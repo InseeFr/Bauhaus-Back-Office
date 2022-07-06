@@ -33,7 +33,7 @@ import fr.insee.rmes.config.auth.user.UserProvider;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled = true)
-@ConditionalOnExpression("'PROD'.equals('${fr.insee.rmes.bauhaus.env}')")
+@ConditionalOnExpression("'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
 public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  {
 	
 	private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
