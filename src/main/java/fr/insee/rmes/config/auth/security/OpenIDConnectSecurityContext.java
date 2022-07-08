@@ -33,7 +33,7 @@ import fr.insee.rmes.config.auth.user.UserProvider;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled = true)
-@ConditionalOnExpression("'PROD'.equals('${fr.insee.rmes.bauhaus.env}')")
+@ConditionalOnExpression("'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
 public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  {
 	
 	private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
@@ -84,6 +84,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 									.replace(" ", "") //remove all spaces
 									.split(",")
 							);
+			String stamp = claims.get(config.getStampclaim()).toString();
 		
 //TODO	change way to have roles 	 
 //			List<String> roles2 =
@@ -91,7 +92,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 //             .map(GrantedAuthority::getAuthority)
 //             .map(String::toUpperCase)
 //             .collect(Collectors.toList());
-			return new User(roles, jwt.getClaimAsString(config.getStampclaim()));
+			return new User(roles, stamp);
 		};
 	}
 
