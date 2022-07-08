@@ -1,10 +1,11 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
@@ -35,8 +36,6 @@ import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
-
-import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -235,7 +234,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException, IOException {
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
@@ -249,7 +248,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response) throws RmesException, IOException {
+	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response) throws RmesException {
 		Map<String, Map<String, String>> concepts = new HashMap<>();
 		Arrays.asList(ids.split(",")).forEach(id -> {
 			try {
@@ -261,7 +260,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 			}
 		});
-		conceptsExport.exportMultipleConceptAsZip(concepts, true, true, true, response);
+		conceptsExport.exportMultipleConceptsAsZip(concepts, true, true, true, response);
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
