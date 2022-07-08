@@ -73,9 +73,10 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	@Bean
 	public UserProvider getUserProvider() {
 		return auth -> {
+			if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication 
 			final Jwt jwt = (Jwt) auth.getPrincipal();
 			Map<String,Object> claims = jwt.getClaims();
-			logger.debug(claims.get(config.getRoleclaim()).toString());
+			logger.debug("{}",claims.get(config.getRoleclaim()));
 			JsonParser parser = JsonParserFactory.getJsonParser();
 			Map<String, Object> listeRoles = parser.parseMap(claims.get(config.getRoleclaim()).toString());
 			List<String> roles = Arrays.asList(
@@ -85,14 +86,8 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 									.split(",")
 							);
 			String stamp = claims.get(config.getStampclaim()).toString();
-		
-//TODO	change way to have roles 	 
-//			List<String> roles2 =
-//			 auth.getAuthorities().stream()
-//             .map(GrantedAuthority::getAuthority)
-//             .map(String::toUpperCase)
-//             .collect(Collectors.toList());
-			return new User(roles, stamp);
+			String id = claims.get(config.getIdclaim()).toString();
+			return new User(id,roles, stamp);
 		};
 	}
 

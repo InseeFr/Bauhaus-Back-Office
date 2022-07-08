@@ -92,6 +92,8 @@ public class Config {
 	private String stampClaim;
 	@Value("${jwt.role-claim}")
 	private String roleClaim;
+	@Value("${jwt.id-claim}")
+	private String idClaim;
 
 	//LDAP
 	@Value("${fr.insee.rmes.bauhaus.sugoi.url}")
@@ -510,6 +512,10 @@ public class Config {
 		return roleClaim;
 	}
 
+	public String getIdclaim() {
+		return idClaim;
+	}
+
 	public String getSugoiUrl() {
 		return sugoiUrl;
 	}
@@ -541,5 +547,6 @@ public class Config {
 	public String getSwaggerUrl() {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
+
 
 }
