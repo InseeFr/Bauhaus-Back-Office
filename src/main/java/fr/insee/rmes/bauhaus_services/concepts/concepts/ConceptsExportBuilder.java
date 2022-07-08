@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 import java.io.InputStream;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -86,18 +88,23 @@ public class ConceptsExportBuilder extends RdfService {
 	}
 
 	public ResponseEntity<Resource>  exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		
 		return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT);
 	}
 
+	public void exportMultipleConceptsAsZip(Map<String, Map<String, String>> concepts, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response) throws RmesException {
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+
+		concepts.values().stream().forEach(concept -> {
+			concept.put(Constants.PARAMETERS_FILE, parametersXML);
+		});
+		exportUtils.exportMultipleResourceAsZip(concepts,xslFile,xmlPattern,zip, Constants.CONCEPT, response);
+	}
+
 	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		
 		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT);
 	}
 	
