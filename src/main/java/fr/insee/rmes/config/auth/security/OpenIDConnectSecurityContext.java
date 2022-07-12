@@ -76,7 +76,6 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 			if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication 
 			final Jwt jwt = (Jwt) auth.getPrincipal();
 			Map<String,Object> claims = jwt.getClaims();
-			logger.debug("{}",claims.get(config.getRoleclaim()));
 			JsonParser parser = JsonParserFactory.getJsonParser();
 			Map<String, Object> listeRoles = parser.parseMap(claims.get(config.getRoleclaim()).toString());
 			List<String> roles = Arrays.asList(
@@ -87,6 +86,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 							);
 			String stamp = claims.get(config.getStampclaim()).toString();
 			String id = claims.get(config.getIdclaim()).toString();
+			logger.debug("Current User is {}, {} with roles {}",id,stamp,roles);
 			return new User(id,roles, stamp);
 		};
 	}
