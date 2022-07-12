@@ -54,7 +54,8 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		logger.info("Allowed origins : {}", allowedOrigin);
-		configuration.setAllowedOrigins(List.of(allowedOrigin.get()));
+		String ao = allowedOrigin.isPresent() ? allowedOrigin.get() : allowedOrigin.orElse("*");
+		configuration.setAllowedOrigins(List.of(ao));
 		configuration.setAllowedMethods(List.of("*"));
 		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new
