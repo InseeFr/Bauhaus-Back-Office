@@ -141,10 +141,22 @@ public class SeriesUtils extends RdfService {
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
 			String idSeries = series.get(Constants.ID).toString();
-			addSeriesCreators(idSeries, series);
-			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
-			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
-			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
+			if (series.has("hasCreator")) {
+				addSeriesCreators(idSeries, series);
+				series.remove("hasCreator");
+			}
+			if (series.has("hasContributor")) {
+				addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
+				series.remove("hasContributor");
+			}
+			if (series.has("hasDataCollector")) {
+				addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
+				series.remove("hasDataCollector");
+			}
+			if (series.has("hasPublisher")) {
+				addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
+				series.remove("hasPublisher");
+			}
 			famOpeSerIndUtils.fixOrganizationsNames(series);			
 			result.put(series);
 		}
