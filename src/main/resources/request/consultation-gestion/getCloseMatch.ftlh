@@ -1,7 +1,7 @@
 SELECT ?closeMatch ?closeMatchNotation
-FROM <${CONCEPTS_GRAPH}>
+FROM <${OBJECT_GRAPH}>
 WHERE {
-    ?concept skos:notation "${CONCEPT_ID}" .
+    ?concept skos:notation "${OBJECT_ID}" .
     ?concept skos:closeMatch ?closeMatch .
     ?closeMatch skos:notation ?closeMatchNotation .
 }
