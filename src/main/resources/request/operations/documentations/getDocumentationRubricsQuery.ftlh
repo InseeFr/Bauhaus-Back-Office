@@ -23,41 +23,43 @@ WHERE {
 		<#-- RangeType.RICHTEXT : label, hasDoc -->
 		UNION {
 			?reportAttr ?attr ?temp .
-			?temp rdf:type dcmitype:Text .		
-		
-			OPTIONAL{ 
-			 ?reportAttr ?attr ?textLg1 .
-			 ?textLg1 rdf:type dcmitype:Text .
-			 ?textLg1 dcterms:language <${LG1_CL}> .
-			 ?textLg1 rdf:value ?labelLg1 .
+			?temp rdf:type dcmitype:Text .
+
+			OPTIONAL{
+				?reportAttr ?attr ?textLg1 .
+				?textLg1 rdf:type dcmitype:Text .
+				?textLg1 dcterms:language <${LG1_CL}> .
+				?textLg1 rdf:value ?labelLg1 .
 			}
-			 BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
+			BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
 
-			 OPTIONAL {
-				 ?reportAttr ?attr ?textLg2 .
-				 ?textLg2 rdf:type dcmitype:Text .
-				 ?textLg2 dcterms:language <${LG2_CL}> .
-				 BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2) .
+			OPTIONAL {
+				?reportAttr ?attr ?textLg2 .
+				?textLg2 rdf:type dcmitype:Text .
+				?textLg2 dcterms:language <${LG2_CL}> .
+				BIND(EXISTS{?textLg2 insee:additionalMaterial ?docLg2} AS ?hasDocLg2) .
 
-						OPTIONAL{ 
-							?textLg2 rdf:value ?labelLg2 .
-						}
-			 }
-			 
-			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
+				OPTIONAL{
+					?textLg2 rdf:value ?labelLg2 .
+				}
+			}
 
-			 BIND('${RICHTEXT.jsonType}' AS ?rangeType) . 
-		} 
-		
-		<#-- RangeType.STRING : label -->
+			BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
+
+			BIND('${RICHTEXT.jsonType}' AS ?rangeType) .
+		}
+
+<#-- RangeType.STRING : label -->
 		UNION {
-			 ?reportAttr ?attr ?labelLg1 .
-			 FILTER(lang(?labelLg1) = '${LG1}') 
-			 OPTIONAL{?reportAttr ?attr ?labelLg2 .
-			 	FILTER(lang(?labelLg2) = '${LG2}') } 
-			 BIND('${STRING.jsonType}' AS ?rangeType) . 
-			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) . 
+             OPTIONAL{?reportAttr ?attr ?labelLg1 .
+			 FILTER(lang(?labelLg1) = '${LG1}')  }
 
+			 OPTIONAL{?reportAttr ?attr ?labelLg2 .
+			 	FILTER(lang(?labelLg2) = '${LG2}') }
+
+			 BIND('${STRING.jsonType}' AS ?rangeType) . 
+			 BIND(REPLACE( STR(?attr) , '(.*/)(\\w.*$)', '$2' ) AS ?idAttribute) .
+			 FILTER ( bound(?labelLg1) || bound(?labelLg2) )
 		} 
 			
 		<#-- RangeType.CODELIST : value, codelist, maxoccurs -->
