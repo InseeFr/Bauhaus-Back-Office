@@ -6,6 +6,8 @@ public interface StampsService {
 	
 	public String getStamp() throws RmesException;
 	
+	public String getStamps() throws RmesException;
+	
 	public String getStampsApiRH() throws RmesException;
 	
 
