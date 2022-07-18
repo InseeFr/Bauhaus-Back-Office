@@ -8,69 +8,57 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.nio.charset.Charset;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.external_services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
-import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
 
 	private static final String ATTACHMENT = "attachment";
 
-	private static final String CONTENT_DISPOSITION = "Content-Disposition";
-
 	static final Logger logger = LogManager.getLogger(OperationsImpl.class);
 
+	
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
-
-	@Autowired
-	VarBookExportBuilder varBookExport;
 
 	@Autowired
 	XDocReport xdr;
@@ -87,13 +75,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
 
-	@Autowired
-	DocumentationsUtils documentationsUtils;
-
-	@Autowired
-	MetadataStructureDefUtils msdUtils;
-
-
 	/***************************************************************************************************
 	 * SERIES
 	 * 
@@ -103,7 +84,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		String resQuery = repoGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -115,21 +96,21 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getSeriesWithSims() throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray seriesArray = repoGestion.getResponseAsArray(SeriesQueries.seriesWithSimsQuery());
+		JSONArray seriesArray = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
 		return QueryUtils.correctEmptyGroupConcat(seriesArray.toString());
 	}
 
 	@Override
 	public String getSeriesWithStamp(String stamp) throws RmesException  {
 		logger.info("Starting to get series list with sims");
-		JSONArray series = repoGestion.getResponseAsArray(SeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
+		JSONArray series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesWithStampQuery(stamp, this.stampsRestrictionsService.isAdmin()));
 		List<JSONObject> seriesList = new ArrayList<>();
 		for (int i = 0; i < series.length(); i++) {
 			seriesList.add(series.getJSONObject(i));
 		}
 		seriesList.sort(( o1,  o2) -> {
-				String key1 = Normalizer.normalize(o1.getString("label"), Normalizer.Form.NFD);
-				String key2 = Normalizer.normalize(o2.getString("label"), Normalizer.Form.NFD);
+				String key1 = Normalizer.normalize(o1.getString(Constants.LABEL), Normalizer.Form.NFD);
+				String key2 = Normalizer.normalize(o2.getString(Constants.LABEL), Normalizer.Form.NFD);
 				return key1.compareTo(key2);
 			});
 		return QueryUtils.correctEmptyGroupConcat(seriesList.toString());
@@ -203,18 +184,34 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public Response getCodeBookExport(String ddiFile, File dicoVar,  String acceptHeader) throws RmesException  {
-		OutputStream os;
-		if (acceptHeader.equals(MediaType.APPLICATION_OCTET_STREAM)) {
-			os = xdr.exportVariableBookInPdf(ddiFile,"DicoVar.odt");
-		} else {
-			os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
+	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {		
+		//Prepare file
+		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
+		InputStream is = transformFileOutputStreamInInputStream(os);
+		if (is == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+		ByteArrayResource resource = null;
+		try {
+			resource = new ByteArrayResource(IOUtils.toByteArray(is));
+			is.close();
+		} catch (IOException e) {
+			logger.error("Failed to getBytes of resource");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
 		}
 
-		InputStream is = transformFileOutputStreamInInputStream(os);
-		String fileName = "Codebook"+ ExportUtils.getExtension(acceptHeader);
-		ContentDisposition content = ContentDisposition.type(ATTACHMENT).fileName(fileName).build();
-		return Response.ok(is, acceptHeader).header(CONTENT_DISPOSITION, content).build();
+		//Prepare response headers
+		String fileName = "Codebook"+ ExportUtils.getExtension(accept);
+		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setContentDisposition(content);
+		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
+
+		return ResponseEntity.ok()
+		         .headers(responseHeaders)
+		         .contentLength(resource.contentLength())
+		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
+		         .body(resource);
+		
 	}
 
 	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
@@ -273,14 +270,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
-		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
 	public String getFamiliesForSearch() throws RmesException {
 		logger.info("Starting to get families list for search");
-		String resQuery = repoGestion.getResponseAsArray(FamiliesQueries.familiesSearchQuery()).toString();
+		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesSearchQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
@@ -373,120 +370,5 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public String setIndicator(String body) throws RmesException {
 		return indicatorsUtils.setIndicator(body);
 	}
-
-
-	/***************************************************************************************************
-	 * DOCUMENTATION
-	 * @throws RmesException 
-	 *****************************************************************************************************/
-
-	@Override
-	public String getMSDJson() throws RmesException {
-		String resQuery = repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
-	}
-
-	@Override
-	public String getMetadataReportDefaultValue() throws IOException {
-		return StreamUtils.copyToString(this.simsDefaultValue.getInputStream(), Charset.defaultCharset());
-	}
-
-	@Override
-	public MSD getMSD() throws RmesException {
-		return operationsUtils.getMSD();
-	}
-
-	@Override
-	public String getMetadataAttribute(String id) throws RmesException {
-		JSONObject attribute = msdUtils.getMetadataAttributeById(id);
-		return attribute.toString();
-	}
-
-	@Override
-	public String getMetadataAttributes() throws RmesException {
-		String attributes = msdUtils.getMetadataAttributes().toString();
-		return QueryUtils.correctEmptyGroupConcat(attributes);
-	}
-
-	@Override
-	public String getMetadataReport(String id) throws RmesException {
-		JSONObject documentation = documentationsUtils.getDocumentationByIdSims(id);
-		XhtmlToMarkdownUtils.convertJSONObject(documentation);
-		return documentation.toString();
-	}
-
-	@Override
-	public Documentation getFullSimsForXml(String id) throws RmesException {
-		return  documentationsUtils.getFullSimsForXml(id);
-	}
-
-	@Override
-	public String getFullSimsForJson(String id) throws RmesException {
-		return  documentationsUtils.getFullSimsForJson(id).toString();
-	}
-
-	@Override
-	public String getMetadataReportOwner(String id) throws RmesException {
-		return documentationsUtils.getDocumentationOwnersByIdSims(id);
-	}
-
-
-	/**
-	 * CREATE
-	 */
-	@Override
-	public String createMetadataReport(String body) throws RmesException {
-		return documentationsUtils.setMetadataReport(null, body, true);
-	}
-
-
-	/**
-	 * UPDATE
-	 */
-	@Override
-	public String setMetadataReport(String id, String body) throws RmesException {
-		return documentationsUtils.setMetadataReport(id, body, false);
-	}
-
-	/**
-	 * DELETE
-	 */
-	@Override
-	public Status deleteMetadataReport(String id) throws RmesException {
-		return documentationsUtils.deleteMetadataReport(id);
-	}
-
-	/**
-	 * PUBLISH
-	 */
-	@Override
-	public String publishMetadataReport(String id) throws RmesException {
-		return documentationsUtils.publishMetadataReport(id);
-	}
-
-	/**
-	 * EXPORT
-	 */
-	@Override
-	public Response exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException  {
-		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
-				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
-				"at least one language must be selected for export",
-				"in export of sims: "+id); 
-		return documentationsUtils.exportMetadataReport(id,includeEmptyMas, lg1, lg2,Constants.GOAL_RMES);
-
-	}
-
-	@Override
-	public Response exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsUtils.exportMetadataReport(id,true, true, false, Constants.GOAL_COMITE_LABEL);
-	}
-
-	@Override
-	public Response exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		return documentationsUtils.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
-	}
-
-
 
 }

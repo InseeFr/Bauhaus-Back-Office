@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -24,26 +24,21 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.external_services.notifications.NotificationsContract;
 import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
-import fr.insee.rmes.utils.EncodingType;
 
 @Repository
 public class SeriesPublication extends RdfService {
 	
 	@Autowired
-	FamOpeSerIndUtils famOpeSerUtils;
-
-	@Autowired
-	private SeriesUtils seriesUtils;
+	ParentUtils ownersUtils;
 	
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
-	public void publishSeries(String seriesId) throws RmesException {
+	public void publishSeries(String seriesId, JSONObject serieJson) throws RmesException {
 		Model model = new LinkedHashModel();
 		Resource series = RdfUtils.seriesIRI(seriesId);
-		JSONObject serieJson = seriesUtils.getSeriesJsonById(seriesId, EncodingType.XML);
 		String familyId = serieJson.getJSONObject(Constants.FAMILY).getString(Constants.ID);
-		String status= famOpeSerUtils.getValidationStatus(familyId);
+		String status= ownersUtils.getValidationStatus(familyId);
 		
 		if(PublicationUtils.isPublished(status)) {
 			throw new RmesUnauthorizedException(
@@ -70,12 +65,12 @@ public class SeriesPublication extends RdfService {
 					
 					// Other URI to transform
 					if (pred.endsWith("isPartOf") ||
-							pred.endsWith("seeAlso") ||
-							pred.endsWith("replaces") ||
-							pred.endsWith("isReplacedBy")||
-							pred.endsWith("dataCollector") || 
-							pred.endsWith("contributor")  ||
-							pred.endsWith("publisher")  ||
+							pred.endsWith(Constants.SEEALSO) ||
+							pred.endsWith(Constants.REPLACES) ||
+							pred.endsWith(Constants.ISREPLACEDBY)||
+							pred.endsWith(Constants.DATA_COLLECTOR) || 
+							pred.endsWith(Constants.CONTRIBUTOR)  ||
+							pred.endsWith(Constants.PUBLISHER)  ||
 							pred.endsWith("accrualPeriodicity")||
 							pred.endsWith("type")   ) {
 						transformSubjectAndObject(model, st);

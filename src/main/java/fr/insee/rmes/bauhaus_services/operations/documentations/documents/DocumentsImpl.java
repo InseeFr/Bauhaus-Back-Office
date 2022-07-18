@@ -3,13 +3,12 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
@@ -76,7 +75,7 @@ public class DocumentsImpl implements DocumentsService {
 	 * Delete 
 	 */
 	@Override
-	public Status deleteDocument(String id) throws RmesException {
+	public HttpStatus deleteDocument(String id) throws RmesException {
 		return documentsUtils.deleteDocument(id, false);
 	}
 
@@ -92,7 +91,7 @@ public class DocumentsImpl implements DocumentsService {
 	
 
 	@Override
-	public Response downloadDocument(String id) throws RmesException, IOException  {
+	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException  {
 		return documentsUtils.downloadDocumentFile(id);	
 	}
 	
@@ -122,7 +121,7 @@ public class DocumentsImpl implements DocumentsService {
 	}
 
 	@Override
-	public Status deleteLink(String id) throws RmesException {
+	public HttpStatus deleteLink(String id) throws RmesException {
 		return documentsUtils.deleteDocument(id, true);
 
 	}

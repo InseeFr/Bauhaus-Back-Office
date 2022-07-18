@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -17,7 +15,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,12 +26,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -45,6 +43,7 @@ import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PROV;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
@@ -64,6 +63,9 @@ public class IndicatorsUtils  extends RdfService {
 
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
+	
+	@Autowired
+	ParentUtils ownersUtils;
 
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
@@ -149,9 +151,9 @@ public class IndicatorsUtils  extends RdfService {
 
 
 	private void addIndicatorCreators(String id, JSONObject indicator) throws RmesException {
-		JSONArray creators = repoGestion.getResponseAsJSONList(IndicatorsQueries.getCreatorsById(id));
-		indicator.put(Constants.CREATORS, creators);
+		indicator.put(Constants.CREATORS, ownersUtils.getIndicatorCreators(id));
 	}
+
 
 	private void addIndicatorPublishers(String id, JSONObject indicator) throws RmesException {
 		JSONArray publishers = repoGestion.getResponseAsJSONList(IndicatorsQueries.getPublishersById(id));
@@ -248,7 +250,7 @@ public class IndicatorsUtils  extends RdfService {
 
 		indicator.setUpdated(DateUtils.getCurrentDate());
 
-		String status=getValidationStatus(id);
+		String status= ownersUtils.getIndicatorsValidationStatus(id);
 
 		documentationsUtils.updateDocumentationTitle(indicator.getIdSims(), indicator.getPrefLabelLg1(), indicator.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
@@ -283,20 +285,20 @@ public class IndicatorsUtils  extends RdfService {
 		/*Const*/
 		model.add(indicURI, RDF.TYPE, INSEE.INDICATOR, RdfUtils.productsGraph());
 		/*Required*/
-		model.add(indicURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), Config.LG1), RdfUtils.productsGraph());
+		model.add(indicURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(indicator.getPrefLabelLg1(), config.getLg1()), RdfUtils.productsGraph());
 		model.add(indicURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.productsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), Config.LG2, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), Config.LG1, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), Config.LG2, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.PREF_LABEL, indicator.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg1(), config.getLg1(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleString(indicURI, SKOS.ALT_LABEL, indicator.getAltLabelLg2(), config.getLg2(), model, RdfUtils.productsGraph());
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.CREATED, indicator.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, RdfUtils.operationsGraph());
 
-		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), Config.LG1, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), Config.LG2, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), config.getLg1(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), config.getLg2(), model, RdfUtils.productsGraph());
 
-		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), Config.LG1, model, RdfUtils.productsGraph());
-		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), Config.LG2, model, RdfUtils.productsGraph());
+		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), model, RdfUtils.productsGraph());
 
 		List<OperationsLink> contributors = indicator.getContributors();
 		if (contributors != null){//partenaires
@@ -393,13 +395,6 @@ public class IndicatorsUtils  extends RdfService {
 		return repoGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
 	}
 
-	public String getValidationStatus(String id) throws RmesException{
-		try {
-			return repoGestion.getResponseAsObject(IndicatorsQueries.getPublicationState(id)).getString("state"); 
-		}
-		catch (JSONException e) {
-			return Constants.UNDEFINED;
-		}
-	}
+
 
 }

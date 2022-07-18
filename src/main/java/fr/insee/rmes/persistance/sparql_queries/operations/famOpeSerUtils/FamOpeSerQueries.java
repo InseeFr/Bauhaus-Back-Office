@@ -7,10 +7,10 @@ import org.eclipse.rdf4j.model.IRI;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class FamOpeSerQueries {
+public class FamOpeSerQueries extends GenericQueries{
 
 	static Map<String,Object> params ;
 
@@ -21,9 +21,9 @@ public class FamOpeSerQueries {
 
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("OPERATIONS_GRAPH",Config.OPERATIONS_GRAPH);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("OPERATIONS_GRAPH",config.getOperationsGraph());
 	}
 	
 	/**

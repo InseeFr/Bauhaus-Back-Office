@@ -3,6 +3,7 @@ package fr.insee.rmes.model.operations;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
@@ -77,6 +78,7 @@ public class Indicator {
 	private String created;
 
 	@Schema(description =  "Update date")
+	@JsonAlias({"updated","modified"})
 	private String updated;
 
   @Schema(description = "validationState")

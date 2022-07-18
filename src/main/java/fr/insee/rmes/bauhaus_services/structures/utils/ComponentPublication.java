@@ -38,8 +38,8 @@ public class ComponentPublication extends RdfService {
 					}else if (pred.endsWith("attribute")
 							|| pred.endsWith("dimension")
 							|| pred.endsWith("measure")
-							|| pred.endsWith("codeList")
-							|| pred.endsWith("concept")
+							|| pred.endsWith(Constants.CODELIST)
+							|| pred.endsWith(Constants.CONCEPT)
 							|| pred.endsWith("range")) {
 						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());

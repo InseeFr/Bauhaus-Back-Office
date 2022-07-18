@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.operations;
 
 import java.io.IOException;
 
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,13 +19,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
@@ -35,12 +33,10 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.SeriesQueries;
-import fr.insee.rmes.utils.EncodingType;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.utils.DateUtils;
 
 @Component
 public class OperationsUtils extends RdfService{
@@ -51,10 +47,11 @@ public class OperationsUtils extends RdfService{
 	private FamOpeSerIndUtils famOpeSerIndUtils;
 
 	@Autowired
-	private SeriesUtils seriesUtils;
-
-	@Autowired
 	private DocumentationsUtils documentationsUtils;
+	
+	@Autowired
+	ParentUtils parentUtils;
+
 
 	@Autowired
 	private OperationPublication operationPublication;
@@ -71,16 +68,11 @@ public class OperationsUtils extends RdfService{
 
 	private void getOperationSeries(String id, JSONObject operation) throws RmesException {
 		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(id));
-		JSONArray creators = repoGestion.getResponseAsJSONList(SeriesQueries.getCreatorsById(series.getString("id")));
+		JSONArray creators = repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(series.getString(Constants.ID)));
 		series.put(Constants.CREATORS, creators);
 		operation.put("series", series);
 	}
 	
-	public IRI getSeriesUriByOperationId(String idOperation) throws RmesException{
-		JSONObject series = repoGestion.getResponseAsObject(OperationsQueries.seriesQuery(idOperation));
-		if (series != null && series.has("id"))		return RdfUtils.objectIRI(ObjectType.SERIES, series.getString("id"));
-		return null;
-	}
 
 	private Operation buildOperationFromJson(JSONObject operationJson) {
 		ObjectMapper mapper = new ObjectMapper();
@@ -134,11 +126,11 @@ public class OperationsUtils extends RdfService{
 			throw new RmesNotFoundException(ErrorCodes.OPERATION_UNKNOWN_SERIES,"Unknown series: ",idSeries) ;
 		}
 		// Tester que la série n'a pas de Sims
-		if (seriesUtils.hasSims(idSeries)){
-			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
-					seriesUtils.getSeriesJsonById(idSeries, EncodingType.MARKDOWN).getString(Constants.PREF_LABEL_LG1)+" ; "+operation.getPrefLabelLg1());
-		}
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,idSeries);
+		if (parentUtils.checkIfSeriesHasSims(seriesURI.stringValue())) {
+			throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,"A series cannot have both a Sims and Operation(s)", 
+					idSeries +" ; "+operation.getPrefLabelLg1());
+		}
 		// Vérifier droits
 		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
@@ -152,6 +144,7 @@ public class OperationsUtils extends RdfService{
 		return operation.getId();
 	}
 
+
 	/**
 	 * UPDATE
 	 * @param id
@@ -160,7 +153,7 @@ public class OperationsUtils extends RdfService{
 	 * @throws RmesException
 	 */
 	public String setOperation(String id, String body) throws RmesException {
-		IRI seriesURI=getSeriesUriByOperationId(id);
+		IRI seriesURI= parentUtils.getSeriesUriByOperationId(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
@@ -176,7 +169,7 @@ public class OperationsUtils extends RdfService{
 
 		operation.setUpdated(DateUtils.getCurrentDate());
 
-		String status= famOpeSerIndUtils.getValidationStatus(id);
+		String status= parentUtils.getValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(operation.getIdSims(), operation.getPrefLabelLg1(), operation.getPrefLabelLg2());
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfOperation(operation,null,ValidationStatus.UNPUBLISHED);
@@ -193,12 +186,12 @@ public class OperationsUtils extends RdfService{
 		/*Const*/
 		model.add(operationURI, RDF.TYPE, INSEE.OPERATION, RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), Config.LG1), RdfUtils.operationsGraph());
+		model.add(operationURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(operation.getPrefLabelLg1(), config.getLg1()), RdfUtils.operationsGraph());
 		model.add(operationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), Config.LG1, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.PREF_LABEL, operation.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getUpdated(), model, RdfUtils.operationsGraph());
 
@@ -216,13 +209,14 @@ public class OperationsUtils extends RdfService{
 	public String setOperationValidation(String idOperation)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
-		IRI seriesURI = getSeriesUriByOperationId(idOperation);
+		IRI seriesURI = parentUtils.getSeriesUriByOperationId(idOperation);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
 
 		//PUBLISH
-		operationPublication.publishOperation(idOperation);
+		JSONObject operationJson = getOperationJsonById(idOperation);
+		operationPublication.publishOperation(idOperation, operationJson);
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
 		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION, idOperation);
@@ -233,12 +227,6 @@ public class OperationsUtils extends RdfService{
 		repoGestion.objectValidation(operationURI, model);
 
 		return idOperation;
-	}
-
-
-
-	public MSD getMSD() throws RmesException {
-		return documentationsUtils.buildMSDFromJson(repoGestion.getResponseAsArray(DocumentationsQueries.msdQuery()));
 	}
 
 }

@@ -1,4 +1,4 @@
-SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs
+SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs ?minOccurs
  FROM <${MSD_GRAPH}> 
  FROM <${MSD_CONCEPTS_GRAPH}>
  WHERE { 
@@ -9,8 +9,9 @@ SELECT ?idMas ?masLabelLg1 ?masLabelLg2 ?idParent ?isPresentational ?maxOccurs
 		
    		OPTIONAL {?mas sdmx-mm:isPresentational ?isPresentational } 
    		OPTIONAL {?mas sdmx-mm:maxOccurs ?maxOccurs}
-		
-		FILTER(STRENDS(STR(?reportStructure),'/qualite/simsv2fr/reportStructure')) . 
+		OPTIONAL {?mas sdmx-mm:minOccurs ?minOccurs}
+
+		FILTER(STRENDS(STR(?reportStructure),'/qualite/simsv2fr/reportStructure')) .
 		BIND(REPLACE( STR(?mas) , '(.*/)(\\w.*$)', '$2' ) AS ?idMas) . 
 		
 		?mas sdmx-mm:metadataAttributeProperty ?map . 

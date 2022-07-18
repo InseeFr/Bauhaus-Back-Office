@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
 import fr.insee.rmes.exceptions.RmesException;
+import org.json.JSONObject;
 
 public interface ConsultationGestionService {
     String getDetailedConcept(String id) throws RmesException;
@@ -17,5 +18,5 @@ public interface ConsultationGestionService {
 
     String getAllComponents() throws RmesException;
 
-    String getComponent(String id) throws RmesException;
+    JSONObject getComponent(String id) throws RmesException;
 }
