@@ -49,7 +49,7 @@ public class XsltUtils {
 			try {
 				addParameter(xsltTransformer, paramName, xmlData, tempDir);
 			} catch (RmesException e) {
-				logger.error(e.getMessageAndDetails2());
+				logger.error(e.getMessageAndDetails());
 			}
 		});
 

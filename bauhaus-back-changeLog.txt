@@ -1,3 +1,15 @@
+3.1.2 : Fix issue with prod param in lowercase and expected in uppercase
+3.1.1 : Fix issue with OIDC and stamp
+3.1.0  : - Back : Passage à Springboot
+		 - Front : Ajout des rubriques essentielles dans les Sims
+				   Quelques mises à jour de dépendances
+3.0.18 : - Back : 
+				- Correction de la vulnérabilité Spring https://spring.io/blog/2022/03/31/spring-framework-rce-early-announcement
+		 		- Changement de gestionnaire de droit (Igesa -> Sugoi)
+		 - Front : Correction de la mise à jour d'un document (fichier physique et RDF peuvent être mis à jour simultanément)
+3.0.17 : - Back : Passage à Java 11
+		 - Front : mise à jour des dépendances
+		 - Ajout de la publication d'une nomenclature
 3.0.16 : - Front : Correction d'un problème de chargement lors de la modification d'un rapport qualité
 3.0.15 : - Correctif de la boucle infinie à l'affichage des séries (opStat - front)
 		 - Correctif sur les concepts (top concept)

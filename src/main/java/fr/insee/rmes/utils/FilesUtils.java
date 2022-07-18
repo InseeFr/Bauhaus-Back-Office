@@ -12,15 +12,16 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class FilesUtils {
 
-	private static final Logger log = LoggerFactory.getLogger(FilesUtils.class);
+	private static final Logger log = LogManager.getLogger(FilesUtils.class);
+
 
 	public static InputStream fileToIS(File file) {
 		InputStream is = null;
@@ -99,7 +100,8 @@ public class FilesUtils {
 			File[] children = fileToZip.listFiles();
 			for (File childFile : children) {
 				zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
-			}
+				}
+				zipOut.close();
 			return;
 		}
 		try (FileInputStream fis = new FileInputStream(fileToZip)) {

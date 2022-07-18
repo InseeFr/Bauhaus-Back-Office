@@ -3,7 +3,9 @@ package fr.insee.rmes.bauhaus_services;
 import java.io.InputStream;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.http.ResponseEntity;
 
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -43,9 +45,12 @@ public interface ConceptsService {
 	public void setConcept(String id, String body) throws RmesException;
 	
 	public void setConceptsValidation(String body) throws  RmesException ;
-	
-	public Response exportConcept(String id, String acceptHeader) throws RmesException;
-	
+
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
+
+	public void exportZipConcept(String id, String acceptHeader, HttpServletResponse response) throws RmesException;
+
+
 	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	
 	public void setCollection(String body) throws RmesException;
@@ -54,7 +59,7 @@ public interface ConceptsService {
 	
 	public void setCollectionsValidation(String body) throws  RmesException ;
 	
-	public Response getCollectionExport(String id, String acceptHeader) throws RmesException ;
+	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException ;
 	
 	public boolean setCollectionSend(String id, String body) throws  RmesException ;
 

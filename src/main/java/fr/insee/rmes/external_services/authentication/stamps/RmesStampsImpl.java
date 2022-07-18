@@ -53,11 +53,33 @@ public class RmesStampsImpl implements StampsService {
 	
 	@Autowired
 	LdapConnexion ldapConnexion;
+  
+  @Autowired
+	Config config;
 	
+
 	
 	public String getStampsApiRH() throws RmesException {
 		
 		TreeSet<String> listStamp = new TreeSet<>();
+   }
+
+
+	
+	@Override
+	public String getStamps() throws RmesException {
+		TreeSet<String> stamps = new TreeSet<>();
+		try {
+			if(config.getLdapUrl() != null && !config.getLdapUrl().isEmpty()) {
+				// Connexion à la racine de l'annuaire
+				DirContext context = ldapConnexion.getLdapContext();
+
+				// Spécification des critères pour la recherche des unités
+				SearchControls controls = new SearchControls();
+				controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+				controls.setReturningAttributes(new String[] { "ou", "description" });
+				String filter = "(objectClass=inseeUnite)";
+//>>>>>>> acceptance
 
 		for (int i=0;i<=2;i++ ) {
 			

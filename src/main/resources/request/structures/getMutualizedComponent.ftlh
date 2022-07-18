@@ -1,6 +1,7 @@
 SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState
-?created ?modified ?creator ?contributor ?disseminationStatus ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern
+?created ?modified ?creator ?contributor ?disseminationStatus ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern ?fullCodeListValue
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
+FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?component dcterms:identifier '${ID}' ;
                skos:notation ?identifiant ;
@@ -35,7 +36,10 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?component qb:codeList ?codeList
+        ?component qb:codeList ?codeList .
+        OPTIONAL {
+            ?codeList prov:wasDerivedFrom ?fullCodeListValue
+        }
     } .
 
     OPTIONAL {

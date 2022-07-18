@@ -63,7 +63,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 		componentDefinitions.forEach(o -> {
 			JSONObject cd = (JSONObject) o;
 			removeEmptyAttachment((JSONObject) o);
-			cd.remove("id");
+			cd.remove(Constants.ID);
 			cd.remove("created");
 			cd.remove("modified");
 
@@ -86,7 +86,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 				component.remove("range");
 
 				JSONObject codeList = new JSONObject();
-				codeList.put("id", component.getString(Constants.CODELIST));
+				codeList.put(Constants.ID, component.getString(Constants.CODELIST));
 				try {
 					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString(Constants.CODELIST))));
 				} catch (RmesException e) {

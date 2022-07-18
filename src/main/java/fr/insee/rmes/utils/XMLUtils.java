@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.core.MediaType;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -24,6 +23,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -67,7 +67,7 @@ public class XMLUtils {
 		ObjectMapper mapper = null;
 		String response = "";
 
-		if (header != null && header.equals(MediaType.APPLICATION_XML)) {
+		if (header != null && header.equals(MediaType.APPLICATION_XML_VALUE)) {
 			mapper = new XmlMapper();
 		} else {
 			mapper = new ObjectMapper();
