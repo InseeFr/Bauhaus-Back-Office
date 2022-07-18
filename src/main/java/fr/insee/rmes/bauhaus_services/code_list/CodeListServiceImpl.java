@@ -183,7 +183,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					j++;
 					position++;
 				}
-				i = j;
+				i = j - 1;
 
 			}
 		}
@@ -431,6 +431,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, Model codeListModel, IRI uriOwlClass) {
 		if(codesList.has(CODES)){
+			String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 			JSONObject parentsModel = new JSONObject();
 			JSONObject codes = codesList.getJSONObject(CODES);
 			for (String key : codes.keySet()) {
@@ -438,7 +439,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 					JSONObject code = codes.getJSONObject(key);
 
 					Model codeModel = new LinkedHashModel();
-					IRI codeIri = RdfUtils.codeListIRI(code.getString(LAST_CODE_URI_SEGMENT) + "/" + code.get(CODE));
+					IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.get(CODE));
 
 					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri, uriOwlClass);
 
