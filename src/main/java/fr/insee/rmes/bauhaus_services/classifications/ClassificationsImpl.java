@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -23,10 +24,10 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.CorrespondencesQueries;
-import fr.insee.rmes.persistance.sparql_queries.classifications.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.LevelsQueries;
-import fr.insee.rmes.persistance.sparql_queries.classifications.SeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifSeriesQueries;
 
 @Service
 public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
@@ -39,37 +40,37 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
-		return repoGestion.getResponseAsArray(FamiliesQueries.familiesQuery()).toString();
+		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery()).toString();
 	}
 	
 	@Override
 	public String getFamily(String id) throws RmesException {
 		logger.info("Starting to get classification family");
-		return repoGestion.getResponseAsObject(FamiliesQueries.familyQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassifFamiliesQueries.familyQuery(id)).toString();
 	}
 	
 	@Override
 	public String getFamilyMembers(String id) throws RmesException {
 		logger.info("Starting to get classification family members");
-		return repoGestion.getResponseAsArray(FamiliesQueries.familyMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familyMembersQuery(id)).toString();
 	}
 	
 	@Override
 	public String getSeries() throws RmesException {
 		logger.info("Starting to get classifications series");
-		return repoGestion.getResponseAsArray(SeriesQueries.seriesQuery()).toString();
+		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery()).toString();
 	}
 	
 	@Override
 	public String getOneSeries(String id) throws RmesException {
 		logger.info("Starting to get a classification series");
-		return repoGestion.getResponseAsObject(SeriesQueries.oneSeriesQuery(id)).toString();
+		return repoGestion.getResponseAsObject(ClassifSeriesQueries.oneSeriesQuery(id)).toString();
 	}
 	
 	@Override
 	public String getSeriesMembers(String id) throws RmesException {
 		logger.info("Starting to get members of a classification series");
-		return repoGestion.getResponseAsArray(SeriesQueries.seriesMembersQuery(id)).toString();
+		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesMembersQuery(id)).toString();
 	}
 	
 	@Override
@@ -110,7 +111,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	
 	@Override
 	public String getClassificationItem(String classificationId, String itemId) throws RmesException{
-		logger.info("Starting to get classification item");
+		logger.info("Starting to get classification item {} from {}", itemId, classificationId);
 		JSONObject item = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
 		JSONArray altLabels = repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
 		if(altLabels.length() != 0) {
@@ -121,13 +122,13 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	
 	@Override
 	public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
-		logger.info("Starting to get classification item notes");
+		logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
 		return repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion)).toString();
 	}
 	
 	@Override
 	public String getClassificationItemNarrowers(String classificationId, String itemId) throws RmesException {
-		logger.info("Starting to get classification item members");
+		logger.info("Starting to get classification item members {} from {}", itemId, classificationId);
 		return repoGestion.getResponseAsArray(ItemsQueries.itemNarrowersQuery(classificationId, itemId)).toString();
 	}
 	
@@ -163,7 +164,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 		logger.debug("JSON for listGraph id : {}", listGraph);
 		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classifId);} 
 		String graph = listGraph.getString("graph");
-		String classifUriString = listGraph.getString("uri");
+		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
 		
 		

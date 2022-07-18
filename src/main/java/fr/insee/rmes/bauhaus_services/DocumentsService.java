@@ -4,10 +4,9 @@ package fr.insee.rmes.bauhaus_services;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -38,7 +37,7 @@ public interface DocumentsService {
 	 * Delete
 	 * Delete the document and the links towards it.
 	 */
-	public Status deleteDocument(String id) throws RmesException ;
+	public HttpStatus deleteDocument(String id) throws RmesException ;
 
 	/**
 	 * Change an uploaded document file
@@ -47,7 +46,7 @@ public interface DocumentsService {
 	 */
 	public String changeDocument(String documentUri, InputStream documentFile, String documentName) throws RmesException ;
 	
-	public Response downloadDocument(String id) throws RmesException, IOException;
+	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException;
 
 
 	/*
@@ -61,7 +60,7 @@ public interface DocumentsService {
 
 	public Object getLink(String id) throws RmesException;
 
-	public Status deleteLink(String id) throws RmesException;
+	public HttpStatus deleteLink(String id) throws RmesException;
 
 	/**
 	 * update

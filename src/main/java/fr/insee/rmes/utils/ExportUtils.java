@@ -10,18 +10,28 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
-import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -30,14 +40,17 @@ import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
-
+	
+	private static final String CONTENT_TYPE = "Content-Type";
+	private static final String ATTACHMENT = "attachment";
 	private static final String ODT_EXTENSION = ".odt";
+	private static final String ZIP_EXTENSION = ".zip";
 	private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
 	
 
 	public static String getExtension(String acceptHeader) {
-		if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
+		if (acceptHeader==null) {
 			return ODT_EXTENSION;
 		} else if (acceptHeader.equals("application/octet-stream")) {
 			return ".pdf";
@@ -45,26 +58,80 @@ public class ExportUtils {
 			return ".fodt";
 		} else if (acceptHeader.equals("XML")) {
 			return ".xml";
+		} else if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
+			return ODT_EXTENSION;
 		} else {
 			return ODT_EXTENSION;
 			// default --> odt
 		}
 	}
 
-	public Response exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+	private void addZipEntry(String filename, Map<String, String> xmlContent, ZipOutputStream zos, String xslFile, String xmlPattern, String zip, String objectType)
+			throws IOException, RmesException {
+		filename = filename.replace(ODT_EXTENSION, "");
+		ZipEntry entry = new ZipEntry(filename + ODT_EXTENSION);
+		InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType);
+		if (input == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+		zos.putNextEntry(entry);
+		input.transferTo(zos);
+		zos.closeEntry(); // close the entry. Note: not closing the zos just yet as we need to add more files to our ZIP
+	}
+
+	public void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, String objectType, HttpServletResponse response) throws RmesException {
+
+		String zipFileName = "concepts" + ZIP_EXTENSION;
+
+		response.addHeader(HttpHeaders.ACCEPT,  "*/*");
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
+		response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE );
+		response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
+
+		try (ZipOutputStream zipOutputStreamStream = new ZipOutputStream(response.getOutputStream())){
+			Iterator<String> resourceIterator = resources.keySet().iterator();
+			while(resourceIterator.hasNext()) {
+				String key = resourceIterator.next();
+				this.addZipEntry(key, resources.get(key), zipOutputStreamStream, xslFile, xmlPattern, zip, objectType);
+			}
+		} catch (IOException e1) {
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException on "+ zipFileName, e1.getMessage());
+		}
+	}
+
+	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
 		logger.debug("Begin To export {} as Response", objectType);
 		fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
-		ContentDisposition content = ContentDisposition.type("attachment").fileName(fileName + ODT_EXTENSION).build();
 
 		InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
-		logger.debug("End To export {} as Response", objectType);
-		
-		return Response.ok((StreamingOutput) out -> {
-			IOUtils.copy(input, out);
-			out.flush();
+		if (input == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+
+		ByteArrayResource resource = null;
+		try {
+			resource = new ByteArrayResource(IOUtils.toByteArray(input));
 			input.close();
-			out.close();
-		}).header("Content-Disposition", content).build();
+		} catch (IOException e) {
+			logger.error("Failed to getBytes of resource");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+		}
+		logger.debug("End To export {} as Response", objectType);
+
+		//Prepare response headers
+		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName+ODT_EXTENSION).build();
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setContentDisposition(content);
+		List<String> allowHeaders = new ArrayList<>();
+		allowHeaders.add("Content-Disposition");
+		allowHeaders.add("Access-Control-Allow-Origin");
+		allowHeaders.add("Access-Control-Allow-Credentials");
+		responseHeaders.setAccessControlExposeHeaders(allowHeaders);
+		responseHeaders.add(CONTENT_TYPE,"application/vnd.oasis.opendocument.text" );
+
+		return ResponseEntity.ok()
+						.headers(responseHeaders)
+				        .contentLength(resource.contentLength())
+				        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+						.body(resource);		
 
 	}
 	
@@ -107,7 +174,7 @@ public class ExportUtils {
 
 			return Files.newInputStream(finalPath);
 		} catch (IOException | TransformerException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
 		} finally {
 			try {
 				if (odtFileIS != null)
@@ -122,9 +189,9 @@ public class ExportUtils {
 		}
 	}
 	
-	public Response exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
+	public ResponseEntity<Object> exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
 		logger.debug("Begin To export temp files as Response");
-		ContentDisposition content = ContentDisposition.type("attachment").fileName("xmlFiles.zip").build();
+		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename("xmlFiles.zip").build();
 		Path tempDir;
 
 		try {
@@ -144,12 +211,18 @@ public class ExportUtils {
 			FilesUtils.zipDirectory(tempDir.toFile()); 
 			
 			logger.debug("End To export temp files as Response");
-			return Response.ok(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toFile()).header("Content-Disposition", content)
-			  .header("Content-Type","application/octet-stream")
-			  .build();
 			
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentDisposition(content);
+		    responseHeaders.set(CONTENT_TYPE,  "application/zip");
+			Resource resource = null;
+			resource= new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName()+".zip").toUri());
+			return ResponseEntity.ok()
+							.headers(responseHeaders)
+							.body(resource);
+
 		} catch (IOException e1) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
 		} 
 
 

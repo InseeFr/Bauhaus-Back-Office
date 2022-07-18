@@ -1,43 +1,37 @@
 package fr.insee.rmes.webservice;
 
 import java.io.IOException;
-import java.io.InputStream;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -45,9 +39,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  *
  */
-@Hidden
-@Component
-@Path("/documents")
+@RestController
+@RequestMapping("/documents")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name=Constants.DOCUMENT, description="Document API")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
@@ -58,7 +52,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class DocumentsResources {
+public class DocumentsResources  extends GenericResources {
 
 	static final Logger logger = LogManager.getLogger(DocumentsResources.class);
 
@@ -73,18 +67,17 @@ public class DocumentsResources {
 	 * Get the list of all documents and links
 	 * @return
 	 */
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping
 	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
-	public Response getDocuments() {
+	public ResponseEntity<Object> getDocuments() {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getDocuments();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
 
@@ -97,34 +90,30 @@ public class DocumentsResources {
 	 * @param id
 	 * @return
 	 */
-	@GET
-	@Path("/document/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping("/document/{id}")
 	@Operation(operationId = "getDocument", summary = "Get a Document",
-	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
-	public Response getDocument(@PathParam(Constants.ID) String id) {
+		responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
+	public ResponseEntity<Object> getDocument(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getDocument(id).toString();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 	
-	@GET
-	@Path("/document/{id}/file")
-	@Produces("*/*")
+	@GetMapping(value = "/document/{id}/file", produces = "*/*")
 	@Operation(operationId = "downloadDocument", summary = "Download the Document file")																 
-	public Response downloadDocument(@PathParam(Constants.ID) String id) {
+	public ResponseEntity<Object> downloadDocument(@PathVariable(Constants.ID) String id) {
 		try {
 			return documentsService.downloadDocument(id);
 		} catch (RmesException e) {
 			logger.error(e.getDetails());
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		} catch (IOException e) {
 			logger.error("IOException {}", e.getMessage());
-			return Response.status(HttpStatus.SC_NOT_FOUND).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.TEXT_PLAIN).body(e.getMessage());
 		}
 	}
 	
@@ -133,47 +122,50 @@ public class DocumentsResources {
 	/**
 	 * Create a new document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@POST
-	@Path("/document")
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
 	@Operation(operationId = "setDocument", summary = "Create document" )
-	public Response setDocument(
+	@PostMapping(value = "/document", 
+	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
+			MediaType.APPLICATION_OCTET_STREAM_VALUE,
+			"application/vnd.oasis.opendocument.text",
+			MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Object> setDocument(
 			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))
-			@FormDataParam(value="body") String body,
+			@RequestParam(value="body") String body,
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
-			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition
-			) throws RmesException {
+			@RequestParam(value = "file") MultipartFile  documentFile
+			) {
 		String id = null;
-		String documentName = fileDisposition.getFileName();
+		String documentName = documentFile.getOriginalFilename();
 		try {
-			id = documentsService.createDocument(body, documentFile, documentName);
+			id = documentsService.createDocument(body, documentFile.getInputStream(), documentName);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("IOException"+e.getMessage());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
 	/**
 	 * Update informations about a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@PUT
-	@Path("/document/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/document/{id}")
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
-	public Response setDocument(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
-			@RequestBody(description = Constants.DOCUMENT, required = true)
-			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
+	public ResponseEntity<Object> setDocument(
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
+			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))@RequestBody String body) {
 		try {
 			documentsService.setDocument(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
 		logger.info("Update document : {}", id);
-		return Response.status(Status.OK).build();
+		return ResponseEntity.ok(id);
 	}
 	
 
@@ -181,42 +173,46 @@ public class DocumentsResources {
 	/**
 	 * Change the file of a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PUT
-	@Path("/document/{id}/file")
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
-	@Operation(operationId = "changeDocument", summary = "Change document file" )
-	public Response changeDocument(
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@Operation(operationId = "changeDocument", summary = "Change document file" )
+	@PutMapping(value = "/document/{id}/file", 
+	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
+			MediaType.APPLICATION_OCTET_STREAM_VALUE,
+			"application/vnd.oasis.opendocument.text",
+			MediaType.APPLICATION_JSON_VALUE })
+	public ResponseEntity<Object> changeDocument(
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
-			@FormDataParam(value = "file") InputStream documentFile,
-			@Parameter(hidden=true) @FormDataParam(value = "file") FormDataContentDisposition fileDisposition,
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id
+			@RequestParam(value = "file") MultipartFile documentFile,
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
 			) throws RmesException {
 		String url = null;
-		String documentName = fileDisposition.getFileName();
+		String documentName = documentFile.getOriginalFilename();
 		try {
-			url = documentsService.changeDocument(id, documentFile, documentName);
+			url = documentsService.changeDocument(id, documentFile.getInputStream(), documentName);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
+		} catch (IOException e) {
+			return ResponseEntity.internalServerError().body("IOException"+e.getMessage());
 		}
-		return Response.status(HttpStatus.SC_OK).entity(url).build();
+		return ResponseEntity.status(HttpStatus.OK).body(url);
 	}
 	
 	/**
 	 * Delete a document
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@DELETE
-	@Path("/document/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
-	public Response deleteDocument(@PathParam(Constants.ID) String id) {
-		Status status = null;
+	public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) {
+		HttpStatus status = null;
 		try {
 			status = documentsService.deleteDocument(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(status).entity(id).build();
+		return ResponseEntity.status(status).body(id);
 	}
 
 	/*
@@ -229,78 +225,77 @@ public class DocumentsResources {
 	 * @param id
 	 * @return
 	 */
-	@GET
-	@Path("/link/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@GetMapping("/link/{id}")
 	@Operation(operationId = "getLink", summary = "Get a Link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
-	public Response getLink(@PathParam(Constants.ID) String id) {
+	public ResponseEntity<Object> getLink(@PathVariable(Constants.ID) String id) {
 		String jsonResultat;
 		try {
 			jsonResultat = documentsService.getLink(id).toString();
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(jsonResultat).build();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 	
 	/**
 	 * Create a new link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@POST
-	@Path("/link")
-	@Consumes({MediaType.MULTIPART_FORM_DATA, MediaType.APPLICATION_OCTET_STREAM, "application/vnd.oasis.opendocument.text",MediaType.APPLICATION_JSON })
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PostMapping(value = "/link", 
+		consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
+				MediaType.APPLICATION_OCTET_STREAM_VALUE,
+				"application/vnd.oasis.opendocument.text",
+				MediaType.APPLICATION_JSON_VALUE })
 	@Operation(operationId = "setDocument", summary = "Create link" )
-	public Response setLink(
+	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class))
-			@FormDataParam(value="body") String body
+			@RequestParam(value="body") String body
 			) throws RmesException {
 		String id = null;
 		try {
 			id = documentsService.setLink(body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return returnRmesException(e);
 		}
-		return Response.status(HttpStatus.SC_OK).entity(id).build();
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
 	/**
 	 * Update informations about a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })	
-	@PUT
-	@Path("/link/{id}")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/link/{id}")
 	@Operation(operationId = "setLinkById", summary = "Update link")
-	public Response setLink(
-			@Parameter(description = "Id", required = true) @PathParam(Constants.ID) String id,
-			@RequestBody(description = "Link", required = true)
-			@Parameter(schema = @Schema(implementation=Document.class)) String body) {
+	public ResponseEntity<Object> setLink(
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
+			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class)) @RequestBody String body) {
 		try {
 			documentsService.setLink(id, body);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
 		logger.info("Update link : {}", id);
-		return Response.status(Status.OK).build();
+		return ResponseEntity.ok(id);
 	}
 	
 	/**
 	 * Delete a link
 	 */
-	@Secured({ Roles.SPRING_ADMIN, Roles.SPRING_SERIES_CONTRIBUTOR, Roles.SPRING_INDICATOR_CONTRIBUTOR })
-	@DELETE
-	@Path("/link/{id}")
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/link/{id}")
 	@Operation(operationId = "deleteLink", summary = "Delete a link")
-	public Response deleteLink(@PathParam(Constants.ID) String id) {
-		Status status = null;
+	public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) {
+		HttpStatus status = null;
 		try {
 			status = documentsService.deleteLink(id);
 		} catch (RmesException e) {
-			return Response.status(e.getStatus()).entity(e.getDetails()).type(MediaType.TEXT_PLAIN).build();
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return Response.status(status).entity(id).build();
+		return ResponseEntity.status(status).body(id);
 	}
 	
 	
