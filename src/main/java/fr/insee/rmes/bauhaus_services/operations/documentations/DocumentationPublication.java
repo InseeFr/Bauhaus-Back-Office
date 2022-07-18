@@ -1,11 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -15,11 +13,9 @@ import org.springframework.stereotype.Repository;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -28,9 +24,6 @@ import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class DocumentationPublication extends RdfService {
-
-	@Autowired
-	RepositoryUtils repoUtils;
 
 	static NotificationsContract notification = new RmesNotificationsImpl();
 	
@@ -59,15 +52,7 @@ public class DocumentationPublication extends RdfService {
 				if (!isTripletForPublication(predicate)) {
 					// nothing, wouldn't copy this attr
 				} else {
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
-					IRI predicateIRI = RdfUtils
-							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-					Value object = st.getObject();
-					if (st.getObject() instanceof Resource) {
-						object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
-					}
-
-					model.add(subject, predicateIRI, object, st.getContext());
+					transformTripleToPublish(model, st);
 				}
 			}
 			documentsPublication.publishAllDocumentsInSims(simsId);

@@ -1,4 +1,4 @@
-SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents ?codeUri
+SELECT ?labelLg1 ?labelLg2 ?code ?descriptionLg1 ?descriptionLg2 ?parents ?codeUri ?lastCodeUriSegment
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
 <#if PARTIAL>
@@ -19,6 +19,8 @@ WHERE {
         ?parentsParent skos:notation ?parents
     } .
 
+    BIND(STRAFTER(STR(?codeUri),'${CODE_LIST_BASE_URI}/') AS ?lastCodeUriSegmentWithId) .
+    BIND(STRBEFORE(?lastCodeUriSegmentWithId, CONCAT('/', ?code)) AS ?lastCodeUriSegment) .
     OPTIONAL {?codeUri skos:definition ?descriptionLg1 .
     FILTER(lang(?descriptionLg1) = '${LG1}') } .
     OPTIONAL {?codeUri skos:definition ?descriptionLg2 .

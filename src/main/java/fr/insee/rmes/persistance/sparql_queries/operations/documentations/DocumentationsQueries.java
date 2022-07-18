@@ -7,11 +7,11 @@ import org.eclipse.rdf4j.model.Resource;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class DocumentationsQueries {
+public class DocumentationsQueries extends GenericQueries{
 	
 	private static final String ID_SIMS = Constants.ID_SIMS;
 
@@ -34,9 +34,9 @@ public class DocumentationsQueries {
 		Map<String,Object> params = initParams();
 		params.put("idMas", idMas);
 		params.put("uniqueAttr","true");
-		params.put("MSD_GRAPH",Config.MSD_GRAPH);
-		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
-		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
+		params.put("MSD_GRAPH",config.getMsdGraph());
+		params.put("CODELIST_GRAPH",config.getCodeListGraph());
+		params.put("MSD_CONCEPTS_GRAPH", config.getMsdConceptsGraph());
         return buildRequest("getAttributeSpecificationQuery.ftlh", params);
 	}
 	
@@ -109,8 +109,8 @@ public class DocumentationsQueries {
 		params.put("ORGANIZATION", RangeType.ORGANIZATION);
 		params.put("GEOGRAPHY", RangeType.GEOGRAPHY);
 		
-		params.put("ORGANIZATIONS_GRAPH", Config.ORGANIZATIONS_GRAPH);
-		params.put("ORG_INSEE_GRAPH", Config.ORG_INSEE_GRAPH);
+		params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
+		params.put("ORG_INSEE_GRAPH", config.getOrgInseeGraph());
 		
 		params.put("LG1_CL",clLg1);
 		params.put("LG2_CL",clLg2);
@@ -129,19 +129,19 @@ public class DocumentationsQueries {
 	public static String getPublicationState(String id) throws RmesException{
 		Map<String,Object> params = initParams();
 		params.put(Constants.ID_SIMS, id);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
+		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
 		return buildRequest("getPublicationStatusQuery.ftlh", params);	
 	}
 	
 	
 	private static Map<String,Object> initParams() {
 		Map<String,Object> params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-		params.put("DOCUMENTATIONS_GRAPH", Config.DOCUMENTATIONS_GRAPH);
-		params.put("MSD_GRAPH",Config.MSD_GRAPH);
-		params.put("CODELIST_GRAPH",Config.CODELIST_GRAPH);
-		params.put("MSD_CONCEPTS_GRAPH", Config.MSD_CONCEPTS_GRAPH);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+		params.put("MSD_GRAPH",config.getMsdGraph());
+		params.put("CODELIST_GRAPH",config.getCodeListGraph());
+		params.put("MSD_CONCEPTS_GRAPH", config.getMsdConceptsGraph());
 		return params;
 	}
 	

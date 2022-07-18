@@ -3,11 +3,11 @@ package fr.insee.rmes.persistance.sparql_queries.structures;
 import java.util.HashMap;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class StructureQueries {
+public class StructureQueries extends GenericQueries{
 
 	public static String 	getStructures() throws RmesException {
 		HashMap<String, Object> params = initParams();
@@ -43,8 +43,8 @@ public class StructureQueries {
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
-		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
-		params.put("CONCEPT_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
+		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
 		params.put("TYPE", type);
 		return buildRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
@@ -103,7 +103,7 @@ public class StructureQueries {
 
 	public static String getUriClasseOwl(String codeList) throws RmesException {
 		HashMap<String, Object> params = initParams();
-		params.put("CODES_LISTS_GRAPH", Config.CODELIST_GRAPH);
+		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
 		params.put("CODES_LIST", codeList);
 
 		return buildRequest("getUriClasseOwl.ftlh", params);
@@ -115,11 +115,11 @@ public class StructureQueries {
 
 	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
-		params.put("STRUCTURES_COMPONENTS_GRAPH", Config.STRUCTURES_COMPONENTS_GRAPH);
-		params.put("STRUCTURES_GRAPH", Config.STRUCTURES_GRAPH);
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
-
+		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
+		params.put("STRUCTURES_GRAPH", config.getStructuresGraph());
+		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		return params;
 	}
 	

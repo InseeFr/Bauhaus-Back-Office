@@ -2,6 +2,7 @@ package fr.insee.rmes.external_services.notifications;
 
 import java.util.Arrays;
 
+import javax.annotation.PostConstruct;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -14,13 +15,24 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 
+@Service
 public class RmesNotificationsImpl implements NotificationsContract {
 	
-	private static final String BROKER_URL = "failover:(" + Config.BROKER_URL + ")?randomize=false";
+	@Autowired
+	Config config;
+	
+	private String brokerUrl;
+	
+	@PostConstruct
+	public void init() {
+		brokerUrl = "failover:(" + config.getBrokerUrl() + ")?randomize=false";
+	}
 	
     private static final Boolean NON_TRANSACTED = false;
     private static final long DELAY = 1;
@@ -53,8 +65,8 @@ public class RmesNotificationsImpl implements NotificationsContract {
 	}    
 	
 	public void sendMessageToBrocker(String message) throws RmesException {
-        String url = BROKER_URL;
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(Config.BROKER_USER, Config.BROKER_PASSWORD, url);
+        String url = brokerUrl;
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(config.getBrokerUser(), config.getBrokerPassword(), url);
         connectionFactory.setTrustedPackages(Arrays.asList("fr.insee.rmes"));
         Connection connection = null;
 

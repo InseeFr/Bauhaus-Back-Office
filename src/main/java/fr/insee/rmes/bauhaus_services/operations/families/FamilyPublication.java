@@ -47,7 +47,7 @@ public class FamilyPublication extends RdfService {
 							|| pred.endsWith("validationState")
 							|| pred.endsWith("hasPart")
 							|| pred.endsWith(Constants.PUBLISHER)
-							|| pred.endsWith("contributor")) {
+							|| pred.endsWith(Constants.CONTRIBUTOR)) {
 						// nothing, wouldn't copy this attr
 					}
 					// Literals

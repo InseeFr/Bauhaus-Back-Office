@@ -16,6 +16,7 @@ public class MutualizedComponent {
     private String type;
     private String concept;
     private String codeList;
+    private String fullCodeListValue;
     private String range;
     private Structure[] structures;
 
@@ -202,5 +203,13 @@ public class MutualizedComponent {
 
     public void setMinLength(String minLength) {
         this.minLength = minLength;
+    }
+
+    public String getFullCodeListValue() {
+        return fullCodeListValue;
+    }
+
+    public void setFullCodeListValue(String fullCodeListValue) {
+        this.fullCodeListValue = fullCodeListValue;
     }
 }

@@ -25,6 +25,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.utils.DocumentBuilders;
@@ -113,7 +114,7 @@ public class VarBookExportBuilder {
 		while (node.getAttributes().getLength() > nbAtt) {
 			Node att = node.getAttributes().item(nbAtt);
 			
-			if (StringUtils.stringContainsItemFromList(att.getNodeName(), new String[] {"lang","Length", "regExp", "blank", "scale"})) {
+			if (StringUtils.stringContainsItemFromList(att.getNodeName(), new String[] {Constants.LANG,"Length", "regExp", "blank", "scale"})) {
 				document.renameNode(att, null, att.getNodeName().replaceFirst("[a-z]*:", ""));
 				nbAtt++;
 			} else {

@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,6 +16,7 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -33,7 +30,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -57,9 +53,12 @@ public class ConceptsUtils extends RdfService {
 
 	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
-		String notation = json.getString("notation");
-		int id = Integer.parseInt(notation.substring(1))+1;
-		return "c" + id;
+		if (json != null && !json.isEmpty()) {
+			String notation = json.getString(Constants.NOTATION);
+			int id = Integer.parseInt(notation.substring(1))+1;
+			return "c" + id;
+		}
+		return "c0001";
 	}
 
 	public JSONObject getConceptById(String id)  throws RmesException{
@@ -67,8 +66,8 @@ public class ConceptsUtils extends RdfService {
 			throw new RmesNotFoundException(ErrorCodes.CONCEPT_UNKNOWN_ID,"This concept cannot be found in database: ", id);
 		}
 		JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
-		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG1));
-		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, Config.LG2));
+		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg1()));
+		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg2()));
 		if(altLabelLg1.length() != 0) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
@@ -115,7 +114,7 @@ public class ConceptsUtils extends RdfService {
 		try {
 			concept =  mapper.readerForUpdating(concept).readValue(body);
 		} catch (IOException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "IOException");
 		}
 		createRdfConcept(concept);
 		return concept;
@@ -140,23 +139,23 @@ public class ConceptsUtils extends RdfService {
 		model.add(conceptURI, INSEE.IS_VALIDATED, RdfUtils.setLiteralBoolean(false), RdfUtils.conceptGraph());
 		/*Required*/
 		model.add(conceptURI, SKOS.NOTATION, RdfUtils.setLiteralString(concept.getId()), RdfUtils.conceptGraph());
-		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), Config.LG1), RdfUtils.conceptGraph());
+		model.add(conceptURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(concept.getPrefLabelLg1(), config.getLg1()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CREATOR, RdfUtils.setLiteralString(concept.getCreator()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(concept.getContributor()), RdfUtils.conceptGraph());
 		model.add(conceptURI, INSEE.DISSEMINATIONSTATUS, RdfUtils.toURI(concept.getDisseminationStatus()), RdfUtils.conceptGraph());
 		model.add(conceptURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(concept.getCreated()), RdfUtils.conceptGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), Config.LG2, model, RdfUtils.conceptGraph());
+		RdfUtils.addTripleString(conceptURI, SKOS.PREF_LABEL, concept.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.conceptGraph());
 		List<String> altLabelsLg1 = concept.getAltLabelLg1();
 		List<String> altLabelsLg2 =  concept.getAltLabelLg2();
 		if (altLabelsLg1!=null) {
 			for (String altLabelLg1 : altLabelsLg1) {
-				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, Config.LG1, model, RdfUtils.conceptGraph());
+				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg1, config.getLg1(), model, RdfUtils.conceptGraph());
 			}
 		}
 		if (altLabelsLg2!=null) {
 			for (String altLabelLg2 : altLabelsLg2) {
-				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, Config.LG2, model, RdfUtils.conceptGraph());
+				RdfUtils.addTripleString(conceptURI, SKOS.ALT_LABEL, altLabelLg2, config.getLg2(), model, RdfUtils.conceptGraph());
 			}		
 		}
 		RdfUtils.addTripleString(conceptURI, INSEE.ADDITIONALMATERIAL, concept.getAdditionalMaterial(), model, RdfUtils.conceptGraph());
@@ -198,9 +197,9 @@ public class ConceptsUtils extends RdfService {
 		return repoGestion.getResponseAsArray(ConceptsQueries.getRelatedConceptsQuery(id));
 	}
 
-	public Response.Status deleteConcept(String id) throws RmesException{
-		Response.Status result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
-		if (result.equals(Status.OK)) {
+	public HttpStatus deleteConcept(String id) throws RmesException{
+		HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+		if (result.equals(HttpStatus.OK)) {
 			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;

@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import java.io.IOException;
 
-import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -22,11 +21,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -34,7 +33,8 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.operations.families.FamiliesQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 
 @Component
@@ -49,10 +49,13 @@ public class FamiliesUtils  extends RdfService {
 	
 	@Autowired
 	FamilyPublication familyPublication;
+	
+	@Autowired
+	ParentUtils ownersUtils;
 
 /*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
-		JSONObject family = repoGestion.getResponseAsObject(FamiliesQueries.familyQuery(id));
+		JSONObject family = repoGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id));
 		if (family.length()==0) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		}
@@ -64,14 +67,14 @@ public class FamiliesUtils  extends RdfService {
 
 
 	private void addFamilySeries(String idFamily, JSONObject family) throws RmesException {
-		JSONArray series = repoGestion.getResponseAsArray(FamiliesQueries.getSeries(idFamily));
+		JSONArray series = repoGestion.getResponseAsArray(OpFamiliesQueries.getSeries(idFamily));
 		if (series.length() != 0) {
 			family.put("series", series);
 		}
 	}
 
 	private void addSubjects(String idFamily, JSONObject family) throws RmesException {
-		JSONArray subjects = repoGestion.getResponseAsArray(FamiliesQueries.getSubjects(idFamily));
+		JSONArray subjects = repoGestion.getResponseAsArray(OpFamiliesQueries.getSubjects(idFamily));
 		if (subjects.length() != 0) {
 			family.put("subjects", subjects);
 		}
@@ -98,7 +101,7 @@ public class FamiliesUtils  extends RdfService {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 		family.setUpdated(DateUtils.getCurrentDate());
-		String status= famOpeSerUtils.getValidationStatus(id);
+		String status= ownersUtils.getValidationStatus(id);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		} else {
@@ -120,12 +123,12 @@ public class FamiliesUtils  extends RdfService {
 		/*Const*/
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), Config.LG1), RdfUtils.operationsGraph());
+		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), config.getLg1()), RdfUtils.operationsGraph());
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), Config.LG2, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), Config.LG1, model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), Config.LG2, model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 

@@ -17,6 +17,7 @@ public class Structure {
 	private String contributor;
 	private String creator;
     private String disseminationStatus;
+    private String isRequiredBy;
 
 	private String updated;
 
@@ -123,4 +124,12 @@ public class Structure {
     public void setDisseminationStatus(String disseminationStatus) {
         this.disseminationStatus = disseminationStatus;
     }
+
+	public String getIsRequiredBy() {
+		return isRequiredBy;
+	}
+
+	public void setIsRequiredBy(String isRequiredBy) {
+		this.isRequiredBy = isRequiredBy;
+	}
 }

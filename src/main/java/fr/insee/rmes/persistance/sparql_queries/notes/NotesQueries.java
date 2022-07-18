@@ -2,10 +2,10 @@ package fr.insee.rmes.persistance.sparql_queries.notes;
 
 import org.eclipse.rdf4j.model.IRI;
 
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.notes.DatableNote;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class NotesQueries {
+public class NotesQueries extends GenericQueries{
 
 	public static String getLastVersionnableNoteVersion(String conceptId, IRI predicat) {
 		return "select ?version where { \n"
@@ -35,7 +35,7 @@ public class NotesQueries {
 		
 	public static String getHistoricalNotes(String conceptId, String maxVersion) {
 		return "SELECT ?note ?predicat \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 			//	+ "?concept skos:notation '" + conceptId + "' . \n"
 				
 				+ "?concept ?predicat ?note . \n"

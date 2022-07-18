@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
-public class ConceptsQueries {
+public class ConceptsQueries extends GenericQueries{
 	
 	private static final String URI_CONCEPT = "uriConcept";
 	static Map<String,Object> params ;
@@ -19,7 +19,7 @@ public class ConceptsQueries {
 	
 	public static String lastConceptID() {
 		return "SELECT ?notation \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 				+ "?concept skos:notation ?notation  .\n"
 				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
 				+ "ORDER BY DESC(xsd:integer(?id)) \n"
@@ -29,7 +29,7 @@ public class ConceptsQueries {
 	
 	public static String conceptsQuery() throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 	
@@ -37,12 +37,12 @@ public class ConceptsQueries {
 		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
 			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
 			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+			+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 			+ "?concept skos:notation ?notation . \n"
 			+ "BIND (STR(?notation) AS ?id) \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
-			+ "FILTER (lang(?altLabelLg1) = '" + Config.LG1 + "')} \n"
+			+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "')} \n"
 			+ "?concept dcterms:created ?created . \n"
 			// Not topConceptOf if has broader
 			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
@@ -51,15 +51,15 @@ public class ConceptsQueries {
 			+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
 			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
 			+ "?concept insee:isValidated ?validationStatus . \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') . \n"
+			+ "FILTER (lang(?label) = '" + config.getLg1() + "') . \n"
 			+ "?concept dc:creator ?creator . \n"
 			+ "OPTIONAL{?concept skos:definition ?noteUri . \n"
 			+ "?noteUri pav:version ?version . \n"
 			+ "?noteUri evoc:noteLiteral ?definition . \n"
-			+ "?noteUri dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+			+ "?noteUri dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "OPTIONAL {?concept skos:definition ?latest . \n"
 				+ "?latest pav:version ?latestVersion . \n"
-				+ "?latest dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?latest dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "FILTER (?version < ?latestVersion)} . \n"
 			+ "FILTER (!bound (?latest))}"
 			+ "}} \n"
@@ -70,30 +70,30 @@ public class ConceptsQueries {
 		
 	public static String conceptsToValidateQuery() {
 		return "SELECT DISTINCT ?id ?label ?creator ?valid \n"
-			+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+			+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 			+ "?concept rdf:type skos:Concept . \n"
 			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
 			+ "?concept skos:prefLabel ?label . \n"
 			+ "?concept dc:creator ?creator . \n"
 			+ "?concept insee:isValidated 'false'^^xsd:boolean . \n"
 			+ "OPTIONAL {?concept dcterms:valid ?valid .} \n"
-			+ "FILTER (lang(?label) = '" + Config.LG1 + "') }} \n"
+			+ "FILTER (lang(?label) = '" + config.getLg1() + "') }} \n"
 			+ "ORDER BY ?label";	
 	}
 		
 	public static String conceptQuery(String id) { 
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
 				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n"
 				+ "?concept ?versionnedNote ?versionnedNoteURI . \n"
 				+ "?versionnedNoteURI insee:conceptVersion ?conceptVersion . \n"
  				+ "?concept insee:isValidated ?isValidated . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + Config.LG1 + "') . \n"
+				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
 				+ "OPTIONAL {?concept skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + Config.LG2 + "') } . \n"
+				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n"
 				+ "OPTIONAL {?concept dc:creator ?creator} . \n"
 				+ "?concept dc:contributor ?contributor . \n"
 				+ "?concept insee:disseminationStatus ?disseminationStatus \n"
@@ -108,10 +108,10 @@ public class ConceptsQueries {
 
 	public static String conceptQueryForDetailStructure(String id) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		params.put("ID", id);
-		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
 		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
 	}
 	
@@ -128,54 +128,54 @@ public class ConceptsQueries {
 	public static String conceptNotesQuery(String id, int conceptVersion) { 
 		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
 				+ "?editorialNoteLg1 ?editorialNoteLg2 ?changeNoteLg1 ?changeNoteLg2 \n"
-				+ "WHERE { GRAPH <"+Config.CONCEPTS_GRAPH+"> { \n"
+				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
 				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
 				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n" 
 				// Def Lg1
 				+ "OPTIONAL {?concept skos:definition ?defLg1 . \n"
-				+ "?defLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?defLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?defLg1 evoc:noteLiteral ?definitionLg1 . \n"
 				+ "?defLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				// Def Lg2
 				+ "OPTIONAL {?concept skos:definition ?defLg2 . \n"
-				+ "?defLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?defLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?defLg2 evoc:noteLiteral ?definitionLg2 . \n"
 				+ "?defLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				// Def courte Lg1
 				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg1 . \n"
-				+ "?scopeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?scopeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 . \n"
 				+ "?scopeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} .  \n"
 				// Def courte Lg2
 				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg2 . \n"
-				+ "?scopeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?scopeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 . \n"
 				+ "?scopeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// Note edit Lg1
 				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg1 . \n"
-				+ "?editorialLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?editorialLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?editorialLg1 evoc:noteLiteral ?editorialNoteLg1 . \n"
 				+ "?editorialLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// Note edit Lg2
 				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg2 . \n"
-				+ "?editorialLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?editorialLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?editorialLg2 evoc:noteLiteral ?editorialNoteLg2 . \n"
 				+ "?editorialLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
 				+ "} . \n"
 				// Note changement Lg1
 				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg1 . \n"
-				+ "?noteChangeLg1 dcterms:language '" + Config.LG1 + "'^^xsd:language . \n"
+				+ "?noteChangeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
 				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
 				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
 				// Note changement Lg2
 				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg2 . \n"
-				+ "?noteChangeLg2 dcterms:language '" + Config.LG2 + "'^^xsd:language . \n"
+				+ "?noteChangeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
 				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
 				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
 				+ "}} \n";
@@ -184,7 +184,7 @@ public class ConceptsQueries {
 	public static String conceptLinks(String idConcept) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("ID_CONCEPT", idConcept);
-		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
 		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
@@ -268,7 +268,7 @@ public class ConceptsQueries {
 
 	public static String isConceptValidated(String conceptId) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", Config.CONCEPTS_GRAPH);
+		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
 		params.put("ID", conceptId);
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}
@@ -286,8 +286,8 @@ public class ConceptsQueries {
 	
 	private static void initParams() {
 		params = new HashMap<>();
-		params.put("LG1", Config.LG1);
-		params.put("LG2", Config.LG2);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 	}
 	
 	private static String buildConceptRequest(String fileName, Map<String, Object> params) throws RmesException  {

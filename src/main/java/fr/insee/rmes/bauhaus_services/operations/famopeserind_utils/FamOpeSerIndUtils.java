@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
@@ -41,22 +40,14 @@ public class FamOpeSerIndUtils  extends RdfService {
 		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
 	}
 	
-	public String getValidationStatus(String id) throws RmesException{
-		try {		
-			return repoGestion.getResponseAsObject(FamOpeSerQueries.getPublicationState(id)).getString("state"); }
-		catch (JSONException e) {
-			return Constants.UNDEFINED;
-		}
-	}
-	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {
 		IdLabelTwoLangs idLabelTwoLangs = new IdLabelTwoLangs();
-		idLabelTwoLangs.setId(jsonFamOpeSer.getString("id"));
-		if(jsonFamOpeSer.has("labelLg1")) {
-			idLabelTwoLangs.setLabelLg1(jsonFamOpeSer.getString("labelLg1"));
+		idLabelTwoLangs.setId(jsonFamOpeSer.getString(Constants.ID));
+		if(jsonFamOpeSer.has(Constants.LABEL_LG1)) {
+			idLabelTwoLangs.setLabelLg1(jsonFamOpeSer.getString(Constants.LABEL_LG1));
 		}
-		if(jsonFamOpeSer.has("labelLg2")) {
-			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString("labelLg2"));
+		if(jsonFamOpeSer.has(Constants.LABEL_LG2)) {
+			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString(Constants.LABEL_LG2));
 		}
 		return idLabelTwoLangs;
 	}
