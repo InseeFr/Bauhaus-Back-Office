@@ -107,11 +107,9 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
 
-	public static String apiRhUrl="";
-	public static String APIRH_USER="";
-	
 	@Value("${fr.insee.rmes.bauhaus.apirh.url}")
-	private String APIRH_PASSWORD="";
+	private String apiRhUrl="";
+	
 
 	/******************************************************/
 	/** CONCEPTS 		***********************************/
@@ -223,7 +221,6 @@ public class Config {
 	private String geographyGraph;
 
 	
-
 	/******************************************************/
 	/** PRINTER			***********************************/
 	/******************************************************/
@@ -552,8 +549,7 @@ public class Config {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
-
-	public static String getApiRhUrl() {
+	public String getApiRhUrl() {
 		return apiRhUrl;
 	}
 
