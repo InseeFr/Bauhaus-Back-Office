@@ -39,7 +39,6 @@ public class RmesStampsImpl implements StampsService {
 	static final Logger logger = LogManager.getLogger(RmesStampsImpl.class);
 
 	private static final String APIRH_SEARCH_PATH = "/unites?size=2000&page="  ; // "/unites?page=";
-	private static final String APIRH_SEARCH_STAMP = Config.getApiRhUrl() + APIRH_SEARCH_PATH;
 	
 	@Autowired
 	Config config;
@@ -49,8 +48,8 @@ public class RmesStampsImpl implements StampsService {
 	
 	@Autowired
 	LdapConnexion ldapConnexion;
-	
-	private static InputStream executeGet(String httpMethod)  throws RmesException, UnsupportedOperationException, IOException{
+
+  private static InputStream executeGet(String httpMethod)  throws RmesException, UnsupportedOperationException, IOException{
 		HttpResponse response ;
 		HttpGet http = new HttpGet(httpMethod);
 		try {
@@ -71,10 +70,11 @@ public class RmesStampsImpl implements StampsService {
 	
 	public String getStampsApiRH() throws RmesException {
 		TreeSet<String> listStamp = new TreeSet<>();
+
 		for (int i=0;i<=2;i++ ) {		
 			String jsonResponse;
 			try {
-				jsonResponse = new String(executeGet(APIRH_SEARCH_STAMP+i).readAllBytes(), StandardCharsets.UTF_8);
+				jsonResponse = new String(executeGet(config.getApiRhUrl() + APIRH_SEARCH_PATH +i).readAllBytes(), StandardCharsets.UTF_8);
 			} catch (UnsupportedOperationException | IOException | RmesException e1) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e1.getMessage(), "Get agents via apiRH failed");
 			}
@@ -85,13 +85,12 @@ public class RmesStampsImpl implements StampsService {
 				for (Content u : stamp.getContent()) {
 					JSONObject jsonStamp = new JSONObject();
 					if(u.getTimbre() != null) {
-					jsonStamp.put("timbre", u.getTimbre());
-					String input = (String) jsonStamp.get("timbre");				
-					listStamp.add(JSONObject.valueToString(input));		
-						}
+						jsonStamp.put("timbre", u.getTimbre());
+						String input = (String) jsonStamp.get("timbre");				
+						listStamp.add(JSONObject.valueToString(input));		
 					}
-				
-			    } catch (JsonProcessingException e) {
+				}
+			} catch (JsonProcessingException e) {
 				logger.error("Get agents via apiRH failed : {}", e.getMessage());
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents via apiRH failed");
 			}
