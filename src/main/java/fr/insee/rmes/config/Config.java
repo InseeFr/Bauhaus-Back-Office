@@ -108,7 +108,7 @@ public class Config {
 	private String sugoiRealm;
 
 	@Value("${fr.insee.rmes.bauhaus.apirh.url}")
-	private String apiRhUrl="";
+	private String apiRhUrl;
 	
 
 	/******************************************************/
