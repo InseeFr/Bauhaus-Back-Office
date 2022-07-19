@@ -449,8 +449,8 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
 
             HashMap<String, Object> closeMatchParams = new HashMap<>();
 
-            closeMatchParams.put("CONCEPTS_GRAPH", config.getConceptsGraph());
-            closeMatchParams.put("CONCEPT_ID", code.getString("code"));
+            closeMatchParams.put("OBJECT_GRAPH", config.getConceptsGraph());
+            closeMatchParams.put("OBJECT_ID", code.getString("code"));
 
             JSONArray closeMatch = repoGestion.getResponseAsArray(buildRequest("getCloseMatch.ftlh", closeMatchParams));
 
