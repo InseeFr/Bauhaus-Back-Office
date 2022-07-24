@@ -1,32 +1,27 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.families;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.json.JSONObject;
 
 public class OpFamiliesQueries extends GenericQueries{
 
 	static Map<String,Object> params ;
+	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
+	}
 
-	public static String familiesSearchQuery() {
-
-		return "SELECT DISTINCT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?abstractL1;separator=' || ') as ?abstractLg1) ?abstractLg2 \n"
-				+ "WHERE { \n"
-				+ "   GRAPH <"+config.getOperationsGraph()+"> { \n"				
-				+ "?family a insee:StatisticalOperationFamily . \n"
-				+ "?family skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n"
-				+ "        OPTIONAL {?family skos:prefLabel ?prefLabelLg2 .\n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n"
-				+ "        OPTIONAL {?family dcterms:abstract ?abstractL1 .\n"
-				+ "FILTER (lang(?abstractL1) = '" + config.getLg1() + "') } .\n"
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 .\n"
-				+ "FILTER (lang(?abstractLg2) = '" + config.getLg2() + "') } .  \n"
-				+ "BIND(STRAFTER(STR(?family),'/operations/famille/') AS ?id) . \n"
-				+ "} \n"
-				+ "} \n"
-				+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractL1 ?abstractLg2 \n"
-				+ "ORDER BY ?prefLabelLg1 ";
+	public static String familiesSearchQuery() throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
 	}
 
 
