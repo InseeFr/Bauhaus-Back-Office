@@ -26,16 +26,11 @@ public class OpFamiliesQueries extends GenericQueries{
 
 
 
-	public static String familiesQuery() {
-		return "SELECT DISTINCT ?id ?label  \n"
-				+ "WHERE { GRAPH <"+config.getOperationsGraph()+"> { \n"
-				+ "?family a insee:StatisticalOperationFamily . \n" 
-				+ "?family skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-				+ "BIND(STRAFTER(STR(?family),'/operations/famille/') AS ?id) . \n"
-				+ "}} \n" 
-				+ "GROUP BY ?id ?label \n"
-				+ "ORDER BY ?label ";
+	public static String familiesQuery() throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		return  buildRequest("getFamilies.ftlh", params);
 	}
 
 
