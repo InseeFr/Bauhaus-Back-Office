@@ -9,9 +9,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -181,6 +181,29 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		logger.info("Starting to get operations list");
 		String resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
 		return QueryUtils.correctEmptyGroupConcat(resQuery);
+	}
+
+	public String getforMarkdown() throws RmesException  {
+		logger.info("Starting to get md ");
+		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.forMarkdown());
+		JSONArray res= new JSONArray();
+
+
+		for ( int i=0;i<resQuery.length();i++) {
+			JSONObject test = resQuery.getJSONObject(i);
+
+			if (test.has("o")) {
+				test.put("g",test.getString("g"));
+				test.put("s",test.getString("s"));
+				test.put("p",test.getString("p"));
+				String temp=test.getString("o");
+				String temp2= XhtmlToMarkdownUtils.xhtmlToMarkdown(temp);
+				test.put("o",temp2);
+
+			}
+			res.put(test);
+					}
+		return res.toString();
 	}
 
 	@Override

@@ -67,6 +67,8 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
+	String getforMarkdown() throws RmesException ;
+
 	String getOperationJsonByID(String id) throws RmesException;
 	
 	Operation getOperationById(String id) throws RmesException ;

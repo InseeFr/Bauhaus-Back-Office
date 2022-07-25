@@ -36,6 +36,31 @@ public class OperationsQueries extends GenericQueries {
 				+ "ORDER BY ?label ";
 	}
 
+	public static String forMarkdown() {
+		return "SELECT ?g ?s ?p ?o \n"
+				+ "WHERE { GRAPH ?g { \n"
+
+				+ "{ ?s ?p ?l .\n"
+				+ "?s <http://eurovoc.europa.eu/schema#noteLiteral> ?o . \n"
+				+ "filter(?p=<http://eurovoc.europa.eu/schema#noteLiteral>) \n"
+				+ "} \n"
+				+ " UNION \n"
+				+ "{ ?s ?p ?l .\n"
+				+ "?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#value> ?o . \n"
+				+ "filter(?p=<http://www.w3.org/1999/02/22-rdf-syntax-ns#value>) \n"
+				+ "} \n"
+				+ " UNION \n"
+
+				+ " { ?s ?p ?l.\n"
+				+ " ?s <http://www.w3.org/2004/02/skos/core#historyNote> ?o .\n"
+				+ " filter(?p=<http://www.w3.org/2004/02/skos/core#historyNote>) } \n"
+				+ " UNION \n"
+				+ " { ?s ?p ?l. \n"
+				+ " ?s <http://purl.org/dc/terms/abstract> ?o\n"
+				+ " filter(?p=<http://purl.org/dc/terms/abstract>) }\n"
+				+ " } } ";
+	}
+
 	public static String operationQuery(String id){
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?idSims ?validationState ?created ?modified \n"
 				+ "WHERE { "

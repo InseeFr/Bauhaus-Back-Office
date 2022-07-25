@@ -10,7 +10,7 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
-
+//a supprimer attention transferer markdownToXhtml dans metadata api
 public class XhtmlToMarkdownUtils {
 	
 	private static MutableDataSet optionsXhtmlToMd;
@@ -21,16 +21,21 @@ public class XhtmlToMarkdownUtils {
 			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE,true);
 		}
 	}
-	
-	private static String xhtmlToMarkdown(String xhtml) {
+
+	//à utiliser pour faire les transfo des données
+	public static String xhtmlToMarkdown(String xhtml) {
 		init();
       	String md = FlexmarkHtmlConverter.builder(optionsXhtmlToMd).build().convert(xhtml);
+
 		if (md.endsWith("\n")){
 			return md.substring(0,md.length()-1);
 		}
+
+
 		return md;
 	}
-	
+
+
     public static String markdownToXhtml(String md) {
     	if (StringUtils.isEmpty(md)) { return md;}
         MutableDataSet options = new MutableDataSet();
@@ -48,7 +53,7 @@ public class XhtmlToMarkdownUtils {
         return renderer.render(document); 
     }
     
-    private XhtmlToMarkdownUtils() {
+    public XhtmlToMarkdownUtils() {
     	throw new IllegalStateException("Utility class");
     }
     
