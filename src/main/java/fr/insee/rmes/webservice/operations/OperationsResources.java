@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -49,6 +50,14 @@ public class OperationsResources extends OperationsCommonResources {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
 	public ResponseEntity<Object> getOperations() throws RmesException {
 		String jsonResultat = operationsService.getOperations();
+		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+
+	}
+	@GetMapping(value = "/forMarkdown", produces = MediaType.APPLICATION_JSON_VALUE)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getforMarkdown", summary = "List of triplet", responses = {
+			@ApiResponse(content = @Content(schema = @Schema(type = "array"))) })
+		public ResponseEntity<Object> getforMarkdown() throws RmesException {
+		String jsonResultat = operationsService.getforMarkdown();
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 
 	}

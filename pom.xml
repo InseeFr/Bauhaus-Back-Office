@@ -215,10 +215,10 @@
 					<groupId>xerces</groupId>
 					<artifactId>xercesImpl</artifactId>
 				</exclusion>
-			</exclusions> 
+			</exclusions>
 		</dependency>
 
-		<!-- XHTML to Markdown parser -->
+		<!-- XHTML to Markdown parser à supprimer -->
 		<dependency>
 			<groupId>com.vladsch.flexmark</groupId>
 			<artifactId>flexmark-all</artifactId>
