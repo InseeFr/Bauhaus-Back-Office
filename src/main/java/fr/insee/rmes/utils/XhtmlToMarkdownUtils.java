@@ -31,6 +31,8 @@ public class XhtmlToMarkdownUtils {
 			return md.substring(0,md.length()-1);
 		}
 
+		md.replaceAll("\n\n","  ");
+
 
 		return md;
 	}
