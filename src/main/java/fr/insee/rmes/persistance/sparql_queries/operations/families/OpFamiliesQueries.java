@@ -34,26 +34,13 @@ public class OpFamiliesQueries extends GenericQueries{
 	}
 
 
-	public static String familyQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState ?created ?modified\n"
-				+ "WHERE { GRAPH <"+config.getOperationsGraph()+"> { \n"
-				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
-
-				+ "FILTER (lang(?prefLabelLg1) = '"	+ config.getLg1() + "') . \n" 
-				+ "OPTIONAL {?family skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n" 
-				+ "OPTIONAL {?family insee:validationState ?validationState} . \n"
-				+ "OPTIONAL { ?family dcterms:created ?created } . \n"
-				+ "OPTIONAL { ?family dcterms:modified ?modified } . \n"
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg1 . \n"
-				+ "FILTER (lang(?abstractLg1) = '" + config.getLg1() + "') } . \n" 
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 . \n"
-				+ "FILTER (lang(?abstractLg2) = '" + config.getLg2() + "') } . \n" 
-
-				+ "}} \n"
-				+ "LIMIT 1";
+	public static String familyQuery(String id) throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		return  buildRequest("getFamily.ftlh", params);
 	}
 
 	public static String getSeries(String idFamily) {
