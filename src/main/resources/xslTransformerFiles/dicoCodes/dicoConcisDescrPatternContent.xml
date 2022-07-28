@@ -735,6 +735,9 @@
 			
 			<text:h text:outline-level="1" xml:id="Category">
 				<text:p text:style-name="DICO-VariableRepresentationListeDeCodeLibelle">${Label/Content_lang__fr}</text:p>
+				<text:p xml:id="Description/Content_lang__fr">
+					<text:p text:style-name="DICO-VariableRepresentationListeDeCodeDescription">${.}</text:p>	
+				</text:p>
 			</text:h>
 			
 			<text:h text:outline-level="1" xml:id="RepresentedVariableGroup-thematique">
