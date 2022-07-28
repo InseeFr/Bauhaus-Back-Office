@@ -300,27 +300,6 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
-	@PostMapping(value = "/concept/send/{id}", 
-					consumes = MediaType.APPLICATION_JSON_VALUE, 
-					produces = MediaType.TEXT_PLAIN_VALUE)
-	@Operation(operationId = "setConceptSend", summary = "Send concept", 
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
-	public ResponseEntity<Object> setConceptSend(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
-		try {
-			Boolean isSent = conceptsService.setConceptSend(id, body);
-			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
-		} catch (RmesException e) {
-			logger.error(e.getMessageAndDetails(), e);
-			throw e;
-		}
-	}
-
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
@@ -375,23 +354,6 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.getCollectionExport(id, accept);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
-	@PostMapping(value="/collection/send/{id}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
-	public ResponseEntity<Object> setCollectionSend(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
-		try {
-			Boolean isSent = conceptsService.setCollectionSend(id, body);
-			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
-		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
-	}
+
 
 }
