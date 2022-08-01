@@ -12,48 +12,29 @@ import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 public class IndicatorsQueries extends GenericQueries{
 
-	static Map<String,Object> params ;
-
 	private static StringBuilder variables;
 	private static StringBuilder whereClause;
 
-	/*
-	 * Requests from .ftlh files
-	 */
-	
-	private static void initParams() {
-		params = new HashMap<>();
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		params.put("PRODUCTS_GRAPH",config.getProductsGraph());
-	}
-	
 	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/indicators/", fileName, params);
 	}
 	
 	public static String getPublicationState(String id) throws RmesException{
-		if (params==null) {initParams();}
+		Map<String,Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("PRODUCTS_GRAPH",config.getProductsGraph());
 		params.put(Constants.ID, id);
 		return buildIndicatorRequest("getPublicationStatusQuery.ftlh", params);	
 	}
 	
-	/*
-	 * Requests written in strings
-	 */
-	
-	public static String indicatorsQuery() {
-		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
-				+ "?indic a insee:StatisticalIndicator . \n" 
-				+ "?indic skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-				+ "BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . \n"
-				+ "OPTIONAL{?indic skos:altLabel ?altLabelLg1 . "
-				+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "') } \n "
-				+ "}} \n" 
-				+ "GROUP BY ?id ?label ?altLabelLg1 \n"
-				+ "ORDER BY ?label ";
+	public static String indicatorsQuery() throws RmesException {
+		Map<String,Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("PRODUCTS_GRAPH",config.getProductsGraph());
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		return buildIndicatorRequest("getIndicators.ftlh", params);
 	}
 
 	public static String indicatorsQueryForSearch() {

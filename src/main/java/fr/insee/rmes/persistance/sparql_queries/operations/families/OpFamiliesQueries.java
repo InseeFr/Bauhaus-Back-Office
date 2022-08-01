@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 public class OpFamiliesQueries extends GenericQueries{
 
-	static Map<String,Object> params ;
 	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
