@@ -1,9 +1,15 @@
 package fr.insee.rmes.webservice.operations;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.HashMap;
 
+import fr.insee.rmes.utils.ExportUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -33,12 +39,29 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.w3c.dom.Document;
+
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import static fr.insee.rmes.utils.ExportUtils.getExtension;
 
 @Qualifier("Operation")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 public class OperationsResources extends OperationsCommonResources {
+
+	@Autowired
+	ExportUtils exportUtils;
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -116,6 +139,104 @@ public class OperationsResources extends OperationsCommonResources {
 		}		
 		return response;	
 	}
+
+	@PostMapping(value="/operation/codebook/V2",
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,"application/vnd.oasis.opendocument.text" }
+	)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
+
+	public  ResponseEntity<?> getCodeBookV2(
+
+			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))
+			@RequestHeader(required=false) String accept,
+
+			@Parameter(schema = @Schema(type = "string", allowableValues = { "concis" , "concis avec expression" , "scindable" , "non scindable" }))
+			@RequestParam(value = "dicoVar") String isCodeBook, //InputStream isCodeBook,
+
+			@RequestParam(value="file") MultipartFile isDDI // InputStream isDDI,
+
+			// 1. selectionner le fichier ddi , lui appliquer une transfo pour oter le namespace et créer un nouveau fichier issu de la transfo
+
+			// 2. prendre le fichier précedent et passer la transfo pour checker. Si le fichier contient ok on continue la suite sinon on arrete et on exporte le fichier issu de la transfo
+
+			// 3. si ok précédemment, on applique la méthode  exportUtils.exportAsResponse("export.odt", xmlContent,xslFile,xmlPatternRmes,zipRmes, "dicoVariable");
+			// avec xmlContent= fichier resultat du 1. , xslFile = dico_codes.xsl , xmlPatternRmes= un fichier issu du enum du swagger (iscodebook), zipRmes=xslTransformerFiles/dicoCodes/toZipForDicoCodes.zip
+
+
+	)
+			throws Exception {
+
+		String DDI= new String(isDDI.getBytes(), StandardCharsets.UTF_8);
+		File xslRemoveNameSpaces = new File("src\\main\\resources\\xslTransformerFiles\\remove-namespaces.xsl");
+		File xslCheckReference = new File("src\\main\\resources\\xslTransformerFiles\\check-references.xsl");
+		String dicoCode = new String("/xslTransformerFiles/dico-codes.xsl");
+		String zipRmes = "/xslTransformerFiles/dicoCodes/toZipForDicoCodes.zip";
+
+		String xslPatternFile = null;
+		switch (isCodeBook) {
+			case "concis":
+				String xmlFileConcis = "/xslTransformerFiles/dicoCodes/dicoConcisPatternContent.xml";
+				xslPatternFile = xmlFileConcis;
+				break;
+			case "concis avec expression":
+				String xmlFileConcisAvecExpression = "/xslTransformerFiles/dicoCodes/dicoConcisDescrPatternContent.xml";
+				xslPatternFile = xmlFileConcisAvecExpression;
+				break;
+			case "scindable":
+				String xmlFileScindable = "/xslTransformerFiles/dicoCodes/dicoScindablePatternContent.xml";
+				xslPatternFile = xmlFileScindable;
+				break;
+			case "non scindable":
+				String xmlFileNonScindable = "/xslTransformerFiles/dicoCodes/dicoNonScindablePatternContent.xml";
+				xslPatternFile = xmlFileNonScindable;
+				break;
+			default:
+				System.out.println("Choix incorrect");
+				break;
+		}
+
+		File test = File.createTempFile("test1", ".xml");
+		test.deleteOnExit();
+		transformerRemoveNameSpaces(DDI,xslRemoveNameSpaces,test);
+
+		File control = File.createTempFile("control", ".xml");
+		transformerCheckReference(test,xslCheckReference,control);
+
+		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+		DocumentBuilder db= dbf.newDocumentBuilder();
+		Document doc= db.parse(control);
+		String checkResult = doc.getDocumentElement().getNodeName();
+		ResponseEntity<Resource> resource = null;
+//		if (checkResult!="OK") {
+//			return resource.ok(Files.readString(control.toPath()));
+//		}
+		HashMap<String,String> contentXML= new HashMap<>();
+		contentXML.put("ddi-file",Files.readString(test.toPath()));
+
+		return exportUtils.exportAsResponse("export.odt", contentXML,dicoCode,xslPatternFile,zipRmes, "dicoVariable");
+	}
+
+	public static void transformerRemoveNameSpaces(String ddi,File xslRemoveNameSpaces, File output) throws Exception{
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(new StringReader(ddi));
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+
+	public static void transformerCheckReference(File input,File xslRemoveNameSpaces, File output) throws Exception {
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(input);
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+
+
+
 
 	/**
 	 * UPDATE
