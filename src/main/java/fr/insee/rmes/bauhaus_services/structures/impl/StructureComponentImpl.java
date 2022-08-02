@@ -27,15 +27,21 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
      */
     @Override
     public String getComponentsForSearch() throws RmesException {
-        logger.info("Starting to get all mutualized components");
-        return repoGestion.getResponseAsArray(StructureQueries.getComponentsForSearch()).toString();
+        logger.info("Getting all mutualized components");
+        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true)).toString();
+    }
+
+    @Override
+    public String getAttributes() throws RmesException {
+        logger.info("Getting all mutualized attributes");
+        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, false, false)).toString();
     }
 
     @Override
     public String getComponents() throws RmesException {
 
-        logger.info("Starting to get all mutualized components");
-        return repoGestion.getResponseAsArray(StructureQueries.getComponents()).toString();
+        logger.info("Getting all mutualized components");
+        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true)).toString();
     }
 
     public JSONObject getComponentObject(String id) throws RmesException {

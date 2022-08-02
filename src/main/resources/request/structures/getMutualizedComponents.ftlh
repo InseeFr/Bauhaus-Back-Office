@@ -6,7 +6,7 @@ WHERE {
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 
-    filter ( ?type = qb:DimensionProperty || ?type = qb:AttributeProperty || ?type = qb:MeasureProperty )
+    FILTER (?type IN (${TYPES} ) )
     OPTIONAL {
         ?component dc:creator ?creator .
     } .
