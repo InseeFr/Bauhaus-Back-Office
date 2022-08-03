@@ -64,7 +64,7 @@ public interface OperationsService {
 
 	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
 
-	ResponseEntity<Resource> getCodeBookExportV2(String ddiFile, String xslPatternFile) throws RmesException, Exception;
+	ResponseEntity<?> getCodeBookExportV2(String ddiFile, String xslPatternFile) throws RmesException, Exception;
 
 	String getOperations() throws RmesException ;
 

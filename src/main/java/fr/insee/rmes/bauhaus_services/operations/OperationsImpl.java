@@ -43,6 +43,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -234,10 +235,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
-		File xslRemoveNameSpaces = new File("src\\main\\resources\\xslTransformerFiles\\remove-namespaces.xsl");
-		File xslCheckReference = new File("src\\main\\resources\\xslTransformerFiles\\check-references.xsl");
-		String dicoCode = new String("/xslTransformerFiles/dico-codes.xsl");
+	public ResponseEntity<?> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
+		InputStream xslCheckReference = getClass().getResourceAsStream("/xslTransformerFiles/check-references.xsl");
+		String dicoCode = "/xslTransformerFiles/dico-codes.xsl";
 		String zipRmes = "/xslTransformerFiles/dicoCodes/toZipForDicoCodes.zip";
 
 		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
@@ -253,10 +254,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		String checkResult = doc.getDocumentElement().getNodeName();
 		ResponseEntity<Resource> resource = null;
 
-//		en attente d'une correction du fichier xsl
-//		if (checkResult!="OK") {
-//			return resource.ok(Files.readString(control.toPath()));
-//		}
+		if (checkResult!="OK") {
+			return resource.ok(Files.readString(control.toPath()));
+		}
 		HashMap<String,String> contentXML= new HashMap<>();
 		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
 
@@ -264,7 +264,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	}
 
-	public static void transformerRemoveNameSpaces(String ddi,File xslRemoveNameSpaces, File output) throws Exception{
+	public static void transformerRemoveNameSpaces(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
 		Transformer transformer = factory.newTransformer(stylesheetSource);
@@ -272,8 +272,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
 	}
-
-	public static void transformerCheckReference(File input,File xslRemoveNameSpaces, File output) throws Exception {
+	public static void transformerCheckReference(File input,InputStream xslRemoveNameSpaces, File output) throws Exception {
 		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
 		Transformer transformer = factory.newTransformer(stylesheetSource);
