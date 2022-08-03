@@ -21,6 +21,7 @@
     <xsl:key name="RepresentedVariable"        match="$ddi/FragmentInstance/Fragment/RepresentedVariable"       use="ID"/>
     <xsl:key name="CodeList"                   match="$ddi/FragmentInstance/Fragment/CodeList"                  use="ID"/>
     <xsl:key name="Category"                   match="$ddi/FragmentInstance/Fragment/Category"                  use="ID"/>
+    <xsl:key name="Universe"                   match="$ddi/FragmentInstance/Fragment/Universe"                  use="ID"/>
 
     <xd:doc>
         <xd:desc>Root template</xd:desc>

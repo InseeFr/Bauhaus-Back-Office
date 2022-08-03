@@ -14,6 +14,7 @@
         <dereferencing:reference-name name="RepresentedVariableReference"/>
         <dereferencing:reference-name name="CategoryReference"/>
         <dereferencing:reference-name name="CodeListReference"/>
+        <dereferencing:reference-name name="UniverseReference"/>
     </xsl:variable>
 
     <!-- List of the ...Reference elements of DDI that are not usable to follow -->
@@ -28,6 +29,7 @@
     <xsl:key name="RepresentedVariableGroupReference-_-RepresentedVariableGroup"    match="$ddi/FragmentInstance/Fragment/RepresentedVariableGroup"  use="ID"/>
     <xsl:key name="CategoryReference-_-Category"                                    match="$ddi/FragmentInstance/Fragment/Category"                  use="ID"/>
     <xsl:key name="CodeListReference-_-CodeList"                                    match="$ddi/FragmentInstance/Fragment/CodeList"                  use="ID"/>
+    <xsl:key name="UniverseReference-_-Universe"                                    match="$ddi/FragmentInstance/Fragment/Universe"                  use="ID"/>
 
     <!-- logical links between the DDI referencing and referenced elements -->
     <xsl:variable name="key-names">
@@ -37,6 +39,7 @@
         <dereferencing:key-name name='RepresentedVariableGroupReference-_-RepresentedVariableGroup' name1='RepresentedVariableGroupReference' name2='RepresentedVariableGroup'/>
         <dereferencing:key-name name='CategoryReference-_-Category' name1='CategoryReference' name2='Category'/>
         <dereferencing:key-name name='CodeListReference-_-CodeList'  name1='CodeListReference' name2='CodeList'/>
+        <dereferencing:key-name name='UniverseReference-_-Universe'  name1='UniverseReference' name2='Universe'/>
     </xsl:variable>
 
     <!-- Typology of the error messages for incorrect DDI -->
