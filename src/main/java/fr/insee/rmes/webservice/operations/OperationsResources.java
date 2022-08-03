@@ -113,7 +113,7 @@ public class OperationsResources extends OperationsCommonResources {
 			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
 			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,"application/vnd.oasis.opendocument.text" }
 	)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBook", summary = "Produce a codebook from a DDI")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
 
 	public  ResponseEntity<?> getCodeBookV2(
 
@@ -123,7 +123,7 @@ public class OperationsResources extends OperationsCommonResources {
 			@Parameter(schema = @Schema(type = "string", allowableValues = { "concis" , "concis avec expression" , "scindable" , "non scindable" }))
 			@RequestParam(value = "dicoVar") String isCodeBook, //InputStream isCodeBook,
 
-			@RequestParam(value="file") MultipartFile isDDI // InputStream isDDI,
+			@RequestPart(value="file") MultipartFile isDDI // InputStream isDDI,
 
 	)
 			throws Exception {
