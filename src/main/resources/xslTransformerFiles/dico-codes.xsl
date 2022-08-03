@@ -235,10 +235,25 @@
                     </xsl:when>
                     <!-- element_attribute means element[@attribute]/text() -->
                     <xsl:when test="$split-xpath[1] != '' and $split-xpath[2]">
-                        <xsl:value-of select="*[local-name()=$split-xpath[1]]/@*[local-name()=$split-xpath[2]]"/>
+                        <xsl:choose>
+                            <xsl:when test="*[local-name()=$split-xpath[1]]/@*[local-name()=$split-xpath[2]]">
+                                <xsl:value-of select="*[local-name()=$split-xpath[1]]/@*[local-name()=$split-xpath[2]]"/>        
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'false'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                     </xsl:when>
                     <!-- _attribute means @attribute/text() -->
                     <xsl:when test="$split-xpath[2]">
+                        <xsl:choose>
+                            <xsl:when test="@*[local-name()=$split-xpath[2]]">
+                                <xsl:value-of select="@*[local-name()=$split-xpath[2]]"/>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:value-of select="'false'"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
                         <xsl:value-of select="@*[local-name()=$split-xpath[2]]"/>
                     </xsl:when>
                     <!-- element means element/text() -->
