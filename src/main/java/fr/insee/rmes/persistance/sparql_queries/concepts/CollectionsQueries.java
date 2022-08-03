@@ -14,7 +14,7 @@ public class CollectionsQueries extends GenericQueries{
 	}
 
 	public static String collectionsQuery() throws RmesException {
-		HashMap<String, Object> params = new HashMap();
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		return  buildRequest("getCollections.ftlh", params);
 	}
