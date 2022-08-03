@@ -254,7 +254,7 @@
 			</text:h>
 			<text:h text:outline-level="1" xml:id="RepresentedVariableScheme">
 				<text:sequence-ref>RepresentedVariableGroup</text:sequence-ref>
-				<text:h text:style-name="P1" text:outline-level="1">Index thématique</text:h>
+				<text:p text:style-name="P1" text:outline-level="1">Index thématique</text:p>
 				<text:sequence-ref>RepresentedVariableGroup-thematique</text:sequence-ref>
 			</text:h>
 			

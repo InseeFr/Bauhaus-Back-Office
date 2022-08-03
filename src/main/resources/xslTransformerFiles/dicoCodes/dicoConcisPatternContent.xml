@@ -75,6 +75,18 @@
 			style:family="paragraph" 
 			style:parent-style-name="Heading_20_4">
 		</style:style>
+		<style:style style:name="P5" style:family="paragraph" style:parent-style-name="Heading_20_5">
+		</style:style>
+		<style:style style:name="P6" style:family="paragraph" style:parent-style-name="Heading_20_6">
+		</style:style>
+		<style:style style:name="P7" style:family="paragraph" style:parent-style-name="Heading_20_7">
+		</style:style>
+		<style:style style:name="P8" style:family="paragraph" style:parent-style-name="Heading_20_8">
+		</style:style>
+		<style:style style:name="P9" style:family="paragraph" style:parent-style-name="Heading_20_9">
+		</style:style>
+		<style:style style:name="P10" style:family="paragraph" style:parent-style-name="Heading_20_10">
+		</style:style>
 		<style:style 
 			style:name="P11" 
 			style:family="paragraph" 
@@ -471,7 +483,7 @@
 			</text:h>
 			<text:h text:outline-level="1" xml:id="RepresentedVariableScheme">
 				<text:sequence-ref>RepresentedVariableGroup</text:sequence-ref>
-				<text:h text:style-name="P1" text:outline-level="1">Index thématique</text:h>
+				<text:p text:style-name="P1" text:outline-level="1">Index thématique</text:p>
 				<text:sequence-ref>RepresentedVariableGroup-thematique</text:sequence-ref>
 			</text:h>
 			<text:h text:outline-level="1" xml:id="RepresentedVariableGroup">
