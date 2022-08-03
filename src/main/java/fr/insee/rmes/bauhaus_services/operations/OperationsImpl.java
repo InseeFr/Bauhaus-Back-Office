@@ -1,33 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
@@ -48,6 +20,34 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -74,6 +74,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
+
+	@Autowired
+	ExportUtils exportUtils;
 
 	/***************************************************************************************************
 	 * SERIES
@@ -228,6 +231,55 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 			logger.error(e.getMessage(),e);
 		}
 		return(fis);
+	}
+
+	@Override
+	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+		File xslRemoveNameSpaces = new File("src\\main\\resources\\xslTransformerFiles\\remove-namespaces.xsl");
+		File xslCheckReference = new File("src\\main\\resources\\xslTransformerFiles\\check-references.xsl");
+		String dicoCode = new String("/xslTransformerFiles/dico-codes.xsl");
+		String zipRmes = "/xslTransformerFiles/dicoCodes/toZipForDicoCodes.zip";
+
+		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
+		ddiRemoveNameSpaces.deleteOnExit();
+		transformerRemoveNameSpaces(DDI,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+
+		File control = File.createTempFile("control", ".xml");
+		transformerCheckReference(ddiRemoveNameSpaces,xslCheckReference,control);
+
+		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+		DocumentBuilder db= dbf.newDocumentBuilder();
+		Document doc= db.parse(control);
+		String checkResult = doc.getDocumentElement().getNodeName();
+		ResponseEntity<Resource> resource = null;
+
+//		en attente d'une correction du fichier xsl
+//		if (checkResult!="OK") {
+//			return resource.ok(Files.readString(control.toPath()));
+//		}
+		HashMap<String,String> contentXML= new HashMap<>();
+		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
+
+		return exportUtils.exportAsResponse("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
+
+	}
+
+	public static void transformerRemoveNameSpaces(String ddi,File xslRemoveNameSpaces, File output) throws Exception{
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(new StringReader(ddi));
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+
+	public static void transformerCheckReference(File input,File xslRemoveNameSpaces, File output) throws Exception {
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(input);
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
 	}
 
 	@Override
