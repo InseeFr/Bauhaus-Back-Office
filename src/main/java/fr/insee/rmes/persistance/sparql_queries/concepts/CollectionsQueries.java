@@ -1,17 +1,22 @@
 package fr.insee.rmes.persistance.sparql_queries.concepts;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CollectionsQueries extends GenericQueries{
-	
-	public static String collectionsQuery() {
-		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { \n"
-			+ "?collection rdf:type skos:Collection . \n"
-			+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
-			+ "?collection dcterms:title ?label . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') } \n"
-			+ "ORDER BY ?label ";	
+
+	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("collections/", fileName, params);
+	}
+
+	public static String collectionsQuery() throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		return  buildRequest("getCollections.ftlh", params);
 	}
 	
 	public static String collectionsDashboardQuery() {

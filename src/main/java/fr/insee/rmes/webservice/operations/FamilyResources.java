@@ -75,15 +75,9 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	/**
-	 * UPDATE
-	 * @param id, body
-	 * @return response
-	 */
-
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PutMapping("/family/{id}")
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update family" )
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update an existing family" )
 	public ResponseEntity<Object> setFamilyById(
 			@PathVariable(Constants.ID) String id, 
 			@Parameter(description = "Family to update", required = true, content = @Content(schema = @Schema(implementation = Family.class))) @RequestBody String body) {
@@ -96,14 +90,9 @@ public class FamilyResources extends OperationsCommonResources {
 	}
 
 
-	/**
-	 * CREATE
-	 * @param body
-	 * @return response
-	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PostMapping("/family")
-	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create family")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create a new family")
 	public ResponseEntity<Object> createFamily(
 			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
 			@RequestBody String body) {
@@ -118,7 +107,7 @@ public class FamilyResources extends OperationsCommonResources {
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
 	@PutMapping("/family/validate/{id}")
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Family validation")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {

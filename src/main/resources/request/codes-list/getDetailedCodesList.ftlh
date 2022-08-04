@@ -4,7 +4,6 @@ FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?iri skos:notation '${NOTATION}' ;
     skos:notation ?id .
-
     OPTIONAL {
     ?iri dcterms:created ?created .
     }

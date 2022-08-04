@@ -1,5 +1,6 @@
 SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState
 ?created ?modified ?creator ?contributor ?disseminationStatus ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern ?fullCodeListValue
+?attributeIRI ?valueIri
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
@@ -45,6 +46,12 @@ WHERE {
     OPTIONAL {
         ?component rdfs:range ?range
     } .
+
+    OPTIONAL {
+        ?component ?attributeIRI ?valueIri .
+        ?attributeIRI rdf:type qb:AttributeProperty
+    }
+
     FILTER (lang(?labelLg1) = '${LG1}')
     OPTIONAL {?component rdfs:label ?labelLg2 .
     FILTER (lang(?labelLg2) = '${LG2}') } .

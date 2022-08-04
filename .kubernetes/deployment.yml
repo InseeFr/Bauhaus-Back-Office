@@ -37,8 +37,8 @@ spec:
             #   value: ""
             # - name: fr.insee.rmes.bauhaus.sesame.gestion.baseURI
             #   value: ""
-            # - name: fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer
-            #   value: ""
+            - name: fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer
+              value: ""
             # - name: fr.insee.rmes.bauhaus.sesame.publication.interne.repository
             #   value: ""
             # - name: fr.insee.rmes.bauhaus.metadata.api.baseURI

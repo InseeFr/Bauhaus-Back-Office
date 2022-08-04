@@ -8,18 +8,10 @@ import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 public class ClassificationsQueries  extends GenericQueries {
 	
-	public static String classificationsQuery() {
-		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { GRAPH ?graph { \n"
-			+ "?classification rdf:type skos:ConceptScheme . \n"
-			+ "FILTER(regex(str(?classification),'/codes/')) \n"
-			+ "?classification skos:prefLabel ?label . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-			+ "BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id) \n"
-			+ "} \n"
-			+ "FILTER(REGEX(STR(?graph), '/codes/') ) \n"
-			+ "} \n"
-			+ "ORDER BY ?label ";	
+	public static String classificationsQuery() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassifications.ftlh", params);
 	}
 	
 	public static String getGraphUriById(String classifId) throws RmesException {
