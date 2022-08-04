@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.structures.impl;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,11 +48,33 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public JSONObject getComponentObject(String id) throws RmesException {
 
         logger.info("Starting to get one mutualized component");
-        JSONObject response = repoGestion.getResponseAsObject(StructureQueries.getComponent(id));
-        if(response.keySet().isEmpty()){
+        JSONArray response = repoGestion.getResponseAsArray(StructureQueries.getComponent(id));
+
+
+        if(response.length() == 0){
             throw new RmesNotFoundException("This component does not exist", id);
         }
-        return structureComponentUtils.formatComponent(id, response);
+
+        // We first format linked attributes if they exists
+        JSONObject component = new JSONObject(response.getJSONObject(0).toMap());
+        if(component.has("attributeIRI")){
+            component.remove("attributeIRI");
+        }
+        if(component.has("valueIri")){
+            component.remove("valueIri");
+        }
+
+        int index = 0;
+        for (int i = 0; i < response.length(); i++) {
+            JSONObject current = response.getJSONObject(i);
+            if(current.has("attributeIRI") && current.has("valueIri") && !current.getString("attributeIRI").isEmpty() && !current.getString("valueIri").isEmpty()){
+                component.put("attribute_" + index, current.getString("attributeIRI"));
+                component.put("attributeValue_" + index, current.getString("valueIri"));
+                index++;
+            }
+        }
+
+        return structureComponentUtils.formatComponent(id, component);
     }
 
     @Override

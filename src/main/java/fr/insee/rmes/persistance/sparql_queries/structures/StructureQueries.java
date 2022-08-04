@@ -60,7 +60,7 @@ public class StructureQueries extends GenericQueries{
 		return buildRequest("checkUnicityStructure.ftlh", params);
 	}
 	
-	public static String getComponents(Boolean attributes, Boolean dimensions, Boolean measures) throws RmesException {
+	public static String getComponents(boolean attributes, boolean dimensions, boolean measures) throws RmesException {
 		HashMap<String, Object> params = initParams();
 
 		List<String> types = new ArrayList<>();

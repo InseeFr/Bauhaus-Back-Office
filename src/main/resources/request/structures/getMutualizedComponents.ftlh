@@ -1,32 +1,32 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator ?range
+SELECT DISTINCT ?iri ?id ?identifiant ?labelLg1 ?concept ?type ?codeList ?validationState ?creator ?range
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 WHERE {
-    ?component dcterms:identifier ?id ;
+    ?iri dcterms:identifier ?id ;
                skos:notation ?identifiant ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
 
     FILTER (?type IN (${TYPES} ) )
     OPTIONAL {
-        ?component dc:creator ?creator .
+        ?iri dc:creator ?creator .
     } .
 
     OPTIONAL {
-        ?component insee:validationState ?validationState
+        ?iri insee:validationState ?validationState
     } .
 
     OPTIONAL {
-        ?component qb:codeList ?codeList
+        ?iri qb:codeList ?codeList
     } .
 
     FILTER (lang(?labelLg1) = '${LG1}') .
 
     OPTIONAL {
-        ?component qb:concept ?conceptObject
+        ?iri qb:concept ?conceptObject
     } .
 
     OPTIONAL {
-        ?component rdfs:range ?range
+        ?iri rdfs:range ?range
     } .
 
     BIND(STRAFTER(STR(?conceptObject),'/concepts/definition/') AS ?concept) .
