@@ -110,8 +110,8 @@ public class OperationsResources extends OperationsCommonResources {
 	}
 
 	@PostMapping(value="/operation/codebook/V2",
-			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
-			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,"application/vnd.oasis.opendocument.text" }
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text"},
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
 	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
 
