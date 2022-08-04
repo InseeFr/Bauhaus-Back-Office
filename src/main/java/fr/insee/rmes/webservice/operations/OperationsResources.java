@@ -21,8 +21,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 @Qualifier("Operation")
@@ -123,12 +125,12 @@ public class OperationsResources extends OperationsCommonResources {
 			@Parameter(schema = @Schema(type = "string", allowableValues = { "concis" , "concis avec expression" , "scindable" , "non scindable" }))
 			@RequestParam(value = "dicoVar") String isCodeBook, //InputStream isCodeBook,
 
-			@RequestPart(value="file") MultipartFile isDDI // InputStream isDDI,
+			@RequestParam(value="file") MultipartFile isDDI // InputStream isDDI,
 
 	)
 			throws Exception {
-
-		String DDI= new String(isDDI.getBytes(), StandardCharsets.UTF_8);
+		InputStream ddiInputStream =  new BufferedInputStream(isDDI.getInputStream());
+		String DDI= new String(ddiInputStream.readAllBytes(), StandardCharsets.UTF_8);
 
 		String xslPatternFile = null;
 		switch (isCodeBook) {
@@ -155,6 +157,22 @@ public class OperationsResources extends OperationsCommonResources {
 
 		return operationsService.getCodeBookExportV2(DDI, xslPatternFile);
 	}
+
+/*	@PostMapping(value="/operation/codebook/checkCodeBookContent",
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text"},
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
+	)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
+
+	public  ResponseEntity<?> getCodeBookCheck(
+
+			@RequestParam(value="file") MultipartFile isCodeBook // InputStream isDDI,
+
+	)
+			throws Exception {
+
+			return operationsService.getCodeBookCheck(isCodeBook);
+	}*/
 
 	/**
 	 * UPDATE

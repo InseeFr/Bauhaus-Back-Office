@@ -31,6 +31,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -236,6 +237,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+
 		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
 		InputStream xslCheckReference = getClass().getResourceAsStream("/xslTransformerFiles/check-references.xsl");
 		String dicoCode = "/xslTransformerFiles/dico-codes.xsl";
@@ -292,6 +294,38 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
 	}
+
+
+/*	@Override
+	public ResponseEntity<Resource> getCodeBookCheck(MultipartFile isCodeBook) throws Exception {
+		InputStream inputStream =  new BufferedInputStream(isCodeBook.getInputStream());
+		InputStream xslCodeBookCheck = getClass().getResourceAsStream("/xslTransformerFiles/dico-codes-test-ddi-content.xsl");
+		File codeBookCheck = File.createTempFile("codeBookCheck", ".xml");
+		codeBookCheck.deleteOnExit();
+		transformerInputStreamWithXsl(inputStream,xslCodeBookCheck,codeBookCheck);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + codeBookCheck.getName());
+		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+		headers.add("Pragma", "no-cache");
+		headers.add("Expires", "0");
+		ByteArrayResource resourceByte = new ByteArrayResource(Files.readAllBytes(codeBookCheck.toPath()));
+		return ResponseEntity.ok()
+				.headers(headers)
+				.contentLength(codeBookCheck.length())
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.body(resourceByte);
+	}
+
+
+	public static void transformerInputStreamWithXsl(InputStream input,InputStream xslCheckReference, File output) throws Exception {
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslCheckReference);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(input);
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}*/
+
 
 	@Override
 	public Operation getOperationById(String id) throws RmesException {
