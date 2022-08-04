@@ -21,8 +21,10 @@ public class Config {
 
 	/******************************************************/
 	/** GLOBAL CONF 	***********************************/
-	/******************************************************/	
-	
+	/******************************************************/
+	@Value("${fr.insee.rmes.bauhaus.authorizationHost}")
+	private String authorizationHost;
+
 	@Value("${fr.insee.rmes.bauhaus.appHost}")
 	private String appHost;
 
@@ -268,6 +270,10 @@ public class Config {
 
 	public String getAppHost() {
 		return appHost;
+	}
+
+	public String getAuthorizationHost() {
+		return authorizationHost;
 	}
 
 	public String getEnv() {
