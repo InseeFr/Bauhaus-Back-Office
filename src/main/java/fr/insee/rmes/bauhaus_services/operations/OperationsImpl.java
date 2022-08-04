@@ -235,7 +235,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<?> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
 		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
 		InputStream xslCheckReference = getClass().getResourceAsStream("/xslTransformerFiles/check-references.xsl");
 		String dicoCode = "/xslTransformerFiles/dico-codes.xsl";
@@ -243,20 +243,32 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
 		ddiRemoveNameSpaces.deleteOnExit();
-		transformerRemoveNameSpaces(DDI,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+		transformerStringWithXsl(DDI,xslRemoveNameSpaces,ddiRemoveNameSpaces);
 
 		File control = File.createTempFile("control", ".xml");
-		transformerCheckReference(ddiRemoveNameSpaces,xslCheckReference,control);
+		control.deleteOnExit();
+		transformerFileWithXsl(ddiRemoveNameSpaces,xslCheckReference,control);
 
 		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
 		DocumentBuilder db= dbf.newDocumentBuilder();
 		Document doc= db.parse(control);
 		String checkResult = doc.getDocumentElement().getNodeName();
-		ResponseEntity<Resource> resource = null;
+		//ResponseEntity<Resource> resource = null;
 
-		if (checkResult!="OK") {
-			return resource.ok(Files.readString(control.toPath()));
-		}
+		if (checkResult !="OK") {
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + control.getName());
+			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+			headers.add("Pragma", "no-cache");
+			headers.add("Expires", "0");
+			ByteArrayResource resourceByte = new ByteArrayResource(Files.readAllBytes(control.toPath()));
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentLength(control.length())
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(resourceByte);
+					}
+
 		HashMap<String,String> contentXML= new HashMap<>();
 		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
 
@@ -264,7 +276,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	}
 
-	public static void transformerRemoveNameSpaces(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
+	public static void transformerStringWithXsl(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
 		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
 		Transformer transformer = factory.newTransformer(stylesheetSource);
@@ -272,9 +284,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
 	}
-	public static void transformerCheckReference(File input,InputStream xslRemoveNameSpaces, File output) throws Exception {
+	public static void transformerFileWithXsl(File input,InputStream xslCheckReference, File output) throws Exception {
 		TransformerFactory factory = TransformerFactory.newInstance();
-		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Source stylesheetSource = new StreamSource(xslCheckReference);
 		Transformer transformer = factory.newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
