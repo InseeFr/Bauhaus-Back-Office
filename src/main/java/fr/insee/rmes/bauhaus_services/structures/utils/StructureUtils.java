@@ -279,7 +279,7 @@ public class StructureUtils extends RdfService {
     }
 
     public void createMutualizedComponent(MutualizedComponent component) throws RmesException {
-        String id = structureComponentUtils.createComponent(component);
+        String id = structureComponentUtils.createComponent(component, new JSONObject());
         component.setId(id);
     }
 

@@ -49,9 +49,9 @@ public class Config {
 	/******************************************************/
 	/** DATABASES		***********************************/
 	/******************************************************/	
-	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer}")
+	@Value("http://localhost:7200")
 	private String rdfServerGestion;
-	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository}")
+	@Value("bauhaus")
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
@@ -59,7 +59,7 @@ public class Config {
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
 	private String idRepositoryPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer}")
+	@Value("")
 	private String rdfServerPublicationInt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
 	private String idRepositoryPublicationInt;
@@ -94,15 +94,15 @@ public class Config {
 	private String roleClaim;
 
 	//LDAP
-	@Value("${fr.insee.rmes.bauhaus.sugoi.url}")
+	@Value("")
 	private String sugoiUrl;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.id}")
+	@Value("")
 	private String sugoiUser;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.password}")
+	@Value("")
 	private String sugoiPassword;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.application}")
+	@Value("")
 	private String sugoiApp;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
+	@Value("")
 	private String sugoiRealm;
 
 	

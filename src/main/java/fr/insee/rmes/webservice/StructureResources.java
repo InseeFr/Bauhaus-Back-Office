@@ -171,6 +171,18 @@ public class StructureResources  extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
+    @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getAttributes", summary = "Get all mutualized attributes")
+    public ResponseEntity<Object> getAttributes() {
+        String jsonResultat;
+        try {
+            jsonResultat = structureComponentService.getAttributes();
+        } catch (RmesException e) {
+            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+        }
+        return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
+    }
+
     @GetMapping(value = "/components", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponents", summary = "Get all mutualized components")
     public ResponseEntity<Object> getComponents() {
