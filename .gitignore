@@ -8,3 +8,4 @@ node_modules
 .idea
 graphdb
 *.iml
+src/main/resources/request/BeforeMarkdown.ftlh

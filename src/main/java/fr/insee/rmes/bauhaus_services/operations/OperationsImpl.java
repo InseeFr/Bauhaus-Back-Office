@@ -44,7 +44,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -255,7 +254,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		DocumentBuilder db= dbf.newDocumentBuilder();
 		Document doc= db.parse(control);
 		String checkResult = doc.getDocumentElement().getNodeName();
-		//ResponseEntity<Resource> resource = null;
 
 		if (checkResult !="OK") {
 			HttpHeaders headers = new HttpHeaders();
@@ -296,19 +294,31 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 
-/*	@Override
-	public ResponseEntity<Resource> getCodeBookCheck(MultipartFile isCodeBook) throws Exception {
-		InputStream inputStream =  new BufferedInputStream(isCodeBook.getInputStream());
+	@Override
+	public ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws Exception {
+		InputStream codeBook= new BufferedInputStream(isCodeBook.getInputStream());
+		if (codeBook == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
+		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
+		ddiRemoveNameSpaces.deleteOnExit();
+		transformerInputStreamWithXsl(codeBook,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+
 		InputStream xslCodeBookCheck = getClass().getResourceAsStream("/xslTransformerFiles/dico-codes-test-ddi-content.xsl");
 		File codeBookCheck = File.createTempFile("codeBookCheck", ".xml");
 		codeBookCheck.deleteOnExit();
-		transformerInputStreamWithXsl(inputStream,xslCodeBookCheck,codeBookCheck);
+		transformerFileWithXsl(ddiRemoveNameSpaces,xslCodeBookCheck,codeBookCheck);
+
 		HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + codeBookCheck.getName());
 		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 		headers.add("Pragma", "no-cache");
 		headers.add("Expires", "0");
+
 		ByteArrayResource resourceByte = new ByteArrayResource(Files.readAllBytes(codeBookCheck.toPath()));
+
+		if (resourceByte.contentLength()==0) {
+				return ResponseEntity.ok("Nothing is missing in the DDI file " + isCodeBook.getOriginalFilename());
+		}
 		return ResponseEntity.ok()
 				.headers(headers)
 				.contentLength(codeBookCheck.length())
@@ -324,7 +334,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
-	}*/
+	}
 
 
 	@Override

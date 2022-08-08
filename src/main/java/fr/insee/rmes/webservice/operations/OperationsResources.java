@@ -112,7 +112,7 @@ public class OperationsResources extends OperationsCommonResources {
 	}
 
 	@PostMapping(value="/operation/codebook/V2",
-			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text"},
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
 			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
 	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
@@ -130,8 +130,8 @@ public class OperationsResources extends OperationsCommonResources {
 	)
 			throws Exception {
 		InputStream ddiInputStream =  new BufferedInputStream(isDDI.getInputStream());
+		if (ddiInputStream == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
 		String DDI= new String(ddiInputStream.readAllBytes(), StandardCharsets.UTF_8);
-
 		String xslPatternFile = null;
 		switch (isCodeBook) {
 			case "concis":
@@ -158,11 +158,11 @@ public class OperationsResources extends OperationsCommonResources {
 		return operationsService.getCodeBookExportV2(DDI, xslPatternFile);
 	}
 
-/*	@PostMapping(value="/operation/codebook/checkCodeBookContent",
+	@PostMapping(value="/operation/codebook/checkCodeBookContent",
 			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text"},
 			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
 	)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookCheck", summary = "Check the DDI before made the codebook export")
 
 	public  ResponseEntity<?> getCodeBookCheck(
 
@@ -172,7 +172,7 @@ public class OperationsResources extends OperationsCommonResources {
 			throws Exception {
 
 			return operationsService.getCodeBookCheck(isCodeBook);
-	}*/
+	}
 
 	/**
 	 * UPDATE
