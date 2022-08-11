@@ -1,69 +1,45 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.families;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.json.JSONObject;
 
 public class OpFamiliesQueries extends GenericQueries{
 
-	static Map<String,Object> params ;
+	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
+		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
+	}
 
-	public static String familiesSearchQuery() {
-
-		return "SELECT DISTINCT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?abstractL1;separator=' || ') as ?abstractLg1) ?abstractLg2 \n"
-				+ "WHERE { \n"
-				+ "   GRAPH <"+config.getOperationsGraph()+"> { \n"				
-				+ "?family a insee:StatisticalOperationFamily . \n"
-				+ "?family skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n"
-				+ "        OPTIONAL {?family skos:prefLabel ?prefLabelLg2 .\n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n"
-				+ "        OPTIONAL {?family dcterms:abstract ?abstractL1 .\n"
-				+ "FILTER (lang(?abstractL1) = '" + config.getLg1() + "') } .\n"
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 .\n"
-				+ "FILTER (lang(?abstractLg2) = '" + config.getLg2() + "') } .  \n"
-				+ "BIND(STRAFTER(STR(?family),'/operations/famille/') AS ?id) . \n"
-				+ "} \n"
-				+ "} \n"
-				+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractL1 ?abstractLg2 \n"
-				+ "ORDER BY ?prefLabelLg1 ";
+	public static String familiesSearchQuery() throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
 	}
 
 
 
-	public static String familiesQuery() {
-		return "SELECT DISTINCT ?id ?label  \n"
-				+ "WHERE { GRAPH <"+config.getOperationsGraph()+"> { \n"
-				+ "?family a insee:StatisticalOperationFamily . \n" 
-				+ "?family skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-				+ "BIND(STRAFTER(STR(?family),'/operations/famille/') AS ?id) . \n"
-				+ "}} \n" 
-				+ "GROUP BY ?id ?label \n"
-				+ "ORDER BY ?label ";
+	public static String familiesQuery() throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		return  buildRequest("getFamilies.ftlh", params);
 	}
 
 
-	public static String familyQuery(String id) {
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState ?created ?modified\n"
-				+ "WHERE { GRAPH <"+config.getOperationsGraph()+"> { \n"
-				+ "?family skos:prefLabel ?prefLabelLg1 . \n" 
-				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + id+ "')) . \n" 
-				+ "BIND(STRAFTER(STR(?family),'/famille/') AS ?id) . \n" 
-
-				+ "FILTER (lang(?prefLabelLg1) = '"	+ config.getLg1() + "') . \n" 
-				+ "OPTIONAL {?family skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n" 
-				+ "OPTIONAL {?family insee:validationState ?validationState} . \n"
-				+ "OPTIONAL { ?family dcterms:created ?created } . \n"
-				+ "OPTIONAL { ?family dcterms:modified ?modified } . \n"
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg1 . \n"
-				+ "FILTER (lang(?abstractLg1) = '" + config.getLg1() + "') } . \n" 
-				+ "OPTIONAL {?family dcterms:abstract ?abstractLg2 . \n"
-				+ "FILTER (lang(?abstractLg2) = '" + config.getLg2() + "') } . \n" 
-
-				+ "}} \n"
-				+ "LIMIT 1";
+	public static String familyQuery(String id) throws RmesException {
+		HashMap params = new HashMap();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		return  buildRequest("getFamily.ftlh", params);
 	}
 
 	public static String getSeries(String idFamily) {

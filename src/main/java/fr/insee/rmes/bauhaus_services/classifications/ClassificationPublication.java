@@ -1,11 +1,9 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -61,19 +59,12 @@ public class ClassificationPublication extends RdfService{
 			if (!isTripletForPublication(predicate)) {
 				// nothing, wouldn't copy this attr
 			} else {
-				Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
-				IRI predicateIRI = RdfUtils
-						.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
-				Value object = st.getObject();
-				if (st.getObject() instanceof Resource) {
-					object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
-				}
-
-				model.add(subject, predicateIRI, object, st.getContext());
+				transformTripleToPublish(model, st);
 			}
 		}
 		
 	}
+
 
 	private boolean isTripletForPublication(String predicate) {
 		return !PublicationUtils.stringEndsWithItemFromList(predicate, ignoredAttrs);

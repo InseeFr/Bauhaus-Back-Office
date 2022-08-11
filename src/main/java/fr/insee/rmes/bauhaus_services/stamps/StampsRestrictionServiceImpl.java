@@ -90,7 +90,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
 		JSONArray roles = userObject.getJSONArray("roles");
 
-		new User(roles, userObject.getString(Constants.STAMP));
+		new User("fakeUser",roles, userObject.getString(Constants.STAMP));
 	}
 
 
