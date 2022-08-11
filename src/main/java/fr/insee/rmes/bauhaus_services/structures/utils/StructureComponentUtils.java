@@ -193,7 +193,6 @@ public class StructureComponentUtils extends RdfService {
         jsonComponent.keySet().stream().forEach(key -> {
             if(key.startsWith("attribute_")){
                 String index = key.substring(key.indexOf("_") + 1);
-                System.out.println(index);
                 if(!jsonComponent.getString("attributeValue_" + index).isEmpty()){
                     String predicate = jsonComponent.getString("attribute_" + index);
                     String value = jsonComponent.getString("attributeValue_" + index);
