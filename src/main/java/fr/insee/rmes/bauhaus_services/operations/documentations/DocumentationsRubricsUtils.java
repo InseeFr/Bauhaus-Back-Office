@@ -41,7 +41,8 @@ import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
-public class DocumentationsRubricsUtils extends RdfService {
+public class
+DocumentationsRubricsUtils extends RdfService {
 
 	static final Logger logger = LogManager.getLogger(DocumentationsRubricsUtils.class);
 
@@ -72,7 +73,7 @@ public class DocumentationsRubricsUtils extends RdfService {
 	 */
 	public void getAllRubricsJson(String idSims, JSONObject jsonSims) throws RmesException {
 		JSONArray docRubrics = repoGestion
-				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims, "http://bauhaus/codes/langue/fr", "http://bauhaus/codes/langue/en"));
+				.getResponseAsArray(DocumentationsQueries.getDocumentationRubricsQuery(idSims, langService.getLanguage1(), langService.getLanguage2()));
 		if (docRubrics.length() != 0) {
 			clearRubrics(idSims, docRubrics);
 			jsonSims.put("rubrics", docRubrics);
