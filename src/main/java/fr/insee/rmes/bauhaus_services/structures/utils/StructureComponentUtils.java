@@ -79,6 +79,12 @@ public class StructureComponentUtils extends RdfService {
 
     public String updateComponent(String componentId, String body) throws RmesException {
         MutualizedComponent component;
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JSONObject jsonComponent = new JSONObject(body);
+
         try {
             component = deserializeBody(body);
         } catch (IOException e) {
@@ -94,9 +100,9 @@ public class StructureComponentUtils extends RdfService {
         component.setUpdated(DateUtils.getCurrentDate());
         String status= getValidationStatus(componentId);
         if (status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
-            createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
+            createRDFForComponent(component, ValidationStatus.UNPUBLISHED, jsonComponent);
         } else {
-            createRDFForComponent(component, ValidationStatus.MODIFIED);
+            createRDFForComponent(component, ValidationStatus.MODIFIED, jsonComponent);
         }
 
 
@@ -105,25 +111,31 @@ public class StructureComponentUtils extends RdfService {
 
     public String createComponent(String body) throws RmesException {
         MutualizedComponent component;
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(
+                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JSONObject jsonComponent = new JSONObject(body);
+
         try {
             component = deserializeBody(body);
         } catch (IOException e) {
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
 
         }
-        return createComponent(component);
+        return createComponent(component, jsonComponent);
     }
 
-    public String createComponent(MutualizedComponent component) throws RmesException {
+    public String createComponent(MutualizedComponent component, JSONObject jsonComponent) throws RmesException {
         if (component.getId() != null) {
             throw new RmesBadRequestException("During the creation of a new component, the id property should be null");
         }
         String id = generateNextId(component.getType());
 
-        return createComponent(component, id);
+        return createComponent(component, id, jsonComponent);
     }
 
-    public String createComponent(MutualizedComponent component, String id) throws RmesException {
+    public String createComponent(MutualizedComponent component, String id, JSONObject jsonComponent) throws RmesException {
         validateComponent(component);
 
         component.setId(id);
@@ -131,12 +143,12 @@ public class StructureComponentUtils extends RdfService {
         String currentDate = DateUtils.getCurrentDate();
         component.setCreated(currentDate);
         component.setUpdated(currentDate);
-        createRDFForComponent(component, ValidationStatus.UNPUBLISHED);
+        createRDFForComponent(component, ValidationStatus.UNPUBLISHED, jsonComponent);
         return id;
     }
 
 
-    private void createRDFForComponent(MutualizedComponent component, ValidationStatus status) throws RmesException {
+    private void createRDFForComponent(MutualizedComponent component, ValidationStatus status, JSONObject jsonComponent) throws RmesException {
 
 
         if(StringUtils.isNotEmpty(component.getConcept()) && StringUtils.isNotEmpty(component.getCodeList())){
@@ -150,15 +162,15 @@ public class StructureComponentUtils extends RdfService {
 
         String type = component.getType();
         if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
-            createRDFForComponent(component, QB.ATTRIBUTE_PROPERTY, RdfUtils.structureComponentAttributeIRI(component.getId()), status);
+            createRDFForComponent(component, QB.ATTRIBUTE_PROPERTY, RdfUtils.structureComponentAttributeIRI(component.getId()), status, jsonComponent);
         } else if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
-            createRDFForComponent(component, QB.MEASURE_PROPERTY, RdfUtils.structureComponentMeasureIRI(component.getId()), status);
+            createRDFForComponent(component, QB.MEASURE_PROPERTY, RdfUtils.structureComponentMeasureIRI(component.getId()), status, jsonComponent);
         } else {
-            createRDFForComponent(component, QB.DIMENSION_PROPERTY, RdfUtils.structureComponentDimensionIRI(component.getId()), status);
+            createRDFForComponent(component, QB.DIMENSION_PROPERTY, RdfUtils.structureComponentDimensionIRI(component.getId()), status, jsonComponent);
         }
     }
 
-    private void createRDFForComponent(MutualizedComponent component, Resource resource, IRI componentURI, ValidationStatus status) throws RmesException {
+    private void createRDFForComponent(MutualizedComponent component, Resource resource, IRI componentURI, ValidationStatus status, JSONObject jsonComponent) throws RmesException {
         Model model = new LinkedHashModel();
         Resource graph = RdfUtils.structureComponentGraph();
 
@@ -178,6 +190,20 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
+        jsonComponent.keySet().stream().forEach(key -> {
+            if(key.startsWith("attribute_")){
+                String index = key.substring(key.indexOf("_") + 1);
+                if(!jsonComponent.getString("attributeValue_" + index).isEmpty()){
+                    String predicate = jsonComponent.getString("attribute_" + index);
+                    String value = jsonComponent.getString("attributeValue_" + index);
+                    try {
+                        RdfUtils.addTripleUri(componentURI, RdfUtils.toURI(predicate), value, model, graph);
+                    } catch(Exception e){
+                        model.add(componentURI, RdfUtils.toURI(predicate), RdfUtils.setLiteralString(value), graph);
+                    }
+                }
+            }
+        });
         if(component.getConcept() != null){
             RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
         }
@@ -220,6 +246,8 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, codeListIri, model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), config.getLg2(), model, graph);
+
+
         repoGestion.loadSimpleObject(componentURI, model, null);
     }
 
@@ -349,7 +377,7 @@ public class StructureComponentUtils extends RdfService {
             componentPublication.publishComponent(RdfUtils.structureComponentDimensionIRI(id), QB.DIMENSION_PROPERTY);
         }
 
-        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED);
+        createRDFForComponent(mutualizedComponent, ValidationStatus.VALIDATED, component);
 
         return id;
     }

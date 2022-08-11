@@ -1,6 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -58,15 +60,21 @@ public class StructureQueries extends GenericQueries{
 		return buildRequest("checkUnicityStructure.ftlh", params);
 	}
 	
-	public static String getComponentsForSearch() throws RmesException {
+	public static String getComponents(boolean attributes, boolean dimensions, boolean measures) throws RmesException {
 		HashMap<String, Object> params = initParams();
-		params.put("SEARCH", true);
-		return buildRequest("getMutualizedComponents.ftlh", params);
-	}
 
-	public static String getComponents() throws RmesException {
-		HashMap<String, Object> params = initParams();
-		params.put("SEARCH", false);
+		List<String> types = new ArrayList<>();
+		if(attributes){
+			types.add("qb:AttributeProperty");
+		}
+		if(dimensions){
+			types.add("qb:DimensionProperty");
+		}
+		if(measures){
+			types.add("qb:MeasureProperty");
+		}
+		params.put("TYPES", String.join(",", types));
+
 		return buildRequest("getMutualizedComponents.ftlh", params);
 	}
 

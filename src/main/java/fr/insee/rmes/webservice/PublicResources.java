@@ -76,6 +76,7 @@ public class PublicResources extends GenericResources  {
 		JSONObject props = new JSONObject();
 		try {
 			props.put("appHost", config.getAppHost());
+			props.put("authorizationHost", config.getAuthorizationHost());
 			props.put("defaultContributor", config.getDefaultContributor());
 			props.put("defaultMailSender", config.getDefaultMailSender());
 			props.put("maxLengthScopeNote", config.getMaxLengthScopeNote());
