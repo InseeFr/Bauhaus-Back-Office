@@ -44,7 +44,6 @@ class IndicatorsUtilsTest {
         	jsonIndicator = new JSONObject(json);
 			initIndicator();
 		} catch (RmesException | JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
