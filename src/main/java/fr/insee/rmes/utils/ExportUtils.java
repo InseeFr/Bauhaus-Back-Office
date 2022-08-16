@@ -44,7 +44,7 @@ import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
-
+    private static final String CONTENT_TYPE = "Content-Type";
     private static final String ATTACHMENT = "attachment";
     private static final String ODT_EXTENSION = ".odt";
     private static final String ZIP_EXTENSION = ".zip";
@@ -89,7 +89,7 @@ public class ExportUtils {
         response.addHeader(HttpHeaders.ACCEPT, "*/*");
         response.setStatus(HttpServletResponse.SC_OK);
         response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
-        response.addHeader("Content-Type", MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
 
         try (ZipOutputStream zipOutputStreamStream = new ZipOutputStream(response.getOutputStream())) {
@@ -217,7 +217,7 @@ public class ExportUtils {
         allowHeaders.add("Access-Control-Allow-Origin");
         allowHeaders.add("Access-Control-Allow-Credentials");
         responseHeaders.setAccessControlExposeHeaders(allowHeaders);
-        responseHeaders.add("Content-Type", "application/vnd.oasis.opendocument.text");
+        responseHeaders.add(CONTENT_TYPE, "application/vnd.oasis.opendocument.text");
 
         return ResponseEntity.ok()
                 .headers(responseHeaders)
@@ -283,7 +283,7 @@ public class ExportUtils {
 
     public ResponseEntity<Object> exportFilesAsResponse(Map<String, String> xmlContent) throws RmesException {
         logger.debug("Begin To export temp files as Response");
-        ContentDisposition content = ContentDisposition.builder("attachment").filename("xmlFiles.zip").build();
+        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename("xmlFiles.zip").build();
         Path tempDir;
 
         try {
