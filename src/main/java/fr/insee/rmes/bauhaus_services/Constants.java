@@ -25,7 +25,9 @@ public class Constants {
 	public static final String DOCUMENTS_LG1 = "documentsLg1";
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
 	public static final String DOT_XML = ".xml";
-	
+	public static final String DOT_ODT = ".odt";
+	public static final String DOT_ZIP = ".zip";
+
 	/*F*/
 	public static final String FAMILY = "family";
 	

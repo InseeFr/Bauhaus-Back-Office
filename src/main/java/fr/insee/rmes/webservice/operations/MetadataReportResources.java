@@ -282,12 +282,18 @@ public class MetadataReportResources extends OperationsCommonResources {
 			,
 			@Parameter(
 					description = "Version anglaise",
-					required = false) @RequestParam("lg2")  Boolean lg2
+					required = false) @RequestParam("lg2")  Boolean lg2,
+
+			@Parameter(
+					description = "With documents",
+					required = false) @RequestParam("document")  Boolean document
 			) throws RmesException {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}
-		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2);	
+		if (lg2==null) {lg2=true;}
+		if (document==null) {document=true;}
+		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2, document);
 	}
 
 	/**

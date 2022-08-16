@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -61,19 +62,32 @@ public class DocumentationExport {
 	String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
 	String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
 	
-	public ResponseEntity<?> exportAsResponse(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
-			boolean lg2, String goal) throws RmesException {
-		//Add params to xmlContents
+	public ResponseEntity<?> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+			boolean lg2, boolean documents, String goal) throws RmesException {
+
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		if (Constants.GOAL_RMES.equals(goal)) {
-			return exportUtils.exportAsResponse("export.odt", xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
+		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
+
+		if(!documents){
+			if (Constants.GOAL_RMES.equals(goal)) {
+				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+
+			}
+			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
+				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+			}
+		} else {
+			if (Constants.GOAL_RMES.equals(goal)) {
+				return exportUtils.exportAsZip(sims, id, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+
+			}
+			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
+				return exportUtils.exportAsZip(sims, id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+			}
 		}
-		if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-			return exportUtils.exportAsResponse("export.odt", xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
-		}
-			
+
 		return ResponseEntity.internalServerError().body("Goal to export is not found");
 	}
 	
@@ -88,12 +102,12 @@ public class DocumentationExport {
 	}
 	
 
-	public ResponseEntity<?> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, String goal) throws RmesException {
+	public ResponseEntity<?> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
 		String msdXML = buildShellSims();
 		xmlContent.put("msdFile", msdXML);
-		return exportAsResponse(xmlContent,targetType,includeEmptyMas,lg1,lg2,goal);
+		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal);
 	}
 	
 

@@ -604,6 +604,13 @@ public class DocumentsUtils  extends RdfService  {
 		return doc ;
 	}
 
+	public List getDocumentPath(String id) throws RmesException {
+		JSONObject jsonDoc = getDocument(id, false);
+		String url = getDocumentUrlFromDocument(jsonDoc);
+		String fileName = getDocumentNameFromUrl(url);
+		Path path = Paths.get(url);
+		return Arrays.asList(path, fileName);
+	}
 	/**
 	 * Download a document by id
 	 * @param id
@@ -611,12 +618,10 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
-		JSONObject jsonDoc = getDocument(id, false);
+		List pathAndFileName = this.getDocumentPath(id);
+		Path path = (Path) pathAndFileName.get(0);
+		String fileName = (String) pathAndFileName.get(1);
 
-		//Build Headers
-		String url = getDocumentUrlFromDocument(jsonDoc);
-		String fileName = getDocumentNameFromUrl(url);
-		Path path = Paths.get(url);
 		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentDisposition(content);
