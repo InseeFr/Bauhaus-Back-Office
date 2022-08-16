@@ -49,8 +49,9 @@ WHERE {
 			BIND('${RICHTEXT.jsonType}' AS ?rangeType) .
 		}
 
-<#-- RangeType.STRING : label -->
+		<#-- RangeType.STRING : label -->
 		UNION {
+			 ?reportAttr ?attr ?labelTemp .
              OPTIONAL{?reportAttr ?attr ?labelLg1 .
 			 FILTER(lang(?labelLg1) = '${LG1}')  }
 

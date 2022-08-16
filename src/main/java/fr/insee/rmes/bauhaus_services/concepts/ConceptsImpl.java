@@ -257,7 +257,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 				String fileName = getFileNameForExport(concept);
 				concepts.put(fileName, xmlContent);
 			} catch (RmesException e) {
-
+				logger.error(e.getMessageAndDetails());
 			}
 		});
 		conceptsExport.exportMultipleConceptsAsZip(concepts, true, true, true, response);

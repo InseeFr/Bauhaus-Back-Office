@@ -44,6 +44,7 @@ import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
 @Component
 public class ExportUtils {
+
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ATTACHMENT = "attachment";
     private static final String ODT_EXTENSION = ".odt";

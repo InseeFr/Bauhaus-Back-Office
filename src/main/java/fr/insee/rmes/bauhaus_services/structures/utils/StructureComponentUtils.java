@@ -242,7 +242,7 @@ public class StructureComponentUtils extends RdfService {
         }
 
 
-        String codeListIri = (component.getCodeList() != null && component.getCodeList() != "") ? component.getCodeList() : component.getFullCodeListValue();
+        String codeListIri = (component.getCodeList() != null && !"".equals(component.getCodeList())) ? component.getCodeList() : component.getFullCodeListValue();
         RdfUtils.addTripleUri(componentURI, QB.CODE_LIST, codeListIri, model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, RDFS.COMMENT, component.getDescriptionLg2(), config.getLg2(), model, graph);

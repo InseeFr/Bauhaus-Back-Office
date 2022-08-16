@@ -96,9 +96,7 @@ public class ConceptsExportBuilder extends RdfService {
 	public void exportMultipleConceptsAsZip(Map<String, Map<String, String>> concepts, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 
-		concepts.values().stream().forEach(concept -> {
-			concept.put(Constants.PARAMETERS_FILE, parametersXML);
-		});
+		concepts.values().stream().forEach(concept -> concept.put(Constants.PARAMETERS_FILE, parametersXML));
 		exportUtils.exportMultipleResourceAsZip(concepts,xslFile,xmlPattern,zip, Constants.CONCEPT, response);
 	}
 
