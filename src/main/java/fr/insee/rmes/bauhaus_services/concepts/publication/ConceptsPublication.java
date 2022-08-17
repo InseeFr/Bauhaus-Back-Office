@@ -55,7 +55,7 @@ public class ConceptsPublication extends RdfService{
 					hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
 				}
 				if (!hasBroader) {
-					model.add(concept, SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+					model.add(PublicationUtils.tranformBaseURIToPublish(concept), SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 							RdfUtils.conceptGraph());
 				}
 			} catch (RepositoryException e) {
