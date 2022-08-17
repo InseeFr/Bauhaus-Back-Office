@@ -6,7 +6,7 @@
     <!-- the full odt file content -->
     <xsl:variable name="ddi" select="root(.)"/>
 
-    <!-- List of the ...Reference elements of DDI that reference a neeeded fragment -->
+    <!-- List of the ...Reference elements of DDI that reference a needed fragment -->
     <xsl:variable name="follow-references">
         <dereferencing:reference-name name="LogicalProductReference"/>
         <dereferencing:reference-name name="RepresentedVariableSchemeReference"/>
