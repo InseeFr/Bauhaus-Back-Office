@@ -61,14 +61,20 @@ public class DocumentationExport {
 	
 	String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
 	String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
-	
+
+	/**
+	 *
+	 * @param id The identifier of the report we want to export
+	 * @param documents a boolean value indicating if we want to include the related documents to the export.
+	 *                  If this value is equal to true, the export will be a .ZIP archive. If equal to false,
+	 *                  the export will be a .ODT file.
+	 */
 	public ResponseEntity<?> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2, boolean documents, String goal) throws RmesException {
 
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 
-		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
 
 		if(!documents){
 			if (Constants.GOAL_RMES.equals(goal)) {
@@ -79,6 +85,8 @@ public class DocumentationExport {
 				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
 			}
 		} else {
+			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
+
 			if (Constants.GOAL_RMES.equals(goal)) {
 				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
