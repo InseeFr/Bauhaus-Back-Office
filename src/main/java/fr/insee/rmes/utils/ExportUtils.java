@@ -104,9 +104,9 @@ public class ExportUtils {
         }
     }
 
-    public ResponseEntity<Resource> exportAsZip(JSONObject sims, String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+    public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export temp files as Response");
-        fileName = fileName.replace(ODT_EXTENSION, "");
+        String fileName = sims.getString("labelLg1");
 
         ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
 
@@ -179,11 +179,16 @@ public class ExportUtils {
 				JSONObject document = documents.getJSONObject(j);
 				String uri = document.getString("uri");
 				if(uri.contains("/documents/")){
-					List pathAndFileName = documentsUtils.getDocumentPath(document.getString("id"));
+                    Path documentDirectory = Path.of(directory.toString(), "documents");
+                    if (!Files.exists(documentDirectory)) {
+                        Files.createDirectory(documentDirectory);
+                    }
+
+                    List pathAndFileName = documentsUtils.getDocumentPath(document.getString("id"));
 					Path documentPath = (Path) pathAndFileName.get(0);
 					String documentFileName = (String) pathAndFileName.get(1);
 					InputStream documentInputStream = Files.newInputStream(documentPath);
-					Path documentTempFile = Files.createFile(Path.of(directory.toString(), documentFileName));
+					Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
 					Files.write(documentTempFile, documentInputStream.readAllBytes(), StandardOpenOption.APPEND);
 				}
 			}

@@ -80,11 +80,11 @@ public class DocumentationExport {
 			}
 		} else {
 			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsZip(sims, id, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsZip(sims, id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
 			}
 		}
 
