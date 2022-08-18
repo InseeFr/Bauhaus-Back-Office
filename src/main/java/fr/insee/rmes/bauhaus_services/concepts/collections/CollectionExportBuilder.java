@@ -1,8 +1,10 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import java.io.InputStream;
-import java.util.Map;
+import java.text.Collator;
+import java.util.*;
 
+import fr.insee.rmes.model.concepts.Collection;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,12 +34,34 @@ public class CollectionExportBuilder extends RdfService {
 	String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
 	String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
 	String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
-
+	final Collator instance = Collator.getInstance();
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
 		CollectionForExport collection = null;
 		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
+
+		List<JSONObject> orderMembers = new ArrayList<JSONObject>();
+		for (int i = 0; i < members.length(); i++) {
+			orderMembers.add(members.getJSONObject(i));
+		}
+
+		instance.setStrength(Collator.NO_DECOMPOSITION);
+
+		Collections.sort( orderMembers, new Comparator<JSONObject>() {
+			private static final String KEY_NAME = "prefLabelLg1";
+
+			@Override
+			public int compare(JSONObject a, JSONObject b) {
+				String valA = (String) a.get(KEY_NAME);
+				String valB = (String) b.get(KEY_NAME);
+
+				return instance.compare(valA.toLowerCase(), valB.toLowerCase());
+			}
+		});
+
+
+		JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
 
 		// Deserialization in the `CollectionForExport` class
 		ObjectMapper mapper = new ObjectMapper();
@@ -45,7 +69,7 @@ public class CollectionExportBuilder extends RdfService {
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		try {
 			collection = mapper.readValue(json.toString(), CollectionForExport.class);
-			collection.addMembers(members);
+			collection.addMembers(orderMembersJSONArray);
 
 			// format specific data
 			collection.setCreated(ExportUtils.toDate(collection.getCreated()));
