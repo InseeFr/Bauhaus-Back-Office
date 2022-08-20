@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -7,6 +8,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import fr.insee.rmes.model.concepts.CollectionForExportODS;
+import fr.insee.rmes.model.concepts.CollectionForExportODSFinal;
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -290,6 +293,12 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExport", "Collection"));
 		return xmlContent;
 	}
+	private Map<String, String> convertCollectionInXml(CollectionForExportODSFinal collection) {
+		String collectionXml = XMLUtils.produceXMLResponse(collection);
+		Map<String,String> xmlContent = new HashMap<>();
+		xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExportODSFinal", "Collection"));
+		return xmlContent;
+	}
 	
 
 	/**
@@ -319,6 +328,20 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
+
+	@Override
+	public ResponseEntity<?> getCollectionConceptsExport(String id, String acceptHeader) throws RmesException{
+		CollectionForExportODSFinal collection;
+		try {
+			collection = collectionExport.getCollectionConceptsData(id);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+		}
+		Map<String, String> xmlContent = convertCollectionInXml(collection);
+		String fileName = collection.getPrefLabelLg1()+'-'+ collection.getId() ;//CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getCollection().getId();
+		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
+	}
+
 	
 	@Override
 	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {

@@ -293,6 +293,7 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.exportConcept(id, accept);
 	}
 
+
 	@GetMapping(value = "/concept/export-zip/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
 	public void exportZipConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept, HttpServletResponse response) throws RmesException {
@@ -374,6 +375,13 @@ public class ConceptsResources  extends GenericResources   {
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
 	}
+
+	@GetMapping(value = "/collectionConcept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionConceptsExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
+		return conceptsService.getCollectionConceptsExport(id, accept);
+	}
+
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
