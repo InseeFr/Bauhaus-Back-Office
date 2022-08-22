@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -192,6 +195,20 @@ public class RepositoryPublication extends RepositoryUtils{
 	public static void publishContext(Resource graph, Model model, String type) throws RmesException {
 		publishContext(graph, model, type, repositoryPublicationInterne);
 		publishContext(graph, model, type, repositoryPublicationExterne);
+	}
+	
+	public static HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
+		return persistFile(input, format, graph, repositoryPublicationInterne, repositoryPublicationExterne);
+	}
+	
+
+	public static File getGraphAsFile(String context) throws RmesException {
+			if (context != null) return getCompleteGraphInTrig(repositoryPublicationExterne, context);
+			return getAllGraphsInZip(repositoryPublicationExterne);
+	}
+	
+	public static String[] getAllGraphs() throws RmesException {
+		return getAllGraphs(repositoryPublicationExterne);
 	}
 	
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
