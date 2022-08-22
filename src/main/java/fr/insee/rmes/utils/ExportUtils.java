@@ -120,7 +120,7 @@ public class ExportUtils {
                 File[] entries = file.listFiles();
                 if (entries != null) {
                     for (File entry : entries) {
-                        entry.delete();
+                        Files.delete(entry.toPath());
                     }
                 }
                 Files.delete(directory);
@@ -184,12 +184,13 @@ public class ExportUtils {
                         Files.createDirectory(documentDirectory);
                     }
 
-                    List pathAndFileName = documentsUtils.getDocumentPath(document.getString("id"));
-					Path documentPath = (Path) pathAndFileName.get(0);
-					String documentFileName = (String) pathAndFileName.get(1);
-					InputStream documentInputStream = Files.newInputStream(documentPath);
+                    List<String> pathAndFileName = documentsUtils.getDocumentPath(document.getString("id"));
+					Path documentPath = Path.of(pathAndFileName.get(0));
+					String documentFileName = pathAndFileName.get(1);
+					try (InputStream documentInputStream = Files.newInputStream(documentPath)){
 					Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
 					Files.write(documentTempFile, documentInputStream.readAllBytes(), StandardOpenOption.APPEND);
+					}
 				}
 			}
 		}

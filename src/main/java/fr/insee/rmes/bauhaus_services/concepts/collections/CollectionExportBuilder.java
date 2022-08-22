@@ -2,9 +2,12 @@ package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import java.io.InputStream;
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
-import fr.insee.rmes.model.concepts.Collection;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -41,7 +44,7 @@ public class CollectionExportBuilder extends RdfService {
 		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
 
-		List<JSONObject> orderMembers = new ArrayList<JSONObject>();
+		List<JSONObject> orderMembers = new ArrayList<>();
 		for (int i = 0; i < members.length(); i++) {
 			orderMembers.add(members.getJSONObject(i));
 		}
