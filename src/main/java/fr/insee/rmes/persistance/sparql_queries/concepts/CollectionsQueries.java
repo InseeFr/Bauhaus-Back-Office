@@ -72,18 +72,12 @@ public class CollectionsQueries extends GenericQueries{
 				+ "} \n";
 	}
 	
-	public static String collectionMembersQuery(String id) { 
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 \n"
-				+ "WHERE { \n"
-				+ "?collection rdf:type skos:Collection . \n"
-				+ "FILTER(STRENDS(STR(?collection),'/concepts/definitions/" + id + "')) . \n"
-				+ "?collection skos:member ?member . \n"
-				+ "?member skos:notation ?id . \n"
-				+ "?member skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?member skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "')} \n"
-				+ "}";
+	public static String collectionMembersQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		return  buildRequest("getCollectionMembers.ftlh", params);
 	}
 	
 	public static String isCollectionExist(String id) {
