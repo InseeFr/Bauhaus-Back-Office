@@ -67,7 +67,7 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public String setDocument(String id, String body) throws RmesException {
-		documentsUtils.setDocument(id,body, false);
+		documentsUtils.setDocument(id, body, false);
 		return id;
 	}
 
