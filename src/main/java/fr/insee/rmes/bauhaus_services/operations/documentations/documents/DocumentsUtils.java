@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -604,11 +605,11 @@ public class DocumentsUtils  extends RdfService  {
 		return doc ;
 	}
 
-	public List getDocumentPath(String id) throws RmesException {
+	public List<String> getDocumentPath(String id) throws RmesException {
 		JSONObject jsonDoc = getDocument(id, false);
 		String url = getDocumentUrlFromDocument(jsonDoc);
 		String fileName = getDocumentNameFromUrl(url);
-		Path path = Paths.get(url);
+		String path = Paths.get(url).toString();
 		return Arrays.asList(path, fileName);
 	}
 	/**
@@ -618,9 +619,9 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
-		List pathAndFileName = this.getDocumentPath(id);
-		Path path = (Path) pathAndFileName.get(0);
-		String fileName = (String) pathAndFileName.get(1);
+		List<String> pathAndFileName = this.getDocumentPath(id);
+		Path path = Path.of(pathAndFileName.get(0));
+		String fileName = pathAndFileName.get(1);
 
 		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
