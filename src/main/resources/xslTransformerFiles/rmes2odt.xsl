@@ -175,7 +175,9 @@
     </xd:doc>
     <xsl:template match="text:section[@text:name='conceptLg1-loop']">
         <xsl:variable name="section-content" select="*" as="node() *"/>
-        <xsl:for-each select="$collections//membersLg1/membersLg1">
+        <xsl:for-each-group select="$collections//membersLg1/membersLg1" group-by="id">
+            <!-- sort text without accent -->
+            <xsl:sort select="upper-case(replace(normalize-unicode(prefLabelLg1,'NFKD'),'\P{IsBasicLatin}',''))"/>
             <xsl:apply-templates select="$section-content">
                 <xsl:with-param name="context" as="node()" tunnel="yes">
                     <Context>
@@ -183,7 +185,7 @@
                     </Context>
                 </xsl:with-param>
             </xsl:apply-templates>
-        </xsl:for-each>
+        </xsl:for-each-group>
     </xsl:template>
     <xd:doc>
         <xd:desc>loop on the concepts of a collection Lg2</xd:desc>
@@ -191,6 +193,7 @@
     <xsl:template match="text:section[@text:name='conceptLg2-loop']">
         <xsl:variable name="section-content" select="*" as="node() *"/>
         <xsl:for-each select="$collections//membersLg2/membersLg2">
+            <xsl:sort select="upper-case(replace(normalize-unicode(prefLabelLg1,'NFKD'),'\P{IsBasicLatin}',''))"/>
             <xsl:apply-templates select="$section-content">
                 <xsl:with-param name="context" as="node()" tunnel="yes">
                     <Context>

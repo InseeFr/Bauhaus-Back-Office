@@ -73,6 +73,9 @@
                 </style:tab-stops>
             </style:paragraph-properties>
         </style:style>
+        <style:style style:name="P4" style:family="paragraph" style:parent-style-name="Heading_20_3">
+            <style:text-properties officeooo:paragraph-rsid="00146c7e"/>
+        </style:style>
         <style:style style:name="P47" style:family="paragraph"
             style:parent-style-name="Text_20_body">
             <style:text-properties officeooo:paragraph-rsid="00146c7e"/>
@@ -268,7 +271,7 @@
             </text:table-of-content>
             <text:p text:style-name="P47"/>
             <text:section text:name="conceptLg1-loop">
-                <text:h text:style-name="Heading_20_3" text:outline-level="3"><text:bookmark-start
+                <text:h text:style-name="P4" text:outline-level="3"><text:bookmark-start
                     text:name="__RefHeading___concept_${collectionConcept/id}"/>${collectionConcept/prefLabelLg1}<text:bookmark-end
                         text:name="__RefHeading___concept_${collectionConcept/id}"/></text:h>
                 <text:p text:style-name="Info_20_concept"><text:a xlink:type="simple"
@@ -278,7 +281,6 @@
                 <text:p text:style-name="Info_20_concept">Propriétaire: ${collectionConcept/creator}</text:p>
                 <text:p text:style-name="Info_20_concept">Date de création: ${collectionConcept/created}</text:p>
                 <text:p text:style-name="Info_20_concept">Date de modification: ${collectionConcept/modified}</text:p>
-                <text:p text:style-name="P47">${collectionConcept/prefLabelLg1}</text:p>
                 <text:p text:style-name="P47">${collectionConcept/richContent/defcourteLg1}</text:p>
             </text:section>
         </office:text>
