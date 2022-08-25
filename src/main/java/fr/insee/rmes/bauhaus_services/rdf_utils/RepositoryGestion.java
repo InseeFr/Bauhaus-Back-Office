@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -142,14 +145,13 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
-		RepositoryResult<Statement> statements = null;
-		try {
-			statements = con. getStatements(null, null, null,context); //get the complete Graph
-		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get following graph : " + context);
-		}
-		return statements;
+	public File getGraphAsFile(String context) throws RmesException {
+			if (context != null) return getCompleteGraphInTrig(repositoryGestionInstance, context);
+			return getAllGraphsInZip(repositoryGestionInstance);
+	}
+	
+	public String[] getAllGraphs() throws RmesException {
+		return getAllGraphs(repositoryGestionInstance);
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
@@ -238,6 +240,10 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
 
 		}
+	}
+	
+	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
+		return persistFile(input, format, graph, repositoryGestionInstance, null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
@@ -371,4 +377,5 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT);
 		}
 	}
+
 }

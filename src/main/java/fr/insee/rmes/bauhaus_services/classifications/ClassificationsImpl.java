@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -185,5 +186,14 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 		repoGestion.objectValidation(classifURI, model);
 
 		return classifId;
+	}
+
+	@Override
+	public void uploadClassification(MultipartFile file, String database) throws RmesException {
+		// TODO 
+			// 1 . XSLT ods to XML 
+			// 2 . XSLT XML to trig.
+			// 3 . Call load trig service
+		
 	}
 }

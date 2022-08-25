@@ -1,33 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Field;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
@@ -48,6 +20,35 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -74,6 +75,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Autowired
 	IndicatorsUtils indicatorsUtils;
+
+	@Autowired
+	ExportUtils exportUtils;
 
 	/***************************************************************************************************
 	 * SERIES
@@ -229,6 +233,109 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		}
 		return(fis);
 	}
+
+	@Override
+	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+
+		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
+		InputStream xslCheckReference = getClass().getResourceAsStream("/xslTransformerFiles/check-references.xsl");
+		String dicoCode = "/xslTransformerFiles/dico-codes.xsl";
+		String zipRmes = "/xslTransformerFiles/dicoCodes/toZipForDicoCodes.zip";
+
+		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
+		ddiRemoveNameSpaces.deleteOnExit();
+		transformerStringWithXsl(DDI,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+
+		File control = File.createTempFile("control", ".xml");
+		control.deleteOnExit();
+		transformerFileWithXsl(ddiRemoveNameSpaces,xslCheckReference,control);
+
+		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+		DocumentBuilder db= dbf.newDocumentBuilder();
+		Document doc= db.parse(control);
+		String checkResult = doc.getDocumentElement().getNodeName();
+
+		if (checkResult !="OK") {
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + control.getName());
+			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+			headers.add("Pragma", "no-cache");
+			headers.add("Expires", "0");
+			ByteArrayResource resourceByte = new ByteArrayResource(Files.readAllBytes(control.toPath()));
+			return ResponseEntity.ok()
+					.headers(headers)
+					.contentLength(control.length())
+					.contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(resourceByte);
+					}
+
+		HashMap<String,String> contentXML= new HashMap<>();
+		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
+
+		return exportUtils.exportAsResponse("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
+
+	}
+
+	public static void transformerStringWithXsl(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(new StringReader(ddi));
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+	public static void transformerFileWithXsl(File input,InputStream xslCheckReference, File output) throws Exception {
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslCheckReference);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(input);
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+
+
+	@Override
+	public ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws Exception {
+		InputStream codeBook= new BufferedInputStream(isCodeBook.getInputStream());
+		if (codeBook == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
+		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
+		ddiRemoveNameSpaces.deleteOnExit();
+		transformerInputStreamWithXsl(codeBook,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+
+		InputStream xslCodeBookCheck = getClass().getResourceAsStream("/xslTransformerFiles/dico-codes-test-ddi-content.xsl");
+		File codeBookCheck = File.createTempFile("codeBookCheck", ".xml");
+		codeBookCheck.deleteOnExit();
+		transformerFileWithXsl(ddiRemoveNameSpaces,xslCodeBookCheck,codeBookCheck);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + codeBookCheck.getName());
+		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+		headers.add("Pragma", "no-cache");
+		headers.add("Expires", "0");
+
+		ByteArrayResource resourceByte = new ByteArrayResource(Files.readAllBytes(codeBookCheck.toPath()));
+
+		if (resourceByte.contentLength()==0) {
+				return ResponseEntity.ok("Nothing is missing in the DDI file " + isCodeBook.getOriginalFilename());
+		}
+		return ResponseEntity.ok()
+				.headers(headers)
+				.contentLength(codeBookCheck.length())
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.body(resourceByte);
+	}
+
+
+	public static void transformerInputStreamWithXsl(InputStream input,InputStream xslCheckReference, File output) throws Exception {
+		TransformerFactory factory = TransformerFactory.newInstance();
+		Source stylesheetSource = new StreamSource(xslCheckReference);
+		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Source inputSource = new StreamSource(input);
+		Result outputResult = new StreamResult(output);
+		transformer.transform(inputSource, outputResult);
+	}
+
 
 	@Override
 	public Operation getOperationById(String id) throws RmesException {

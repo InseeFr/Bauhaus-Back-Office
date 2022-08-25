@@ -6,9 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,30 +90,5 @@ public class UserResources  extends GenericResources {
 		return ResponseEntity.status(HttpStatus.SC_OK).build();
 	}
 	
-	
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-	@PostMapping(value = "/private/add/role/{role}/user/{user}",
-			consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setAddRole", summary = "Add role")
-	public ResponseEntity<Object> setAddRole(@PathVariable("role") String role, @PathVariable("user") String user) {
-		try {
-			userRolesManagerService.setAddRole(role, user);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-		}		
-		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
-	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-	@PostMapping(value = "/private/delete/role/{role}/user/{user}",
-			consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setDeleteRole", summary = "Delete role")
-	public ResponseEntity<Object> setDeleteRole(@PathVariable("role") String role, @PathVariable("user") String user) {
-		try {
-			userRolesManagerService.setDeleteRole(role, user);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-		}	
-		return ResponseEntity.status(HttpStatus.SC_NO_CONTENT).build();
-	}
 }
