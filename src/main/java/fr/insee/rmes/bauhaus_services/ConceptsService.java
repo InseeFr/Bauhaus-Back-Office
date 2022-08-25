@@ -49,9 +49,6 @@ public interface ConceptsService {
 	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
 
 	public void exportZipConcept(String id, String acceptHeader, HttpServletResponse response) throws RmesException;
-
-
-	public boolean setConceptSend(String id, String body) throws  RmesException ;
 	
 	public void setCollection(String body) throws RmesException;
 	
@@ -61,8 +58,6 @@ public interface ConceptsService {
 	
 	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException ;
 	
-	public boolean setCollectionSend(String id, String body) throws  RmesException ;
-
 	public String getRelatedConcepts(String id) throws RmesException;
 
 	public String deleteConcept(String id) throws RmesException;

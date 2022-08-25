@@ -32,7 +32,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
@@ -57,9 +56,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Autowired 
 	CollectionExportBuilder collectionExport;
-
-	@Autowired
-	MailSenderContract mailSender;
 
 	@Override
 	public String getConcepts()  throws RmesException{
@@ -330,27 +326,4 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		return ret;
 	}
 	
-
-	/**
-	 * Send concept
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 */
-	@Override
-	public boolean setConceptSend(String id, String body) throws  RmesException  {
-		Map<String,InputStream> getFileToJoin = getConceptExportIS(id);
-		return mailSender.sendMailConcept(id, body, getFileToJoin);
-	}
-
-	/**
-	 * Send collection
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 */
-	@Override
-	public boolean setCollectionSend(String id, String body) throws  RmesException  {
-		Map<String,InputStream> getFileToJoin = getCollectionExportIS(id);
-		return mailSender.sendMailCollection(id, body, getFileToJoin);
-	}
-
 }
