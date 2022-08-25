@@ -106,7 +106,7 @@ public class ExportUtils {
 
     public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export temp files as Response");
-        String fileName = sims.getString("labelLg1");
+        String fileName = sims.getString("id");
 
         ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
 
@@ -153,6 +153,7 @@ public class ExportUtils {
                     .body(resource);
 
         } catch (IOException e1) {
+            logger.error("error", e1);
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
         }
     }
