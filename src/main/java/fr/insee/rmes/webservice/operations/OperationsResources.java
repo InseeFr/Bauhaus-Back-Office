@@ -129,9 +129,9 @@ public class OperationsResources extends OperationsCommonResources {
 
 	)
 			throws Exception {
+		if (isDDI == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
 		InputStream ddiInputStream =  new BufferedInputStream(isDDI.getInputStream());
-		if (ddiInputStream == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
-		String DDI= new String(ddiInputStream.readAllBytes(), StandardCharsets.UTF_8);
+		String ddi = new String(ddiInputStream.readAllBytes(), StandardCharsets.UTF_8);
 		String xslPatternFile = null;
 		switch (isCodeBook) {
 			case "concis":
@@ -151,11 +151,11 @@ public class OperationsResources extends OperationsCommonResources {
 				xslPatternFile = xmlFileNonScindable;
 				break;
 			default:
-				System.out.println("Choix incorrect");
+				logger.error("Choix incorrect");
 				break;
 		}
 
-		return operationsService.getCodeBookExportV2(DDI, xslPatternFile);
+		return operationsService.getCodeBookExportV2(ddi, xslPatternFile);
 	}
 
 	@PostMapping(value="/operation/codebook/checkCodeBookContent",
