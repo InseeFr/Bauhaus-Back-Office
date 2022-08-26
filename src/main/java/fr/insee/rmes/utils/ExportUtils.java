@@ -18,7 +18,6 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -37,6 +36,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 
@@ -109,6 +109,7 @@ public class ExportUtils {
         ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
 
         try {
+
             Path directory = Files.createTempDirectory("sims");
             Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
 
@@ -149,6 +150,7 @@ public class ExportUtils {
             }
         }
     }
+
 
 	private void exportRubricDocument(JSONObject rubric, Path directory, Set<String> history) throws RmesException, IOException, URISyntaxException {
 		this.exportRubricDocumentForLang(rubric, "documentsLg1", directory, history);
