@@ -137,8 +137,7 @@ public class ExportUtils {
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(resource);
-
-        } catch (IOException | URISyntaxException e1) {
+        } catch (IOException e1) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
         }
     }

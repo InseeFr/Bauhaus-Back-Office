@@ -1,15 +1,15 @@
 package fr.insee.rmes.bauhaus_services;
 
-import java.io.File;
-
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 
 public interface OperationsService {
 
@@ -64,6 +64,10 @@ public interface OperationsService {
 
 
 	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
+
+	ResponseEntity<Resource> getCodeBookExportV2(String ddiFile, String xslPatternFile) throws RmesException, Exception;
+
+	ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws RmesException, Exception;
 
 	String getOperations() throws RmesException ;
 
