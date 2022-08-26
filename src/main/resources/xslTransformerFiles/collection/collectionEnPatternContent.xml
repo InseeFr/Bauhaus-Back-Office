@@ -210,7 +210,7 @@
                 <text:sequence-decl text:display-outline-level="0" text:name="Figure"/>
             </text:sequence-decls>
             <text:h text:style-name="Heading_20_1" text:outline-level="1"><text:bookmark-start
-                text:name="__RefHeading___collection_${collection/Collection/id}"/>${collection/Collection/prefLabelLg1}<text:bookmark-end text:name="__RefHeading___collection_${collection/Collection/id}"
+                text:name="__RefHeading___collection_${collection/Collection/id}"/>${collection/Collection/prefLabelLg2}<text:bookmark-end text:name="__RefHeading___collection_${collection/Collection/id}"
                 /></text:h>
             <text:p text:style-name="Identité_20_collection">Identifiant :
                 ${collection/Collection/id}</text:p>
@@ -220,7 +220,7 @@
             <text:p text:style-name="Identité_20_collection">Timbre gestionnaire : ${collection/Collection/contributor}</text:p>
             <text:p text:style-name="Identité_20_collection">État de la collection : ${collection/Collection/isValidated}</text:p>
             <text:p text:style-name="Standard"/>
-            <text:p text:style-name="Standard">${collection/Collection/descriptionLg1}</text:p>
+            <text:p text:style-name="Standard">${collection/Collection/descriptionLg2}</text:p>
             <text:table-of-content text:style-name="Sect1" text:protected="true"
                 text:name="Table des matières1">
                 <text:table-of-content-source text:outline-level="3" text:index-scope="chapter">
@@ -260,19 +260,19 @@
                     <text:p text:style-name="P1"><text:a xlink:type="simple"
                         xlink:href="__RefHeading___collection_${collection/Collection/id}"
                             text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
-                        >${collection/Collection/prefLabelLg1}</text:a></text:p>
+                        >${collection/Collection/prefLabelLg2}</text:a></text:p>
                     <text:section text:name="concept-loop">
                         <text:p text:style-name="P3"><text:a xlink:type="simple"
                             xlink:href="#__RefHeading___concept_${collectionConcept/id}"
                             text:style-name="Index_20_Link" text:visited-style-name="Index_20_Link"
-                            >${collectionConcept/prefLabelLg1}</text:a></text:p>
+                            >${collectionConcept/prefLabelLg2}</text:a></text:p>
                     </text:section>
                 </text:index-body>
             </text:table-of-content>
             <text:p text:style-name="P47"/>
             <text:section text:name="concept-loop">
                 <text:h text:style-name="P4" text:outline-level="3"><text:bookmark-start
-                    text:name="__RefHeading___concept_${collectionConcept/id}"/>${collectionConcept/prefLabelLg1}<text:bookmark-end
+                    text:name="__RefHeading___concept_${collectionConcept/id}"/>${collectionConcept/prefLabelLg2}<text:bookmark-end
                         text:name="__RefHeading___concept_${collectionConcept/id}"/></text:h>
                 <text:p text:style-name="Info_20_concept"><text:a xlink:type="simple"
                     xlink:href="${rmesUrl}/concept/${collectionConcept/id}"
@@ -281,7 +281,7 @@
                 <text:p text:style-name="Info_20_concept">Propriétaire: ${collectionConcept/creator}</text:p>
                 <text:p text:style-name="Info_20_concept">Date de création: ${collectionConcept/created}</text:p>
                 <text:p text:style-name="Info_20_concept">Date de modification: ${collectionConcept/modified}</text:p>
-                <text:p text:style-name="P47">${collectionConcept/richContent/defcourteLg1}</text:p>
+                <text:p text:style-name="P47">${collectionConcept/richContent/defcourteLg2}</text:p>
             </text:section>
         </office:text>
     </office:body>

@@ -171,11 +171,11 @@
     </xsl:template>
     
     <xd:doc>
-        <xd:desc>loop on the concepts of a collection Lg1</xd:desc>
+        <xd:desc>loop on the concepts of a collection</xd:desc>
     </xd:doc>
-    <xsl:template match="text:section[@text:name='conceptLg1-loop']">
+    <xsl:template match="text:section[@text:name='concept-loop']">
         <xsl:variable name="section-content" select="*" as="node() *"/>
-        <xsl:for-each-group select="$collections//membersLg1/membersLg1" group-by="id">
+        <xsl:for-each-group select="$collections//members/members" group-by="id">
             <!-- sort text without accent -->
             <xsl:sort select="upper-case(replace(normalize-unicode(prefLabelLg1,'NFKD'),'\P{IsBasicLatin}',''))"/>
             <xsl:apply-templates select="$section-content">
@@ -186,22 +186,6 @@
                 </xsl:with-param>
             </xsl:apply-templates>
         </xsl:for-each-group>
-    </xsl:template>
-    <xd:doc>
-        <xd:desc>loop on the concepts of a collection Lg2</xd:desc>
-    </xd:doc>
-    <xsl:template match="text:section[@text:name='conceptLg2-loop']">
-        <xsl:variable name="section-content" select="*" as="node() *"/>
-        <xsl:for-each select="$collections//membersLg2/membersLg2">
-            <xsl:sort select="upper-case(replace(normalize-unicode(prefLabelLg1,'NFKD'),'\P{IsBasicLatin}',''))"/>
-            <xsl:apply-templates select="$section-content">
-                <xsl:with-param name="context" as="node()" tunnel="yes">
-                    <Context>
-                        <collectionConcept><xsl:copy-of select="."/></collectionConcept>
-                    </Context>
-                </xsl:with-param>
-            </xsl:apply-templates>
-        </xsl:for-each>
     </xsl:template>
 
     <xd:doc>
@@ -427,29 +411,42 @@
                                 </xsl:call-template>
                             </xsl:matching-substring>
                             <xsl:non-matching-substring>
-                                <xsl:choose>
-                                    <!-- $before ${ $var } $after -->
-                                    <xsl:when test="contains(.,'${')">
-                                        <xsl:variable name="before-var" select="substring-before($text-to-personalize,'${')"/>
-                                        <xsl:variable name="after-var">
-                                            <xsl:call-template name="personalize-text">
-                                                <xsl:with-param name="text-to-personalize" select="substring-after(substring-after($text-to-personalize,'${'),'}')"/>
+                                <!-- $1 #check($2) $3 : for ods : writes X if $2 has a content -->
+                                <xsl:analyze-string select="$text-to-personalize" regex="^(.*)#check\((.*)\)(.*)$">
+                                    <xsl:matching-substring>
+                                        <xsl:variable name="variable-to-check">
+                                            <xsl:call-template name="get-variable-nodes">
+                                                <xsl:with-param name="variable-address" select="substring-before(substring-after(regex-group(2),'${'),'}')"/>
                                             </xsl:call-template>
                                         </xsl:variable>
-                                        <xsl:if test="$before-var !=''">
-                                            <xsl:value-of select="$before-var"/>
-                                        </xsl:if>
-                                        <xsl:call-template name="get-variable-nodes">
-                                            <xsl:with-param name="variable-address" select="substring-before(substring-after($text-to-personalize,'${'),'}')"/>
-                                        </xsl:call-template>
-                                        <xsl:if test="$after-var !=''">
-                                            <xsl:value-of select="$after-var"/>
-                                        </xsl:if>
+                                        <xsl:if test="normalize-space($variable-to-check) != ''"><xsl:value-of select="'X'"/></xsl:if>
+                                    </xsl:matching-substring>
+                                    <xsl:non-matching-substring>
+                                        <xsl:choose>
+                                            <!-- $before ${ $var } $after -->
+                                            <xsl:when test="contains(.,'${')">
+                                                <xsl:variable name="before-var" select="substring-before($text-to-personalize,'${')"/>
+                                                <xsl:variable name="after-var">
+                                                    <xsl:call-template name="personalize-text">
+                                                        <xsl:with-param name="text-to-personalize" select="substring-after(substring-after($text-to-personalize,'${'),'}')"/>
+                                                    </xsl:call-template>
+                                                </xsl:variable>
+                                                <xsl:if test="$before-var !=''">
+                                                    <xsl:value-of select="$before-var"/>
+                                                </xsl:if>
+                                                <xsl:call-template name="get-variable-nodes">
+                                                    <xsl:with-param name="variable-address" select="substring-before(substring-after($text-to-personalize,'${'),'}')"/>
+                                                </xsl:call-template>
+                                                <xsl:if test="$after-var !=''">
+                                                    <xsl:value-of select="$after-var"/>
+                                                </xsl:if>
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:value-of select="$text-to-personalize"/>
                                     </xsl:otherwise>
                                 </xsl:choose>
+                                    </xsl:non-matching-substring>
+                                </xsl:analyze-string>
                             </xsl:non-matching-substring>
                         </xsl:analyze-string>
                     </xsl:non-matching-substring>
