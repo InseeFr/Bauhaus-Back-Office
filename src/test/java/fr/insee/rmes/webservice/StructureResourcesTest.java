@@ -48,4 +48,19 @@ class StructureResourcesTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
     }
+
+    @Test
+    void shouldReturn500IfRmesExceptionWhenPublishingAStructure() throws RmesException {
+        when(structureService.publishStructureById(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
+        ResponseEntity<?> response = structureResources.publishStructureById("1");
+        Assertions.assertEquals(500, response.getStatusCode().value());
+    }
+
+    @Test
+    void shouldReturn200WhenPublishingAStructure() throws RmesException {
+        when(structureService.publishStructureById(anyString())).thenReturn("result publishing");
+        ResponseEntity<?> response = structureResources.publishStructureById("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertEquals("result publishing", response.getBody());
+    }
 }
