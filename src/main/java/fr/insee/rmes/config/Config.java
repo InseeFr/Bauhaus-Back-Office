@@ -273,10 +273,6 @@ public class Config {
 		return appHost;
 	}
 
-	public String getAuthorizationHost() {
-		return authorizationHost;
-	}
-
 	public String getEnv() {
 		return env;
 	}
