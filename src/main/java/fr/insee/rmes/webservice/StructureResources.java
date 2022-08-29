@@ -101,13 +101,12 @@ public class StructureResources  extends GenericResources {
     @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) {
-        String jsonResultat = null;
         try {
-            jsonResultat = structureService.publishStructureById(id);
+            String response = structureService.publishStructureById(id);
+            return ResponseEntity.status(HttpStatus.SC_OK).body(response);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         } 
-        return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)

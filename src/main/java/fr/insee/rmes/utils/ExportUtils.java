@@ -5,15 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -136,33 +134,37 @@ public class ExportUtils {
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(resource);
-        } catch (IOException e1) {
+        }
+        catch (IOException | URISyntaxException e1) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
         }
     }
 
-    private void exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
+    private void exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException, URISyntaxException {
+        Set<String> history = new HashSet<>();
         if (sims.has("rubrics")) {
             JSONArray rubrics = sims.getJSONArray("rubrics");
             for (int i = 0; i < rubrics.length(); i++) {
 				JSONObject rubric = rubrics.getJSONObject(i);
-				this.exportRubricDocument(rubric, directory);
+				this.exportRubricDocument(rubric, directory, history);
             }
         }
     }
 
-	private void exportRubricDocument(JSONObject rubric, Path directory) throws RmesException, IOException {
-		this.exportRubricDocumentForLang(rubric, "documentsLg1", directory);
-		this.exportRubricDocumentForLang(rubric, "documentsLg2", directory);
+
+	private void exportRubricDocument(JSONObject rubric, Path directory, Set<String> history) throws RmesException, IOException, URISyntaxException {
+		this.exportRubricDocumentForLang(rubric, "documentsLg1", directory, history);
+		this.exportRubricDocumentForLang(rubric, "documentsLg2", directory, history);
 	}
 
-	private void exportRubricDocumentForLang(JSONObject rubric, String key, Path directory) throws RmesException, IOException {
+	private void exportRubricDocumentForLang(JSONObject rubric, String key, Path directory, Set<String> history) throws RmesException, IOException, URISyntaxException {
 		if (rubric.has(key)) {
 			JSONArray documents = rubric.getJSONArray(key);
 			for (int j = 0; j < documents.length(); j++) {
 				JSONObject document = documents.getJSONObject(j);
 				String uri = document.getString("uri");
-                    if(uri.contains("/documents/")){
+                if(uri.contains("/documents/") && !history.contains(uri)){
+                    history.add(uri);
                     Path documentDirectory = Path.of(directory.toString(), "documents");
                     if (!Files.exists(documentDirectory)) {
                         Files.createDirectory(documentDirectory);
