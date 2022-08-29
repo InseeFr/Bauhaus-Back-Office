@@ -1,5 +1,48 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
+
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.operations.families.FamiliesUtils;
@@ -20,35 +63,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -235,7 +249,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getCodeBookExportV2(String DDI, String xslPatternFile) throws Exception {
+	public ResponseEntity<Resource> getCodeBookExportV2(String ddi, String xslPatternFile) throws Exception {
 
 		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
 		InputStream xslCheckReference = getClass().getResourceAsStream("/xslTransformerFiles/check-references.xsl");
@@ -244,7 +258,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
 		ddiRemoveNameSpaces.deleteOnExit();
-		transformerStringWithXsl(DDI,xslRemoveNameSpaces,ddiRemoveNameSpaces);
+		transformerStringWithXsl(ddi,xslRemoveNameSpaces,ddiRemoveNameSpaces);
 
 		File control = File.createTempFile("control", ".xml");
 		control.deleteOnExit();

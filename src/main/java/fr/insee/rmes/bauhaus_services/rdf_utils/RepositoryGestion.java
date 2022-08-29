@@ -353,8 +353,8 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	private static void throwsRmesException(Exception e, String details) throws RmesException {
 		logger.error(details);
-		logger.error(e.getMessage());
-		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), details);
+		logger.error("{} {}" , e.getClass(), e.getMessage());
+		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),  e.getClass() + " "+ e.getMessage(), details);
 	}
 
 	public void loadSimpleObject(IRI geoIRI, Model model) throws RmesException {
