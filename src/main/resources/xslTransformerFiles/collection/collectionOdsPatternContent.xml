@@ -396,25 +396,25 @@
                             <text:p>${collectionConcept/prefLabelLg1}</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/defLongueLg1})</text:p>
+                            <text:p>#if (${collectionConcept/richContent/defLongueLg1})X#endif</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/defCourteLg1})</text:p>
+                            <text:p>#if (${collectionConcept/richContent/defCourteLg1})X#endif</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/editorialNoteLg1})</text:p>
+                            <text:p>#if (${collectionConcept/richContent/editorialNoteLg1})X#endif</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>${collectionConcept/prefLabelLg2}</text:p>
+                            <text:p>${collectionConcept/richContent/prefLabelLg2}</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/defLongueLg2})</text:p>
+                            <text:p>#if (${collectionConcept/richContent/defLongueLg2})X#endif</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/defCourteLg2})</text:p>
+                            <text:p>#if (${collectionConceptrichContent//defCourteLg2})X#endif</text:p>
                         </table:table-cell>
                         <table:table-cell office:value-type="string" calcext:value-type="string">
-                            <text:p>#check(${collectionConcept/editorialNoteLg2})</text:p>
+                            <text:p>#if (${collectionConcept/richContent/editorialNoteLg2})X#endif</text:p>
                         </table:table-cell>
                     </table:table-row>
                 </text:section>
