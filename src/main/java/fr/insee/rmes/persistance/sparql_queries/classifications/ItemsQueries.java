@@ -48,21 +48,14 @@ public class ItemsQueries extends GenericQueries{
 		return buildRequest("getClassificationItemNotes.ftlh", params);
 	}
 	
-	public static String itemNarrowersQuery(String classificationId, String itemId) {
-		return "SELECT ?id ?labelLg1 ?labelLg2 WHERE { \n"
-				+ "?item skos:narrower ?narrower . \n"
-				+ "?item skos:inScheme ?classification . \n"
-				+ "?narrower skos:inScheme ?classificationNarrower . \n"
-				+ "FILTER(REGEX(STR(?classification),'/codes/" + classificationId + "/')) \n"
-				+ "FILTER(REGEX(STR(?classificationNarrower),'/codes/" + classificationId + "/')) \n"
-				+ "FILTER(STRENDS(STR(?item),'/" + itemId + "')) \n"
-				+ "?narrower skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
-				+ "?narrower skos:notation ?id . \n"
-				+ "OPTIONAL {?narrower skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} \n"
-				+ "}"
-				+ "ORDER BY ?id ";
+	public static String itemNarrowersQuery(String classificationId, String itemId) throws RmesException {
+		Map<String,Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("CLASSIFICATION_ID", classificationId);
+		params.put("ITEM_ID", itemId);
+
+		return buildRequest("getClassificationItemNarrowers.ftlh", params);
 	}
 
 }
