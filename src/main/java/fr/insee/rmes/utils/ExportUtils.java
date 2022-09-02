@@ -136,6 +136,7 @@ public class ExportUtils {
                     .body(resource);
         }
         catch (IOException | URISyntaxException e1) {
+            logger.error("error zip", e1);
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
         }
     }
