@@ -107,6 +107,8 @@ public class Config {
 	private String sugoiApp;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
+	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
+	private String sugoiUi;
 
 	
 	/******************************************************/
@@ -535,6 +537,10 @@ public class Config {
 
 	public String getSugoiRealm() {
 		return sugoiRealm;
+	}
+
+	public String getSugoiUi() {
+		return sugoiUi;
 	}
 
 	public String getSwaggerHost() {
