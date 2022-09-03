@@ -128,5 +128,10 @@ public class DocumentsQueries extends GenericQueries{
 	 }
 
 
-
+    public static String getDocumentsUriAndUrlForSims(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(Constants.ID, id);
+		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
+		return  buildRequest("getDocumentsUriAndUrlForSims.ftlh", params);
+    }
 }

@@ -103,7 +103,8 @@ public class ExportUtils {
     }
 
     public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        logger.debug("Begin To export temp files as Response");
+        String simsId = sims.getString("id");
+        logger.debug("Begin to download the SIMS {} with its documents", simsId);
         String fileName = sims.getString("labelLg1");
 
         ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
@@ -113,20 +114,26 @@ public class ExportUtils {
             Path directory = Files.createTempDirectory("sims");
             Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
 
-            // We generate our .ODT file
+            logger.debug("Generating the InputStream for the SIMS {}", simsId);
             InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
-            if (input == null)
+            if (input == null){
+                logger.debug("Error when creating the export of the SIMS {}", simsId);
                 throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't export this object", "");
+            }
 
-            // We copy the .ODT file into the temporary folder
+            logger.debug("Creating the .odt file for the SIMS {}", simsId);
             Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + Constants.DOT_ODT));
             Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
+            logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
 
+            logger.debug("Starting downloading documents for the SIMS {}", simsId);
             this.exportRubricsDocuments(sims, simsDirectory);
-            // We zip the temporary folder
+            logger.debug("Ending downloading documents for the SIMS {}", simsId);
+
+            logger.debug("Zipping the folder for the SIMS {}", simsId);
             FilesUtils.zipDirectory(simsDirectory.toFile());
 
-            logger.debug("End To export temp files as Response");
+            logger.debug("Zip created for the SIMS {}", simsId);
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentDisposition(content);
             responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
@@ -135,52 +142,38 @@ public class ExportUtils {
                     .headers(responseHeaders)
                     .body(resource);
         }
-        catch (IOException | URISyntaxException e1) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e1.getMessage(), e1.getClass().getSimpleName());
+        catch (Exception exception) {
+            logger.error("Error when downloading the SIMS {} with its documents", simsId, exception);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), exception.getClass().getSimpleName());
         }
     }
 
-    private void exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException, URISyntaxException {
+    private void exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
         Set<String> history = new HashSet<>();
-        if (sims.has("rubrics")) {
-            JSONArray rubrics = sims.getJSONArray("rubrics");
-            for (int i = 0; i < rubrics.length(); i++) {
-				JSONObject rubric = rubrics.getJSONObject(i);
-				this.exportRubricDocument(rubric, directory, history);
+        JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
+        for (int i = 0; i < documents.length(); i++) {
+            JSONObject document = documents.getJSONObject(i);
+            String url = document.getString("url").replace("file://", "");
+            if(!history.contains(url)){
+                history.add(url);
+                logger.debug("Extracting document {}", url);
+
+                String documentFileName = UriUtils.getLastPartFromUri(url);
+                Path documentDirectory = Path.of(directory.toString(), "documents");
+                if (!Files.exists(documentDirectory)) {
+                    logger.debug("Creating the documents folder");
+                    Files.createDirectory(documentDirectory);
+                }
+
+                Path documentPath = Path.of(url);
+
+                logger.debug("Writing the document {} with the name {} into the folder {}", documentPath, documentFileName, documentDirectory.toString());
+                try (InputStream documentInputStream = Files.newInputStream(documentPath)){
+                    Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
+                    Files.write(documentTempFile, documentInputStream.readAllBytes(), StandardOpenOption.APPEND);
+                }
             }
         }
-    }
-
-
-	private void exportRubricDocument(JSONObject rubric, Path directory, Set<String> history) throws RmesException, IOException, URISyntaxException {
-		this.exportRubricDocumentForLang(rubric, "documentsLg1", directory, history);
-		this.exportRubricDocumentForLang(rubric, "documentsLg2", directory, history);
-	}
-
-	private void exportRubricDocumentForLang(JSONObject rubric, String key, Path directory, Set<String> history) throws RmesException, IOException, URISyntaxException {
-		if (rubric.has(key)) {
-			JSONArray documents = rubric.getJSONArray(key);
-			for (int j = 0; j < documents.length(); j++) {
-				JSONObject document = documents.getJSONObject(j);
-				String uri = document.getString("uri");
-                if(uri.contains("/documents/") && !history.contains(uri)){
-                    history.add(uri);
-                    Path documentDirectory = Path.of(directory.toString(), "documents");
-                    if (!Files.exists(documentDirectory)) {
-                        Files.createDirectory(documentDirectory);
-                    }
-
-                    List<String> pathAndFileName = documentsUtils.getDocumentPath(document.getString("id"));
-
-                    Path documentPath = Path.of(pathAndFileName.get(0));
-					String documentFileName = pathAndFileName.get(1);
-					try (InputStream documentInputStream = Files.newInputStream(documentPath)){
-					    Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
-					    Files.write(documentTempFile, documentInputStream.readAllBytes(), StandardOpenOption.APPEND);
-					}
-				}
-			}
-		}
     }
 
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
