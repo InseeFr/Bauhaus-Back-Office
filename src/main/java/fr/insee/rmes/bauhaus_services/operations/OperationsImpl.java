@@ -310,8 +310,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws Exception {
+		if (isCodeBook == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Codebook is null");
 		InputStream codeBook= new BufferedInputStream(isCodeBook.getInputStream());
-		if (codeBook == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
 		InputStream xslRemoveNameSpaces = getClass().getResourceAsStream("/xslTransformerFiles/remove-namespaces.xsl");
 		File ddiRemoveNameSpaces = File.createTempFile("ddiRemoveNameSpaces", ".xml");
 		ddiRemoveNameSpaces.deleteOnExit();
