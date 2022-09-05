@@ -49,27 +49,12 @@ public class CollectionsQueries extends GenericQueries{
 			+ "ORDER BY ?label ";	
 	}
 	
-	public static String collectionQuery(String id) { 
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified ?descriptionLg1 ?descriptionLg2 \n"
-				+ "?isValidated ?creator ?contributor \n"
-				+ "WHERE { \n"
-				+ "?collection rdf:type skos:Collection . \n"
-				+ "FILTER(STRENDS(STR(?collection),'/concepts/definitions/" + id + "')) . \n"
-				+ "BIND(STRAFTER(STR(?collection),'/concepts/definitions/') AS ?id) . \n"
-				+ "?collection dcterms:title ?prefLabelLg1 . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?collection dcterms:title ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "')} . \n"
-				+ "?collection dcterms:created ?created . \n"
-				+ "OPTIONAL {?collection dcterms:modified ?modified} . \n"
-				+ "OPTIONAL {?collection dcterms:description ?descriptionLg1 ."
-				+ "FILTER (lang(?descriptionLg1) = '" + config.getLg1() + "') } \n"
-				+ "OPTIONAL {?collection dcterms:description ?descriptionLg2 ."
-				+ "FILTER (lang(?descriptionLg2) = '" + config.getLg2() + "') } . \n"
-				+ "?collection insee:isValidated ?isValidated \n"
-				+ "OPTIONAL {?collection dc:creator ?creator} . \n"
-				+ "?collection dc:contributor ?contributor . \n"
-				+ "} \n";
+	public static String collectionQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		return  buildRequest("getCollection.ftlh", params);
 	}
 	
 	public static String collectionMembersQuery(String id) throws RmesException {

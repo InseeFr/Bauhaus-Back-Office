@@ -215,16 +215,15 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollectionByID", summary = "Collection", 
+	@Operation(operationId = "getCollectionByID", summary = "Get a collection byt its identifier",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionByID(id);
+			String collection = conceptsService.getCollectionByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -353,7 +352,5 @@ public class ConceptsResources  extends GenericResources   {
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
 	}
-
-
 
 }
