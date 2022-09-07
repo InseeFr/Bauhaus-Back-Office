@@ -9,10 +9,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
@@ -84,7 +81,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
-		return getResponseAsObject(query, repositoryGestionInstance);
+			return getResponseAsObject(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsArray(String query) throws RmesException {
@@ -181,6 +178,35 @@ public class RepositoryGestion extends RepositoryUtils {
 			throwsRmesException(e, "Failure load concept : " + concept);
 
 		} 
+	}
+
+	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = repositoryGestionInstance.getConnection();
+			}
+			conn.remove(object, predicate, null, graph);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
+	}
+	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = repositoryGestionInstance.getConnection();
+			}
+			conn.add(model);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
 	}
 
 	/**

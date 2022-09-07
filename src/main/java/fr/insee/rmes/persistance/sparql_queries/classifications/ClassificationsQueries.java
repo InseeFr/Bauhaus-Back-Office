@@ -27,7 +27,13 @@ public class ClassificationsQueries  extends GenericQueries {
 		params.put("LG2", config.getLg2());
 		return FreeMarkerUtils.buildRequest("classifications/", "getClassification.ftlh", params);
 	}
-	
+
+	public static String classificationQueryUri(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationUri.ftlh", params);
+	}
+
 	public static String classificationItemsQuery(String id) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ID", id);
@@ -41,5 +47,10 @@ public class ClassificationsQueries  extends GenericQueries {
 	    throw new IllegalStateException("Utility class");
 	}
 
-	
+
+	public static String classificationsUriById(String[] ids) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("IDS", ids);
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationsUriById.ftlh", params);
+	}
 }

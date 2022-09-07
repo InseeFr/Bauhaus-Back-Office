@@ -1,5 +1,7 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.model.classification.Classification;
+import fr.insee.rmes.model.operations.Family;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,25 +155,33 @@ public class ClassificationsResources extends GenericResources {
 	
 	@GetMapping(value="/classification/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassification(@PathVariable(Constants.ID) String id)  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getClassification(id);
+			String classification = classificationsService.getClassification(id);
+			return ResponseEntity.status(HttpStatus.OK).body(classification);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+	}
+
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PutMapping(value="/classification/{id}")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
+	public ResponseEntity<Object> updateClassification(
+			@PathVariable(Constants.ID) String id,
+			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body)  {
+		try {
+			classificationsService.updateClassification(id, body);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+		}
 	}
 	
-	/**
-	 * PUBLISH
-	 * @param id
-	 * @return response
-	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
-	@PutMapping(value="/classification/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setClassifValidation", summary = "Classification validation")
-	public ResponseEntity<Object> setOperationValidation(
-			@PathVariable(Constants.ID) String id) throws RmesException {
+	@PutMapping(value="/classification/{id}/validate")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
+	public ResponseEntity<Object> publishClassification(
+			@PathVariable(Constants.ID) String id) {
 		try {
 			classificationsService.setClassificationValidation(id);
 		} catch (RmesException e) {
