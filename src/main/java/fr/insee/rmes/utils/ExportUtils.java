@@ -112,7 +112,9 @@ public class ExportUtils {
         try {
 
             Path directory = Files.createTempDirectory("sims");
+            logger.debug("Creating tempory directory {}", directory.toString());
             Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
+            logger.debug("Creating tempory directory {}", simsDirectory.toString());
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
             InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
@@ -159,19 +161,14 @@ public class ExportUtils {
                 logger.debug("Extracting document {}", url);
 
                 String documentFileName = UriUtils.getLastPartFromUri(url);
-                Path documentDirectory = Path.of(directory.toString(), "documents");
-                if (!Files.exists(documentDirectory)) {
-                    logger.debug("Creating the documents folder");
-                    Files.createDirectory(documentDirectory);
-                }
 
                 Path documentPath = Path.of(url);
+                InputStream inputStream = Files.newInputStream(documentPath);
 
-                logger.debug("Writing the document {} with the name {} into the folder {}", documentPath, documentFileName, documentDirectory.toString());
-                try (InputStream documentInputStream = Files.newInputStream(documentPath)){
-                    Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
-                    Files.write(documentTempFile, documentInputStream.readAllBytes(), StandardOpenOption.APPEND);
-                }
+                logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
+                Path documentTempFile = Files.createFile(Path.of(directory.toString(), documentFileName));
+                Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+
             }
         }
     }
