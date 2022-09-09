@@ -1,22 +1,19 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.HashMap;
 
 public class LevelsQueries extends GenericQueries{
 	
-	public static String levelsQuery(String classificationId) {
-		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { \n"
-				+ "?level rdf:type xkos:ClassificationLevel . \n"
-				+ "FILTER(REGEX(STR(?level),'/codes/" + classificationId + "/')) \n"
-				+ "BIND(STRAFTER(STR(?level),'/" + classificationId + "/') AS ?id) \n"
-				+ "?level skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') \n"
-				+ "OPTIONAL {?level skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') } \n"
-				+ "?level xkos:depth ?depth . \n"
-				+ "} \n"
-				+ "ORDER BY ?depth ";	
+	public static String levelsQuery(String classificationId) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("ID", classificationId);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationLevels.ftlh", params);
 	}
 	
 	public static String levelQuery(String classificationId, String levelId) {

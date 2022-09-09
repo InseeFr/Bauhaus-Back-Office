@@ -39,18 +39,10 @@ public class OpSeriesQueries extends GenericQueries{
 		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
 	}
 
-	public static String getSeriesForSearch(String stamp) {
-		variables = null;
-		whereClause = null;
-		getSimpleAttr(null);
-		getCodesLists();
-		
-		if (stamp != null) {
-			addClauseToWhereClause(" ?series dc:creator ?crea ."
-					+ " FILTER (str(?crea) = '" + stamp + "' )  .  \n ");
-		}
-
-		return "SELECT DISTINCT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n";
+	public static String getSeriesForSearch(String stamp) throws RmesException {
+			if (params==null) {initParams();}
+			params.put("stamp", stamp ==null ? "" : stamp);
+			return buildSeriesRequest("getSeriesForAdvancedSearchQuery.ftlh", params);	
 	}
 
 	private static void getSimpleAttr(String id) {

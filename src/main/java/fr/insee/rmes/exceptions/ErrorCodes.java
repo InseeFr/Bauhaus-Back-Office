@@ -75,7 +75,7 @@ public class ErrorCodes {
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CONCEPT = 1006;
 	public static final int COMPONENT_PUBLICATION_VALIDATED_CODESLIST = 1007;
 	public static final int STRUCTURE_PUBLICATION_VALIDATED_COMPONENT = 1008;
-	
+
 	// CLASSIFICATIONS
 	public static final int CLASSIFICATION_VALIDATION_RIGHTS_DENIED = 1103 ;
 
@@ -95,21 +95,21 @@ public class ErrorCodes {
 
 	// INDICATORS
 	public static final int INDICATOR_UNKNOWN_ID = 241;
-	
+
 	// DOCUMENTS
 	public static final int DOCUMENT_UNKNOWN_ID = 341;
-	
+
 	// LINKS
 	public static final int LINK_UNKNOWN_ID = 441;
-	
+
 	// FAMILIES
 	public static final int FAMILY_UNKNOWN_ID = 541;
 	public static final int FAMILY_INCORRECT_BODY = 542;
-	
+
 	// SERIES
 	public static final int SERIES_UNKNOWN_ID = 641;
 	public static final int SERIES_UNKNOWN_FAMILY = 644;
-	
+
 	// OPERATIONS
 	public static final int OPERATION_UNKNOWN_ID = 741;
 	public static final int OPERATION_UNKNOWN_SERIES = 744;
@@ -117,17 +117,18 @@ public class ErrorCodes {
 	// SIMS
 	public static final int SIMS_UNKNOWN_ID = 841;
 	public static final int SIMS_UNKNOWN_TARGET = 844;
-	
+
 	//GEOFEATURES
 	public static final int GEOFEATURE_UNKNOWN = 845;
 	public static final int GEOFEATURE_INCORRECT_BODY = 846;
 	public static final int GEOFEATURE_EXISTING_LABEL = 847;
-	
+
 	//CLASSIFICATIONS
 	public static final int CLASSIFICATION_UNKNOWN_ID = 1141;
+	public static final int CLASSIFICATION_INCORRECT_BODY = 1142;
 
 
-	
+
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
 	 */
@@ -139,7 +140,7 @@ public class ErrorCodes {
 	// LINKS
 	public static final int LINK_EMPTY_URL = 461;
 	public static final int LINK_EXISTING_URL = 462;
-	
+
 	// SERIES
 	public static final int SERIES_OPERATION_OR_SIMS = 663;
 
@@ -147,7 +148,7 @@ public class ErrorCodes {
 	public static final int SIMS_INCORRECT = 861;
 	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
 	public static final int SIMS_EXPORT_WITHOUT_LANGUAGE = 863;
-	
+
 	  private ErrorCodes() {
 		    throw new IllegalStateException("Utility class");
 	}

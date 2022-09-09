@@ -41,7 +41,8 @@ import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 
 @Component
-public class DocumentationsRubricsUtils extends RdfService {
+public class
+DocumentationsRubricsUtils extends RdfService {
 
 	static final Logger logger = LogManager.getLogger(DocumentationsRubricsUtils.class);
 

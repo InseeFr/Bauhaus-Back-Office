@@ -6,6 +6,9 @@ public class Init {
 	
 	@Schema(description = "Base host URL of front-end", required = true)
 	public String appHost;
+
+	@Schema(description = "Base host URL of the authorization service", required = true)
+	public String authorizationHost;
 	
 	@Schema(description = "Default concept contributor", required = true)
 	public String defaultContributor;

@@ -1,26 +1,5 @@
 package fr.insee.rmes.webservice.operations;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
@@ -33,12 +12,27 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Qualifier("Operation")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 public class OperationsResources extends OperationsCommonResources {
+
 
 	/***************************************************************************************************
 	 * OPERATIONS
@@ -115,6 +109,69 @@ public class OperationsResources extends OperationsCommonResources {
 			return returnRmesException(e);
 		}		
 		return response;	
+	}
+
+	@PostMapping(value="/operation/codebook/V2",
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
+	)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
+
+	public  ResponseEntity<?> getCodeBookV2(
+
+			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))
+			@RequestHeader(required=false) String accept,
+
+			@Parameter(schema = @Schema(type = "string", allowableValues = { "concis" , "concis avec expression" , "scindable" , "non scindable" }))
+			@RequestParam(value = "dicoVar") String isCodeBook, //InputStream isCodeBook,
+
+			@RequestParam(value="file") MultipartFile isDDI // InputStream isDDI,
+
+	)
+			throws Exception {
+		if (isDDI == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
+		InputStream ddiInputStream =  new BufferedInputStream(isDDI.getInputStream());
+		String ddi = new String(ddiInputStream.readAllBytes(), StandardCharsets.UTF_8);
+		String xslPatternFile = null;
+		switch (isCodeBook) {
+			case "concis":
+				String xmlFileConcis = "/xslTransformerFiles/dicoCodes/dicoConcisPatternContent.xml";
+				xslPatternFile = xmlFileConcis;
+				break;
+			case "concis avec expression":
+				String xmlFileConcisAvecExpression = "/xslTransformerFiles/dicoCodes/dicoConcisDescrPatternContent.xml";
+				xslPatternFile = xmlFileConcisAvecExpression;
+				break;
+			case "scindable":
+				String xmlFileScindable = "/xslTransformerFiles/dicoCodes/dicoScindablePatternContent.xml";
+				xslPatternFile = xmlFileScindable;
+				break;
+			case "non scindable":
+				String xmlFileNonScindable = "/xslTransformerFiles/dicoCodes/dicoNonScindablePatternContent.xml";
+				xslPatternFile = xmlFileNonScindable;
+				break;
+			default:
+				logger.error("Choix incorrect");
+				break;
+		}
+
+		return operationsService.getCodeBookExportV2(ddi, xslPatternFile);
+	}
+
+	@PostMapping(value="/operation/codebook/checkCodeBookContent",
+			consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text"},
+			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
+	)
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookCheck", summary = "Check the DDI before made the codebook export")
+
+	public  ResponseEntity<?> getCodeBookCheck(
+
+			@RequestParam(value="file") MultipartFile isCodeBook // InputStream isDDI,
+
+	)
+			throws Exception {
+
+			return operationsService.getCodeBookCheck(isCodeBook);
 	}
 
 	/**

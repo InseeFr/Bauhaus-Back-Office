@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -299,6 +300,12 @@ public class DocumentsUtils  extends RdfService  {
 		writeRdfDocument(document, docUri);
 	}
 
+	public JSONArray getDocumentsUriAndUrlForSims(String id) throws RmesException {
+		logger.debug("Querrying the list of uri and url for all documents for the SIMS {}", id);
+		JSONArray documents = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsUriAndUrlForSims(id));
+		return documents;
+	}
+
 	/**
 	 * Get RDF for a document or a link by ID
 	 * with associated sims (and their creators)
@@ -308,14 +315,16 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public JSONObject getDocument(String id, boolean isLink) throws RmesException {
+		logger.debug("Querrying the Database in order to get the document/link {}", id);
 		JSONObject jsonDocs = new JSONObject();
 		try {
 			jsonDocs = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentQuery(id, isLink));
 		} catch (RmesException e) {
-			logger.error(e.getMessage());
+			logger.error("Error when querrying the database for the document/link {}", id);
 		}
 
 		if (jsonDocs.isNull(Constants.URI)) {
+			logger.error("Error with the document {}. It looks like it does not have an uri", id);
 			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find "+ (isLink ? "Link" : "Document")+" with id: ", id);
 		}
 		formatDateInJsonObject(jsonDocs);
@@ -604,6 +613,12 @@ public class DocumentsUtils  extends RdfService  {
 		return doc ;
 	}
 
+	public List<String> getDocumentPath(String id) throws RmesException {
+		JSONObject jsonDoc = getDocument(id, false);
+		String url = getDocumentUrlFromDocument(jsonDoc);
+		String fileName = getDocumentNameFromUrl(url);
+		return Arrays.asList(url, fileName);
+	}
 	/**
 	 * Download a document by id
 	 * @param id
@@ -611,12 +626,10 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
-		JSONObject jsonDoc = getDocument(id, false);
+		List<String> pathAndFileName = this.getDocumentPath(id);
+		Path path = Path.of(pathAndFileName.get(0));
+		String fileName = pathAndFileName.get(1);
 
-		//Build Headers
-		String url = getDocumentUrlFromDocument(jsonDoc);
-		String fileName = getDocumentNameFromUrl(url);
-		Path path = Paths.get(url);
 		ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.setContentDisposition(content);

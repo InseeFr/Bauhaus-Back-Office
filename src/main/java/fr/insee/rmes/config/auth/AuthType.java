@@ -5,8 +5,7 @@ import fr.insee.rmes.config.Config;
 public class AuthType {
 
 	public static String getAuthType(Config config) {
-		if (config.getEnv().equals("qf")) return "BasicAuthImpl";
-		else if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") || config.getEnv().equals("PROD")) return "OpenIDConnectAuth";
+		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") || config.getEnv().equals("PROD")) return "OpenIDConnectAuth";
 		else return "NoAuthImpl";
 	}
 	

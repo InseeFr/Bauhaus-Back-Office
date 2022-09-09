@@ -45,7 +45,7 @@ public interface OperationsDocumentationsService {
 	HttpStatus deleteMetadataReport(String id) throws RmesException;
 	
 	/** export **/
-	ResponseEntity<?> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2) throws RmesException;
+	ResponseEntity<?> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException;
 
 	ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException;
 
