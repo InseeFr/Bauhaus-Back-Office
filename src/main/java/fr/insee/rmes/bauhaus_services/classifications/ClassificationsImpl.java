@@ -1,5 +1,12 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
+import fr.insee.rmes.model.classification.Classification;
+import fr.insee.rmes.model.operations.Family;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -30,8 +37,15 @@ import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.LevelsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassifSeriesQueries;
 
+import java.io.IOException;
+
 @Service
 public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
+	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
+
+	@Autowired
+	ClassificationUtils classificationUtils;
+
 
 	@Autowired
 	private ClassificationPublication classificationPublication;
@@ -83,9 +97,31 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	@Override
 	public String getClassification(String id) throws RmesException{
 		logger.info("Starting to get a classification scheme");
-		return repoGestion.getResponseAsObject(ClassificationsQueries.classificationQuery(id)).toString();
+		JSONObject classification = repoGestion.getResponseAsObject(ClassificationsQueries.classificationQuery(id));
+		XhtmlToMarkdownUtils.convertJSONObject(classification);
+		return classification.toString();
 	}
-	
+
+	@Override
+	public void updateClassification(String id, String body) throws RmesException {
+		logger.info("Starting to update the classification {}", id);
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		Classification classification = new Classification();
+		classification.setId(id);
+		try {
+			classification = mapper.readerForUpdating(classification).readValue(body);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_INCORRECT_BODY, e.getMessage(), CAN_T_READ_REQUEST_BODY);
+		}
+		System.out.println(classification);
+		String uri = repoGestion.getResponseAsObject(ClassificationsQueries.classificationQueryUri(classification.getId())).getString("iri");
+		System.out.println(uri);
+
+		classificationUtils.updateClassification(classification, uri);
+	}
+
 	@Override
 	public String getClassificationItems(String id) throws RmesException{
 		logger.info("Starting to get a classification scheme");
@@ -158,12 +194,11 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	}
 
 	@Override
-	public String setClassificationValidation(String classifId) throws RmesException {
-
-		//GET graph 
-		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classifId));
+	public String setClassificationValidation(String classificationId) throws RmesException {
+		//GET graph
+		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
-		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classifId);} 
+		if (listGraph.length()==0) {throw new RmesNotFoundException(ErrorCodes.CLASSIFICATION_UNKNOWN_ID, "Classification not found", classificationId);}
 		String graph = listGraph.getString("graph");
 		String classifUriString = listGraph.getString(Constants.URI);
 		Resource graphIri = RdfUtils.createIRI(graph);
@@ -185,7 +220,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 		logger.info("Validate classification : {}", classifUriString);
 		repoGestion.objectValidation(classifURI, model);
 
-		return classifId;
+		return classificationId;
 	}
 
 	@Override

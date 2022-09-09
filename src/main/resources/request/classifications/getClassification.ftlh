@@ -1,11 +1,12 @@
-SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?seriesLg1 ?seriesLg2 ?idSeries 
+SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?seriesLg1 ?seriesLg2 ?idSeries
 ?afterLg1 ?afterLg2 ?idAfter ?beforeLg1 ?beforeLg2 ?idBefore ?variantLg1 ?variantLg2 ?idVariant 
 ?issued ?valid ?lastRefreshedOn ?additionalMaterial ?rights ?creator ?contributor 
 ?disseminationStatus ?legalMaterial ?homepage 
-?scopeNoteLg1 ?scopeNoteLg2 ?changeNoteLg1 ?changeNoteLg2 ?descriptionLg1 ?descriptionLg2 
-
+?scopeNoteLg1 ?scopeNoteLg2 ?changeNoteLg1 ?changeNoteLg2 ?descriptionLg1 ?descriptionLg2
+?changeNoteUriLg1 ?changeNoteUriLg2 ?scopeNoteUriLg1 ?scopeNoteUriLg2
 WHERE {
     ?classification rdf:type skos:ConceptScheme .
+
     FILTER(REGEX(STR(?classification),'/codes/${ID}/')) .
 
     BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id)
@@ -42,27 +43,27 @@ WHERE {
     }
 
     OPTIONAL {
-        ?classification skos:scopeNote ?scopeLg1 .
-        ?scopeLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 .
+        ?classification skos:scopeNote ?scopeNoteUriLg1 .
+        ?scopeNoteUriLg1 dcterms:language '${LG1}'^^xsd:language .
+        ?scopeNoteUriLg1 evoc:noteLiteral ?scopeNoteLg1 .
     } .
 
     OPTIONAL {
-        ?classification skos:scopeNote ?scopeLg2 .
-        ?scopeLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 .
+        ?classification skos:scopeNote ?scopeNoteUriLg2 .
+        ?scopeNoteUriLg2 dcterms:language '${LG2}'^^xsd:language .
+        ?scopeNoteUriLg2 evoc:noteLiteral ?scopeNoteLg2 .
     } .
 
     OPTIONAL {
-        ?classification skos:changeNote ?changeLg1 .
-        ?changeLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?changeLg1 evoc:noteLiteral ?changeNoteLg1 .
+        ?classification skos:changeNote ?changeNoteUriLg1 .
+        ?changeNoteUriLg1 dcterms:language '${LG1}'^^xsd:language .
+        ?changeNoteUriLg1 evoc:noteLiteral ?changeNoteLg1 .
     } .
 
     OPTIONAL {
-        ?classification skos:changeNote ?changeLg2 .
-        ?changeLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?changeLg2 evoc:noteLiteral ?changeNoteLg2 .
+        ?classification skos:changeNote ?changeNoteUriLg2 .
+        ?changeNoteUriLg2 dcterms:language '${LG2}'^^xsd:language .
+        ?changeNoteUriLg2 evoc:noteLiteral ?changeNoteLg2 .
     } .
 
     OPTIONAL {

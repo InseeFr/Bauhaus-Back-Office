@@ -71,7 +71,13 @@ public class RdfUtils {
 	public static Resource codesListGraph(){
 		return factory.createIRI(config.getCodeListGraph());
 	}
-	
+	public static Resource codesListGraph(String id) {
+		return factory.createIRI(config.getCodeListGraph() + "/" + id);
+	}
+	public static Resource classificationSerieIRI(String id) {
+		return factory.createIRI(config.getBaseUriGestion() + "codes/serieDeNomenclatures/" + id);
+	}
+
 	public static Resource structureComponentGraph(){
 		return factory.createIRI(config.getStructuresComponentsGraph());
 	}

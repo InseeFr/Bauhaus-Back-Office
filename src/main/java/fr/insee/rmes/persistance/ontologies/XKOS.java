@@ -122,7 +122,12 @@ public class XKOS {
 	 * The xkos:compares property.
 	 */
 	public static final IRI COMPARES ;
-	
+
+	public static final IRI VARIANT;
+
+	public static final IRI BEFORE;
+
+	public static final IRI AFTER;
 
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
@@ -145,5 +150,10 @@ public class XKOS {
 		COMPARES = f.createIRI(NAMESPACE, "compares");
 		
 		ORGANISED_BY = f.createIRI(NAMESPACE, "organisedBy");
+
+		VARIANT = f.createIRI(NAMESPACE, "variant");
+		BEFORE = f.createIRI(NAMESPACE, "before");
+		AFTER = f.createIRI(NAMESPACE, "after");
+
 	}
 }
