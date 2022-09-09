@@ -7,16 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
@@ -48,8 +45,10 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.springframework.stereotype.Service;
 
-public abstract class RepositoryUtils {
+@Service
+public class RepositoryUtils {
 	
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
@@ -57,12 +56,21 @@ public abstract class RepositoryUtils {
 
 	
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
+	private static String accessToken= null;
+	private static KeycloakServices keycloakServices;
 
+	public RepositoryUtils (KeycloakServices keycloakService) {
+		RepositoryUtils.keycloakServices= keycloakService;
+	}	 
 
 	public static Repository initRepository(String sesameServer, String repositoryID) {
 		if (sesameServer==null||sesameServer.equals("")) {return null;}
-		Repository repo = new HTTPRepository(sesameServer, repositoryID);
+		HTTPRepository repo = new HTTPRepository(sesameServer, repositoryID);
 		try {
+			if(!keycloakServices.isTokenValid(accessToken)) {
+				accessToken= keycloakServices.getKeycloakAccessToken();
+			}
+			repo.setAdditionalHttpHeaders(Map.of("Authorization","bearer "+ accessToken));
 			repo.init();
 		} catch (Exception e) {
 			logger.error("Initialisation de la connection à la base sesame {} impossible", sesameServer);

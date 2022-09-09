@@ -32,11 +32,12 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 
 @Component("RepositoryGestion")
 @DependsOn("AppContext")
-public class RepositoryGestion extends RepositoryUtils {
+public class RepositoryGestion  {
 
 	@Autowired
 	Config config;
-
+	@Autowired
+	private RepositoryUtils repositoryUtils;
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
@@ -47,7 +48,7 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	@PostConstruct
 	public void init() {
-		repositoryGestionInstance = initRepository(config.getRdfServerGestion(),
+		repositoryGestionInstance = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion());
 	}
 
@@ -59,7 +60,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public String getResponse(String query) throws RmesException {
-		return getResponse(query, repositoryGestionInstance);
+		return repositoryUtils.getResponse(query, repositoryGestionInstance);
 	}
 
 	/**
@@ -70,7 +71,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		return executeUpdate(updateQuery, repositoryGestionInstance);
+		return repositoryUtils.executeUpdate(updateQuery, repositoryGestionInstance);
 	}
 
 	/**
@@ -81,15 +82,15 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
-			return getResponseAsObject(query, repositoryGestionInstance);
+			return repositoryUtils.getResponseAsObject(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsArray(String query) throws RmesException {
-		return getResponseAsArray(query, repositoryGestionInstance);
+		return repositoryUtils.getResponseAsArray(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsJSONList(String query) throws RmesException {
-		return getResponseAsJSONList(query, repositoryGestionInstance);
+		return repositoryUtils.getResponseAsJSONList(query, repositoryGestionInstance);
 	}
 
 	/**
@@ -101,7 +102,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws JSONException
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
-		return getResponseForAskQuery(query, repositoryGestionInstance);
+		return repositoryUtils.getResponseForAskQuery(query, repositoryGestionInstance);
 	}
 
 	public RepositoryResult<Statement> getStatements(RepositoryConnection con, Resource subject)
@@ -143,12 +144,12 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public File getGraphAsFile(String context) throws RmesException {
-			if (context != null) return getCompleteGraphInTrig(repositoryGestionInstance, context);
-			return getAllGraphsInZip(repositoryGestionInstance);
+			if (context != null) return repositoryUtils.getCompleteGraphInTrig(repositoryGestionInstance, context);
+			return repositoryUtils.getAllGraphsInZip(repositoryGestionInstance);
 	}
 	
 	public String[] getAllGraphs() throws RmesException {
-		return getAllGraphs(repositoryGestionInstance);
+		return repositoryUtils.getAllGraphs(repositoryGestionInstance);
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
@@ -269,7 +270,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 	
 	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
-		return persistFile(input, format, graph, repositoryGestionInstance, null);
+		return repositoryUtils.persistFile(input, format, graph, repositoryGestionInstance, null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
@@ -336,7 +337,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
-		clearStructureAndComponents(structure, repositoryGestionInstance);
+		repositoryUtils.clearStructureAndComponents(structure, repositoryGestionInstance);
 	}
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
@@ -388,7 +389,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	}
 
 	public RepositoryConnection getConnection() throws RmesException {
-		return getConnection(repositoryGestionInstance);
+		return repositoryUtils.getConnection(repositoryGestionInstance);
 	}
 
 
@@ -404,4 +405,7 @@ public class RepositoryGestion extends RepositoryUtils {
 		}
 	}
 
+	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
+		return repositoryUtils.getCompleteGraph(con,graphIri);
+	}
 }
