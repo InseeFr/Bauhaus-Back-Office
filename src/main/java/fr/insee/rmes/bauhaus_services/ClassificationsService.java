@@ -25,19 +25,11 @@ public interface ClassificationsService {
 
 	public void updateClassification(String id, String body) throws RmesException;
 
-	public String getClassificationItems(String id) throws RmesException;
-	
 	public String getClassificationLevels(String id) throws RmesException;
 	
 	public String getClassificationLevel(String classificationid, String levelId) throws RmesException;
 	
 	public String getClassificationLevelMembers(String classificationid, String levelId) throws RmesException;
-	
-	public String getClassificationItem(String classificationid, String itemId) throws RmesException;
-	
-	public String getClassificationItemNotes(String classificationid, String itemId, int conceptVersion) throws RmesException;
-
-	public String getClassificationItemNarrowers(String classificationid, String itemId) throws RmesException;
 	
 	public String getCorrespondences() throws RmesException;
 	

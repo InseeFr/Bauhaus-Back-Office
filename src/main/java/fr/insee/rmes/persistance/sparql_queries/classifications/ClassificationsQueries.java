@@ -53,4 +53,11 @@ public class ClassificationsQueries  extends GenericQueries {
 		params.put("IDS", ids);
 		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationsUriById.ftlh", params);
 	}
+
+	public static String classificationItemQueryUri(String classificationId, String itemId) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("CLASSIFICATION_ID", classificationId);
+		params.put("CLASSIFICATION_ITEM_ID", itemId);
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationItemURI.ftlh", params);
+	}
 }
