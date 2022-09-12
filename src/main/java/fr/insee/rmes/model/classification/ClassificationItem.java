@@ -23,8 +23,8 @@ public class ClassificationItem {
     @Schema(description = "altLabelLg2")
     public String altLabelLg2;
 
-    @Schema(description = "shortLabels")
-    public List<ClassificationItemShortLabel>  shortLabels;
+    @Schema(description = "altLabels")
+    public List<ClassificationItemShortLabel>  altLabels;
 
     @Schema(description = "narrowers")
     public List<String>  narrowers;
@@ -88,12 +88,12 @@ public class ClassificationItem {
         this.altLabelLg2 = altLabelLg2;
     }
 
-    public List<ClassificationItemShortLabel> getShortLabels() {
-        return shortLabels;
+    public List<ClassificationItemShortLabel> getAltLabels() {
+        return altLabels;
     }
 
-    public void setShortLabels(List<ClassificationItemShortLabel> shortLabels) {
-        this.shortLabels = shortLabels;
+    public void setAltLabels(List<ClassificationItemShortLabel> altLabels) {
+        this.altLabels = altLabels;
     }
 
     public List<String> getNarrowers() {

@@ -111,13 +111,12 @@ public class ClassificationsResources extends GenericResources {
 	@Operation(operationId = "getClassificationSeries", summary = "List of classification series", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getSeries()  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getSeries();
+			String series = classificationsService.getSeries();
+			return ResponseEntity.status(HttpStatus.OK).body(series);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	@GetMapping(value="/series/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

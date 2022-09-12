@@ -10,6 +10,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.vocabulary.SKOSXL;
 import org.springframework.stereotype.Repository;
 
 @Repository()
@@ -41,6 +42,21 @@ public class ClassificationItemUtils extends RdfService {
         if(item.getBroaderURI() != null){
             model.add(classificationItemIri, SKOS.BROADER, RdfUtils.createIRI(item.getBroaderURI()), graph);
         }
+
+        item.getAltLabels().stream().forEach(altLabel -> {
+            try {
+                IRI altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
+                repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
+                if(altLabel.getShortLabelLg1() != null){
+                    model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), config.getLg1()), graph);
+                }
+                if(altLabel.getShortLabelLg2() != null){
+                    model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
+                }
+            } catch (RmesException e) {
+                e.printStackTrace();
+            }
+        });
         repoGestion.loadSimpleObjectWithoutDeletion(classificationItemIri, model, null);
     }
 
