@@ -2,6 +2,7 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
@@ -22,7 +23,6 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getAllCodesLists(boolean partial) throws RmesException {
-
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
@@ -30,18 +30,14 @@ public class CodeListQueries extends GenericQueries {
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
-	public static String getCodeListItemsByNotation(String notation) {
-		return "SELECT ?code ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
-				+ "?codeList rdf:type skos:ConceptScheme . \n"
-				+ "?codeList skos:notation '" + notation + "' . \n"
-				+ "?item skos:inScheme ?codeList . \n"
-				+ "?item skos:notation ?code . \n"
-				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
-				+ " }}";
+
+	public static String getCodeListItemsByNotation(String notation) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(NOTATION, notation);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {

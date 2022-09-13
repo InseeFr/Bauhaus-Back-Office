@@ -73,9 +73,9 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	@Bean
 	public UserProvider getUserProvider() {
 		return auth -> {
+			if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication 
 			final Jwt jwt = (Jwt) auth.getPrincipal();
 			Map<String,Object> claims = jwt.getClaims();
-			logger.debug(claims.get(config.getRoleclaim()).toString());
 			JsonParser parser = JsonParserFactory.getJsonParser();
 			Map<String, Object> listeRoles = parser.parseMap(claims.get(config.getRoleclaim()).toString());
 			List<String> roles = Arrays.asList(
@@ -85,14 +85,9 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 									.split(",")
 							);
 			String stamp = claims.get(config.getStampclaim()).toString();
-		
-//TODO	change way to have roles 	 
-//			List<String> roles2 =
-//			 auth.getAuthorities().stream()
-//             .map(GrantedAuthority::getAuthority)
-//             .map(String::toUpperCase)
-//             .collect(Collectors.toList());
-			return new User(roles, stamp);
+			String id = claims.get(config.getIdclaim()).toString();
+			logger.debug("Current User is {}, {} with roles {}",id,stamp,roles);
+			return new User(id,roles, stamp);
 		};
 	}
 
@@ -100,7 +95,8 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 		logger.info("Allowed origins : {}", allowedOrigin);
-		configuration.setAllowedOrigins(List.of(allowedOrigin.get()));
+		String ao = allowedOrigin.isPresent() ? allowedOrigin.get() : allowedOrigin.orElse("*");
+		configuration.setAllowedOrigins(List.of(ao));
 		configuration.setAllowedMethods(List.of("*"));
 		configuration.setAllowedHeaders(List.of("*"));
 		UrlBasedCorsConfigurationSource source = new

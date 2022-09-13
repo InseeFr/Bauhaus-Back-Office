@@ -1,5 +1,7 @@
 package fr.insee.rmes.webservice;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,16 +215,15 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollectionByID", summary = "Collection", 
+	@Operation(operationId = "getCollectionByID", summary = "Get a collection byt its identifier",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionByID(id);
+			String collection = conceptsService.getCollectionByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -285,31 +286,16 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@GetMapping(value = "/concept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@GetMapping(value = "/concept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
 	public ResponseEntity<?> exportConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.exportConcept(id, accept);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
-	@PostMapping(value = "/concept/send/{id}", 
-					consumes = MediaType.APPLICATION_JSON_VALUE, 
-					produces = MediaType.TEXT_PLAIN_VALUE)
-	@Operation(operationId = "setConceptSend", summary = "Send concept", 
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
-	public ResponseEntity<Object> setConceptSend(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
-		try {
-			Boolean isSent = conceptsService.setConceptSend(id, body);
-			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
-		} catch (RmesException e) {
-			logger.error(e.getMessageAndDetails(), e);
-			throw e;
-		}
+	@GetMapping(value = "/concept/export-zip/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+	@Operation(operationId = "exportConcept", summary = "Blob of concept")
+	public void exportZipConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept, HttpServletResponse response) throws RmesException {
+		conceptsService.exportZipConcept(id, accept, response);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
@@ -365,25 +351,6 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
-	}
-
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
-	@PostMapping(value="/collection/send/{id}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
-	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
-	public ResponseEntity<Object> setCollectionSend(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
-		try {
-			Boolean isSent = conceptsService.setCollectionSend(id, body);
-			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
-		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			throw e;
-		}
 	}
 
 }

@@ -1,8 +1,11 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +32,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.mail_sender.MailSenderContract;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
@@ -54,9 +56,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Autowired 
 	CollectionExportBuilder collectionExport;
-
-	@Autowired
-	MailSenderContract mailSender;
 
 	@Override
 	public String getConcepts()  throws RmesException{
@@ -231,17 +230,33 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException  {
+	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
 		ConceptForExport concept;
 		try {
 			concept = conceptsExport.getConceptData(id);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
-		
-		Map<String, String> xmlContent = convertConceptInXml(concept);	
+
+		Map<String, String> xmlContent = convertConceptInXml(concept);
 		String fileName = getFileNameForExport(concept);
 		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
+	}
+
+	@Override
+	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response) throws RmesException {
+		Map<String, Map<String, String>> concepts = new HashMap<>();
+		Arrays.asList(ids.split(",")).forEach(id -> {
+			try {
+				ConceptForExport concept = conceptsExport.getConceptData(id);
+				Map<String, String> xmlContent = convertConceptInXml(concept);
+				String fileName = getFileNameForExport(concept);
+				concepts.put(fileName, xmlContent);
+			} catch (RmesException e) {
+				logger.error(e.getMessageAndDetails());
+			}
+		});
+		conceptsExport.exportMultipleConceptsAsZip(concepts, true, true, true, response);
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
@@ -311,27 +326,4 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		return ret;
 	}
 	
-
-	/**
-	 * Send concept
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 */
-	@Override
-	public boolean setConceptSend(String id, String body) throws  RmesException  {
-		Map<String,InputStream> getFileToJoin = getConceptExportIS(id);
-		return mailSender.sendMailConcept(id, body, getFileToJoin);
-	}
-
-	/**
-	 * Send collection
-	 * @throws RmesException 
-	 * @throws RmesUnauthorizedException 
-	 */
-	@Override
-	public boolean setCollectionSend(String id, String body) throws  RmesException  {
-		Map<String,InputStream> getFileToJoin = getCollectionExportIS(id);
-		return mailSender.sendMailCollection(id, body, getFileToJoin);
-	}
-
 }

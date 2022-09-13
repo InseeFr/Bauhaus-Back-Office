@@ -28,7 +28,7 @@ public class AuthorizeMethodDecider {
 		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") || config.getEnv().equals("PROD")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 			User currentUser = userProvider.getUser(authentication);
-			logger.info("Current user has stamp {}", currentUser.getStamp());
+			logger.debug("Current user has stamp {}", currentUser == null ? "" : currentUser.getStamp());
 			return currentUser;
 		}
 		return dvOrQfUser();
@@ -43,7 +43,7 @@ public class AuthorizeMethodDecider {
 		roles.put("ROLE_offline_access");
 		roles.put("Administrateur_RMESGNCS");
 		roles.put("ROLE_uma_authorization");
-		return new User(roles, "fakeStampForDvAndQf");
+		return new User("fakeUser",roles, "fakeStampForDvAndQf");
 	}
 
 

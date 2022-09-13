@@ -82,28 +82,31 @@ public class StructureResources  extends GenericResources {
     }
 
     @GetMapping(value = "/structure/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructureById", summary = "Get a structure",
-            responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
+    @Operation(
+            operationId = "getStructureById",
+            summary = "Get a structure",
+            responses = {
+                    @ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))
+            }
+    )
     public ResponseEntity<Object> getStructureById(@PathVariable(Constants.ID) String id) {
-        String jsonResultat = null;
         try {
-            jsonResultat = structureService.getStructureById(id);
+            String structure = structureService.getStructureById(id);
+            return ResponseEntity.status(HttpStatus.SC_OK).body(structure);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
-        return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) {
-        String jsonResultat = null;
         try {
-            jsonResultat = structureService.publishStructureById(id);
+            String response = structureService.publishStructureById(id);
+            return ResponseEntity.status(HttpStatus.SC_OK).body(response);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         } 
-        return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -165,6 +168,18 @@ public class StructureResources  extends GenericResources {
         String jsonResultat;
         try {
             jsonResultat = structureComponentService.getComponentsForSearch();
+        } catch (RmesException e) {
+            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+        }
+        return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
+    }
+
+    @GetMapping(value = "/attributes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getAttributes", summary = "Get all mutualized attributes")
+    public ResponseEntity<Object> getAttributes() {
+        String jsonResultat;
+        try {
+            jsonResultat = structureComponentService.getAttributes();
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

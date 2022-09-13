@@ -85,10 +85,6 @@ public class RmesNotificationsImpl implements NotificationsContract {
             producer.send(msg);
             Thread.sleep(DELAY);
 
-
-            // tell the subscribers we're done
-            //producer.send(session.createTextMessage("END"));
-
             producer.close();
             session.close();
 

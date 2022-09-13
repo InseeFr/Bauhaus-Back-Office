@@ -30,9 +30,6 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 @Component
 public class ConceptsPublication extends RdfService{
 
-
-	//static NotificationsContract notification = new RmesNotificationsImpl();
-	
 	String[] notes = {"scopeNote","definition","editorialNote"} ;
 	String[] links = {"inScheme","disseminationStatus","references",Constants.ISREPLACEDBY};
 	String[] ignoredAttrs = {"isValidated","changeNote",Constants.CREATOR,Constants.CONTRIBUTOR};
@@ -40,8 +37,6 @@ public class ConceptsPublication extends RdfService{
 	public void publishConcepts(JSONArray conceptsToPublish) throws RmesException {
 		for (int i = 0; i < conceptsToPublish.length(); ++i) {
 			String conceptId = conceptsToPublish.getString(i);
-			//TODO uncomment when we can notify...
-			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(ConceptsQueries.isConceptExist(conceptId));
 			Model model = new LinkedHashModel();
 			List<Resource> noteToClear = new ArrayList<>();
 			List<Resource> topConceptOfToDelete = new ArrayList<>();
@@ -60,7 +55,7 @@ public class ConceptsPublication extends RdfService{
 					hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
 				}
 				if (!hasBroader) {
-					model.add(concept, SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+					model.add(PublicationUtils.tranformBaseURIToPublish(concept), SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 							RdfUtils.conceptGraph());
 				}
 			} catch (RepositoryException e) {
@@ -75,12 +70,6 @@ public class ConceptsPublication extends RdfService{
 			
 			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
 			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
-			//TODO uncomment when we can notify...
-			/* if (creation)
-			// notification.notifyConceptCreation(conceptId,
-			// concept.toString());
-			// else notification.notifyConceptUpdate(conceptId,
-			// concept.toString());*/
 		}
 
 	}
@@ -250,11 +239,6 @@ public class ConceptsPublication extends RdfService{
 			}
 			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
 			RepositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
-			// if (creation)
-			// notification.notifyCollectionCreation(collectionId,
-			// collection.toString());
-			// else notification.notifyCollectionUpdate(collectionId,
-			// collection.toString());
 		}
 	}
 

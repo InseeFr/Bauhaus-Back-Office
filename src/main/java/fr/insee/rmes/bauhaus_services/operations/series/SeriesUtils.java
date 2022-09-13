@@ -1,8 +1,11 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +60,8 @@ import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 public class SeriesUtils extends RdfService {
 
 
+
+	private static final String ID_SERIE = "idSerie";
 
 	@Autowired
 	CodeListService codeListService;
@@ -138,13 +143,29 @@ public class SeriesUtils extends RdfService {
 	public String getSeriesForSearch(String stamp) throws RmesException {
 		JSONArray resQuery = repoGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch(stamp));
 		JSONArray result = new JSONArray();
+		Map<String, List<String>> creators = getAllSeriesCreators();
+		Map<String, JSONArray> contribs = getOneTypeOfLink(DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
+		Map<String, JSONArray> dataCollectors = getOneTypeOfLink( INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
+		Map<String, JSONArray> publishers = getOneTypeOfLink( DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
 		for (int i = 0; i < resQuery.length(); i++) {
 			JSONObject series = resQuery.getJSONObject(i);
 			String idSeries = series.get(Constants.ID).toString();
-			addSeriesCreators(idSeries, series);
-			addOneTypeOfLink(idSeries, series, DCTERMS.CONTRIBUTOR, Constants.ORGANIZATIONS);
-			addOneTypeOfLink(idSeries, series, INSEE.DATA_COLLECTOR, Constants.ORGANIZATIONS);
-			addOneTypeOfLink(idSeries, series, DCTERMS.PUBLISHER, Constants.ORGANIZATIONS);
+			if (series.has("hasCreator")) {
+				series.put(Constants.CREATORS, creators.get(idSeries));
+				series.remove("hasCreator");
+			}
+			if (series.has("hasContributor")) {
+				series.put(DCTERMS.CONTRIBUTOR.getLocalName(), contribs.get(idSeries));
+				series.remove("hasContributor");
+			}
+			if (series.has("hasDataCollector")) {
+				series.put( INSEE.DATA_COLLECTOR.getLocalName(), dataCollectors.get(idSeries));
+				series.remove("hasDataCollector");
+			}
+			if (series.has("hasPublisher")) {
+				series.put( DCTERMS.PUBLISHER.getLocalName(), publishers.get(idSeries));
+				series.remove("hasPublisher");
+			}
 			famOpeSerIndUtils.fixOrganizationsNames(series);			
 			result.put(series);
 		}
@@ -198,10 +219,58 @@ public class SeriesUtils extends RdfService {
 		}
 		series.put(predicate.getLocalName(), links);
 	}
+	
+	private Map<String, JSONArray> getOneTypeOfLink(IRI predicate, String resultType) throws RmesException {
+		JSONArray links = repoGestion.getResponseAsArray(OpSeriesQueries.seriesLinks("", predicate, resultType));
+		Map<String,JSONArray> map = new HashMap<>();
+
+		if (links.length() != 0) {
+			links = QueryUtils.transformRdfTypeInString(links);
+			for (int i = 0; i < links.length(); i++) {
+				JSONObject l = links.getJSONObject(i);
+				if (l.has(ID_SERIE)) {
+					String idSerie = l.getString(ID_SERIE);
+					l.remove(ID_SERIE);
+					JSONArray temp;
+					if (map.containsKey(idSerie)) {
+						temp = map.get(idSerie);
+					}else {						
+						temp = new JSONArray();
+					}
+					temp.put(l);
+					map.put(idSerie, temp);
+				}
+			}
+		}
+		return map;
+	}
 
 	private void addSeriesCreators(String id, JSONObject series) throws RmesException {
 		JSONArray creators = repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsById(id));
 		series.put(Constants.CREATORS, creators);
+	}
+	
+	private Map<String,List<String>> getAllSeriesCreators() throws RmesException {
+		Map<String,List<String>> map = new HashMap<>();
+		JSONArray creators = repoGestion.getResponseAsArray(OpSeriesQueries.getCreatorsById(""));
+		if (creators.length() != 0) {
+			for (int i = 0; i < creators.length(); i++) {
+				JSONObject crea = creators.getJSONObject(i);
+				if (crea.has(ID_SERIE)) {
+					String idSerie = crea.getString(ID_SERIE);
+					String creaUri = crea.getString(Constants.CREATORS);
+					List<String> temp;
+					if (map.containsKey(idSerie)) {
+						temp = map.get(idSerie);
+					}else {						
+						temp = new ArrayList<>();
+					}
+					temp.add(creaUri);
+					map.put(idSerie, temp);
+				}
+			}
+		}
+		return map;
 	}
 
 

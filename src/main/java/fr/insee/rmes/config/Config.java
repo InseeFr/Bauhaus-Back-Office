@@ -21,8 +21,8 @@ public class Config {
 
 	/******************************************************/
 	/** GLOBAL CONF 	***********************************/
-	/******************************************************/	
-	
+	/******************************************************/
+
 	@Value("${fr.insee.rmes.bauhaus.appHost}")
 	private String appHost;
 
@@ -48,7 +48,7 @@ public class Config {
 
 	/******************************************************/
 	/** DATABASES		***********************************/
-	/******************************************************/	
+	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer}")
 	private String rdfServerGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository}")
@@ -92,7 +92,10 @@ public class Config {
 	private String stampClaim;
 	@Value("${jwt.role-claim}")
 	private String roleClaim;
+	@Value("${jwt.id-claim}")
+	private String idClaim;
 
+	//LDAP
 	//LDAP
 	@Value("${fr.insee.rmes.bauhaus.sugoi.url}")
 	private String sugoiUrl;
@@ -104,6 +107,8 @@ public class Config {
 	private String sugoiApp;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
+	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
+	private String sugoiUi;
 
 	
 	/******************************************************/
@@ -510,6 +515,10 @@ public class Config {
 		return roleClaim;
 	}
 
+	public String getIdclaim() {
+		return idClaim;
+	}
+
 	public String getSugoiUrl() {
 		return sugoiUrl;
 	}
@@ -530,6 +539,10 @@ public class Config {
 		return sugoiRealm;
 	}
 
+	public String getSugoiUi() {
+		return sugoiUi;
+	}
+
 	public String getSwaggerHost() {
 		return swaggerHost;
 	}
@@ -541,5 +554,6 @@ public class Config {
 	public String getSwaggerUrl() {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
+
 
 }
