@@ -1,5 +1,9 @@
-SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 ?coreContentNoteLg1 ?coreContentNoteLg2
-?additionalContentNoteLg1 ?additionalContentNoteLg2 ?exclusionNoteLg1 ?exclusionNoteLg2
+SELECT
+?definitionLg1 ?definitionLg2
+?scopeNoteLg1 ?scopeNoteLg2
+?coreContentNoteLg1 ?coreContentNoteLg2
+?additionalContentNoteLg1 ?additionalContentNoteLg2
+?exclusionNoteLg1 ?exclusionNoteLg2
 ?changeNoteLg1 ?changeNoteLg2 ?changeNoteDate
 
 WHERE {

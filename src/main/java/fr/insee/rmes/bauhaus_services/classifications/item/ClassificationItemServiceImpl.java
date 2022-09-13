@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -49,7 +50,9 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     @Override
     public String getClassificationItemNotes(String classificationId, String itemId, int conceptVersion)throws RmesException {
         logger.info("Starting to get classification item notes {} from {}", itemId, classificationId);
-        return repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion)).toString();
+        JSONObject classificationItemNotes = repoGestion.getResponseAsObject(ItemsQueries.itemNotesQuery(classificationId, itemId, conceptVersion));
+        XhtmlToMarkdownUtils.convertJSONObject(classificationItemNotes);
+        return classificationItemNotes.toString();
     }
 
     @Override
