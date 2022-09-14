@@ -121,13 +121,12 @@ public class ClassificationsResources extends GenericResources {
 	
 	@GetMapping(value="/series/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getOneSeries(@PathVariable(Constants.ID) String id)  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getOneSeries(id);
-		} catch (RmesException e) {
+			String serie = classificationsService.getOneSeries(id);
+            return ResponseEntity.status(HttpStatus.OK).body(serie);
+        } catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	@GetMapping(value="/series/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -281,24 +280,22 @@ public class ClassificationsResources extends GenericResources {
 	
 	@GetMapping(value="/correspondences", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondences()  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getCorrespondences();
+			String correspondences = classificationsService.getCorrespondences();
+			return ResponseEntity.status(HttpStatus.OK).body(correspondences);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	@GetMapping(value="/correspondence/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getCorrespondence(@PathVariable(Constants.ID) String id)  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getCorrespondence(id);
+			String correspondence = classificationsService.getCorrespondence(id);
+			return ResponseEntity.status(HttpStatus.OK).body(correspondence);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	@GetMapping(value="/correspondence/{id}/associations", produces = MediaType.APPLICATION_JSON_VALUE)
