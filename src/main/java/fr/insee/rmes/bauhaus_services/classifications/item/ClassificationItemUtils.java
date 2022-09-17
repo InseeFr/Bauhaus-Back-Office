@@ -5,6 +5,8 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
+import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -57,7 +59,34 @@ public class ClassificationItemUtils extends RdfService {
                 e.printStackTrace();
             }
         });
+
+
+        addNote(item.getDefinitionLg1Uri(), item.getDefinitionLg1(), graph, model);
+        addNote(item.getDefinitionLg2Uri(), item.getDefinitionLg2(), graph, model);
+
+        addNote(item.getScopeNoteLg1Uri(), item.getScopeNoteLg1(), graph, model);
+        addNote(item.getScopeNoteLg2Uri(), item.getScopeNoteLg2(), graph, model);
+
+        addNote(item.getCoreContentNoteLg1Uri(), item.getCoreContentNoteLg1(), graph, model);
+        addNote(item.getCoreContentNoteLg2Uri(), item.getCoreContentNoteLg2(), graph, model);
+
+        addNote(item.getAdditionalContentNoteLg1Uri(), item.getAdditionalContentNoteLg1(), graph, model);
+        addNote(item.getAdditionalContentNoteLg2Uri(), item.getAdditionalContentNoteLg2(), graph, model);
+
+        addNote(item.getExclusionNoteLg1Uri(), item.getExclusionNoteLg1(), graph, model);
+        addNote(item.getExclusionNoteLg2Uri(), item.getExclusionNoteLg2(), graph, model);
+
+        addNote(item.getChangeNoteLg1Uri(), item.getChangeNoteLg1(), graph, model);
+        addNote(item.getChangeNoteLg2Uri(), item.getChangeNoteLg2(), graph, model);
+
         repoGestion.loadSimpleObjectWithoutDeletion(classificationItemIri, model, null);
+    }
+
+    private void addNote(String iri, String value, Resource graph, Model model) throws RmesException {
+        if(iri != null){
+            repoGestion.deleteTripletByPredicate(RdfUtils.createIRI(iri), EVOC.NOTE_LITERAL, graph, null);
+            model.add(RdfUtils.createIRI(iri), EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(XhtmlToMarkdownUtils.markdownToXhtml(value)), graph);
+        }
     }
 
     private void validate(ClassificationItem item) throws RmesBadRequestException {
