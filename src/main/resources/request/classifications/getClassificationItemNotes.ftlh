@@ -1,6 +1,17 @@
-SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 ?coreContentNoteLg1 ?coreContentNoteLg2
-?additionalContentNoteLg1 ?additionalContentNoteLg2 ?exclusionNoteLg1 ?exclusionNoteLg2
-?changeNoteLg1 ?changeNoteLg2 ?changeNoteDate
+SELECT
+?definitionLg1Uri ?definitionLg1
+?definitionLg2Uri ?definitionLg2
+?scopeNoteLg1Uri ?scopeNoteLg1
+?scopeNoteLg2Uri ?scopeNoteLg2
+?coreContentNoteLg1Uri ?coreContentNoteLg1
+?coreContentNoteLg2Uri ?coreContentNoteLg2
+?additionalContentNoteLg1Uri ?additionalContentNoteLg1
+?additionalContentNoteLg2Uri ?additionalContentNoteLg2
+?exclusionNoteLg1Uri ?exclusionNoteLg1
+?exclusionNoteLg2Uri ?exclusionNoteLg2
+?changeNoteLg1Uri ?changeNoteLg1
+?changeNoteLg2Uri ?changeNoteLg2
+?changeNoteDate
 
 WHERE {
     ?item skos:inScheme ?classification .
@@ -8,87 +19,87 @@ WHERE {
     FILTER(STRENDS(STR(?item),'/${ITEM_ID}'))
 
     OPTIONAL {
-        ?item skos:definition ?defLg1 .
-        ?defLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?defLg1 evoc:noteLiteral ?definitionLg1 .
-        ?defLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item skos:definition ?definitionLg1Uri .
+        ?definitionLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?definitionLg1Uri evoc:noteLiteral ?definitionLg1 .
+        ?definitionLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item skos:definition ?defLg2 .
-        ?defLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?defLg2 evoc:noteLiteral ?definitionLg2 .
-        ?defLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item skos:definition ?definitionLg2Uri .
+        ?definitionLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?definitionLg2Uri evoc:noteLiteral ?definitionLg2 .
+        ?definitionLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item skos:scopeNote ?scopeLg1 .
-        ?scopeLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 .
-        ?scopeLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item skos:scopeNote ?scopeNoteLg1Uri .
+        ?scopeNoteLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?scopeNoteLg1Uri evoc:noteLiteral ?scopeNoteLg1 .
+        ?scopeNoteLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item skos:scopeNote ?scopeLg2 .
-        ?scopeLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 .
-        ?scopeLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item skos:scopeNote ?scopeNoteLg2Uri .
+        ?scopeNoteLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?scopeNoteLg2Uri evoc:noteLiteral ?scopeNoteLg2 .
+        ?scopeNoteLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:coreContentNote ?coreContentLg1 .
-        ?coreContentLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?coreContentLg1 evoc:noteLiteral ?coreContentNoteLg1 .
-        ?coreContentLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:coreContentNote ?coreContentNoteLg1Uri .
+        ?coreContentNoteLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?coreContentNoteLg1Uri evoc:noteLiteral ?coreContentNoteLg1 .
+        ?coreContentNoteLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:coreContentNote ?coreContentLg2 .
-        ?coreContentLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?coreContentLg2 evoc:noteLiteral ?coreContentNoteLg2 .
-        ?coreContentLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:coreContentNote ?coreContentNoteLg2Uri .
+        ?coreContentNoteLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?coreContentNoteLg2Uri evoc:noteLiteral ?coreContentNoteLg2 .
+        ?coreContentNoteLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:additionalContentNote ?additionalContentLg1 .
-        ?additionalContentLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?additionalContentLg1 evoc:noteLiteral ?additionalContentNoteLg1 .
-        ?additionalContentLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:additionalContentNote ?additionalContentNoteLg1Uri .
+        ?additionalContentNoteLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?additionalContentNoteLg1Uri evoc:noteLiteral ?additionalContentNoteLg1 .
+        ?additionalContentNoteLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:additionalContentNote ?additionalContentLg2 .
-        ?additionalContentLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?additionalContentLg2 evoc:noteLiteral ?additionalContentNoteLg2 .
-        ?additionalContentLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:additionalContentNote ?additionalContentNoteLg2Uri .
+        ?additionalContentNoteLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?additionalContentNoteLg2Uri evoc:noteLiteral ?additionalContentNoteLg2 .
+        ?additionalContentNoteLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:exclusionNote ?exclusionLg1 .
-        ?exclusionLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?exclusionLg1 evoc:noteLiteral ?exclusionNoteLg1 .
-        ?exclusionLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:exclusionNote ?exclusionNoteLg1Uri .
+        ?exclusionNoteLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?exclusionNoteLg1Uri evoc:noteLiteral ?exclusionNoteLg1 .
+        ?exclusionNoteLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item xkos:exclusionNote ?exclusionLg2 .
-        ?exclusionLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?exclusionLg2 evoc:noteLiteral ?exclusionNoteLg2 .
-        ?exclusionLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
+        ?item xkos:exclusionNote ?exclusionNoteLg2Uri .
+        ?exclusionNoteLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?exclusionNoteLg2Uri evoc:noteLiteral ?exclusionNoteLg2 .
+        ?exclusionNoteLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int .
     } .
 
     OPTIONAL {
-        ?item skos:changeNote ?noteChangeLg1 .
-        ?noteChangeLg1 dcterms:issued ?changeNoteDate .
-        ?noteChangeLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 .
-        ?noteChangeLg1 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int
+        ?item skos:changeNote ?changeNoteLg1Uri .
+        ?changeNoteLg1Uri dcterms:issued ?changeNoteDate .
+        ?changeNoteLg1Uri dcterms:language '${LG1}'^^xsd:language .
+        ?changeNoteLg1Uri evoc:noteLiteral ?changeNoteLg1 .
+        ?changeNoteLg1Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int
     } .
 
     OPTIONAL {
-        ?item skos:changeNote ?noteChangeLg2 .
-        ?noteChangeLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 .
-        ?noteChangeLg2 insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int
+        ?item skos:changeNote ?changeNoteLg2Uri .
+        ?changeNoteLg2Uri dcterms:language '${LG2}'^^xsd:language .
+        ?changeNoteLg2Uri evoc:noteLiteral ?changeNoteLg2 .
+        ?changeNoteLg2Uri insee:conceptVersion '${CONCEPT_VERSION}'^^xsd:int
     } .
 }
