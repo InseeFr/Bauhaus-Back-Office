@@ -106,6 +106,7 @@ public class ExportUtils {
             logger.debug("Creating tempory directory {}", simsDirectory.toString());
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
+
             InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
             if (input == null){
                 logger.debug("Error when creating the export of the SIMS {}", simsId);
@@ -116,6 +117,7 @@ public class ExportUtils {
             Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + Constants.DOT_ODT));
             Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
             logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
+
 
             logger.debug("Starting downloading documents for the SIMS {}", simsId);
             this.exportRubricsDocuments(sims, simsDirectory);
@@ -154,8 +156,14 @@ public class ExportUtils {
                 Path documentPath = Path.of(url);
                 InputStream inputStream = Files.newInputStream(documentPath);
 
+                Path documentDirectory = Path.of(directory.toString(), "documents");
+                if (!Files.exists(documentDirectory)) {
+                    logger.debug("Creating the documents folder");
+                    Files.createDirectory(documentDirectory);
+                }
+
                 logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
-                Path documentTempFile = Files.createFile(Path.of(directory.toString(), documentFileName));
+                Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
                 Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
 
             }

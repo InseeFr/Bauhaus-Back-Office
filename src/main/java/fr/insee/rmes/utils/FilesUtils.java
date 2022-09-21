@@ -77,8 +77,8 @@ public class FilesUtils {
 		zipFile(directoryToZip, directoryToZip.getName(), zipOut);
 		
 		try {
-			fos.close();
 			zipOut.close();
+			fos.close();
 		}catch(IOException e ) {
 			log.warn("outputStream already closed");
 		}
@@ -100,8 +100,8 @@ public class FilesUtils {
 			File[] children = fileToZip.listFiles();
 			for (File childFile : children) {
 				zipFile(childFile, fileName + "/" + childFile.getName(), zipOut);
-				}
-				zipOut.close();
+			}
+
 			return;
 		}
 		try (FileInputStream fis = new FileInputStream(fileToZip)) {
