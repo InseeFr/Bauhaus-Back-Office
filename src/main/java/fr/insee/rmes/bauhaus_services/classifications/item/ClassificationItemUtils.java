@@ -45,20 +45,23 @@ public class ClassificationItemUtils extends RdfService {
             model.add(classificationItemIri, SKOS.BROADER, RdfUtils.createIRI(item.getBroaderURI()), graph);
         }
 
-        item.getAltLabels().stream().forEach(altLabel -> {
-            try {
-                IRI altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
-                repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
-                if(altLabel.getShortLabelLg1() != null){
-                    model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), config.getLg1()), graph);
+        if(item.getAltLabels() != null) {
+            item.getAltLabels().stream().forEach(altLabel -> {
+                try {
+                    IRI altLabelIri = RdfUtils.createIRI(altLabel.getShortLabelUri());
+                    repoGestion.deleteTripletByPredicate(altLabelIri, SKOSXL.LITERAL_FORM, graph, null);
+                    if(altLabel.getShortLabelLg1() != null){
+                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg1(), config.getLg1()), graph);
+                    }
+                    if(altLabel.getShortLabelLg2() != null){
+                        model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
+                    }
+                } catch (RmesException e) {
+                    e.printStackTrace();
                 }
-                if(altLabel.getShortLabelLg2() != null){
-                    model.add(altLabelIri, SKOSXL.LITERAL_FORM, RdfUtils.setLiteralString(altLabel.getShortLabelLg2(), config.getLg2()), graph);
-                }
-            } catch (RmesException e) {
-                e.printStackTrace();
-            }
-        });
+            });
+        }
+
 
 
         addNote(item.getDefinitionLg1Uri(), item.getDefinitionLg1(), graph, model);
