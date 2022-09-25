@@ -52,7 +52,7 @@ public class LevelsQueries extends GenericQueries{
 	}
 	
 	public static String levelMembersQuery(String classificationId, String levelId) {
-		return "SELECT DISTINCT ?id ?labelLg1 ?labelLg2 \n"
+		return "SELECT DISTINCT ?item ?id ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { \n"
 				+ "?level rdf:type xkos:ClassificationLevel . \n"
 				+ "FILTER(STRENDS(STR(?level),'/codes/" + classificationId + "/" + levelId + "')) \n"
