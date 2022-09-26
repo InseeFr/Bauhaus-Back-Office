@@ -227,13 +227,12 @@ public class ClassificationsResources extends GenericResources {
 	
 	@GetMapping(value="/classification/{classificationId}/level/{levelId}/members", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> getClassificationLevelMembers(@PathVariable("classificationId") String classificationId, @PathVariable("levelId") String levelId)  {
-		String jsonResultat;
 		try {
-			jsonResultat = classificationsService.getClassificationLevelMembers(classificationId, levelId);
+			String levelMembers = classificationsService.getClassificationLevelMembers(classificationId, levelId);
+			return ResponseEntity.status(HttpStatus.OK).body(levelMembers);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 	
 	@GetMapping(value="/classification/{classificationId}/item/{itemId}", produces = MediaType.APPLICATION_JSON_VALUE)
