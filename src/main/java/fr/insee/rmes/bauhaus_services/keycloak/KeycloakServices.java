@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.keycloak;
 
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Date;
 
 import javax.annotation.PostConstruct;
@@ -10,15 +7,18 @@ import javax.json.Json;
 import javax.json.JsonObject;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -36,15 +36,15 @@ public class KeycloakServices {
     private Config config;
 
     private String secret;
-    private String resource;
+    private String clientId;
     private String server;
     static final Logger log = LogManager.getLogger(KeycloakServices.class);
 
     @PostConstruct
     private void init() {
         secret = config.getSecret();
-        resource = config.getResource();
         server = config.getServerKeycloak();
+        clientId= config.getClientId();
     }
 
     /**
@@ -56,29 +56,25 @@ public class KeycloakServices {
 
         log.debug("GET Keycloak access token");
 
-        var authString = resource + ":" + secret;
-
-        byte[] authBytes = authString.getBytes(StandardCharsets.UTF_8);
-        var encodedAuthString = Base64.getEncoder().encodeToString(authBytes);
-
         var keycloakClient = new RestTemplate();
         String keycloakUrl = server + "/protocol/openid-connect/token";
 
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("Authorization", "Basic " + encodedAuthString);
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+        body.add("grant_type", "client_credentials");
+        body.add("client_id",clientId);
+        body.add("client_secret",secret);
 
-        var request = "grant_type=client_credentials";
 
-        HttpEntity<String> entity = new HttpEntity<>(request, headers);
+        HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {
-            String result = keycloakClient.postForObject(keycloakUrl, entity, String.class);
 
-            JsonObject accessToken= Json.createParser(new StringReader(result)).getObject();
+            token accessToken = keycloakClient.postForObject( keycloakUrl, entity , token.class );
 
             log.trace("Keycloak token provided");
+            return accessToken.getAccessToken();
 
-            return accessToken.getString("access_token");
 
         } catch (RestClientException e) {
             log.warn(e.getMessage());
