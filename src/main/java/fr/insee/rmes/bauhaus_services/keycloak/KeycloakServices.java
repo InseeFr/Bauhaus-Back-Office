@@ -1,30 +1,24 @@
 package fr.insee.rmes.bauhaus_services.keycloak;
 
-import java.util.Date;
-
-import javax.annotation.PostConstruct;
-import javax.json.Json;
-import javax.json.JsonObject;
-
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.auth0.jwt.interfaces.DecodedJWT;
+import javax.annotation.PostConstruct;
+import java.util.Date;
 
 
 @Service
@@ -101,11 +95,11 @@ public class KeycloakServices {
                 isValid = true;
             }
         } catch (JWTDecodeException exception) {
-            log.error("erreur" + exception.toString());
+            log.error("erreur {}" , exception.toString());
 
         }
 
-        log.trace("Token is valid : " + isValid);
+        log.trace("Token is valid : {}" , isValid);
         return isValid;
     }
 }

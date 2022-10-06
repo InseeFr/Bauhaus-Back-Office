@@ -94,7 +94,7 @@ public class Config {
 	private String roleClaim;
 	@Value("${jwt.id-claim}")
 	private String idClaim;
-	
+
 	@Value ("${fr.insee.rmes.bauhaus.keycloak.client.secret}")
 	private String secret;
 	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
