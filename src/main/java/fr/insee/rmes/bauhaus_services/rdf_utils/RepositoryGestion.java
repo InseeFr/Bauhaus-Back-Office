@@ -150,12 +150,15 @@ public class RepositoryGestion  {
 	}
 
 	public File getGraphAsFile(String context) throws RmesException {
-			if (context != null) return RepositoryUtils.getCompleteGraphInTrig(repositoryGestionInstance, context);
-			return RepositoryUtils.getAllGraphsInZip(repositoryGestionInstance);
+			if (context != null) return RepositoryUtils.getCompleteGraphInTrig(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()), context);
+			return RepositoryUtils.getAllGraphsInZip(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()));
 	}
 	
 	public String[] getAllGraphs() throws RmesException {
-		return RepositoryUtils.getAllGraphs(repositoryGestionInstance);
+		return RepositoryUtils.getAllGraphs(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()));
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
@@ -168,7 +171,8 @@ public class RepositoryGestion  {
 
 	public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate)
 			throws RmesException {
-		try (RepositoryConnection conn = repositoryGestionInstance.getConnection() ){
+		try (RepositoryConnection conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()).getConnection() ){
 			// notes to delete
 			for (IRI note : notesToDeleteAndUpdate.get(0)) {
 				conn.remove(note, null, null);
@@ -190,7 +194,8 @@ public class RepositoryGestion  {
 	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = repositoryGestionInstance.getConnection();
+				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, predicate, null, graph);
 			conn.close();
@@ -204,7 +209,8 @@ public class RepositoryGestion  {
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = repositoryGestionInstance.getConnection();
+				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.add(model);
 			conn.close();
@@ -225,7 +231,8 @@ public class RepositoryGestion  {
 	public void loadSimpleObject(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = repositoryGestionInstance.getConnection();
+				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, null, null);
 			conn.add(model);
@@ -241,7 +248,8 @@ public class RepositoryGestion  {
 	public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = repositoryGestionInstance.getConnection();
+				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, null, null);
 			conn.close();
@@ -262,7 +270,8 @@ public class RepositoryGestion  {
 	public void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = repositoryGestionInstance.getConnection();
+				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.clear(graph);
 			conn.add(model);
@@ -276,11 +285,13 @@ public class RepositoryGestion  {
 	}
 	
 	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
-		return RepositoryUtils.persistFile(input, format, graph, repositoryGestionInstance, null);
+		return RepositoryUtils.persistFile(input, format, graph, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()), null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
-		try (RepositoryConnection conn = repositoryGestionInstance.getConnection()){
+		try (RepositoryConnection conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()).getConnection()){
 			clearReplaceLinks(object, conn);
 			loadSimpleObject(object, model, conn);
 		} catch (RepositoryException e) {
@@ -290,7 +301,8 @@ public class RepositoryGestion  {
 
 	public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
 		try {
-			RepositoryConnection conn = repositoryGestionInstance.getConnection();
+			RepositoryConnection conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()).getConnection();
 			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
 				conn.remove(item, INSEE.IS_VALIDATED, null);
@@ -304,7 +316,8 @@ public class RepositoryGestion  {
 
 	public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
 		try {
-			RepositoryConnection conn = repositoryGestionInstance.getConnection();
+			RepositoryConnection conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()).getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
 			conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
 			conn.add(model);
@@ -343,7 +356,8 @@ public class RepositoryGestion  {
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
-		RepositoryUtils.clearStructureAndComponents(structure, repositoryGestionInstance);
+		RepositoryUtils.clearStructureAndComponents(structure, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()));
 	}
 
 	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
@@ -395,13 +409,15 @@ public class RepositoryGestion  {
 	}
 
 	public RepositoryConnection getConnection() throws RmesException {
-		return repositoryUtils.getConnection(repositoryGestionInstance);
+		return repositoryUtils.getConnection(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				config.getRepositoryIdGestion()));
 	}
 
 
 	public void overrideTriplets(IRI simsUri, Model model, Resource graph) throws RmesException {
 		try {
-			RepositoryConnection connection = repositoryGestionInstance.getConnection();
+			RepositoryConnection connection = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()).getConnection();
 			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
 			connection.add(model);
 			connection.close();

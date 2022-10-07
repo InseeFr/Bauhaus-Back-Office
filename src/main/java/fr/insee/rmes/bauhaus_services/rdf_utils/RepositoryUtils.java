@@ -58,6 +58,7 @@ public class RepositoryUtils {
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
 	private static String accessToken= null;
 	private static KeycloakServices keycloakServices;
+	private static HTTPRepository repository;
 
 	public RepositoryUtils (KeycloakServices keycloakService) {
 		RepositoryUtils.keycloakServices= keycloakService;
@@ -65,18 +66,21 @@ public class RepositoryUtils {
 
 	public static Repository initRepository(String sesameServer, String repositoryID) {
 		if (sesameServer==null||sesameServer.equals("")) {return null;}
-		HTTPRepository repo = new HTTPRepository(sesameServer, repositoryID);
+
 		try {
-			if(!keycloakServices.isTokenValid(accessToken)) {
+			if(!keycloakServices.isTokenValid(accessToken) || repository==null) {
+
 				accessToken= keycloakServices.getKeycloakAccessToken();
+				repository = new HTTPRepository(sesameServer, repositoryID);
+				repository.setAdditionalHttpHeaders(Map.of("Authorization","bearer "+ accessToken));
+				repository.init();
 			}
-			repo.setAdditionalHttpHeaders(Map.of("Authorization","bearer "+ accessToken));
-			repo.init();
+
 		} catch (Exception e) {
 			logger.error("Initialisation de la connection à la base sesame {} impossible", sesameServer);
 			logger.error(e.getMessage());
 		}
-		return repo;
+		return repository;
 	}
 	
 	public RepositoryConnection getConnection(Repository repository) throws RmesException {
