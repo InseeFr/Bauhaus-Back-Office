@@ -18,7 +18,9 @@ public class XhtmlToMarkdownUtils {
 	private static void init(){
 		if (optionsXhtmlToMd==null || optionsXhtmlToMd.getKeys().isEmpty()) {
 			optionsXhtmlToMd = new MutableDataSet();
-			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE,true);
+			optionsXhtmlToMd.set(FlexmarkHtmlConverter.SKIP_CHAR_ESCAPE, true);
+			optionsXhtmlToMd.set(FlexmarkHtmlConverter.TYPOGRAPHIC_QUOTES, false);
+			optionsXhtmlToMd.set(FlexmarkHtmlConverter.TYPOGRAPHIC_SMARTS, false);
 		}
 	}
 	

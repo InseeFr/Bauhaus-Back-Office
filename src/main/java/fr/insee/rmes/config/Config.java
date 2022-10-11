@@ -22,8 +22,6 @@ public class Config {
 	/******************************************************/
 	/** GLOBAL CONF 	***********************************/
 	/******************************************************/
-	@Value("${fr.insee.rmes.bauhaus.authorizationHost}")
-	private String authorizationHost;
 
 	@Value("${fr.insee.rmes.bauhaus.appHost}")
 	private String appHost;
@@ -109,6 +107,8 @@ public class Config {
 	private String sugoiApp;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
+	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
+	private String sugoiUi;
 
 	
 	/******************************************************/
@@ -273,10 +273,6 @@ public class Config {
 
 	public String getAppHost() {
 		return appHost;
-	}
-
-	public String getAuthorizationHost() {
-		return authorizationHost;
 	}
 
 	public String getEnv() {
@@ -541,6 +537,10 @@ public class Config {
 
 	public String getSugoiRealm() {
 		return sugoiRealm;
+	}
+
+	public String getSugoiUi() {
+		return sugoiUi;
 	}
 
 	public String getSwaggerHost() {

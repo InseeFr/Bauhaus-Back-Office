@@ -3,21 +3,21 @@ package fr.insee.rmes.persistance.sparql_queries.operations.families;
 import java.util.HashMap;
 import java.util.Map;
 
-import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.json.JSONObject;
 
 public class OpFamiliesQueries extends GenericQueries{
+
+	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 
 	private static String buildRequest(String fileName, Map<String, Object> params) throws RmesException {
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
 
 	public static String familiesSearchQuery() throws RmesException {
-		HashMap params = new HashMap();
-		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
@@ -26,16 +26,16 @@ public class OpFamiliesQueries extends GenericQueries{
 
 
 	public static String familiesQuery() throws RmesException {
-		HashMap params = new HashMap();
-		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LG1", config.getLg1());
 		return  buildRequest("getFamilies.ftlh", params);
 	}
 
 
 	public static String familyQuery(String id) throws RmesException {
-		HashMap params = new HashMap();
-		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);

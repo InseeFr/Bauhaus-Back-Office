@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,16 @@ import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.XsltUtils;
+
+import java.io.InputStream;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
+
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,7 +45,7 @@ public class CollectionExportBuilder extends RdfService {
 	String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
 	String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
 	String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
-
+	final Collator instance = Collator.getInstance();
 
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
@@ -42,13 +53,37 @@ public class CollectionExportBuilder extends RdfService {
 		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
 
+		List<JSONObject> orderMembers = new ArrayList<>();
+		for (int i = 0; i < members.length(); i++) {
+			orderMembers.add(members.getJSONObject(i));
+		}
+
+		instance.setStrength(Collator.NO_DECOMPOSITION);
+
+		Collections.sort( orderMembers, new Comparator<JSONObject>() {
+			private static final String KEY_NAME = "prefLabelLg1";
+
+			@Override
+			public int compare(JSONObject a, JSONObject b) {
+				String valA = (String) a.get(KEY_NAME);
+				String valB = (String) b.get(KEY_NAME);
+
+				return instance.compare(valA.toLowerCase(), valB.toLowerCase());
+			}
+		});
+
+
+		JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
+
 		// Deserialization in the `CollectionForExport` class
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		try {
 			collection = mapper.readValue(json.toString(), CollectionForExport.class);
-			collection.addMembers(members);
+
+			collection.addMembers(orderMembersJSONArray);
+
 			// format specific data
 			collection.setCreated(ExportUtils.toDate(collection.getCreated()));
 			collection.setModified(ExportUtils.toDate(collection.getModified()));

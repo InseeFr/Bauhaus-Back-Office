@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -7,16 +9,14 @@ import javax.annotation.PostConstruct;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,7 +81,7 @@ public class RepositoryGestion extends RepositoryUtils {
 	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
-		return getResponseAsObject(query, repositoryGestionInstance);
+			return getResponseAsObject(query, repositoryGestionInstance);
 	}
 
 	public JSONArray getResponseAsArray(String query) throws RmesException {
@@ -142,14 +142,13 @@ public class RepositoryGestion extends RepositoryUtils {
 		return statements;
 	}
 
-	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource context) throws RmesException {
-		RepositoryResult<Statement> statements = null;
-		try {
-			statements = con. getStatements(null, null, null,context); //get the complete Graph
-		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get following graph : " + context);
-		}
-		return statements;
+	public File getGraphAsFile(String context) throws RmesException {
+			if (context != null) return getCompleteGraphInTrig(repositoryGestionInstance, context);
+			return getAllGraphsInZip(repositoryGestionInstance);
+	}
+	
+	public String[] getAllGraphs() throws RmesException {
+		return getAllGraphs(repositoryGestionInstance);
 	}
 
 	public void closeStatements(RepositoryResult<Statement> statements) throws RmesException {
@@ -179,6 +178,35 @@ public class RepositoryGestion extends RepositoryUtils {
 			throwsRmesException(e, "Failure load concept : " + concept);
 
 		} 
+	}
+
+	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = repositoryGestionInstance.getConnection();
+			}
+			conn.remove(object, predicate, null, graph);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
+	}
+	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
+		try {
+			if (conn == null) {
+				conn = repositoryGestionInstance.getConnection();
+			}
+			conn.add(model);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
 	}
 
 	/**
@@ -238,6 +266,10 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
 
 		}
+	}
+	
+	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
+		return persistFile(input, format, graph, repositoryGestionInstance, null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
@@ -347,8 +379,8 @@ public class RepositoryGestion extends RepositoryUtils {
 
 	private static void throwsRmesException(Exception e, String details) throws RmesException {
 		logger.error(details);
-		logger.error(e.getMessage());
-		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), details);
+		logger.error("{} {}" , e.getClass(), e.getMessage());
+		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),  e.getClass() + " "+ e.getMessage(), details);
 	}
 
 	public void loadSimpleObject(IRI geoIRI, Model model) throws RmesException {
@@ -371,4 +403,5 @@ public class RepositoryGestion extends RepositoryUtils {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT);
 		}
 	}
+
 }

@@ -87,7 +87,7 @@ public class CodeListQueries extends GenericQueries {
 
 	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
 		HashMap<String, Object> params = initParams();
-		params.put("IRI", notation);
+		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
