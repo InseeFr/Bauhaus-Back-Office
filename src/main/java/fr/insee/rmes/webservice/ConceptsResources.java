@@ -292,6 +292,7 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.exportConcept(id, accept);
 	}
 
+
 	@GetMapping(value = "/concept/export-zip/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
 	public void exportZipConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept, HttpServletResponse response) throws RmesException {
@@ -351,6 +352,33 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
+	}
+
+
+	@GetMapping(value = "/collectionConcept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionConceptsExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
+		return conceptsService.getCollectionConceptsExport(id, accept);
+	}
+
+
+	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
+			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
+			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
+	@PostMapping(value="/collection/send/{id}",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.TEXT_PLAIN_VALUE)
+	@Operation(operationId = "setCollectionSend", summary = "Send collection", 
+			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
+	public ResponseEntity<Object> setCollectionSend(
+			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
+			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
+		try {
+			Boolean isSent = conceptsService.setCollectionSend(id, body);
+			logger.info("Send concept : {}" , id);
+			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
+		} catch (RmesException e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 	}
 
 }

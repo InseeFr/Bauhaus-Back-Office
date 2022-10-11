@@ -57,6 +57,8 @@ public interface ConceptsService {
 	public void setCollectionsValidation(String body) throws  RmesException ;
 	
 	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException ;
+
+	public ResponseEntity<?> getCollectionConceptsExport(String id, String acceptHeader) throws RmesException ;
 	
 	public String getRelatedConcepts(String id) throws RmesException;
 
