@@ -215,16 +215,15 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollectionByID", summary = "Collection", 
+	@Operation(operationId = "getCollectionByID", summary = "Get a collection byt its identifier",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionByID(id);
+			String collection = conceptsService.getCollectionByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collection/{id}/members", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -301,27 +300,6 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
-	@PostMapping(value = "/concept/send/{id}", 
-					consumes = MediaType.APPLICATION_JSON_VALUE, 
-					produces = MediaType.TEXT_PLAIN_VALUE)
-	@Operation(operationId = "setConceptSend", summary = "Send concept", 
-			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Boolean.class)))})	
-	public ResponseEntity<Object> setConceptSend(
-			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Mail informations", required = true) @RequestBody String body) throws RmesException {
-		try {
-			Boolean isSent = conceptsService.setConceptSend(id, body);
-			logger.info("Send concept : {}" , id);
-			return ResponseEntity.status(HttpStatus.OK).body(isSent.toString());
-		} catch (RmesException e) {
-			logger.error(e.getMessageAndDetails(), e);
-			throw e;
-		}
-	}
-
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
@@ -375,6 +353,7 @@ public class ConceptsResources  extends GenericResources   {
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
 	}
+
 
 	@GetMapping(value = "/collectionConcept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")

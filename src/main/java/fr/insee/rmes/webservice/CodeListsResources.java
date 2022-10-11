@@ -43,7 +43,7 @@ public class CodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
-    @PostMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
@@ -71,7 +71,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
     public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
         try {
@@ -110,7 +110,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @DeleteMapping(value = "/partial/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = "/partial/{id}")
     @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
         try {

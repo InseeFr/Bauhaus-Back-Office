@@ -24,7 +24,6 @@ public class ComponentPublication extends RdfService {
 	public void publishComponent(Resource component, IRI type) throws RmesException {
 		
 		Model model = new LinkedHashModel();
-		//TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, component);
 

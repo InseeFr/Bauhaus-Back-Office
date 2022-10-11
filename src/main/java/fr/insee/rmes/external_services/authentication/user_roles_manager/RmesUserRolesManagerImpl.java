@@ -1,6 +1,5 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -141,22 +140,6 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), "Get agents via Sugoi failed");
 		}
 		return agents.toString();
-	}
-
-	@Override
-	public void setAddRole(String role, String user) throws  RmesException{
-		String url = MessageFormat.format(getUserPath(), user, role);
-		Sugoi.put(url);
-	}
-
-	@Override
-	public void setDeleteRole(String role, String user) throws  RmesException {
-		String url = MessageFormat.format(getUserPath(), user, role);
-			Sugoi.delete(url);
-	}
-	
-	private String getUserPath() {
-		return config.getSugoiUrl() + "/v2"+ SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + SUGOI_APP_SEARCH_PATH+ config.getSugoiApp()+"/groups/{1}/members/{0}";
 	}
 
 	

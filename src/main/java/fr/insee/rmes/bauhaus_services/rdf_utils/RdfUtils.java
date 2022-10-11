@@ -36,6 +36,10 @@ public class RdfUtils {
 		return factory.createBNode();
 	}
 	
+	public static String getBaseGraph(){
+		return config.getBaseGraph();
+	}
+	
 	public static Resource conceptGraph(){
 		return factory.createIRI(config.getConceptsGraph());
 	}
@@ -47,7 +51,6 @@ public class RdfUtils {
 	public static Resource operationsGraph(){
 		return factory.createIRI(config.getOperationsGraph());
 	}
-
 
 	public static Resource productsGraph(){
 		return factory.createIRI(config.getProductsGraph());
@@ -68,7 +71,13 @@ public class RdfUtils {
 	public static Resource codesListGraph(){
 		return factory.createIRI(config.getCodeListGraph());
 	}
-	
+	public static Resource codesListGraph(String id) {
+		return factory.createIRI(config.getCodeListGraph() + "/" + id);
+	}
+	public static Resource classificationSerieIRI(String id) {
+		return factory.createIRI(config.getBaseUriGestion() + "codes/serieDeNomenclatures/" + id);
+	}
+
 	public static Resource structureComponentGraph(){
 		return factory.createIRI(config.getStructuresComponentsGraph());
 	}

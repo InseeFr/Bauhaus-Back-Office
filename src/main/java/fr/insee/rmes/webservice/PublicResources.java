@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
-import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.exceptions.RmesException;
@@ -76,7 +75,7 @@ public class PublicResources extends GenericResources  {
 		JSONObject props = new JSONObject();
 		try {
 			props.put("appHost", config.getAppHost());
-			props.put("authorizationHost", config.getAuthorizationHost());
+			props.put("authorizationHost", config.getSugoiUi());
 			props.put("defaultContributor", config.getDefaultContributor());
 			props.put("defaultMailSender", config.getDefaultMailSender());
 			props.put("maxLengthScopeNote", config.getMaxLengthScopeNote());
@@ -105,13 +104,12 @@ public class PublicResources extends GenericResources  {
 	@GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamps", summary = "List of stamps", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public ResponseEntity<Object> getStamps() {
-			String entity = null;
 			try {
-				entity = stampsService.getStamps();
+				String stamps = stampsService.getStamps();
+				return ResponseEntity.status(HttpStatus.SC_OK).body(stamps);
 			} catch (RmesException e) {
 				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 			}
-			return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
 	}
 
 	@GetMapping(value = "/disseminationStatus", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -134,18 +132,6 @@ public class PublicResources extends GenericResources  {
 		String entity = null;
 		try {
 			entity = userRolesManagerService.getRoles();
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-		}
-		return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
-	}
-
-	@GetMapping(value = "/agents", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getAgents", summary = "List of agents", responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object>  getAgents() {
-		String entity = null;
-		try {
-			entity = userRolesManagerService.getAgentsSugoi();
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
