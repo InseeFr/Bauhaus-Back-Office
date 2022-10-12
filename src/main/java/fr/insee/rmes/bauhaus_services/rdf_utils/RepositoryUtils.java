@@ -7,16 +7,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
@@ -70,7 +67,7 @@ public abstract class RepositoryUtils {
 
 				accessToken= keycloakServices.getKeycloakAccessToken();
 				repository = new HTTPRepository(sesameServer, repositoryID);
-				repository.setAdditionalHttpHeaders(Map.of("Authorization","bearer "+ accessToken));
+				repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
 				repository.init();
 			}
 
