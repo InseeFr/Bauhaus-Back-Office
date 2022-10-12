@@ -1,23 +1,9 @@
 package fr.insee.rmes.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.TransformerException;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -28,17 +14,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.TransformerException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Component
 public class ExportUtils {
@@ -117,6 +106,7 @@ public class ExportUtils {
             logger.debug("Creating tempory directory {}", simsDirectory.toString());
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
+
             InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
             if (input == null){
                 logger.debug("Error when creating the export of the SIMS {}", simsId);
@@ -127,6 +117,7 @@ public class ExportUtils {
             Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + Constants.DOT_ODT));
             Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
             logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
+
 
             logger.debug("Starting downloading documents for the SIMS {}", simsId);
             this.exportRubricsDocuments(sims, simsDirectory);
@@ -165,8 +156,14 @@ public class ExportUtils {
                 Path documentPath = Path.of(url);
                 InputStream inputStream = Files.newInputStream(documentPath);
 
+                Path documentDirectory = Path.of(directory.toString(), "documents");
+                if (!Files.exists(documentDirectory)) {
+                    logger.debug("Creating the documents folder");
+                    Files.createDirectory(documentDirectory);
+                }
+
                 logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
-                Path documentTempFile = Files.createFile(Path.of(directory.toString(), documentFileName));
+                Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
                 Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
 
             }
