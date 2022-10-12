@@ -1,30 +1,17 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -40,12 +27,14 @@ import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.springframework.stereotype.Service;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class RepositoryUtils {
@@ -82,7 +71,8 @@ public class RepositoryUtils {
 		}
 		return repository;
 	}
-	
+
+
 	public RepositoryConnection getConnection(Repository repository) throws RmesException {
 		RepositoryConnection con = null;
 		try {
@@ -278,7 +268,7 @@ public class RepositoryUtils {
 
 	public static String[] getAllGraphs(Repository repo) throws RmesException {
 		RepositoryConnection connection = repo.getConnection();
-		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());//.evaluate(writer);
+		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());
 		TupleQueryResult rs = tupleQuery.evaluate();
 		String[] graphs = rs.stream().map(g -> g.getValue("g").stringValue()).toArray(String[]::new);
 		logger.info("Graphs in database : {}", (graphs != null ? graphs.length : "0"));
