@@ -1,5 +1,6 @@
 SELECT ?classificationId ?itemId ?prefLabelLg1 ?prefLabelLg2 ?isValidated
 ?broaderLg1 ?broaderLg2 ?idBroader ?conceptVersion ?altLabelLg1 ?altLabelLg2
+?broaderURI
 WHERE {
     ?item skos:prefLabel ?prefLabelLg1 .
     FILTER (lang(?prefLabelLg1) = '${LG1}')

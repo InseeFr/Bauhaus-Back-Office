@@ -67,13 +67,11 @@ public class ClassificationUtils extends RdfService {
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CREATOR, graph, null);
         if(classification.getCreator() != null){
-            //TODO FRONT
             model.add(classificationIri, DC.CREATOR, RdfUtils.setLiteralString(classification.getCreator()), graph);
         }
 
         repoGestion.deleteTripletByPredicate(classificationIri, DC.CONTRIBUTOR, graph, null);
         if(classification.getContributor() != null){
-            //TODO FRONT
             model.add(classificationIri, DC.CONTRIBUTOR, RdfUtils.setLiteralString(classification.getContributor()), graph);
         }
 
