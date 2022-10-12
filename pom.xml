@@ -50,7 +50,7 @@
 	<properties>
 		<final.war.name>bauhaus</final.war.name>
 		<java.version>11</java.version>
-
+		<java-jwt.version>3.4.1</java-jwt.version>
 		<springdoc-openapi-ui.version>1.6.6</springdoc-openapi-ui.version>
 		<jackson.version>2.13.1</jackson.version>
 		<rdf4j.version>3.7.7</rdf4j.version>
@@ -120,7 +120,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
- 
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>${java-jwt.version}</version>
+		</dependency>
+
+
 
 		<!-- test -->
 		<dependency>
@@ -181,6 +187,11 @@
 		<dependency>
 		    <groupId>jakarta.jms</groupId>
 		    <artifactId>jakarta.jms-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.json</groupId>
+			<artifactId>jakarta.json-api</artifactId>
+			<version>1.1.6</version>
 		</dependency>
 
 		<!-- SAXON FOR XSLT -->
