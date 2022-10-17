@@ -202,6 +202,7 @@ public class DocumentsUtils  extends RdfService  {
 
 		/* Check rights */
 		if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
+			logger.debug("You do not have the right to create the file {}", id);
 			throw new RmesUnauthorizedException(isLink ?ErrorCodes.LINK_CREATION_RIGHTS_DENIED: ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED,
 					"Only an admin or a manager can create a new  "+ (isLink ? "link." : "document."));
 		}
@@ -242,6 +243,7 @@ public class DocumentsUtils  extends RdfService  {
 
 	private void checkLinkDoesNotExist(String id, String url) throws RmesException {
 		if (StringUtils.isEmpty(url)) {
+			logger.debug("The Link {} must have a non-empty URL", id);
 			throw new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL, "A link must have a non-empty url. ", id);
 		}
 		// Check if the url is already used by a link
@@ -267,7 +269,7 @@ public class DocumentsUtils  extends RdfService  {
 			String uri = existingUriJson.getString(Constants.DOCUMENT);
 			String existingId = getIdFromUri(uri);
 			if (!existingId.equals(id)) {
-				throw new RmesNotAcceptableException(errorCode,errorMessage, uri);
+				throw new RmesNotAcceptableException(errorCode, errorMessage, uri);
 			}
 		}
 	}
@@ -495,23 +497,32 @@ public class DocumentsUtils  extends RdfService  {
 		RdfUtils.addTripleUri(docUri, RDF.TYPE, FOAF.DOCUMENT, model, graph);
 
 		String uriString = document.getUrl();
+
+		logger.debug("Add to {} schema:url {}", docUri, uriString);
 		RdfUtils.addTripleUri(docUri, SCHEMA.URL, uriString, model, graph);
+
 		if (StringUtils.isNotEmpty(document.getLabelLg1())) {
+			logger.debug("Add to {} RDFS:LABEL {}", docUri, document.getLabelLg1());
 			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg1(), config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLabelLg2())) {
+			logger.debug("Add to {} RDFS:LABEL {}", docUri, document.getLabelLg2());
 			RdfUtils.addTripleString(docUri, RDFS.LABEL, document.getLabelLg2(), config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg1())) {
+			logger.debug("Add to {} RDFS.COMMENT {}", docUri, document.getDescriptionLg1());
 			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg1(), config.getLg1(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDescriptionLg2())) {
+			logger.debug("Add to {} RDFS.COMMENT {}", docUri, document.getDescriptionLg2());
 			RdfUtils.addTripleString(docUri, RDFS.COMMENT, document.getDescriptionLg2(), config.getLg2(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getLangue())) {
+			logger.debug("Add to {} DC.LANGUAGE {}", docUri, document.getLangue());
 			RdfUtils.addTripleString(docUri, DC.LANGUAGE, document.getLangue(), model, graph);
 		}
 		if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
+			logger.debug("Add to {} PAV.LASTREFRESHEDON {}", docUri, document.getDateMiseAJour());
 			RdfUtils.addTripleDateTime(docUri, PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
 		}
 		repoGestion.loadSimpleObject(docUri, model);
@@ -569,7 +580,9 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 	public void checkFileNameValidity(String fileName) throws RmesNotAcceptableException {
+		logger.debug("Checking File Name {}", fileName);
 		if (fileName == null || fileName.trim().isEmpty()) {
+			logger.debug("The File name is null or empty");
 			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
 		}
 		Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
@@ -580,7 +593,7 @@ public class DocumentsUtils  extends RdfService  {
 					"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
 					fileName);
 		}
-
+		logger.debug("The file name {} is valid", fileName);
 	}
 
 	public Document buildDocumentFromJson(JSONObject jsonDoc) {
