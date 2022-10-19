@@ -58,6 +58,6 @@ public class ClassificationsQueries  extends GenericQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("CLASSIFICATION_ID", classificationId);
 		params.put("CLASSIFICATION_ITEM_ID", itemId);
-		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationItemURI.ftlh", params);
+		return FreeMarkerUtils.buildRequest("classifications/", "getClassificationItemUri.ftlh", params);
 	}
 }
