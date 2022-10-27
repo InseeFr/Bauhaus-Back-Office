@@ -330,17 +330,19 @@ public class DocumentsUtils  extends RdfService  {
 			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find "+ (isLink ? "Link" : "Document")+" with id: ", id);
 		}
 		formatDateInJsonObject(jsonDocs);
+		jsonDocs.put("sims", this.getSimsByDocument(id, isLink));
+		return jsonDocs;
+	}
+
+	private JSONArray getSimsByDocument(String id, Boolean isLink) throws RmesException {
 		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id, isLink));
 
 		for (int i = 0; i < sims.length(); i++) {
 			JSONObject sim = sims.getJSONObject(i);
 			sim.put(Constants.CREATORS, new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
 		}
-
-		jsonDocs.put("sims", sims);
-		return jsonDocs;
+		return sims;
 	}
-
 	/**
 	 * Delete a document or a link
 	 * @param docId
