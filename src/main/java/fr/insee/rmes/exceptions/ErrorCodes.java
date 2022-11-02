@@ -140,6 +140,7 @@ public class ErrorCodes {
 	// LINKS
 	public static final int LINK_EMPTY_URL = 461;
 	public static final int LINK_EXISTING_URL = 462;
+	public static final int LINK_BAD_URL = 463;
 
 	// SERIES
 	public static final int SERIES_OPERATION_OR_SIMS = 663;
