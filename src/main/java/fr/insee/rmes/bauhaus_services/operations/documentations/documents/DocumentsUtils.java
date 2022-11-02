@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,7 +70,7 @@ public class DocumentsUtils  extends RdfService  {
 
 	@Autowired
 	ParentUtils ownersUtils;
-	
+
 	/*
 	 * METHODS LINKS TO THE SIMS - RUBRICS
 	 */
@@ -98,7 +100,7 @@ public class DocumentsUtils  extends RdfService  {
 	 * @throws RmesException
 	 */
 	public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, langService.getLanguageByConfigLg(lang)));
+		JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/fr"));
 		formatDateInJsonArray(allDocs);
 		return allDocs;
 	}
@@ -223,6 +225,7 @@ public class DocumentsUtils  extends RdfService  {
 		}else {
 			String url = createFileUrl(documentName);
 			checkDocumentDoesNotExist(id, url);
+
 			logger.info("URL CREATED : {}", url);
 			document.setUrl(url);
 
@@ -246,6 +249,15 @@ public class DocumentsUtils  extends RdfService  {
 			logger.debug("The Link {} must have a non-empty URL", id);
 			throw new RmesNotAcceptableException(ErrorCodes.LINK_EMPTY_URL, "A link must have a non-empty url. ", id);
 		}
+
+		try {
+			new URL(url);
+		} catch (MalformedURLException e) {
+			logger.debug("The Link {} is not valid", id);
+			throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);
+		}
+
+
 		// Check if the url is already used by a link
 		checkUrlDoesNotExist(id, url, ErrorCodes.LINK_EXISTING_URL,"This url is already referenced by another link.");
 	}
@@ -330,17 +342,19 @@ public class DocumentsUtils  extends RdfService  {
 			throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find "+ (isLink ? "Link" : "Document")+" with id: ", id);
 		}
 		formatDateInJsonObject(jsonDocs);
+		jsonDocs.put("sims", this.getSimsByDocument(id, isLink));
+		return jsonDocs;
+	}
+
+	private JSONArray getSimsByDocument(String id, Boolean isLink) throws RmesException {
 		JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getSimsByDocument(id, isLink));
 
 		for (int i = 0; i < sims.length(); i++) {
 			JSONObject sim = sims.getJSONObject(i);
 			sim.put(Constants.CREATORS, new JSONArray(ownersUtils.getDocumentationOwnersByIdSims(sim.getString(Constants.ID))));
 		}
-
-		jsonDocs.put("sims", sims);
-		return jsonDocs;
+		return sims;
 	}
-
 	/**
 	 * Delete a document or a link
 	 * @param docId
@@ -585,6 +599,7 @@ public class DocumentsUtils  extends RdfService  {
 			logger.debug("The File name is null or empty");
 			throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
 		}
+
 		Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
 		Matcher m = p.matcher(fileName);
 		if (m.find()) {
