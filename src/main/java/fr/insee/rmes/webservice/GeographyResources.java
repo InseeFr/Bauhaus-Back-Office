@@ -82,13 +82,12 @@ public class GeographyResources  extends GenericResources {
 	public ResponseEntity<Object> createGeography(
 			@Parameter(description = "Geo Feature to create", required = true, 
             content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {
-		String id = null;
 		try {
-			id = geoService.createFeature(body);
+			String id = geoService.createFeature(body);
+			return ResponseEntity.status(HttpStatus.SC_OK).body(id);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return ResponseEntity.status(HttpStatus.SC_OK).body(id);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
@@ -99,9 +98,9 @@ public class GeographyResources  extends GenericResources {
 			@Parameter(description = "Geo Feature to update", required = true, schema = @Schema(implementation= GeoFeature.class)) @RequestBody String body) {
 		try {
 			geoService.updateFeature(id, body);
+			return ResponseEntity.ok(HttpStatus.SC_OK);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
-		return ResponseEntity.ok(HttpStatus.SC_OK);
 	}
 }
