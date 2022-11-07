@@ -13,6 +13,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
@@ -303,9 +304,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */
 	@Override
 	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException{
-		CollectionForExport collection;
+		CollectionForExportOld collection;
 		try {
-			collection = collectionExport.getCollectionData(id);
+			collection = collectionExport.getCollectionDataOld(id);
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
