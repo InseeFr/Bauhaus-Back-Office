@@ -9,3 +9,4 @@ node_modules
 graphdb
 *.iml
 src/main/resources/request/BeforeMarkdown.ftlh
+.properties
