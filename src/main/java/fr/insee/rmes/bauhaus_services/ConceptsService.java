@@ -1,13 +1,11 @@
 package fr.insee.rmes.bauhaus_services;
 
-import java.io.InputStream;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
+import fr.insee.rmes.exceptions.RmesException;
 import org.springframework.http.ResponseEntity;
 
-import fr.insee.rmes.exceptions.RmesException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Concept Service Query interface to assume the persistance of App in JSON
@@ -66,4 +64,7 @@ public interface ConceptsService {
 
 	Map<String, InputStream> getCollectionExportIS(String id) throws RmesException;
 
+	public ResponseEntity<?> getCollectionExportODT(String id, String accept, Boolean boolLangueChoisie) throws RmesException ;
+
+	public   ResponseEntity<?>  getCollectionExportODS(String id, String accept) throws RmesException;
 }

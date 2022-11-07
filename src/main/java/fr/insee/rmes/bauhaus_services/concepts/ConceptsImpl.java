@@ -1,23 +1,5 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.text.CaseUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionsUtils;
@@ -35,6 +17,22 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
+import org.apache.commons.text.CaseUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -315,7 +313,43 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
-	
+
+	@Override
+	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, Boolean boolLangueChoisie) throws RmesException{
+		CollectionForExport collection;
+		try {
+			collection = collectionExport.getCollectionData(id);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+		}
+
+		Map<String, String> xmlContent = convertCollectionInXml(collection);
+		String fileName;
+		if (boolLangueChoisie){
+			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
+		}
+		else {
+			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
+		}
+		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, boolLangueChoisie);
+	}
+
+
+	@Override
+	public ResponseEntity<?> getCollectionExportODS(String id, String acceptHeader) throws RmesException{
+		CollectionForExport collection;
+		try {
+			collection = collectionExport.getCollectionData(id);
+		} catch (RmesException e) {
+			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+		}
+
+		Map<String, String> xmlContent = convertCollectionInXml(collection);
+		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();;
+		return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
+	}
+
+
 	@Override
 	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {
 		CollectionForExport collection = collectionExport.getCollectionData(id);
