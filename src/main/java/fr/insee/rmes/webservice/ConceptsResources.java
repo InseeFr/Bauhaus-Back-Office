@@ -1,36 +1,10 @@
 package fr.insee.rmes.webservice;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
-import fr.insee.rmes.config.swagger.model.concepts.CollectionById;
-import fr.insee.rmes.config.swagger.model.concepts.CollectionMembers;
-import fr.insee.rmes.config.swagger.model.concepts.CollectionsToValidate;
-import fr.insee.rmes.config.swagger.model.concepts.ConceptById;
-import fr.insee.rmes.config.swagger.model.concepts.ConceptLinks;
-import fr.insee.rmes.config.swagger.model.concepts.ConceptNotes;
-import fr.insee.rmes.config.swagger.model.concepts.ConceptsSearch;
-import fr.insee.rmes.config.swagger.model.concepts.ConceptsToValidate;
+import fr.insee.rmes.config.swagger.model.concepts.*;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,6 +15,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * WebService class for resources of Concepts
@@ -353,4 +337,23 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.getCollectionExport(id, accept);
 	}
 
+	@GetMapping(value = "/collection/export/{id}/odt", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExportODT", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionExportODT(
+			@PathVariable(Constants.ID) String id,
+			@RequestParam(name = "français", defaultValue = "true") Boolean boolLangueChoisie,
+			@RequestHeader(required=false) String accept)
+			throws RmesException {
+		return conceptsService.getCollectionExportODT(id, accept,boolLangueChoisie);
+
+	}
+
+	@GetMapping(value = "/collection/export/{id}/ods", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExportODS", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionExportODS(
+			@PathVariable(Constants.ID) String id,
+			@RequestHeader(required=false) String accept)
+			throws RmesException {
+		return conceptsService.getCollectionExportODS(id, accept);
+	}
 }
