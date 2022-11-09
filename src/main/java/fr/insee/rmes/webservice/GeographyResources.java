@@ -71,11 +71,6 @@ public class GeographyResources  extends GenericResources {
 	}
 	
 
-	/**
-	 * CREATE
-	 * @param body
-	 * @return response
-	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
