@@ -352,25 +352,25 @@
                         <text:p>Modification</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce4" office:value-type="string" calcext:value-type="string">
-                        <text:p>Nom</text:p>
+                        <text:p>Libellé</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Def longue</text:p>
+                        <text:p>Définition longue</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Def courte</text:p>
+                        <text:p>Définition courte</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
                         <text:p>Note</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce4" office:value-type="string" calcext:value-type="string">
-                        <text:p>Nom</text:p>
+                        <text:p>Libellé</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Def longue</text:p>
+                        <text:p>Définition longue</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Def courte</text:p>
+                        <text:p>Définition courte</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
                         <text:p>Note</text:p>
