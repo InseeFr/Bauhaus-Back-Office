@@ -94,6 +94,13 @@ public class Config {
 	private String roleClaim;
 	@Value("${jwt.id-claim}")
 	private String idClaim;
+	//@Value ("${fr.rmes.bauhaus.keycloak.resource}")
+	//private String resource;
+	@Value ("${fr.insee.rmes.bauhaus.keycloak.client.secret}")
+	private String secret;
+	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
+	private String clientId;
+
 
 	//LDAP
 	//LDAP
@@ -109,7 +116,8 @@ public class Config {
 	private String sugoiRealm;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
 	private String sugoiUi;
-
+	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
+	private String serverKeycloak;
 	
 	/******************************************************/
 	/** CONCEPTS 		***********************************/
@@ -555,5 +563,19 @@ public class Config {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
+	//public String getResource() {
+		//return resource;
+	//}
 
+	public String getClientId() {
+		return clientId;
+	}
+
+	public String getSecret() {
+		return secret;
+	}
+
+	public String getServerKeycloak() {
+		return serverKeycloak;
+	}
 }
