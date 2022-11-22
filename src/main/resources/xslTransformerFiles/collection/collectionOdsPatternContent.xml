@@ -56,7 +56,7 @@
             <style:table-column-properties fo:break-before="auto" style:column-width="11.172cm"/>
         </style:style>
         <style:style style:name="co6" style:family="table-column">
-            <style:table-column-properties fo:break-before="auto" style:column-width="1.499cm"/>
+            <style:table-column-properties fo:break-before="auto" style:column-width="2.702cm"/>
         </style:style>
         <style:style style:name="co7" style:family="table-column">
             <style:table-column-properties fo:break-before="auto" style:column-width="10.165cm"/>
@@ -276,6 +276,10 @@
                         calcext:value-type="string">
                         <text:p>${collection/Collection/descriptionLg1}</text:p>
                     </table:table-cell>
+                    <table:table-cell table:style-name="ce30" table:number-columns-repeated="3" />
+                    <table:table-cell office:value-type="string" calcext:value-type="string">
+                        <text:p>Les dates de modification sur l'année 2016 correspondent à la reprise de DDS dans RMèS</text:p>
+                    </table:table-cell>
                     <table:table-cell table:style-name="Default" table:number-columns-repeated="7"/>
                 </table:table-row>
                 <table:table-row table:style-name="ro2">
@@ -286,6 +290,10 @@
                     </table:table-cell>
                     <table:table-cell table:style-name="ce28" office:value-type="string" calcext:value-type="string">
                         <text:p>${collection/Collection/id}</text:p>
+                    </table:table-cell>
+                    <table:table-cell table:style-name="ce30" table:number-columns-repeated="3" />
+                    <table:table-cell office:value-type="string" calcext:value-type="string">
+                        <text:p>La "note éditoriale" correspond au champ "remarque" sur la page de définition d'insee.fr</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="Default" table:number-columns-repeated="7"/>
                 </table:table-row>
