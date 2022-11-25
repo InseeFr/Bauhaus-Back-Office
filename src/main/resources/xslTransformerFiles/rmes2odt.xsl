@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:officeooo="http://openoffice.org/2009/office"
-    xmlns:xhtml="http://www.w3.org/1999/xhtml"
-    exclude-result-prefixes="xs xd"
-    version="3.0">
+                xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+                xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+                xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:officeooo="http://openoffice.org/2009/office"
+                xmlns:calcext="urn:org:documentfoundation:names:experimental:calc:xmlns:calcext:1.0"
+                xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                exclude-result-prefixes="xs xd"
+                version="3.0">
 
     <xsl:output method="xml" encoding="UTF-8" indent="yes" />
 
@@ -171,7 +172,26 @@
     </xsl:template>
 
     <xd:doc>
+        <xd:desc>loop on the concepts of a collection</xd:desc>
+    </xd:doc>
+    <xsl:template match="text:section[@text:name='concept-loop']">
+        <xsl:variable name="section-content" select="*" as="node() *"/>
+        <xsl:for-each-group select="$collections//membersLg/membersLg" group-by="id">
+            <!-- sort text without accent -->
+            <xsl:sort select="upper-case(replace(normalize-unicode(prefLabelLg1,'NFKD'),'\P{IsBasicLatin}',''))"/>
+            <xsl:apply-templates select="$section-content">
+                <xsl:with-param name="context" as="node()" tunnel="yes">
+                    <Context>
+                        <collectionConcept><xsl:copy-of select="."/></collectionConcept>
+                    </Context>
+                </xsl:with-param>
+            </xsl:apply-templates>
+        </xsl:for-each-group>
+    </xsl:template>
+
+    <xd:doc>
         <xd:desc>elements with @id are used to filter the pattern, depending on parameters or mas/isPresentational </xd:desc>
+        <xd:param name="context"/>
     </xd:doc>
     <xsl:template match="*[@xml:id]" priority="1">
         <xsl:param name="context" tunnel="yes"/>
@@ -261,12 +281,40 @@
     </xsl:template>
 
     <xd:doc>
+        <xd:desc>text out of text:p may be personalized</xd:desc>
+    </xd:doc>
+    <xsl:template match="text()[contains(.,'${')]">
+        <xsl:call-template name="personalize-text">
+            <xsl:with-param name="text-to-personalize" select="."/>
+            <xsl:with-param name="style" select="''" tunnel="yes"/>
+            <xsl:with-param name="title-style" select="''" tunnel="yes"/>
+        </xsl:call-template>
+    </xsl:template>
+
+    <xd:doc>
+        <xd:desc>text out of text:p may be personalized</xd:desc>
+    </xd:doc>
+    <xsl:template match="@*[contains(.,'${')]">
+        <xsl:attribute name="{name()}">
+            <xsl:call-template name="personalize-text">
+                <xsl:with-param name="text-to-personalize" select="."/>
+                <xsl:with-param name="style" select="''" tunnel="yes"/>
+                <xsl:with-param name="title-style" select="''" tunnel="yes"/>
+            </xsl:call-template>
+        </xsl:attribute>
+    </xsl:template>
+
+
+    <xd:doc>
         <xd:desc>
             <xd:p>Recognize grammar structures :</xd:p>
             <xd:p>${dataReference}</xd:p>
             <xd:p>#if (${dataReference}) content #endif</xd:p>
             <xd:p>#list(${dataReference},'list style')</xd:p>
         </xd:desc>
+        <xd:param name="text-to-personalize"/>
+        <xd:param name="style"/>
+        <xd:param name="context"/>
     </xd:doc>
     <xsl:template name="personalize-text">
         <xsl:param name="text-to-personalize"/>
@@ -397,6 +445,10 @@
 
     <xd:doc>
         <xd:desc>Transform variable-name into nodes</xd:desc>
+        <xd:param name="variable-address"/>
+        <xd:param name="style"/>
+        <xd:param name="title-style"/>
+        <xd:param name="context"/>
     </xd:doc>
     <xsl:template name="get-variable-nodes">
         <xsl:param name="variable-address"/>
@@ -408,6 +460,7 @@
         <xsl:variable name="address-complement" select="substring-after($variable-address,'/')"/>
 
         <xsl:choose>
+            <xsl:when test="$variable-address = 'rmesUrl'"><xsl:value-of select="'https://gestion-metadonnees.insee.fr'"/></xsl:when>
             <xsl:when test="$source = 'concept' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$concepts//*[local-name()=$address-complement]//text()"/>
             </xsl:when>
@@ -421,7 +474,7 @@
                 <xsl:copy-of select="$collections//*[local-name()=$address-complement]//text()"/>
             </xsl:when>
             <xsl:when test="$source = 'collection'">
-                <xsl:copy-of select="$collections//*[local-name()=substring-before($address-complement,'/')]//*[local-name()=substring-after($address-complement,'/')]/text()"/>
+                <xsl:copy-of select="$collections//*[local-name()=substring-before($address-complement,'/')]/*[local-name()=substring-after($address-complement,'/')]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'series' and not(contains($address-complement,'/'))">
                 <xsl:copy-of select="$series//*[local-name()=$address-complement]/text()"/>
@@ -481,6 +534,12 @@
                 <xsl:call-template name="get-variable-nodes">
                     <xsl:with-param name="variable-address" select="concat('identifiedSims/',$context//mas,'/',$address-complement)"/>
                 </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$source = 'collectionConcept' and starts-with($address-complement,'richContent/')">
+                <xsl:apply-templates select="$context//collectionConcept//*[local-name()=substring-after($address-complement,'richContent/')]/*" mode="rich-content"/>
+            </xsl:when>
+            <xsl:when test="$source = 'collectionConcept'">
+                <xsl:copy-of select="$context//collectionConcept//*[local-name()=$address-complement]/text()"/>
             </xsl:when>
             <xsl:when test="$source = 'identifiedSims'">
                 <xsl:variable name="simsRubrics" select="$sims//rubrics[idAttribute = substring-before($address-complement,'/')]" as="node()*"/>
@@ -695,15 +754,25 @@
         </xsl:choose>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>in rich-content mode, text is copied as it</xd:desc>
+    </xd:doc>
     <xsl:template match="text()" mode="rich-content">
         <xsl:value-of select="."/>
     </xsl:template>
 
-    <!-- div is just a container and is not kept in odt ; all other ones have their corresponding odt tag -->
+
+    <xd:doc>
+        <xd:desc>div is just a container and is not kept in odt ; all other ones have their corresponding odt tag </xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:div" mode="rich-content">
         <xsl:apply-templates select="node()" mode="rich-content"/>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>paragraph</xd:desc>
+        <xd:param name="style"/>
+    </xd:doc>
     <xsl:template match="xhtml:p" mode="rich-content">
         <xsl:param name="style" tunnel="yes"/>
         <text:p text:style-name="{$style}">
@@ -711,34 +780,53 @@
         </text:p>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>line break</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:br" mode="rich-content">
         <text:line-break/>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>bold</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:strong" mode="rich-content">
         <text:span text:style-name="Bold">
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:span>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>italic</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:em" mode="rich-content">
         <text:span text:style-name="Italic">
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:span>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>unordonned list</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:ul" mode="rich-content">
         <text:list text:style-name="L1">
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:list>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>ordonned list</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:ol" mode="rich-content">
         <text:list text:style-name="L2">
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:list>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>list item</xd:desc>
+        <xd:param name="style"/>
+    </xd:doc>
     <xsl:template match="xhtml:li" mode="rich-content">
         <xsl:param name="style" tunnel="yes"/>
         <text:list-item>
@@ -748,12 +836,18 @@
         </text:list-item>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>link</xd:desc>
+    </xd:doc>
     <xsl:template match="xhtml:a" mode="rich-content">
         <text:a xlink:type="simple" xlink:href="{@href}">
             <xsl:apply-templates select="node()" mode="rich-content"/>
         </text:a>
     </xsl:template>
 
+    <xd:doc>
+        <xd:desc>any other tag</xd:desc>
+    </xd:doc>
     <xsl:template match="*" mode="rich-content">
         <xsl:value-of select="concat('BeginUnknownTag ',local-name())"/>
         <xsl:apply-templates select="node()" mode="rich-content"/>
