@@ -369,7 +369,7 @@
                         <text:p>Définition courte</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Note</text:p>
+                        <text:p>Note éditoriale</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce4" office:value-type="string" calcext:value-type="string">
                         <text:p>Libellé</text:p>
@@ -381,7 +381,7 @@
                         <text:p>Définition courte</text:p>
                     </table:table-cell>
                     <table:table-cell table:style-name="ce34" office:value-type="string" calcext:value-type="string">
-                        <text:p>Note</text:p>
+                        <text:p>Note éditoriale</text:p>
                     </table:table-cell>
                 </table:table-row>
                 <text:section text:name="concept-loop">
