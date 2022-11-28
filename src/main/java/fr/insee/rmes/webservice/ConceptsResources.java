@@ -341,7 +341,7 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionExportODT", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExportODT(
 			@PathVariable(Constants.ID) String id,
-			@RequestParam(name = "français", defaultValue = "true") Boolean boolLangueChoisie,
+			@RequestParam(name = "LG1", defaultValue = "true") Boolean boolLangueChoisie,
 			@RequestHeader(required=false) String accept)
 			throws RmesException {
 		return conceptsService.getCollectionExportODT(id, accept,boolLangueChoisie);
