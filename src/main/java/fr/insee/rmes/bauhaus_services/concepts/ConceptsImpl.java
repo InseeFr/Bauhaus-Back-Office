@@ -18,6 +18,7 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
+import fr.insee.rmes.webservice.ConceptsResources;
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -316,7 +317,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, Boolean boolLangueChoisie) throws RmesException{
+	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, ConceptsResources.Language LG) throws RmesException{
 		CollectionForExport collection;
 		try {
 			collection = collectionExport.getCollectionData(id);
@@ -326,13 +327,13 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 		Map<String, String> xmlContent = convertCollectionInXml(collection);
 		String fileName;
-		if (boolLangueChoisie){
+		if (LG == ConceptsResources.Language.LG1){
 			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
 		}
 		else {
 			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
 		}
-		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, boolLangueChoisie);
+		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, LG);
 	}
 
 
