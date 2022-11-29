@@ -11,6 +11,7 @@ import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.XsltUtils;
+import fr.insee.rmes.webservice.ConceptsResources;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -104,9 +105,9 @@ public class CollectionExportBuilder extends RdfService {
 	}
 
 
-	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, boolean boolLangueChoisie) throws RmesException {
+	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, ConceptsResources.Language LG) throws RmesException {
 		// Add two params to xmlContents
-		if (boolLangueChoisie){
+		if (LG == ConceptsResources.Language.LG1){
 			String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
 			xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 			return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternFR,zip, Constants.COLLECTION);
