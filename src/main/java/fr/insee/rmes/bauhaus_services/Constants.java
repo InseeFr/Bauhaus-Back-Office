@@ -11,14 +11,20 @@ public class Constants {
 	public static final String CODELIST = "codeList";
 	public static final String COLLECTION = "collection";
 	public static final String CONCEPT = "concept";
+	public static final String CONCEPT_VERSION = "conceptVersion";
 	public static final String CONTRIBUTOR = "contributor";
 	public static final String CONTRIBUTORS = "contributors";
+	public static final String CREATED = "created";
 	public static final String CREATOR = "creator";
 	public static final String CREATORS = "creators";
 
 	/*D*/
 	public static final String DATA_COLLECTOR = "dataCollector";
 	public static final String DATA_COLLECTORS = "dataCollectors";
+	public static final String DEF_COURTE_LG1 = "defCourteLg1";
+	public static final String DEF_COURTE_LG2 = "defCourteLg2";
+	public static final String DEF_LONGUE_LG1 = "defLongueLg1";
+	public static final String DEF_LONGUE_LG2 = "defLongueLg2";
 	public static final String DESCRIPTION_LG1 = "descriptionLg1";
 	public static final String DESCRIPTION_LG2 = "descriptionLg2";
 	public static final String DOCUMENT = "document";
@@ -26,7 +32,14 @@ public class Constants {
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
 	public static final String DOT_XML = ".xml";
 	public static final String DOT_ODT = ".odt";
+	public static final String DOT_ODS = ".ods";
 	public static final String DOT_ZIP = ".zip";
+
+	/*E*/
+	public static final String EDITORIAL_NOTE_LG1 = "editorialNoteLg1";
+	public static final String EDITORIAL_NOTE_LG2 = "editorialNoteLg2";
+
+
 
 	/*F*/
 	public static final String FAMILY = "family";
@@ -50,6 +63,7 @@ public class Constants {
 	public static final String ID_SIMS = "idSims";
 	public static final String INDICATOR_UP = "INDICATOR";
 	public static final String ISREPLACEDBY = "isReplacedBy";
+	public static final String ISVALIDATED = "isValidated";
 	
 	/*L*/
 	public static final String LABEL = "label";
@@ -59,6 +73,7 @@ public class Constants {
 	
 	/*M*/
 	public static final String MANAGER = "manager";
+	public static final String MODIFIED = "modified";
 
 	/*N*/
 	public static final String NOTATION = "notation";

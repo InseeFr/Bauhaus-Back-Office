@@ -1,12 +1,12 @@
 package fr.insee.rmes.model.concepts;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.utils.ExportUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CollectionForExport {
 
@@ -25,26 +25,39 @@ public class CollectionForExport {
 	private String isValidated;//
 	
 	//LINKS
-	private List<String> membersLg1;
-	private List<String> membersLg2;
-	
+	private List<MembersLg> membersLg;
+
 	//NOTES
 	private String descriptionLg1; 
-	private String descriptionLg2; 	
-	
-	
+	private String descriptionLg2;
+
+
+
 	public CollectionForExport() {
-		membersLg1 = new ArrayList<>();
-		membersLg2 = new ArrayList<>();
+		membersLg = new ArrayList<>();
 	}
 
 	public void addMembers(JSONArray members) {
 		for (int i = 0; i < members.length(); i++) {
 			JSONObject member = (JSONObject) members.get(i);
-				membersLg1.add(member.getString(Constants.PREF_LABEL_LG1));
-				if (member.has(Constants.PREF_LABEL_LG2)) membersLg2.add(member.getString(Constants.PREF_LABEL_LG2));
+			MembersLg rep = new MembersLg();
+			rep.setId(member.getString(Constants.ID));
+			rep.setPrefLabelLg1(member.getString(Constants.PREF_LABEL_LG1));
+			rep.setPrefLabelLg2(member.getString(Constants.PREF_LABEL_LG2));
+			if (member.has(Constants.CREATOR)) rep.setCreator(member.getString(Constants.CREATOR));
+			if (member.has(Constants.DEF_COURTE_LG1)) rep.setDefCourteLg1(member.getString(Constants.DEF_COURTE_LG1));
+			if (member.has(Constants.DEF_COURTE_LG2)) rep.setDefCourteLg2(member.getString(Constants.DEF_COURTE_LG2));
+			if (member.has(Constants.DEF_LONGUE_LG1)) rep.setDefLongueLg1(member.getString(Constants.DEF_LONGUE_LG1));
+			if (member.has(Constants.DEF_LONGUE_LG2)) rep.setDefLongueLg2(member.getString(Constants.DEF_LONGUE_LG2));
+			if (member.has(Constants.EDITORIAL_NOTE_LG1)) rep.setEditorialNoteLg1(member.getString(Constants.EDITORIAL_NOTE_LG1));
+			if (member.has(Constants.EDITORIAL_NOTE_LG2)) rep.setEditorialNoteLg2(member.getString(Constants.EDITORIAL_NOTE_LG2));
+			if (member.has(Constants.ISVALIDATED)) rep.setIsValidated(ExportUtils.toValidationStatus(member.getString(Constants.ISVALIDATED),true));
+			if (member.has(Constants.CREATED)) rep.setCreated(ExportUtils.toDate(member.getString(Constants.CREATED)));
+			if (member.has(Constants.MODIFIED)) rep.setModified(ExportUtils.toDate(member.getString(Constants.MODIFIED)));
+			membersLg.add(rep);
 		}
 	}
+
 
 	public String getCreated() {
 		return created;
@@ -112,26 +125,14 @@ public class CollectionForExport {
 
 
 
-	public List<String> getMemberLg1() {
-		return membersLg1;
+	public List<MembersLg> getMembersLg() {
+		return membersLg;
 	}
 
 
 
-	public void setMemberLg1(List<String> memberLg1) {
-		this.membersLg1 = memberLg1;
-	}
-
-
-
-	public List<String> getMemberLg2() {
-		return membersLg2;
-	}
-
-
-
-	public void setMemberLg2(List<String> memberLg2) {
-		this.membersLg2 = memberLg2;
+	public void setMembersLg(List<MembersLg> membersLg) {
+		this.membersLg = membersLg;
 	}
 
 
@@ -157,4 +158,7 @@ public class CollectionForExport {
 	public void setDescriptionLg2(String descriptionLg2) {
 		this.descriptionLg2 = descriptionLg2;
 	}
+
+
+
 }

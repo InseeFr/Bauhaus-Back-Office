@@ -64,7 +64,17 @@ public class CollectionsQueries extends GenericQueries{
 		params.put("ID", id);
 		return  buildRequest("getCollectionMembers.ftlh", params);
 	}
-	
+
+	public static String collectionConceptsQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
+		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
+		params.put("COLLECTION_ID", id);
+		return  buildRequest("getCollectionConcepts.ftlh", params);
+	}
+
 	public static String isCollectionExist(String id) {
 		return "ASK { \n"
 				+ "?collection ?b ?c . \n"

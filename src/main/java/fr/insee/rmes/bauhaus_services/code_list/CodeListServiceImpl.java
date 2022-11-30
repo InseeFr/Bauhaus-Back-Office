@@ -408,24 +408,27 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDFS.SEEALSO, codeListIri, model, graph);
 			
-			CodeList original = getCodeList(codeListId);
-			deleteCodes(codesList, original);
+			JSONObject original = new JSONObject(getCodeListJson(codeListId));
+			deleteCodes(original);
 			createCodeTriplet(graph, codesList, codeListIri, model, owlClassUri);
 		}
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return codeListId;
 	}
 
-	private void deleteCodes(JSONObject codesList, CodeList original) {
-		if(original.getCodes() != null) {
-			original.getCodes().forEach(code -> {
-				IRI codeIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + code.getCode());
-				try {
-					repoGestion.deleteObject(codeIri, null);
-				} catch (RmesException e) {
-					logger.error(e.getMessage());
-				}
-			});
+	private void deleteCodes(JSONObject original) {
+		JSONArray codes = original.getJSONArray("codes");
+		for(int i = 0; i < codes.length(); i++){
+			JSONObject code = codes.getJSONObject(i);
+			try {
+				String iri = code.getString("iri");
+				logger.debug("Deleting code {}", iri);
+				IRI codeIri = RdfUtils.createIRI(iri);
+				repoGestion.deleteObject(codeIri, null);
+			} catch (RmesException e) {
+				logger.error(e.getMessage());
+			}
+
 		}
 	}
 
@@ -499,7 +502,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		rootNodes.forEach(rootNode -> {
 			String rootNodeCode = (String) rootNode;
 
-			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + rootNodeCode);
+			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_CODE_URI_SEGMENT) + "/" + rootNodeCode);
 			RdfUtils.addTripleUri(codeListIri, RdfUtils.createIRI(RDF.NAMESPACE + "_" + i), parentIRI, codeListModel, graph);
 			i.getAndIncrement();
 
@@ -512,7 +515,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				});
 
 				children.forEach(child -> {
-					IRI childIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + child);
+					IRI childIri = RdfUtils.codeListIRI(codesList.getString(LAST_CODE_URI_SEGMENT) + "/" + child);
 					RdfUtils.addTripleUri(codeListIri, RdfUtils.createIRI(RDF.NAMESPACE + "_" + i), childIri, codeListModel, graph);
 					i.getAndIncrement();
 				});
@@ -537,10 +540,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private void createParentChildRelationForCodes(Resource graph, JSONObject codesList, JSONObject parentsModel) {
 		parentsModel.keySet().forEach(key -> {
 			Model parentModel = new LinkedHashModel();
-			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + key);
+			IRI parentIRI = RdfUtils.codeListIRI(codesList.getString(LAST_CODE_URI_SEGMENT) + "/" + key);
 			JSONArray children = parentsModel.getJSONArray(key);
 			children.forEach(child -> {
-				IRI childIri = RdfUtils.codeListIRI(codesList.getString(LAST_LIST_URI_SEGMENT) + "/" + child);
+				IRI childIri = RdfUtils.codeListIRI(codesList.getString(LAST_CODE_URI_SEGMENT) + "/" + child);
 				RdfUtils.addTripleUri(parentIRI, SKOS.NARROWER, RdfUtils.toString(childIri), parentModel, graph);
 			});
 			try {
