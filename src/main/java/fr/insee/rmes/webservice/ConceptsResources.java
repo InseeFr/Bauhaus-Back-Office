@@ -337,19 +337,14 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.getCollectionExport(id, accept);
 	}
 
-
-	public enum Language {
-		LG1, LG2;
-	}
-
 	@GetMapping(value = "/collection/export/{id}/odt", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExportODT", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExportODT(
 			@PathVariable(Constants.ID) String id,
-			@RequestParam("langue") Language LG,
+			@RequestParam(name = "LG1", defaultValue = "true") Boolean boolLangueChoisie,
 			@RequestHeader(required=false) String accept)
 			throws RmesException {
-		return conceptsService.getCollectionExportODT(id, accept,LG);
+		return conceptsService.getCollectionExportODT(id, accept,boolLangueChoisie);
 
 	}
 

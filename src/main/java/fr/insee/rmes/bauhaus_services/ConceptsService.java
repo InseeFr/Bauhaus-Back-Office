@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.webservice.ConceptsResources;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
@@ -65,7 +64,7 @@ public interface ConceptsService {
 
 	Map<String, InputStream> getCollectionExportIS(String id) throws RmesException;
 
-	public ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsResources.Language LG) throws RmesException ;
+	public ResponseEntity<?> getCollectionExportODT(String id, String accept, Boolean boolLangueChoisie) throws RmesException ;
 
 	public   ResponseEntity<?>  getCollectionExportODS(String id, String accept) throws RmesException;
 }
