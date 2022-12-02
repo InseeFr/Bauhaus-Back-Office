@@ -65,7 +65,7 @@ public interface ConceptsService {
 
 	Map<String, InputStream> getCollectionExportIS(String id) throws RmesException;
 
-	public ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsResources.Language LG) throws RmesException ;
+	public ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsResources.Language lg) throws RmesException ;
 
 	public   ResponseEntity<?>  getCollectionExportODS(String id, String accept) throws RmesException;
 }

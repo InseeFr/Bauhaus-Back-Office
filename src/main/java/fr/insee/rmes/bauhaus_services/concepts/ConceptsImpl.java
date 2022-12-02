@@ -317,7 +317,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, ConceptsResources.Language LG) throws RmesException{
+	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, ConceptsResources.Language lg) throws RmesException{
 		CollectionForExport collection;
 		try {
 			collection = collectionExport.getCollectionData(id);
@@ -327,13 +327,13 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 		Map<String, String> xmlContent = convertCollectionInXml(collection);
 		String fileName;
-		if (LG == ConceptsResources.Language.LG1){
+		if (lg == ConceptsResources.Language.lg1){
 			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
 		}
 		else {
 			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
 		}
-		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, LG);
+		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
 	}
 
 
