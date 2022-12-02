@@ -53,13 +53,10 @@ public class DocumentsImpl implements DocumentsService {
 	 * @see fr.insee.rmes.bauhaus_services.DocumentsService#createDocument(java.lang.String)
 	 */
 	@Override
-	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException {
-		logger.debug("Creating document {}", documentName);
+	public String createDocument(String body, InputStream documentFile,String documentName) throws RmesException {
 		documentsUtils.checkFileNameValidity(documentName);
-
-		String id = documentsUtils.createDocumentID();
-		logger.debug("Creating document {} with the identifier {}", documentName, id);
-
+		String id=documentsUtils.createDocumentID();
+		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,false, documentFile,documentName);
 		return id;
 	}
