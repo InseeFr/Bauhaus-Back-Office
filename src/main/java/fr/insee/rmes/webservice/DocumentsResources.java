@@ -154,7 +154,8 @@ public class DocumentsResources  extends GenericResources {
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/document/{id}")
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PutMapping("/document/{id}")
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public ResponseEntity<Object> setDocument(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
@@ -243,7 +244,8 @@ public class DocumentsResources  extends GenericResources {
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PostMapping(value = "/link", 
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PostMapping(value = "/link",
 		consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
 				MediaType.APPLICATION_OCTET_STREAM_VALUE,
 				"application/vnd.oasis.opendocument.text",
@@ -267,7 +269,8 @@ public class DocumentsResources  extends GenericResources {
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@PutMapping("/link/{id}")
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PutMapping("/link/{id}")
 	@Operation(operationId = "setLinkById", summary = "Update link")
 	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,

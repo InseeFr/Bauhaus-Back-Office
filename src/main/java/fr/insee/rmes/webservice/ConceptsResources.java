@@ -57,26 +57,24 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
 	public ResponseEntity<Object> getConcepts() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConcepts();
+			String jsonResultat = conceptsService.getConcepts();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/linkedConcepts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getRelatedConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})																 
 	public ResponseEntity<Object> getRelatedConcepts(@PathVariable(Constants.ID) String id) {
-		String resultat;
 		try {
-			resultat = conceptsService.getRelatedConcepts(id);
+			String resultat = conceptsService.getRelatedConcepts(id);
+			return ResponseEntity.status(HttpStatus.OK).body(resultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(resultat);
 	}
 	
 	
@@ -88,114 +86,106 @@ public class ConceptsResources  extends GenericResources   {
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) {
 		try {
 			conceptsService.deleteConcept(id);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
 	@GetMapping(value = "/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConceptsSearch", summary = "Rich list of concepts", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsSearch.class))))})																 
 	public ResponseEntity<Object> getConceptsSearch() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConceptsSearch();
+			String jsonResultat = conceptsService.getConceptsSearch();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/concept/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConceptByID", summary = "Concept", 
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
 	public ResponseEntity<Object> getConceptByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConceptByID(id);
+			String jsonResultat = conceptsService.getConceptByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConceptsToValidate", summary = "List of concepts to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptsToValidate.class))))})
 	public ResponseEntity<Object> getConceptsToValidate() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConceptsToValidate();
+			String jsonResultat = conceptsService.getConceptsToValidate();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/concept/{id}/links", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConceptLinksByID", summary = "List of linked concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=ConceptLinks.class))))})
 	public ResponseEntity<Object> getConceptLinksByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConceptLinksByID(id);
+			String jsonResultat = conceptsService.getConceptLinksByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/concept/{id}/notes/{conceptVersion}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConceptNotesByID", summary = "Last notes of the concept", 
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
 	public ResponseEntity<Object> getConceptNotesByID(@PathVariable(Constants.ID) String id, @PathVariable("conceptVersion") int conceptVersion) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
+			String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getCollections", summary = "List of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getCollections() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollections();
+			String jsonResultat = conceptsService.getCollections();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getCollectionsDashboard() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionsDashboard();
+			String jsonResultat = conceptsService.getCollectionsDashboard();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collections/toValidate", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getCollectionsToValidate", summary = "List of collections to validate", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionsToValidate.class))))})
 	public ResponseEntity<Object> getCollectionsToValidate() {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionsToValidate();
+			String jsonResultat = conceptsService.getCollectionsToValidate();
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -214,13 +204,12 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionMembersByID", summary = "List of collection member concepts", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	public ResponseEntity<Object> getCollectionMembersByID(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = conceptsService.getCollectionMembersByID(id);
+			String jsonResultat = conceptsService.getCollectionMembersByID(id);
+			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
@@ -229,13 +218,12 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Concept", required = true) @RequestBody String body) {
-		String id = null;
 		try {
-			id = conceptsService.setConcept(body);
+			String id = conceptsService.setConcept(body);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
@@ -247,11 +235,11 @@ public class ConceptsResources  extends GenericResources   {
 			@Parameter(description = "Concept", required = true) @RequestBody String body) {
 		try {
 			conceptsService.setConcept(id, body);
+			logger.info("Concept updated : {}" , id);
+			return ResponseEntity.noContent().build();
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		logger.info("Update concept : {}" , id);
-		return ResponseEntity.noContent().build();
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
@@ -290,10 +278,10 @@ public class ConceptsResources  extends GenericResources   {
 			@Parameter(description = "Collection", required = true) @RequestBody String body) {
 		try {
 			conceptsService.setCollection(body);
+			return ResponseEntity.noContent().build();
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.noContent().build();
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
