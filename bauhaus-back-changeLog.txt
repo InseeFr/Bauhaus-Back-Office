@@ -1,3 +1,5 @@
+3.3.1 : - Front: Fix an issue with sims
+3.3.0 : Add export ods and change layout odt for collection
 3.1.2 : Fix issue with prod param in lowercase and expected in uppercase
 3.1.1 : Fix issue with OIDC and stamp
 3.1.0  : - Back : Passage à Springboot
