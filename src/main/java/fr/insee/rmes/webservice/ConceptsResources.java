@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
@@ -52,6 +53,9 @@ public class ConceptsResources  extends GenericResources   {
 	
 	@Autowired
 	ConceptsService conceptsService;
+
+	@Autowired
+	ConceptsCollectionService conceptsCollectionService;
 
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
@@ -329,23 +333,30 @@ public class ConceptsResources  extends GenericResources   {
 		lg1, lg2;
 	}
 
-	@GetMapping(value = "/collection/export/{id}/odt", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExportODT", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExportODT(
+	@GetMapping(value = "/collection/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+	@Operation(operationId = "exportZipCollectionODT", summary = "Blob of concept")
+	public void exportZipCollectionODT(
 			@PathVariable(Constants.ID) String id,
+			@PathVariable("type") String type,
+			@RequestParam("langue") Language lg,
+			@RequestHeader(required=false) String accept,
+			HttpServletResponse response) throws RmesException {
+		conceptsCollectionService.exportZipCollection(id, accept, response, lg, type);
+	}
+
+	@GetMapping(value = "/collection/export/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionExport(
+			@PathVariable(Constants.ID) String id,
+			@PathVariable("type") String type,
 			@RequestParam("langue") Language lg,
 			@RequestHeader(required=false) String accept)
 			throws RmesException {
-		return conceptsService.getCollectionExportODT(id, accept,lg);
 
-	}
+		if("ods".equalsIgnoreCase(type)){
+			return conceptsCollectionService.getCollectionExportODS(id, accept);
+		}
+		return conceptsCollectionService.getCollectionExportODT(id, accept,lg);
 
-	@GetMapping(value = "/collection/export/{id}/ods", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExportODS", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExportODS(
-			@PathVariable(Constants.ID) String id,
-			@RequestHeader(required=false) String accept)
-			throws RmesException {
-		return conceptsService.getCollectionExportODS(id, accept);
 	}
 }

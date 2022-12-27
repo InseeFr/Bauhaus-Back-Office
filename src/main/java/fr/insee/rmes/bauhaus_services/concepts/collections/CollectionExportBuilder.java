@@ -17,12 +17,18 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.Collator;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Component
 public class CollectionExportBuilder extends RdfService {
@@ -35,6 +41,12 @@ public class CollectionExportBuilder extends RdfService {
 	String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
 	String zipold = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
 	final Collator instance = Collator.getInstance();
+
+	private static final String CONTENT_TYPE = "Content-Type";
+	private static final String ATTACHMENT = "attachment";
+	private static final String ODT_EXTENSION = ".odt";
+	private static final String ODS_EXTENSION = ".ods";
+	private static final String ZIP_EXTENSION = ".zip";
 
 
 	String xmlPatternFR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
@@ -94,49 +106,77 @@ public class CollectionExportBuilder extends RdfService {
 	}
 
 
-		
-
 	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		
 		return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPattern,zipold, Constants.COLLECTION);
 	}
 
 
 	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, ConceptsResources.Language lg) throws RmesException {
-		// Add two params to xmlContents
-		if (lg == ConceptsResources.Language.lg1){
-			String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
-			xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-			return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternFR,zip, Constants.COLLECTION);
-		}
-		else {
-			String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
-			xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-			return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternEN,zip, Constants.COLLECTION);
-		}
-
+		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
+		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+		String xmlPattern = lg == ConceptsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
+		return exportUtils.exportAsResponse(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
 	}
 
 	public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsResponseODS(fileName, xmlContent,xslFile,xmlPatternODS,zipODS, Constants.COLLECTION); // à changer en exportAsResponseODS
-
-
+		return exportUtils.exportAsResponseODS(fileName, xmlContent,xslFile,xmlPatternODS,zipODS, Constants.COLLECTION);
 	}
 
 	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		// Add two params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		
 		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.COLLECTION);
 	}
 
+	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, ConceptsResources.Language lg) throws RmesException {
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+		String xmlPattern = lg == ConceptsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
+		exportMultipleResourceAsZip(collections,xslFile,xmlPattern,zip, response, ODT_EXTENSION);
+	}
+
+	public void exportMultipleCollectionsAsZipOds(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response) throws RmesException {
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
+		exportMultipleResourceAsZip(collections,xslFile,xmlPatternODS, zip, response, ODS_EXTENSION);
+	}
+
+	private void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, HttpServletResponse response, String extension) throws RmesException {
+
+		String zipFileName = "collections" + ZIP_EXTENSION;
+
+		response.addHeader(HttpHeaders.ACCEPT, "*/*");
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
+		response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+		response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
+
+		try (ZipOutputStream zipOutputStreamStream = new ZipOutputStream(response.getOutputStream())) {
+			Iterator<String> resourceIterator = resources.keySet().iterator();
+			while (resourceIterator.hasNext()) {
+				String key = resourceIterator.next();
+				this.addZipEntry(key, resources.get(key), zipOutputStreamStream, xslFile, xmlPattern, zip,extension);
+			}
+		} catch (IOException e1) {
+			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "IOException on " + zipFileName, e1.getMessage());
+		}
+	}
+
+	private void addZipEntry(String filename, Map<String, String> xmlContent, ZipOutputStream zos, String xslFile, String xmlPattern, String zip, String extension)
+			throws IOException, RmesException {
+		filename = filename.replace(extension, "");
+		ZipEntry entry = new ZipEntry(filename + extension);
+		InputStream input = exportUtils.exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
+		if (input == null)
+			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+		zos.putNextEntry(entry);
+		input.transferTo(zos);
+		zos.closeEntry();
+	}
 
 	public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
 		CollectionForExportOld collection = null;

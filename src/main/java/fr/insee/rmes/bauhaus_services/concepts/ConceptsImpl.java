@@ -317,42 +317,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, ConceptsResources.Language lg) throws RmesException{
-		CollectionForExport collection;
-		try {
-			collection = collectionExport.getCollectionData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName;
-		if (lg == ConceptsResources.Language.lg1){
-			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
-		}
-		else {
-			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
-		}
-		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
-	}
-
-
-	@Override
-	public ResponseEntity<?> getCollectionExportODS(String id, String acceptHeader) throws RmesException{
-		CollectionForExport collection;
-		try {
-			collection = collectionExport.getCollectionData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();;
-		return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
-	}
-
-
-	@Override
 	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {
 		CollectionForExport collection = collectionExport.getCollectionData(id);
 		Map<String, String> xmlContent = convertCollectionInXml(collection);
