@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,15 +30,7 @@ public interface ConceptsService {
 	
 	String getConceptNotesByID(String id, int conceptVersion) throws RmesException;
 	
-	String getCollections() throws RmesException;
-	
-	String getCollectionsDashboard() throws RmesException;
-	
 	String getCollectionsToValidate() throws RmesException;
-	
-	String getCollectionByID(String id) throws RmesException;
-	
-	String getCollectionMembersByID(String id) throws RmesException;
 	
 	String setConcept(String body) throws RmesException;
 
@@ -62,6 +55,8 @@ public interface ConceptsService {
 	String deleteConcept(String id) throws RmesException;
 
 	Map<String, InputStream> getConceptExportIS(String id) throws RmesException;
+
+	Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException;
 
 	Map<String, InputStream> getCollectionExportIS(String id) throws RmesException;
 }

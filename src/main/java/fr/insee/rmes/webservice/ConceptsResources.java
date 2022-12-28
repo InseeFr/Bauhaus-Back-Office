@@ -161,7 +161,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getCollections() {
 		try {
-			String jsonResultat = conceptsService.getCollections();
+			String jsonResultat = conceptsCollectionService.getCollections();
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -173,7 +173,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getCollectionsDashboard() {
 		try {
-			String jsonResultat = conceptsService.getCollectionsDashboard();
+			String jsonResultat = conceptsCollectionService.getCollectionsDashboard();
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -197,7 +197,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
 		try {
-			String collection = conceptsService.getCollectionByID(id);
+			String collection = conceptsCollectionService.getCollectionByID(id);
 			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -209,7 +209,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	public ResponseEntity<Object> getCollectionMembersByID(@PathVariable(Constants.ID) String id) {
 		try {
-			String jsonResultat = conceptsService.getCollectionMembersByID(id);
+			String jsonResultat = conceptsCollectionService.getCollectionMembersByID(id);
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -327,36 +327,5 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
-	}
-
-	public enum Language {
-		lg1, lg2;
-	}
-
-	@GetMapping(value = "/collection/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
-	@Operation(operationId = "exportZipCollectionODT", summary = "Blob of concept")
-	public void exportZipCollectionODT(
-			@PathVariable(Constants.ID) String id,
-			@PathVariable("type") String type,
-			@RequestParam("langue") Language lg,
-			@RequestHeader(required=false) String accept,
-			HttpServletResponse response) throws RmesException {
-		conceptsCollectionService.exportZipCollection(id, accept, response, lg, type);
-	}
-
-	@GetMapping(value = "/collection/export/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExport(
-			@PathVariable(Constants.ID) String id,
-			@PathVariable("type") String type,
-			@RequestParam("langue") Language lg,
-			@RequestHeader(required=false) String accept)
-			throws RmesException {
-
-		if("ods".equalsIgnoreCase(type)){
-			return conceptsCollectionService.getCollectionExportODS(id, accept);
-		}
-		return conceptsCollectionService.getCollectionExportODT(id, accept,lg);
-
 	}
 }

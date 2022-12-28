@@ -11,7 +11,7 @@ import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.XsltUtils;
-import fr.insee.rmes.webservice.ConceptsResources;
+import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -113,10 +113,10 @@ public class CollectionExportBuilder extends RdfService {
 	}
 
 
-	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, ConceptsResources.Language lg) throws RmesException {
+	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, ConceptsCollectionsResources.Language lg) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		String xmlPattern = lg == ConceptsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
+		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
 		return exportUtils.exportAsResponse(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
 	}
 
@@ -132,22 +132,29 @@ public class CollectionExportBuilder extends RdfService {
 		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.COLLECTION);
 	}
 
-	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, ConceptsResources.Language lg) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, ConceptsCollectionsResources.Language lg, Map<String, Map<String, InputStream>> concepts) throws RmesException {
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
-		String xmlPattern = lg == ConceptsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
-		exportMultipleResourceAsZip(collections,xslFile,xmlPattern,zip, response, ODT_EXTENSION);
+		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
+		exportMultipleResourceAsZip(collections,xslFile,xmlPattern,zip, response, ODT_EXTENSION, concepts);
 	}
 
-	public void exportMultipleCollectionsAsZipOds(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+	public void exportMultipleCollectionsAsZipOds(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, Map<String, Map<String, InputStream>> concepts) throws RmesException {
+		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		collections.values().stream().forEach(collection -> collection.put(Constants.PARAMETERS_FILE, parametersXML));
-		exportMultipleResourceAsZip(collections,xslFile,xmlPatternODS, zip, response, ODS_EXTENSION);
+		exportMultipleResourceAsZip(collections,xslFile,xmlPatternODS, zip, response, ODS_EXTENSION, concepts);
 	}
 
-	private void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, HttpServletResponse response, String extension) throws RmesException {
+	private void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, HttpServletResponse response, String extension, Map<String, Map<String, InputStream>> concepts) throws RmesException {
 
 		String zipFileName = "collections" + ZIP_EXTENSION;
+
+		/**
+		 * If we want to create an archive with only one collection, we name the archive after it.
+		 */
+		if(resources.size() == 1){
+			zipFileName = resources.keySet().iterator().next() + ZIP_EXTENSION;
+		}
 
 		response.addHeader(HttpHeaders.ACCEPT, "*/*");
 		response.setStatus(HttpServletResponse.SC_OK);
@@ -159,20 +166,36 @@ public class CollectionExportBuilder extends RdfService {
 			Iterator<String> resourceIterator = resources.keySet().iterator();
 			while (resourceIterator.hasNext()) {
 				String key = resourceIterator.next();
-				this.addZipEntry(key, resources.get(key), zipOutputStreamStream, xslFile, xmlPattern, zip,extension);
+				InputStream input = exportUtils.exportAsInputStream(key.replace(extension, ""), resources.get(key), xslFile, xmlPattern, zip, Constants.COLLECTION);
+				if (input == null)
+					throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+
+				this.addZipEntry("", key + extension, input, zipOutputStreamStream);
+			}
+			if(concepts != null){
+				addCollectionsConcepts(concepts, zipOutputStreamStream);
 			}
 		} catch (IOException e1) {
 			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "IOException on " + zipFileName, e1.getMessage());
 		}
 	}
 
-	private void addZipEntry(String filename, Map<String, String> xmlContent, ZipOutputStream zos, String xslFile, String xmlPattern, String zip, String extension)
-			throws IOException, RmesException {
-		filename = filename.replace(extension, "");
-		ZipEntry entry = new ZipEntry(filename + extension);
-		InputStream input = exportUtils.exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
-		if (input == null)
-			throw new RmesException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+	private void addCollectionsConcepts(Map<String, Map<String, InputStream>> collectionsConcepts, ZipOutputStream zipOutputStreamStream) throws IOException {
+		Iterator<String> collectionIterator = collectionsConcepts.keySet().iterator();
+		while (collectionIterator.hasNext()) {
+			String collectionName = collectionIterator.next();
+			Map<String, InputStream> concepts = collectionsConcepts.get(collectionName);
+
+			Iterator<String> conceptsIterator = concepts.keySet().iterator();
+			while (conceptsIterator.hasNext()) {
+				String key = conceptsIterator.next();
+				this.addZipEntry(collectionName + "/", key + ODT_EXTENSION, concepts.get(key), zipOutputStreamStream);
+			}
+		}
+	}
+
+	private void addZipEntry(String folder, String filename, InputStream input, ZipOutputStream zos) throws IOException {
+		ZipEntry entry = new ZipEntry(folder + filename);
 		zos.putNextEntry(entry);
 		input.transferTo(zos);
 		zos.closeEntry();

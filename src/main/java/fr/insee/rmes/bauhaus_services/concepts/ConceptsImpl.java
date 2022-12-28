@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -150,30 +151,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public String getCollections()  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
-	}
-
-	@Override
-	public String getCollectionsDashboard()  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
-	}
-
-	@Override
 	public String getCollectionsToValidate()  throws RmesException{
 		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
 	}
-
-	@Override
-	public String getCollectionByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
-	}
-
-	@Override
-	public String getCollectionMembersByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
-	}
-
 
 
 	/**
@@ -270,6 +250,22 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String fileName = getFileNameForExport(concept);
 		Map<String,InputStream> ret = new HashMap<>();
 		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+		return ret;
+	}
+
+	@Override
+	public Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException {
+		Map<String,InputStream> ret = new HashMap<>();
+		ids.parallelStream().forEach(id -> {
+			try {
+				ConceptForExport concept = conceptsExport.getConceptData(id);
+				Map<String, String> xmlContent = convertConceptInXml(concept);
+				String fileName = getFileNameForExport(concept);
+				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+			} catch (RmesException e) {
+				e.printStackTrace();
+			}
+		});
 		return ret;
 	}
 
