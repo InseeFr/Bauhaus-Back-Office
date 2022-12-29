@@ -156,17 +156,6 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollections", summary = "List of collections", 
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getCollections() {
-		try {
-			String jsonResultat = conceptsCollectionService.getCollections();
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
-	}
 
 	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
