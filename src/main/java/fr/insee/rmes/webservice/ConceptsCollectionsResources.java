@@ -3,8 +3,12 @@ package fr.insee.rmes.webservice;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -12,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +49,18 @@ public class ConceptsCollectionsResources extends GenericResources   {
 
 	@Autowired
 	ConceptsCollectionService conceptsCollectionService;
+
+	@GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getCollections", summary = "List of collections",
+			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= IdLabel.class))))})
+	public ResponseEntity<Object> getCollections() {
+		try {
+			String collections = conceptsCollectionService.getCollections();
+			return ResponseEntity.status(HttpStatus.OK).body(collections);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+	}
 
 	@GetMapping(value = "/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
