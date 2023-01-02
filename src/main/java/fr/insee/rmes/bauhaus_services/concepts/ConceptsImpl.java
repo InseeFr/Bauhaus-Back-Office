@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -150,30 +151,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public String getCollections()  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
-	}
-
-	@Override
-	public String getCollectionsDashboard()  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsDashboardQuery()).toString();
-	}
-
-	@Override
 	public String getCollectionsToValidate()  throws RmesException{
 		return repoGestion.getResponseAsArray(CollectionsQueries.collectionsToValidateQuery()).toString();
 	}
-
-	@Override
-	public String getCollectionByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id)).toString();
-	}
-
-	@Override
-	public String getCollectionMembersByID(String id)  throws RmesException{
-		return repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
-	}
-
 
 
 	/**
@@ -273,6 +253,22 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		return ret;
 	}
 
+	@Override
+	public Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException {
+		Map<String,InputStream> ret = new HashMap<>();
+		ids.parallelStream().forEach(id -> {
+			try {
+				ConceptForExport concept = conceptsExport.getConceptData(id);
+				Map<String, String> xmlContent = convertConceptInXml(concept);
+				String fileName = getFileNameForExport(concept);
+				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+			} catch (RmesException e) {
+				e.printStackTrace();
+			}
+		});
+		return ret;
+	}
+
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
 		String conceptXml = XMLUtils.produceXMLResponse(concept);
 		Map<String,String> xmlContent = new HashMap<>();
@@ -315,42 +311,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
-
-	@Override
-	public ResponseEntity<?> getCollectionExportODT(String id, String acceptHeader, ConceptsResources.Language lg) throws RmesException{
-		CollectionForExport collection;
-		try {
-			collection = collectionExport.getCollectionData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName;
-		if (lg == ConceptsResources.Language.lg1){
-			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
-		}
-		else {
-			fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
-		}
-		return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
-	}
-
-
-	@Override
-	public ResponseEntity<?> getCollectionExportODS(String id, String acceptHeader) throws RmesException{
-		CollectionForExport collection;
-		try {
-			collection = collectionExport.getCollectionData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();;
-		return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
-	}
-
 
 	@Override
 	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {

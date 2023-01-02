@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
@@ -52,6 +53,9 @@ public class ConceptsResources  extends GenericResources   {
 	
 	@Autowired
 	ConceptsService conceptsService;
+
+	@Autowired
+	ConceptsCollectionService conceptsCollectionService;
 
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
@@ -152,24 +156,13 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollections", summary = "List of collections", 
-			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getCollections() {
-		try {
-			String jsonResultat = conceptsService.getCollections();
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
-	}
 
 	@GetMapping(value = "/collections/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getCollectionsDashboard", summary = "Rich list of collections", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getCollectionsDashboard() {
 		try {
-			String jsonResultat = conceptsService.getCollectionsDashboard();
+			String jsonResultat = conceptsCollectionService.getCollectionsDashboard();
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -193,7 +186,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
 		try {
-			String collection = conceptsService.getCollectionByID(id);
+			String collection = conceptsCollectionService.getCollectionByID(id);
 			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -205,7 +198,7 @@ public class ConceptsResources  extends GenericResources   {
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=CollectionMembers.class))))})
 	public ResponseEntity<Object> getCollectionMembersByID(@PathVariable(Constants.ID) String id) {
 		try {
-			String jsonResultat = conceptsService.getCollectionMembersByID(id);
+			String jsonResultat = conceptsCollectionService.getCollectionMembersByID(id);
 			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
@@ -323,29 +316,5 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
 	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
 			return conceptsService.getCollectionExport(id, accept);
-	}
-
-	public enum Language {
-		lg1, lg2;
-	}
-
-	@GetMapping(value = "/collection/export/{id}/odt", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExportODT", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExportODT(
-			@PathVariable(Constants.ID) String id,
-			@RequestParam("langue") Language lg,
-			@RequestHeader(required=false) String accept)
-			throws RmesException {
-		return conceptsService.getCollectionExportODT(id, accept,lg);
-
-	}
-
-	@GetMapping(value = "/collection/export/{id}/ods", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExportODS", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExportODS(
-			@PathVariable(Constants.ID) String id,
-			@RequestHeader(required=false) String accept)
-			throws RmesException {
-		return conceptsService.getCollectionExportODS(id, accept);
 	}
 }
