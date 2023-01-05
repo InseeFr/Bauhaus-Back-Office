@@ -257,7 +257,6 @@ public class ExportUtils {
     }
 
 
-
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
         fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
@@ -456,7 +455,7 @@ public class ExportUtils {
     }
 
     public static String toValidationStatus(String boolStatus, boolean fem) {
-        if (boolStatus.equals("true")) {
+        if ("true".equals(boolStatus)) {
             return fem ? "Publiée" : "Publié";
         } else {
             return "Provisoire";
