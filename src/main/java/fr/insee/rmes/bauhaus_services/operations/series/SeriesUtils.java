@@ -388,6 +388,7 @@ public class SeriesUtils extends RdfService {
 	}
 
 	public String createSeries(String body) throws RmesException {
+
 		if (!stampsRestrictionsService.canCreateSeries()) {
 			throw new RmesUnauthorizedException(ErrorCodes.SERIES_CREATION_RIGHTS_DENIED,
 					"Only an admin can create a new series.");
@@ -398,7 +399,7 @@ public class SeriesUtils extends RdfService {
 		// Tester l'existence de la famille
 		String idFamily = series.getFamily().getId();
 		if (!famOpeSerIndUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
-			throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: ", idFamily);
+			throw new RmesUnauthorizedException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
 		}
 
 		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
@@ -409,7 +410,6 @@ public class SeriesUtils extends RdfService {
 		logger.info("Create series : {} - {}", series.getId(), series.getPrefLabelLg1());
 
 		return series.getId();
-
 	}
 
 	/**
