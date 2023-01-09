@@ -347,8 +347,6 @@ public class IndicatorsUtils  extends RdfService {
 	}
 
 	public String setIndicatorValidation(String id)  throws RmesException  {
-		Model model = new LinkedHashModel();
-
 		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
 		}
@@ -356,6 +354,8 @@ public class IndicatorsUtils  extends RdfService {
 		indicatorPublication.publishIndicator(id);
 
 		IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
+
+		Model model = new LinkedHashModel();
 		model.add(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.productsGraph());
 		model.remove(indicatorURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.productsGraph());
