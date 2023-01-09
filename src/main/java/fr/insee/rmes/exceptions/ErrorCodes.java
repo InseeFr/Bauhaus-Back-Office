@@ -27,7 +27,6 @@ public class ErrorCodes {
 	// DOCUMENTS
 	public static final int DOCUMENT_CREATION_RIGHTS_DENIED = 301;
 	public static final int DOCUMENT_CREATION_EXISTING_FILE = 302;
-	public static final int DOCUMENT_MODIFICATION_RIGHTS_DENIED = 303;
 	public static final int DOCUMENT_DELETION_LINKED = 304;
 
 	// LINKS
