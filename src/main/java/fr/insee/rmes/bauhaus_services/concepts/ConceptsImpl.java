@@ -18,7 +18,6 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.ConceptsResources;
 import org.apache.commons.text.CaseUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -244,16 +243,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 	
 	@Override
-	public Map<String,InputStream> getConceptExportIS(String id) throws RmesException  {
-		ConceptForExport concept = conceptsExport.getConceptData(id);
-		Map<String, String> xmlContent = convertConceptInXml(concept);
-		String fileName = getFileNameForExport(concept);
-		Map<String,InputStream> ret = new HashMap<>();
-		ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
-		return ret;
-	}
-
-	@Override
 	public Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException {
 		Map<String,InputStream> ret = new HashMap<>();
 		ids.parallelStream().forEach(id -> {
@@ -312,14 +301,4 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 
-	@Override
-	public Map<String,InputStream> getCollectionExportIS(String id) throws RmesException  {
-		CollectionForExport collection = collectionExport.getCollectionData(id);
-		Map<String, String> xmlContent = convertCollectionInXml(collection);
-		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
-		Map<String,InputStream> ret = new HashMap<>();
-		ret.put(fileName, collectionExport.exportAsInputStream(fileName,xmlContent,true,true,true));
-		return ret;
-	}
-	
 }
