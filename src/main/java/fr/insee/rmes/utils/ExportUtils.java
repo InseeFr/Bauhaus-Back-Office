@@ -34,9 +34,6 @@ public class ExportUtils {
 
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ATTACHMENT = "attachment";
-    private static final String ODT_EXTENSION = ".odt";
-    private static final String ODS_EXTENSION = ".ods";
-    private static final String ZIP_EXTENSION = ".zip";
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
     @Autowired
@@ -44,7 +41,7 @@ public class ExportUtils {
 
     public static String getExtension(String acceptHeader) {
         if (acceptHeader == null) {
-            return ODT_EXTENSION;
+            return FilesUtils.ODT_EXTENSION;
         } else if (acceptHeader.equals("application/octet-stream")) {
             return ".pdf";
         } else if (acceptHeader.equals("flatODT")) {
@@ -52,17 +49,17 @@ public class ExportUtils {
         } else if (acceptHeader.equals("XML")) {
             return ".xml";
         } else if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
-            return ODT_EXTENSION;
+            return FilesUtils.ODT_EXTENSION;
         } else {
-            return ODT_EXTENSION;
+            return FilesUtils.ODT_EXTENSION;
             // default --> odt
         }
     }
 
     private void addZipEntry(String filename, Map<String, String> xmlContent, ZipOutputStream zos, String xslFile, String xmlPattern, String zip, String objectType)
             throws IOException, RmesException {
-        filename = filename.replace(ODT_EXTENSION, "");
-        ZipEntry entry = new ZipEntry(filename + ODT_EXTENSION);
+        filename = filename.replace(FilesUtils.ODT_EXTENSION, "");
+        ZipEntry entry = new ZipEntry(filename + FilesUtils.ODT_EXTENSION);
         InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
@@ -73,7 +70,7 @@ public class ExportUtils {
 
     public void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, String objectType, HttpServletResponse response) throws RmesException {
 
-        String zipFileName = "concepts" + ZIP_EXTENSION;
+        String zipFileName = "concepts" + FilesUtils.ZIP_EXTENSION;
 
         response.addHeader(HttpHeaders.ACCEPT, "*/*");
         response.setStatus(HttpServletResponse.SC_OK);
@@ -222,7 +219,7 @@ public class ExportUtils {
     }
     public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(ODS_EXTENSION, ""); //Remove extension if exists
+        fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
         InputStream input = exportAsInputStreamODS(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
@@ -238,7 +235,7 @@ public class ExportUtils {
         logger.debug("End To export {} as Response", objectType);
 
         //Prepare response headers
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + ODS_EXTENSION).build();
+        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + FilesUtils.ODS_EXTENSION).build();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
         responseHeaders.setContentDisposition(content);
@@ -259,7 +256,7 @@ public class ExportUtils {
 
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
+        fileName = fileName.replace(FilesUtils.ODT_EXTENSION, ""); //Remove extension if exists
 
         InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
         if (input == null)
@@ -276,7 +273,7 @@ public class ExportUtils {
         logger.debug("End To export {} as Response", objectType);
 
         //Prepare response headers
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + ODT_EXTENSION).build();
+        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + FilesUtils.ODT_EXTENSION).build();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
         responseHeaders.setContentDisposition(content);
@@ -302,7 +299,7 @@ public class ExportUtils {
         InputStream odsFileIS = null;
         InputStream xslFileIS = null;
         InputStream zipToCompleteIS = null;
-        fileName = fileName.replace(ODS_EXTENSION, ""); //Remove extension if exists
+        fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
 
 
         try {
@@ -322,7 +319,7 @@ public class ExportUtils {
              PrintStream printStream = new PrintStream(osOutputFile);) {
 
             Path tempDir = Files.createTempDirectory("forExport");
-            Path finalPath = Paths.get(tempDir.toString(), fileName + ODT_EXTENSION);
+            Path finalPath = Paths.get(tempDir.toString(), fileName + FilesUtils.ODT_EXTENSION);
 
             // transform
             XsltUtils.xsltTransform(xmlContent, odsFileIS, xslFileIS, printStream, tempDir);
@@ -349,15 +346,18 @@ public class ExportUtils {
     }
 
 
-
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+        return this.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+    }
+
+    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
 
         File output = null;
         InputStream odtFileIS = null;
         InputStream xslFileIS = null;
         InputStream zipToCompleteIS = null;
-        fileName = fileName.replace(ODT_EXTENSION, ""); //Remove extension if exists
+        fileName = fileName.replace(extension, ""); //Remove extension if exists
 
 
         try {
@@ -377,7 +377,7 @@ public class ExportUtils {
              PrintStream printStream = new PrintStream(osOutputFile);) {
 
             Path tempDir = Files.createTempDirectory("forExport");
-            Path finalPath = Paths.get(tempDir.toString(), fileName + ODT_EXTENSION);
+            Path finalPath = Paths.get(tempDir.toString(), fileName + extension);
 
             // transform
             XsltUtils.xsltTransform(xmlContent, odtFileIS, xslFileIS, printStream, tempDir);
@@ -429,7 +429,7 @@ public class ExportUtils {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentDisposition(content);
             responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
-            Resource resource = new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName() + ZIP_EXTENSION).toUri());
+            Resource resource = new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(resource);

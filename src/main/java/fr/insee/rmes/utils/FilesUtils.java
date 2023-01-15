@@ -21,17 +21,9 @@ import org.zeroturnaround.zip.ZipUtil;
 public class FilesUtils {
 
 	private static final Logger log = LogManager.getLogger(FilesUtils.class);
-
-
-	public static InputStream fileToIS(File file) {
-		InputStream is = null;
-		try {
-			is = new FileInputStream(file);
-		} catch (Exception e) {
-			log.error("fileToIS : {}", e.getMessage());
-		}
-		return is;
-	}
+	public static final String ODT_EXTENSION = ".odt";
+	public static final String ODS_EXTENSION = ".ods";
+	public static final String ZIP_EXTENSION = ".zip";
 
 	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
 		final File tempFile = File.createTempFile(fileName, fileExtension);
@@ -40,12 +32,6 @@ public class FilesUtils {
 			IOUtils.copy(in, out);
 		}
 		return tempFile;
-	}
-	
-	public static File streamToFile(InputStream in, String fileName) throws IOException {
-		if (fileName.contains(".")) {
-			return streamToFile(in, FilenameUtils.getBaseName(fileName), FilenameUtils.getExtension(fileName));
-		}else return null;
 	}
 
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
