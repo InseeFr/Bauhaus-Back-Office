@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.families;
 
 import java.io.IOException;
 
+import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -81,10 +82,40 @@ public class FamiliesUtils  extends RdfService {
 	}
 
 
-/*WRITE*/
+	private void validateFamily(Family family) throws RmesException {
+		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkFamilyPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), config.getLg1()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
+		}
+		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkFamilyPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), config.getLg2()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
+		}
+	}
+
+	public String createFamily(String body) throws RmesException {
+		if(!stampsRestrictionsService.canCreateFamily()) {
+			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		String id = famOpeSerUtils.createId();
+		try {
+			Family family = mapper.readValue(body,Family.class);
+			family.setId(id);
+			family.setCreated(DateUtils.getCurrentDate());
+			family.setUpdated(DateUtils.getCurrentDate());
+			validateFamily(family);
+			createRdfFamily(family, ValidationStatus.UNPUBLISHED);
+			logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+		return id;
+	}
+
 	public void setFamily(String id, String body) throws RmesException {
 		if(!stampsRestrictionsService.canCreateFamily()) {
-			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can modify a family.");
+			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create or modify a family.");
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -96,19 +127,20 @@ public class FamiliesUtils  extends RdfService {
 			logger.error(e.getMessage());
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_INCORRECT_BODY, e.getMessage(), CAN_T_READ_REQUEST_BODY);
 		}
-		boolean familyExists = famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY,id);
+		boolean familyExists = famOpeSerUtils.checkIfObjectExists(ObjectType.FAMILY, id);
 		if (!familyExists) {
 			throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID, "Family "+id+" doesn't exist", "Can't update non-existant family");
 		}
 		family.setUpdated(DateUtils.getCurrentDate());
 		String status= ownersUtils.getValidationStatus(id);
+
+		validateFamily(family);
 		if(status.equals(ValidationStatus.UNPUBLISHED.getValue()) || status.equals(Constants.UNDEFINED)) {
 			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
 		} else {
 			createRdfFamily(family,ValidationStatus.MODIFIED);
 		}
 		logger.info("Update family : {} - {}" , family.getId() , family.getPrefLabelLg1());
-		
 	}
 
 	public void createRdfFamily(Family family, ValidationStatus newStatus) throws RmesException {
@@ -135,29 +167,6 @@ public class FamiliesUtils  extends RdfService {
 		repoGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
 		repoGestion.loadSimpleObject(familyURI, model);
-	}
-
-
-	public String createFamily(String body) throws RmesException {
-		if(!stampsRestrictionsService.canCreateFamily()) {
-			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can create a new family.");
-		}
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		String id = famOpeSerUtils.createId();
-		Family family = null ;
-		try {
-			family = mapper.readValue(body,Family.class);
-			family.setId(id);
-			family.setCreated(DateUtils.getCurrentDate());
-			family.setUpdated(DateUtils.getCurrentDate());
-			createRdfFamily(family,ValidationStatus.UNPUBLISHED);
-			logger.info("Create family : {} - {}", id , family.getPrefLabelLg1());
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
-		return id;
-
 	}
 
 

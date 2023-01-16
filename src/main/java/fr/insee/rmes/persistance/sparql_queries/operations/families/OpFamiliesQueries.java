@@ -15,6 +15,15 @@ public class OpFamiliesQueries extends GenericQueries{
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
 
+	public static String checkFamilyPrefLabelUnicity(String id, String label, String lang) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put("LANG", lang);
+		params.put("ID", id);
+		params.put("LABEL", label);
+		return FreeMarkerUtils.buildRequest("operations/families/", "checkFamilyPrefLabelUnicity.ftlh", params);
+	}
+
 	public static String familiesSearchQuery() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
@@ -22,8 +31,6 @@ public class OpFamiliesQueries extends GenericQueries{
 		params.put("LG2", config.getLg2());
 		return  buildRequest("getFamiliesForAdvancedSearch.ftlh", params);
 	}
-
-
 
 	public static String familiesQuery() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
