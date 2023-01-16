@@ -132,6 +132,10 @@ public class ErrorCodes {
 	 *  406 NOTACCEPTABLEEXCEPTIONS
 	 */
 
+	// FAMILY
+	public static final String OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1 = "406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1";
+	public static final String OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2 = "406_OPERATION_FAMILY_OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2";
+
 	// DOCUMENTS
 	public static final int DOCUMENT_EMPTY_NAME = 361;
 	public static final int DOCUMENT_FORBIDDEN_CHARACTER_NAME = 362;
@@ -149,7 +153,7 @@ public class ErrorCodes {
 	public static final int SIMS_DELETION_FOR_NON_SERIES = 862;
 	public static final int SIMS_EXPORT_WITHOUT_LANGUAGE = 863;
 
-	  private ErrorCodes() {
+	private ErrorCodes() {
 		    throw new IllegalStateException("Utility class");
 	}
 }
