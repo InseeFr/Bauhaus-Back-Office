@@ -1,26 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.families;
 
-import java.io.IOException;
-
-import fr.insee.rmes.persistance.sparql_queries.operations.ParentQueries;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
@@ -37,6 +18,22 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 @Component
 public class FamiliesUtils  extends RdfService {
@@ -83,10 +80,10 @@ public class FamiliesUtils  extends RdfService {
 
 
 	private void validateFamily(Family family) throws RmesException {
-		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkFamilyPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), config.getLg1()))){
+		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), config.getLg1()))){
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
-		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkFamilyPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), config.getLg2()))){
+		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), config.getLg2()))){
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}

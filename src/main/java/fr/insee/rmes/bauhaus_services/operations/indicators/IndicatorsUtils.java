@@ -1,28 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -46,6 +26,20 @@ import fr.insee.rmes.persistance.sparql_queries.operations.indicators.Indicators
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class IndicatorsUtils  extends RdfService {
@@ -69,6 +63,15 @@ public class IndicatorsUtils  extends RdfService {
 
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
+
+	private void validate(Indicator indicator) throws RmesException {
+		if(repoGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), config.getLg1()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
+		}
+		if(repoGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), config.getLg2()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
+		}
+	}
 
 	public Indicator getIndicatorById(String id) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
@@ -280,6 +283,8 @@ public class IndicatorsUtils  extends RdfService {
 	}
 
 	private void createRdfIndicator(Indicator indicator, ValidationStatus newStatus) throws RmesException {
+		validate(indicator);
+
 		Model model = new LinkedHashModel();
 		IRI indicURI = RdfUtils.objectIRI(ObjectType.INDICATOR,indicator.getId());
 		/*Const*/

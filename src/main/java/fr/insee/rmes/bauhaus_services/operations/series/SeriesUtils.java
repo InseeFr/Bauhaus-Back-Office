@@ -1,34 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -40,21 +13,29 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
-import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.EncodingType;
-import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import fr.insee.rmes.utils.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.*;
 
 @Component
 public class SeriesUtils extends RdfService {
@@ -96,6 +77,15 @@ public class SeriesUtils extends RdfService {
 		return buildSeriesFromJson(getSeriesJsonById(id, encode),encode);	
 	}
 
+
+	private void validate(Series series) throws RmesException {
+		if(repoGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), config.getLg1()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
+		}
+		if(repoGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), config.getLg2()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
+		}
+	}
 
 	private Series buildSeriesFromJson(JSONObject seriesJson,  EncodingType encode) throws RmesException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -280,6 +270,7 @@ public class SeriesUtils extends RdfService {
 	 * CREATE OR UPDATE
 	 */
 	private void createRdfSeries(Series series, IRI familyURI, ValidationStatus newStatus) throws RmesException {
+		validate(series);
 
 		Model model = new LinkedHashModel();
 		IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES,series.getId());

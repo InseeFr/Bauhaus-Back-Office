@@ -1,11 +1,11 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.families;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class OpFamiliesQueries extends GenericQueries{
 
@@ -15,13 +15,15 @@ public class OpFamiliesQueries extends GenericQueries{
 		return FreeMarkerUtils.buildRequest("operations/famOpeSer/", fileName, params);
 	}
 
-	public static String checkFamilyPrefLabelUnicity(String id, String label, String lang) throws RmesException {
+	public static String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);
-		return FreeMarkerUtils.buildRequest("operations/families/", "checkFamilyPrefLabelUnicity.ftlh", params);
+		params.put("URI_PREFIX", "/operations/famille/");
+		params.put("TYPE", "StatisticalOperationFamily");
+		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
 	public static String familiesSearchQuery() throws RmesException {
