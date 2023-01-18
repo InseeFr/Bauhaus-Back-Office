@@ -22,7 +22,7 @@ public class OpFamiliesQueries extends GenericQueries{
 		params.put("ID", id);
 		params.put("LABEL", label);
 		params.put("URI_PREFIX", "/operations/famille/");
-		params.put("TYPE", "StatisticalOperationFamily");
+		params.put("TYPE", "insee:StatisticalOperationFamily");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 

@@ -29,7 +29,7 @@ public class OperationsQueries extends GenericQueries {
 		params.put("ID", id);
 		params.put("LABEL", label);
 		params.put("URI_PREFIX", "/operations/operation/");
-		params.put("TYPE", "StatisticalOperation");
+		params.put("TYPE", "insee:StatisticalOperation");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 

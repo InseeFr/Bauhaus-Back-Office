@@ -1,7 +1,7 @@
 ASK
 FROM <${OPERATIONS_GRAPH}>
 WHERE {
-    ?family a insee:${TYPE} .
-    ?family skos:prefLabel "${LABEL}"@${LANG} .
-    FILTER(!STRENDS(STR(?family),'${URI_PREFIX}${ID}')) .
+    ?uri a ${TYPE} .
+    {?uri skos:prefLabel "${LABEL}"@${LANG} .} UNION {?uri rdfs:label "${LABEL}"@${LANG} .}
+    FILTER(!STRENDS(STR(?uri),'${URI_PREFIX}${ID}')) .
 }

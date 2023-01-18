@@ -35,7 +35,7 @@ public class OpSeriesQueries extends GenericQueries{
 		params.put("ID", id);
 		params.put("LABEL", label);
 		params.put("URI_PREFIX", "/operations/serie/");
-		params.put("TYPE", "StatisticalOperationSeries");
+		params.put("TYPE", "insee:StatisticalOperationSeries");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
