@@ -149,8 +149,8 @@ public class ConceptsResources  extends GenericResources   {
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptNotes.class)))})		
 	public ResponseEntity<Object> getConceptNotesByID(@PathVariable(Constants.ID) String id, @PathVariable("conceptVersion") int conceptVersion) {
 		try {
-			String jsonResultat = conceptsService.getConceptNotesByID(id, conceptVersion);
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+			String notes = conceptsService.getConceptNotesByID(id, conceptVersion);
+			return ResponseEntity.status(HttpStatus.OK).body(notes);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
@@ -246,8 +246,7 @@ public class ConceptsResources  extends GenericResources   {
 			conceptsService.setConceptsValidation(body);
 			return ResponseEntity.noContent().build();
 		} catch (RmesException e) {
-			logger.error(e.getMessage(), e);
-			throw e;
+			return returnRmesException(e);
 		}
 	}
 

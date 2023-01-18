@@ -15,7 +15,6 @@ public interface ConceptsCollectionService {
 
     String getCollectionMembersByID(String id) throws RmesException;
 
-
     ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsCollectionsResources.Language lg, boolean withConcepts, HttpServletResponse response) throws RmesException;
 
     ResponseEntity<?>  getCollectionExportODS(String id, String accept, boolean withConcepts, HttpServletResponse response) throws RmesException;
