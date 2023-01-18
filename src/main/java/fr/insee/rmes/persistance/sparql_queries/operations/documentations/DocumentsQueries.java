@@ -1,20 +1,29 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.model.IRI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentsQueries extends GenericQueries{
 	
 	static Map<String,Object> params ;
-	
+
+	public static String checkLabelUnicity(String id, String label, String lang) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("OPERATIONS_GRAPH", config.getDocumentsGraph());
+		params.put("LANG", lang);
+		params.put("ID", id);
+		params.put("LABEL", label);
+		params.put("URI_PREFIX", "");
+		params.put("TYPE", "foaf:Document");
+		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
+	}
 
 	/**
 	 * Can delete both document and link because the delete query is based on URI (not only id)
