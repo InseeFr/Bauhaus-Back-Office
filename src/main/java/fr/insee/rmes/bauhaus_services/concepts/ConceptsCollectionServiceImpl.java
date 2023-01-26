@@ -126,7 +126,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         Map<String, Map<String, String>> collections = new HashMap<>();
         Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
-        Arrays.asList(ids.split(",")).forEach(id -> {
+        Arrays.asList(ids.split("_AND_")).forEach(id -> {
             try {
                 List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
 
