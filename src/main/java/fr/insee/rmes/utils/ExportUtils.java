@@ -347,7 +347,7 @@ public class ExportUtils {
 
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        return this.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+        return exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
     }
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
