@@ -1,14 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.indicators;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class IndicatorsQueries extends GenericQueries{
 
@@ -18,7 +17,18 @@ public class IndicatorsQueries extends GenericQueries{
 	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest("operations/indicators/", fileName, params);
 	}
-	
+
+	public static String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("OPERATIONS_GRAPH", config.getProductsGraph());
+		params.put("LANG", lang);
+		params.put("ID", id);
+		params.put("LABEL", label);
+		params.put("URI_PREFIX", "/operations/indicateur/");
+		params.put("TYPE", "insee:StatisticalIndicator");
+		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
+	}
+
 	public static String getPublicationState(String id) throws RmesException{
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());

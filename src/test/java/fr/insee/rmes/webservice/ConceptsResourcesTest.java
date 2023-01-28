@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
@@ -20,7 +21,7 @@ class ConceptsResourcesTest {
     private ConceptsResources conceptsResources;
 
     @Mock
-    ConceptsService conceptsService;
+    ConceptsCollectionService conceptsCollectionService;
 
     @BeforeEach
     public void init() {
@@ -29,14 +30,14 @@ class ConceptsResourcesTest {
 
     @Test
     void shouldReturn500IfRmesExceptionWhenFetchingCollectionById() throws RmesException {
-        when(conceptsService.getCollectionByID(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
+        when(conceptsCollectionService.getCollectionByID(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
         ResponseEntity<?> response = conceptsResources.getCollectionByID("1");
         Assertions.assertEquals(500, response.getStatusCode().value());
     }
 
     @Test
     void shouldReturn200WhenFetchingCollectionById() throws RmesException {
-        when(conceptsService.getCollectionByID(anyString())).thenReturn("result");
+        when(conceptsCollectionService.getCollectionByID(anyString())).thenReturn("result");
         ResponseEntity<?> response = conceptsResources.getCollectionByID("1");
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
