@@ -11,7 +11,6 @@ public class Constants {
 	public static final String CODELIST = "codeList";
 	public static final String COLLECTION = "collection";
 	public static final String CONCEPT = "concept";
-	public static final String CONCEPT_VERSION = "conceptVersion";
 	public static final String CONTRIBUTOR = "contributor";
 	public static final String CONTRIBUTORS = "contributors";
 	public static final String CREATED = "created";
@@ -31,8 +30,6 @@ public class Constants {
 	public static final String DOCUMENTS_LG1 = "documentsLg1";
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
 	public static final String DOT_XML = ".xml";
-	public static final String DOT_ODT = ".odt";
-	public static final String DOT_ODS = ".ods";
 	public static final String DOT_ZIP = ".zip";
 
 	/*E*/

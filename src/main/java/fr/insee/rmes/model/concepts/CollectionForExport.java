@@ -1,6 +1,7 @@
 package fr.insee.rmes.model.concepts;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,8 +53,8 @@ public class CollectionForExport {
 			if (member.has(Constants.EDITORIAL_NOTE_LG1)) rep.setEditorialNoteLg1(member.getString(Constants.EDITORIAL_NOTE_LG1));
 			if (member.has(Constants.EDITORIAL_NOTE_LG2)) rep.setEditorialNoteLg2(member.getString(Constants.EDITORIAL_NOTE_LG2));
 			if (member.has(Constants.ISVALIDATED)) rep.setIsValidated(ExportUtils.toValidationStatus(member.getString(Constants.ISVALIDATED),true));
-			if (member.has(Constants.CREATED)) rep.setCreated(ExportUtils.toDate(member.getString(Constants.CREATED)));
-			if (member.has(Constants.MODIFIED)) rep.setModified(ExportUtils.toDate(member.getString(Constants.MODIFIED)));
+			if (member.has(Constants.CREATED)) rep.setCreated(DateUtils.toDate(member.getString(Constants.CREATED)));
+			if (member.has(Constants.MODIFIED)) rep.setModified(DateUtils.toDate(member.getString(Constants.MODIFIED)));
 			membersLg.add(rep);
 		}
 	}
