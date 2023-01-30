@@ -9,11 +9,11 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -91,8 +91,8 @@ public class CollectionExportBuilder extends RdfService {
 			collection.addMembers(orderMembersJSONArray);
 
 			// format specific data
-			collection.setCreated(ExportUtils.toDate(collection.getCreated()));
-			collection.setModified(ExportUtils.toDate(collection.getModified()));
+			collection.setCreated(DateUtils.toDate(collection.getCreated()));
+			collection.setModified(DateUtils.toDate(collection.getModified()));
 			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
 
 		} catch (JsonProcessingException e) {
@@ -228,8 +228,8 @@ public class CollectionExportBuilder extends RdfService {
 			collection.addMembers(orderMembersJSONArray);
 
 			// format specific data
-			collection.setCreated(ExportUtils.toDate(collection.getCreated()));
-			collection.setModified(ExportUtils.toDate(collection.getModified()));
+			collection.setCreated(DateUtils.toDate(collection.getCreated()));
+			collection.setModified(DateUtils.toDate(collection.getModified()));
 			collection.setIsValidated(ExportUtils.toValidationStatus(collection.getIsValidated(),true));
 
 		} catch (JsonProcessingException e) {

@@ -60,7 +60,7 @@ public class ExportUtils {
             throws IOException, RmesException {
         filename = filename.replace(FilesUtils.ODT_EXTENSION, "");
         ZipEntry entry = new ZipEntry(filename + FilesUtils.ODT_EXTENSION);
-        InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType);
+        InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
         zos.putNextEntry(entry);
@@ -105,14 +105,14 @@ public class ExportUtils {
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
 
-            InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+            InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
             if (input == null){
                 logger.debug("Error when creating the export of the SIMS {}", simsId);
                 throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't export this object", "");
             }
 
             logger.debug("Creating the .odt file for the SIMS {}", simsId);
-            Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + Constants.DOT_ODT));
+            Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + FilesUtils.ODT_EXTENSION));
             Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
             logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
 
@@ -155,14 +155,14 @@ public class ExportUtils {
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
 
-            InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+            InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODS_EXTENSION);
             if (input == null){
                 logger.debug("Error when creating the export of the SIMS {}", simsId);
                 throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't export this object", "");
             }
 
             logger.debug("Creating the .odt file for the SIMS {}", simsId);
-            Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + Constants.DOT_ODS));
+            Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + FilesUtils.ODS_EXTENSION));
             Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
             logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
 
@@ -258,7 +258,7 @@ public class ExportUtils {
         logger.debug("Begin To export {} as Response", objectType);
         fileName = fileName.replace(FilesUtils.ODT_EXTENSION, ""); //Remove extension if exists
 
-        InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+        InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
 
@@ -345,10 +345,6 @@ public class ExportUtils {
         }
     }
 
-
-    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        return exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
-    }
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
@@ -447,13 +443,6 @@ public class ExportUtils {
         return DisseminationStatus.getEnumLabel(dsURL);
     }
 
-    public static String toDate(String dateTime) {
-        if (dateTime != null && dateTime.length() > 10) {
-            return dateTime.substring(8, 10) + "/" + dateTime.substring(5, 7) + "/" + dateTime.substring(0, 4);
-        }
-        return dateTime;
-    }
-
     public static String toValidationStatus(String boolStatus, boolean fem) {
         if ("true".equals(boolStatus)) {
             return fem ? "Publiée" : "Publié";
@@ -461,7 +450,4 @@ public class ExportUtils {
             return "Provisoire";
         }
     }
-
-
-
 }
