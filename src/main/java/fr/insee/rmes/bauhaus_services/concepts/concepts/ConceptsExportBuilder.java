@@ -1,10 +1,14 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
-import java.io.InputStream;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.ConceptForExport;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -13,18 +17,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.ExportUtils;
-import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.utils.XsltUtils;
+import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.util.Map;
 
 @Component
 public class ConceptsExportBuilder extends RdfService {
@@ -76,9 +71,9 @@ public class ConceptsExportBuilder extends RdfService {
 			// format specific data
 			concept.setIsValidated(ExportUtils.toValidationStatus(concept.getIsValidated(),false));
 			concept.setDisseminationStatus(ExportUtils.toLabel(concept.getDisseminationStatus()));
-			concept.setCreated(ExportUtils.toDate(concept.getCreated()));
-			concept.setModified(ExportUtils.toDate(concept.getModified()));
-			concept.setValid(ExportUtils.toDate(concept.getValid()));
+			concept.setCreated(DateUtils.toDate(concept.getCreated()));
+			concept.setModified(DateUtils.toDate(concept.getModified()));
+			concept.setValid(DateUtils.toDate(concept.getValid()));
 
 		} catch (JsonProcessingException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -103,7 +98,7 @@ public class ConceptsExportBuilder extends RdfService {
 	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT);
+		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
 	}
 	
 }
