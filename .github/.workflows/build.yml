@@ -2,8 +2,9 @@ name: Build
 
 on:
   push:
-    branches:
-      - docker
+    branches: [ "main", "docker"]
+  pull_request:
+    branches: [ "main", "docker"]
 
 jobs:
   build:
