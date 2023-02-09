@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: bauhaus-back
-        image: jeromebourgeois/bauhausbofork:v3.3-docker
+        image: inseefr/bauhaus-back-office
         resources:
           limits:
             memory: "2Gi"
