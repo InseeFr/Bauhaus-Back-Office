@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bauhaus-back
+data:
+  rmesgncs.properties: |-
+    fr.insee.rmes.bauhaus.api.host= gestion-metadonnees-api.demo.insee.io:8080
