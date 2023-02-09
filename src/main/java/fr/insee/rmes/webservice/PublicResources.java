@@ -82,23 +82,12 @@ public class PublicResources extends GenericResources  {
 			props.put("lg1", config.getLg1());
 			props.put("lg2", config.getLg2());
 			props.put("authType", AuthType.getAuthType(config));
-			props.put("modules", getActiveModules());
+			props.put("modules", config.getListActiveModule());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,e.getMessage(),e.getClass().getSimpleName());
 		}
 		return ResponseEntity.status(HttpStatus.SC_OK).body(props.toString());
-	}
-
-	private List<String> getActiveModules() {
-        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
-        File file = new File(dirPath);
-        try {
-			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			return new ArrayList<>();
-		} 
 	}
 
 	@GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)
