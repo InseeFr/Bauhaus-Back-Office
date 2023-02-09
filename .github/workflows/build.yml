@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - main
-      - docker
+      - dockerCI
   pull_request:
     branches:    
       - main
       - acceptance
       - 'feat/**'
-      - docker
+      - dockerCI
 
 jobs:
   build:
