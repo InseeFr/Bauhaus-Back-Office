@@ -88,7 +88,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
             Map<String, Map<String, InputStream>> collectionConcepts = new HashMap<>();
             collectionConcepts.put(fileName, concepts);
-            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionConcepts, withConcepts);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (RmesException e){
             return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
@@ -113,7 +113,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             Map<String, Map<String, InputStream>> collectionConcepts = new HashMap<>();
             collectionConcepts.put(fileName, concepts);
 
-            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionConcepts, withConcepts);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (RmesException e){
             return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
@@ -122,7 +122,6 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     @Override
     public void exportZipCollection(String ids, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException {
-
         Map<String, Map<String, String>> collections = new HashMap<>();
         Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
@@ -145,10 +144,10 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         });
 
         if("odt".equalsIgnoreCase(type)){
-            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
 
         } else {
-            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
         }
     }
 
