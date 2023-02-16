@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: bauhaus-back
-data:
-  rmesgncs.properties: |-
-    fr.insee.rmes.bauhaus.api.host = SECRET
