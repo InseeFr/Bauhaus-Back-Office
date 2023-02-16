@@ -112,9 +112,7 @@ public class Config {
 	private String sugoiRealm;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
 	private String sugoiUi;
-	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
-	private String serverKeycloak;
-	
+
 	/******************************************************/
 	/** CONCEPTS 		***********************************/
 	/******************************************************/	
