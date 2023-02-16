@@ -26,8 +26,8 @@ jobs:
       - name: Upload war
         uses: actions/upload-artifact@v2
         with:
-          name: jar
-          path: target/*.jar
+          name: war
+          path: target/*.war
   docker:
     runs-on: ubuntu-latest
     needs: build
