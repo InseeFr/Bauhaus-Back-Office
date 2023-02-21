@@ -24,7 +24,7 @@ public class IndicatorsQueries extends GenericQueries{
 		params.put("LANG", lang);
 		params.put("ID", id);
 		params.put("LABEL", label);
-		params.put("URI_PREFIX", "/operations/indicateur/");
+		params.put("URI_PREFIX", "/produits/indicateur/");
 		params.put("TYPE", "insee:StatisticalIndicator");
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
