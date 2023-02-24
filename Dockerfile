@@ -4,7 +4,7 @@ COPY ./ /bauhaus/
 RUN mvn -B -f /bauhaus/pom.xml package
 
 
-FROM tomcat:8-jdk8
+FROM tomcat:9.0.71-jdk11
 COPY --from=mvn bauhaus/target/bauhaus.war /usr/local/tomcat/webapps/
 ADD ./config/start.sh /usr/local/tomcat
 RUN chmod +x /usr/local/tomcat/start.sh
