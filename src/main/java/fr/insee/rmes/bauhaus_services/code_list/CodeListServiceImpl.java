@@ -54,6 +54,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;
 
+	@Autowired
+	CodeListPublication codeListPublication;
 
 	@Override
 	public String getCodeListJson(String notation) throws RmesException{
@@ -347,10 +349,33 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		repoGestion.deleteObject(RdfUtils.toURI(iri), null);
 	}
 
+	@Override
+	public String publishCodeList(String id, boolean partial) throws RmesException {
+
+		JSONObject codesList = getDetailedCodesListJson(id, partial);
+		String iri = codesList.getString("iri");
+		IRI codelist = RdfUtils.createIRI(iri);
+
+		codeListPublication.publishCodeList(codelist, partial);
+
+		Model model = new LinkedHashModel();
+		model.add(codelist, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.codesListGraph());
+		model.remove(codelist, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.codesListGraph());
+		model.remove(codelist, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.codesListGraph());
+
+		repoGestion.objectValidation(codelist, model);
+
+		return id;
+	}
+
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {
 		String codeListId = codesList.getString(Constants.ID);
 
-		model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+		if(codesList.has("validationState") && codesList.getString("validationState").equalsIgnoreCase(ValidationStatus.VALIDATED.getValue())){
+			model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
+		} else {
+			model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+		}
 
 		IRI type = partial ? SKOS.COLLECTION : SKOS.CONCEPT_SCHEME ;
 		RdfUtils.addTripleUri(codeListIri, RDF.TYPE, type, model, graph);
