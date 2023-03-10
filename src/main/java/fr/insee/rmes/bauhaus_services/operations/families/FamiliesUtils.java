@@ -51,7 +51,6 @@ public class FamiliesUtils  extends RdfService {
 	@Autowired
 	ParentUtils ownersUtils;
 
-/*READ*/
 	public JSONObject getFamilyById(String id) throws RmesException{
 		JSONObject family = repoGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id));
 		if (family.length()==0) {
@@ -174,15 +173,15 @@ public class FamiliesUtils  extends RdfService {
 			throw new RmesUnauthorizedException(ErrorCodes.FAMILY_CREATION_RIGHTS_DENIED, "Only an admin can publish a family.");
 		}
 
-			familyPublication.publishFamily(id);
-		
-			IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
-			model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
-			model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
-			model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
-			logger.info("Validate family : {}", familyURI);
+		familyPublication.publishFamily(id);
 
-			repoGestion.objectValidation(familyURI, model);
+		IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, id);
+		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
+		model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.operationsGraph());
+		model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
+		logger.info("Validate family : {}", familyURI);
+
+		repoGestion.objectValidation(familyURI, model);
 			
 		return id;
 	}
