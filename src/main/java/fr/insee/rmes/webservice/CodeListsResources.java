@@ -1,14 +1,6 @@
 package fr.insee.rmes.webservice;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
@@ -22,6 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/codeList")
@@ -237,5 +237,29 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
+    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PutMapping("/validate/{id}")
+    @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
+    public ResponseEntity<Object> publishFullCodeList(
+            @PathVariable(Constants.ID) String id) throws RmesException {
+        try {
+            codeListService.publishCodeList(id, false);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
 
+    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PutMapping("/partial/validate/{id}")
+    @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
+    public ResponseEntity<Object> publishPartialCodeList(
+            @PathVariable(Constants.ID) String id) throws RmesException {
+        try {
+            codeListService.publishCodeList(id, true);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
 }

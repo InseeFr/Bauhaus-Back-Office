@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.operations.families;
+package fr.insee.rmes.bauhaus_services.code_list;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -19,40 +19,45 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class FamilyPublication extends RdfService {
+public class CodeListPublication extends RdfService {
 
-	public void publishFamily(String familyId) throws RmesException {
+	public void publishCodeList(Resource codelist, boolean partial) throws RmesException {
 		
 		Model model = new LinkedHashModel();
-		Resource family = RdfUtils.familyIRI(familyId);
-		//TODO notify...
+
 		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, family);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, codelist);
 
 		try {	
 			try {
 				if (!statements.hasNext()) {
-					throw new RmesNotFoundException(ErrorCodes.FAMILY_UNKNOWN_ID,"Family not found", familyId);
+					throw new RmesNotFoundException(ErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codelist.stringValue());
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
 					String pred = RdfUtils.toString(st.getPredicate());
-					// Triplets that don't get published
-					if (pred.endsWith("isValidated")
-							|| pred.endsWith("validationState")
-							|| pred.endsWith("hasPart")
-							|| pred.endsWith(Constants.PUBLISHER)
-							|| pred.endsWith(Constants.CONTRIBUTOR)) {
-						// nothing, wouldn't copy this attr
+					String value = st.getObject().stringValue();
+
+					if(!partial){
+						if (pred.contains("rdf:_")
+								|| value.contains("Seq")
+								|| pred.endsWith("validationState")
+								|| pred.endsWith(Constants.CREATOR)
+								|| pred.endsWith(Constants.CONTRIBUTOR)) {
+							continue;
+						}
+					} else {
+						if (pred.endsWith("validationState")
+								|| pred.endsWith(Constants.CREATOR)
+								|| pred.endsWith(Constants.CONTRIBUTOR)) {
+							continue;
+						}
 					}
-					// Literals
-					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
-								st.getPredicate(), 
-								st.getObject(),
-								st.getContext());
-					}
-					// Other URI to transform : none
+
+					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+							st.getPredicate(),
+							st.getObject(),
+							st.getContext());
 				}
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
@@ -62,8 +67,8 @@ public class FamilyPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
-		RepositoryPublication.publishResource(familyToPublishRessource, model, Constants.FAMILY);
+		Resource codelistToPublishRessource = PublicationUtils.tranformBaseURIToPublish(codelist);
+		RepositoryPublication.publishResource(codelistToPublishRessource, model, Constants.CODELIST);
 		
 	}
 
