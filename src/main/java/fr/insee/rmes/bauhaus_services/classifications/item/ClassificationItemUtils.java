@@ -6,6 +6,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -13,11 +14,14 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.SKOSXL;
+import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
 
 @Repository()
 public class ClassificationItemUtils extends RdfService {
     public void updateClassificationItem(ClassificationItem item, String itemUri, String classificationId) throws RmesException {
+        JSONObject previousItem = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, item.getId()));
+
         Model model = new LinkedHashModel();
         this.validate(item);
         Resource graph = RdfUtils.codesListGraph(classificationId);
@@ -39,10 +43,16 @@ public class ClassificationItemUtils extends RdfService {
             model.add(classificationItemIri, SKOS.ALT_LABEL, RdfUtils.setLiteralString(item.getAltLabelLg2(), config.getLg2()), graph);
         }
 
-        repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.BROADER, graph, null);
 
+        repoGestion.deleteTripletByPredicate(classificationItemIri, SKOS.BROADER, graph, null);
         if(item.getBroaderURI() != null){
-            model.add(classificationItemIri, SKOS.BROADER, RdfUtils.createIRI(item.getBroaderURI()), graph);
+
+            if(previousItem.has("broaderURI")){
+                repoGestion.deleteTripletByPredicateAndValue(RdfUtils.createIRI(previousItem.getString("broaderURI")), SKOS.NARROWER, graph, null, classificationItemIri);
+            }
+            IRI broaderIri = RdfUtils.createIRI(item.getBroaderURI());
+            model.add(broaderIri, SKOS.NARROWER, classificationItemIri, graph);
+            model.add(classificationItemIri, SKOS.BROADER, broaderIri, graph);
         }
 
         if(item.getAltLabels() != null) {
