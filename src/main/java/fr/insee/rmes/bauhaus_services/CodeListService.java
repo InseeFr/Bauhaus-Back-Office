@@ -28,4 +28,6 @@ public interface CodeListService {
     String getPartialCodeListByParent(String parentIRI) throws RmesException;
 
     void deleteCodeList(String notation, boolean partial) throws RmesException;
+
+    String publishCodeList(String id, boolean b) throws RmesException;
 }
