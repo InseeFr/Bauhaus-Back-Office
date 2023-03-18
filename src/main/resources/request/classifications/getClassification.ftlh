@@ -3,7 +3,7 @@ SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLg1 ?altLabelLg2 ?seriesLg1 ?ser
 ?issued ?valid ?lastRefreshedOn ?additionalMaterial ?rights ?creator ?contributor 
 ?disseminationStatus ?legalMaterial ?homepage 
 ?scopeNoteLg1 ?scopeNoteLg2 ?changeNoteLg1 ?changeNoteLg2 ?descriptionLg1 ?descriptionLg2
-?changeNoteUriLg1 ?changeNoteUriLg2 ?scopeNoteUriLg1 ?scopeNoteUriLg2
+?changeNoteUriLg1 ?changeNoteUriLg2 ?scopeNoteUriLg1 ?scopeNoteUriLg2 ?validationState
 WHERE {
     ?classification rdf:type skos:ConceptScheme .
 
@@ -138,4 +138,5 @@ WHERE {
     OPTIONAL {?classification insee:disseminationStatus ?disseminationStatus} .
     OPTIONAL {?classification insee:legalMaterial ?legalMaterial} .
     OPTIONAL {?classification foaf:homepage ?homepage} .
+    OPTIONAL {?classification insee:validationState ?validationState . }
 }

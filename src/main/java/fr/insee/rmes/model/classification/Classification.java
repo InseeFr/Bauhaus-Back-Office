@@ -79,6 +79,11 @@ public class Classification {
     @Schema(description = "Contributor", required = true)
     public String contributor;
 
+    @Schema(description = "validationState")
+    public String validationState;
+
+
+
     public String getId() {
         return id;
     }
@@ -277,5 +282,13 @@ public class Classification {
 
     public void setChangeNoteUriLg2(String changeNoteUriLg2) {
         this.changeNoteUriLg2 = changeNoteUriLg2;
+    }
+
+    public String getValidationState() {
+        return validationState;
+    }
+
+    public void setValidationState(String validationState) {
+        this.validationState = validationState;
     }
 }
