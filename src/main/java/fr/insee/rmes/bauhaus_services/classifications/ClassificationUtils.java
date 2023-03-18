@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -94,6 +95,15 @@ public class ClassificationUtils extends RdfService {
         if(StringUtils.isNotEmpty(classification.getHomepage())){
             model.add(classificationIri, FOAF.HOMEPAGE, RdfUtils.createIRI(classification.getHomepage()), graph);
         }
+
+        repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, graph, null);
+
+        if(ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(classification.getValidationState()) || ValidationStatus.MODIFIED.getValue().equalsIgnoreCase(classification.getValidationState())){
+            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
+        } else {
+            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+        }
+
 
 
         List<String> ids = new ArrayList<>();
