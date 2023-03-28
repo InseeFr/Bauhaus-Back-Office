@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
-    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:officeooo="http://openoffice.org/2009/office"
-    exclude-result-prefixes="xs xd"
-    version="3.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+                xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+                xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+                xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+                xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+                exclude-result-prefixes="xs xd"
+                version="3.0">
 
     <xsl:output method="xml" encoding="UTF-8" indent="yes" />
 
@@ -463,8 +465,8 @@
                                 <xsl:value-of  select="$simsRubrics//*[local-name()=$rubric-element]"/>
                             </xsl:with-param>
                         </xsl:call-template>
-                        <xsl:variable name="count-links" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[not(contains(tokenize(text(),'/')[last()],'.'))])"/>
-                        <xsl:variable name="count-documents" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/url[contains(tokenize(text(),'/')[last()],'.')])"/>
+                        <xsl:variable name="count-links" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/uri[contains(text(),'/page/')])"/>
+                        <xsl:variable name="count-documents" select="count($simsRubrics//*[local-name()=replace($rubric-element,'label','documents')]/uri[contains(text(),'/document/')])"/>
                         <xsl:choose>
                             <xsl:when test="$count-links = 0"/>
                             <xsl:when test="$count-links = 1 and ends-with($rubric-element,'Lg1')">
@@ -480,7 +482,7 @@
                                 <text:p text:style-name="{$title-style}">Links:</text:p>
                             </xsl:otherwise>
                         </xsl:choose>
-                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][url[not(contains(tokenize(text(),'/')[last()],'.'))]]">
+                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][uri[contains(text(),'/page/')]]">
                             <xsl:element name="text:p">
                                 <xsl:attribute name="text:style-name" select="$style"/>
                                 <xsl:element name="text:a">
@@ -532,7 +534,7 @@
                                 <text:p text:style-name="{$title-style}">Document:</text:p>
                             </xsl:otherwise>
                         </xsl:choose>
-                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][url[contains(tokenize(text(),'/')[last()],'.')]]">
+                        <xsl:for-each select="$simsRubrics//*[local-name()=replace($rubric-element,'label','documents')][uri[contains(text(),'/document/')]]">
                             <xsl:element name="text:p">
                                 <xsl:attribute name="text:style-name" select="$style"/>
                                 <xsl:variable name="document-language" select="lang"/>
