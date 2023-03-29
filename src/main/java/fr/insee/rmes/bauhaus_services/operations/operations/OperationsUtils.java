@@ -1,7 +1,22 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
+import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
@@ -15,28 +30,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
-import fr.insee.rmes.utils.DateUtils;
+import java.io.IOException;
 
 @Component
 public class OperationsUtils extends RdfService{
@@ -55,6 +49,15 @@ public class OperationsUtils extends RdfService{
 
 	@Autowired
 	private OperationPublication operationPublication;
+
+	private void validate(Operation operation) throws RmesException {
+		if(repoGestion.getResponseAsBoolean(OperationsQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), config.getLg1()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another operation.");
+		}
+		if(repoGestion.getResponseAsBoolean(OperationsQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg2(), config.getLg2()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another operation.");
+		}
+	}
 
 	public Operation getOperationById(String id) throws RmesException {
 		return buildOperationFromJson(getOperationJsonById(id));
@@ -181,6 +184,8 @@ public class OperationsUtils extends RdfService{
 	}
 
 	private void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
+		validate(operation);
+
 		Model model = new LinkedHashModel();
 		IRI operationURI = RdfUtils.objectIRI(ObjectType.OPERATION,operation.getId());
 		/*Const*/

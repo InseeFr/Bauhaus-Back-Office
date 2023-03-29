@@ -1,19 +1,21 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.LangService;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.PAV;
+import fr.insee.rmes.persistance.ontologies.SCHEMA;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.UriUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -30,34 +32,22 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.operations.documentations.Document;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.PAV;
-import fr.insee.rmes.persistance.ontologies.SCHEMA;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
-import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.UriUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class DocumentsUtils  extends RdfService  {
@@ -192,6 +182,7 @@ public class DocumentsUtils  extends RdfService  {
 		}
 	}
 
+
 	/**
 	 * Create document
 	 * @param id
@@ -201,6 +192,7 @@ public class DocumentsUtils  extends RdfService  {
 	 */
 	public void createDocument(String id, String body, boolean isLink, InputStream documentFile, String documentName)
 			throws RmesException {
+
 
 		/* Check rights */
 		if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
@@ -220,9 +212,12 @@ public class DocumentsUtils  extends RdfService  {
 		}
 
 
+		validate(document);
+
+
 		if (isLink) {
 			checkLinkDoesNotExist(id, document.getUrl());
-		}else {
+		} else {
 			String url = createFileUrl(documentName);
 			checkDocumentDoesNotExist(id, url);
 
@@ -311,6 +306,7 @@ public class DocumentsUtils  extends RdfService  {
 
 		IRI docUri = RdfUtils.toURI(document.getUri());
 		logger.info("Update document : {} - {} / {}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
+		validate(document);
 		writeRdfDocument(document, docUri);
 	}
 
@@ -496,15 +492,16 @@ public class DocumentsUtils  extends RdfService  {
 	}
 
 
-	/**
-	 * Write a document in rdf database
-	 * @param document
-	 * @param docUri
-	 * @throws RmesException
-	 */
+	private void validate(Document document) throws RmesException {
+		if(repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
+		}
+		if(repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))){
+			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
+		}
+	}
 
 	private void writeRdfDocument(Document document, IRI docUri) throws RmesException {
-
 		Resource graph = RdfUtils.documentsGraph();
 		Model model = new LinkedHashModel();
 

@@ -1,14 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class OpSeriesQueries extends GenericQueries{
 
@@ -28,6 +27,17 @@ public class OpSeriesQueries extends GenericQueries{
 	private static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
 	private static final String ORG_INSEE_GRAPH = "ORG_INSEE_GRAPH";
 	private static final String LINK_PREDICATE = "LINK_PREDICATE";
+
+	public static String checkPrefLabelUnicity(String id, String label, String lang) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put("LANG", lang);
+		params.put("ID", id);
+		params.put("LABEL", label);
+		params.put("URI_PREFIX", "/operations/serie/");
+		params.put("TYPE", "insee:StatisticalOperationSeries");
+		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
+	}
 
 	public static String oneSeriesQuery(String id) {
 		variables = null;

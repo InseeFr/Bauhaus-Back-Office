@@ -1,8 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import fr.insee.rmes.bauhaus_services.DocumentsService;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -11,8 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.exceptions.RmesException;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class DocumentsImpl implements DocumentsService {
@@ -107,7 +106,7 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public String setLink(String body) throws RmesException {
-		String id=documentsUtils.createDocumentID();
+		String id = documentsUtils.createDocumentID();
 		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,true, null, null);
 		return id;

@@ -1,10 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
-import java.util.HashMap;
-
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.HashMap;
 
 public class ClassificationsQueries  extends GenericQueries {
 	

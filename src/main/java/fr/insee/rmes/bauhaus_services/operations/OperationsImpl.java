@@ -410,20 +410,17 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public void setFamily(String id, String body) throws RmesException {
-		familiesUtils.setFamily(id,body);
+		familiesUtils.setFamily(id, body);
+	}
+
+	@Override
+	public String createFamily(String body) throws RmesException {
+		return familiesUtils.createFamily(body);
 	}
 
 	@Override
 	public String setFamilyValidation(String id) throws RmesException{
 		return familiesUtils.setFamilyValidation(id);
-	}
-
-	/**
-	 * CREATE
-	 */
-	@Override
-	public String createFamily(String body) throws RmesException {
-		return familiesUtils.createFamily(body);
 	}
 
 	public String getSeriesWithReport(String idFamily) throws RmesException {
