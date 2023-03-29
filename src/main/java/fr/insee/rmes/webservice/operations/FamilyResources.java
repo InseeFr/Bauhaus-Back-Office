@@ -112,11 +112,9 @@ public class FamilyResources extends OperationsCommonResources {
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		try {
 			operationsService.setFamilyValidation(id);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
-
-
 }
