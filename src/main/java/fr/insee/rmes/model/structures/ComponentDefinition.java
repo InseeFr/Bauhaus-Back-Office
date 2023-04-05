@@ -10,6 +10,9 @@ public class ComponentDefinition {
     private String order;
     private String[] attachment = new String[0];
     private Boolean required = false;
+    private String notation;
+    private String labelLg1;
+    private String labelLg2;
 
     private MutualizedComponent component;
 
@@ -71,5 +74,29 @@ public class ComponentDefinition {
 
     public void setRequired(Boolean required) {
         this.required = required;
+    }
+
+    public String getNotation() {
+        return notation;
+    }
+
+    public void setNotation(String notation) {
+        this.notation = notation;
+    }
+
+    public String getLabelLg1() {
+        return labelLg1;
+    }
+
+    public void setLabelLg1(String labelLg1) {
+        this.labelLg1 = labelLg1;
+    }
+
+    public String getLabelLg2() {
+        return labelLg2;
+    }
+
+    public void setLabelLg2(String labelLg2) {
+        this.labelLg2 = labelLg2;
     }
 }
