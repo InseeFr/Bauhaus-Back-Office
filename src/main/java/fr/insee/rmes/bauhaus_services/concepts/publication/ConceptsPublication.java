@@ -1,8 +1,14 @@
 package fr.insee.rmes.bauhaus_services.concepts.publication;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -15,17 +21,10 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
-import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.XKOS;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ConceptsPublication extends RdfService{
@@ -167,7 +166,7 @@ public class ConceptsPublication extends RdfService{
 					model.add(subject, st.getPredicate(), st.getObject(), st.getContext());
 				}
 			}
-			Literal plainText = RdfUtils.setLiteralString(Jsoup.parse(xhtml).text(), lg);
+			Literal plainText = RdfUtils.setLiteralString(StringUtils.convertHtmlStringToRaw(xhtml), lg);
 			if (subject == null) {
 				throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
 			}
