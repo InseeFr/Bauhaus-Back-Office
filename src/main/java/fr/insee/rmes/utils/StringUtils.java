@@ -5,19 +5,30 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StringUtils {
-	
-	  private StringUtils() {
-		    throw new IllegalStateException("Utility class");
-	}
 
-	public static boolean stringContainsItemFromList(String string, String[] list) {
-		return Arrays.stream(list).anyMatch(string::contains);
-	}
+    private StringUtils() {
+        throw new IllegalStateException("Utility class");
+    }
 
-	public static List<String> stringToList(String value) {
-		List<String> val = new ArrayList<>();
-		val.add(value);
-		return val;
-	}
-	
+    public static boolean stringContainsItemFromList(String string, String[] list) {
+        return Arrays.stream(list).anyMatch(string::contains);
+    }
+
+    public static List<String> stringToList(String value) {
+        List<String> val = new ArrayList<>();
+        val.add(value);
+        return val;
+    }
+
+    public static String convertHtmlStringToRaw(String html) {
+        String raw = html
+                .replaceAll("<p>", "\n")
+                .replaceAll("<[^>]*>", "");
+
+        if (raw.startsWith("\n")) {
+            raw = raw.substring(1);
+        }
+        return raw;
+    }
+
 }
