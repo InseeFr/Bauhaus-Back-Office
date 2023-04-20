@@ -147,12 +147,13 @@ public class ClassificationUtils extends RdfService {
             repoGestion.deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
             if (StringUtils.isNotEmpty(noteValue)) {
                 String html = XhtmlToMarkdownUtils.markdownToXhtml(noteValue);
-                String raw = html.replaceAll("<[^>]*>", "");
+                String raw = fr.insee.rmes.utils.StringUtils.convertHtmlStringToRaw(html);
                 model.add(noteIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(html), graph);
                 model.add(noteIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
             }
         }
     }
+
 
     private void validate(Classification classification) throws RmesBadRequestException {
         if(classification.getPrefLabelLg1() == null){
