@@ -68,7 +68,7 @@ public class CodeListPublication extends RdfService {
 			con.close();
 		}
 		Resource codelistToPublishRessource = PublicationUtils.tranformBaseURIToPublish(codelist);
-		RepositoryPublication.publishResource(codelistToPublishRessource, model, Constants.CODELIST);
+		repositoryPublication.publishResource(codelistToPublishRessource, model, Constants.CODELIST);
 		
 	}
 

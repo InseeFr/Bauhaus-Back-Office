@@ -272,7 +272,6 @@ public class Config {
 		RdfUtils.setConfig(this);
 		Sugoi.setConfig(this);
 		PublicationUtils.setConfig(this);
-		RepositoryPublication.setConfig(this);
 	}
 
 	/******************************************************/

@@ -47,7 +47,7 @@ public class ClassificationPublication extends RdfService{
 			con.close();
 		}
 
-		RepositoryPublication.publishContext(graphIri, model, "classification");
+		repositoryPublication.publishContext(graphIri, model, "classification");
 
 	}
 
