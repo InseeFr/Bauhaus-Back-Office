@@ -6,10 +6,7 @@ import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -205,13 +202,13 @@ public class RepositoryGestion  {
 		} 
 	}
 
-	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
+	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, RepositoryConnection conn, Value value) throws RmesException {
 		try {
 			if (conn == null) {
 				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
-			conn.remove(object, predicate, null, graph);
+			conn.remove(object, predicate, value, graph);
 			conn.close();
 		} catch (RepositoryException e) {
 			logger.error(FAILURE_LOAD_OBJECT , object);
@@ -220,6 +217,11 @@ public class RepositoryGestion  {
 
 		}
 	}
+
+	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
+		deleteTripletByPredicateAndValue(object, predicate, graph, conn, null);
+	}
+
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
