@@ -61,6 +61,7 @@
 		<jacoco.version>0.8.5</jacoco.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+		<java-jwt.version>3.4.1</java-jwt.version>
 
 		<!-- SONAR -->
 		<sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
@@ -119,6 +120,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.auth0</groupId>
+			<artifactId>java-jwt</artifactId>
+			<version>${java-jwt.version}</version>
 		</dependency>
  
 
