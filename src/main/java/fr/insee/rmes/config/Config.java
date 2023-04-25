@@ -100,6 +100,9 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
 	private String clientId;
 
+	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
+	private String serverKeycloak;
+
 	//LDAP
 	//LDAP
 	@Value("${fr.insee.rmes.bauhaus.sugoi.url}")
@@ -569,4 +572,7 @@ public class Config {
 		return secret;
 	}
 
+	public String getServerKeycloak() {
+		return serverKeycloak;
+	}
 }
