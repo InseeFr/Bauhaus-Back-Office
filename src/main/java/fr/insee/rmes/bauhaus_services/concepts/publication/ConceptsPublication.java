@@ -69,7 +69,7 @@ public class ConceptsPublication extends RdfService{
 			con.close();
 			
 			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
-			RepositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
+			repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
 		}
 
 	}
@@ -129,7 +129,7 @@ public class ConceptsPublication extends RdfService{
 
 
 	private void checkTopConceptOf(String conceptId, Model model)  throws RmesException {
-		JSONArray conceptsToCheck = RepositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
+		JSONArray conceptsToCheck = repositoryPublication.getResponseAsArray(ConceptsQueries.getNarrowers(conceptId));
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
 			if (!repoGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
@@ -207,7 +207,7 @@ public class ConceptsPublication extends RdfService{
 			Model model = new LinkedHashModel();
 			Resource collection = RdfUtils.collectionIRI(collectionId);
 			//TODO uncomment when we can notify...
-			//Boolean creation = !RepositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
+			//Boolean creation = !repositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
 			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection);
 
@@ -238,7 +238,7 @@ public class ConceptsPublication extends RdfService{
 				con.close();
 			}
 			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
-			RepositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
+			repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
 		}
 	}
 

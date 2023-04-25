@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services.keycloak;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class token {
+public class Token {
     @JsonProperty("access_token")
     String access_token;
 

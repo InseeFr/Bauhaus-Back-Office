@@ -37,9 +37,6 @@ public class RepositoryGestion  {
 	@Autowired
 	private RepositoryUtils repositoryUtils;
 
-
-	private RepositoryGestion repo;
-
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
@@ -48,7 +45,7 @@ public class RepositoryGestion  {
 
 		@PostConstruct
 	public void init() {
-		RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion());
 	}
 
@@ -61,7 +58,7 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public String getResponse(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getResponse(query, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -73,7 +70,7 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		return RepositoryUtils.executeUpdate(updateQuery, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -85,17 +82,17 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public JSONObject getResponseAsObject(String query) throws RmesException {
-			return RepositoryUtils.getResponseAsObject(query, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			return repositoryUtils.getResponseAsObject(query, repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()));
 	}
 
 	public JSONArray getResponseAsArray(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsArray(query, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getResponseAsArray(query, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
 	public JSONArray getResponseAsJSONList(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsJSONList(query, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getResponseAsJSONList(query, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -108,7 +105,7 @@ public class RepositoryGestion  {
 	 * @throws JSONException
 	 */
 	public boolean getResponseAsBoolean(String query) throws RmesException {
-		return RepositoryUtils.getResponseForAskQuery(query, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getResponseForAskQuery(query, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -116,7 +113,7 @@ public class RepositoryGestion  {
 			throws RmesException {
 		RepositoryResult<Statement> statements = null;
 		if (con == null) {
-			con = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			con = repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()).getConnection();
 		}
 		try {
@@ -147,7 +144,7 @@ public class RepositoryGestion  {
 			throws RmesException {
 
 			if (con == null) {
-				con = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				con = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 
@@ -161,14 +158,14 @@ public class RepositoryGestion  {
 	}
 
 	public File getGraphAsFile(String context) throws RmesException {
-			if (context != null) return RepositoryUtils.getCompleteGraphInTrig(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			if (context != null) return repositoryUtils.getCompleteGraphInTrig(repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()), context);
-			return RepositoryUtils.getAllGraphsInZip(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			return repositoryUtils.getAllGraphsInZip(repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()));
 	}
 	
 	public String[] getAllGraphs() throws RmesException {
-		return RepositoryUtils.getAllGraphs(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getAllGraphs(repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -182,7 +179,7 @@ public class RepositoryGestion  {
 
 	public void loadConcept(IRI concept, Model model, List<List<IRI>> notesToDeleteAndUpdate)
 			throws RmesException {
-		try (RepositoryConnection conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		try (RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection() ){
 			// notes to delete
 			for (IRI note : notesToDeleteAndUpdate.get(0)) {
@@ -205,7 +202,7 @@ public class RepositoryGestion  {
 	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, RepositoryConnection conn, Value value) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, predicate, value, graph);
@@ -225,7 +222,7 @@ public class RepositoryGestion  {
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
 		try {
 			if (conn == null) {
-				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.add(model);
@@ -248,7 +245,7 @@ public class RepositoryGestion  {
 
 		try {
 			if (conn == null) {
-				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, null, null);
@@ -266,7 +263,7 @@ public class RepositoryGestion  {
 
 		try {
 			if (conn == null) {
-				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.remove(object, null, null);
@@ -289,7 +286,7 @@ public class RepositoryGestion  {
 
 		try {
 			if (conn == null) {
-				conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
 			conn.clear(graph);
@@ -304,14 +301,14 @@ public class RepositoryGestion  {
 	}
 	
 	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
-		return RepositoryUtils.persistFile(input, format, graph, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.persistFile(input, format, graph, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()), null);
 	}
 
 	public void loadObjectWithReplaceLinks(IRI object, Model model) throws RmesException {
 
 
-		try (RepositoryConnection conn=RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		try (RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();)
 		{
 			clearReplaceLinks(object, conn);
@@ -324,7 +321,7 @@ public class RepositoryGestion  {
 	public void objectsValidation(List<IRI> collectionsToValidateList, Model model) throws RmesException {
 
 		try {
-			RepositoryConnection conn=RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()).getConnection();
 			for (IRI item : collectionsToValidateList) {
 				conn.remove(item, INSEE.VALIDATION_STATE, null);
@@ -340,7 +337,7 @@ public class RepositoryGestion  {
 	public void objectValidation(IRI ressourceURI, Model model) throws RmesException {
 
 		try {
-			RepositoryConnection conn=RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()).getConnection();
 			conn.remove(ressourceURI, INSEE.VALIDATION_STATE, null);
 			conn.remove(ressourceURI, INSEE.IS_VALIDATED, null);
@@ -352,14 +349,14 @@ public class RepositoryGestion  {
 	}
 
 	public void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
-		conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection();
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 		getStatementsAndRemove(concept, conn, typeOfLink);
 	}
 
 	public void clearReplaceLinks(Resource object, RepositoryConnection conn) throws RmesException {
-		conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection();
 		List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
 		getStatementsAndRemove(object, conn, typeOfLink);
@@ -367,7 +364,7 @@ public class RepositoryGestion  {
 
 	private  void getStatementsAndRemove(Resource object, RepositoryConnection conn, List<IRI> typeOfLink)
 			throws RmesException {
-		conn = RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection();
 		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements = null;
@@ -386,7 +383,7 @@ public class RepositoryGestion  {
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
-		RepositoryUtils.clearStructureAndComponents(structure, RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		repositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -394,7 +391,7 @@ public class RepositoryGestion  {
 		List<IRI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
 
 		try (
-				RepositoryConnection conn=RepositoryUtils.initRepository(config.getRdfServerGestion(),
+				RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 		){
 			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
@@ -408,7 +405,7 @@ public class RepositoryGestion  {
 
 	private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink,
 			RepositoryConnection conn) throws RmesException {
-		conn=RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection();
 		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements;
@@ -445,7 +442,7 @@ public class RepositoryGestion  {
 	}
 
 	public RepositoryConnection getConnection() throws RmesException {
-		return repositoryUtils.getConnection(RepositoryUtils.initRepository(config.getRdfServerGestion(),
+		return repositoryUtils.getConnection(repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
 	}
 
@@ -454,7 +451,7 @@ public class RepositoryGestion  {
 
 
 		try {
-			RepositoryConnection connection =RepositoryUtils.initRepository(config.getRdfServerGestion(),
+			RepositoryConnection connection =repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()).getConnection();
 			model.predicates().forEach(predicate -> connection.remove(simsUri, predicate, null, graph));
 			connection.add(model);

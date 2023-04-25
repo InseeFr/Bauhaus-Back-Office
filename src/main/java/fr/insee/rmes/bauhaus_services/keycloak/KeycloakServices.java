@@ -22,8 +22,6 @@ import java.util.Date;
 
 
 @Service
-
-
 public class KeycloakServices {
 
     @Autowired
@@ -32,6 +30,7 @@ public class KeycloakServices {
     private String secret;
     private String clientId;
     private String server;
+    private RestTemplate keycloakClient = new RestTemplate();
     static final Logger log = LogManager.getLogger(KeycloakServices.class);
 
     @PostConstruct
@@ -50,7 +49,6 @@ public class KeycloakServices {
 
         log.debug("GET Keycloak access token");
 
-        var keycloakClient = new RestTemplate();
         String keycloakUrl = server + "/protocol/openid-connect/token";
 
         var headers = new HttpHeaders();
@@ -60,15 +58,13 @@ public class KeycloakServices {
         body.add("client_id",clientId);
         body.add("client_secret",secret);
 
-
         HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {
 
-            token accessToken = keycloakClient.postForObject( keycloakUrl, entity , token.class );
+            Token accessToken = keycloakClient.postForObject( keycloakUrl, entity , Token.class );
 
             log.trace("Keycloak token provided");
             return accessToken.getAccessToken();
-
 
         } catch (RestClientException e) {
             log.warn(e.getMessage());

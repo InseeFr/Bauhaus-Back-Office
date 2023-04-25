@@ -9,11 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 
 public abstract class RdfService {
 
 	@Autowired
 	protected RepositoryGestion repoGestion;
+
+	@Autowired
+	protected RepositoryPublication repositoryPublication;
 	
 	@Autowired
 	protected Config config;
