@@ -203,7 +203,7 @@ public class StructureUtils extends RdfService {
     }
 
     /**
-     * Structure to sesame
+     * Structure to rdf
      *
      * @throws RmesException
      */

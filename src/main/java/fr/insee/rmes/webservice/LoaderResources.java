@@ -75,6 +75,9 @@ public class LoaderResources  extends GenericResources {
 
 	@Autowired
 	protected RepositoryGestion repoGestion;
+
+	@Autowired
+	protected RepositoryPublication repositoryPublication;
 	
 	
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
@@ -137,7 +140,7 @@ public class LoaderResources  extends GenericResources {
 			if (database.equals(GESTION)) {
 				graphs = repoGestion.getAllGraphs();
 			}else {
-				graphs = RepositoryPublication.getAllGraphs();
+				graphs = repositoryPublication.getAllGraphs();
 			}
 			return ResponseEntity.ok(String.join("\n", graphs));
 		} catch (RmesException e) {
@@ -157,7 +160,7 @@ public class LoaderResources  extends GenericResources {
 			if (database.equals(GESTION)) {
 				repoGestion.persistFile(content, format, graph);
 			}else {
-				RepositoryPublication.persistFile(content, format,graph);
+				repositoryPublication.persistFile(content, format,graph);
 			}
 		}  catch (IOException e) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR,"IOException : file " + documentName, e.getMessage());
@@ -170,7 +173,7 @@ public class LoaderResources  extends GenericResources {
 		if (database.equals(GESTION)) {
 			outFile = repoGestion.getGraphAsFile(graph);
 		}else {
-			outFile = RepositoryPublication.getGraphAsFile(graph);
+			outFile = repositoryPublication.getGraphAsFile(graph);
 		}
 
 		//Build Headers
