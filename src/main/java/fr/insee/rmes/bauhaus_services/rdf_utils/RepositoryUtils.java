@@ -27,6 +27,7 @@ import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -43,29 +44,25 @@ public class RepositoryUtils {
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
-
 	
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
-	private String accessToken= null;
-	@Autowired
-	private KeycloakServices keycloakServices;
-	private HTTPRepository repository;
+	private RepositoryInitiator repositoryInitiator;
 
+
+	public RepositoryUtils(KeycloakServices keycloakServices, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
+		repositoryInitiator=RepositoryInitiator.newInstance(type, keycloakServices);
+	}
 
 	public Repository initRepository(String rdfServer, String repositoryID) {
-		if (rdfServer==null||rdfServer.equals("")) {return null;}
-
-		try {
-			if(!keycloakServices.isTokenValid(accessToken) || repository==null) {
-
-				accessToken= keycloakServices.getKeycloakAccessToken();
-				repository = new HTTPRepository(rdfServer, repositoryID);
-				repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
-				repository.init();
-			}
-
-		} catch (Exception e) {
-			logger.error("Initialisation de la connection à la base RDF "+rdfServer+" impossible", e);
+		if (rdfServer==null||rdfServer.equals("")) {
+			logger.warn("rdfServer ("+rdfServer+") et repositoryID("+repositoryID+") ne doivent pas être nuls dans RepositoryUtils.initRepository");
+			return null;
+		}
+		Repository repository=null;
+		try{
+			repository= this.repositoryInitiator.initRepository(rdfServer, repositoryID);
+		}catch(Exception e) {
+			logger.error("Initialisation de la connection à la base RDF " + rdfServer + " impossible", e);
 		}
 		return repository;
 	}
