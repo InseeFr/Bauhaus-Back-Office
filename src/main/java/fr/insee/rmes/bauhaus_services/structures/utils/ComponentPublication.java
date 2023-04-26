@@ -60,7 +60,7 @@ public class ComponentPublication extends RdfService {
 			con.close();
 		}
 		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
-		RepositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
+		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
 		
 	}
 

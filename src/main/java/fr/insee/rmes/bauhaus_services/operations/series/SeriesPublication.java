@@ -102,7 +102,7 @@ public class SeriesPublication extends RdfService {
 			con.close();
 		}
 		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
-		RepositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
+		repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
 	}
 
