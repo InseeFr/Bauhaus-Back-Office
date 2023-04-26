@@ -95,6 +95,14 @@ public class Config {
 	@Value("${jwt.id-claim}")
 	private String idClaim;
 
+	@Value ("${fr.insee.rmes.bauhaus.keycloak.client.secret}")
+	private String secret;
+	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
+	private String clientId;
+
+	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
+	private String serverKeycloak;
+
 	//LDAP
 	//LDAP
 	@Value("${fr.insee.rmes.bauhaus.sugoi.url}")
@@ -264,7 +272,6 @@ public class Config {
 		RdfUtils.setConfig(this);
 		Sugoi.setConfig(this);
 		PublicationUtils.setConfig(this);
-		RepositoryPublication.setConfig(this);
 	}
 
 	/******************************************************/
@@ -556,4 +563,15 @@ public class Config {
 	}
 
 
+	public String getClientId() {
+		return clientId;
+	}
+
+	public String getSecret() {
+		return secret;
+	}
+
+	public String getServerKeycloak() {
+		return serverKeycloak;
+	}
 }

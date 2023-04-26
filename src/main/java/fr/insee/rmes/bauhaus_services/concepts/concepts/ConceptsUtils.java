@@ -126,7 +126,7 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	/**
-	 * Concepts to sesame
+	 * Concepts to rdf
 	 * @throws RmesException 
 	 */
 
@@ -200,7 +200,7 @@ public class ConceptsUtils extends RdfService {
 	public HttpStatus deleteConcept(String id) throws RmesException{
 		HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		if (result.equals(HttpStatus.OK)) {
-			result = RepositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+			result = repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
 	}

@@ -66,7 +66,7 @@ public class DocumentationPublication extends RdfService {
 			con.close();
 		}
 
-		RepositoryPublication.publishContext(graph, model, "sims");
+		repositoryPublication.publishContext(graph, model, "sims");
 
 	}
 

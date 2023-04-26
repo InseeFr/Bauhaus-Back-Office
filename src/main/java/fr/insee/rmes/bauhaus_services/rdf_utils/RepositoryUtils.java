@@ -1,33 +1,17 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.Update;
+import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -42,14 +26,19 @@ import org.eclipse.rdf4j.rio.trig.TriGParser;
 import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-public abstract class RepositoryUtils {
+@Service
+public class RepositoryUtils {
 	
 	private static final String BINDINGS = "bindings";
 	private static final String RESULTS = "results";
@@ -57,20 +46,31 @@ public abstract class RepositoryUtils {
 
 	
 	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
+	private String accessToken= null;
+	@Autowired
+	private KeycloakServices keycloakServices;
+	private HTTPRepository repository;
 
 
-	public static Repository initRepository(String sesameServer, String repositoryID) {
-		if (sesameServer==null||sesameServer.equals("")) {return null;}
-		Repository repo = new HTTPRepository(sesameServer, repositoryID);
+	public Repository initRepository(String rdfServer, String repositoryID) {
+		if (rdfServer==null||rdfServer.equals("")) {return null;}
+
 		try {
-			repo.init();
+			if(!keycloakServices.isTokenValid(accessToken) || repository==null) {
+
+				accessToken= keycloakServices.getKeycloakAccessToken();
+				repository = new HTTPRepository(rdfServer, repositoryID);
+				repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
+				repository.init();
+			}
+
 		} catch (Exception e) {
-			logger.error("Initialisation de la connection à la base sesame {} impossible", sesameServer);
-			logger.error(e.getMessage());
+			logger.error("Initialisation de la connection à la base RDF "+rdfServer+" impossible", e);
 		}
-		return repo;
+		return repository;
 	}
-	
+
+
 	public RepositoryConnection getConnection(Repository repository) throws RmesException {
 		RepositoryConnection con = null;
 		try {
@@ -266,7 +266,7 @@ public abstract class RepositoryUtils {
 
 	public static String[] getAllGraphs(Repository repo) throws RmesException {
 		RepositoryConnection connection = repo.getConnection();
-		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());//.evaluate(writer);
+		TupleQuery tupleQuery = connection.prepareTupleQuery(QueryLanguage.SPARQL,GenericQueries.getAllGraphs());
 		TupleQueryResult rs = tupleQuery.evaluate();
 		String[] graphs = rs.stream().map(g -> g.getValue("g").stringValue()).toArray(String[]::new);
 		logger.info("Graphs in database : {}", (graphs != null ? graphs.length : "0"));

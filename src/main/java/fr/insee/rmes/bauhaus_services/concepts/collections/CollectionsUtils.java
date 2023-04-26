@@ -82,7 +82,7 @@ public class CollectionsUtils extends RdfService{
 	}
 	
 	/**
-	 * Collections to sesame
+	 * Collections to graphDB
 	 * @throws RmesException 
 	 */
 	

@@ -71,8 +71,8 @@ public class StructurePublication extends RdfService {
 		con.close();
 		Resource structureToPublish = PublicationUtils.tranformBaseURIToPublish(structure);
 
-		RepositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
-		RepositoryPublication.publishResource(structureToPublish, model, "Structure");
+		repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
+		repositoryPublication.publishResource(structureToPublish, model, "Structure");
 
 	}
 

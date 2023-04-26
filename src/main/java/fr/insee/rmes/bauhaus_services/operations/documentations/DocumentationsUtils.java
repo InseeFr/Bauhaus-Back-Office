@@ -473,7 +473,7 @@ public class DocumentationsUtils extends RdfService{
 
 		HttpStatus result =  repoGestion.executeUpdate(DocumentationsQueries.deleteGraph(graph));
 		if (result.equals(HttpStatus.OK)) {
-			result = RepositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));	
+			result = repositoryPublication.executeUpdate(DocumentationsQueries.deleteGraph(graph));
 		}
 
 		return result;

@@ -44,6 +44,9 @@ public class HealthcheckApi  extends GenericResources {
 	
 	@Autowired
 	protected RepositoryGestion repoGestion;
+
+	@Autowired
+	protected RepositoryPublication repositoryPublication;
 	
 	@Autowired
 	protected UserRolesManagerService userService;
@@ -100,13 +103,13 @@ public class HealthcheckApi  extends GenericResources {
 
 	public void checkDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
 		try {
-			if (StringUtils.isEmpty(RepositoryPublication.getResponse(sparlQuery))){
+			if (StringUtils.isEmpty(repositoryPublication.getResponse(sparlQuery))){
 				errorMessage.add("- Repository publication doesn't return statement \n");
 				stateResult.add(" - Connexion publication Z").add(KO_STATE);
 			}else {
 				stateResult.add(" - Connexion publication Z").add(OK_STATE);
 			}
-			if (StringUtils.isEmpty(RepositoryPublication.getResponseInternalPublication(sparlQuery))){
+			if (StringUtils.isEmpty(repositoryPublication.getResponseInternalPublication(sparlQuery))){
 				errorMessage.add("- Repository publication interne doesn't return statement \n");
 				stateResult.add(" - Connexion publication I").add(KO_STATE);
 			}else {

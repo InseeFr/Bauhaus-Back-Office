@@ -62,7 +62,7 @@ public class DocumentsPublication  extends RdfService{
 			
 			// Change url in document (getModelToPublish) and publish the RDF
 			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
-			RepositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
+			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
 		}
 		
 		//Get all links
@@ -70,7 +70,7 @@ public class DocumentsPublication  extends RdfService{
 		for (Object link : listLinks) {
 			String id = docUtils.getIdFromJson((JSONObject)link).toString();
 			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
-			RepositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
+			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
 		}
 		
 		
