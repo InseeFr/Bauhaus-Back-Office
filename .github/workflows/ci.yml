@@ -6,9 +6,6 @@ jobs:
   test-build:
     name: Test & build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: [ 14, 16 ]
     steps:
       - name: Check Branches 
         uses: actions/github-script@v6
