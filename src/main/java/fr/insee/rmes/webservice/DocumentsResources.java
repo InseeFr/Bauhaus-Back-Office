@@ -177,7 +177,7 @@ public class DocumentsResources  extends GenericResources {
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file"))
 			@RequestParam(value = "file") MultipartFile documentFile,
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id
-			) throws RmesException {
+			) {
 		String url = null;
 		String documentName = documentFile.getOriginalFilename();
 		try {

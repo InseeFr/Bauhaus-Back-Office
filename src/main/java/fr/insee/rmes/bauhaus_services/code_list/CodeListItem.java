@@ -6,6 +6,9 @@ public class CodeListItem {
 
 	private static String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
+	@Schema(description = "Iri", required = true)
+	private String iri;
+
 	@Schema(description = "Code", required = true)
 	private String code;
 	
@@ -15,11 +18,14 @@ public class CodeListItem {
 	@Schema(description = "Label lg2")
 	private String labelLg2;
 
-	public CodeListItem(String code, String labelLg1, String labelLg2) {
+
+
+	public CodeListItem(String code, String labelLg1, String labelLg2, String iri) {
 		super();
 		this.code = code;
 		this.labelLg1 = labelLg1;
 		this.labelLg2 = labelLg2;
+		this.iri = iri;
 	}
 
 	public CodeListItem() {
@@ -49,6 +55,14 @@ public class CodeListItem {
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public String getIri() {
+		return iri;
+	}
+
+	public void setIri(String iri) {
+		this.iri = iri;
 	}
 
 	public static String getClassOperationsLink() {

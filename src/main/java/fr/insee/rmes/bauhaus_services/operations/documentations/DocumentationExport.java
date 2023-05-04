@@ -1,16 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
@@ -26,6 +15,16 @@ import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XsltUtils;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class DocumentationExport {
@@ -139,7 +138,7 @@ public class DocumentationExport {
 		String targetType = target[0];
 		String idDatabase = target[1];
 
-		List<String>neededCodeLists=new ArrayList<>();
+		List<String> neededCodeLists=new ArrayList<>();
 
 		if (targetType.equals(Constants.OPERATION_UP)) {
 			operation=operationsUtils.getOperationById(idDatabase);
