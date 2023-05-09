@@ -201,7 +201,7 @@ public class StructureComponentUtils extends RdfService {
             }
         });
         if(component.getConcept() != null){
-            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, RdfUtils.conceptIRI() + "/" + component.getConcept(), model, graph);
         }
 
         if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(INSEE.CODELIST))) {
