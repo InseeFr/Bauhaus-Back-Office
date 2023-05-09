@@ -256,10 +256,16 @@ public class ConceptsResources  extends GenericResources   {
 			return conceptsService.exportConcept(id, accept);
 	}
 
-	@GetMapping(value = "/concept/export-zip/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+	@GetMapping(value = "/concept/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
-	public void exportZipConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept, HttpServletResponse response) throws RmesException {
-		conceptsService.exportZipConcept(id, accept, response);
+	public void exportZipConcept(
+			@PathVariable(Constants.ID) String id,
+			@PathVariable("type") String type,
+			@RequestParam("langue") ConceptsCollectionsResources.Language lg,
+			@RequestHeader(required=false) String accept,
+			@RequestParam("withConcepts") boolean withConcepts,
+			HttpServletResponse response) throws RmesException {
+		conceptsService.exportZipConcept(id, accept, response, lg, type, withConcepts);
 	}
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "

@@ -71,7 +71,7 @@ public class ConceptsCollectionsResources extends GenericResources   {
 
 	@GetMapping(value = "/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportZipCollectionODT", summary = "Blob of concept")
-	public void exportZipCollectionODT(
+	public void exportZipCollection(
 			@PathVariable(Constants.ID) String id,
 			@PathVariable("type") String type,
 			@RequestParam("langue") Language lg,
