@@ -1,26 +1,21 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class RdfUtils {
@@ -112,7 +107,10 @@ public class RdfUtils {
 	public static IRI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
-	
+	public static IRI conceptIRI() {
+		return factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion());
+	}
+
 	public static IRI collectionIRI(String id) {
 		return objectIRI(ObjectType.COLLECTION, id);
 	}
