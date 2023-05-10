@@ -249,10 +249,10 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 
 		if("odt".equalsIgnoreCase(type)){
-			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts);
+			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
 
 		} else {
-			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts);
+			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
 		}
 	}
 
