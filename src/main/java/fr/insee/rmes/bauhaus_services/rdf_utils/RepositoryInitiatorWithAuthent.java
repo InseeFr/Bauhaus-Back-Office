@@ -10,8 +10,8 @@ import java.util.Map;
 
 public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
     private KeycloakServices keycloakServices;
-    private String accessToken;
-    private HTTPRepository repository;
+    private Map<String, String> accessTokens=Map.of();
+    private final Map<String, HTTPRepository> repositories=Map.of();
 
     static final Logger logger = LogManager.getLogger(RepositoryInitiatorWithAuthent.class);
 
@@ -20,12 +20,20 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
     }
 
     @Override
-    public Repository initRepository(String rdfServer, String repositoryID) throws Exception{
-            if(!this.keycloakServices.isTokenValid(this.accessToken) || this.repository==null) {
+    public Repository initRepository(String rdfServer, String repositoryID) throws Exception {
+        var repository=repositories.get(rdfServer);
+        repository=refreshRepository(rdfServer, repositoryID, repository);
+        repositories.put(rdfServer, repository);
+        return repository;
+    }
 
-                accessToken = keycloakServices.getKeycloakAccessToken();
+    private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) throws Exception{
+            if(!this.keycloakServices.isTokenValid(this.accessTokens.get(rdfServer)) || repository==null) {
+
+                var accessToken = keycloakServices.getKeycloakAccessToken();
                 repository = new HTTPRepository(rdfServer, repositoryID);
                 repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
+                this.accessTokens.put(rdfServer, accessToken);
                 repository.init();
             }
 
