@@ -7,6 +7,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 
@@ -84,7 +87,7 @@ public class KeycloakServices {
             return false;
         }
         var isValid = false;
-        var now = new Date();
+        var now = nowPlus1Second();
         try {
             DecodedJWT jwt = JWT.decode(token);
             if (jwt.getExpiresAt().after(now)) {
@@ -97,5 +100,10 @@ public class KeycloakServices {
 
         log.trace("Token is valid : {}" , isValid);
         return isValid;
+    }
+
+    @NotNull
+    protected Date nowPlus1Second() {
+        return Date.from((new Date()).toInstant().plusSeconds(1));
     }
 }
