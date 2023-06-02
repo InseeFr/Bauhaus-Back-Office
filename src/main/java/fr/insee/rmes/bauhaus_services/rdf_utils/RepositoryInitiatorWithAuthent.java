@@ -1,17 +1,20 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
     private KeycloakServices keycloakServices;
-    private Map<String, String> accessTokens=Map.of();
-    private final Map<String, HTTPRepository> repositories=Map.of();
+    private Map<String, String> accessTokens=new HashMap<>();
+    private final Map<String, HTTPRepository> repositories=new HashMap<>();
+
 
     static final Logger logger = LogManager.getLogger(RepositoryInitiatorWithAuthent.class);
 
@@ -27,7 +30,7 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
         return repository;
     }
 
-    private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) throws Exception{
+    private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) throws RmesException {
             if(!this.keycloakServices.isTokenValid(this.accessTokens.get(rdfServer)) || repository==null) {
 
                 var accessToken = keycloakServices.getKeycloakAccessToken();
