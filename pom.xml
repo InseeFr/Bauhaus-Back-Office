@@ -13,15 +13,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-<<<<<<< HEAD
 	<version>3.5.6</version>
-=======
-<<<<<<< Updated upstream
-	<version>3.5.0</version>
-=======
-	<version>3.5.6</version>
->>>>>>> Stashed changes
->>>>>>> cd826946 (feat(many keycloak) add management of many keycloaks (props an treatment))
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
