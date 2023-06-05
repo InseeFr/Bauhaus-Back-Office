@@ -21,14 +21,9 @@ public class TokenApi extends GenericResources {
 	
 	private static final Logger logger = LogManager.getLogger(TokenApi.class);
 
-<<<<<<< Updated upstream
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-	@GetMapping(value = "")
-    public String getToken() throws RmesException {
-=======
-    @GetMapping(value = "/{rdfServerUrl}")
+	@GetMapping(value = "/{rdfServerUrl}")
     public String getToken(@PathVariable String rdfServerUrl) throws RmesException {
->>>>>>> Stashed changes
 		logger.info("GET /token");
 		return keycloakServices.getKeycloakAccessToken(rdfServerUrl);
 	}
