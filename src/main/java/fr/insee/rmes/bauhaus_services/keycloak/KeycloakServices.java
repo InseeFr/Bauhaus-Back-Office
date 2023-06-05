@@ -3,11 +3,19 @@ package fr.insee.rmes.bauhaus_services.keycloak;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import fr.insee.rmes.config.Config;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiatorWithAuthent;
+import fr.insee.rmes.config.keycloak.KeycloakServer;
+import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
+import fr.insee.rmes.config.keycloak.ServerZone;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+<<<<<<< Updated upstream
 import org.springframework.beans.factory.annotation.Autowired;
+=======
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
+>>>>>>> Stashed changes
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,27 +25,47 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+<<<<<<< Updated upstream
 import javax.annotation.PostConstruct;
+=======
+>>>>>>> Stashed changes
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 
 @Service
 public class KeycloakServices {
 
-    @Autowired
-    private Config config;
+    private final Map<String, ServerZone> zonesByServer;
 
-    private String secret;
-    private String clientId;
-    private String server;
+    private final Map<String, ServerZone> zonesByUrl=new HashMap<>();
     private RestTemplate keycloakClient = new RestTemplate();
     static final Logger log = LogManager.getLogger(KeycloakServices.class);
+    private final Map<ServerZone.Zone, KeycloakServer> keycloakServers;
 
-    @PostConstruct
-    private void init() {
-        secret = config.getSecret();
-        server = config.getServerKeycloak();
-        clientId= config.getClientId();
+    static final Logger logger = LogManager.getLogger(KeycloakServices.class);
+
+    protected KeycloakServices(){
+        zonesByServer=Map.of();
+        keycloakServers=Map.of();
+    }
+
+    public KeycloakServices(
+            @Value("${fr.insee.rmes.bauhaus.keycloak.client.secret}") String secret,
+            @Value("${fr.insee.rmes.bauhaus.keycloak.client.id}") String clientID,
+            @Value("${fr.insee.rmes.bauhaus.auth-server-url}") String serverKeycloak,
+            @Value("${fr.insee.rmes.bauhaus.keycloak.client.dmz.secret}") String secretDmz,
+            @Value("${fr.insee.rmes.bauhaus.keycloak.client.dmz.id}") String clientDmzId,
+            @Value("${fr.insee.rmes.bauhaus.dmz.auth-server-url}") String serverKeycloakDmz,
+            KeycloakServerZoneConfiguration keycloakServerZoneConfiguration) {
+        keycloakServers = Map.of(ServerZone.Zone.INTERNE,
+                new KeycloakServer(secret, clientID, serverKeycloak),
+                ServerZone.Zone.DMZ,
+                new KeycloakServer(secretDmz, clientDmzId, serverKeycloakDmz)
+        );
+        this.zonesByServer=keycloakServerZoneConfiguration.zonesByServer();
     }
 
     /**
@@ -45,32 +73,62 @@ public class KeycloakServices {
      *
      * @return jeton
      */
-    public String getKeycloakAccessToken() throws RmesException {
+    public String getKeycloakAccessToken(String rdfServerUrl) throws RmesException {
 
-        log.debug("GET Keycloak access token");
+        if (keycloakServers == null) {
+            throw new RmesException(500, "Unable to retrieve token : some propertis provided to connect to keycloak servers or invalid", "");
+        }
 
-        String keycloakUrl = server + "/protocol/openid-connect/token";
+        var zone=findZoneForKeycloakForRdfServer(rdfServerUrl);
+
+        log.debug("GET Keycloak access token pour " + zone);
+
+        KeycloakServer keycloakServer = keycloakServers.get(zone.serverZone());
+
+        String keycloakUrl = keycloakServer.server() + "/protocol/openid-connect/token";
 
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<String, String>();
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
-        body.add("client_id",clientId);
-        body.add("client_secret",secret);
+        body.add("client_id", keycloakServer.clientId());
+        body.add("client_secret", keycloakServer.secret());
 
         HttpEntity<Object> entity = new HttpEntity<>(body, headers);
         try {
 
-            Token accessToken = keycloakClient.postForObject( keycloakUrl, entity , Token.class );
+            Token accessToken = keycloakClient.postForObject(keycloakUrl, entity, Token.class);
 
             log.trace("Keycloak token provided");
             return accessToken.getAccessToken();
 
         } catch (RestClientException e) {
             log.warn(e.getMessage());
-            throw new RmesException (404,0,"Le serveur Keycloak est injoignable");
+            throw new RmesException(404, 0, "Le serveur Keycloak est injoignable");
         }
 
+    }
+
+    private ServerZone findZoneForKeycloakForRdfServer(String rdfServerUrl) {
+        var retour=zonesByUrl.get(rdfServerUrl);
+        if (retour!=null){
+            return retour;
+        }
+        return findZoneFromUrlAndStoreIt(rdfServerUrl);
+
+    }
+
+    public ServerZone findZoneFromUrlAndStoreIt(String url) {
+        var retour= zonesByServer.entrySet().stream()
+                .filter(entry->url.contains(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .findAny();
+        if (retour.isEmpty()){
+            logger.warn("Unable to find server zone for url "+url+" : default zone used");
+            retour= Optional.of(ServerZone.defaultZone());
+        }
+        zonesByUrl.put(url, retour.get());
+        return retour.get();
     }
 
     /**
@@ -91,11 +149,11 @@ public class KeycloakServices {
                 isValid = true;
             }
         } catch (JWTDecodeException exception) {
-            log.error("erreur {}" , exception.toString());
+            log.error("erreur {}", exception.toString());
 
         }
 
-        log.trace("Token is valid : {}" , isValid);
+        log.trace("Token is valid : {}", isValid);
         return isValid;
     }
 }
