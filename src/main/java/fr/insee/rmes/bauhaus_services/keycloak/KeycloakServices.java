@@ -30,7 +30,7 @@ public class KeycloakServices {
 
     private final Map<String, ServerZone> zonesByServer;
     private final Map<String, ServerZone> zonesByUrl=new HashMap<>();
-    private RestTemplate keycloakClient = new RestTemplate();
+    protected RestTemplate keycloakClient = new RestTemplate();
     static final Logger log = LogManager.getLogger(KeycloakServices.class);
     private final Map<ServerZone.Zone, KeycloakServer> keycloakServers;
 
@@ -54,7 +54,15 @@ public class KeycloakServices {
                 ServerZone.Zone.DMZ,
                 new KeycloakServer(secretDmz, clientDmzId, serverKeycloakDmz)
         );
-        this.zonesByServer=keycloakServerZoneConfiguration.zonesByServer();
+        this.zonesByServer=keycloakServerZoneConfiguration.rdfserver();
+        logKeycloakServerZones(keycloakServerZoneConfiguration);
+    }
+
+    private void logKeycloakServerZones(KeycloakServerZoneConfiguration keycloakServerZoneConfiguration) {
+            var zonesByServer = keycloakServerZoneConfiguration.rdfserver();
+            logger.info("\n------- Servers zone configuration ------\n" +
+                    zonesByServer.entrySet().stream().reduce(new StringBuilder(), (sb,entry)->sb.append(entry.getKey()+ " -> "+entry.getValue()).append("\n"),StringBuilder::append).toString()+
+                    "-------------------------------------------");
     }
 
     /**
@@ -72,7 +80,7 @@ public class KeycloakServices {
 
         log.debug("GET Keycloak access token pour " + zone);
 
-        KeycloakServer keycloakServer = keycloakServers.get(zone.serverZone());
+        KeycloakServer keycloakServer = keycloakServers.get(zone.zone());
 
         String keycloakUrl = keycloakServer.server() + "/protocol/openid-connect/token";
 
