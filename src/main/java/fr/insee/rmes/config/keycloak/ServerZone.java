@@ -7,15 +7,14 @@ import java.util.Arrays;
 
 public class ServerZone {
 
-    private final String zone;
-
-    private final Zone serverZone;
+    private Zone zone;
 
     static final Logger logger = LogManager.getLogger(ServerZone.class);
 
-    public ServerZone(String zone) {
-        this.zone = zone;
-        serverZone= Arrays.stream(Zone.values())
+    public ServerZone(){ }
+
+    public void setZone(String zone) {
+        this.zone = Arrays.stream(Zone.values())
                 .filter(z->zone.toUpperCase().equals(z.name()))
                 .findFirst()
                 .orElseGet(()->{
@@ -24,18 +23,30 @@ public class ServerZone {
                 });
     }
 
+    public ServerZone(String zone) {
+        this.zone = Arrays.stream(Zone.values())
+                .filter(z->zone.toUpperCase().equals(z.name()))
+                .findFirst()
+                .orElseGet(()->{
+                    logger.warn("No zone found for value "+zone+" : this is serverZone set to default zone");
+                    return Zone.defaultZone();
+                });
+    }
+
+
+
     public static ServerZone defaultZone(){
         return new ServerZone(Zone.defaultZone().name());
     }
 
-    public Zone serverZone() {
-        return serverZone;
+    public Zone zone() {
+        return zone;
     }
 
     @Override
     public String toString() {
         return "ServerZone{" +
-                "zone=" + serverZone +
+                "zone=" + zone +
                 '}';
     }
 
