@@ -28,10 +28,10 @@ class RepositoryInitiatorWithAuthentTest {
         var repositoryInitiatorWithAuthent = new RepositoryInitiatorWithAuthent(keycloakServices);
         when(keycloakServices.isTokenValid(null)).thenReturn(Boolean.FALSE);
         when(keycloakServices.isTokenValid(anyString())).thenReturn(Boolean.TRUE);
-        when(keycloakServices.getKeycloakAccessToken()).thenReturn("token");
+        when(keycloakServices.getKeycloakAccessToken(anyString())).thenReturn("token");
         var servers= List.of("http://server1", "http://server2", "http://server3", "http://server1", "http://server1", "http://server3");
         for (String server : servers){
-            assertDoesNotThrow(()-> repository =repositoryInitiatorWithAuthent.initRepository(server, "id"));
+            assertDoesNotThrow(()-> repository = repositoryInitiatorWithAuthent.initRepository(server, "id"));
             assertAll(()->assertTrue(repository.isInitialized()),
                     ()->assertInstanceOf(HTTPRepository.class, repository),
                     ()->assertEquals(server+"/repositories/id", ((HTTPRepository) repository).getRepositoryURL())
