@@ -19,10 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,7 +50,10 @@ class KeycloakServicesTest {
 
     @Test
     void nowPlus1Second() {
-        var keycloakServices = new KeycloakServices();
+        var keycloakServerZoneConfiguration =  new KeycloakServerZoneConfiguration();
+        keycloakServerZoneConfiguration.setZoneByServers(Map.of());
+        var keycloakServices = new KeycloakServices("s", "i", "s",
+        "d", "di", "dk",keycloakServerZoneConfiguration);
         var start= new Date();
         var actual=keycloakServices.nowPlus1Second();
         var nowPlus1= Date.from(start.toInstant().plusSeconds(1));

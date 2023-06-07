@@ -36,11 +36,6 @@ public class KeycloakServices {
 
     static final Logger logger = LogManager.getLogger(KeycloakServices.class);
 
-    protected KeycloakServices(){
-        zonesByServer=Map.of();
-        keycloakServers=Map.of();
-    }
-
     public KeycloakServices(
             @Value("${fr.insee.rmes.bauhaus.keycloak.client.secret}") String secret,
             @Value("${fr.insee.rmes.bauhaus.keycloak.client.id}") String clientID,
