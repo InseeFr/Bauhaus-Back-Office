@@ -195,7 +195,8 @@ public class DocumentsResources  extends GenericResources {
 	 */
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
 			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/document/{id}")
+			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@DeleteMapping("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
 	public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) {
 		HttpStatus status = null;
