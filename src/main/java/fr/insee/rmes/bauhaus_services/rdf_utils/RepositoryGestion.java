@@ -465,4 +465,18 @@ public class RepositoryGestion  {
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
 	}
+
+	/**
+	 * Method to clear an entire graph.
+	 */
+	public void clearGraph() {
+
+		String server = config.getRdfServerGestion();
+		String repository = config.getRepositoryIdGestion();
+
+		RepositoryConnection connection =
+				repositoryUtils.initRepository(server, repository).getConnection();
+
+		connection.clear();
+	}
 }
