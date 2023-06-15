@@ -9,6 +9,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.Resource;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.mockito.Mockito.*;
 
@@ -20,6 +24,8 @@ public class DatabaseManagementServiceTest {
     @Mock
     RepositoryGestion repoGestion;
 
+    @Mock
+    Resource res;
 
     @InjectMocks
     private DatabaseManagementServiceImpl databaseManagementService;
@@ -38,9 +44,10 @@ public class DatabaseManagementServiceTest {
     }
 
     @Test
-    void shouldCallRepoGestionClearGraph() throws RmesBadRequestException {
+    void shouldCallRepoGestionClearGraph() throws RmesBadRequestException, IOException {
         when(config.getEnv()).thenReturn("pre-prod");
+        when(res.getFile()).thenReturn(new File("file"));
         databaseManagementService.clearGraph();
-        verify(repoGestion, times(1)).clearGraph();
+        verify(repoGestion, times(1)).clearGraph(any());
     }
 }

@@ -468,8 +468,9 @@ public class RepositoryGestion  {
 
 	/**
 	 * Method to clear an entire graph.
+	 * @param file
 	 */
-	public void clearGraph() {
+	public void clearGraph(File file) throws IOException {
 
 		String server = config.getRdfServerGestion();
 		String repository = config.getRepositoryIdGestion();
@@ -478,5 +479,7 @@ public class RepositoryGestion  {
 				repositoryUtils.initRepository(server, repository).getConnection();
 
 		connection.clear();
+
+		connection.add(file, RDFFormat.TRIG);
 	}
 }
