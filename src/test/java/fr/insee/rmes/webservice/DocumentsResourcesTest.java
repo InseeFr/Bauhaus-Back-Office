@@ -4,7 +4,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,7 +74,7 @@ class DocumentsResourcesTest {
         Date expiresAT=Date.from((new Date()).toInstant().plusSeconds(100));
         Jwt jwt=new Jwt("token",issuedAt.toInstant(),expiresAT.toInstant(),
                 Map.of("alg", "RS256","typ", "JWT"),
-                Map.of("realm_access", "{\"roles\":[\"Administrateur_RMESGNCS\"]}",
+                Map.of("realm_access", "{\"roles\":[\""+Roles.ADMIN+"\"]}",
                         "timbre", "DR59-SNDI",
                         "preferred_username", "bibi"
                 )
@@ -80,6 +84,25 @@ class DocumentsResourcesTest {
 
         mvc.perform(delete("/documents/document/"+documentId).header("Authorization", "bearer token_blabla"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteDocument_testNoRoleAdminCantDelete(@Autowired MockMvc mvc) throws Exception {
+        String documentId="1";
+        Date issuedAt=new Date();
+        Date expiresAT=Date.from((new Date()).toInstant().plusSeconds(100));
+        Jwt jwt=new Jwt("token",issuedAt.toInstant(),expiresAT.toInstant(),
+                Map.of("alg", "RS256","typ", "JWT"),
+                Map.of("realm_access", "{\"roles\":[\""+ Roles.USER+"\"]}",
+                        "timbre", "DR59-SNDI",
+                        "preferred_username", "bibi"
+                )
+        );
+        when(documentsService.deleteDocument(documentId)).thenReturn(OK);
+        when(jwtDecoder.decode(anyString())).thenReturn(jwt);
+
+        mvc.perform(delete("/documents/document/"+documentId).header("Authorization", "bearer token_blabla"))
+                .andExpect(status().isForbidden());
     }
 
 }
