@@ -11,6 +11,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
@@ -29,14 +31,21 @@ class DatabaseManagementResourcesTest {
     }
 
     @Test
-    void shouldReturn500() throws RmesException {
+    void shouldReturn500IfRmesException() throws RmesException, IOException {
         doThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", "")).when(databaseManagementService).clearGraph();
         ResponseEntity<?> response = databaseManagementResources.reset();
         Assertions.assertEquals(500, response.getStatusCode().value());
     }
 
     @Test
-    void shouldReturn200() throws RmesException {
+    void shouldReturn500IfIOException() throws RmesException, IOException {
+        doThrow(new IOException()).when(databaseManagementService).clearGraph();
+        ResponseEntity<?> response = databaseManagementResources.reset();
+        Assertions.assertEquals(500, response.getStatusCode().value());
+    }
+
+    @Test
+    void shouldReturn200() throws RmesException, IOException {
         doNothing().when(databaseManagementService).clearGraph();
         ResponseEntity<?> response = databaseManagementResources.reset();
         Assertions.assertEquals(200, response.getStatusCode().value());

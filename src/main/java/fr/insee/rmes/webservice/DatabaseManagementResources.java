@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @Qualifier("Database Management")
 @RestController
 @SecurityRequirement(name = "bearerAuth")
@@ -22,16 +24,15 @@ public class DatabaseManagementResources {
     @Autowired
     DatabaseManagementService databaseManagementService;
 
-
     @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
     @GetMapping("/reset-graph")
     @io.swagger.v3.oas.annotations.Operation(operationId = "resetGraph", summary = "Reset the graph")
     public ResponseEntity<? extends Object> reset() {
         try {
-            databaseManagementService.clearGraph();
+            this.databaseManagementService.clearGraph();
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+        } catch (RmesException | IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
