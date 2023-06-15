@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+
+import static org.springframework.http.CacheControl.noCache;
 
 /**
  * WebService class for resources of Concepts
@@ -63,7 +66,9 @@ public class ConceptsResources  extends GenericResources   {
 	public ResponseEntity<Object> getConcepts() {
 		try {
 			String jsonResultat = conceptsService.getConcepts();
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+			return ResponseEntity.status(HttpStatus.OK)
+					.cacheControl(noCache())
+					.body(jsonResultat);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
