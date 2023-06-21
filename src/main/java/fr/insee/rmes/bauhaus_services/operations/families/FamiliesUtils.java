@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -155,8 +156,7 @@ public class FamiliesUtils  extends RdfService {
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
 		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		addAbstractToFamily(family, model, familyURI, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
@@ -165,6 +165,18 @@ public class FamiliesUtils  extends RdfService {
 		repoGestion.loadSimpleObject(familyURI, model);
 	}
 
+	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) throws RmesException {
+		IRI abstractIriLg1 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), "resume", model, graph);
+		IRI abstractIriLg2 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+
+		if(abstractIriLg1 != null) {
+			repoGestion.deleteObject(abstractIriLg1, null);
+		}
+		if(abstractIriLg2 != null) {
+			repoGestion.deleteObject(abstractIriLg2, null);
+		}
+
+	}
 
 	public String setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
