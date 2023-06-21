@@ -1,9 +1,9 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.List;
-
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 public class Family {
 
@@ -45,6 +45,10 @@ public class Family {
 		return prefLabelLg1;
 	}
 
+	public void setPrefLabelLg1(String label ) {
+		this.prefLabelLg1 = label;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -57,14 +61,21 @@ public class Family {
 		return abstractLg1;
 	}
 
+	public void setAbstractLg1(String label ) {
+		this.abstractLg1 = label;
+	}
+
 	public String getAbstractLg2() {
 		return abstractLg2;
+	}
+
+	public void setAbstractLg2(String label ) {
+		this.abstractLg2 = label;
 	}
 
 	public void setId(String id) {
 		this.id = id;
 	}
-
 
     public void setCreated(String currentDate) {
 		this.created = currentDate;
