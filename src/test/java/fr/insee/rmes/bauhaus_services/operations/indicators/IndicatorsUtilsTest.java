@@ -42,8 +42,6 @@ public class IndicatorsUtilsTest {
         indicator.setId("1");
         indicator.setAbstractLg1("setAbstractLg1");
         indicator.setAbstractLg2("setAbstractLg2");
-        indicator.setHistoryNoteLg1("");
-        indicator.setHistoryNoteLg2("setHistoryNoteLg2");
         IRI indicatorIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + indicator.getId());
         Model model = new LinkedHashModel();
 
@@ -58,6 +56,30 @@ public class IndicatorsUtilsTest {
         Assertions.assertEquals(subjects[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
         Assertions.assertEquals(subjects[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/FR"));
         Assertions.assertEquals(subjects[2], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/EN"));
+    }
+
+    @Test
+    void shouldAddHistoryProperty() throws RmesException {
+        when(config.getLg1()).thenReturn("FR");
+        when(config.getLg2()).thenReturn("EN");
+        Indicator indicator = new Indicator();
+        indicator.setId("1");
+        indicator.setHistoryNoteLg1("setHistoryNoteLg1");
+        indicator.setHistoryNoteLg2("setHistoryNoteLg2");
+        IRI indicatorIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + indicator.getId());
+        Model model = new LinkedHashModel();
+
+        SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
+
+        indicatorsUtils.addHistoryToIndicator(indicator, model, indicatorIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"));
+        verify(repoGestion, times(2)).deleteObject(any(), any());
+
+
+        Assertions.assertEquals(model.size(), 6);
+        Object[] subjects = model.subjects().toArray();
+        Assertions.assertEquals(subjects[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
+        Assertions.assertEquals(subjects[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/history/FR"));
+        Assertions.assertEquals(subjects[2], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/history/EN"));
     }
 
 }

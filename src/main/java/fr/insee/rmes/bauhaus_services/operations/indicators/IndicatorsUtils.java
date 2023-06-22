@@ -366,8 +366,8 @@ public class IndicatorsUtils  extends RdfService {
 	}
 
 	public void addHistoryToIndicator(Indicator indicator, Model model, IRI indicatorIri, Resource graph) throws RmesException {
-		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), model, RdfUtils.productsGraph());
-		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), model, RdfUtils.productsGraph());
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), model, graph);
 
 
 		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), "history", model, graph);
