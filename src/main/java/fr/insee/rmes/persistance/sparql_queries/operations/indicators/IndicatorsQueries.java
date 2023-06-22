@@ -88,26 +88,17 @@ public class IndicatorsQueries extends GenericQueries{
 	}
 
 
-	public static String indicatorQuery(String id) {
+	public static String indicatorQuery(String id) throws RmesException {
 		return indicatorFullObjectQuery(id, true);
 	}
 
-	private static String indicatorFullObjectQuery(String id, boolean withLimit){
-		variables=null;
-		whereClause=null;
-		getSimpleAttr(id);
-		getCodesLists();
-		getOrganizations();
-		getSimsId();
-		getValidationState();
-
-		return   "SELECT "
-				+ variables.toString()
-				+ " WHERE {  \n"
-				+ whereClause.toString()
-				+ "} \n"
-				+ (withLimit ? "LIMIT 1" : "");
-
+	private static String indicatorFullObjectQuery(String id, boolean withLimit) throws RmesException {
+		Map<String,Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		params.put("WITH_LIMIT", withLimit);
+		return buildIndicatorRequest("getIndicator.ftlh", params);
 	}
 
 	public static String getCreatorsById(String id) {
@@ -163,73 +154,6 @@ public class IndicatorsQueries extends GenericQueries{
 				+ "ORDER BY ?id";
 	}
 
-	private static void getSimpleAttr(String id) {
-		if(id != null) {
-			addClauseToWhereClause(" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" );
-		} else {
-			addClauseToWhereClause("?indic a insee:StatisticalIndicator .");
-			addClauseToWhereClause("BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . ");
-		}
-
-		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified");
-		addClauseToWhereClause( "OPTIONAL { ?indic dcterms:created ?created } .  \n ");
-		addClauseToWhereClause( "OPTIONAL { ?indic dcterms:modified ?modified } .  \n ");
-
-		addClauseToWhereClause( "?indic skos:prefLabel ?prefLabelLg1 \n");
-		addClauseToWhereClause( "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') \n ");
-		addClauseToWhereClause( "OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \n");
-		addClauseToWhereClause( "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } \n ");
-
-
-
-		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
-		addOptionalClause("skos:altLabel", "?altLabel");
-
-		addVariableToList(" ?abstractLg1 ?abstractLg2 ");
-		addOptionalClause("dcterms:abstract", "?abstract");
-
-		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
-		addOptionalClause("skos:historyNote", "?historyNote");
-
-
-
-	}
-
-	private static void addOptionalClause(String predicate, String variableName){
-		addClauseToWhereClause( "OPTIONAL{?indic "+predicate+" "+variableName + "Lg1 \n");
-		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg1) = '" + config.getLg1() + "') } \n ");
-		addClauseToWhereClause( "OPTIONAL{?indic "+predicate+" "+variableName + "Lg2 \n");
-		addClauseToWhereClause( "FILTER (lang("+variableName + "Lg2) = '" + config.getLg2() + "') } \n ");
-	}
-
-	private static void getCodesLists() {
-		addVariableToList(" ?accrualPeriodicityCode ?accrualPeriodicityList ");
-		addClauseToWhereClause( "OPTIONAL {?indic dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
-				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
-				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
-				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n"
-				+ "}   \n" );
-	}
-
-	private static void getOrganizations() {
-		addVariableToList(" ?publishers ?creators ");
-		addClauseToWhereClause(
-				"OPTIONAL {?indic dcterms:publisher ?uriPublisher . \n"
-						+ "?uriPublisher dcterms:identifier  ?publishers . \n"
-						+ "}   \n");
-		addClauseToWhereClause(  
-				"OPTIONAL {?indic dc:creator ?creators . \n"
-						+ "}   \n");
-	}
-	
-	private static void getSimsId() {
-		addVariableToList(" ?idSims ");
-		addClauseToWhereClause("OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ."
-				+ " ?report sdmx-mm:target ?indic "
-				+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n"
-				+ "} \n");
-	}
-
 
 	private static void addVariableToList(String variable) {
 		if (variables == null){
@@ -244,14 +168,7 @@ public class IndicatorsQueries extends GenericQueries{
 		}
 		whereClause.append(clause);
 	}
-	
-	private static void getValidationState() {
-		addVariableToList(" ?validationState ");
-		addClauseToWhereClause(
-				"OPTIONAL {?indic insee:validationState ?validationState . \n"
-						+ "}   \n");
-	}
-	
+
 	public static String lastID() {
 		return "SELECT ?id \n"
 				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
@@ -274,13 +191,6 @@ public class IndicatorsQueries extends GenericQueries{
 		  	
 	}
 
-	public static String getOwner(String uris) {
-		return "SELECT ?owner { \n"
-				+ "?indic dcterms:publisher ?owner . \n" 
-				+ "VALUES ?indic { " + uris + " } \n"
-				+ "}";
-	}
-
 	public static String getCreatorsByIndicatorUri(String uris) {
 		return "SELECT ?creators { \n"
 				+ "?indic dc:creator ?creators . \n" 
@@ -288,7 +198,7 @@ public class IndicatorsQueries extends GenericQueries{
 				+ "}";
 	}
 
-	  private IndicatorsQueries() {
+	private IndicatorsQueries() {
 		    throw new IllegalStateException("Utility class");
 	}
 

@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.*;
@@ -237,6 +238,17 @@ public class RdfUtils {
 			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	
 		}
 	}
+
+	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicat, String value, String lang, String prefix, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			IRI uri = factory.createIRI(objectURI.toString() + "/" + prefix + "/" + lang);
+			addTripleUri(objectURI, predicat, uri, model, graph);
+			addTripleString(uri, XKOS.EXPLANATORY_NOTE, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);
+			return uri;
+		}
+		return null;
+	}
+
 	public static void addTripleDateTime(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralDateTime(value), graph);
@@ -277,7 +289,5 @@ public class RdfUtils {
 	public static void setConfig(Config config) {
 		RdfUtils.config = config;
 	}
-	
-
 
 }
