@@ -166,12 +166,19 @@ public class FamiliesUtils  extends RdfService {
 	}
 
 	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) throws RmesException {
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, graph);
 
 
-		RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), "resume", model, graph);
-		RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), "resume", model, graph);
+		IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+
+		if(iri1 != null){
+			repoGestion.deleteObject(iri1, null);
+		}
+		if(iri2 != null){
+			repoGestion.deleteObject(iri2, null);
+		}
 	}
 
 	public String setFamilyValidation(String id) throws  RmesException  {
