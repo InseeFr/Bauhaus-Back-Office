@@ -199,7 +199,7 @@ public class ExportUtils {
                 history.add(url);
                 logger.debug("Extracting document {}", url);
 
-                String documentFileName = UriUtils.getLastPartFromUri(url);
+                String documentFileName = FilesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url));
 
                 Path documentPath = Path.of(url);
                 InputStream inputStream = Files.newInputStream(documentPath);

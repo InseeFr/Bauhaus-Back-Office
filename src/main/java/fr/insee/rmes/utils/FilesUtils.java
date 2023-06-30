@@ -1,15 +1,5 @@
 package fr.insee.rmes.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.Normalizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -18,12 +8,21 @@ import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 
+import java.io.*;
+import java.text.Normalizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 public class FilesUtils {
 
 	private static final Logger log = LogManager.getLogger(FilesUtils.class);
 	public static final String ODT_EXTENSION = ".odt";
 	public static final String ODS_EXTENSION = ".ods";
 	public static final String ZIP_EXTENSION = ".zip";
+
+	public static String reduceFileNameSize(String fileName) {
+		return fileName.substring(0, Math.min(fileName.length(), 200));
+	}
 
 	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
 		final File tempFile = File.createTempFile(fileName, fileExtension);
