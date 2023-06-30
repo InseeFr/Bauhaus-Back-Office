@@ -1,27 +1,7 @@
 package fr.insee.rmes.webservice;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -37,6 +17,18 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.TreeSet;
 
 /**
  * WebService class for resources 
@@ -82,23 +74,12 @@ public class PublicResources extends GenericResources  {
 			props.put("lg1", config.getLg1());
 			props.put("lg2", config.getLg2());
 			props.put("authType", AuthType.getAuthType(config));
-			props.put("modules", getActiveModules());
+			props.put("modules", config.getActiveModules());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR,e.getMessage(),e.getClass().getSimpleName());
 		}
 		return ResponseEntity.status(HttpStatus.SC_OK).body(props.toString());
-	}
-
-	private List<String> getActiveModules() {
-        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
-        File file = new File(dirPath);
-        try {
-			return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
-		} catch (IOException e) {
-			logger.error(e.getMessage(), e);
-			return new ArrayList<>();
-		} 
 	}
 
 	@GetMapping(value = "/stamps", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -1,17 +1,15 @@
 package fr.insee.rmes.config;
 
-import javax.annotation.PostConstruct;
-
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class Config {
@@ -44,6 +42,9 @@ public class Config {
 	private String swaggerHost;
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
+
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private String activeModules;
 	
 
 	/******************************************************/
@@ -573,5 +574,9 @@ public class Config {
 
 	public String getServerKeycloak() {
 		return serverKeycloak;
+	}
+
+	public String getActiveModules() {
+		return activeModules;
 	}
 }
