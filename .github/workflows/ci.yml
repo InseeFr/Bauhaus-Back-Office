@@ -1,0 +1,13 @@
+name: Quality
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  test-build:
+    name: Test & build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Branches 
+        uses: actions/github-script@v6
+        with:
+          script: context.payload.pull_request.base.ref === 'main' && context.payload.pull_request.head.ref !== 'acceptance' && core.setFailed("A PR to the main branch must come from the acceptance branch, but comes from " + context.payload.pull_request.head.ref);  
