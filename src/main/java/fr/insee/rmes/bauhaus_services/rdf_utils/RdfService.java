@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.bauhaus_services.concepts.collections.ConceptUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -24,7 +26,11 @@ public abstract class RdfService {
 	
 	@Autowired
 	protected StampsRestrictionsService stampsRestrictionsService;
-	
+    @Autowired
+	protected FilesUtils filesUtils;
+	@Autowired
+	protected ConceptUtils conceptUtils;
+
 	public void transformTripleToPublish(Model model, Statement st) {
 		Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
 		IRI predicateIRI = RdfUtils

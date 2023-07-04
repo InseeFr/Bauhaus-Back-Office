@@ -70,7 +70,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-            String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+            String fileName = super.conceptUtils.getFileNameForExport(collection, lg);
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
             }
@@ -96,7 +96,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-            String fileName = ConceptUtils.getFileNameForExport(collection, null);
+            String fileName = conceptUtils.getFileNameForExport(collection, null);
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
             }
@@ -124,7 +124,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
                 CollectionForExport collection = collectionExport.getCollectionData(id);
                 Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-                String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+                String fileName = conceptUtils.getFileNameForExport(collection, lg);
                 collections.put(fileName, xmlContent);
 
                 if(conceptsIds.size() > 0){
