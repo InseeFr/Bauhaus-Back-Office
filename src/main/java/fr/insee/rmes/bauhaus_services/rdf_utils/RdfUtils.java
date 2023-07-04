@@ -289,7 +289,5 @@ public class RdfUtils {
 	public static void setConfig(Config config) {
 		RdfUtils.config = config;
 	}
-	
-
 
 }
