@@ -44,6 +44,9 @@ public class Config {
 	private String swaggerHost;
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
+
+	@Value("{fr.insee.rmes.bauhaus.filenames.maxlength")
+	private int maxFileNameLength;
 	
 
 	/******************************************************/
@@ -573,5 +576,9 @@ public class Config {
 
 	public String getServerKeycloak() {
 		return serverKeycloak;
+	}
+
+	public int getMaxFileNameLength() {
+		return maxFileNameLength;
 	}
 }
