@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Configuration
 public class Config {
@@ -44,7 +45,7 @@ public class Config {
 	private String swaggerBasepath;
 
 	@Value("${fr.insee.rmes.bauhaus.activeModules}")
-	private String activeModules;
+	private List<String> activeModules;
 	
 
 	/******************************************************/
@@ -576,7 +577,7 @@ public class Config {
 		return serverKeycloak;
 	}
 
-	public String getActiveModules() {
+	public List<String> getActiveModules() {
 		return activeModules;
 	}
 }
