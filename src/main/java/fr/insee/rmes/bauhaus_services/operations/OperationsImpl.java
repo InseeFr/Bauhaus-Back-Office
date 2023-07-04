@@ -165,7 +165,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	@Override
 	public String createSeries(String body) throws RmesException {
-		// TODO: check if there is already a series with the same name ?
 		return seriesUtils.createSeries(body);
 	}
 
