@@ -36,8 +36,15 @@ public class ExportUtils {
     private static final String ATTACHMENT = "attachment";
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
+    private final DocumentsUtils documentsUtils;
+
+    private final FilesUtils filesUtils;
+
     @Autowired
-    DocumentsUtils documentsUtils;
+    public ExportUtils(DocumentsUtils documentsUtils, FilesUtils filesUtils) {
+        this.documentsUtils = documentsUtils;
+        this.filesUtils = filesUtils;
+    }
 
     public static String getExtension(String acceptHeader) {
         if (acceptHeader == null) {
@@ -199,7 +206,7 @@ public class ExportUtils {
                 history.add(url);
                 logger.debug("Extracting document {}", url);
 
-                String documentFileName = FilesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url));
+                String documentFileName = filesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url));
 
                 Path documentPath = Path.of(url);
                 InputStream inputStream = Files.newInputStream(documentPath);

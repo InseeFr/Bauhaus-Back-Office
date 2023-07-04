@@ -242,7 +242,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
 		Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-		String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+		String fileName = conceptUtils.getFileNameForExport(collection, lg);
 		collections.put(fileName, xmlContent);
 
 		if(withConcepts){
@@ -258,7 +258,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
-		return FilesUtils.reduceFileNameSize(concept.getId() + "-" + CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false));
+		return super.filesUtils.reduceFileNameSize(concept.getId() + "-" + CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false));
 	}
 
 	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
