@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
@@ -286,11 +287,8 @@ public class SeriesUtils extends RdfService {
 		RdfUtils.addTripleDateTime(seriesURI, DCTERMS.CREATED, series.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(seriesURI, DCTERMS.MODIFIED, series.getUpdated(), model, RdfUtils.operationsGraph());
 
-		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(seriesURI, DCTERMS.ABSTRACT, series.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
-
-		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(seriesURI, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		addAbstractToSeries(series, model, seriesURI, RdfUtils.operationsGraph());
+		addHistoryToSeries(series, model, seriesURI, RdfUtils.operationsGraph());
 
 		List<String> creators=series.getCreators();
 		if (creators!=null) {
@@ -340,7 +338,40 @@ public class SeriesUtils extends RdfService {
 
 		repoGestion.loadObjectWithReplaceLinks(seriesURI, model);
 	}
-	
+
+	public void addAbstractToSeries(Series series, Model model, IRI seriesIri, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(seriesIri, DCTERMS.ABSTRACT, series.getAbstractLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(seriesIri, DCTERMS.ABSTRACT, series.getAbstractLg2(), config.getLg2(), model, graph);
+
+
+		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(seriesIri, DCTERMS.ABSTRACT, series.getAbstractLg1(), config.getLg1(), "resume", model, graph);
+		IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(seriesIri, DCTERMS.ABSTRACT, series.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+
+		if(iri1 != null){
+			repoGestion.deleteObject(iri1, null);
+		}
+		if(iri2 != null){
+			repoGestion.deleteObject(iri2, null);
+		}
+	}
+
+	public void addHistoryToSeries(Series series, Model model, IRI seriesIri, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(seriesIri, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(seriesIri, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), config.getLg2(), model, graph);
+
+
+		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(seriesIri, SKOS.HISTORY_NOTE, series.getHistoryNoteLg1(), config.getLg1(), "history", model, graph);
+		IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(seriesIri, SKOS.HISTORY_NOTE, series.getHistoryNoteLg2(), config.getLg2(), "history", model, graph);
+
+		if(iri1 != null){
+			repoGestion.deleteObject(iri1, null);
+		}
+		if(iri2 != null){
+			repoGestion.deleteObject(iri2, null);
+		}
+
+	}
+
 	private void addReplacesAndReplacedBy(Model model, IRI previous, IRI next) {
 		RdfUtils.addTripleUri(previous, DCTERMS.IS_REPLACED_BY ,next, model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleUri(next, DCTERMS.REPLACES ,previous, model, RdfUtils.operationsGraph());
