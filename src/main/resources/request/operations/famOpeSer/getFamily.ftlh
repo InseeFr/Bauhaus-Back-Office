@@ -13,6 +13,18 @@ WHERE {
         OPTIONAL {?family insee:validationState ?validationState} .
         OPTIONAL { ?family dcterms:created ?created } .
         OPTIONAL { ?family dcterms:modified ?modified } .
+
+        OPTIONAL {
+            ?family dcterms:abstract ?abstractLg1Uri .
+            ?abstractLg1Uri xkos:ExplanatoryNote ?abstractLg1
+            FILTER (lang(?abstractLg1) = '${LG1}')
+        }
+        OPTIONAL {
+            ?family dcterms:abstract ?abstractLg2Uri .
+            ?abstractLg2Uri xkos:ExplanatoryNote ?abstractLg2
+            FILTER (lang(?abstractLg2) = '${LG2}')
+        }
+
         OPTIONAL {?family dcterms:abstract ?abstractLg1 .
         FILTER (lang(?abstractLg1) = '${LG1}') } .
         OPTIONAL {?family dcterms:abstract ?abstractLg2 .
