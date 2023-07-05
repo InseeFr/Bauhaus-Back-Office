@@ -15,8 +15,6 @@ public class OpSeriesQueries extends GenericQueries{
 		throw new IllegalStateException("Utility class");
 	}
 
-	private static StringBuilder variables;
-	private static StringBuilder whereClause;
 	static Map<String, Object> params;
 	
 	private static final String ID_SERIES = "ID_SERIES";
@@ -39,14 +37,13 @@ public class OpSeriesQueries extends GenericQueries{
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
-	public static String oneSeriesQuery(String id) {
-		variables = null;
-		whereClause = null;
-		getSimpleAttr(id);
-		getCodesLists();
-		getValidationState();
+	public static String oneSeriesQuery(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
 
-		return "SELECT " + variables.toString() + " WHERE {  \n" + whereClause.toString() + "} \n" + "LIMIT 1";
+		return FreeMarkerUtils.buildRequest("operations/series/", "getSeriesById.ftlh", params);
 	}
 
 	public static String getSeriesForSearch(String stamp) throws RmesException {
@@ -55,84 +52,6 @@ public class OpSeriesQueries extends GenericQueries{
 			return buildSeriesRequest("getSeriesForAdvancedSearchQuery.ftlh", params);	
 	}
 
-	private static void getSimpleAttr(String id) {
-
-		if (id != null) {
-			addClauseToWhereClause(" FILTER(STRENDS(STR(?series),'/operations/serie/" + id + "')) . \n");
-		} else {
-			addClauseToWhereClause("?series a insee:StatisticalOperationSeries .");
-			addClauseToWhereClause("BIND(STRAFTER(STR(?series),'/operations/serie/') AS ?id) . ");
-		}
-
-		addVariableToList("?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified");
-		addClauseToWhereClause("?series skos:prefLabel ?prefLabelLg1 \n");
-		addClauseToWhereClause( "OPTIONAL { ?series dcterms:created ?created } .  \n ");
-		addClauseToWhereClause( "OPTIONAL { ?series dcterms:modified ?modified } .  \n ");
-
-		addClauseToWhereClause("FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "')  \n ");
-		addClauseToWhereClause("OPTIONAL{?series skos:prefLabel ?prefLabelLg2 \n");
-		addClauseToWhereClause("FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } \n ");
-
-
-
-		addVariableToList(" ?altLabelLg1 ?altLabelLg2 ");
-		addOptionalClause("skos:altLabel", "?altLabel");
-
-		addVariableToList(" ?abstractLg1 ?abstractLg2 ");
-		addOptionalClause("dcterms:abstract", "?abstract");
-
-		addVariableToList(" ?historyNoteLg1 ?historyNoteLg2 ");
-		addOptionalClause("skos:historyNote", "?historyNote");
-
-		addVariableToList(" ?idSims ");
-		addGetSimsId();
-	}
-
-	private static void addOptionalClause(String predicate, String variableName) {
-		addClauseToWhereClause("OPTIONAL{?series " + predicate + " " + variableName + "Lg1 \n");
-		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg1) = '" + config.getLg1() + "') } \n ");
-		addClauseToWhereClause("OPTIONAL{?series " + predicate + " " + variableName + "Lg2 \n");
-		addClauseToWhereClause("FILTER (lang(" + variableName + "Lg2) = '" + config.getLg2() + "') } \n ");
-	}
-
-	private static void addGetSimsId() {
-		addClauseToWhereClause(
-				"OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport ." + " ?report sdmx-mm:target ?series "
-						+ " BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \n" + "} \n");
-	}
-
-	private static void getCodesLists() {
-		addVariableToList(" ?typeCode ?typeList ");
-		addClauseToWhereClause("OPTIONAL {?series dcterms:type ?type . \n" + "?type skos:notation ?typeCode . \n"
-				+ "?type skos:inScheme ?typeCodeList . \n" + "?typeCodeList skos:notation ?typeList . \n" + "}   \n");
-
-		addVariableToList(" ?accrualPeriodicityCode ?accrualPeriodicityList ");
-		addClauseToWhereClause("OPTIONAL {?series dcterms:accrualPeriodicity ?accrualPeriodicity . \n"
-				+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \n"
-				+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \n"
-				+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \n" + "}   \n");
-	}
-
-
-	private static void getValidationState() {
-		addVariableToList(" ?validationState ");
-		addClauseToWhereClause("OPTIONAL {?series insee:validationState ?validationState . \n" + "}   \n");
-	}
-
-	private static void addVariableToList(String variable) {
-		if (variables == null) {
-			variables = new StringBuilder();
-		}
-		variables.append(variable);
-	}
-
-	private static void addClauseToWhereClause(String clause) {
-		if (whereClause == null) {
-			whereClause = new StringBuilder();
-		}
-		whereClause.append(clause);
-	}
-	
 	
   //////////////////////////
  //   Using .flth files  //
