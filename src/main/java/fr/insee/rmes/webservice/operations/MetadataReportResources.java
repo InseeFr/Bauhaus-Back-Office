@@ -181,14 +181,14 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@Parameter(description = "Metadata report to create", required = true,
 	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		logger.info("POST Metadata report");
-		String id = null;
 		try {
-			id = documentationsService.createMetadataReport(body);
+			String id = documentationsService.createMetadataReport(body);
+			if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
+
 	}
 
 	/**
