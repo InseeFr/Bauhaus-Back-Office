@@ -26,9 +26,9 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
 
     @Override
     public Repository initRepository(String rdfServer, String repositoryID) throws Exception {
-        var repository=repositories.get(rdfServer);
+        var repository=repositories.get(rdfServer + repositoryID);
         repository=refreshRepository(rdfServer, repositoryID, repository);
-        repositories.put(rdfServer, repository);
+        repositories.put( rdfServer + repositoryID, repository);
         return repository;
     }
 
