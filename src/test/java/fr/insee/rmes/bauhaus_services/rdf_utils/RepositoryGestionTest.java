@@ -42,7 +42,7 @@ public class RepositoryGestionTest {
 
         when(repositoryUtils.initRepository(anyString(), anyString())).thenReturn(mockRepository);
         when(mockRepository.getConnection()).thenReturn(mockRepositoryConnection);
-        repositoryGestion.clearGraph(new File(""));
+        repositoryGestion.clearGraph();
 
        verify(mockRepositoryConnection, times(1)).clear();
        verify(mockRepositoryConnection, times(1)).add(any(File.class), eq(RDFFormat.TRIG));

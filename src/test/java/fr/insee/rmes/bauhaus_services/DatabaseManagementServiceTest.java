@@ -48,6 +48,6 @@ public class DatabaseManagementServiceTest {
         when(config.getEnv()).thenReturn("pre-prod");
         when(res.getFile()).thenReturn(new File("file"));
         databaseManagementService.clearGraph();
-        verify(repoGestion, times(1)).clearGraph(any());
+        verify(repoGestion, times(1)).clearGraph();
     }
 }

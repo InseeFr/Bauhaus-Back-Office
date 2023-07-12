@@ -1,17 +1,15 @@
 package fr.insee.rmes.config;
 
-import javax.annotation.PostConstruct;
-
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class Config {
@@ -55,6 +53,10 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer.prod}")
+	private String rdfServerGestionProd;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository.prod}")
+	private String idRepositoryGestionProd;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
@@ -312,6 +314,14 @@ public class Config {
 
 	public String getBaseUriGestion() {
 		return baseUriGestion;
+	}
+
+	public String getRdfServerGestionProd() {
+		return rdfServerGestionProd;
+	}
+
+	public String getRepositoryIdGestionProd() {
+		return idRepositoryGestionProd;
 	}
 
 	public String getRdfServerPublication() {

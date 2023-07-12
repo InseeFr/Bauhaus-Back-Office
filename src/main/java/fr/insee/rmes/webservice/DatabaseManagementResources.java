@@ -1,7 +1,6 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.DatabaseManagementService;
-import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,8 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
 
 @Qualifier("Database Management")
 @RestController
@@ -31,7 +28,7 @@ public class DatabaseManagementResources {
         try {
             this.databaseManagementService.clearGraph();
             return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (RmesException | IOException e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
