@@ -1,30 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -40,14 +17,31 @@ import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 public class StructureComponentUtils extends RdfService {
+    static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
+
     private static final String MAX_LENGTH = "maxLength";
 	private static final String MIN_LENGTH = "minLength";
 	private static final String PATTERN = "pattern";
 	private static final String IO_EXCEPTION = "IOException";
-	static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
@@ -182,6 +176,8 @@ public class StructureComponentUtils extends RdfService {
 
         model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg1(), config.getLg1()), graph);
         model.add(componentURI, RDFS.LABEL, RdfUtils.setLiteralString(component.getLabelLg2(), config.getLg2()), graph);
+        model.add(componentURI, SKOS.ALT_LABEL, RdfUtils.setLiteralString(component.getAltLabelLg1(), config.getLg1()), graph);
+        model.add(componentURI, SKOS.ALT_LABEL, RdfUtils.setLiteralString(component.getAltLabelLg2(), config.getLg2()), graph);
         model.add(componentURI, SKOS.NOTATION, RdfUtils.setLiteralString(component.getIdentifiant()), graph);
         model.add(componentURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(status), graph);
         model.add(componentURI, DCTERMS.CREATED, RdfUtils.setLiteralDateTime(component.getCreated()), graph);
@@ -205,7 +201,7 @@ public class StructureComponentUtils extends RdfService {
             }
         });
         if(component.getConcept() != null){
-            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, INSEE.STRUCTURE_CONCEPT + component.getConcept(), model, graph);
+            RdfUtils.addTripleUri(componentURI, QB.CONCEPT, RdfUtils.conceptIRI() + "/" + component.getConcept(), model, graph);
         }
 
         if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(INSEE.CODELIST))) {

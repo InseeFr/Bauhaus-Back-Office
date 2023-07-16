@@ -1,26 +1,22 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.notes.DatableNote;
+import fr.insee.rmes.model.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.XKOS;
+import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.notes.DatableNote;
-import fr.insee.rmes.model.notes.VersionableNote;
-import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class RdfUtils {
@@ -112,7 +108,10 @@ public class RdfUtils {
 	public static IRI conceptIRI(String id) {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
-	
+	public static IRI conceptIRI() {
+		return factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion());
+	}
+
 	public static IRI collectionIRI(String id) {
 		return objectIRI(ObjectType.COLLECTION, id);
 	}
@@ -239,6 +238,17 @@ public class RdfUtils {
 			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	
 		}
 	}
+
+	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicat, String value, String lang, String prefix, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			IRI uri = factory.createIRI(objectURI.toString() + "/" + prefix + "/" + lang);
+			addTripleUri(objectURI, predicat, uri, model, graph);
+			addTripleString(uri, XKOS.EXPLANATORY_NOTE, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);
+			return uri;
+		}
+		return null;
+	}
+
 	public static void addTripleDateTime(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralDateTime(value), graph);
@@ -279,7 +289,5 @@ public class RdfUtils {
 	public static void setConfig(Config config) {
 		RdfUtils.config = config;
 	}
-	
-
 
 }

@@ -44,7 +44,7 @@ public class CollectionForExport {
 			MembersLg rep = new MembersLg();
 			rep.setId(member.getString(Constants.ID));
 			rep.setPrefLabelLg1(member.getString(Constants.PREF_LABEL_LG1));
-			rep.setPrefLabelLg2(member.getString(Constants.PREF_LABEL_LG2));
+			if (member.has(Constants.PREF_LABEL_LG2)) rep.setPrefLabelLg2(member.getString(Constants.PREF_LABEL_LG2));
 			if (member.has(Constants.CREATOR)) rep.setCreator(member.getString(Constants.CREATOR));
 			if (member.has(Constants.DEF_COURTE_LG1)) rep.setDefCourteLg1(member.getString(Constants.DEF_COURTE_LG1));
 			if (member.has(Constants.DEF_COURTE_LG2)) rep.setDefCourteLg2(member.getString(Constants.DEF_COURTE_LG2));

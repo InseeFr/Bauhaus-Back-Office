@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -95,6 +96,15 @@ public class ClassificationUtils extends RdfService {
             model.add(classificationIri, FOAF.HOMEPAGE, RdfUtils.createIRI(classification.getHomepage()), graph);
         }
 
+        repoGestion.deleteTripletByPredicate(classificationIri, INSEE.VALIDATION_STATE, graph, null);
+
+        if(ValidationStatus.VALIDATED.getValue().equalsIgnoreCase(classification.getValidationState()) || ValidationStatus.MODIFIED.getValue().equalsIgnoreCase(classification.getValidationState())){
+            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
+        } else {
+            model.add(classificationIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
+        }
+
+
 
         List<String> ids = new ArrayList<>();
         if(classification.getIdBefore() != null){
@@ -147,12 +157,13 @@ public class ClassificationUtils extends RdfService {
             repoGestion.deleteTripletByPredicate(noteIri, XKOS.PLAIN_TEXT, graph, null);
             if (StringUtils.isNotEmpty(noteValue)) {
                 String html = XhtmlToMarkdownUtils.markdownToXhtml(noteValue);
-                String raw = html.replaceAll("<[^>]*>", "");
+                String raw = fr.insee.rmes.utils.StringUtils.convertHtmlStringToRaw(html);
                 model.add(noteIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(html), graph);
                 model.add(noteIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
             }
         }
     }
+
 
     private void validate(Classification classification) throws RmesBadRequestException {
         if(classification.getPrefLabelLg1() == null){

@@ -19,6 +19,7 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
@@ -249,15 +250,15 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 
 		if("odt".equalsIgnoreCase(type)){
-			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts);
+			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
 
 		} else {
-			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts);
+			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
 		}
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
-		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
+		return super.filesUtils.reduceFileNameSize(concept.getId() + "-" + CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false));
 	}
 
 	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
@@ -279,6 +280,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
 		return member;
 	}
+
 	@Override
 	public Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) {
 		Map<String,InputStream> ret = new HashMap<>();
