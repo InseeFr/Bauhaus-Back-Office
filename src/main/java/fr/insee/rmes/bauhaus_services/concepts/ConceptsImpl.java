@@ -269,6 +269,14 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		member.setIsValidated(concept.getIsValidated());
 		member.setCreated(concept.getCreated());
 		member.setModified(concept.getModified());
+		member.setDefLongueLg1(concept.getDefinitionLg1());
+		member.setDefLongueLg2(concept.getDefinitionLg2());
+
+		member.setDefCourteLg1(concept.getScopeNoteLg1());
+		member.setDefCourteLg2(concept.getScopeNoteLg2());
+
+		member.setEditorialNoteLg1(concept.getEditorialNoteLg1());
+		member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
 		return member;
 	}
 	@Override
