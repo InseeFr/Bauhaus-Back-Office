@@ -43,6 +43,10 @@ public class FilesUtils {
 		return tempFile;
 	}
 
+	public static String removeAsciiCharacters(String fileName) {
+		return Normalizer.normalize(fileName, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").replaceAll("\\p{Punct}", "");
+	}
+
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
 		fileName = fileName.toLowerCase().trim();
 		fileName = StringUtils.normalizeSpace(fileName);
@@ -74,7 +78,7 @@ public class FilesUtils {
 		try {
 			zipOut.close();
 			fos.close();
-		}catch(IOException e ) {
+		} catch(IOException e ) {
 			log.warn("outputStream already closed");
 		}
 		

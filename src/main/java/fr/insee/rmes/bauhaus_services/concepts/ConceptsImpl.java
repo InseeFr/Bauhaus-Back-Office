@@ -19,7 +19,6 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
@@ -219,7 +218,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 
 		Map<String, String> xmlContent = convertConceptInXml(concept);
-		String fileName = getFileNameForExport(concept);
+		String fileName = conceptsUtils.getConceptExportFileName(concept);
 		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 
@@ -242,7 +241,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
 		Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-		String fileName = conceptUtils.getFileNameForExport(collection, lg);
+		String fileName = conceptsUtils.getCollectionExportFileName(collection, lg);
 		collections.put(fileName, xmlContent);
 
 		if(withConcepts){
@@ -255,10 +254,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		} else {
 			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
 		}
-	}
-
-	private String getFileNameForExport(ConceptForExport concept) {
-		return super.filesUtils.reduceFileNameSize(concept.getId() + "-" + CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false));
 	}
 
 	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
@@ -279,7 +274,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			try {
 				ConceptForExport concept = conceptsExport.getConceptData(id);
 				Map<String, String> xmlContent = convertConceptInXml(concept);
-				String fileName = getFileNameForExport(concept);
+				String fileName = conceptsUtils.getConceptExportFileName(concept);
 				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
 
 				if(members != null){
