@@ -51,7 +51,7 @@ public class IndicatorsUtilsTest {
         verify(repoGestion, times(2)).deleteObject(any(), any());
 
 
-        Assertions.assertEquals(model.size(), 6);
+        Assertions.assertEquals(model.size(),10);
         Object[] subjects = model.subjects().toArray();
         Assertions.assertEquals(subjects[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
         Assertions.assertEquals(subjects[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/FR"));
@@ -75,7 +75,7 @@ public class IndicatorsUtilsTest {
         verify(repoGestion, times(2)).deleteObject(any(), any());
 
 
-        Assertions.assertEquals(model.size(), 6);
+        Assertions.assertEquals(model.size(), 10);
         Object[] subjects = model.subjects().toArray();
         Assertions.assertEquals(subjects[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
         Assertions.assertEquals(subjects[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/history/FR"));
