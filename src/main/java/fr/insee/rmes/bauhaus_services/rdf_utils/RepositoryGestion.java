@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.*;
@@ -13,6 +14,8 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.Rio;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +48,7 @@ public class RepositoryGestion  {
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
-		@PostConstruct
+	@PostConstruct
 	public void init() {
 		repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion());
@@ -128,18 +133,18 @@ public class RepositoryGestion  {
 			throws RmesException {
 		return getStatementsPredicatObject(con, DCTERMS.HAS_PART,object);
 	}
-	
+
 	public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
 		return getStatementsPredicatObject(con, DCTERMS.REPLACES,object);
 	}
-	
+
 	public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
 		return getStatementsPredicatObject(con, DCTERMS.IS_REPLACED_BY,object);
 	}
-	
-	
+
+
 	private RepositoryResult<Statement> getStatementsPredicatObject(RepositoryConnection con, IRI predicate, Resource object)
 			throws RmesException {
 
@@ -163,7 +168,7 @@ public class RepositoryGestion  {
 			return repositoryUtils.getAllGraphsInZip(repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()));
 	}
-	
+
 	public String[] getAllGraphs() throws RmesException {
 		return repositoryUtils.getAllGraphs(repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()));
@@ -190,13 +195,13 @@ public class RepositoryGestion  {
 				conn.remove(note, EVOC.NOTE_LITERAL, null);
 			}
 			// links to delete
-			clearConceptLinks(concept, conn);
+			clearConceptLinks(concept);
 
 			loadSimpleObject(concept, model, conn);
 		} catch (RepositoryException e) {
 			throwsRmesException(e, "Failure load concept : " + concept);
 
-		} 
+		}
 	}
 
 	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, RepositoryConnection conn, Value value) throws RmesException {
@@ -299,7 +304,7 @@ public class RepositoryGestion  {
 
 		}
 	}
-	
+
 	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
 		return repositoryUtils.persistFile(input, format, graph, repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()), null);
@@ -348,8 +353,8 @@ public class RepositoryGestion  {
 		}
 	}
 
-	public void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {
-		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
+	public void clearConceptLinks(Resource concept) throws RmesException {
+		RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion()).getConnection();
 		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
 		getStatementsAndRemove(concept, conn, typeOfLink);
@@ -438,7 +443,7 @@ public class RepositoryGestion  {
 	}
 
 	public void loadSimpleObject(IRI geoIRI, Model model) throws RmesException {
-		loadSimpleObject(geoIRI, model, null);		
+		loadSimpleObject(geoIRI, model, null);
 	}
 
 	public RepositoryConnection getConnection() throws RmesException {
@@ -464,5 +469,32 @@ public class RepositoryGestion  {
 
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
+	}
+
+	/**
+	 * Method to clear an entire graph.
+	 */
+	public void clearGraph() throws IOException {
+
+		String server = config.getRdfServerGestion();
+		String repository = config.getRepositoryIdGestion();
+
+		String serverProd = config.getRdfServerGestionProd();
+		String repositoryProd = config.getRepositoryIdGestionProd();
+
+		RepositoryConnection connection =
+				repositoryUtils.initRepository(server, repository).getConnection();
+
+		RepositoryConnection connectionProd =
+				repositoryUtils.initRepository(serverProd, repositoryProd).getConnection();
+
+		File file = new File("export.trig");
+		FileOutputStream outputStream = new FileOutputStream(file);
+		RDFWriter writer = Rio.createWriter(RDFFormat.TRIG, outputStream);
+
+		connectionProd.exportStatements(null, null, null, false, writer);
+		connection.clear();
+		IOUtils.close(outputStream);
+		connection.add(file, RDFFormat.TRIG);
 	}
 }

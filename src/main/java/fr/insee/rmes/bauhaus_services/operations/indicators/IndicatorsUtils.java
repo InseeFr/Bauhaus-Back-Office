@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
@@ -211,7 +212,7 @@ public class IndicatorsUtils  extends RdfService {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Indicator indicator = new Indicator();
-		String id=createID();
+		String id = createID();
 		if (id == null) {
 			logger.error("Create indicator cancelled - no id");
 			return null;
@@ -299,11 +300,8 @@ public class IndicatorsUtils  extends RdfService {
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.CREATED, indicator.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(indicURI, DCTERMS.MODIFIED, indicator.getUpdated(), model, RdfUtils.operationsGraph());
 
-		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), config.getLg1(), model, RdfUtils.productsGraph());
-		RdfUtils.addTripleStringMdToXhtml(indicURI, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), config.getLg2(), model, RdfUtils.productsGraph());
-
-		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), model, RdfUtils.productsGraph());
-		RdfUtils.addTripleStringMdToXhtml(indicURI, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), model, RdfUtils.productsGraph());
+		addAbstractToIndicator(indicator, model, indicURI, RdfUtils.productsGraph());
+		addHistoryToIndicator(indicator, model, indicURI, RdfUtils.productsGraph());
 
 		List<OperationsLink> contributors = indicator.getContributors();
 		if (contributors != null){//partenaires
@@ -351,6 +349,39 @@ public class IndicatorsUtils  extends RdfService {
 		repoGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
+	public void addAbstractToIndicator(Indicator indicator, Model model, IRI indicatorIri, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), config.getLg2(), model, graph);
+
+
+		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(indicatorIri, DCTERMS.ABSTRACT, indicator.getAbstractLg1(), config.getLg1(), "resume", model, graph);
+		IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(indicatorIri, DCTERMS.ABSTRACT, indicator.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+
+		if(iri1 != null){
+			repoGestion.deleteObject(iri1, null);
+		}
+		if(iri2 != null){
+			repoGestion.deleteObject(iri2, null);
+		}
+	}
+
+	public void addHistoryToIndicator(Indicator indicator, Model model, IRI indicatorIri, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), model, graph);
+
+
+		IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg1(), config.getLg1(), "history", model, graph);
+		IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(indicatorIri, SKOS.HISTORY_NOTE, indicator.getHistoryNoteLg2(), config.getLg2(), "history", model, graph);
+
+		if(iri1 != null){
+			repoGestion.deleteObject(iri1, null);
+		}
+		if(iri2 != null){
+			repoGestion.deleteObject(iri2, null);
+		}
+
+	}
+
 	public String setIndicatorValidation(String id)  throws RmesException  {
 		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
@@ -389,7 +420,12 @@ public class IndicatorsUtils  extends RdfService {
 		logger.info("Generate indicator id");
 		JSONObject json = repoGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
-		if (json.length()==0) {return null;}
+
+		// If we do not have any data in the database, we initialize the first id
+		if (json.length() == 0) {
+			return "p1";
+		}
+
 		String id = json.getString(Constants.ID);
 		if (id.equals(Constants.UNDEFINED)) {return null;}
 		int idInt = Integer.parseInt(id.substring(1))+1;
