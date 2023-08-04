@@ -1,17 +1,17 @@
 package fr.insee.rmes.config;
 
-import javax.annotation.PostConstruct;
-
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
+import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
-import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import javax.annotation.PostConstruct;
+import java.util.List;
+
 
 @Configuration
 public class Config {
@@ -45,7 +45,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
 
-	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private List<String> activeModules;
+
+  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
 	private int maxFileNameLength;
 	
 
@@ -58,6 +61,10 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer.prod}")
+	private String rdfServerGestionProd;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository.prod}")
+	private String idRepositoryGestionProd;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
@@ -97,14 +104,6 @@ public class Config {
 	private String roleClaim;
 	@Value("${jwt.id-claim}")
 	private String idClaim;
-
-	@Value ("${fr.insee.rmes.bauhaus.keycloak.client.secret}")
-	private String secret;
-	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
-	private String clientId;
-
-	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
-	private String serverKeycloak;
 
 	//LDAP
 	//LDAP
@@ -315,6 +314,14 @@ public class Config {
 
 	public String getBaseUriGestion() {
 		return baseUriGestion;
+	}
+
+	public String getRdfServerGestionProd() {
+		return rdfServerGestionProd;
+	}
+
+	public String getRepositoryIdGestionProd() {
+		return idRepositoryGestionProd;
 	}
 
 	public String getRdfServerPublication() {
@@ -565,20 +572,11 @@ public class Config {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
-
-	public String getClientId() {
-		return clientId;
-	}
-
-	public String getSecret() {
-		return secret;
-	}
-
-	public String getServerKeycloak() {
-		return serverKeycloak;
-	}
-
 	public int getMaxFileNameLength() {
 		return maxFileNameLength;
+	}
+
+	public List<String> getActiveModules() {
+		return activeModules;
 	}
 }
