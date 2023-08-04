@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
+
 
 @Configuration
 public class Config {
@@ -42,6 +44,12 @@ public class Config {
 	private String swaggerHost;
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
+
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private List<String> activeModules;
+
+  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+	private int maxFileNameLength;
 	
 
 	/******************************************************/
@@ -96,14 +104,6 @@ public class Config {
 	private String roleClaim;
 	@Value("${jwt.id-claim}")
 	private String idClaim;
-
-	@Value ("${fr.insee.rmes.bauhaus.keycloak.client.secret}")
-	private String secret;
-	@Value("${fr.insee.rmes.bauhaus.keycloak.client.id}")
-	private String clientId;
-
-	@Value("${fr.insee.rmes.bauhaus.auth-server-url}")
-	private String serverKeycloak;
 
 	//LDAP
 	//LDAP
@@ -572,16 +572,11 @@ public class Config {
 		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
-
-	public String getClientId() {
-		return clientId;
+	public int getMaxFileNameLength() {
+		return maxFileNameLength;
 	}
 
-	public String getSecret() {
-		return secret;
-	}
-
-	public String getServerKeycloak() {
-		return serverKeycloak;
+	public List<String> getActiveModules() {
+		return activeModules;
 	}
 }
