@@ -576,14 +576,6 @@ public class Config {
 		return maxFileNameLength;
 	}
 
-	public String getSecret() {
-		return secret;
-	}
-
-	public String getServerKeycloak() {
-		return serverKeycloak;
-	}
-
 	public List<String> getActiveModules() {
 		return activeModules;
 	}
