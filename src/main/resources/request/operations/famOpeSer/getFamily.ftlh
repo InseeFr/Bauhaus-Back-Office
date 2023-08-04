@@ -13,10 +13,23 @@ WHERE {
         OPTIONAL {?family insee:validationState ?validationState} .
         OPTIONAL { ?family dcterms:created ?created } .
         OPTIONAL { ?family dcterms:modified ?modified } .
+
+        OPTIONAL {
+            ?family dcterms:abstract ?abstractLg1Uri .
+            ?abstractLg1Uri evoc:noteLiteral ?abstractLg1 .
+            ?abstractLg2Uri xsd:language '${LG1}'^^xsd:language
+        }
+        OPTIONAL {
+            ?family dcterms:abstract ?abstractLg2Uri .
+            ?abstractLg2Uri evoc:noteLiteral ?abstractLg2 .
+            ?abstractLg2Uri xsd:language '${LG2}'^^xsd:language
+        }
+
         OPTIONAL {?family dcterms:abstract ?abstractLg1 .
         FILTER (lang(?abstractLg1) = '${LG1}') } .
         OPTIONAL {?family dcterms:abstract ?abstractLg2 .
         FILTER (lang(?abstractLg2) = '${LG2}') } .
+
     }
 }
 LIMIT 1

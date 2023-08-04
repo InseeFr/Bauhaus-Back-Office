@@ -4,6 +4,8 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.*;
@@ -26,11 +28,6 @@ public class RdfUtils {
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-
-	public static Resource blankNode(){
-		return factory.createBNode();
-	}
-	
 	public static String getBaseGraph(){
 		return config.getBaseGraph();
 	}
@@ -237,6 +234,25 @@ public class RdfUtils {
 			addTripleString(objectURI, predicat, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);	
 		}
 	}
+
+	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicat, String value, String lang, String prefix, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			IRI uri = factory.createIRI(objectURI.toString() + "/" + prefix + "/" + lang);
+			addTripleUri(objectURI, predicat, uri, model, graph);
+			addTripleUri(uri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, model, graph);
+			addTripleLiteralXML(uri, EVOC.NOTE_LITERAL, XhtmlToMarkdownUtils.markdownToXhtml(value), model, graph);
+			addTripleLanguage(uri, XSD.LANGUAGE, lang, model, graph);
+			return uri;
+		}
+		return null;
+	}
+
+	public static void addTripleLanguage(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			model.add(objectURI, predicat, RdfUtils.setLiteralLanguage(value), graph);
+		}
+	}
+
 	public static void addTripleDateTime(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralDateTime(value), graph);
@@ -277,7 +293,5 @@ public class RdfUtils {
 	public static void setConfig(Config config) {
 		RdfUtils.config = config;
 	}
-	
-
 
 }
