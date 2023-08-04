@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
+import java.util.List;
+
 @Configuration
 public class Config {
 
@@ -43,7 +45,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
 
-	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private List<String> activeModules;
+
+  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
 	private int maxFileNameLength;
 	
 
@@ -571,4 +576,15 @@ public class Config {
 		return maxFileNameLength;
 	}
 
+	public String getSecret() {
+		return secret;
+	}
+
+	public String getServerKeycloak() {
+		return serverKeycloak;
+	}
+
+	public List<String> getActiveModules() {
+		return activeModules;
+	}
 }
