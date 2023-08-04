@@ -26,20 +26,20 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
 
     @Override
     public Repository initRepository(String rdfServer, String repositoryID) throws Exception {
-        var repository=repositories.get(rdfServer);
+        var repository=repositories.get(rdfServer + repositoryID);
         repository=refreshRepository(rdfServer, repositoryID, repository);
-        repositories.put(rdfServer, repository);
+        repositories.put( rdfServer + repositoryID, repository);
         return repository;
     }
 
     private HTTPRepository refreshRepository(String rdfServer, String repositoryID, HTTPRepository repository) throws RmesException {
-            if(!this.keycloakServices.isTokenValid(this.accessTokens.get(rdfServer)) || repository==null) {
+            if(!this.keycloakServices.isTokenValid(this.accessTokens.get(rdfServer + repositoryID)) || repository==null) {
 
                 var accessToken = keycloakServices.getKeycloakAccessToken(rdfServer);
 
                 repository = new HTTPRepository(rdfServer, repositoryID);
                 repository.setAdditionalHttpHeaders(Map.of("Authorization", "bearer " + accessToken));
-                this.accessTokens.put(rdfServer, accessToken);
+                this.accessTokens.put(rdfServer + repositoryID, accessToken);
                 repository.init();
             }
 
