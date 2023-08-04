@@ -7,9 +7,9 @@ import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
+
 
 @Component
 public class ConceptUtils {
@@ -25,6 +25,7 @@ public class ConceptUtils {
             return this.filesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId());
         }
         return this.filesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId());
+
     }
 
     public static  Map<String, String> convertCollectionInXml(CollectionForExport collection) {

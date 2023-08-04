@@ -242,7 +242,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
 		Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-		String fileName = conceptUtils.getFileNameForExport(collection, lg);
+		String fileName = ConceptUtils.getFileNameForExport(collection, lg);
 		collections.put(fileName, xmlContent);
 
 		if(withConcepts){
@@ -270,8 +270,17 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		member.setIsValidated(concept.getIsValidated());
 		member.setCreated(concept.getCreated());
 		member.setModified(concept.getModified());
+		member.setDefLongueLg1(concept.getDefinitionLg1());
+		member.setDefLongueLg2(concept.getDefinitionLg2());
+
+		member.setDefCourteLg1(concept.getScopeNoteLg1());
+		member.setDefCourteLg2(concept.getScopeNoteLg2());
+
+		member.setEditorialNoteLg1(concept.getEditorialNoteLg1());
+		member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
 		return member;
 	}
+
 	@Override
 	public Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) {
 		Map<String,InputStream> ret = new HashMap<>();
