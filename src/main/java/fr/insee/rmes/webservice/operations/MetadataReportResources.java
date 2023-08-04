@@ -36,7 +36,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 
 	@GetMapping(value = "/metadataStructureDefinition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getMsd", summary = "Metadata structure definition",
-	responses = { @ApiResponse(content = @Content(/*mediaType = "application/json",*/ schema = @Schema(implementation = MAS.class)))})
+	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = MAS.class)))})
 	public ResponseEntity<Object> getMSD(
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
@@ -181,14 +181,14 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@Parameter(description = "Metadata report to create", required = true,
 	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		logger.info("POST Metadata report");
-		String id = null;
 		try {
-			id = documentationsService.createMetadataReport(body);
+			String id = documentationsService.createMetadataReport(body);
+			if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
+
 	}
 
 	/**
@@ -247,7 +247,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public ResponseEntity<Object> setSimsValidation(
-			@PathVariable(Constants.ID) String id) throws RmesException {
+			@PathVariable(Constants.ID) String id) {
 		try {
 			documentationsService.publishMetadataReport(id);
 		} catch (RmesException e) {
@@ -327,17 +327,17 @@ public class MetadataReportResources extends OperationsCommonResources {
 			schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id
 			,
 			@Parameter(
-					description = "Inclure les champs vides",
-					required = false)  @RequestParam("emptyMas") Boolean includeEmptyMas
+					description = "Inclure les champs vides"
+			)  @RequestParam("emptyMas") Boolean includeEmptyMas
 			,
 			@Parameter(
-					description = "Version française",
-					required = false) @RequestParam("lg1")  Boolean lg1
+					description = "Version française"
+			) @RequestParam("lg1")  Boolean lg1
 			,
 			@Parameter(
-					description = "Version anglaise",
-					required = false) @RequestParam("lg2")  Boolean lg2
-			) throws RmesException {
+					description = "Version anglaise"
+			) @RequestParam("lg2")  Boolean lg2
+			) {
 		if (includeEmptyMas==null) {includeEmptyMas=true;}
 		if (lg1==null) {lg1=true;}
 		if (lg2==null) {lg2=true;}

@@ -19,6 +19,7 @@ import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
@@ -241,7 +242,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
 		Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-		String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+		String fileName = conceptUtils.getFileNameForExport(collection, lg);
 		collections.put(fileName, xmlContent);
 
 		if(withConcepts){
@@ -257,7 +258,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
-		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
+		return super.filesUtils.reduceFileNameSize(concept.getId() + "-" + CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false));
 	}
 
 	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
