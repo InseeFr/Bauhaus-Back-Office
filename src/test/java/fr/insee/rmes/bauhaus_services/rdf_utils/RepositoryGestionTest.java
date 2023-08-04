@@ -36,6 +36,8 @@ public class RepositoryGestionTest {
     void shouldCallRepositoryClear() throws IOException {
         when(config.getRdfServerGestion()).thenReturn("rdfServerGestion");
         when(config.getRepositoryIdGestion()).thenReturn("repositoryIdGestion");
+        when(config.getRdfServerGestionProd()).thenReturn("rdfServerProd");
+        when(config.getRepositoryIdGestionProd()).thenReturn("repositoryIdProd");
 
         Repository mockRepository = mock(Repository.class);
         RepositoryConnection mockRepositoryConnection = mock(RepositoryConnection.class);
