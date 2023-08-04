@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.*;
@@ -13,6 +14,8 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.Rio;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +26,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -43,7 +48,7 @@ public class RepositoryGestion  {
 
 	static final Logger logger = LogManager.getLogger(RepositoryGestion.class);
 
-		@PostConstruct
+	@PostConstruct
 	public void init() {
 		repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion());
@@ -464,5 +469,32 @@ public class RepositoryGestion  {
 
 	public RepositoryResult<Statement> getCompleteGraph(RepositoryConnection con, Resource graphIri) throws RmesException {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
+	}
+
+	/**
+	 * Method to clear an entire graph.
+	 */
+	public void clearGraph() throws IOException {
+
+		String server = config.getRdfServerGestion();
+		String repository = config.getRepositoryIdGestion();
+
+		String serverProd = config.getRdfServerGestionProd();
+		String repositoryProd = config.getRepositoryIdGestionProd();
+
+		RepositoryConnection connection =
+				repositoryUtils.initRepository(server, repository).getConnection();
+
+		RepositoryConnection connectionProd =
+				repositoryUtils.initRepository(serverProd, repositoryProd).getConnection();
+
+		File file = new File("export.trig");
+		FileOutputStream outputStream = new FileOutputStream(file);
+		RDFWriter writer = Rio.createWriter(RDFFormat.TRIG, outputStream);
+
+		connectionProd.exportStatements(null, null, null, false, writer);
+		connection.clear();
+		IOUtils.close(outputStream);
+		connection.add(file, RDFFormat.TRIG);
 	}
 }
