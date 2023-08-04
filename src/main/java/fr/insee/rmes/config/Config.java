@@ -56,6 +56,10 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer.prod}")
+	private String rdfServerGestionProd;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository.prod}")
+	private String idRepositoryGestionProd;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
@@ -305,6 +309,14 @@ public class Config {
 
 	public String getBaseUriGestion() {
 		return baseUriGestion;
+	}
+
+	public String getRdfServerGestionProd() {
+		return rdfServerGestionProd;
+	}
+
+	public String getRepositoryIdGestionProd() {
+		return idRepositoryGestionProd;
 	}
 
 	public String getRdfServerPublication() {
