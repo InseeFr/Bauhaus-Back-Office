@@ -86,12 +86,6 @@ public class Config {
 	//AUTHENTICATION
 	@Value("${fr.insee.rmes.bauhaus.ldap.url}")
 	private String ldapUrl;
-	@Value("${jwt.stamp-claim}")
-	private String stampClaim;
-	@Value("${jwt.role-claim}")
-	private String roleClaim;
-	@Value("${jwt.id-claim}")
-	private String idClaim;
 
 	//LDAP
 	//LDAP
@@ -274,10 +268,6 @@ public class Config {
 
 	public String getEnv() {
 		return env;
-	}
-
-	public boolean isRequiresSsl() {
-		return requiresSsl;
 	}
 
 	public String getLg1() {
@@ -502,18 +492,6 @@ public class Config {
 
 	public String getLdapUrl() {
 		return ldapUrl;
-	}
-
-	public String getStampclaim() {
-		return stampClaim;
-	}
-
-	public String getRoleclaim() {
-		return roleClaim;
-	}
-
-	public String getIdclaim() {
-		return idClaim;
 	}
 
 	public String getSugoiUrl() {
