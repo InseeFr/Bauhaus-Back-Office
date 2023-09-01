@@ -3,7 +3,6 @@ package fr.insee.rmes.config.auth.security;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.config.auth.user.UserProvider;
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.Optional.*;
 import static java.util.Optional.ofNullable;
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -37,6 +37,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter {
 
     public static final String TIMBRE_ANONYME = "bauhausGuest_STAMP";
     private static final List<String> EMPTY_ROLES = List.of();
+    public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
 
     private final Optional<String> allowedOrigin;
 
@@ -89,7 +90,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter {
     public UserProvider getUserProvider() {
         return auth -> {
             var principal=auth.getPrincipal();
-            Optional<Map<String, Object>> claims = "anonymousUser".equals(auth.getPrincipal()) ? Optional.empty() : Optional.of(((Jwt)principal).getClaims());
+            Optional<Map<String, Object>> claims = "anonymousUser".equals(auth.getPrincipal()) ? empty() : of(((Jwt)principal).getClaims());
             return buildUserFromToken(claims);
         };
     }
@@ -100,12 +101,16 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter {
         }
         var userClaims = claims.get();
         var id = (String) userClaims.get(idClaim);
-        var stamp = (String) ofNullable(userClaims.get(stampClaim)).orElse(TIMBRE_ANONYME);
+        var stamp=ofNullable((String)userClaims.get(stampClaim));
+        if (stamp.isEmpty()){
+            logger.info(LOG_INFO_DEFAULT_STAMP, id);
+            stamp= of(TIMBRE_ANONYME);
+        }
         var objectForRoles = (JSONObject) userClaims.get(roleClaim);
         var roles = objectForRoles == null ? EMPTY_ROLES : ((List<String>) (objectForRoles.get(keyForRolesInRoleClaim)));
 
         logger.debug("Current User is {}, {} with roles {}", id, stamp, roles);
-        return new User(id, roles == null ? EMPTY_ROLES : roles, stamp);
+        return new User(id, roles == null ? EMPTY_ROLES : roles, stamp.get());
     }
 
     @Bean
