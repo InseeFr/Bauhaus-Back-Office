@@ -22,7 +22,7 @@ public class RmesStampsImpl implements StampsService {
 	@Autowired
 	Config config;
 
-	public static final List stamps = List.of(
+	public static final List<String> stamps = List.of(
 			"DG33-C990",
 			"DG57-C003",
 			"DG57-C060",
