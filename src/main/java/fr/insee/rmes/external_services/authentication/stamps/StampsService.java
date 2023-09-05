@@ -2,9 +2,11 @@ package fr.insee.rmes.external_services.authentication.stamps;
 
 import fr.insee.rmes.exceptions.RmesException;
 
+import java.util.List;
+
 public interface StampsService {
 	
-	public String getStamps() throws RmesException;
+	List<String> getStamps() throws RmesException;
 
-	public String getStamp() throws RmesException;
+	String getStamp() throws RmesException;
 }
