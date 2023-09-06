@@ -1,19 +1,12 @@
 package fr.insee.rmes.config.auth.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.nimbusds.jose.shaded.json.JSONObject;
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.UserProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,83 +19,112 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.config.auth.user.UserProvider;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Optional.*;
+import static java.util.Optional.ofNullable;
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled=true, prePostEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @ConditionalOnExpression("'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
-public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  {
-	
-	private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
-	
-	@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}")
-	private Optional<String> allowedOrigin;
-	
-	@Autowired
-	Config config;
-	
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http.sessionManagement().disable();
+public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter {
 
-		http.cors(withDefaults())
-				.authorizeRequests()
-				.antMatchers("/init","/stamps","/disseminationStatus","/roles","/agents").permitAll() //PublicResources
-				.antMatchers("/healthcheck").permitAll()
-				.antMatchers("/swagger-ui/*").permitAll()
-				.antMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
-				.antMatchers("/openapi.json").permitAll()
-				.antMatchers("/documents/document/*/file").permitAll()
-				.antMatchers("/operations/operation/codebook").permitAll()
-				.antMatchers(HttpMethod.OPTIONS).permitAll()
-				.anyRequest().authenticated()
-				.and()
-				.oauth2ResourceServer()
-				.jwt();
-		if (config.isRequiresSsl())
-			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
-		
-		logger.info("OpenID authentication activated ");
-	
-	}
-	
-	
-	@Bean
-	public UserProvider getUserProvider() {
-		return auth -> {
-			if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication 
-			final Jwt jwt = (Jwt) auth.getPrincipal();
-			Map<String,Object> claims = jwt.getClaims();
-			JsonParser parser = JsonParserFactory.getJsonParser();
-			Map<String, Object> listeRoles = parser.parseMap(claims.get(config.getRoleclaim()).toString());
-			List<String> roles = Arrays.asList(
-								listeRoles.get("roles").toString()
-									.substring(1,listeRoles.get("roles").toString().length() - 1) //remove []
-									.replace(" ", "") //remove all spaces
-									.split(",")
-							);
-			String stamp = claims.get(config.getStampclaim()).toString();
-			String id = claims.get(config.getIdclaim()).toString();
-			logger.debug("Current User is {}, {} with roles {}",id,stamp,roles);
-			return new User(id,roles, stamp);
-		};
-	}
+    private static final Logger logger = LoggerFactory.getLogger(OpenIDConnectSecurityContext.class);
 
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		logger.info("Allowed origins : {}", allowedOrigin);
-		String ao = allowedOrigin.isPresent() ? allowedOrigin.get() : allowedOrigin.orElse("*");
-		configuration.setAllowedOrigins(List.of(ao));
-		configuration.setAllowedMethods(List.of("*"));
-		configuration.setAllowedHeaders(List.of("*"));
-		UrlBasedCorsConfigurationSource source = new
-				UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
-	
+    public static final String TIMBRE_ANONYME = "bauhausGuest_STAMP";
+    private static final List<String> EMPTY_ROLES = List.of();
+    public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
+
+    private final Optional<String> allowedOrigin;
+
+
+    private final String stampClaim;
+
+    private final String roleClaim;
+
+    private final String idClaim;
+
+    private final boolean requiresSsl;
+    private final String keyForRolesInRoleClaim;
+
+    public OpenIDConnectSecurityContext(@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin, @Value("${jwt.stamp-claim}") String stampClaim, @Value("${jwt.role-claim}") String roleClaim, @Value("${jwt.id-claim}") String idClaim, @Value("${fr.insee.rmes.bauhaus.force.ssl}") boolean requiresSsl, @Value("${jwt.role-claim.roles}") String keyForRolesInRoleClaim) {
+        this.allowedOrigin = allowedOrigin;
+        this.stampClaim = stampClaim;
+        this.roleClaim = roleClaim;
+        this.idClaim = idClaim;
+        this.requiresSsl = requiresSsl;
+        this.keyForRolesInRoleClaim = keyForRolesInRoleClaim;
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.sessionManagement().disable();
+
+        http.cors(withDefaults())
+                .authorizeRequests()
+                .antMatchers("/init", "/stamps", "/disseminationStatus", "/roles", "/agents").permitAll() //PublicResources
+                .antMatchers("/healthcheck").permitAll()
+                .antMatchers("/swagger-ui/*").permitAll()
+                .antMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
+                .antMatchers("/openapi.json").permitAll()
+                .antMatchers("/documents/document/*/file").permitAll()
+                .antMatchers("/operations/operation/codebook").permitAll()
+                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .oauth2ResourceServer()
+                .jwt();
+        if (requiresSsl)
+            http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+
+        logger.info("OpenID authentication activated ");
+
+    }
+
+
+    @Bean
+    public UserProvider getUserProvider() {
+        return auth -> {
+            var principal=auth.getPrincipal();
+            Optional<Map<String, Object>> claims = "anonymousUser".equals(auth.getPrincipal()) ? empty() : of(((Jwt)principal).getClaims());
+            return buildUserFromToken(claims);
+        };
+    }
+
+    public User buildUserFromToken(Optional<Map<String, Object>> claims) {
+        if (claims.isEmpty()) {
+            return null;
+        }
+        var userClaims = claims.get();
+        var id = (String) userClaims.get(idClaim);
+        var stamp=ofNullable((String)userClaims.get(stampClaim));
+        if (stamp.isEmpty()){
+            logger.info(LOG_INFO_DEFAULT_STAMP, id);
+            stamp= of(TIMBRE_ANONYME);
+        }
+        var objectForRoles = (JSONObject) userClaims.get(roleClaim);
+        var roles = objectForRoles == null ? EMPTY_ROLES : ((List<String>) (objectForRoles.get(keyForRolesInRoleClaim)));
+
+        logger.debug("Current User is {}, {} with roles {}", id, stamp, roles);
+        return new User(id, roles == null ? EMPTY_ROLES : roles, stamp.get());
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        logger.info("Allowed origins : {}", allowedOrigin);
+        String ao = allowedOrigin.isPresent() ? allowedOrigin.get() : allowedOrigin.orElse("*");
+        configuration.setAllowedOrigins(List.of(ao));
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        UrlBasedCorsConfigurationSource source = new
+                UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
 }

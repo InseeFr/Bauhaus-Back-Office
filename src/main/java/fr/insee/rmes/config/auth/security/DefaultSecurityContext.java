@@ -1,13 +1,9 @@
 package fr.insee.rmes.config.auth.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import java.util.List;
-import java.util.Optional;
-
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.UserProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -20,9 +16,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.config.auth.user.UserProvider;
+import java.util.List;
+import java.util.Optional;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -32,18 +29,18 @@ public class DefaultSecurityContext extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(DefaultSecurityContext.class);
 
-	@Autowired
-	Config config;
-	
 	@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}")
 	private Optional<String> allowedOrigin;
+
+	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
+	private boolean requiresSsl;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.cors(withDefaults())
 		.authorizeRequests().anyRequest().permitAll();
-		if (config.isRequiresSsl()) {
+		if (requiresSsl) {
 			http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
 		}
 		
