@@ -29,12 +29,12 @@ import static org.mockito.Mockito.when;
 @RestClientTest
 @Import({KeycloakServicesStub.class, KeycloakServerZoneConfiguration.class})
 @TestPropertySource(properties = {
-        "fr.insee.rmes.bauhaus.keycloak.client.secret = SECRET
+        "fr.insee.rmes.bauhaus.keycloak.client.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.id = XXX",
-        "fr.insee.rmes.bauhaus.auth-server-url = SECRET
-        "fr.insee.rmes.bauhaus.keycloak.client.dmz.secret = SECRET
+        "fr.insee.rmes.bauhaus.auth-server-url= keycloak.interne",
+        "fr.insee.rmes.bauhaus.keycloak.client.dmz.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.dmz.id = XXX",
-        "fr.insee.rmes.bauhaus.dmz.auth-server-url = SECRET
+        "fr.insee.rmes.bauhaus.dmz.auth-server-url = keycloak.dmz",
         "fr.insee.rmes.bauhaus.keycloak-configuration.zoneByServers.[serverinterne.insee.fr].zone=interne",
         "fr.insee.rmes.bauhaus.keycloak-configuration.zoneByServers.[servergestion.insee.fr].zone=interne",
         "fr.insee.rmes.bauhaus.keycloak-configuration.zoneByServers.[serverdmz.insee.fr].zone=dmz",
@@ -64,7 +64,7 @@ class KeycloakServicesTest {
 
     @BeforeEach
     void given(){
-        this.token=new Token(){
+        Token token = new Token() {
             @Override
             public String getAccessToken() {
                 return "token";
