@@ -305,14 +305,6 @@ public class Config {
 		return baseUriGestion;
 	}
 
-	public String getRdfServerGestionProd() {
-		return rdfServerGestionProd;
-	}
-
-	public String getRepositoryIdGestionProd() {
-		return idRepositoryGestionProd;
-	}
-
 	public String getRdfServerPublication() {
 		return rdfServerPublicationExt;
 	}

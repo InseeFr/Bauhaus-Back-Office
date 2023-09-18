@@ -1,12 +1,11 @@
 package fr.insee.rmes.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import fr.insee.rmes.exceptions.RmesException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FileUtilsTest {
 

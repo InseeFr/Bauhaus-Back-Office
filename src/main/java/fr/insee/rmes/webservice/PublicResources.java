@@ -17,9 +17,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -28,6 +29,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -73,7 +79,7 @@ public class PublicResources extends GenericResources {
             props.put("lg1", config.getLg1());
             props.put("lg2", config.getLg2());
             props.put("authType", AuthType.getAuthType(config));
-            props.put("modules", config.getActiveModules());
+            props.put("modules", getActiveModules());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -88,6 +94,17 @@ public class PublicResources extends GenericResources {
             return ResponseEntity.status(HttpStatus.SC_OK).body(stampsService.getStamps());
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+        }
+    }
+
+    private List<String> getActiveModules() {
+        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
+        File file = new File(dirPath);
+        try {
+            return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return new ArrayList<>();
         }
     }
 

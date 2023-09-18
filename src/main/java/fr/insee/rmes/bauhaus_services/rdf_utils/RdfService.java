@@ -1,15 +1,9 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.eclipse.rdf4j.model.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class RdfService {
 

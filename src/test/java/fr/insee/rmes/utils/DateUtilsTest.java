@@ -1,10 +1,9 @@
 package fr.insee.rmes.utils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 
-import fr.insee.rmes.exceptions.RmesException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DateUtilsTest {
 

@@ -1,11 +1,9 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.config.Config;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
@@ -23,16 +21,7 @@ public class FilesUtils {
 	public static final String ODT_EXTENSION = ".odt";
 	public static final String ODS_EXTENSION = ".ods";
 	public static final String ZIP_EXTENSION = ".zip";
-	private final int maxLength;
 
-	@Autowired
-	public FilesUtils(Config config) {
-		this.maxLength = config.getMaxFileNameLength();
-	}
-
-	public String reduceFileNameSize(String fileName) {
-		return fileName.substring(0, Math.min(fileName.length(), this.maxLength));
-	}
 
 	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
 		final File tempFile = File.createTempFile(fileName, fileExtension);

@@ -13,16 +13,10 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.Concept;
-import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
-import org.apache.commons.text.CaseUtils;
-import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -32,6 +26,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -45,38 +40,12 @@ import java.util.List;
 public class ConceptsUtils extends RdfService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConceptsUtils.class);
-	
-	private ConceptsPublication conceptsPublication;
-	private NoteManager noteManager;
-	private FilesUtils filesUtils;
 
 	@Autowired
-	public ConceptsUtils(FilesUtils filesUtils, NoteManager noteManager, ConceptsPublication conceptsPublication) {
-		this.filesUtils = filesUtils;
-		this.noteManager = noteManager;
-		this.conceptsPublication = conceptsPublication;
-	}
+	private ConceptsPublication conceptsPublication;
 
-	public String getConceptExportFileName(ConceptForExport concept) {
-		return getAbstractExportFileName(concept.getId(), concept.getPrefLabelLg1(), concept.getPrefLabelLg2(), ConceptsCollectionsResources.Language.lg1);
-	}
-
-	public String getCollectionExportFileName(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-		return getAbstractExportFileName(collection.getId(), collection.getPrefLabelLg1(), collection.getPrefLabelLg2(), lg);
-	}
-
-	private String getAbstractExportFileName(String id, String labelLg1, String labelLg2, ConceptsCollectionsResources.Language lg){
-		var initialFileName = getInitialFileName(labelLg1, labelLg2, lg);
-		return this.filesUtils.reduceFileNameSize(id + "-" + FilesUtils.removeAsciiCharacters(CaseUtils.toCamelCase(initialFileName, false)));
-	}
-
-	private String getInitialFileName(String labelLg1, String labelLg2, ConceptsCollectionsResources.Language lg){
-		if(lg == ConceptsCollectionsResources.Language.lg2){
-			return labelLg2;
-		}
-		return labelLg1;
-	}
-
+	@Autowired
+	private NoteManager noteManager;
 
 	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());

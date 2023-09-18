@@ -21,9 +21,9 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

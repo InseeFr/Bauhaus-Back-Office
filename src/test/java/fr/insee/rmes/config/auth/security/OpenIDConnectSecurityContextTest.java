@@ -1,24 +1,20 @@
 package fr.insee.rmes.config.auth.security;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.OutputStreamAppender;
 import com.nimbusds.jose.shaded.json.JSONArray;
 import com.nimbusds.jose.shaded.json.JSONObject;
-import com.nimbusds.jwt.JWTParser;
 import fr.insee.rmes.config.auth.user.User;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.OutputStreamAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OpenIDConnectSecurityContextTest {
 
-    private static ByteArrayOutputStream logOutputStream=new ByteArrayOutputStream();
+    private static final ByteArrayOutputStream logOutputStream=new ByteArrayOutputStream();
     private static final String idep = "zzzzzz";
     private static final String timbre="DR59-SNDI";
     private static final List<String> roles = List.of("role1", "role2", "role3", "role4", "role5");
@@ -96,36 +92,33 @@ class OpenIDConnectSecurityContextTest {
 
     @BeforeAll
     static void configureLog4j(){
-
-        final Configuration config = ((LoggerContext) LogManager.getContext(false)).getConfiguration();
-        final Appender appender = createOutputStreamAppender(config);
-        addAppenderEverywhere(config, appender);
-        forceInfoForRootLogger(config);
+        LoggerContext context = ((LoggerContext) LoggerFactory.getILoggerFactory());
+        addAppenderToOidcSecurityContextLogger(createOutputStreamAppender(context), context);
     }
 
-    private static void addAppenderEverywhere(Configuration config, Appender appender) {
-        config.addAppender(appender);
-        config.getRootLogger().addAppender(appender, Level.INFO, null);
-        for (final LoggerConfig loggerConfig : config.getLoggers().values()) {
-            loggerConfig.addAppender(appender, Level.INFO, null);
-        }
+    private static void addAppenderToOidcSecurityContextLogger(Appender<ILoggingEvent> appender, LoggerContext context) {
+        var oidcSecurityContextLogger = context.getLogger(OpenIDConnectSecurityContext.class);
+        oidcSecurityContextLogger.setLevel(Level.INFO);
+        oidcSecurityContextLogger.addAppender(appender);
     }
 
     @NotNull
-    private static Appender createOutputStreamAppender(Configuration config) {
-        final PatternLayout layout = PatternLayout.createDefaultLayout(config);
-        final Appender appender = OutputStreamAppender.createAppender(layout, null, logOutputStream, "StdoutTest", false, true);
+    private static Appender<ILoggingEvent> createOutputStreamAppender(LoggerContext context) {
+        PatternLayoutEncoder ple=new PatternLayoutEncoder();
+        ple.setPattern("%msg");
+        ple.setContext(context);
+        ple.start();
+        var appender = new OutputStreamAppender<ILoggingEvent>();
+        appender.setContext(context);
+        appender.setEncoder(ple);
+        appender.setOutputStream(logOutputStream);
         appender.start();
+
         return appender;
     }
 
-    private static void forceInfoForRootLogger(Configuration config) {
-        config.getRootLogger().setLevel(Level.INFO);
-        config.getRootLogger().setAdditive(true);
-    }
-
     @Test
-    void testJwt() throws ParseException, JSONException {
+    void testJwt() {
         var oidcContext = new OpenIDConnectSecurityContext(empty(), "timbre", "realm_access", "preferred_username", false, "roles");
 
         User user = oidcContext.buildUserFromToken(Optional.of(jwtDecoded));
@@ -135,7 +128,7 @@ class OpenIDConnectSecurityContextTest {
     }
 
     @Test
-    void testJwt_sansTimbre() throws ParseException, JSONException {
+    void testJwt_sansTimbre() {
         logOutputStream.reset();
 
         var oidcContext = new OpenIDConnectSecurityContext(empty(), "timbr", "realm_access", "preferred_username", false, "roles");
