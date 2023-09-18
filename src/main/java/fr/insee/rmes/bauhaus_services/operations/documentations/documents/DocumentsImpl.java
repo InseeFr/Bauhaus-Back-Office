@@ -2,9 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.exceptions.RmesException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import java.io.InputStream;
 @Service
 public class DocumentsImpl implements DocumentsService {
 
-	private static final  Logger logger = LogManager.getLogger(DocumentsImpl.class);
+	private static final  Logger logger = LoggerFactory.getLogger(DocumentsImpl.class);
 
 	@Autowired 
 	DocumentsUtils documentsUtils;

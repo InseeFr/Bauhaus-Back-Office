@@ -1,12 +1,11 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
-
 import fr.insee.rmes.exceptions.RmesException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +17,7 @@ public class RepositoryInitiatorWithAuthent implements RepositoryInitiator {
     private final Map<String, HTTPRepository> repositories=new HashMap<>();
 
 
-    static final Logger logger = LogManager.getLogger(RepositoryInitiatorWithAuthent.class);
+    static final Logger logger = LoggerFactory.getLogger(RepositoryInitiatorWithAuthent.class);
 
     public RepositoryInitiatorWithAuthent(KeycloakServices keycloakServices) {
         this.keycloakServices=keycloakServices;

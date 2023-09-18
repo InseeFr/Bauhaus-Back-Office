@@ -1,17 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.famopeserind_utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -20,11 +10,19 @@ import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpeSerQueries;
+import org.slf4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class FamOpeSerIndUtils  extends RdfService {
 
-	static final Logger logger = LogManager.getLogger(FamOpeSerIndUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(FamOpeSerIndUtils.class);
 
 	public String createId() throws RmesException {
 		logger.info("Generate famOpeSer id");

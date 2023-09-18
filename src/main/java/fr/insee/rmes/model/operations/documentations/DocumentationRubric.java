@@ -1,13 +1,11 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DocumentationRubric {
 

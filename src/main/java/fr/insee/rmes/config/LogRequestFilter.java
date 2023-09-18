@@ -1,7 +1,7 @@
 package fr.insee.rmes.config;
 
-import javax.servlet.http.HttpServletRequest;
-
+import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
+import fr.insee.rmes.config.auth.user.User;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
 
-import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
-import fr.insee.rmes.config.auth.user.User;
+import javax.servlet.http.HttpServletRequest;
 
 @Component
 public class LogRequestFilter extends AbstractRequestLoggingFilter {

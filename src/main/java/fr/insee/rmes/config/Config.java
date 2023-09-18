@@ -4,17 +4,19 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
+
 
 @Configuration
 public class Config {
 
-	private final  Logger logger = LogManager.getLogger(Config.class);
+	private final Logger logger = LoggerFactory.getLogger(Config.class);
 	
 
 	/******************************************************/
@@ -26,9 +28,6 @@ public class Config {
 
 	@Value("${fr.insee.rmes.bauhaus.env}")
 	private String env;
-
-	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
-	private boolean requiresSsl = false;
 
 	@Value("${fr.insee.rmes.bauhaus.lg1}")
 	private String lg1;
@@ -42,6 +41,15 @@ public class Config {
 	private String swaggerHost;
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
+
+	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
+	private boolean requiresSsl = false;
+
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private List<String> activeModules;
+
+  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+	private int maxFileNameLength;
 	
 
 	/******************************************************/
@@ -86,6 +94,9 @@ public class Config {
 	//AUTHENTICATION
 	@Value("${fr.insee.rmes.bauhaus.ldap.url}")
 	private String ldapUrl;
+
+
+
 
 	//LDAP
 	//LDAP
@@ -292,6 +303,14 @@ public class Config {
 
 	public String getBaseUriGestion() {
 		return baseUriGestion;
+	}
+
+	public String getRdfServerGestionProd() {
+		return rdfServerGestionProd;
+	}
+
+	public String getRepositoryIdGestionProd() {
+		return idRepositoryGestionProd;
 	}
 
 	public String getRdfServerPublication() {

@@ -1,10 +1,10 @@
 package fr.insee.rmes.config.auth.user;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
+import java.util.List;
 
 public class User {
 	

@@ -1,20 +1,8 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -26,6 +14,16 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import org.slf4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -34,7 +32,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	@Autowired
 	protected RepositoryGestion repoGestion;
 	
-	static final Logger logger = LogManager.getLogger(StampsRestrictionServiceImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(StampsRestrictionServiceImpl.class);
 
 	@Autowired
 	Config config;

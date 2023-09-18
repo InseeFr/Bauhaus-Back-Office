@@ -1,23 +1,5 @@
 package fr.insee.rmes.external_services.export;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.opensagres.xdocreport.converter.ConverterTypeTo;
@@ -28,6 +10,16 @@ import fr.opensagres.xdocreport.document.registry.XDocReportRegistry;
 import fr.opensagres.xdocreport.template.IContext;
 import fr.opensagres.xdocreport.template.TemplateEngineKind;
 import freemarker.ext.dom.NodeModel;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 
 @Component
 public class XDocReport {
@@ -35,7 +27,7 @@ public class XDocReport {
 	@Autowired
 	VarBookExportBuilder varBookExport;
 
-	static final Logger logger = LogManager.getLogger(XDocReport.class);
+	static final Logger logger = LoggerFactory.getLogger(XDocReport.class);
 
 	public OutputStream exportVariableBookInPdf(String xmlFilename, String odtTemplate) throws RmesException  {
 		// 1) Load DOCX into XWPFDocument

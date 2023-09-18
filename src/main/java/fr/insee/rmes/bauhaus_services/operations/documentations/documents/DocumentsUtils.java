@@ -18,8 +18,7 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.UriUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -30,6 +29,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
 public class DocumentsUtils  extends RdfService  {
 
 	private static final String SCHEME_FILE = "file://";
-	static final Logger logger = LogManager.getLogger(DocumentsUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
 
 	@Autowired
 	private LangService langService;

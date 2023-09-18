@@ -1,13 +1,12 @@
 package fr.insee.rmes.bauhaus_services;
 
-import java.io.IOException;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
 
 public interface OperationsDocumentationsService {
 

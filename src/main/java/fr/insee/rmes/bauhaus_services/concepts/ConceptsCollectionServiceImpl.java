@@ -3,16 +3,16 @@ package fr.insee.rmes.bauhaus_services.concepts;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
+import fr.insee.rmes.bauhaus_services.concepts.collections.ConceptUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
-import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
-import org.apache.commons.text.CaseUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.json.JSONArray;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,13 +25,19 @@ import java.util.*;
 
 @Service
 public class ConceptsCollectionServiceImpl extends RdfService implements ConceptsCollectionService {
-    static final Logger logger = LogManager.getLogger(ConceptsCollectionServiceImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(ConceptsCollectionServiceImpl.class);
+
+    private CollectionExportBuilder collectionExport;
+    private ConceptsService conceptsService;
+    private ConceptsUtils conceptsUtils;
 
     @Autowired
-    CollectionExportBuilder collectionExport;
+    public ConceptsCollectionServiceImpl(CollectionExportBuilder collectionExport, ConceptsService conceptsService, ConceptsUtils conceptsUtils) {
+        this.collectionExport = collectionExport;
+        this.conceptsService = conceptsService;
+        this.conceptsUtils = conceptsUtils;
+    }
 
-    @Autowired
-    ConceptsService conceptsService;
 
     @Override
     public String getCollections()  throws RmesException{
@@ -53,12 +59,6 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         return repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id)).toString();
     }
 
-    private Map<String, String> convertCollectionInXml(CollectionForExport collection) {
-        String collectionXml = XMLUtils.produceXMLResponse(collection);
-        Map<String,String> xmlContent = new HashMap<>();
-        xmlContent.put("collectionFile",  collectionXml.replace("CollectionForExport", "Collection"));
-        return xmlContent;
-    }
 
     private List<String> getCollectionConceptsIds(String collectionId) throws RmesException {
         List conceptsIds = new ArrayList<String>();
@@ -76,19 +76,19 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         try {
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
-            Map<String, String> xmlContent = convertCollectionInXml(collection);
-            String fileName = getFileNameForExport(collection, lg);
+            Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+            String fileName = conceptsUtils.getCollectionExportFileName(collection, lg);
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
             }
 
-            Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds);
+            Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);
             Map<String, Map<String, String>> collections = new HashMap<>();
             collections.put(fileName, xmlContent);
 
             Map<String, Map<String, InputStream>> collectionConcepts = new HashMap<>();
             collectionConcepts.put(fileName, concepts);
-            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionConcepts, withConcepts);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (RmesException e){
             return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
@@ -102,18 +102,18 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         try {
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
-            Map<String, String> xmlContent = convertCollectionInXml(collection);
-            String fileName = getFileNameForExport(collection, null);
+            Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+            String fileName = conceptsUtils.getCollectionExportFileName(collection, null);
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
             }
-            Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds);
+            Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);
             Map<String, Map<String, String>> collections = new HashMap<>();
             collections.put(fileName, xmlContent);
             Map<String, Map<String, InputStream>> collectionConcepts = new HashMap<>();
             collectionConcepts.put(fileName, concepts);
 
-            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionConcepts, withConcepts);
             return ResponseEntity.status(HttpStatus.OK).build();
         } catch (RmesException e){
             return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
@@ -122,7 +122,6 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     @Override
     public void exportZipCollection(String ids, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException {
-
         Map<String, Map<String, String>> collections = new HashMap<>();
         Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
 
@@ -131,12 +130,12 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
                 List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
 
                 CollectionForExport collection = collectionExport.getCollectionData(id);
-                Map<String, String> xmlContent = convertCollectionInXml(collection);
-                String fileName = getFileNameForExport(collection, lg);
+                Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+                String fileName = conceptsUtils.getCollectionExportFileName(collection, lg);
                 collections.put(fileName, xmlContent);
 
                 if(conceptsIds.size() > 0){
-                    Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds);
+                    Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);
                     collectionsConcepts.put(fileName, concepts);
                 }
             } catch (RmesException e) {
@@ -145,17 +144,10 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
         });
 
         if("odt".equalsIgnoreCase(type)){
-            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
 
         } else {
-            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts);
+            collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
         }
-    }
-
-    private String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-        if (lg == ConceptsCollectionsResources.Language.lg2){
-            return CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
-        }
-        return CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
     }
 }

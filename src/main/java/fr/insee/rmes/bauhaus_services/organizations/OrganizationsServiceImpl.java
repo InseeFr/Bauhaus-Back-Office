@@ -1,16 +1,5 @@
 package fr.insee.rmes.bauhaus_services.organizations;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
@@ -20,6 +9,16 @@ import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.organizations.Organization;
 import fr.insee.rmes.persistance.sparql_queries.organizations.OrganizationQueries;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class OrganizationsServiceImpl  extends RdfService implements OrganizationsService {
@@ -30,7 +29,7 @@ public class OrganizationsServiceImpl  extends RdfService implements Organizatio
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
 
-	static final Logger logger = LogManager.getLogger(OrganizationsServiceImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(OrganizationsServiceImpl.class);
 	
 	@Override
 	public String getOrganizationJsonString(String organizationIdentifier) throws RmesException {

@@ -3,8 +3,6 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -19,6 +17,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -50,7 +50,7 @@ public class RepositoryPublication{
 	private RepositoryUtils repositoryUtils;
 
 
-	static final Logger logger = LogManager.getLogger(RepositoryPublication.class);
+	static final Logger logger = LoggerFactory.getLogger(RepositoryPublication.class);
 
 	@PostConstruct
 	public  void init() {

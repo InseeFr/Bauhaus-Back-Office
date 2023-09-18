@@ -1,15 +1,13 @@
 package fr.insee.rmes.model.notes.concepts;
 
-import java.util.EnumSet;
-
-import javax.annotation.PostConstruct;
-
+import fr.insee.rmes.config.Config;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.Config;
+import javax.annotation.PostConstruct;
+import java.util.EnumSet;
 
 
 public enum ConceptsDatedNoteTypes {

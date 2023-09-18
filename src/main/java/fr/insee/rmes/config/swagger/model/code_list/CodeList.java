@@ -1,8 +1,8 @@
 package fr.insee.rmes.config.swagger.model.code_list;
 
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 public class CodeList {
 

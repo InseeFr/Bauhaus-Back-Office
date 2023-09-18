@@ -1,15 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.stereotype.Component;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -23,12 +13,21 @@ import fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils.FamOpe
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ParentUtils extends RdfService{
 
 	
-	static final Logger logger = LogManager.getLogger(ParentUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(ParentUtils.class);
 
 	
 	public String getDocumentationOwnersByIdSims(String idSims) throws RmesException {

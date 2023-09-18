@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.keycloak;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
@@ -9,7 +9,7 @@ public class ServerZone {
 
     private Zone zone;
 
-    static final Logger logger = LogManager.getLogger(ServerZone.class);
+    static final Logger logger = LoggerFactory.getLogger(ServerZone.class);
 
     public ServerZone(){ }
 

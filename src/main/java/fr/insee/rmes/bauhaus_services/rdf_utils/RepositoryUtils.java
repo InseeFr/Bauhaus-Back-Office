@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -17,7 +16,6 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -26,7 +24,7 @@ import org.eclipse.rdf4j.rio.trig.TriGParser;
 import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,7 +43,7 @@ public class RepositoryUtils {
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 	
-	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
 	private RepositoryInitiator repositoryInitiator;
 
 

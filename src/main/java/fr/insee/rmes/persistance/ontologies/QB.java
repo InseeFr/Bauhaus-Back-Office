@@ -1,12 +1,11 @@
 package fr.insee.rmes.persistance.ontologies;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 
 public class QB {
 	
