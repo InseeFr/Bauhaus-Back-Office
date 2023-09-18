@@ -1,12 +1,5 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -14,6 +7,12 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.IGEO;
 import fr.insee.rmes.persistance.ontologies.QB;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Iterator;
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
 

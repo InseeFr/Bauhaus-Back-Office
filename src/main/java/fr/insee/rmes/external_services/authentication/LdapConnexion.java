@@ -1,19 +1,17 @@
 package fr.insee.rmes.external_services.authentication;
 
-import java.util.Hashtable;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
+import java.util.Hashtable;
 
 @Service
 public class LdapConnexion {
@@ -21,7 +19,7 @@ public class LdapConnexion {
 	@Autowired
 	Config config;
 	
-	static final Logger logger = LogManager.getLogger(LdapConnexion.class);
+	static final Logger logger = LoggerFactory.getLogger(LdapConnexion.class);
 	
 	public DirContext getLdapContext() throws NamingException, RmesException {
 		if(config.getLdapUrl() != null && !config.getLdapUrl().isEmpty()) {

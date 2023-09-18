@@ -1,15 +1,15 @@
 package fr.insee.rmes.webservice;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.StringJoiner;
-import java.util.function.UnaryOperator;
-
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
+import fr.insee.rmes.exceptions.RmesException;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
-import fr.insee.rmes.exceptions.RmesException;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.StringJoiner;
 
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Opération réussie"),
@@ -50,7 +48,7 @@ public class HealthcheckApi extends GenericResources {
 
     private final UserRolesManagerService userService;
 
-    private static final Logger logger = LogManager.getLogger(HealthcheckApi.class);
+    private static final Logger logger = LoggerFactory.getLogger(HealthcheckApi.class);
 
     @Autowired
     public HealthcheckApi(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, UserRolesManagerService userService) {

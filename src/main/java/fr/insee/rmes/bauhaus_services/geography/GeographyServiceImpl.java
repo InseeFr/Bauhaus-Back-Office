@@ -1,24 +1,7 @@
 package fr.insee.rmes.bauhaus_services.geography;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
@@ -33,6 +16,21 @@ import fr.insee.rmes.model.geography.GeoFeature;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.IGEO;
 import fr.insee.rmes.persistance.sparql_queries.geography.GeoQueries;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.UUID;
 
 @Service
 public class GeographyServiceImpl extends RdfService implements GeographyService {
@@ -41,7 +39,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 
 	private static final String HAS_COMPOSITION = "hasComposition";
-	static final Logger logger = LogManager.getLogger(GeographyServiceImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
 
 	@Override
 	public String getGeoFeatures() throws RmesException {

@@ -1,12 +1,11 @@
 package fr.insee.rmes.config.auth.security.restrictions;
 
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
+import org.eclipse.rdf4j.model.IRI;
+
+import java.util.List;
 
 public interface StampsRestrictionsService {
 	

@@ -2,8 +2,8 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.exceptions.RmesException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +19,7 @@ public class TokenApi extends GenericResources {
 	protected KeycloakServices keycloakServices;
 
 	
-	private static final Logger logger = LogManager.getLogger(TokenApi.class);
+	private static final Logger logger = LoggerFactory.getLogger(TokenApi.class);
 
 
 	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")

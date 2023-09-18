@@ -20,8 +20,7 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -30,6 +29,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +40,7 @@ public class FamiliesUtils  extends RdfService {
 
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-	static final Logger logger = LogManager.getLogger(FamiliesUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(FamiliesUtils.class);
 
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;

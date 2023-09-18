@@ -18,8 +18,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,6 +26,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +49,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	private static final String LAST_CODE_URI_SEGMENT = "lastCodeUriSegment";
 
-	static final Logger logger = LogManager.getLogger(CodeListServiceImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(CodeListServiceImpl.class);
 	
 	@Autowired
 	FamOpeSerIndUtils famOpeSerIndUtils;

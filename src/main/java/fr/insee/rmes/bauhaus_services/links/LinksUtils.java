@@ -1,14 +1,13 @@
 package fr.insee.rmes.bauhaus_services.links;
 
-import java.util.List;
-
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.model.links.Link;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.model.links.Link;
+import java.util.List;
 
 public class LinksUtils {
 

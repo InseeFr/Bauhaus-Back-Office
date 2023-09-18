@@ -1,30 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -41,15 +18,35 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class StructureUtils extends RdfService {
 
     private static final String IO_EXCEPTION = "IOException";
-	static final Logger logger = LogManager.getLogger(StructureUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(StructureUtils.class);
     public static final String ATTACHMENT = "attachment";
     public static final String REQUIRED = "required";
     public static final String ORDER = "order";
+    public static final String NOTATION = "notation";
+    public static final String LABEL_LG1 = "csLabelLg1";
+    public static final String LABEL_LG2 = "csLabelLg2";
     public static final String COMPONENT_DEFINITION_CREATED = "componentDefinitionCreated";
     public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
@@ -74,11 +71,9 @@ public class StructureUtils extends RdfService {
     public JSONObject formatStructure(JSONObject structure, String id) throws RmesException {
         structure.put(Constants.ID, id);
 
-
         JSONArray componentDefinitions = new JSONArray();
 
         JSONArray componentDefinitionsFlat = repoGestion.getResponseAsArray(StructureQueries.getComponentsForStructure(id));
-
 
         for (int i = 0; i < componentDefinitionsFlat.length(); i++) {
             JSONObject componentDefinitionFlat = componentDefinitionsFlat.getJSONObject(i);
@@ -92,7 +87,7 @@ public class StructureUtils extends RdfService {
 
             JSONObject componentDefinition= new JSONObject();
 
-             componentDefinition.put(ATTACHMENT, attachments);
+            componentDefinition.put(ATTACHMENT, attachments);
 
 
             if(componentDefinitionFlat.has(REQUIRED)){
@@ -109,13 +104,24 @@ public class StructureUtils extends RdfService {
             }
             if(componentDefinitionFlat.has(COMPONENT_DEFINITION_MODIFIED)){
                 componentDefinition.put("modified", componentDefinitionFlat.getString(COMPONENT_DEFINITION_MODIFIED));
-
             }
             if(componentDefinitionFlat.has(COMPONENT_DEFINITION_ID)){
                 componentDefinition.put(Constants.ID, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID));
-
             }
+            if(componentDefinitionFlat.has(NOTATION)){
+                componentDefinition.put(NOTATION, componentDefinitionFlat.getString(NOTATION));
+            }
+            if(componentDefinitionFlat.has(LABEL_LG1)){
+                componentDefinition.put("labelLg1", componentDefinitionFlat.getString(LABEL_LG1));
+            }
+            if(componentDefinitionFlat.has(LABEL_LG2)){
+                componentDefinition.put("labelLg2", componentDefinitionFlat.getString(LABEL_LG2));
+            }
+
             componentDefinitionFlat.remove(REQUIRED);
+            componentDefinitionFlat.remove(NOTATION);
+            componentDefinitionFlat.remove(LABEL_LG1);
+            componentDefinitionFlat.remove(LABEL_LG2);
             componentDefinitionFlat.remove(ORDER);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_CREATED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
@@ -306,9 +312,18 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
         }
 
+        if(componentDefinition.getNotation() != null){
+            model.add(componentSpecificationIRI, SKOS.NOTATION, RdfUtils.setLiteralString(componentDefinition.getNotation()), graph);
+        }
+        if(componentDefinition.getLabelLg1() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), config.getLg1()), graph);
+        }
+        if(componentDefinition.getLabelLg2() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), config.getLg2()), graph);
+        }
+
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
-
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
         if (component.getType().equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {

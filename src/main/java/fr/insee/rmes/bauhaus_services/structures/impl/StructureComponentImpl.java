@@ -1,23 +1,21 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.webjars.NotFoundException;
-
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import org.slf4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StructureComponentImpl extends RdfService implements StructureComponent {
-    static final Logger logger = LogManager.getLogger(StructureComponentImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(StructureComponentImpl.class);
 
     @Autowired
     StructureComponentUtils structureComponentUtils;
@@ -96,7 +94,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     public void deleteComponent(String id) throws RmesException {
         JSONObject response = this.getComponentObject(id);
         if(response.keySet().isEmpty()){
-            throw new NotFoundException("This component does not exist");
+            throw new RmesNotFoundException("Not Found","component with "+id+" not found");
         }
         String type = response.getString("type");
         structureComponentUtils.deleteComponent(response, id, type);

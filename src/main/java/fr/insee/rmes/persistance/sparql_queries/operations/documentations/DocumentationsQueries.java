@@ -1,15 +1,14 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.documentations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.rdf4j.model.Resource;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.RangeType;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.Resource;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DocumentationsQueries extends GenericQueries{
 	

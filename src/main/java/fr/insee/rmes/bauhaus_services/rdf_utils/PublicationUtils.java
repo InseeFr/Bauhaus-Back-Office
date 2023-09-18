@@ -1,14 +1,13 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.util.Arrays;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.model.ValidationStatus;
 import org.eclipse.rdf4j.model.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.model.ValidationStatus;
+import java.util.Arrays;
 
 @Service
 public abstract class PublicationUtils {

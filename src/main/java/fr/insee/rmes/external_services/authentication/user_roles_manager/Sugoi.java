@@ -1,7 +1,7 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
-import java.util.Arrays;
-
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -10,13 +10,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
+import java.util.Arrays;
 
 
 public class Sugoi {
@@ -27,7 +26,7 @@ public class Sugoi {
 
 	private static Config config;
 
-	static final Logger logger = LogManager.getLogger(Sugoi.class);
+	static final Logger logger = LoggerFactory.getLogger(Sugoi.class);
 
 	private static void execute(HttpRequestBase httpMethod)  throws RmesException{
 		/* add authentication params */

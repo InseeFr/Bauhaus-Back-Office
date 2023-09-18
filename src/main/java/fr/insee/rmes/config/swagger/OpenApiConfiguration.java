@@ -1,18 +1,17 @@
 package fr.insee.rmes.config.swagger;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-
 import fr.insee.rmes.config.Config;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 
 //@("/")
 @DependsOn("AppContext")
@@ -25,7 +24,7 @@ import io.swagger.v3.oas.models.servers.Server;
 	)
 public class OpenApiConfiguration   {
 
-	private static final  Logger logger = LogManager.getLogger(OpenApiConfiguration.class);
+	private static final  Logger logger = LoggerFactory.getLogger(OpenApiConfiguration.class);
 	
 	@Value("${fr.insee.rmes.bauhaus.version}")
 	private String projectVersion;

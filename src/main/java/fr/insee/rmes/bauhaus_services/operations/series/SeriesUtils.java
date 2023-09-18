@@ -22,8 +22,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -31,6 +30,7 @@ import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -65,7 +65,7 @@ public class SeriesUtils extends RdfService {
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
 
-	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(SeriesUtils.class);
 
 	/*READ*/
 

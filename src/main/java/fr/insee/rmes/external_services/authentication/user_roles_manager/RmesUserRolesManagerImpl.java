@@ -1,22 +1,7 @@
 package fr.insee.rmes.external_services.authentication.user_roles_manager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -28,6 +13,20 @@ import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiMo
 import fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiModel.UsersSugoi;
 import fr.insee.rmes.utils.JSONComparator;
 import fr.insee.rmes.utils.RestTemplateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+
+import org.slf4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeSet;
 
 @Service
 public class RmesUserRolesManagerImpl implements UserRolesManagerService {
@@ -43,7 +42,7 @@ public class RmesUserRolesManagerImpl implements UserRolesManagerService {
 	@Autowired
 	RestTemplateUtils restTemplateUtils;
 
-	static final Logger  logger = LogManager.getLogger(RmesUserRolesManagerImpl.class);
+	static final Logger  logger = LoggerFactory.getLogger(RmesUserRolesManagerImpl.class);
 
 	private static final String SUGOI_REALM_SEARCH_PATH = "/realms/";
 	private static final String SUGOI_APP_SEARCH_PATH = "/applications/";

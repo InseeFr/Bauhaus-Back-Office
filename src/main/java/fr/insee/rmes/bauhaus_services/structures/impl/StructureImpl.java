@@ -1,12 +1,5 @@
 package fr.insee.rmes.bauhaus_services.structures.impl;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -17,11 +10,17 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import org.slf4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StructureImpl  extends RdfService implements StructureService {
 	
-	static final Logger logger = LogManager.getLogger(StructureImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(StructureImpl.class);
 	
 	@Autowired
 	StructureUtils structureUtils;
@@ -90,8 +89,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 				try {
 					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString(Constants.CODELIST))));
 				} catch (RmesException e) {
-					logger.error("Cannot fetch code list of the structure {}" , id);
-					logger.error(e);
+					logger.error("Cannot fetch code list of the structure "+id, e);
 				}
 
 				component.put(Constants.CODELIST, codeList);
@@ -102,8 +100,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 					JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQueryForDetailStructure(component.getString(Constants.CONCEPT)));
 					component.put(Constants.CONCEPT, concept);
 				} catch (RmesException e) {
-					logger.error("Cannot fetch concept of the structure {}" , id);
-					logger.error(e);
+					logger.error("Cannot fetch concept of the structure " +id, e);
 				}
 
 			}

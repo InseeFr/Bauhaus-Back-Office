@@ -1,12 +1,10 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.utils.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class Document {
 	

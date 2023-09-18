@@ -1,15 +1,15 @@
 package fr.insee.rmes.utils;
 
-import java.util.Comparator;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+
+import java.util.Comparator;
 
 public class JSONComparator implements Comparator<JSONObject> {
 	
-	static final Logger logger = LogManager.getLogger(JSONComparator.class);
+	static final Logger logger = LoggerFactory.getLogger(JSONComparator.class);
 
 	
     private String fieldToCompare;
@@ -26,7 +26,7 @@ public class JSONComparator implements Comparator<JSONObject> {
             id1 = o1.getString(this.fieldToCompare);
             id2 = o2.getString(this.fieldToCompare);
         } catch (JSONException e) {
-        	logger.error(e);
+        	logger.error("Error comparing json", e);
         }
 
         return id1.toLowerCase().compareTo(id2.toLowerCase());
