@@ -113,9 +113,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Create a new document
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@Operation(operationId = "setDocument", summary = "Create document" )
 	@PostMapping(value = "/document", 
 	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
@@ -143,9 +143,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Update informations about a document
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping("/document/{id}")
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
 	public ResponseEntity<Object> setDocument(
@@ -165,9 +165,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Change the file of a document
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@Operation(operationId = "changeDocument", summary = "Change document file" )
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@Operation(operationId = "changeDocument", summary = "Change document file" )
 	@PutMapping(value = "/document/{id}/file", 
 	consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
 			MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -193,9 +193,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Delete a document
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/document/{id}")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@DeleteMapping("/document/{id}")
 	@Operation(operationId = "deleteDocument", summary = "Delete a document")
 	public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) {
 		HttpStatus status = null;
@@ -232,9 +232,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Create a new link
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/link",
 		consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, 
 				MediaType.APPLICATION_OCTET_STREAM_VALUE,
@@ -257,9 +257,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Update informations about a link
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping("/link/{id}")
 	@Operation(operationId = "setLinkById", summary = "Update link")
 	public ResponseEntity<Object> setLink(
@@ -277,9 +277,9 @@ public class DocumentsResources  extends GenericResources {
 	/**
 	 * Delete a link
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")	@DeleteMapping("/link/{id}")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@DeleteMapping("/link/{id}")
 	@Operation(operationId = "deleteLink", summary = "Delete a link")
 	public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) {
 		HttpStatus status = null;

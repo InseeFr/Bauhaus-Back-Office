@@ -97,9 +97,9 @@ public class SeriesResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() "
-			+ "|| @AuthorizeMethodDecider.isCnis()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/series/{id}",
 		consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
@@ -145,7 +145,7 @@ public class SeriesResources extends OperationsCommonResources {
 	 * @param body
 	 * @return response
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping(value = "/series",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
@@ -166,8 +166,8 @@ public class SeriesResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/series/validate/{id}",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")

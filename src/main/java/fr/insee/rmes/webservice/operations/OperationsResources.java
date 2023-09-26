@@ -181,8 +181,8 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() " + "|| @AuthorizeMethodDecider.isSeriesContributor() "
-			+ "|| @AuthorizeMethodDecider.isCnis()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
 	public ResponseEntity<Object> setOperationById(@PathVariable(Constants.ID) String id,
@@ -201,7 +201,7 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() " + "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public ResponseEntity<Object> createOperation(
@@ -221,7 +221,7 @@ public class OperationsResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() " + "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/operation/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public ResponseEntity<Object> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {

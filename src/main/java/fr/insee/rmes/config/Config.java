@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 
 @Configuration
@@ -45,13 +44,6 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
 	private boolean requiresSsl = false;
 
-	@Value("${fr.insee.rmes.bauhaus.activeModules}")
-	private List<String> activeModules;
-
-  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
-	private int maxFileNameLength;
-	
-
 	/******************************************************/
 	/** DATABASES		***********************************/
 	/******************************************************/
@@ -65,7 +57,7 @@ public class Config {
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
 	private String idRepositoryPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer}")
+	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
 	private String rdfServerPublicationInt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
 	private String idRepositoryPublicationInt;
@@ -223,7 +215,7 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.geographie.graph}")	 //Getter with baseGraph
 	private String geographyGraph;
 
-	
+
 
 
 	/******************************************************/
@@ -311,10 +303,6 @@ public class Config {
 
 	public String getRepositoryIdPublication() {
 		return idRepositoryPublicationExt;
-	}
-
-	public String getRdfServerPublicationInterne() {
-		return rdfServerPublicationInt;
 	}
 
 	public String getRepositoryIdPublicationInterne() {

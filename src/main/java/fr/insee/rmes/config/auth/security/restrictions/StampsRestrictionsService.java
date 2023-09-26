@@ -1,7 +1,5 @@
 package fr.insee.rmes.config.auth.security.restrictions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -12,11 +10,6 @@ public interface StampsRestrictionsService {
 	/*
 	 * USER
 	 */
-	
-	User getUser() throws RmesException;
-	
-	void setFakeUser(String user) throws JsonProcessingException;
-
 	
 	/*
 	 * CONCEPTS AND COLLECTIONS

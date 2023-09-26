@@ -1,10 +1,11 @@
 package fr.insee.rmes.external_services.authentication.stamps;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.LdapConnexion;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,9 @@ public class RmesStampsImpl implements StampsService {
 	
 	@Autowired
 	Config config;
+
+	@Autowired
+	private UserDecoder userDecoder;
 
 	public static final List<String> stamps = List.of(
 			"DG33-C990",
@@ -291,16 +295,15 @@ public class RmesStampsImpl implements StampsService {
 			"SSM-DEPS"
 	);
 
+
 	@Override
 	public List<String> getStamps() {
 		return stamps;
 	}
 
 	@Override
-	public String getStamp() throws RmesException {
-		JSONObject jsonStamp = new JSONObject();
-		jsonStamp.put("stamp",stampsRestrictionService.getUser().getStamp());
-		return jsonStamp.toString();
+	public String findStampFrom(Object principal) throws RmesException {
+		return this.userDecoder.fromPrincipal(principal).map(User::stamp).orElse(null);
 	}
 
 }

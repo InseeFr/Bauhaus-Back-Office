@@ -8,5 +8,5 @@ public interface StampsService {
 	
 	List<String> getStamps() throws RmesException;
 
-	String getStamp() throws RmesException;
+	String findStampFrom(Object principal) throws RmesException;
 }

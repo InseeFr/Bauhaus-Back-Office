@@ -9,6 +9,7 @@ import ch.qos.logback.core.OutputStreamAppender;
 import com.nimbusds.jose.shaded.json.JSONArray;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.exceptions.RmesException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -18,11 +19,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.LOG_INFO_DEFAULT_STAMP;
 import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.TIMBRE_ANONYME;
-import static java.util.Optional.empty;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OpenIDConnectSecurityContextTest {
@@ -118,25 +117,25 @@ class OpenIDConnectSecurityContextTest {
     }
 
     @Test
-    void testJwt() {
-        var oidcContext = new OpenIDConnectSecurityContext(empty(), "timbre", "realm_access", "preferred_username", false, "roles");
+    void testJwt() throws RmesException {
+        var oidcContext = new OpenIDConnectSecurityContext("timbre", "realm_access", "preferred_username", false, "roles");
 
-        User user = oidcContext.buildUserFromToken(Optional.of(jwtDecoded));
-        assertThat(user.getId()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo(timbre);
-        assertThat(user.getRoles()).isEqualTo(new org.json.JSONArray(roles));
+        User user = oidcContext.buildUserFromToken(jwtDecoded);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.stamp()).isEqualTo(timbre);
+        assertThat(user.roles()).isEqualTo(new org.json.JSONArray(roles));
     }
 
     @Test
-    void testJwt_sansTimbre() {
+    void testJwt_sansTimbre() throws RmesException {
         logOutputStream.reset();
 
-        var oidcContext = new OpenIDConnectSecurityContext(empty(), "timbr", "realm_access", "preferred_username", false, "roles");
+        var oidcContext = new OpenIDConnectSecurityContext( "timbr", "realm_access", "preferred_username", false, "roles");
 
-        User user = oidcContext.buildUserFromToken(Optional.of(jwtDecoded));
-        assertThat(user.getId()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo(TIMBRE_ANONYME);
-        assertThat(user.getRoles()).isEqualTo(new org.json.JSONArray(roles));
+        User user = oidcContext.buildUserFromToken(jwtDecoded);
+        assertThat(user.id()).isEqualTo(idep);
+        assertThat(user.stamp()).isEqualTo(TIMBRE_ANONYME);
+        assertThat(user.roles()).isEqualTo(new org.json.JSONArray(roles));
         assertThat(logOutputStream.toString().trim()).hasToString(String.format(LOG_INFO_DEFAULT_STAMP.replace("{}", "%s"), idep));
         logOutputStream.reset();
     }

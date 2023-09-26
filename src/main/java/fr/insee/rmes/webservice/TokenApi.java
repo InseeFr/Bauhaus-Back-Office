@@ -22,7 +22,7 @@ public class TokenApi extends GenericResources {
 	private static final Logger logger = LoggerFactory.getLogger(TokenApi.class);
 
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @GetMapping(value = "/{rdfServerUrl}")
     public String getToken(@PathVariable String rdfServerUrl) throws RmesException {
 		logger.info("GET /token");

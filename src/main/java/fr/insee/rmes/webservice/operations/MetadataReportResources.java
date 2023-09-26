@@ -173,7 +173,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() || @AuthorizeMethodDecider.isIndicatorContributor() || @AuthorizeMethodDecider.isSeriesContributor()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN || T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR || T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
@@ -197,10 +197,10 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() "
-			+ "|| @AuthorizeMethodDecider.isCnis()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/metadataReport/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
 	public ResponseEntity<Object> setMetadataReportById(
@@ -220,7 +220,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param id
 	 * @return
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@DeleteMapping(value = "/metadataReport/delete/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
 	public ResponseEntity<Object> deleteMetadataReportById(
@@ -241,9 +241,9 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param id
 	 * @return response
 	 */
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isIndicatorContributor() "
-			+ "|| @AuthorizeMethodDecider.isSeriesContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public ResponseEntity<Object> setSimsValidation(

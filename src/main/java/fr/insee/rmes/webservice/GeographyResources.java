@@ -64,7 +64,7 @@ public class GeographyResources  extends GenericResources {
 	}
 	
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
@@ -78,7 +78,7 @@ public class GeographyResources  extends GenericResources {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping(value = "/territory/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "updateGeography", summary = "Update geography ")
 	public ResponseEntity<Object> updateGeography(
