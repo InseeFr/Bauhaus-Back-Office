@@ -1,59 +1,17 @@
 package fr.insee.rmes.config.auth.user;
 
-import org.json.JSONArray;
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Collection;
 import java.util.List;
 
-public class User {
-	
-	private JSONArray roles;
-	private String stamp = "";
-	
-	private String id;
-	
-	private Collection<GrantedAuthority> authorities;
-	
-	public User() {
-		super();
-	}
-	
-	public User(String id, JSONArray roles, String stamp) {
-		this.id=id;
-		this.roles = roles;
-		this.stamp = stamp;
-	}
-	
-	public User(String id, List<String> roles, String stamp) {
-		this.id=id;
-		this.roles = new JSONArray(roles);
-		this.stamp = stamp;
-	}
-	
-	public JSONArray getRoles() {
-		return roles;
-	}
-	public void setRoles(JSONArray roles) {
-		this.roles = roles;
-	}
-	public String getStamp() {
-		return stamp;
-	}
-	public void setStamp(String stamp) {
-		this.stamp = stamp;
-	}
-	public Collection<GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
+public record User(String id, List<String> roles, String stamp) {
 
-	public String getId() {
-		return id;
+	public static final User FAKE_USER=new User("fakeUser",List.of("ROLE_offline_access", "Administrateur_RMESGNCS", "ROLE_uma_authorization"), "fakeStampForDvAndQf");
+	public static final User EMPTY_USER = new User();
+
+	private User() {
+		this(null, List.of(), "");
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public boolean hasRole(String role) {
+		return roles.contains(role);
 	}
-
-	
 }

@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
@@ -14,7 +13,6 @@ import java.text.Normalizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-@Component
 public class FilesUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(FilesUtils.class);
@@ -30,10 +28,6 @@ public class FilesUtils {
 			IOUtils.copy(in, out);
 		}
 		return tempFile;
-	}
-
-	public static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").replaceAll("\\p{Punct}", "");
 	}
 
 	public static String cleanFileNameAndAddExtension(String fileName, String extension) {

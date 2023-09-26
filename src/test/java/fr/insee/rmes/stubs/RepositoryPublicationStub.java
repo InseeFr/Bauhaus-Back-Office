@@ -5,8 +5,12 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public class RepositoryPublicationStub extends RepositoryPublication {
 
+    public RepositoryPublicationStub(){
+        super(null, null, null,null,null);
+    }
+
     @Override
-    public String getResponse(String query) throws RmesException {
+    public String getResponse(String query) {
         return "NON_EMPTY";
     }
 

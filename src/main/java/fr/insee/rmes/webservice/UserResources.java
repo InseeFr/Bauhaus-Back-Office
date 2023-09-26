@@ -1,10 +1,8 @@
 package fr.insee.rmes.webservice;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -51,6 +50,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserResources  extends GenericResources {
 
 	static final Logger logger = LoggerFactory.getLogger(UserResources.class);
+	private static final String STAMP_KEY = "stamp";
 
 	@Autowired
 	UserRolesManagerService userRolesManagerService;
@@ -64,24 +64,24 @@ public class UserResources  extends GenericResources {
 	@GetMapping(value = "/stamp",
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamp", summary = "User's stamp", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-	public ResponseEntity<Object> getStamp() {
-			String stamp = null;
+	public ResponseEntity<Object> getStamp(@AuthenticationPrincipal Object principal) {
+			String stamp;
 			try {
-				stamp = stampsService.getStamp();
-			} catch (RmesException e) {
-				return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+				stamp = stampsService.findStampFrom(principal);
+			} catch (Exception e) {
+				logger.error("exception while retrieving stamp",e);
+				return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("exception while retrieving stamp");
 			}
-			return ResponseEntity.status(HttpStatus.SC_OK).body(stamp);
+			return ResponseEntity.status(HttpStatus.SC_OK).body(toJson(STAMP_KEY,stamp));
 	}
+
 
 	@PostMapping(value = "/login",
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "login", summary = "Fake Login", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class)))})
 	public ResponseEntity<Object> login(
-			@Parameter(description = "Component", required = true) @RequestBody String user) 
-			throws JsonProcessingException {
-		stampsRestrictionService.setFakeUser(user);
-		return ResponseEntity.status(HttpStatus.SC_OK).build();
+			@Parameter(description = "Component", required = true) @RequestBody String user) {
+		throw new RuntimeException("Deprecated to be removed: noop");
 	}
 	
 

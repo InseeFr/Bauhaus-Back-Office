@@ -71,7 +71,7 @@ public class LoaderResources  extends GenericResources {
 	protected RepositoryPublication repositoryPublication;
 	
 	
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")	
 	@Operation(operationId = "uploadFile", summary = "Upload a ttl or trig file in database"  )
 	@PostMapping(value = "/upload/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
 	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
@@ -105,7 +105,7 @@ public class LoaderResources  extends GenericResources {
 		}
 	}
 	
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() ")	
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")	
 	@GetMapping(value = "/download/graphs", produces = "*/*")
 	@Operation(operationId = "downloadGraphs", summary = "Download all graphs in a zip file")																 
 	public ResponseEntity<Object> downloadDocument(

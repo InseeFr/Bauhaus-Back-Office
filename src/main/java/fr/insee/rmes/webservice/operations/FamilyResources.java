@@ -68,7 +68,7 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update an existing family" )
 	public ResponseEntity<Object> setFamilyById(
@@ -83,7 +83,7 @@ public class FamilyResources extends OperationsCommonResources {
 	}
 
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping("/family")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create a new family")
 	public ResponseEntity<Object> createFamily(
@@ -98,7 +98,7 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/validate/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(

@@ -82,9 +82,9 @@ public class ConceptsResources  extends GenericResources   {
 	}
 	
 	
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) {
@@ -205,8 +205,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public ResponseEntity<Object> setConcept(
@@ -219,8 +219,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public ResponseEntity<Object> setConcept(
@@ -235,8 +235,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@PutMapping(value= "/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
@@ -262,8 +262,8 @@ public class ConceptsResources  extends GenericResources   {
 		conceptsService.exportZipConcept(id, accept, response);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
@@ -276,9 +276,9 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")
 	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public ResponseEntity<Object> setCollection(
@@ -294,8 +294,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")	
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")	
 	@PutMapping(value= "/collections/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(

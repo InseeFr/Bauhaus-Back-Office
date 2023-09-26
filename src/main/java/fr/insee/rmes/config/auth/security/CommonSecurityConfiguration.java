@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -16,6 +20,8 @@ import java.util.Optional;
 public class CommonSecurityConfiguration {
 
     private static final Logger logger= LoggerFactory.getLogger(CommonSecurityConfiguration.class);
+
+    public static final String DEFAULT_ROLE_PREFIX = null ;
     private final Optional<String> allowedOrigin ;
 
     public CommonSecurityConfiguration(@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin){
@@ -35,4 +41,18 @@ public class CommonSecurityConfiguration {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+    @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+    public static class CustomGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+
+        @Override
+        protected MethodSecurityExpressionHandler createExpressionHandler() {
+            logger.trace("Initializing GlobalMethodSecurityConfiguration with DefaultRolePrefix = {}",DEFAULT_ROLE_PREFIX);
+            var expressionHandler = new DefaultMethodSecurityExpressionHandler();
+            expressionHandler.setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
+            return expressionHandler;
+        }
+
+    }
+
 }
