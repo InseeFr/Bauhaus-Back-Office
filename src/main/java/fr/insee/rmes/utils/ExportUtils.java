@@ -217,7 +217,9 @@ public class ExportUtils {
                 if(!Files.exists(documentPath)){
                     missingDocuments.add(document.getString("id"));
                 } else {
-                    String documentFileName = FilenameUtils.getBaseName(documentPath.getFileName().toString());
+                    String fileName = FilenameUtils.getBaseName(documentPath.getFileName().toString());
+                    String extension = FilenameUtils.getExtension(documentPath.getFileName().toString());
+                    String documentFileName = String.format("%s.%s", filesUtils.reduceFileNameSize(fileName), extension);
 
                     InputStream inputStream = Files.newInputStream(documentPath);
 
