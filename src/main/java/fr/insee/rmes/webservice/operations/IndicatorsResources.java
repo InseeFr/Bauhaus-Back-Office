@@ -83,6 +83,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
+	//TODO Test : admin then INDICATOR_CONTRIBUTOR with stamp fit then not
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN || T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")

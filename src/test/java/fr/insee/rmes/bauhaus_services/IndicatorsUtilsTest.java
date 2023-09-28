@@ -48,8 +48,6 @@ class IndicatorsUtilsTest {
         
     }
 
-    //getCodeListByNotation//
-
     @Test
     void givenBuildIndicatorFromJson_whenCorrectRequest_thenResponseIsOk() throws RmesException {
     	

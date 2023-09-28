@@ -219,6 +219,7 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
+	//TODO Test with Roles.ADMIN, Roles.CONCEPT_CONTRIBUTOR (user stamp is contributor and user stamp is not contributor) : StampRestrictionsServiceImpl.isConceptManager
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -235,6 +236,7 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
+	//TODO Test with admin and with concept_creator (user stamp is creator of all concepts, user stamp is not creator of one concept)
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@PutMapping(value= "/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,25 +61,56 @@ public class PublicResources extends GenericResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 
-    @Autowired
-    UserRolesManagerService userRolesManagerService;
+    private final UserRolesManagerService userRolesManagerService;
 
-    @Autowired
-    StampsService stampsService;
+    private final StampsService stampsService;
+    private final  String documentsStorageGestion;
+    private  final String env;
+    private final  String lg2;
+    private final  String lg1;
+    private final  String maxLengthScopeNote;
+    private  final String defaultMailSender;
+    private final String defaultContributor;
+    private final String sugoiUi;
+    private final String appHost;
+
+    public PublicResources(@Autowired UserRolesManagerService userRolesManagerService,
+                           @Autowired StampsService stampsService,
+                           @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion,
+                           @Value("${fr.insee.rmes.bauhaus.env}") String env,
+                           @Value("${fr.insee.rmes.bauhaus.lg1}") String lg2,
+                           @Value("${fr.insee.rmes.bauhaus.lg2}") String lg1,
+                           @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
+                           @Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}") String defaultMailSender,
+                           @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
+                           @Value("${fr.insee.rmes.bauhaus.sugoi.ui}") String sugoiUi,
+                           @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost) {
+        this.userRolesManagerService = userRolesManagerService;
+        this.stampsService = stampsService;
+        this.documentsStorageGestion = documentsStorageGestion;
+        this.env = env;
+        this.lg2 = lg2;
+        this.lg1 = lg1;
+        this.maxLengthScopeNote = maxLengthScopeNote;
+        this.defaultMailSender = defaultMailSender;
+        this.defaultContributor = defaultContributor;
+        this.sugoiUi = sugoiUi;
+        this.appHost = appHost;
+    }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getInit", summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
     public ResponseEntity<Object> getProperties() throws RmesException {
         JSONObject props = new JSONObject();
         try {
-            props.put("appHost", config.getAppHost());
-            props.put("authorizationHost", config.getSugoiUi());
-            props.put("defaultContributor", config.getDefaultContributor());
-            props.put("defaultMailSender", config.getDefaultMailSender());
-            props.put("maxLengthScopeNote", config.getMaxLengthScopeNote());
-            props.put("lg1", config.getLg1());
-            props.put("lg2", config.getLg2());
-            props.put("authType", AuthType.getAuthType(config));
+            props.put("appHost", this.appHost);
+            props.put("authorizationHost", this.sugoiUi);
+            props.put("defaultContributor", this.defaultContributor);
+            props.put("defaultMailSender", this.defaultMailSender);
+            props.put("maxLengthScopeNote", this.maxLengthScopeNote);
+            props.put("lg1", this.lg1);
+            props.put("lg2", this.lg2);
+            props.put("authType", AuthType.getAuthType(this.env));
             props.put("modules", getActiveModules());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -98,7 +130,7 @@ public class PublicResources extends GenericResources {
     }
 
     private List<String> getActiveModules() {
-        String dirPath = config.getDocumentsStorageGestion() + "/BauhausActiveModules.txt";
+        String dirPath = this.documentsStorageGestion + "/BauhausActiveModules.txt";
         File file = new File(dirPath);
         try {
             return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list

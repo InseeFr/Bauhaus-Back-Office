@@ -167,7 +167,7 @@ public class ConceptsUtils extends RdfService {
 		repoGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
 
-	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
+	private void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
 		Model model = new LinkedHashModel();
 		List<IRI> conceptsToValidateList = new ArrayList<>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {
