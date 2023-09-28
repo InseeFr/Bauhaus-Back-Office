@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 
+//TODO Test
 @Component
 public class LogRequestFilter extends AbstractRequestLoggingFilter {
 
@@ -56,7 +57,7 @@ public class LogRequestFilter extends AbstractRequestLoggingFilter {
             logger.error("while authenticating user", e);
             currentUser = empty();
         }
-        return currentUser.map(user -> user.id() + " " + user.stamp()).orElse("No authentication needed");
+        return currentUser.map(user -> user.id() + " " + user.getStamp()).orElse("No authentication needed");
     }
 
 }

@@ -49,7 +49,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	}
 
 
-	public boolean isSeriesManager(IRI uri) throws RmesException {
+	private boolean isSeriesManager(IRI uri) throws RmesException {
 		return isOwnerForModule(List.of(uri), OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATOR);
 	}
 
@@ -67,7 +67,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 	private boolean checkResponsabilityForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<String>, Predicate<String>> predicateMatcher) throws RmesException {
 		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
-		var stamp=getUser().stamp();
+		var stamp=getUser().getStamp();
 		return StringUtils.hasLength(stamp) &&
 				predicateMatcher.test(owners.toList().stream()
 								.map(JSONObject.class::cast)
@@ -167,11 +167,6 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	@Override
 	public boolean canValidateSeries(IRI uri) throws RmesException {
 		return (authorizeMethodDecider.isAdmin() || (isSeriesManager(uri) && authorizeMethodDecider.isSeriesContributor()));
-	}
-
-	@Override
-	public boolean canValidateOperation(IRI seriesURI) throws RmesException {
-		return canValidateSeries(seriesURI);
 	}
 
 	@Override

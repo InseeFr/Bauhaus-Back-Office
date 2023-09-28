@@ -52,9 +52,6 @@ public interface StampsRestrictionsService {
 	boolean canCreateOperation(IRI seriesURI) throws RmesException;
 	
 	boolean canModifyOperation(IRI seriesURI) throws RmesException;
-	
-	boolean canValidateOperation(IRI seriesURI) throws RmesException;
-
 
 	
 	/*
@@ -65,8 +62,6 @@ public interface StampsRestrictionsService {
 	boolean canModifySeries(IRI uri) throws RmesException;
 
 	boolean canValidateSeries(IRI uri) throws RmesException;
-
-	boolean isSeriesManager(IRI uri) throws RmesException;
 
 	/*
 	 * FAMILIES (OPERATION MODULE)
