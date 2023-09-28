@@ -54,6 +54,8 @@
 		<jaxb.version>4.0.3</jaxb.version>
 		<zt.version>1.16</zt.version>
 		<saxon.version>12.3</saxon.version>
+		<!--<slf4j.version>2.0.9</slf4j.version>
+		<logback.version>1.4.11</logback.version>-->
 
 
 		<!-- SONAR -->
