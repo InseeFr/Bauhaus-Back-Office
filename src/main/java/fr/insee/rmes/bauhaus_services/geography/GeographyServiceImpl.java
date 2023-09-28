@@ -17,6 +17,8 @@ import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.IGEO;
 import fr.insee.rmes.persistance.sparql_queries.geography.GeoQueries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -171,6 +173,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), config.getLg1()), RdfUtils.simsGeographyGraph());
 
 		/*Optional*/
+		RdfUtils.addTripleString(geoIRI, SKOS.PREF_LABEL, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), config.getLg1(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
