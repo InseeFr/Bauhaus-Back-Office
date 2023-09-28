@@ -17,7 +17,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component("RepositoryGestion")
-@DependsOn("AppContext")
 public class RepositoryGestion  {
 
 	@Autowired

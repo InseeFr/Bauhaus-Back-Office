@@ -44,7 +44,7 @@ public class RepositoryUtils {
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 	
 	static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
-	private RepositoryInitiator repositoryInitiator;
+	private final RepositoryInitiator repositoryInitiator;
 
 
 	public RepositoryUtils(KeycloakServices keycloakServices, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){

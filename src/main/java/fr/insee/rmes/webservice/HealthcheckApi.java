@@ -7,10 +7,10 @@ import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,14 +47,26 @@ public class HealthcheckApi extends GenericResources {
     private final RepositoryPublication repositoryPublication;
 
     private final UserRolesManagerService userService;
+    private final String documentsStoragePublicationInterne;
+    private final String documentsStoragePublicationExterne;
+    private final  String documentsStorageGestion;
 
     private static final Logger logger = LoggerFactory.getLogger(HealthcheckApi.class);
 
-    @Autowired
-    public HealthcheckApi(RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, UserRolesManagerService userService) {
+
+
+    public HealthcheckApi(@Autowired RepositoryGestion repoGestion,
+                          @Autowired RepositoryPublication repositoryPublication,
+                          @Autowired UserRolesManagerService userService,
+                          @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}") String documentsStoragePublicationInterne,
+                          @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
+                          @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
         this.userService = userService;
+        this.documentsStoragePublicationInterne = documentsStoragePublicationInterne;
+        this.documentsStoragePublicationExterne = documentsStoragePublicationExterne;
+        this.documentsStorageGestion = documentsStorageGestion;
     }
 
     @GetMapping(value = "",
@@ -98,12 +110,11 @@ public class HealthcheckApi extends GenericResources {
         }
     }
 
-    @NotNull
     private void checkStrorage(StringJoiner errorMessage, StringJoiner stateResult) {
         stateResult = stateResult.add("Document storage \n");
-        checkDocumentStorage(config.getDocumentsStorageGestion(), "Gestion", stateResult, errorMessage);
-        checkDocumentStorage(config.getDocumentsStoragePublicationExterne(), "Publication Externe", stateResult, errorMessage);
-        checkDocumentStorage(config.getDocumentsStoragePublicationInterne(), "Publication Interne", stateResult, errorMessage);
+        checkDocumentStorage(this.documentsStorageGestion, "Gestion", stateResult, errorMessage);
+        checkDocumentStorage(this.documentsStoragePublicationExterne, "Publication Externe", stateResult, errorMessage);
+        checkDocumentStorage(this.documentsStoragePublicationInterne, "Publication Interne", stateResult, errorMessage);
     }
 
     protected void checkDatabase(StringJoiner errorMessage, StringJoiner stateResult) {

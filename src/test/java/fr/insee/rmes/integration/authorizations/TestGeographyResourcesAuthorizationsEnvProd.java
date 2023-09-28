@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -31,7 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE"}
 )
-@Import({Config.class, OpenIDConnectSecurityContext.class, DefaultSecurityContext.class, CommonSecurityConfiguration.class})
+@Import({Config.class,
+        OpenIDConnectSecurityContext.class,
+        DefaultSecurityContext.class,
+        CommonSecurityConfiguration.class,
+        UserProvider.class})
 class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Autowired
@@ -74,7 +79,7 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Test
     void postTerritoriesNoAdmin_403() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre,List.of("bidon"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bidon"));
         mvc.perform(post("/geo/territory")
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,7 +91,7 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Test
     void postTerritoriesAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre,List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         mvc.perform(post("/geo/territory").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +119,7 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Test
     void optionCreateTerritoriesAsAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre,List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
         mvc.perform(options("/geo/territory")
                         .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))

@@ -4,8 +4,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,19 +12,12 @@ import javax.annotation.PostConstruct;
 
 @Configuration
 public class Config {
-
-	private final Logger logger = LoggerFactory.getLogger(Config.class);
 	
 
 	/******************************************************/
 	/** GLOBAL CONF 	***********************************/
 	/******************************************************/
 
-	@Value("${fr.insee.rmes.bauhaus.appHost}")
-	private String appHost;
-
-	@Value("${fr.insee.rmes.bauhaus.env}")
-	private String env;
 
 	@Value("${fr.insee.rmes.bauhaus.lg1}")
 	private String lg1;
@@ -53,27 +44,12 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
-	private String rdfServerPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
-	private String idRepositoryPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
-	private String rdfServerPublicationInt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
-	private String idRepositoryPublicationInt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.baseURI}")
 	private String baseUriPublication;
 
 	/******************************************************/
 	/** EXTERNAL SERVICES *********************************/
 	/******************************************************/	
-	//MAIL SENDER
-	@Value("${fr.insee.rmes.bauhaus.spoc.url}")
-	private String spocServiceUrl;
-	@Value("${fr.insee.rmes.bauhaus.spoc.user}")
-	private String spocUser;
-	@Value("${fr.insee.rmes.bauhaus.spoc.password}")
-	private String spocPassword;
 
 	//BROKER
 	@Value("${fr.insee.rmes.bauhaus.broker.url}")
@@ -102,20 +78,12 @@ public class Config {
 	private String sugoiApp;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
-	private String sugoiUi;
 
 	
 	/******************************************************/
 	/** CONCEPTS 		***********************************/
 	/******************************************************/	
-	
-	@Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}")
-	private String defaultContributor;
-	@Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}")
-	private String defaultMailSender;
-	@Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}")
-	private String maxLengthScopeNote;
+
 	
 	@Value("${fr.insee.rmes.bauhaus.concepts.graph}") //Getter with baseGraph
 	private String conceptsGraph;
@@ -215,40 +183,6 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.geographie.graph}")	 //Getter with baseGraph
 	private String geographyGraph;
 
-
-
-
-	/******************************************************/
-	/** PRINTER			***********************************/
-	/******************************************************/
-	public void printMajorConfig() {
-		logger.info("*********************** CONFIG USED ***********************************");
-
-		logger.info("ENV : {}", env);
-		
-		logger.info("SERVEUR RDF : ");
-		
-		logger.info("   GESTION : {} _ REPO : {} _ BASEURI : {}",rdfServerGestion,idRepositoryGestion, baseUriGestion);
-		logger.info("   PUB EXTERNE : {} _ REPO : {} _ BASEURI : {}",rdfServerPublicationExt, idRepositoryPublicationExt, baseUriPublication);
-		logger.info("   PUB INTERNE : {} _ REPO : {}",rdfServerPublicationInt,idRepositoryPublicationInt);
-		
-		logger.info("DOCUMENT STORAGE : ");
-		
-		logger.info("   GESTION : {}", documentsStorageGestion);
-		logger.info("   PUB EXTERNE : {}", documentsStoragePublicationExt);
-		logger.info("   PUB INTERNE : {}", documentsStoragePublicationInt);
-
-
-		
-		logger.info("*********************** END CONFIG USED ***********************************");
-		
-		
-	}
-
-	
-	public Config() {
-		//constructor for spring
-	}
 	
 	/******************************************************/
 	/** INIT STATIC		***********************************/
@@ -264,14 +198,6 @@ public class Config {
 	/******************************************************/
 	/** GETTERS 		***********************************/
 	/******************************************************/
-
-	public String getAppHost() {
-		return appHost;
-	}
-
-	public String getEnv() {
-		return env;
-	}
 
 	public String getLg1() {
 		return lg1;
@@ -297,33 +223,10 @@ public class Config {
 		return baseUriGestion;
 	}
 
-	public String getRdfServerPublication() {
-		return rdfServerPublicationExt;
-	}
-
-	public String getRepositoryIdPublication() {
-		return idRepositoryPublicationExt;
-	}
-
-	public String getRepositoryIdPublicationInterne() {
-		return idRepositoryPublicationInt;
-	}
-
 	public String getBaseUriPublication() {
 		return baseUriPublication;
 	}
 
-	public String getDefaultContributor() {
-		return defaultContributor;
-	}
-
-	public String getDefaultMailSender() {
-		return defaultMailSender;
-	}
-
-	public String getMaxLengthScopeNote() {
-		return maxLengthScopeNote;
-	}
 
 	public String getConceptsGraph() {
 		return baseGraph + conceptsGraph;
@@ -465,18 +368,6 @@ public class Config {
 		return  baseGraph + geographyGraph;
 	}
 
-	public String getSpocServiceUrl() {
-		return spocServiceUrl;
-	}
-
-	public String getSpocUser() {
-		return spocUser;
-	}
-
-	public String getSpocPassword() {
-		return spocPassword;
-	}
-
 	public String getBrokerUrl() {
 		return brokerUrl;
 	}
@@ -511,10 +402,6 @@ public class Config {
 
 	public String getSugoiRealm() {
 		return sugoiRealm;
-	}
-
-	public String getSugoiUi() {
-		return sugoiUi;
 	}
 
 	public String getSwaggerHost() {
