@@ -1,9 +1,12 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.external_services.authentication.stamps.RmesStampsImpl;
+import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,7 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE"}
 )
-@Import({Config.class, OpenIDConnectSecurityContext.class, DefaultSecurityContext.class, CommonSecurityConfiguration.class})
+@Import({Config.class,
+        OpenIDConnectSecurityContext.class,
+        DefaultSecurityContext.class,
+        CommonSecurityConfiguration.class,
+        UserProvider.class,
+        RmesStampsImpl.class})
 class UserResourcesEnvHorsProdTest {
 
     @Autowired
@@ -39,8 +47,10 @@ class UserResourcesEnvHorsProdTest {
     @MockBean
     private JwtDecoder jwtDecoder;
 
+    private static final String FAKE_STAMP_ANSWER = "{\"stamp\": \"fakeStampForDvAndQf\"}";
+
     @Test
-    void getStamp() throws Exception {
+    void getStamp_authent() throws Exception {
         String idep = "xxxxux";
         String timbre = "XX59-YYY";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
@@ -48,6 +58,14 @@ class UserResourcesEnvHorsProdTest {
         mvc.perform(get("/users/stamp").header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json("{\"stamp\":  \""+ timbre +"\"}"));
+                .andExpect(content().json(FAKE_STAMP_ANSWER));
+    }
+
+    @Test
+    void getStamp_anonymous() throws Exception {
+        mvc.perform(get("/users/stamp")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(FAKE_STAMP_ANSWER));
     }
 }

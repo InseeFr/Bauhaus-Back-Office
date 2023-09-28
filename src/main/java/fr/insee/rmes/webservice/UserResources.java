@@ -1,7 +1,6 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,29 +49,27 @@ import org.springframework.web.bind.annotation.*;
 public class UserResources  extends GenericResources {
 
 	static final Logger logger = LoggerFactory.getLogger(UserResources.class);
-	private static final String STAMP_KEY = "stamp";
+
+	private final StampsService stampsService;
+
 
 	@Autowired
-	UserRolesManagerService userRolesManagerService;
-	
-	@Autowired
-	StampsService stampsService;
-
-	@Autowired
-	StampsRestrictionsService stampsRestrictionService;
+	public UserResources(StampsService stampsService) {
+		this.stampsService = stampsService;
+	}
 
 	@GetMapping(value = "/stamp",
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getStamp", summary = "User's stamp", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
 	public ResponseEntity<Object> getStamp(@AuthenticationPrincipal Object principal) {
-			String stamp;
+			Stamp stamp;
 			try {
 				stamp = stampsService.findStampFrom(principal);
 			} catch (Exception e) {
 				logger.error("exception while retrieving stamp",e);
 				return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("exception while retrieving stamp");
 			}
-			return ResponseEntity.status(HttpStatus.SC_OK).body(toJson(STAMP_KEY,stamp));
+			return ResponseEntity.status(HttpStatus.SC_OK).body(stamp);
 	}
 
 
