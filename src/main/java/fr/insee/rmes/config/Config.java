@@ -147,7 +147,13 @@ public class Config {
 	/******************************************************/	
 	@Value("${fr.insee.rmes.bauhaus.classifications.families.graph}")	 //Getter with baseGraph
 	private String classifFamiliesGraph  ;
-	
+
+	/******************************************************/
+	/** DataSets 		***********************************/
+	/******************************************************/
+	@Value("${fr.insee.rmes.bauhaus.datasets.graph}")
+	private String datasetsGraph;
+
 	/******************************************************/
 	/** OPERATIONS		***********************************/
 	/******************************************************/
@@ -374,6 +380,10 @@ public class Config {
 
 	public String getClassifFamiliesGraph() {
 		return baseGraph + classifFamiliesGraph;
+	}
+
+	public String getDatasetsGraph() {
+		return baseGraph + datasetsGraph;
 	}
 
 	public String getOperationsGraph() {
