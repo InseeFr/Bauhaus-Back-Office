@@ -1,6 +1,5 @@
 package fr.insee.rmes.config.swagger;
 
-import fr.insee.rmes.config.Config;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -27,14 +26,11 @@ public class OpenApiConfiguration   {
 	private String projectVersion;
 	
 	@Bean
-	public OpenAPI customOpenAPI(Config config) {
+	public OpenAPI customOpenAPI(@Value("${fr.insee.rmes.bauhaus.api.ssl}") boolean swaggerUseSSL, @Value("${fr.insee.rmes.bauhaus.api.host}") String swaggerHost, @Value("${fr.insee.rmes.bauhaus.api.basepath}") String swaggerBasepath) {
 		Server server = new Server();
-		server.setUrl(config.getSwaggerUrl());
-		logger.info("______________________________________________________________________");
-		logger.info("____________________SWAGGER HOST : {}_________________________________________________", config.getSwaggerHost());
-		logger.info("____________________SWAGGER BASEPATH : {} _________________________________________________", config.getSwaggerBasepath());
-		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", config.getSwaggerUrl());
-		logger.info("______________________________________________________________________");
+		var swaggerUrl = (swaggerUseSSL ? "https" : "http")+ swaggerHost + "/" + swaggerBasepath;
+		server.setUrl(swaggerUrl);
+		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", swaggerUrl);
 		return new OpenAPI()
 				.addServersItem(server)
 				.info(new Info()

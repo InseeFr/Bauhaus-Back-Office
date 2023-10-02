@@ -27,14 +27,6 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.baseGraph}")
 	private String baseGraph;
 
-	@Value("${fr.insee.rmes.bauhaus.api.host}")	
-	private String swaggerHost;
-	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
-	private String swaggerBasepath;
-
-	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
-	private boolean requiresSsl = false;
-
 	/******************************************************/
 	/** DATABASES		***********************************/
 	/******************************************************/
@@ -402,18 +394,6 @@ public class Config {
 
 	public String getSugoiRealm() {
 		return sugoiRealm;
-	}
-
-	public String getSwaggerHost() {
-		return swaggerHost;
-	}
-
-	public String getSwaggerBasepath() {
-		return swaggerBasepath;
-	}
-
-	public String getSwaggerUrl() {
-		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
 	}
 
 }
