@@ -21,12 +21,10 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfiguration   {
 
 	private static final  Logger logger = LoggerFactory.getLogger(OpenApiConfiguration.class);
-	
-	@Value("${fr.insee.rmes.bauhaus.version}")
-	private String projectVersion;
+
 	
 	@Bean
-	public OpenAPI customOpenAPI(@Value("${fr.insee.rmes.bauhaus.api.ssl}") boolean swaggerUseSSL, @Value("${fr.insee.rmes.bauhaus.api.host}") String swaggerHost, @Value("${fr.insee.rmes.bauhaus.api.basepath}") String swaggerBasepath) {
+	public OpenAPI customOpenAPI(@Value("${fr.insee.rmes.bauhaus.api.ssl}") boolean swaggerUseSSL, @Value("${fr.insee.rmes.bauhaus.api.host}") String swaggerHost, @Value("${fr.insee.rmes.bauhaus.api.basepath}") String swaggerBasepath, @Value("${fr.insee.rmes.bauhaus.version}") String projectVersion) {
 		Server server = new Server();
 		var swaggerUrl = (swaggerUseSSL ? "https" : "http")+"://"+ swaggerHost + "/" + swaggerBasepath;
 		server.setUrl(swaggerUrl);

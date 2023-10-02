@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -30,10 +29,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -64,7 +59,6 @@ public class PublicResources extends GenericResources {
     private final UserRolesManagerService userRolesManagerService;
 
     private final StampsService stampsService;
-    private final  String documentsStorageGestion;
     private  final String env;
     private final  String lg2;
     private final  String lg1;
@@ -73,10 +67,10 @@ public class PublicResources extends GenericResources {
     private final String defaultContributor;
     private final String sugoiUi;
     private final String appHost;
+    private final List<String> activeModules;
 
     public PublicResources(@Autowired UserRolesManagerService userRolesManagerService,
                            @Autowired StampsService stampsService,
-                           @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg2,
                            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg1,
@@ -84,10 +78,10 @@ public class PublicResources extends GenericResources {
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}") String defaultMailSender,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
                            @Value("${fr.insee.rmes.bauhaus.sugoi.ui}") String sugoiUi,
-                           @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost) {
+                           @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
+                           @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules) {
         this.userRolesManagerService = userRolesManagerService;
         this.stampsService = stampsService;
-        this.documentsStorageGestion = documentsStorageGestion;
         this.env = env;
         this.lg2 = lg2;
         this.lg1 = lg1;
@@ -96,6 +90,7 @@ public class PublicResources extends GenericResources {
         this.defaultContributor = defaultContributor;
         this.sugoiUi = sugoiUi;
         this.appHost = appHost;
+        this.activeModules=activeModules;
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -111,7 +106,7 @@ public class PublicResources extends GenericResources {
             props.put("lg1", this.lg1);
             props.put("lg2", this.lg2);
             props.put("authType", AuthType.getAuthType(this.env));
-            props.put("modules", getActiveModules());
+            props.put("modules", this.activeModules);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
@@ -126,17 +121,6 @@ public class PublicResources extends GenericResources {
             return ResponseEntity.status(HttpStatus.SC_OK).body(stampsService.getStamps());
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
-    }
-
-    private List<String> getActiveModules() {
-        String dirPath = this.documentsStorageGestion + "/BauhausActiveModules.txt";
-        File file = new File(dirPath);
-        try {
-            return FileUtils.readLines(file, StandardCharsets.UTF_8);//Read lines in a list
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return new ArrayList<>();
         }
     }
 
