@@ -28,7 +28,7 @@ public class OpenApiConfiguration   {
 	@Bean
 	public OpenAPI customOpenAPI(@Value("${fr.insee.rmes.bauhaus.api.ssl}") boolean swaggerUseSSL, @Value("${fr.insee.rmes.bauhaus.api.host}") String swaggerHost, @Value("${fr.insee.rmes.bauhaus.api.basepath}") String swaggerBasepath) {
 		Server server = new Server();
-		var swaggerUrl = (swaggerUseSSL ? "https" : "http")+ swaggerHost + "/" + swaggerBasepath;
+		var swaggerUrl = (swaggerUseSSL ? "https" : "http")+"://"+ swaggerHost + "/" + swaggerBasepath;
 		server.setUrl(swaggerUrl);
 		logger.info("____________________SWAGGER CONFIG : {} _________________________________________________", swaggerUrl);
 		return new OpenAPI()
