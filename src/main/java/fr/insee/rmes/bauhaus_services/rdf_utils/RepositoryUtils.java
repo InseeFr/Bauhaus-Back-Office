@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -283,7 +284,7 @@ public class RepositoryUtils {
 		try {
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return stream.toString();
@@ -301,7 +302,7 @@ public class RepositoryUtils {
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
 			return tupleQuery.evaluate();
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return false;
@@ -321,13 +322,13 @@ public class RepositoryUtils {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return response;
 	}
 
-	private static void logAndThrowError(String query, RepositoryException e) throws RmesException {
+	private static void logAndThrowError(String query, RDF4JException e) throws RmesException {
 		logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 		logger.error(e.getMessage());
 		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + query);
@@ -347,7 +348,7 @@ public class RepositoryUtils {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeAskQuery(conn, queryWithPrefixes);
 			conn.close();
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return response;
