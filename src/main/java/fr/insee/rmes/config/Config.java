@@ -155,6 +155,12 @@ public class Config {
 	private String datasetsGraph;
 
 	/******************************************************/
+	/** Distributions 	***********************************/
+	/******************************************************/
+	@Value("${fr.insee.rmes.bauhaus.distribution.graph}")
+	private String distributionsGraph;
+
+	/******************************************************/
 	/** OPERATIONS		***********************************/
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.operations.graph}")	//Getter with baseGraph
@@ -384,6 +390,10 @@ public class Config {
 
 	public String getDatasetsGraph() {
 		return baseGraph + datasetsGraph;
+	}
+
+	public String getDistributionsGraph() {
+		return baseGraph + distributionsGraph;
 	}
 
 	public String getOperationsGraph() {
