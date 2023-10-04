@@ -53,12 +53,12 @@ public class IndicatorPublication extends RdfService {
 						|| pred.endsWith(Constants.CONTRIBUTOR)
 						|| pred.endsWith(Constants.PUBLISHER)
 						|| pred.endsWith("accrualPeriodicity")) {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 				}
 				// Literals
 				else {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							st.getObject(), st.getContext());
 				}
 				// Other URI to transform : none
@@ -72,7 +72,7 @@ public class IndicatorPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource indicatorToPublishRessource = PublicationUtils.tranformBaseURIToPublish(indicator);
+		Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
 		repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
 
 	}

@@ -18,14 +18,17 @@ public abstract class RdfService {
 	
 	@Autowired
 	protected StampsRestrictionsService stampsRestrictionsService;
+
+	@Autowired
+	protected PublicationUtils publicationUtils;
 	
 	public void transformTripleToPublish(Model model, Statement st) {
-		Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+		Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 		IRI predicateIRI = RdfUtils
-				.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+				.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 		Value object = st.getObject();
 		if (st.getObject() instanceof Resource) {
-			object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+			object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 		}
 
 		model.add(subject, predicateIRI, object, st.getContext());

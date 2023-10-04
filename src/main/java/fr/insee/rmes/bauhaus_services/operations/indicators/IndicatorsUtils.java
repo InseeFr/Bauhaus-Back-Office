@@ -9,10 +9,7 @@ import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -63,6 +60,8 @@ public class IndicatorsUtils  extends RdfService {
 
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
+	@Autowired
+	private UriUtils uriUtils;
 
 	private void validate(Indicator indicator) throws RmesException {
 		if(repoGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), config.getLg1()))){
@@ -192,7 +191,7 @@ public class IndicatorsUtils  extends RdfService {
 		if (organizations.length() != 0) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
-				orga.put("type", ObjectType.ORGANIZATION.getLabelType());
+				orga.put("type", ObjectType.ORGANIZATION.labelType());
 			}
 		}
 		object.put(predicate.getLocalName(), organizations);
@@ -335,7 +334,7 @@ public class IndicatorsUtils  extends RdfService {
 		List<OperationsLink> replaces = indicator.getReplaces();
 		if (replaces != null) {
 			for (OperationsLink replace : replaces) {
-				String replaceUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
+				String replaceUri = this.uriUtils.getCompleteUriGestion(replace.getType(), replace.getId());
 				addReplacesAndReplacedBy(model, RdfUtils.toURI(replaceUri), indicURI);
 			}
 		}		
@@ -343,7 +342,7 @@ public class IndicatorsUtils  extends RdfService {
 		List<OperationsLink> isReplacedBys = indicator.getIsReplacedBy();
 		if (isReplacedBys != null) {
 			for (OperationsLink isRepl : isReplacedBys) {
-				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+				String isReplUri = this.uriUtils.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
 				addReplacesAndReplacedBy(model, indicURI, RdfUtils.toURI(isReplUri));
 			}
 		}
@@ -374,7 +373,7 @@ public class IndicatorsUtils  extends RdfService {
 	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {
 		if (links != null) {
 			for (OperationsLink oneLink : links) {
-				String linkedObjectUri = ObjectType.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
+				String linkedObjectUri = this.uriUtils.getCompleteUriGestion(oneLink.getType(), oneLink.getId());
 				RdfUtils.addTripleUri(indicURI, linkPredicate ,linkedObjectUri, model, RdfUtils.productsGraph());
 			}
 		}

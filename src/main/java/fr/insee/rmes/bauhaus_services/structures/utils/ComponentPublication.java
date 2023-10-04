@@ -38,11 +38,11 @@ public class ComponentPublication extends RdfService {
 							|| pred.endsWith(Constants.CODELIST)
 							|| pred.endsWith(Constants.CONCEPT)
 							|| pred.endsWith("range")) {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 					}
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 								st.getPredicate(),
 								st.getObject(),
 								st.getContext());
@@ -57,7 +57,7 @@ public class ComponentPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource componentToPublishRessource = PublicationUtils.tranformBaseURIToPublish(component);
+		Resource componentToPublishRessource = publicationUtils.tranformBaseURIToPublish(component);
 		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
 		
 	}

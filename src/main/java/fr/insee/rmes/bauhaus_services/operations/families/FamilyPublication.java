@@ -46,7 +46,7 @@ public class FamilyPublication extends RdfService {
 					}
 					// Literals
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext());
@@ -61,7 +61,7 @@ public class FamilyPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
+		Resource familyToPublishRessource = publicationUtils.tranformBaseURIToPublish(family);
 		repositoryPublication.publishResource(familyToPublishRessource, model, Constants.FAMILY);
 		
 	}

@@ -53,7 +53,7 @@ public class CodeListPublication extends RdfService {
 						}
 					}
 
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 							st.getPredicate(),
 							st.getObject(),
 							st.getContext());
@@ -66,7 +66,7 @@ public class CodeListPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource codelistToPublishRessource = PublicationUtils.tranformBaseURIToPublish(codelist);
+		Resource codelistToPublishRessource = publicationUtils.tranformBaseURIToPublish(codelist);
 		repositoryPublication.publishResource(codelistToPublishRessource, model, Constants.CODELIST);
 		
 	}

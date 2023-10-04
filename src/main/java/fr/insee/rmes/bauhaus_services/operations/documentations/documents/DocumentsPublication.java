@@ -56,7 +56,7 @@ public class DocumentsPublication  extends RdfService{
 			
 			// Change url in document (getModelToPublish) and publish the RDF
 			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
-			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
+			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.labelType());
 		}
 		
 		//Get all links
@@ -64,7 +64,7 @@ public class DocumentsPublication  extends RdfService{
 		for (Object link : listLinks) {
 			String id = docUtils.getIdFromJson((JSONObject)link).toString();
 			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
-			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
+			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.labelType());
 		}
 		
 		
@@ -102,15 +102,15 @@ public class DocumentsPublication  extends RdfService{
 			while (documentStatements.hasNext()) {
 				Statement st = documentStatements.next();
 				if (RdfUtils.toString(st.getPredicate()).endsWith(Constants.URL)) {
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
-							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+							.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 					String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
 				} else {
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					renameAndAddTripleToModel(model, st, subject);
 				}
 			}
@@ -155,13 +155,13 @@ public class DocumentsPublication  extends RdfService{
 	}
 
 	private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
-		Resource newSubject = PublicationUtils.tranformBaseURIToPublish(document);
+		Resource newSubject = publicationUtils.tranformBaseURIToPublish(document);
 		Value object ;
 		
 		for (int i = 0; i < tuples.length(); i++) {				
 			JSONObject tuple = (JSONObject) tuples.get(i);
 			String predicatString = tuple.getString("predicat");
-			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
 			if (predicatString.endsWith(Constants.URL)) {
 				String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
@@ -170,7 +170,7 @@ public class DocumentsPublication  extends RdfService{
 				String objectString = tuple.getString("obj");
 				try {					
 					object = RdfUtils.toURI(objectString);
-					object = PublicationUtils.tranformBaseURIToPublish((Resource) object);
+					object = publicationUtils.tranformBaseURIToPublish((Resource) object);
 
 				}catch(IllegalArgumentException iAe) {
 					object = RdfUtils.setLiteralString(objectString);
@@ -193,7 +193,7 @@ public class DocumentsPublication  extends RdfService{
 			}
 			while (linkStatements.hasNext()) {
 				Statement st = linkStatements.next();
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					renameAndAddTripleToModel(model, st, subject);
 				
 			}
@@ -211,10 +211,10 @@ public class DocumentsPublication  extends RdfService{
 
 	public void renameAndAddTripleToModel(Model model, Statement st, Resource subject) {
 		IRI predicate = RdfUtils
-				.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+				.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 		Value object = st.getObject();
 		if (st.getObject() instanceof Resource) {
-			object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+			object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 		}
 		model.add(subject, predicate, object, st.getContext());
 	}
