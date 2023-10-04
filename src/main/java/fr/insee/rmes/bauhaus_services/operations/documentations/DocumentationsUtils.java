@@ -35,12 +35,15 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static fr.insee.rmes.config.PropertiesKeys.OPERATIONS_BASE_URI;
 
 
 @Component
@@ -66,6 +69,9 @@ public class DocumentationsUtils extends RdfService{
 	
 	@Autowired
 	ParentUtils parentUtils;
+
+	@Value("${"+OPERATIONS_BASE_URI+"}")
+	private String operationsBaseUri;
 
 	/**
 	 * GETTER
@@ -170,7 +176,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-		if (RdfUtils.toString(targetUri).contains(config.getOperationsBaseUri())) {
+		if (RdfUtils.toString(targetUri).contains(this.operationsBaseUri)) {
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {

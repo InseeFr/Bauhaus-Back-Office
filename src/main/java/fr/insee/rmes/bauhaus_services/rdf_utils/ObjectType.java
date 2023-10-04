@@ -1,267 +1,87 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.*;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
+
+import static fr.insee.rmes.config.PropertiesKeys.*;
+import static java.util.function.UnaryOperator.identity;
 
 public enum ObjectType {
-	CONCEPT{
-		@Override
-		public String getLabelType() {return Constants.CONCEPT;}
-		@Override
-		public IRI getUri() {return SKOS.CONCEPT;}
-		@Override
-		public String getBaseUri() {return config.getConceptsBaseUri();}
-	},
-	COLLECTION{
-		@Override
-		public String getLabelType() {return Constants.COLLECTION;}
-		@Override
-		public IRI getUri() {return SKOS.COLLECTION;}
-		@Override
-		public String getBaseUri() {return config.getCollectionsBaseUri();}
-	},
-	FAMILY{
-		@Override
-		public String getLabelType() {return Constants.FAMILY;}
-		@Override
-		public IRI getUri() {return INSEE.FAMILY;}
-		@Override
-		public String getBaseUri() {return config.getOpFamiliesBaseUri();}
-	},
-	SERIES{
-		@Override
-		public String getLabelType() {return "series";}
-		@Override
-		public IRI getUri() {return INSEE.SERIES;}
-		@Override
-		public String getBaseUri() {return config.getOpSeriesBaseUri();}
-	},
-	OPERATION{
-		@Override
-		public String getLabelType() {return "operation";}
-		@Override
-		public IRI getUri() {return INSEE.OPERATION;}
-		@Override
-		public String getBaseUri() {return config.getOperationsBaseUri();}
-	},
-	INDICATOR{
-		@Override
-		public String getLabelType() {return "indicator";}
-		@Override
-		public IRI getUri() {return INSEE.INDICATOR;}
-		@Override
-		public String getBaseUri() {return config.getProductsBaseUri();}
-	},
-	DOCUMENTATION{
-		@Override
-		public String getLabelType() {return "documentation";}
-		@Override
-		public IRI getUri() {return SDMX_MM.METADATA_REPORT;}
-		@Override
-		public String getBaseUri() {return config.getDocumentationsBaseUri();}
-	},
-	DOCUMENT{
-		@Override
-		public String getLabelType() {return Constants.DOCUMENT;}
-		@Override
-		public IRI getUri() {return FOAF.DOCUMENT;}
-		@Override
-		public String getBaseUri() {return config.getDocumentsBaseUri();}
-	},
-	LINK{
-		@Override
-		public String getLabelType() {return "link";}
-		@Override
-		public IRI getUri() {return FOAF.DOCUMENT;}
-		@Override
-		public String getBaseUri() {return config.getLinksBaseUri();}
-	},
-	GEO_STAT_TERRITORY{
-		@Override
-		public String getLabelType() {return "geoFeature";}
-		@Override
-		public IRI getUri() {return GEO.FEATURE;}
-		@Override
-		public String getBaseUri() {return config.getDocumentationsGeoBaseUri();}
-	},
-	ORGANIZATION{
-		@Override
-		public String getLabelType() {return "organization";}
-		@Override
-		public IRI getUri() {return ORG.ORGANIZATION;}
-		@Override
-		public String getBaseUri() {return "";}
-	},
-	STRUCTURE{
-		@Override
-		public String getLabelType() {return "structure";}
-		@Override
-		public IRI getUri() {return QB.DATA_STRUCTURE_DEFINITION;}
-		@Override
-		public String getBaseUri() {return config.getStructuresBaseUri();}
-	},
-	CODE_LIST{
-		@Override
-		public String getLabelType() {return Constants.CODELIST;}
-		@Override
-		public IRI getUri() {return QB.CODE_LIST;}
-		@Override
-		public String getBaseUri() {return config.getCodeListBaseUri();}
-	},
-	MEASURE_PROPERTY{
-		@Override
-		public String getLabelType() {return "measureProperty";}
-		@Override
-		public IRI getUri() {return QB.MEASURE_PROPERTY;}
-		@Override
-		public String getBaseUri() {return config.getStructuresComponentsBaseUri()  + "mesure";}
-	},
-	ATTRIBUTE_PROPERTY{
-		@Override
-		public String getLabelType() {return "attributeProperty";}
-		@Override
-		public IRI getUri() {return QB.ATTRIBUTE_PROPERTY;}
-		@Override
-		public String getBaseUri() {return config.getStructuresComponentsBaseUri() + "attribut";}
-	},
-	DIMENSION_PROPERTY{
-		@Override
-		public String getLabelType() {return "dimensionProperty";}
-		@Override
-		public IRI getUri() {return QB.DIMENSION_PROPERTY;}
-		@Override
-		public String getBaseUri() {return config.getStructuresComponentsBaseUri() + "dimension";}
-	},
+	CONCEPT(Constants.CONCEPT,SKOS.CONCEPT, CONCEPTS_BASE_URI, identity()),
+	COLLECTION(Constants.COLLECTION, SKOS.COLLECTION, COLLECTIONS_BASE_URI,identity()),
+	FAMILY(Constants.FAMILY, INSEE.FAMILY, OP_FAMILIES_BASE_URI, identity()),
+	SERIES("series", INSEE.SERIES, OP_SERIES_BASE_URI, identity()),
+	OPERATION("operation", INSEE.OPERATION, OPERATIONS_BASE_URI, identity()),
+	INDICATOR("indicator", INSEE.INDICATOR, PRODUCTS_BASE_URI, identity()),
+	DOCUMENTATION("documentation", SDMX_MM.METADATA_REPORT, DOCUMENTATIONS_BASE_URI, identity()),
+	DOCUMENT(Constants.DOCUMENT, FOAF.DOCUMENT, DOCUMENTS_BASE_URI, identity()),
+	LINK("link", FOAF.DOCUMENT, LINKS_BASE_URI, identity()),
+	GEO_STAT_TERRITORY("geoFeature", GEO.FEATURE, DOCUMENTATIONS_GEO_BASE_URI, identity()),
+	ORGANIZATION("organization", ORG.ORGANIZATION, null, s->""),
+	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, STRUCTURES_BASE_URI, identity()),
+	CODE_LIST(Constants.CODELIST, QB.CODE_LIST, CODE_LIST_BASE_URI, identity()),
+	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, STRUCTURES_COMPONENTS_BASE_URI, s->s+"mesure"),
+	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, STRUCTURES_COMPONENTS_BASE_URI, s->s+"attribut"),
 
+	DIMENSION_PROPERTY("dimensionProperty", QB.DIMENSION_PROPERTY, STRUCTURES_COMPONENTS_BASE_URI, s->s+"dimension"),
 
-	UNDEFINED{
-		@Override
-		public String getLabelType() {return Constants.UNDEFINED;}
-		@Override
-		public IRI getUri() {return null;}
-		@Override
-		public String getBaseUri() {return "";}
-	};
+	UNDEFINED(Constants.UNDEFINED, null, null,s->"");
 	
-	private static Config config;
-	
-	protected void setConfig(Config configParam) {
-		config = configParam;
-	}
-	
-  
-    @Component
-    public static class ConfigServiceInjector {
-        @Autowired
-        private Config config;
+	private final IRI uri;
+	@NotNull
+	private final String labelType;
+	private final String baseUriPropertyName;
+	private final UnaryOperator<String> baseUriModifier;
 
-        @PostConstruct
-        public void postConstruct() {
-        	 for (ObjectType objectType : EnumSet.allOf(ObjectType.class))
-             	objectType.setConfig(config);
-        }
-    }
-
-	
-
-
-
-	ObjectType(){
+	ObjectType(String labelType, IRI uri, String baseUriPropertyName, UnaryOperator<String> baseUriModifier){
+		this.uri=uri;
+		this.labelType=labelType;
+		this.baseUriPropertyName=baseUriPropertyName;
+		this.baseUriModifier=baseUriModifier;
 	}
 
-	public abstract IRI getUri() ;
-	public abstract String getLabelType() ;
-	public abstract String getBaseUri(); 
-	
+	public static Optional<ObjectType> getEnumByLabel(String labelType) {
+		return Arrays.stream(values()).filter(e->e.labelType.equals(labelType)).findAny();
+	}
 
-	
-	private static Map<String, ObjectType> lookupLabel = new HashMap<>();
-	private static Map<IRI, ObjectType> lookupUri = new HashMap<>();
 
-	static {
-		// Populate out lookup when enum is created
-		for (ObjectType e : ObjectType.values()) {
-			lookupLabel.put(e.getLabelType(), e);
-			lookupUri.put(e.getUri(), e);
-		}
-	}
-	
-	/**
-	 * Get Enum type by label
-	 * @param label
-	 * @return
-	 */
-	public static ObjectType getEnum(String labelType) {
-		return lookupLabel.get(labelType)!=null ? lookupLabel.get(labelType): UNDEFINED;
-	}
-	
-	/**
-	 * Get URI by label
-	 * @param label
-	 * @return
-	 */
-	public static IRI getUriByLabel(String labelType) {
-		return getEnum(labelType).getUri();
-	}
-	
-	/**
-	 * Get URI by label
-	 * @param label
-	 * @return
-	 */
-	public static String getBaseUriByLabel(String labelType) {
-		return getEnum(labelType).getBaseUri();
-	}
 
 	/**
 	 * Get Enum type by URI
-	 * @param labelType
-	 * @return
 	 */
 	public static ObjectType getEnum(IRI uri) {
-		return lookupUri.get(uri)!=null ? lookupUri.get(uri): UNDEFINED;
+		return Arrays.stream(values()).filter(e->Objects.equals(e.uri, uri))
+				.findAny()
+				.orElse(UNDEFINED);
 	}
 	
 	/**
 	 * Get label by URI
-	 * @param labelType
-	 * @return
 	 */
 	public static String getLabelType(IRI uri) {
-		return getEnum(uri).getLabelType();
-	}
-
-	
-	/**
-	 * Get label by URI
-	 * @param label
-	 * @return
-	 */
-	public static String getCompleteUriGestion(String labelType, String id) {
-		String baseUri = getBaseUriByLabel(labelType);
-		return config.getBaseUriGestion() + baseUri + "/" + id;
+		return getEnum(uri).labelType;
 	}
 
 
-
-	public String getBaseUriPublication(){
-		return config.getBaseUriPublication() + this.getBaseUri() ;
+	public String baseUriPropertyName() {
+		return this.baseUriPropertyName;
 	}
 
-	public String getBaseUriGestion() {
-		return config.getBaseUriGestion() + this.getBaseUri() ;
+	public UnaryOperator<String> baseUriModifier() {
+		return baseUriModifier;
 	}
 
+	public String labelType() {
+		return labelType;
+	}
 }
 

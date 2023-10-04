@@ -23,6 +23,8 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import static fr.insee.rmes.utils.StringUtils.urisAsString;
+
 
 @Service
 public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) implements StampsRestrictionsService {
@@ -75,17 +77,6 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
 				);
 	}
-
-	@NotNull
-	private String urisAsString(List<IRI> uris) {
-		return uris.stream().map(this::uriAsString).reduce(String::concat).orElse("");
-	}
-
-	@NotNull
-	private String uriAsString(IRI uri) {
-		return "<" + RdfUtils.toString(uri) + ">";
-	}
-
 
 
 	private boolean canModifyOrValidateIndicator(IRI iri) throws RmesException {

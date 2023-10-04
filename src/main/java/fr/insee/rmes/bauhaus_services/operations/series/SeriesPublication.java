@@ -79,7 +79,7 @@ public class SeriesPublication extends RdfService {
 					}
 					// Literals
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext()
@@ -99,7 +99,7 @@ public class SeriesPublication extends RdfService {
 			repoGestion.closeStatements(hasPartStatements);
 			con.close();
 		}
-		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
+		Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(series);
 		repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
 	}
@@ -112,9 +112,9 @@ public class SeriesPublication extends RdfService {
 	}
 
 	public void transformSubjectAndObject(Model model, Statement statement) {
-		model.add(PublicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
+		model.add(publicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
 				statement.getPredicate(), 
-				PublicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
+				publicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
 				statement.getContext());
 	}
 

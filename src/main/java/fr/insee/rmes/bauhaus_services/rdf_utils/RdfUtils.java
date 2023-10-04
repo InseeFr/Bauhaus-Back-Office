@@ -11,25 +11,23 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-@Service
 public class RdfUtils {
+
+	private RdfUtils(){}
 	
 	private static Config config;
+
+	private static UriUtils uriUtils;
 
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-
-	public static Resource blankNode(){
-		return factory.createBNode();
-	}
 	
 	public static String getBaseGraph(){
 		return config.getBaseGraph();
@@ -82,11 +80,11 @@ public class RdfUtils {
 	}
 	
 	public static IRI objectIRI(ObjectType objType, String id) {
-		return factory.createIRI(objType.getBaseUriGestion() + "/" + id);
+		return factory.createIRI(uriUtils.getBaseUriGestion(objType) + "/" + id);
 	}
 	
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
-		return factory.createIRI(objType.getBaseUriPublication() + "/" + id);
+		return factory.createIRI(uriUtils.getBaseUriPublication(objType) + "/" + id);
 	}
 
 	public static IRI structureComponentAttributeIRI(String id) {
@@ -108,7 +106,7 @@ public class RdfUtils {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
 	public static IRI conceptIRI() {
-		return factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion());
+		return factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT));
 	}
 
 	public static IRI collectionIRI(String id) {
@@ -149,7 +147,7 @@ public class RdfUtils {
 
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUriGestion() 
+				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -159,7 +157,7 @@ public class RdfUtils {
 	public static IRI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		return RdfUtils.factory.createIRI(
-				ObjectType.CONCEPT.getBaseUriGestion()
+				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
@@ -168,7 +166,7 @@ public class RdfUtils {
 	
 	public static IRI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-		return RdfUtils.factory.createIRI(ObjectType.CONCEPT.getBaseUriGestion() + "/" + conceptId + "/" + datableNote.getPath()
+		return RdfUtils.factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT) + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 	}
 	
@@ -276,6 +274,10 @@ public class RdfUtils {
 
 	public static void setConfig(Config config) {
 		RdfUtils.config = config;
+	}
+
+	public static void setUriUtils(UriUtils uriUtils){
+		RdfUtils.uriUtils=uriUtils;
 	}
 	
 

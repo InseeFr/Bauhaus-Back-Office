@@ -53,7 +53,7 @@ public class ConceptsPublication extends RdfService{
 					hasBroader = prepareOneTripleToPublicationAndCheckIfHasBroader(model, noteToClear, topConceptOfToDelete, con, st, hasBroader);
 				}
 				if (!hasBroader) {
-					model.add(PublicationUtils.tranformBaseURIToPublish(concept), SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+					model.add(publicationUtils.tranformBaseURIToPublish(concept), SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 							RdfUtils.conceptGraph());
 				}
 			} catch (RepositoryException e) {
@@ -66,7 +66,7 @@ public class ConceptsPublication extends RdfService{
 			publishMemberLinks(concept, model, con);
 			con.close();
 			
-			Resource conceptToPublish = PublicationUtils.tranformBaseURIToPublish(concept);
+			Resource conceptToPublish = publicationUtils.tranformBaseURIToPublish(concept);
 			repositoryPublication.publishConcept(conceptToPublish, model, noteToClear, topConceptOfToDelete);
 		}
 
@@ -78,38 +78,38 @@ public class ConceptsPublication extends RdfService{
 			List<Resource> topConceptOfToDelete, RepositoryConnection con, Statement st, boolean hasBroader)
 			throws RmesException {
 		
-		Resource subject =  PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+		Resource subject =  publicationUtils.tranformBaseURIToPublish(st.getSubject());
 		Resource graph = st.getContext();
 		String predicat = RdfUtils.toString(st.getPredicate());
 		
 		if (PublicationUtils.stringEndsWithItemFromList(predicat,notes)) {
-			model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
 			publishExplanatoryNotes(con, RdfUtils.toURI(st.getObject().toString()), model);
-			noteToClear.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
+			noteToClear.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()));
 		}
 		// Other URI to transform	
 		else if (PublicationUtils.stringEndsWithItemFromList(predicat,links)) {
-			model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
 		}
 		else if (predicat.endsWith("related")) {
-			model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
-			model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
+			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.RELATED, subject, graph);
 		} else if (predicat.endsWith(Constants.REPLACES)) {
-			model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
-			model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
+			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), DCTERMS.IS_REPLACED_BY, subject, graph);
 		} else if (predicat.endsWith("broader")) {
 			hasBroader = true;
-			model.add(subject, st.getPredicate(), PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 					graph);
-			model.add(PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.NARROWER, subject, graph);
+			model.add(publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), SKOS.NARROWER, subject, graph);
 		}
 		// Narrower links
 		else if (predicat.endsWith("narrower")) {
-			Resource object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+			Resource object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 			topConceptOfToDelete.add(object);
 			model.add(subject, st.getPredicate(), object, graph);
 			model.add(object, SKOS.BROADER, subject, graph);
@@ -131,8 +131,8 @@ public class ConceptsPublication extends RdfService{
 		for (int i = 0; i < conceptsToCheck.length(); i++) {
 			String id = conceptsToCheck.getJSONObject(i).getString("narrowerId");
 			if (!repoGestion.getResponseAsBoolean(ConceptsQueries.hasBroader(id))) {
-				model.add(PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
-						SKOS.TOP_CONCEPT_OF, PublicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
+				model.add(publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptIRI(id)),
+						SKOS.TOP_CONCEPT_OF, publicationUtils.tranformBaseURIToPublish(RdfUtils.conceptScheme()),
 						RdfUtils.conceptGraph());
 			}
 		}
@@ -148,7 +148,7 @@ public class ConceptsPublication extends RdfService{
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				String predicat = RdfUtils.toString(st.getPredicate());
-				subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+				subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 				graph = st.getContext();
 				if (predicat.endsWith("conceptVersion")) {
 					// nothing, wouldn't copy this attr
@@ -169,7 +169,7 @@ public class ConceptsPublication extends RdfService{
 			if (subject == null) {
 				throw new RmesException(HttpStatus.SC_NO_CONTENT, "subject can't be null", "");
 			}
-			model.add(PublicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
+			model.add(publicationUtils.tranformBaseURIToPublish(subject), XKOS.PLAIN_TEXT, plainText, graph);
 		} catch (RepositoryException e) {
 			repoGestion.closeStatements(statements);
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
@@ -189,8 +189,8 @@ public class ConceptsPublication extends RdfService{
 		try {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-				model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-						PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+				model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+						publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 			}
 		} catch (RepositoryException e) {
 			repoGestion.closeStatements(statements);
@@ -215,8 +215,8 @@ public class ConceptsPublication extends RdfService{
 						Statement st = statements.next();
 						// Other URI to transform
 						if (RdfUtils.toString(st.getPredicate()).endsWith("member")) {
-							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-									PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+							model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+									publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 						} else if (RdfUtils.toString(st.getPredicate()).endsWith("isValidated")
 								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CREATOR))
 								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CONTRIBUTOR))) {
@@ -224,7 +224,7 @@ public class ConceptsPublication extends RdfService{
 						}
 						// Literals
 						else {
-							model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
+							model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(), st.getObject(),
 									st.getContext());
 						}
 					}
@@ -235,7 +235,7 @@ public class ConceptsPublication extends RdfService{
 				repoGestion.closeStatements(statements);
 				con.close();
 			}
-			Resource collectionToPublish = PublicationUtils.tranformBaseURIToPublish(collection);
+			Resource collectionToPublish = publicationUtils.tranformBaseURIToPublish(collection);
 			repositoryPublication.publishResource(collectionToPublish, model, Constants.COLLECTION);
 		}
 	}

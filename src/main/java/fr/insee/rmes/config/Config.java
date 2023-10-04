@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
+import static fr.insee.rmes.config.PropertiesKeys.*;
+
 
 @Configuration
 public class Config {
@@ -36,8 +38,6 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.baseURI}")
-	private String baseUriPublication;
 
 	/******************************************************/
 	/** EXTERNAL SERVICES *********************************/
@@ -81,10 +81,8 @@ public class Config {
 	private String conceptsGraph;
 	@Value("${fr.insee.rmes.bauhaus.concepts.scheme}")
 	private String conceptsScheme;
-	@Value("${fr.insee.rmes.bauhaus.concepts.baseURI}")
-	private String conceptsBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.collections.baseURI}")
-	private String collectionsBaseUri;
+
+
 	
 
 	/******************************************************/
@@ -98,14 +96,8 @@ public class Config {
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.operations.graph}")	//Getter with baseGraph
 	private String operationsGraph;
-	@Value("${fr.insee.rmes.bauhaus.operations.baseURI}")	
-	private String operationsBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.operations.series.baseURI}")	
-	private String opSeriesBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.operations.families.baseURI}")	
-	private String opFamiliesBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.documentations.baseURI}")	
-	private String documentationsBaseUri;
+
+
 	@Value("${fr.insee.rmes.bauhaus.documentations.graph}")	//Getter with baseGraph
 	private String documentationsGraph;
 	@Value("${fr.insee.rmes.bauhaus.documentations.msd.graph}")	//Getter with baseGraph
@@ -114,16 +106,14 @@ public class Config {
 	private String msdConceptsGraph;
 	@Value("${fr.insee.rmes.bauhaus.documentation.geographie.graph}")	//Getter with baseGraph
 	private String documentationsGeoGraph;
-	@Value("${fr.insee.rmes.bauhaus.documentation.geographie.baseURI}")	
-	private String documentationsGeoBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.documentation.titlePrefixLg1}")	
 	private String documentationsTitlePrefixLg1;
 	@Value("${fr.insee.rmes.bauhaus.documentation.titlePrefixLg2}")	
 	private String documentationsTitlePrefixLg2;
-	@Value("${fr.insee.rmes.bauhaus.links.baseURI}")	
+	@Value("${"+LINKS_BASE_URI+"}")
 	private String linksBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.documents.baseURI}")	
-	private String documentsBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.documents.graph}")	//Getter with baseGraph
 	private String documentsGraph;
 	@Value("${fr.insee.rmes.bauhaus.storage.document.gestion}")	
@@ -145,20 +135,15 @@ public class Config {
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.structures.graph}")	//Getter with baseGraph
 	private String structuresGraph;
-	@Value("${fr.insee.rmes.bauhaus.structures.baseURI}")	
-	private String structuresBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.structures.components.graph}")	//Getter with baseGraph
 	private String structuresComponentsGraph;
-	@Value("${fr.insee.rmes.bauhaus.structures.components.baseURI}")	
-	private String structuresComponentsBaseUri;
 
 	/******************************************************/
 	/** CODE LISTS		***********************************/
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.codelists.graph}")	//Getter with baseGraph
 	private String codeListsGraph;
-	@Value("${fr.insee.rmes.bauhaus.codeList.baseURI}")	
-	private String codeListsBaseUri;
 	
 	/******************************************************/
 	/** ORGANIZATIONS	***********************************/
@@ -175,7 +160,12 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.geographie.graph}")	 //Getter with baseGraph
 	private String geographyGraph;
 
-	
+	@Value("${"+CODE_LIST_BASE_URI+"}")
+	private String codeListBaseUri;
+	@Value("${"+DOCUMENTS_BASE_URI+"}")
+	private String documentsBaseUri;
+
+
 	/******************************************************/
 	/** INIT STATIC		***********************************/
 	/******************************************************/
@@ -184,7 +174,6 @@ public class Config {
 		GenericQueries.setConfig(this);
 		RdfUtils.setConfig(this);
 		Sugoi.setConfig(this);
-		PublicationUtils.setConfig(this);
 	}
 
 	/******************************************************/
@@ -215,10 +204,6 @@ public class Config {
 		return baseUriGestion;
 	}
 
-	public String getBaseUriPublication() {
-		return baseUriPublication;
-	}
-
 
 	public String getConceptsGraph() {
 		return baseGraph + conceptsGraph;
@@ -226,14 +211,6 @@ public class Config {
 
 	public String getConceptsScheme() {
 		return conceptsScheme;
-	}
-
-	public String getConceptsBaseUri() {
-		return conceptsBaseUri;
-	}
-
-	public String getCollectionsBaseUri() {
-		return collectionsBaseUri;
 	}
 
 	public String getClassifFamiliesGraph() {
@@ -244,28 +221,8 @@ public class Config {
 		return baseGraph + operationsGraph;
 	}
 
-	public String getOperationsBaseUri() {
-		return operationsBaseUri;
-	}
-
-	public String getOpSeriesBaseUri() {
-		return opSeriesBaseUri;
-	}
-
-	public String getOpFamiliesBaseUri() {
-		return opFamiliesBaseUri;
-	}
-
-	public String getDocumentationsBaseUri() {
-		return documentationsBaseUri;
-	}
-
 	public String getDocumentationsGraph() {
 		return baseGraph + documentationsGraph;
-	}
-
-	public String getDocumentsBaseUri() {
-		return documentsBaseUri;
 	}
 
 	public String getMsdGraph() {
@@ -280,20 +237,12 @@ public class Config {
 		return baseGraph + documentationsGeoGraph;
 	}
 
-	public String getDocumentationsGeoBaseUri() {
-		return documentationsGeoBaseUri;
-	}
-
 	public String getDocumentationsTitlePrefixLg1() {
 		return documentationsTitlePrefixLg1;
 	}
 
 	public String getDocumentationsTitlePrefixLg2() {
 		return documentationsTitlePrefixLg2;
-	}
-
-	public String getLinksBaseUri() {
-		return linksBaseUri;
 	}
 
 	public String getDocumentsGraph() {
@@ -328,24 +277,12 @@ public class Config {
 		return baseGraph + structuresGraph;
 	}
 
-	public String getStructuresBaseUri() {
-		return structuresBaseUri;
-	}
-
 	public String getStructuresComponentsGraph() {
 		return baseGraph + structuresComponentsGraph;
 	}
 
-	public String getStructuresComponentsBaseUri() {
-		return structuresComponentsBaseUri;
-	}
-
 	public String getCodeListGraph() {
 		return baseGraph + codeListsGraph;
-	}
-
-	public String getCodeListBaseUri() {
-		return codeListsBaseUri;
 	}
 
 	public String getOrganizationsGraph() {
@@ -396,4 +333,15 @@ public class Config {
 		return sugoiRealm;
 	}
 
+	public String getCodeListBaseUri() {
+		return this.codeListBaseUri;
+	}
+
+	public String getLinksBaseUri() {
+		return this.linksBaseUri;
+	}
+
+	public String getDocumentsBaseUri() {
+		return this.documentsBaseUri;
+	}
 }

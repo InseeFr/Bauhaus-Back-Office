@@ -16,6 +16,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 import java.util.Optional;
 
+import static fr.insee.rmes.config.PropertiesKeys.CORS_ALLOWED_ORIGIN;
+
 @Configuration
 public class CommonSecurityConfiguration {
 
@@ -24,7 +26,7 @@ public class CommonSecurityConfiguration {
     public static final String DEFAULT_ROLE_PREFIX = null ;
     private final Optional<String> allowedOrigin ;
 
-    public CommonSecurityConfiguration(@Value("${fr.insee.rmes.bauhaus.cors.allowedOrigin}") Optional<String> allowedOrigin){
+    public CommonSecurityConfiguration(@Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin){
         this.allowedOrigin=allowedOrigin;
     }
 
