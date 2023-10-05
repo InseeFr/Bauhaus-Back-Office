@@ -154,6 +154,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.datasets.graph}")
 	private String datasetsGraph;
 
+	@Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
+	private String datasetsBaseUri;
+
+
 	/******************************************************/
 	/** Distributions 	***********************************/
 	/******************************************************/
@@ -391,6 +395,11 @@ public class Config {
 	public String getDatasetsGraph() {
 		return baseGraph + datasetsGraph;
 	}
+
+	public String getDatasetsBaseUri() {
+		return datasetsBaseUri;
+	}
+
 
 	public String getDistributionsGraph() {
 		return baseGraph + distributionsGraph;

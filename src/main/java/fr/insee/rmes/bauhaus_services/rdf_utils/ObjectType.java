@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,14 @@ public enum ObjectType {
 		public IRI getUri() {return ORG.ORGANIZATION;}
 		@Override
 		public String getBaseUri() {return "";}
+	},
+	DATASET{
+		@Override
+		public String getLabelType() {return "dataset";}
+		@Override
+		public IRI getUri() {return DCAT.DATASET;}
+		@Override
+		public String getBaseUri() {return config.getDatasetsBaseUri();}
 	},
 	STRUCTURE{
 		@Override

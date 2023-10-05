@@ -7,4 +7,8 @@ public interface DatasetService {
     String getDatasets() throws RmesException;
 
     String getDatasetByID(String id) throws RmesException ;
+
+    String update(String datasetId, String body) throws RmesException;
+
+    String create(String body) throws RmesException;
 }

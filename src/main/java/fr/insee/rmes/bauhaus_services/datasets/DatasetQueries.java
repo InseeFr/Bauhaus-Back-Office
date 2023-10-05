@@ -25,4 +25,11 @@ public class DatasetQueries extends GenericQueries {
         params.put("ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDataset.ftlh", params);
     }
+
+    public static String lastDatasetId() throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DATASET_GRAPH", config.getDatasetsGraph());
+
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
+    }
 }
