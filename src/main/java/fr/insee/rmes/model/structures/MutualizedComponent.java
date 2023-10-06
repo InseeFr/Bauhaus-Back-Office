@@ -9,6 +9,8 @@ public class MutualizedComponent {
     private String labelLg1;
     private String labelLg2;
 
+    private String altLabelLg1;
+    private String altLabelLg2;
 
     private String descriptionLg1;
     private String descriptionLg2;
@@ -59,6 +61,22 @@ public class MutualizedComponent {
 
     public void setLabelLg2(String labelLg2) {
         this.labelLg2 = labelLg2;
+    }
+
+    public String getAltLabelLg1() {
+        return altLabelLg1;
+    }
+
+    public void setAltLabelLg1(String altLabelLg1) {
+        this.altLabelLg1 = altLabelLg1;
+    }
+
+    public String getAltLabelLg2() {
+        return altLabelLg2;
+    }
+
+    public void setAltLabelLg2(String altLabelLg2) {
+        this.altLabelLg2 = altLabelLg2;
     }
 
     public String getType() {
