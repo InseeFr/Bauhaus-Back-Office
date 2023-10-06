@@ -19,6 +19,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+/**
+ *  Créer un endpoint pour récupérer les disributions d'un dataset
+ *  Ne pas ecraser les distributions lors qu'on update un dataset
+ *  Ajouter des tests
+ */
+
 @RestController
 @RequestMapping("/datasets")
 //@SecurityRequirement(name = "bearerAuth")
