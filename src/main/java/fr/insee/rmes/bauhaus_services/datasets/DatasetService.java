@@ -11,4 +11,8 @@ public interface DatasetService {
     String update(String datasetId, String body) throws RmesException;
 
     String create(String body) throws RmesException;
+
+    String addDistributions(String id, String body) throws RmesException;
+
+    String getDistributions(String id) throws RmesException;
 }

@@ -1,11 +1,8 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.persistance.ontologies.*;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
@@ -13,13 +10,10 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.persistance.ontologies.GEO;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.ORG;
-import fr.insee.rmes.persistance.ontologies.QB;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import javax.annotation.PostConstruct;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public enum ObjectType {
 	CONCEPT{
@@ -117,6 +111,14 @@ public enum ObjectType {
 		public IRI getUri() {return DCAT.DATASET;}
 		@Override
 		public String getBaseUri() {return config.getDatasetsBaseUri();}
+	},
+	DISTRIBUTION{
+		@Override
+		public String getLabelType() {return "distribution";}
+		@Override
+		public IRI getUri() {return DCAT.DISTRIBUTION;}
+		@Override
+		public String getBaseUri() {return config.getDistributionsBaseUri();}
 	},
 	STRUCTURE{
 		@Override

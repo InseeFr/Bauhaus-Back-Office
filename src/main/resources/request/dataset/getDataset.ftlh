@@ -1,7 +1,7 @@
 SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?creator ?contributor ?disseminationStatus ?idSerie ?theme ?validationState ?created ?updated
 FROM <${DATASET_GRAPH}>
 WHERE {
-    ?uri rdf:type <http://www.w3.org/ns/dcat#Dataset> .
+    ?uri rdf:type <http://www.w3.org/dcat#Dataset> .
     ?uri dcterms:identifier '${ID}' .
     ?uri dcterms:title ?labelLg1
     FILTER (lang(?labelLg1) = '${LG1}') .

@@ -70,6 +70,10 @@ public class SeriesUtils extends RdfService {
 
 	/*READ*/
 
+	public Boolean isSeriesExist(String iri) throws RmesException {
+		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesExists(iri));
+	}
+
 	public IdLabelTwoLangs getSeriesLabelById(String id) throws RmesException {
 		return famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(getSeriesJsonById(id, EncodingType.MARKDOWN));	
 	}
