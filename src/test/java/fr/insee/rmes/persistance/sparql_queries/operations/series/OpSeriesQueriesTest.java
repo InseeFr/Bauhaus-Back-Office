@@ -44,7 +44,7 @@ class OpSeriesQueriesTest {
                 	}""";
         assertThatCode(()->actualRequest=OpSeriesQueries.getCreatorsBySeriesUri(urisAsString(uris)))
                 .doesNotThrowAnyException();
-        assertThat(actualRequest).isEqualTo(expectedGeneratedQuery);
+        assertThat(actualRequest).isEqualToIgnoringNewLines(expectedGeneratedQuery);
     }
 
     private void prepareGenericQueries() {
