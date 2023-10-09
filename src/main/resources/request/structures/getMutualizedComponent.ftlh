@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState
 ?created ?modified ?creator ?contributor ?disseminationStatus ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern ?fullCodeListValue
-?attributeIRI ?valueIri
+?attributeIRI ?valueIri ?altLabelLg1 ?altLabelLg2
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
@@ -59,6 +59,16 @@ WHERE {
     FILTER (lang(?descriptionLg1) = '${LG1}') } .
     OPTIONAL {?component rdfs:comment ?descriptionLg2 .
     FILTER (lang(?descriptionLg2) = '${LG2}') } .
+
+    OPTIONAL {
+        ?component skos:altLabel ?altLabelLg1 .
+        FILTER (lang(?altLabelLg1) = '${LG1}')
+        }
+
+    OPTIONAL {
+        ?component skos:altLabel ?altLabelLg2 .
+        FILTER (lang(?altLabelLg2) = '${LG2}')
+        }
 
     OPTIONAL {
         ?component xsd:minLength ?minLength .
