@@ -471,30 +471,4 @@ public class RepositoryGestion  {
 		return repositoryUtils.getCompleteGraph(con,graphIri);
 	}
 
-	/**
-	 * Method to clear an entire graph.
-	 */
-	public void clearGraph() throws IOException {
-
-		String server = config.getRdfServerGestion();
-		String repository = config.getRepositoryIdGestion();
-
-		String serverProd = config.getRdfServerGestionProd();
-		String repositoryProd = config.getRepositoryIdGestionProd();
-
-		RepositoryConnection connection =
-				repositoryUtils.initRepository(server, repository).getConnection();
-
-		RepositoryConnection connectionProd =
-				repositoryUtils.initRepository(serverProd, repositoryProd).getConnection();
-
-		File file = new File("export.trig");
-		FileOutputStream outputStream = new FileOutputStream(file);
-		RDFWriter writer = Rio.createWriter(RDFFormat.TRIG, outputStream);
-
-		connectionProd.exportStatements(null, null, null, false, writer);
-		connection.clear();
-		IOUtils.close(outputStream);
-		connection.add(file, RDFFormat.TRIG);
-	}
 }

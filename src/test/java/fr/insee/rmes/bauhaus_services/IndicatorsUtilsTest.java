@@ -1,8 +1,10 @@
 package fr.insee.rmes.bauhaus_services;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.model.operations.Indicator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -12,11 +14,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
-import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.links.OperationsLink;
-import fr.insee.rmes.model.operations.Indicator;
+import java.util.ArrayList;
+import java.util.List;
 
 class IndicatorsUtilsTest {
 

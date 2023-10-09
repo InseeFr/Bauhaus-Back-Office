@@ -15,10 +15,9 @@ import fr.insee.rmes.utils.JSONComparator;
 import fr.insee.rmes.utils.RestTemplateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-
-import org.slf4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

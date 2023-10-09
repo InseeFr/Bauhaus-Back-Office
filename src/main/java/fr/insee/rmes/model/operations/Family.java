@@ -1,9 +1,9 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.List;
-
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
 
 public class Family {
 

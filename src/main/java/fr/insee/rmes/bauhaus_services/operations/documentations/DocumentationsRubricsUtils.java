@@ -21,7 +21,6 @@ import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -30,6 +29,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -264,7 +264,6 @@ DocumentationsRubricsUtils extends RdfService {
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg1())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), model, graph);
-				RdfUtils.addTripleStringMdToXhtml2(textUriLg1, RDF.VALUE, rubric.getLabelLg1(), config.getLg1(), "value", model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg1(), textUriLg1);
 		}
@@ -276,7 +275,6 @@ DocumentationsRubricsUtils extends RdfService {
 
 			if (StringUtils.isNotEmpty(rubric.getLabelLg2())) {
 				RdfUtils.addTripleStringMdToXhtml(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), model, graph);
-				RdfUtils.addTripleStringMdToXhtml2(textUriLg2, RDF.VALUE, rubric.getLabelLg2(), config.getLg2(), "value", model, graph);
 			}
 			docUtils.addDocumentsAndLinksToRubric(model, graph, rubric.getDocumentsLg2(), textUriLg2);
 		}

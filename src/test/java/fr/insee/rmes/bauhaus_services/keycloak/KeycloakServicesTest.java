@@ -5,20 +5,24 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.stubs.KeycloakServicesStub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Date;
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -27,7 +31,7 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(properties = {
         "fr.insee.rmes.bauhaus.keycloak.client.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.id = XXX",
-        "fr.insee.rmes.bauhaus.auth-server-url= keycloak.interne",
+        "fr.insee.rmes.bauhaus.auth-server-url = keycloak.interne",
         "fr.insee.rmes.bauhaus.keycloak.client.dmz.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.dmz.id = XXX",
         "fr.insee.rmes.bauhaus.dmz.auth-server-url = keycloak.dmz",
@@ -42,7 +46,6 @@ class KeycloakServicesTest {
 
     @Autowired
     private KeycloakServicesStub keycloakServices;
-    private Token token;
 
     @Test
     void nowPlus1Second() {
