@@ -1,6 +1,5 @@
 package fr.insee.rmes.stubs;
 
-import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;

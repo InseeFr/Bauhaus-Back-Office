@@ -1,12 +1,11 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProvider;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.external_services.authentication.stamps.RmesStampsImpl;
-import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -37,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
-        UserProvider.class,
+        UserProviderFromSecurityContext.class,
         RmesStampsImpl.class})
 class UserResourcesEnvHorsProdTest {
 

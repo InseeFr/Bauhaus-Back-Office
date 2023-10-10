@@ -2,7 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProvider;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.webservice.GeographyResources;
@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
-        UserProvider.class})
+        UserProviderFromSecurityContext.class})
 class TestGeographyResourcesAuthorizationsEnvHorsProd {
 
     @Autowired

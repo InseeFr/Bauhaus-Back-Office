@@ -2,7 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProvider;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
-        UserProvider.class})
+        UserProviderFromSecurityContext.class})
 class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Autowired

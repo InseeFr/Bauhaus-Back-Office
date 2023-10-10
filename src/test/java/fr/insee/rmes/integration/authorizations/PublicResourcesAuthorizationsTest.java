@@ -1,7 +1,7 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProvider;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
@@ -13,7 +13,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -23,7 +22,6 @@ import java.util.stream.Stream;
 
 import static fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext.PUBLIC_RESOURCES_ANT_PATTERNS;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
-        UserProvider.class})
+        UserProviderFromSecurityContext.class})
 class PublicResourcesAuthorizationsTest {
 
     @Autowired
