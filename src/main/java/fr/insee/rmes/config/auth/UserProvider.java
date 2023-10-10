@@ -1,27 +1,22 @@
 package fr.insee.rmes.config.auth;
 
-import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 import static java.util.Optional.empty;
 
-@Component
-public record UserProvider(UserDecoder userDecoder) {
 
-    static final Logger logger = LoggerFactory.getLogger(UserProvider.class);
+public interface UserProvider {
 
-    public Optional<User> findUser() throws RmesException {
-        return this.userDecoder.fromPrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-    }
+    Logger logger = LoggerFactory.getLogger(UserProvider.class);
 
-    public User findUserDefaultToEmpty() {
+    Optional<User> findUser() throws RmesException;
+
+    default User findUserDefaultToEmpty() {
         Optional<User> currentUser;
         try {
             currentUser = findUser();
