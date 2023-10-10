@@ -49,7 +49,7 @@ class KeycloakServicesTest {
         var keycloakServerZoneConfiguration =  new KeycloakServerZoneConfiguration();
         keycloakServerZoneConfiguration.setZoneByServers(Map.of());
         var keycloakServices = new KeycloakServices("s", "i", "s",
-        "d", "di", "dk",keycloakServerZoneConfiguration);
+                "d", "di", "dk",keycloakServerZoneConfiguration);
         var start= new Date();
         var actual=keycloakServices.nowPlus1Second();
         var nowPlus1= Date.from(start.toInstant().plusSeconds(1));
