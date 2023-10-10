@@ -13,6 +13,8 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -27,6 +29,8 @@ import static fr.insee.rmes.utils.StringUtils.urisAsString;
 
 @Service
 public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) implements StampsRestrictionsService {
+
+	private static final Logger logger = LoggerFactory.getLogger(StampsRestrictionServiceImpl.class);
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -50,7 +54,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	}
 
 
-	private boolean isSeriesManager(IRI uri) throws RmesException {
+	protected boolean isSeriesManager(IRI uri) throws RmesException {
 		return isOwnerForModule(List.of(uri), OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATOR);
 	}
 
@@ -59,10 +63,12 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	}
 
 	private boolean isManagerForModule(IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+		logger.trace("Check management access for {} with stamp {}",uri, stampKey);
 		return checkResponsabilityForModule(List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 
 	private boolean isOwnerForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
 		return checkResponsabilityForModule(uris, queryGenerator, stampKey, Stream::allMatch);
 	}
 

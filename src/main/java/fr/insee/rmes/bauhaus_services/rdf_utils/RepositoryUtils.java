@@ -16,6 +16,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.repository.http.HTTPRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -94,6 +95,7 @@ public class RepositoryUtils {
 			update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
 			update.execute();
 			conn.close();
+			logTrace("Repo {} --- Executed update --- \n{}", repository, queryWithPrefixes);
 		} catch (RepositoryException e) {
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
@@ -101,7 +103,14 @@ public class RepositoryUtils {
 		}
 		return(HttpStatus.OK);
 	}
-	
+
+	private static void logTrace(String message, Repository repository, String queryWithPrefixes) {
+		if (logger.isTraceEnabled()){
+			var repoUrl=repository instanceof HTTPRepository httpRepository ? httpRepository.getRepositoryURL():"unknown ("+repository.getClass()+")";
+			logger.trace(message, repoUrl, queryWithPrefixes);
+		}
+	}
+
 	/**
 	 * Method which aims to load a file in database
 	 * @param graph 
@@ -280,16 +289,25 @@ public class RepositoryUtils {
 	 */
 	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
 		TupleQuery tupleQuery = null;
-		OutputStream stream = new ByteArrayOutputStream();
+		String result;
 		try {
+			var stream = new ByteArrayOutputStream();
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
+			result= stream.toString();
+			traceLogResult(conn, query, result);
 		} catch (RDF4JException e) {
-			logAndThrowError(query, e);		
+			logAndThrowError(query, e);
+			result="";
 		}
-		return stream.toString();
+		return result;
 	}
-	
+
+	private static void traceLogResult(RepositoryConnection conn, String query, String result) {
+		logTrace("Repo {} --- Executed query --- \n{}", conn.getRepository(), query);
+		logger.trace("--- Results ---\n{}", result);
+	}
+
 	/**
 	 * Method which aims to execute a sparql ASK query
 	 * 
@@ -301,7 +319,9 @@ public class RepositoryUtils {
 		BooleanQuery tupleQuery = null;
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
-			return tupleQuery.evaluate();
+			var result =  tupleQuery.evaluate();
+			traceLogResult(conn, query, Boolean.toString(result));
+			return result;
 		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
