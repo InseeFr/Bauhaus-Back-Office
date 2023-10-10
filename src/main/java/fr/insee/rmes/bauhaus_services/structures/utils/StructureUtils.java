@@ -50,6 +50,9 @@ public class StructureUtils extends RdfService {
     public static final String ATTACHMENT = "attachment";
     public static final String REQUIRED = "required";
     public static final String ORDER = "order";
+    public static final String NOTATION = "notation";
+    public static final String LABEL_LG1 = "csLabelLg1";
+    public static final String LABEL_LG2 = "csLabelLg2";
     public static final String COMPONENT_DEFINITION_CREATED = "componentDefinitionCreated";
     public static final String COMPONENT_DEFINITION_MODIFIED = "componentDefinitionModified";
     public static final String COMPONENT_DEFINITION_ID = "componentDefinitionId";
@@ -99,7 +102,6 @@ public class StructureUtils extends RdfService {
                 componentDefinition.put(REQUIRED, Boolean.parseBoolean(componentDefinitionFlat.getString(REQUIRED)));
             }
 
-
             if(componentDefinitionFlat.has(ORDER)){
                 componentDefinition.put(ORDER, componentDefinitionFlat.getString(ORDER));
             }
@@ -113,9 +115,21 @@ public class StructureUtils extends RdfService {
             }
             if(componentDefinitionFlat.has(COMPONENT_DEFINITION_ID)){
                 componentDefinition.put(Constants.ID, componentDefinitionFlat.getString(COMPONENT_DEFINITION_ID));
-
             }
+            if(componentDefinitionFlat.has(NOTATION)){
+                componentDefinition.put(NOTATION, componentDefinitionFlat.getString(NOTATION));
+            }
+            if(componentDefinitionFlat.has(LABEL_LG1)){
+                componentDefinition.put("labelLg1", componentDefinitionFlat.getString(LABEL_LG1));
+            }
+            if(componentDefinitionFlat.has(LABEL_LG2)){
+                componentDefinition.put("labelLg2", componentDefinitionFlat.getString(LABEL_LG2));
+            }
+
             componentDefinitionFlat.remove(REQUIRED);
+            componentDefinitionFlat.remove(NOTATION);
+            componentDefinitionFlat.remove(LABEL_LG1);
+            componentDefinitionFlat.remove(LABEL_LG2);
             componentDefinitionFlat.remove(ORDER);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_CREATED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
@@ -305,7 +319,15 @@ public class StructureUtils extends RdfService {
         if (componentDefinition.getOrder() != null) {
             model.add(componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
         }
-
+        if(componentDefinition.getNotation() != null){
+            model.add(componentSpecificationIRI, SKOS.NOTATION, RdfUtils.setLiteralString(componentDefinition.getNotation()), graph);
+        }
+        if(componentDefinition.getLabelLg1() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), config.getLg1()), graph);
+        }
+        if(componentDefinition.getLabelLg2() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), config.getLg2()), graph);
+        }
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
 

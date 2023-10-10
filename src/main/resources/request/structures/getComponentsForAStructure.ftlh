@@ -1,4 +1,8 @@
-SELECT DISTINCT ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState ?order ?created ?modified ?required ?creator ?contributor ?disseminationStatus
+SELECT DISTINCT ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified 
+?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 
+?descriptionLg2 ?validationState ?order ?created ?modified ?required ?creator 
+?contributor ?disseminationStatus ?notation ?csLabelLg1 ?csLabelLg2
+
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
@@ -17,6 +21,17 @@ WHERE {
         ?componentSpecification qb:order ?order .
     } .
 
+    OPTIONAL {
+        ?componentSpecification skos:notation ?notation .
+    } .
+    OPTIONAL {
+        ?componentSpecification rdfs:label ?csLabelLg1 .
+        FILTER (lang(?csLabelLg1) = '${LG1}')
+    } .
+    OPTIONAL {
+        ?componentSpecification rdfs:label ?csLabelLg2 .
+        FILTER (lang(?csLabelLg2) = '${LG2}')
+    } .
     ?component dcterms:identifier ?id ;
                rdf:type ?type ;
                rdfs:label ?labelLg1 .
