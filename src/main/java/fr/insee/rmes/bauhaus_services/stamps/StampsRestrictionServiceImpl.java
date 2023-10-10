@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -12,13 +11,13 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -67,15 +66,24 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 		return checkResponsabilityForModule(uris, queryGenerator, stampKey, Stream::allMatch);
 	}
 
-	private boolean checkResponsabilityForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<String>, Predicate<String>> predicateMatcher) throws RmesException {
+	private boolean checkResponsabilityForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
 		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
 		var stamp=getUser().getStamp();
 		return StringUtils.hasLength(stamp) &&
 				predicateMatcher.test(owners.toList().stream()
-								.map(JSONObject.class::cast)
-								.map(o->o.getString(stampKey)),
+								.map(o-> findStamp(o, stampKey)),
 						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
 				);
+	}
+
+	private Object findStamp(Object o, String stampKey) {
+		if (o instanceof JSONObject jsonObject) {
+			return jsonObject.get(stampKey);
+		}
+		if (o instanceof Map<?, ?> map) {
+			return map.get(stampKey);
+		}
+		return null;
 	}
 
 
