@@ -55,11 +55,11 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 
 	protected boolean isSeriesManager(IRI uri) throws RmesException {
-		return isOwnerForModule(List.of(uri), OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATOR);
+		return isOwnerForModule(List.of(uri), OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
 
 	private boolean isIndicatorCreator(IRI iri) throws RmesException {
-		return isOwnerForModule(List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATOR);
+		return isOwnerForModule(List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
 
 	private boolean isManagerForModule(IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
