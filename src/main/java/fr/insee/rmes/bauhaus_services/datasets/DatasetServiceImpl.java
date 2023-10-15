@@ -19,8 +19,8 @@ import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.base.AbstractIRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.PROV;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -99,10 +99,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             Model model = new LinkedHashModel();
 
             distributions.forEach(distribution -> {
-                model.add(datasetIri, createIRI("http://www.w3.org/dcat#", "Dataset"), RdfUtils.distributionIRI(distribution.getId()), graph);
+                model.add(datasetIri, DCAT.DATASET, RdfUtils.distributionIRI(distribution.getId()), graph);
             });
 
-            if(model.size() > 0){
+            if(!model.isEmpty()){
                 repoGestion.loadSimpleObjectWithoutDeletion(datasetIri, model, null);
             }
 
@@ -122,7 +122,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Dataset dataset = null;
+        Dataset dataset;
         try {
             dataset = mapper.readValue(body, Dataset.class);
         } catch (IOException e) {
@@ -134,7 +134,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private String generateNextId() throws RmesException {
         String prefix = "jd";
         JSONObject json = repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId());
-        if (json.length() == 0) {
+        if (json.isEmpty()) {
             return prefix + "1000";
         }
         String id = json.getString(Constants.ID);
@@ -142,25 +142,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             return prefix + "1000";
         }
         return prefix + (Integer.parseInt(id) + 1);
-    }
-
-    static IRI createIRI(final String namespace, final String localName) {
-        return new AbstractIRI() {
-            private static final long serialVersionUID = 1692436252019169159L;
-            private final String stringValue = (namespace + localName).toString();
-
-            public String stringValue() {
-                return this.stringValue;
-            }
-
-            public String getNamespace() {
-                return namespace;
-            }
-
-            public String getLocalName() {
-                return localName;
-            }
-        };
     }
 
     private String persist(Dataset dataset) throws RmesException {
@@ -171,7 +152,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         Model model = new LinkedHashModel();
 
         model.add(datasetIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(dataset.getId()), graph);
-        model.add(datasetIri, RDF.TYPE, createIRI("http://www.w3.org/dcat#", "Dataset"), graph);
+        model.add(datasetIri, RDF.TYPE, DCAT.DATASET, graph);
         model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), config.getLg1()), graph);
         model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), config.getLg2()), graph);
         model.add(datasetIri, DCTERMS.CREATOR, RdfUtils.setLiteralString(dataset.getCreator()), graph);
@@ -185,7 +166,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
         RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
-        RdfUtils.addTripleString(datasetIri, createIRI("http://www.w3.org/dcat#", "theme"), dataset.getTheme(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCAT.THEME, dataset.getTheme(), model, graph);
 
         repoGestion.loadSimpleObject(datasetIri, model, null);
 
@@ -214,6 +195,5 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");
         }
-
     }
 }

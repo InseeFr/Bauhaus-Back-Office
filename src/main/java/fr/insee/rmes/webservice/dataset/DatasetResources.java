@@ -17,17 +17,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-/**
- *  Créer un endpoint pour récupérer les disributions d'un dataset
- *  Ne pas ecraser les distributions lors qu'on update un dataset
- *  Ajouter des tests
- */
-
 @RestController
 @RequestMapping("/datasets")
 //@SecurityRequirement(name = "bearerAuth")
-@Tag(name= Constants.DOCUMENT, description="DataSet API")
+@Tag(name = Constants.DOCUMENT, description = "DataSet API")
 public class DatasetResources {
 
     @Autowired
@@ -35,11 +28,11 @@ public class DatasetResources {
 
     @GetMapping
     @Operation(operationId = "getDatasets", summary = "List of datasets",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Dataset.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public ResponseEntity<Object> getDatasets() {
         try {
-            String jsonResultat = this.datasetService.getDatasets();
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+            String datasets = this.datasetService.getDatasets();
+            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(datasets);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
@@ -48,11 +41,11 @@ public class DatasetResources {
 
     @GetMapping("/{id}")
     @Operation(operationId = "getDataset", summary = "List of datasets",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Dataset.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public ResponseEntity<Object> getDataset(@PathVariable(Constants.ID) String id) {
         try {
-            String jsonResultat = this.datasetService.getDatasetByID(id);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+            String dataset = this.datasetService.getDatasetByID(id);
+            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(dataset);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
@@ -60,11 +53,11 @@ public class DatasetResources {
 
     @GetMapping("/{id}/distributions")
     @Operation(operationId = "getDistributionsByDataset", summary = "List of distributions for a dataset",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Dataset.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public ResponseEntity<Object> getDistributionsByDataset(@PathVariable(Constants.ID) String id) {
         try {
-            String jsonResultat = this.datasetService.getDistributions(id);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+            String distributions = this.datasetService.getDistributions(id);
+            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(distributions);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

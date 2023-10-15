@@ -1,12 +1,12 @@
 SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?dateCreation ?dateModification ?format ?taille ?url
 FROM <${DATASET_GRAPH}>
 WHERE {
-	?uri rdf:type <http://www.w3.org/dcat#Distribution> .
+	?uri rdf:type dcat:Distribution .
     
     ?uri dcterms:identifier ?id .
     
-    ?uriDataset rdf:type <http://www.w3.org/dcat#Dataset> .
-	?uriDataset <http://www.w3.org/dcat#distribution> ?uri .
+    ?uriDataset rdf:type dcat:Dataset .
+	?uriDataset dcat:distribution ?uri .
 
 <#if DATASET_ID != "">
 	?uriDataset dcterms:identifier '${DATASET_ID}' .
