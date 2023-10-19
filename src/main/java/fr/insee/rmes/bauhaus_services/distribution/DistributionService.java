@@ -6,5 +6,9 @@ public interface DistributionService {
 
     String getDistributions() throws RmesException;
 
-    String getDistributionByID(String id) throws RmesException;    
+    String getDistributionByID(String id) throws RmesException;
+
+    String create(String body) throws RmesException;
+
+    String update(String id, String body) throws RmesException;
 }

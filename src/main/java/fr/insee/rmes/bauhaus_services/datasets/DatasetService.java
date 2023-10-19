@@ -12,7 +12,5 @@ public interface DatasetService {
 
     String create(String body) throws RmesException;
 
-    String addDistributions(String id, String body) throws RmesException;
-
     String getDistributions(String id) throws RmesException;
 }

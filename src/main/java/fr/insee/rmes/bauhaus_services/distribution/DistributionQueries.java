@@ -13,6 +13,7 @@ public class DistributionQueries extends GenericQueries {
     public static String getDistributions() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", config.getDistributionsGraph());
+        params.put("DATASET_ID", "");
         params.put("LG1", config.getLg1());
         params.put("LG2", config.getLg2());
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributions.ftlh", params);
@@ -35,5 +36,11 @@ public class DistributionQueries extends GenericQueries {
         params.put("DATASET_ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributions.ftlh", params);
 
+    }
+
+    public static String lastDatasetId() throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DATASET_GRAPH", config.getDistributionsGraph());
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
 }

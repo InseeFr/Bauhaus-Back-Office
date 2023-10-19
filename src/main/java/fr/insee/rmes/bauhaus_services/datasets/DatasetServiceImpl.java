@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -11,8 +9,8 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.http.HttpStatus;
@@ -24,12 +22,12 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.PROV;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.List;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -53,6 +51,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         Dataset dataset = deserializeBody(body);
         dataset.setId(datasetId);
+
+        if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())){
+            dataset.setValidationState(ValidationStatus.MODIFIED.toString());
+        }
         if(dataset.getIdSerie() != null){
             dataset.setIdSerie(RdfUtils.seriesIRI(dataset.getIdSerie()).toString());
         }
@@ -68,6 +70,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public String create(String body) throws RmesException {
         Dataset dataset = deserializeBody(body);
         dataset.setId(generateNextId());
+        dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){
             dataset.setIdSerie(RdfUtils.seriesIRI(dataset.getIdSerie()).toString());
@@ -79,38 +82,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.setCreated(DateUtils.getCurrentDate());
         dataset.setUpdated(dataset.getCreated());
 
-
         return this.persist(dataset);
-    }
-
-    @Override
-    public String addDistributions(String id, String body) throws RmesException {
-        Resource graph = RdfUtils.datasetGraph();
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        IRI datasetIri = RdfUtils.datasetIRI(id);
-
-        try {
-            List<Distribution> distributions = mapper.readValue(body, new TypeReference<>(){});
-
-            Model model = new LinkedHashModel();
-
-            distributions.forEach(distribution -> {
-                model.add(datasetIri, DCAT.DATASET, RdfUtils.distributionIRI(distribution.getId()), graph);
-            });
-
-            if(!model.isEmpty()){
-                repoGestion.loadSimpleObjectWithoutDeletion(datasetIri, model, null);
-            }
-
-        } catch (JsonProcessingException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
-        }
-
-        return id;
     }
 
     @Override
@@ -160,6 +132,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), config.getLg2(), model, graph);
+
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.CREATED, dataset.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(datasetIri, DCTERMS.MODIFIED, dataset.getUpdated(), model, graph);
 
@@ -168,15 +141,22 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
         RdfUtils.addTripleString(datasetIri, DCAT.THEME, dataset.getTheme(), model, graph);
 
+        JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));
+
+        for(int i = 0; i < distributions.length(); i++) {
+            JSONObject distribution = distributions.getJSONObject(i);
+            if (distribution.has("id")) {
+                String id = distribution.getString("id");
+                RdfUtils.addTripleUri(datasetIri, DCAT.DISTRIBUTION, RdfUtils.distributionIRI(id), model, graph);
+            }
+        }
+
         repoGestion.loadSimpleObject(datasetIri, model, null);
 
         return dataset.getId();
     }
 
     private void validate(Dataset dataset) throws RmesException {
-        if (dataset.getId() == null) {
-            throw new RmesBadRequestException("The property identifiant is required");
-        }
         if (dataset.getLabelLg1() == null) {
             throw new RmesBadRequestException("The property labelLg1 is required");
         }

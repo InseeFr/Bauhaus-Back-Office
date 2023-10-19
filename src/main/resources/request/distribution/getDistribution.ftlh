@@ -1,4 +1,5 @@
-SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?dateCreation ?dateModification ?format ?taille ?url
+SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?updated
+?format ?taille ?url
 FROM <${DATASET_GRAPH}>
 WHERE {
 	?uri rdf:type dcat:Distribution .
@@ -7,7 +8,7 @@ WHERE {
     ?uri dcterms:identifier ?id .
     
     ?uriDataset rdf:type dcat:Dataset .
-	?uriDataset dcat:distribution ?uri .
+	?uriDataset dcat:Distribution ?uri .
     
     ?uriDataset dcterms:identifier ?idDataset .
     
@@ -32,11 +33,11 @@ WHERE {
 	}
 
 	OPTIONAL {
-		?uri dcterms:created ?dateCreation .
+		?uri dcterms:created ?created .
 	}
 
 	OPTIONAL {
-		?uri dcterms:modified ?dateModification .
+		?uri dcterms:modified ?updated .
 	}
 
 	OPTIONAL {

@@ -63,26 +63,13 @@ public class DatasetResources {
         }
     }
 
-    @PostMapping(value = "/{id}/distributions", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "addDistributionsForDataset", summary = "Add distributions for a dataset")
-    public ResponseEntity<Object> createDataset(
-            @PathVariable(Constants.ID) String datasetId,
-            @Parameter(description = "Distributions", required = true) @RequestBody String body) {
-        try {
-            String id = this.datasetService.addDistributions(datasetId, body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_OK).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
-    }
-
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDataset", summary = "Create a Dataset")
     public ResponseEntity<Object> setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) {
         try {
             String id = this.datasetService.create(body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_OK).body(id);
+            return ResponseEntity.status(org.apache.http.HttpStatus.SC_CREATED).body(id);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

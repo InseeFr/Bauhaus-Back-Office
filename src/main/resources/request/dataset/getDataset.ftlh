@@ -1,4 +1,5 @@
-SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?creator ?contributor ?disseminationStatus ?idSerie ?theme ?validationState ?created ?updated
+SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?creator ?contributor ?disseminationStatus ?idSerie ?theme
+?validationState ?created ?updated
 FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
