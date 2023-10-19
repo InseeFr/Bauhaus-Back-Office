@@ -35,6 +35,7 @@ public class DistributionQueriesTest {
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
+                put("DATASET_ID", "");
                 put("LG1", "fr");
                 put("LG2", "en");
             }};
