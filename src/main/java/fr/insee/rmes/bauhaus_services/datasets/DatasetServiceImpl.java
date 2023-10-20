@@ -90,6 +90,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return this.repoGestion.getResponseAsArray(DistributionQueries.getDatasetDistributions(id)).toString();
     }
 
+    @Override
+    public String getThemes() throws RmesException {
+        return this.repoGestion.getResponseAsArray(DatasetQueries.getThemes()).toString();
+    }
+
     private Dataset deserializeBody(String body) throws RmesException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(
@@ -139,7 +144,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
         RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCAT.THEME, dataset.getTheme(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, DCAT.THEME, dataset.getTheme(), model, graph);
 
         JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));
 

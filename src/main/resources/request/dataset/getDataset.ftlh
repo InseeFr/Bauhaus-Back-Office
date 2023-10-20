@@ -23,11 +23,11 @@ WHERE {
     }
 
     OPTIONAL {
-        ?uri dc:creator ?creator .
+        ?uri dcterms:creator ?creator .
     }
 
     OPTIONAL {
-        ?uri dc:contributor ?contributor .
+        ?uri dcterms:contributor ?contributor .
     }
 
     OPTIONAL {

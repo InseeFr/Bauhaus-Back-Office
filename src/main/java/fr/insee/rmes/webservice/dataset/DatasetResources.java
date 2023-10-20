@@ -36,7 +36,6 @@ public class DatasetResources {
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
-
     }
 
     @GetMapping("/{id}")
@@ -83,6 +82,18 @@ public class DatasetResources {
         try {
             String id = this.datasetService.update(datasetId, body);
             return ResponseEntity.status(org.apache.http.HttpStatus.SC_OK).body(id);
+        } catch (RmesException e) {
+            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
+        }
+    }
+
+    @GetMapping("/themes")
+    @Operation(operationId = "getThemes", summary = "List of themes",
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
+    public ResponseEntity<Object> getThemes() {
+        try {
+            String themes = this.datasetService.getThemes();
+            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(themes);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

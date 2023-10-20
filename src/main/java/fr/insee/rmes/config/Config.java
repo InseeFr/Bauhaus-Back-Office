@@ -157,6 +157,12 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
 	private String datasetsBaseUri;
 
+	@Value("${fr.insee.rmes.bauhaus.theme.graph}")
+	private String datasetsThemeGraph;
+
+	@Value("${fr.insee.rmes.bauhaus.theme.typePrefix}")
+	private String datasetsThemeTypePrefix;
+
 
 	/******************************************************/
 	/** Distributions 	***********************************/
@@ -402,6 +408,15 @@ public class Config {
 	public String getDatasetsBaseUri() {
 		return datasetsBaseUri;
 	}
+
+	public String getDatasetsThemeGraph() {
+		return datasetsThemeGraph;
+	}
+
+	public String getDatasetsThemeTypePrefix() {
+		return datasetsThemeTypePrefix;
+	}
+
 	public String getDistributionsBaseUri(){
 		return distributionsBaseUri;
 	}
