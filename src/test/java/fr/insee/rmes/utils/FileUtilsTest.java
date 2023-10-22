@@ -16,16 +16,19 @@ class FileUtilsTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "Carrières complètes ", "carrières-complètes", "  Carrières    complètes  " })
 	void givenCleanFileName_whenString_thenResponseIsClean(String name) {
-
 		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension(name, "odt");
 		assertEquals("carrières-complètes.odt", cleanFileName);
 	}
 
 	@Test
 	void givenCleanFileName_whenStringWithPointExtension_thenResponseIsClean() {
-
 		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension("test de nommage bidon ", ".odt");
 		assertEquals("test-de-nommage-bidon.odt", cleanFileName);
+	}
+
+	@Test
+	void shouldRemoveAsciiCharacters(){
+		assertEquals("textWithE", filesUtils.removeAsciiCharacters("textWith:É"));
 	}
 
 	@Test

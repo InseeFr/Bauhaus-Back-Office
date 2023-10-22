@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.collections.ConceptUtils;
+import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -26,11 +27,17 @@ import java.util.*;
 public class ConceptsCollectionServiceImpl extends RdfService implements ConceptsCollectionService {
     static final Logger logger = LogManager.getLogger(ConceptsCollectionServiceImpl.class);
 
-    @Autowired
-    CollectionExportBuilder collectionExport;
+    private CollectionExportBuilder collectionExport;
+    private ConceptsService conceptsService;
+    private ConceptsUtils conceptsUtils;
 
     @Autowired
-    ConceptsService conceptsService;
+    public ConceptsCollectionServiceImpl(CollectionExportBuilder collectionExport, ConceptsService conceptsService, ConceptsUtils conceptsUtils) {
+        this.collectionExport = collectionExport;
+        this.conceptsService = conceptsService;
+        this.conceptsUtils = conceptsUtils;
+    }
+
 
     @Override
     public String getCollections()  throws RmesException{
@@ -70,7 +77,9 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+
             String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
             }
@@ -96,6 +105,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             CollectionForExport collection = collectionExport.getCollectionData(id);
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+
             String fileName = ConceptUtils.getFileNameForExport(collection, null);
             if(conceptsIds.size() == 0){
                 return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
@@ -124,7 +134,9 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
                 CollectionForExport collection = collectionExport.getCollectionData(id);
                 Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
+
                 String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+
                 collections.put(fileName, xmlContent);
 
                 if(conceptsIds.size() > 0){

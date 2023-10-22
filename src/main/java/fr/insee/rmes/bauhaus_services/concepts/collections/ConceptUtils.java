@@ -1,11 +1,7 @@
 package fr.insee.rmes.bauhaus_services.concepts.collections;
 
 import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
-import org.apache.commons.text.CaseUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +9,7 @@ import java.util.Map;
 
 @Component
 public class ConceptUtils {
+
     private final FilesUtils filesUtils;
 
     @Autowired

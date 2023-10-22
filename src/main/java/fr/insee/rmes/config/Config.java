@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
+
 
 @Configuration
 public class Config {
@@ -43,7 +45,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
 
-	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+	@Value("${fr.insee.rmes.bauhaus.activeModules}")
+	private List<String> activeModules;
+
+  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
 	private int maxFileNameLength;
 	
 
@@ -56,6 +61,10 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer.prod}")
+	private String rdfServerGestionProd;
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository.prod}")
+	private String idRepositoryGestionProd;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
 	private String rdfServerPublicationExt;
 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
@@ -305,6 +314,14 @@ public class Config {
 
 	public String getBaseUriGestion() {
 		return baseUriGestion;
+	}
+
+	public String getRdfServerGestionProd() {
+		return rdfServerGestionProd;
+	}
+
+	public String getRepositoryIdGestionProd() {
+		return idRepositoryGestionProd;
 	}
 
 	public String getRdfServerPublication() {
@@ -559,4 +576,7 @@ public class Config {
 		return maxFileNameLength;
 	}
 
+	public List<String> getActiveModules() {
+		return activeModules;
+	}
 }
