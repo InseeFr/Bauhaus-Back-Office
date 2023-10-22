@@ -1,15 +1,13 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.utils.DateUtils;
-import org.apache.http.HttpStatus;
+import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -20,12 +18,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
-    private static final String IO_EXCEPTION = "IOException";
-
 
     @Override
     public String getDistributions() throws RmesException {
@@ -37,23 +31,10 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id)).toString();
     }
 
-    private Distribution deserializeBody(String body) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Distribution dataset;
-        try {
-            dataset = mapper.readValue(body, Distribution.class);
-        } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
-        }
-        return dataset;
-    }
-
     @Override
     public String create(String body) throws RmesException {
-        Distribution distribution = deserializeBody(body);
-        distribution.setId(generateNextId());
+        Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
+        distribution.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId()), "d"));
 
         this.validate(distribution);
 
@@ -65,7 +46,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String update(String id, String body) throws RmesException {
-        Distribution distribution = deserializeBody(body);
+        Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
         distribution.setId(id);
 
         this.validate(distribution);
@@ -75,18 +56,6 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution);
     }
 
-    private String generateNextId() throws RmesException {
-        String prefix = "d";
-        JSONObject json = repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId());
-        if (json.isEmpty()) {
-            return prefix + "1000";
-        }
-        String id = json.getString(Constants.ID);
-        if (id.equals(Constants.UNDEFINED)) {
-            return prefix + "1000";
-        }
-        return prefix + (Integer.parseInt(id) + 1);
-    }
 
     private String persist(Distribution distribution) throws RmesException {
         Resource graph = RdfUtils.datasetGraph();

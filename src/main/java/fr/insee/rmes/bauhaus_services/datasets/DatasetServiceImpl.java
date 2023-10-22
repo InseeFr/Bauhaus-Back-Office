@@ -1,8 +1,5 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -13,7 +10,8 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
-import org.apache.http.HttpStatus;
+import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,11 +25,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
-    private static final String IO_EXCEPTION = "IOException";
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -49,7 +44,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String update(String datasetId, String body) throws RmesException {
 
-        Dataset dataset = deserializeBody(body);
+        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
         dataset.setId(datasetId);
 
         if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())){
@@ -68,8 +63,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String create(String body) throws RmesException {
-        Dataset dataset = deserializeBody(body);
-        dataset.setId(generateNextId());
+        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId()), "jd"));
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){
@@ -95,31 +90,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return this.repoGestion.getResponseAsArray(DatasetQueries.getThemes()).toString();
     }
 
-    private Dataset deserializeBody(String body) throws RmesException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(
-                DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        Dataset dataset;
-        try {
-            dataset = mapper.readValue(body, Dataset.class);
-        } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), IO_EXCEPTION);
-        }
-        return dataset;
-    }
-
-    private String generateNextId() throws RmesException {
-        String prefix = "jd";
-        JSONObject json = repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId());
-        if (json.isEmpty()) {
-            return prefix + "1000";
-        }
-        String id = json.getString(Constants.ID);
-        if (id.equals(Constants.UNDEFINED)) {
-            return prefix + "1000";
-        }
-        return prefix + (Integer.parseInt(id) + 1);
-    }
 
     private String persist(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.datasetGraph();

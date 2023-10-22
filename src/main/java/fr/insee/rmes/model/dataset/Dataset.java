@@ -15,9 +15,6 @@ public class Dataset {
     private String created;
     private String updated;
 
-    public Dataset() {
-    }
-
     public String getId() {
         return id;
     }

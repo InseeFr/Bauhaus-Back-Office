@@ -70,7 +70,7 @@ public class SeriesUtils extends RdfService {
 
 	/*READ*/
 
-	public Boolean isSeriesExist(String iri) throws RmesException {
+	public boolean isSeriesExist(String iri) throws RmesException {
 		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesExists(iri));
 	}
 

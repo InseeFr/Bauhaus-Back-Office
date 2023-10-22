@@ -13,9 +13,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class DistributionServiceImplTest {
     @Mock
     Config config;
@@ -32,11 +34,6 @@ public class DistributionServiceImplTest {
 
     @InjectMocks
     DistributionServiceImpl distributionService;
-
-    @BeforeEach
-    public void init() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void shouldReturnDistributions() throws RmesException {
@@ -180,9 +177,6 @@ public class DistributionServiceImplTest {
             body.put("taille", "taille");
             body.put("url", "url");
 
-            when(config.getBaseUriGestion()).thenReturn("base-uri-gestion");
-            when(config.getOpSeriesBaseUri()).thenReturn("base-op-series-uri");
-            when(config.getDatasetsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");
             when(config.getLg2()).thenReturn("en");
 
@@ -252,9 +246,6 @@ public class DistributionServiceImplTest {
             body.put("url", "url");
             body.put("created", "2022-10-19T11:44:23.335590");
 
-            when(config.getBaseUriGestion()).thenReturn("base-uri-gestion");
-            when(config.getOpSeriesBaseUri()).thenReturn("base-op-series-uri");
-            when(config.getDatasetsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");
             when(config.getLg2()).thenReturn("en");
 

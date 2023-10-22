@@ -15,9 +15,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class DatasetServiceImplTest {
 
     @Mock
@@ -38,11 +40,6 @@ public class DatasetServiceImplTest {
 
     @InjectMocks
     DatasetServiceImpl datasetService;
-
-    @BeforeEach
-    public void init() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void shouldReturnDatasets() throws RmesException {
@@ -189,7 +186,7 @@ public class DatasetServiceImplTest {
             body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
 
-            when(seriesUtils.isSeriesExist(anyString())).thenReturn(false);
+            when(seriesUtils.isSeriesExist(any())).thenReturn(false);
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
                 JSONObject lastId = new JSONObject();
@@ -261,9 +258,6 @@ public class DatasetServiceImplTest {
             body.put("idSerie", "2");
             body.put("theme", "theme");
 
-            when(config.getBaseUriGestion()).thenReturn("base-uri-gestion");
-            when(config.getOpSeriesBaseUri()).thenReturn("base-op-series-uri");
-            when(config.getDatasetsGraph()).thenReturn("dataset-graph");
             when(config.getDistributionsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");
             when(config.getLg2()).thenReturn("en");
@@ -321,9 +315,6 @@ public class DatasetServiceImplTest {
             body.put("idSerie", "2");
             body.put("theme", "theme");
 
-            when(config.getBaseUriGestion()).thenReturn("base-uri-gestion");
-            when(config.getOpSeriesBaseUri()).thenReturn("base-op-series-uri");
-            when(config.getDatasetsGraph()).thenReturn("dataset-graph");
             when(config.getDistributionsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");
             when(config.getLg2()).thenReturn("en");

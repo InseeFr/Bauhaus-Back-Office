@@ -5,27 +5,23 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class DistributionResourcesTest {
     @InjectMocks
     private DistributionResources distributionResources;
 
     @Mock
     DistributionService distributionService;
-
-    @BeforeEach
-    public void init() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void shouldReturn500IfRmesExceptionWhenFetchingDistributions() throws RmesException {

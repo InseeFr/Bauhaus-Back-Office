@@ -10,8 +10,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +19,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/datasets")
-//@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = Constants.DOCUMENT, description = "DataSet API")
 public class DatasetResources {
 
-    @Autowired
-    DatasetService datasetService;
+    final DatasetService datasetService;
+
+    public DatasetResources(DatasetService datasetService) {
+        this.datasetService = datasetService;
+    }
 
     @GetMapping
     @Operation(operationId = "getDatasets", summary = "List of datasets",
@@ -68,7 +71,7 @@ public class DatasetResources {
             @Parameter(description = "Dataset", required = true) @RequestBody String body) {
         try {
             String id = this.datasetService.create(body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_CREATED).body(id);
+            return ResponseEntity.status(HttpStatus.CREATED).body(id);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
@@ -81,7 +84,7 @@ public class DatasetResources {
             @Parameter(description = "Dataset", required = true) @RequestBody String body) {
         try {
             String id = this.datasetService.update(datasetId, body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_OK).body(id);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +23,11 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name= Constants.DOCUMENT, description="Distribution API")
 public class DistributionResources {
     
-    @Autowired
-    DistributionService distributionService;
+    final DistributionService distributionService;
+
+    public DistributionResources(DistributionService distributionService) {
+        this.distributionService = distributionService;
+    }
 
     @GetMapping
     @Operation(operationId = "getDistributions", summary = "List of distributions",
@@ -58,7 +60,7 @@ public class DistributionResources {
             @Parameter(description = "Distribution", required = true) @RequestBody String body) {
         try {
             String id = this.distributionService.create(body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_CREATED).body(id);
+            return ResponseEntity.status(HttpStatus.CREATED).body(id);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }
@@ -71,7 +73,7 @@ public class DistributionResources {
             @Parameter(description = "Distribution", required = true) @RequestBody String body) {
         try {
             String id = this.distributionService.update(distributionId, body);
-            return ResponseEntity.status(org.apache.http.HttpStatus.SC_OK).body(id);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return ResponseEntity.status(e.getStatus()).body(e.getDetails());
         }

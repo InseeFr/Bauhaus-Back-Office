@@ -12,8 +12,6 @@ public class Distribution {
     String format;
     String taille;
     String url;
-    public Distribution() {
-    }
 
     public String getId() {
         return id;
