@@ -241,7 +241,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
 		Map<String, String> xmlContent = ConceptUtils.convertCollectionInXml(collection);
-		String fileName = ConceptUtils.getFileNameForExport(collection, lg);
+		String fileName = conceptUtils.getFileNameForExport(collection, lg);
 		collections.put(fileName, xmlContent);
 
 		if(withConcepts){
