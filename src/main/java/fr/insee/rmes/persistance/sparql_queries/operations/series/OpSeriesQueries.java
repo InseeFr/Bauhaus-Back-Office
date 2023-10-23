@@ -192,4 +192,9 @@ public class OpSeriesQueries extends GenericQueries{
 	}
 
 
+	public static String checkIfSeriesExists(String iri) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("URI_SERIES", iri);
+		return buildSeriesRequest("checkIfSeriesExists.ftlh", params);
+	}
 }

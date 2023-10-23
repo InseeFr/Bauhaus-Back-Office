@@ -1,13 +1,12 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-
 public class QueryUtils {
-
+//
 	public static final String PREFIXES =
 			"PREFIX dcterms:<http://purl.org/dc/terms/> \n"
 					+ "PREFIX xkos:<http://rdf-vocabulary.ddialliance.org/xkos#> \n"
@@ -27,6 +26,7 @@ public class QueryUtils {
 					+ "PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#> \n"
 					+ "PREFIX qb:<http://purl.org/linked-data/cube#> \n"
 					+ "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \n"
+					+ "PREFIX dcat:<http://www.w3.org/ns/dcat#> \n"
 					+ "PREFIX dcmitype:<http://purl.org/dc/dcmitype/> \n \n" ;
 
 
