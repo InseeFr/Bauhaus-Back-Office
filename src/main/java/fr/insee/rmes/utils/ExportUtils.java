@@ -101,16 +101,14 @@ public class ExportUtils {
     public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         String simsId = sims.getString("id");
         logger.debug("Begin to download the SIMS {} with its documents", simsId);
-        String fileName = sims.getString("labelLg1");
-
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
+        String fileName = filesUtils.reduceFileNameSize(sims.getString("labelLg1"));
 
         try {
 
             Path directory = Files.createTempDirectory("sims");
             logger.debug("Creating tempory directory {}", directory.toString());
             Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
-            logger.debug("Creating tempory directory {}", simsDirectory.toString());
+            logger.debug("Creating tempory directory {}", simsDirectory);
 
             logger.debug("Generating the InputStream for the SIMS {}", simsId);
 
@@ -127,7 +125,7 @@ public class ExportUtils {
 
 
             logger.debug("Starting downloading documents for the SIMS {}", simsId);
-            Set missingDocuments = this.exportRubricsDocuments(sims, simsDirectory);
+            Set<String> missingDocuments = this.exportRubricsDocuments(sims, simsDirectory);
             logger.debug("Ending downloading documents for the SIMS {}", simsId);
 
             logger.debug("Zipping the folder for the SIMS {}", simsId);
@@ -135,10 +133,10 @@ public class ExportUtils {
 
             logger.debug("Zip created for the SIMS {}", simsId);
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.setContentDisposition(content);
+            responseHeaders.setContentDisposition(ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build());
             responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
 
-            responseHeaders.setAccessControlExposeHeaders(List.of("X-Missing-Documents"));
+            responseHeaders.setAccessControlExposeHeaders(List.of("X-Missing-Documents", "Content-Disposition"));
             responseHeaders.set("X-Missing-Documents", StringUtils.join(missingDocuments, ","));
             Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + Constants.DOT_ZIP).toUri());
             return ResponseEntity.ok()
