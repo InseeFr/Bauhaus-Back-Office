@@ -356,7 +356,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		String iri = codesList.getString("iri");
 		IRI codelist = RdfUtils.createIRI(iri);
 
-		codeListPublication.publishCodeList(codelist, partial);
+		codeListPublication.publishCodeListAndCodes(codelist, partial);
 
 		Model model = new LinkedHashModel();
 		model.add(codelist, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.codesListGraph());
