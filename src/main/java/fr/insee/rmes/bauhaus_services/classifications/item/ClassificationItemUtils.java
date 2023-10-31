@@ -6,6 +6,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.ontologies.EVOC;
+import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -16,6 +17,8 @@ import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.SKOSXL;
 import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
+
+import static fr.insee.rmes.utils.StringUtils.convertHtmlStringToRaw;
 
 @Repository()
 public class ClassificationItemUtils extends RdfService {
@@ -97,8 +100,14 @@ public class ClassificationItemUtils extends RdfService {
 
     private void addNote(String iri, String value, Resource graph, Model model) throws RmesException {
         if(iri != null){
-            repoGestion.deleteTripletByPredicate(RdfUtils.createIRI(iri), EVOC.NOTE_LITERAL, graph, null);
-            model.add(RdfUtils.createIRI(iri), EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(XhtmlToMarkdownUtils.markdownToXhtml(value)), graph);
+            IRI finalIri = RdfUtils.createIRI(iri)
+            repoGestion.deleteTripletByPredicate(finalIri, EVOC.NOTE_LITERAL, graph, null);
+            repoGestion.deleteTripletByPredicate(finalIri, XKOS.PLAIN_TEXT, graph, null);
+
+            String html = XhtmlToMarkdownUtils.markdownToXhtml(value);
+            String raw = convertHtmlStringToRaw(html);
+            model.add(finalIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(html), graph);
+            model.add(finalIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
         }
     }
 
