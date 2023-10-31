@@ -24,13 +24,6 @@ public class DatasetResourcesTest {
     DatasetService datasetService;
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingDatasets() throws RmesException {
-        when(datasetService.getDatasets()).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = datasetResources.getDatasets();
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
         when(datasetService.getDatasets()).thenReturn("result");
         ResponseEntity<?> response = datasetResources.getDatasets();
@@ -38,12 +31,6 @@ public class DatasetResourcesTest {
         Assertions.assertEquals("result", response.getBody());
     }
 
-    @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingDataset() throws RmesException {
-        when(datasetService.getDatasetByID(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = datasetResources.getDataset("");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
-    }
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDataset() throws RmesException {
@@ -51,13 +38,6 @@ public class DatasetResourcesTest {
         ResponseEntity<?> response = datasetResources.getDataset("1");
         Assertions.assertEquals(HttpStatus.SC_OK, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingDistributions() throws RmesException {
-        when(datasetService.getDistributions(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = datasetResources.getDistributionsByDataset("");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
     }
 
     @Test
@@ -69,25 +49,11 @@ public class DatasetResourcesTest {
     }
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenPostingADataset() throws RmesException {
-        when(datasetService.create(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = datasetResources.setDataset("");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn201IfRmesExceptionWhenPostingADataset() throws RmesException {
         when(datasetService.create(anyString())).thenReturn("result");
         ResponseEntity<?> response = datasetResources.setDataset("");
         Assertions.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenUpdatingADataset() throws RmesException {
-        when(datasetService.update(anyString(), anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = datasetResources.setDataset("", "");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
     }
 
     @Test

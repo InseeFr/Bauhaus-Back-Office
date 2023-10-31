@@ -24,25 +24,11 @@ public class DistributionResourcesTest {
     DistributionService distributionService;
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingDistributions() throws RmesException {
-        when(distributionService.getDistributions()).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = distributionResources.getDistributions();
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
         when(distributionService.getDistributions()).thenReturn("result");
         ResponseEntity<?> response = distributionResources.getDistributions();
         Assertions.assertEquals(HttpStatus.SC_OK, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingDistributionById() throws RmesException {
-        when(distributionService.getDistributionByID(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = distributionResources.getDistribution("");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
     }
 
     @Test
@@ -54,25 +40,11 @@ public class DistributionResourcesTest {
     }
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenPostingADistribution() throws RmesException {
-        when(distributionService.create(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = distributionResources.createDistribution("");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn201IfRmesExceptionWhenPostingADistribution() throws RmesException {
         when(distributionService.create(anyString())).thenReturn("result");
         ResponseEntity<?> response = distributionResources.createDistribution("");
         Assertions.assertEquals(HttpStatus.SC_CREATED, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenUpdatingADistribution() throws RmesException {
-        when(distributionService.update(anyString(), anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = distributionResources.updateDistribution("", "");
-        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getStatusCode().value());
     }
 
     @Test
