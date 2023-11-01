@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -216,7 +217,9 @@ public class ExportUtils {
                 if(!Files.exists(documentPath)){
                     missingDocuments.add(document.getString("id"));
                 } else {
-                    String documentFileName = filesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url));
+                    String fileName = FilenameUtils.getBaseName(documentPath.getFileName().toString());
+                    String extension = FilenameUtils.getExtension(documentPath.getFileName().toString());
+                    String documentFileName = String.format("%s.%s", filesUtils.reduceFileNameSize(fileName), extension);
 
                     InputStream inputStream = Files.newInputStream(documentPath);
 
