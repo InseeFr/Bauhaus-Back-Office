@@ -100,7 +100,7 @@ public class ClassificationItemUtils extends RdfService {
 
     private void addNote(String iri, String value, Resource graph, Model model) throws RmesException {
         if(iri != null){
-            IRI finalIri = RdfUtils.createIRI(iri)
+            IRI finalIri = RdfUtils.createIRI(iri);
             repoGestion.deleteTripletByPredicate(finalIri, EVOC.NOTE_LITERAL, graph, null);
             repoGestion.deleteTripletByPredicate(finalIri, XKOS.PLAIN_TEXT, graph, null);
 
