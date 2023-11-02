@@ -8,7 +8,6 @@ public class Roles {
 
 
 	public static final String ADMIN = "Administrateur_RMESGNCS";
-	public static final String USER = "Utilisateur_RMESGNCS";
 	
 	/* Concepts */
 	public static final String CONCEPTS_CONTRIBUTOR = "Gestionnaire_ensemble_concepts_RMESGNCS";

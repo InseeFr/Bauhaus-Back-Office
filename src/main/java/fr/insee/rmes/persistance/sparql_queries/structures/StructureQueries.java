@@ -1,13 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class StructureQueries extends GenericQueries{
 

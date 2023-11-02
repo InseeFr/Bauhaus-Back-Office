@@ -1,5 +1,27 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,34 +30,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-
 @Component
 public class DocumentsPublication  extends RdfService{
 
@@ -43,7 +37,7 @@ public class DocumentsPublication  extends RdfService{
 	DocumentsUtils docUtils;
 	
 
-	static final Logger logger = LogManager.getLogger(DocumentsPublication.class);
+	static final Logger logger = LoggerFactory.getLogger(DocumentsPublication.class);
 
 	public void publishAllDocumentsInSims(String idSims) throws RmesException {
 		
@@ -62,7 +56,7 @@ public class DocumentsPublication  extends RdfService{
 			
 			// Change url in document (getModelToPublish) and publish the RDF
 			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
-			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.getLabelType());
+			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.labelType());
 		}
 		
 		//Get all links
@@ -70,7 +64,7 @@ public class DocumentsPublication  extends RdfService{
 		for (Object link : listLinks) {
 			String id = docUtils.getIdFromJson((JSONObject)link).toString();
 			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
-			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.getLabelType());
+			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.labelType());
 		}
 		
 		
@@ -108,15 +102,15 @@ public class DocumentsPublication  extends RdfService{
 			while (documentStatements.hasNext()) {
 				Statement st = documentStatements.next();
 				if (RdfUtils.toString(st.getPredicate()).endsWith(Constants.URL)) {
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					IRI predicate = RdfUtils
-							.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+							.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 					String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 					logger.info("Publishing document : {}",newUrl);
 					Value object = RdfUtils.toURI(newUrl);
 					model.add(subject, predicate, object, st.getContext());
 				} else {
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					renameAndAddTripleToModel(model, st, subject);
 				}
 			}
@@ -161,13 +155,13 @@ public class DocumentsPublication  extends RdfService{
 	}
 
 	private void transformTuplesToPublish(String filename, Model model, Resource document, JSONArray tuples) {
-		Resource newSubject = PublicationUtils.tranformBaseURIToPublish(document);
+		Resource newSubject = publicationUtils.tranformBaseURIToPublish(document);
 		Value object ;
 		
 		for (int i = 0; i < tuples.length(); i++) {				
 			JSONObject tuple = (JSONObject) tuples.get(i);
 			String predicatString = tuple.getString("predicat");
-			IRI predicate = (SimpleIRI) PublicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
+			IRI predicate = (SimpleIRI) publicationUtils.tranformBaseURIToPublish(RdfUtils.toURI(predicatString));			
 			if (predicatString.endsWith(Constants.URL)) {
 				String newUrl = config.getDocumentsBaseurl() + "/"+ filename;
 				logger.info("Publishing document : {}",newUrl);
@@ -176,7 +170,7 @@ public class DocumentsPublication  extends RdfService{
 				String objectString = tuple.getString("obj");
 				try {					
 					object = RdfUtils.toURI(objectString);
-					object = PublicationUtils.tranformBaseURIToPublish((Resource) object);
+					object = publicationUtils.tranformBaseURIToPublish((Resource) object);
 
 				}catch(IllegalArgumentException iAe) {
 					object = RdfUtils.setLiteralString(objectString);
@@ -199,7 +193,7 @@ public class DocumentsPublication  extends RdfService{
 			}
 			while (linkStatements.hasNext()) {
 				Statement st = linkStatements.next();
-					Resource subject = PublicationUtils.tranformBaseURIToPublish(st.getSubject());
+					Resource subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 					renameAndAddTripleToModel(model, st, subject);
 				
 			}
@@ -217,10 +211,10 @@ public class DocumentsPublication  extends RdfService{
 
 	public void renameAndAddTripleToModel(Model model, Statement st, Resource subject) {
 		IRI predicate = RdfUtils
-				.createIRI(PublicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
+				.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 		Value object = st.getObject();
 		if (st.getObject() instanceof Resource) {
-			object = PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+			object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
 		}
 		model.add(subject, predicate, object, st.getContext());
 	}

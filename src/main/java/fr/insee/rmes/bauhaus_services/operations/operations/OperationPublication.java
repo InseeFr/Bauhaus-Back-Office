@@ -1,5 +1,14 @@
 package fr.insee.rmes.bauhaus_services.operations.operations;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -11,17 +20,6 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 
 
 @Component
@@ -51,14 +49,14 @@ public class OperationPublication extends RdfService{
 				Statement st = statements.next();
 				// Other URI to transform
 				if (RdfUtils.toString(st.getPredicate()).endsWith("isPartOf")) {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 				} else if (PublicationUtils.stringEndsWithItemFromList(RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
 					// nothing, wouldn't copy this attr
 				}
 				// Literals
 				else {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							st.getObject(), st.getContext());
 				}
 				addHasPartStatements(model, operation, con);
@@ -70,7 +68,7 @@ public class OperationPublication extends RdfService{
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource operationToPublishRessource = PublicationUtils.tranformBaseURIToPublish(operation);
+		Resource operationToPublishRessource = publicationUtils.tranformBaseURIToPublish(operation);
 		repositoryPublication.publishResource(operationToPublishRessource, model, "operation");
 
 	}
@@ -93,8 +91,8 @@ public class OperationPublication extends RdfService{
 
 		while (hasPartStatements.hasNext()) {
 			Statement hpst = hasPartStatements.next();
-			model.add(PublicationUtils.tranformBaseURIToPublish(hpst.getSubject()), hpst.getPredicate(),
-					PublicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()), hpst.getContext());
+			model.add(publicationUtils.tranformBaseURIToPublish(hpst.getSubject()), hpst.getPredicate(),
+					publicationUtils.tranformBaseURIToPublish((Resource) hpst.getObject()), hpst.getContext());
 		}
 	}
 

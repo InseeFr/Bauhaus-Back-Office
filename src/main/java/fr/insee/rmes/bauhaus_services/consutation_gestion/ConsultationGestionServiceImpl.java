@@ -1,12 +1,5 @@
 package fr.insee.rmes.bauhaus_services.consutation_gestion;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.stereotype.Service;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -14,10 +7,23 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.IGEO;
 import fr.insee.rmes.persistance.ontologies.QB;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Iterator;
+
+import static fr.insee.rmes.config.PropertiesKeys.CONCEPTS_BASE_URI;
+
 @Service
 public class ConsultationGestionServiceImpl extends RdfService implements ConsultationGestionService {
 
     String defaultDate = "2020-01-01T00:00:00.000";
+
+    @Value("${"+CONCEPTS_BASE_URI+"}")
+    private String conceptsBaseUri;
 
 	
 	@Override
@@ -210,7 +216,7 @@ public class ConsultationGestionServiceImpl extends RdfService implements Consul
         HashMap<String, Object> params = new HashMap<>();
         params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
         params.put("CODELIST_GRAPH", config.getCodeListGraph());
-        params.put("CONCEPTS_BASE_URI", config.getConceptsBaseUri());
+        params.put("CONCEPTS_BASE_URI", conceptsBaseUri);
         params.put("ID", id);
         params.put("LG1", config.getLg1());
         params.put("LG2", config.getLg2());

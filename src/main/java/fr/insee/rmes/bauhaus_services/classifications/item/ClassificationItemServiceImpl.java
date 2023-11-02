@@ -10,10 +10,10 @@ import fr.insee.rmes.model.classification.ClassificationItem;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ClassificationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.classifications.ItemsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
     ClassificationItemUtils classificationItemUtils;
 
 
-    static final Logger logger = LogManager.getLogger(ClassificationItemServiceImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(ClassificationItemServiceImpl.class);
 
     @Override
     public String getClassificationItems(String id) throws RmesException{

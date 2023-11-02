@@ -1,29 +1,25 @@
 package fr.insee.rmes.utils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.Normalizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 
+import java.io.*;
+import java.text.Normalizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 public class FilesUtils {
 
-	private static final Logger log = LogManager.getLogger(FilesUtils.class);
+	private static final Logger log = LoggerFactory.getLogger(FilesUtils.class);
 	public static final String ODT_EXTENSION = ".odt";
 	public static final String ODS_EXTENSION = ".ods";
 	public static final String ZIP_EXTENSION = ".zip";
+
 
 	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
 		final File tempFile = File.createTempFile(fileName, fileExtension);
@@ -65,7 +61,7 @@ public class FilesUtils {
 		try {
 			zipOut.close();
 			fos.close();
-		}catch(IOException e ) {
+		} catch(IOException e ) {
 			log.warn("outputStream already closed");
 		}
 		

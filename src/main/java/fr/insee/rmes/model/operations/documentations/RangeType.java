@@ -1,16 +1,15 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.persistance.ontologies.DCMITYPE;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.ORG;
 import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public enum RangeType {

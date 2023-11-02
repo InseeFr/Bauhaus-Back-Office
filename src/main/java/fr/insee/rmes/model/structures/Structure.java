@@ -1,8 +1,8 @@
 package fr.insee.rmes.model.structures;
 
-import java.util.List;
-
 import fr.insee.rmes.exceptions.RmesException;
+
+import java.util.List;
 
 public class Structure {
 

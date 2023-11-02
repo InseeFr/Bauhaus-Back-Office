@@ -1,5 +1,10 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -9,13 +14,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.RmesException;
 
 @Repository
 public class StructurePublication extends RdfService {
@@ -33,20 +31,20 @@ public class StructurePublication extends RdfService {
 					if (PublicationUtils.stringEndsWithItemFromList(pred,denyList)) {
 						// nothing, wouldn't copy this attr
 					} else if(pred.endsWith("component")){
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 								st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								st.getContext());
 
 						copyTriplet((Resource) st.getObject(), model, con, new String[]{"identifier", "created", "modified"});
 					} else if(pred.endsWith("attribute") || pred.endsWith("measure") || pred.endsWith("dimension")){
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 								st.getPredicate(),
-								PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
+								publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
 								st.getContext());
 					}
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()),
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 								st.getPredicate(),
 								st.getObject(),
 								st.getContext());
@@ -69,7 +67,7 @@ public class StructurePublication extends RdfService {
 
 		this.copyTriplet(structure, model, con, new String[]{"validationState", Constants.CREATOR, Constants.CONTRIBUTOR});
 		con.close();
-		Resource structureToPublish = PublicationUtils.tranformBaseURIToPublish(structure);
+		Resource structureToPublish = publicationUtils.tranformBaseURIToPublish(structure);
 
 		repositoryPublication.clearStructureAndComponentForAllRepositories(structureToPublish);
 		repositoryPublication.publishResource(structureToPublish, model, "Structure");

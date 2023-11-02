@@ -5,8 +5,7 @@ import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.eclipse.rdf4j.common.exception.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -26,7 +25,8 @@ import org.eclipse.rdf4j.rio.trig.TriGParser;
 import org.eclipse.rdf4j.rio.trig.TriGWriter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,8 +45,8 @@ public class RepositoryUtils {
 	private static final String RESULTS = "results";
 	private static final String EXECUTE_QUERY_FAILED = "Execute query failed : ";
 	
-	static final Logger logger = LogManager.getLogger(RepositoryUtils.class);
-	private RepositoryInitiator repositoryInitiator;
+	static final Logger logger = LoggerFactory.getLogger(RepositoryUtils.class);
+	private final RepositoryInitiator repositoryInitiator;
 
 
 	public RepositoryUtils(KeycloakServices keycloakServices, @Value("${fr.insee.rmes.bauhaus.rdf.auth}")RepositoryInitiator.Type type){
@@ -95,6 +95,7 @@ public class RepositoryUtils {
 			update = conn.prepareUpdate(QueryLanguage.SPARQL, queryWithPrefixes);
 			update.execute();
 			conn.close();
+			logTrace("Repo {} --- Executed update --- \n{}", repository, queryWithPrefixes);
 		} catch (RepositoryException e) {
 			logger.error("{} {} {}",EXECUTE_QUERY_FAILED, updateQuery, repository);
 			logger.error(e.getMessage());
@@ -102,7 +103,14 @@ public class RepositoryUtils {
 		}
 		return(HttpStatus.OK);
 	}
-	
+
+	private static void logTrace(String message, Repository repository, String queryWithPrefixes) {
+		if (logger.isTraceEnabled()){
+			var repoUrl=repository instanceof HTTPRepository httpRepository ? httpRepository.getRepositoryURL():"unknown ("+repository.getClass()+")";
+			logger.trace(message, repoUrl, queryWithPrefixes);
+		}
+	}
+
 	/**
 	 * Method which aims to load a file in database
 	 * @param graph 
@@ -281,16 +289,25 @@ public class RepositoryUtils {
 	 */
 	public static String executeQuery(RepositoryConnection conn, String query) throws RmesException {
 		TupleQuery tupleQuery = null;
-		OutputStream stream = new ByteArrayOutputStream();
+		String result;
 		try {
+			var stream = new ByteArrayOutputStream();
 			tupleQuery = conn.prepareTupleQuery(QueryLanguage.SPARQL, query);
 			tupleQuery.evaluate(new SPARQLResultsJSONWriter(stream));
-		} catch (RepositoryException e) {
-			logAndThrowError(query, e);		
+			result= stream.toString();
+			traceLogResult(conn, query, result);
+		} catch (RDF4JException e) {
+			logAndThrowError(query, e);
+			result="";
 		}
-		return stream.toString();
+		return result;
 	}
-	
+
+	private static void traceLogResult(RepositoryConnection conn, String query, String result) {
+		logTrace("Repo {} --- Executed query --- \n{}", conn.getRepository(), query);
+		logger.trace("--- Results ---\n{}", result);
+	}
+
 	/**
 	 * Method which aims to execute a sparql ASK query
 	 * 
@@ -302,8 +319,10 @@ public class RepositoryUtils {
 		BooleanQuery tupleQuery = null;
 		try {
 			tupleQuery = conn.prepareBooleanQuery(QueryLanguage.SPARQL, query);
-			return tupleQuery.evaluate();
-		} catch (RepositoryException e) {
+			var result =  tupleQuery.evaluate();
+			traceLogResult(conn, query, Boolean.toString(result));
+			return result;
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return false;
@@ -323,13 +342,13 @@ public class RepositoryUtils {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeQuery(conn, queryWithPrefixes);
 			conn.close();
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return response;
 	}
 
-	private static void logAndThrowError(String query, RepositoryException e) throws RmesException {
+	private static void logAndThrowError(String query, RDF4JException e) throws RmesException {
 		logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
 		logger.error(e.getMessage());
 		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + query);
@@ -349,7 +368,7 @@ public class RepositoryUtils {
 			String queryWithPrefixes = QueryUtils.PREFIXES + query;
 			response = executeAskQuery(conn, queryWithPrefixes);
 			conn.close();
-		} catch (RepositoryException e) {
+		} catch (RDF4JException e) {
 			logAndThrowError(query, e);		
 		}
 		return response;

@@ -19,10 +19,10 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.text.CaseUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,7 +42,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	private static final String THE_CONCEPT = "The concept ";
 
 
-	static final Logger logger = LogManager.getLogger(ConceptsImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
 
 	
 	@Autowired 

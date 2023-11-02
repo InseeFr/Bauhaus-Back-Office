@@ -1,21 +1,5 @@
 package fr.insee.rmes.webservice;
 
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
@@ -31,6 +15,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/structures")
@@ -47,7 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class StructureResources  extends GenericResources {
 
-	static final Logger logger = LogManager.getLogger(StructureResources.class);
+	static final Logger logger = LoggerFactory.getLogger(StructureResources.class);
 
     @Autowired
     StructureService structureService;
@@ -97,7 +89,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) {
@@ -121,7 +113,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(value = "/structure",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Create a structure")
@@ -135,7 +127,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/structure/{structureId}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Update a structure")
@@ -150,7 +142,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
     public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") String structureId) {
@@ -206,7 +198,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @GetMapping(value = "/components/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishComponentById", summary = "Publish a component")
     public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) String id) {
@@ -218,7 +210,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) String id) {
@@ -230,7 +222,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/components/{id}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateComponent", summary = "Update a component")
@@ -244,7 +236,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(value = "/components",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createComponent", summary = "create a component")

@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -47,7 +46,7 @@ public class FamilyPublication extends RdfService {
 					}
 					// Literals
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext());
@@ -62,7 +61,7 @@ public class FamilyPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource familyToPublishRessource = PublicationUtils.tranformBaseURIToPublish(family);
+		Resource familyToPublishRessource = publicationUtils.tranformBaseURIToPublish(family);
 		repositoryPublication.publishResource(familyToPublishRessource, model, Constants.FAMILY);
 		
 	}

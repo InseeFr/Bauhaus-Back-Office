@@ -1,13 +1,13 @@
 package fr.insee.rmes.exceptions;
 
 
-import javax.xml.transform.ErrorListener;
-import javax.xml.transform.TransformerException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.TransformerException;
 
 public class BauhausErrorListener implements ErrorListener {
 

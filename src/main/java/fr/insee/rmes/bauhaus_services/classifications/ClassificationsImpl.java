@@ -15,14 +15,14 @@ import fr.insee.rmes.model.classification.Classification;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +39,7 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 	@Autowired
 	private ClassificationPublication classificationPublication;
 	
-	static final Logger logger = LogManager.getLogger(ClassificationsImpl.class);
+	static final Logger logger = LoggerFactory.getLogger(ClassificationsImpl.class);
 	
 	@Override
 	public String getFamilies() throws RmesException {

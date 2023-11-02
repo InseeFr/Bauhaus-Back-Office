@@ -1,10 +1,9 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import fr.insee.rmes.bauhaus_services.Constants;
 
 public class QueryUtils {
 

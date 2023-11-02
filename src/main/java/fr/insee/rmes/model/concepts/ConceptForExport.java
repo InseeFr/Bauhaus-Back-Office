@@ -1,12 +1,11 @@
 package fr.insee.rmes.model.concepts;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.insee.rmes.bauhaus_services.Constants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import fr.insee.rmes.bauhaus_services.Constants;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConceptForExport {
 

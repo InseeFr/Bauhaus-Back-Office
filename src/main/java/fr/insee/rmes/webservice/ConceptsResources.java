@@ -16,8 +16,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
 public class ConceptsResources  extends GenericResources   {
 	
-	static final Logger logger = LogManager.getLogger(ConceptsResources.class);
+	static final Logger logger = LoggerFactory.getLogger(ConceptsResources.class);
 	
 	@Autowired
 	ConceptsService conceptsService;
@@ -82,9 +82,9 @@ public class ConceptsResources  extends GenericResources   {
 	}
 	
 	
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "deleteConcept", summary = "deletion")
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) {
@@ -205,8 +205,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PostMapping(value = "/concept", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConcept", summary = "Create concept" )
 	public ResponseEntity<Object> setConcept(
@@ -219,8 +219,9 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	//TODO Test with Roles.ADMIN, Roles.CONCEPT_CONTRIBUTOR (user stamp is contributor and user stamp is not contributor) : StampRestrictionsServiceImpl.isConceptManager
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptById", summary = "Update concept")
 	public ResponseEntity<Object> setConcept(
@@ -235,8 +236,9 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptCreator() ")
+	//TODO Test with admin and with concept_creator (user stamp is creator of all concepts, user stamp is not creator of one concept)
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@PutMapping(value= "/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
@@ -262,8 +264,8 @@ public class ConceptsResources  extends GenericResources   {
 		conceptsService.exportZipConcept(id, accept, response);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() ")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PostMapping(value = "/collection", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollection", summary = "Create collection")
 	public ResponseEntity<Object> setCollection(
@@ -276,9 +278,9 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isConceptsContributor() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")
 	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionById", summary = "Update collection")
 	public ResponseEntity<Object> setCollection(
@@ -294,8 +296,8 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin() "
-			+ "|| @AuthorizeMethodDecider.isCollectionCreator()")	
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")	
 	@PutMapping(value= "/collections/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setCollectionsValidation", summary = "Collections validation")
 	public ResponseEntity<Object> setCollectionsValidation(

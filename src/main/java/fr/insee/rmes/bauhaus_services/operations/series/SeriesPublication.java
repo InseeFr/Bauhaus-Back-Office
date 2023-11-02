@@ -1,5 +1,16 @@
 package fr.insee.rmes.bauhaus_services.operations.series;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.external_services.notifications.NotificationsContract;
+import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -11,19 +22,6 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class SeriesPublication extends RdfService {
@@ -81,7 +79,7 @@ public class SeriesPublication extends RdfService {
 					}
 					// Literals
 					else {
-						model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), 
+						model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), 
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext()
@@ -101,7 +99,7 @@ public class SeriesPublication extends RdfService {
 			repoGestion.closeStatements(hasPartStatements);
 			con.close();
 		}
-		Resource seriesToPublishRessource = PublicationUtils.tranformBaseURIToPublish(series);
+		Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(series);
 		repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
 	}
@@ -114,9 +112,9 @@ public class SeriesPublication extends RdfService {
 	}
 
 	public void transformSubjectAndObject(Model model, Statement statement) {
-		model.add(PublicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
+		model.add(publicationUtils.tranformBaseURIToPublish(statement.getSubject()), 
 				statement.getPredicate(), 
-				PublicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
+				publicationUtils.tranformBaseURIToPublish((Resource) statement.getObject()),
 				statement.getContext());
 	}
 

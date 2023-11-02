@@ -7,8 +7,8 @@ import fr.insee.rmes.config.keycloak.KeycloakServer;
 import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
 import fr.insee.rmes.config.keycloak.ServerZone;
 import fr.insee.rmes.exceptions.RmesException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -31,10 +31,10 @@ public class KeycloakServices {
     private final Map<String, ServerZone> zonesByServer;
     private final Map<String, ServerZone> zonesByUrl=new HashMap<>();
     protected RestTemplate keycloakClient = new RestTemplate();
-    static final Logger log = LogManager.getLogger(KeycloakServices.class);
+    static final Logger log = LoggerFactory.getLogger(KeycloakServices.class);
     private final Map<ServerZone.Zone, KeycloakServer> keycloakServers;
 
-    static final Logger logger = LogManager.getLogger(KeycloakServices.class);
+    static final Logger logger = LoggerFactory.getLogger(KeycloakServices.class);
 
     public KeycloakServices(
             @Value("${fr.insee.rmes.bauhaus.keycloak.client.secret}") String secret,
