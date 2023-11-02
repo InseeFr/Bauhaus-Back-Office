@@ -1,23 +1,15 @@
 package fr.insee.rmes.config.auth.security.restrictions;
 
-import java.util.List;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 
-import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
+import java.util.List;
 
 public interface StampsRestrictionsService {
 	
 	/*
 	 * USER
 	 */
-	
-	User getUser() throws RmesException;
-	
-	void setFakeUser(String user) throws JsonProcessingException;
-
 	
 	/*
 	 * CONCEPTS AND COLLECTIONS
@@ -60,9 +52,6 @@ public interface StampsRestrictionsService {
 	boolean canCreateOperation(IRI seriesURI) throws RmesException;
 	
 	boolean canModifyOperation(IRI seriesURI) throws RmesException;
-	
-	boolean canValidateOperation(IRI seriesURI) throws RmesException;
-
 
 	
 	/*
@@ -73,8 +62,6 @@ public interface StampsRestrictionsService {
 	boolean canModifySeries(IRI uri) throws RmesException;
 
 	boolean canValidateSeries(IRI uri) throws RmesException;
-
-	boolean isSeriesManager(IRI uri) throws RmesException;
 
 	/*
 	 * FAMILIES (OPERATION MODULE)

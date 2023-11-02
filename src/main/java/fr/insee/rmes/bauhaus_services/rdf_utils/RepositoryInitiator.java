@@ -4,9 +4,6 @@ import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
-import java.util.Map;
-import java.util.Objects;
-
 public interface RepositoryInitiator {
     static RepositoryInitiator newInstance(Type type, KeycloakServices keycloakServices) {
         switch (type) {

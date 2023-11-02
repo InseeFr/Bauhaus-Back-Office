@@ -1,9 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.exceptions.RmesException;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONObject;
-
-import fr.insee.rmes.exceptions.RmesException;
 
 public interface GeographyService {
 

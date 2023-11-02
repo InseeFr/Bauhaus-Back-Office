@@ -1,11 +1,22 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
+import fr.insee.rmes.bauhaus_services.links.LinksUtils;
+import fr.insee.rmes.bauhaus_services.notes.NoteManager;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.model.concepts.Concept;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -15,41 +26,26 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.concepts.publication.ConceptsPublication;
-import fr.insee.rmes.bauhaus_services.links.LinksUtils;
-import fr.insee.rmes.bauhaus_services.notes.NoteManager;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.concepts.Concept;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.JSONUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class ConceptsUtils extends RdfService {
 
-	private static final Logger logger = LogManager.getLogger(ConceptsUtils.class);
-	
+	private static final Logger logger = LoggerFactory.getLogger(ConceptsUtils.class);
+
 	@Autowired
 	private ConceptsPublication conceptsPublication;
-	
+
 	@Autowired
 	private NoteManager noteManager;
-
 
 	public String createID() throws RmesException {
 		JSONObject json = repoGestion.getResponseAsObject(ConceptsQueries.lastConceptID());
@@ -171,7 +167,7 @@ public class ConceptsUtils extends RdfService {
 		repoGestion.loadConcept(conceptURI, model, notesToDeleteAndUpdate);
 	}
 
-	public void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
+	private void conceptsValidation(JSONArray conceptsToValidate) throws RmesException  {
 		Model model = new LinkedHashModel();
 		List<IRI> conceptsToValidateList = new ArrayList<>();
 		for (int i = 0; i < conceptsToValidate.length(); i++) {

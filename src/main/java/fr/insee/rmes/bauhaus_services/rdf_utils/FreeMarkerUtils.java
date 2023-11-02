@@ -1,22 +1,21 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.config.freemarker.FreemarkerConfig;
+import fr.insee.rmes.exceptions.RmesException;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import fr.insee.rmes.config.freemarker.FreemarkerConfig;
-import fr.insee.rmes.exceptions.RmesException;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-
 public class FreeMarkerUtils {
 
-	static final Logger logger = LogManager.getLogger(FreeMarkerUtils.class);
+	static final Logger logger = LoggerFactory.getLogger(FreeMarkerUtils.class);
 
 	
 	private FreeMarkerUtils() {

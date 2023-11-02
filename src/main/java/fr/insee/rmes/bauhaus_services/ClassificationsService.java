@@ -1,9 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import org.springframework.web.multipart.MultipartFile;
-
 import fr.insee.rmes.exceptions.RmesException;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ClassificationsService {
 	

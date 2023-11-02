@@ -4,31 +4,22 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
+import static fr.insee.rmes.config.PropertiesKeys.*;
+
+
 @Configuration
 public class Config {
-
-	private final  Logger logger = LogManager.getLogger(Config.class);
 	
 
 	/******************************************************/
 	/** GLOBAL CONF 	***********************************/
 	/******************************************************/
 
-	@Value("${fr.insee.rmes.bauhaus.appHost}")
-	private String appHost;
-
-	@Value("${fr.insee.rmes.bauhaus.env}")
-	private String env;
-
-	@Value("${fr.insee.rmes.bauhaus.force.ssl}")
-	private boolean requiresSsl = false;
 
 	@Value("${fr.insee.rmes.bauhaus.lg1}")
 	private String lg1;
@@ -37,12 +28,6 @@ public class Config {
 
 	@Value("${fr.insee.rmes.bauhaus.baseGraph}")
 	private String baseGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.api.host}")	
-	private String swaggerHost;
-	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
-	private String swaggerBasepath;
-	
 
 	/******************************************************/
 	/** DATABASES		***********************************/
@@ -53,27 +38,10 @@ public class Config {
 	private String idRepositoryGestion;
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
 	private String baseUriGestion;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}")
-	private String rdfServerPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}")
-	private String idRepositoryPublicationExt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer}")
-	private String rdfServerPublicationInt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}")
-	private String idRepositoryPublicationInt;
-	@Value("${fr.insee.rmes.bauhaus.sesame.publication.baseURI}")
-	private String baseUriPublication;
 
 	/******************************************************/
 	/** EXTERNAL SERVICES *********************************/
 	/******************************************************/	
-	//MAIL SENDER
-	@Value("${fr.insee.rmes.bauhaus.spoc.url}")
-	private String spocServiceUrl;
-	@Value("${fr.insee.rmes.bauhaus.spoc.user}")
-	private String spocUser;
-	@Value("${fr.insee.rmes.bauhaus.spoc.password}")
-	private String spocPassword;
 
 	//BROKER
 	@Value("${fr.insee.rmes.bauhaus.broker.url}")
@@ -86,12 +54,9 @@ public class Config {
 	//AUTHENTICATION
 	@Value("${fr.insee.rmes.bauhaus.ldap.url}")
 	private String ldapUrl;
-	@Value("${jwt.stamp-claim}")
-	private String stampClaim;
-	@Value("${jwt.role-claim}")
-	private String roleClaim;
-	@Value("${jwt.id-claim}")
-	private String idClaim;
+
+
+
 
 	//LDAP
 	//LDAP
@@ -105,29 +70,19 @@ public class Config {
 	private String sugoiApp;
 	@Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
 	private String sugoiRealm;
-	@Value("${fr.insee.rmes.bauhaus.sugoi.ui}")
-	private String sugoiUi;
 
 	
 	/******************************************************/
 	/** CONCEPTS 		***********************************/
 	/******************************************************/	
-	
-	@Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}")
-	private String defaultContributor;
-	@Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}")
-	private String defaultMailSender;
-	@Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}")
-	private String maxLengthScopeNote;
+
 	
 	@Value("${fr.insee.rmes.bauhaus.concepts.graph}") //Getter with baseGraph
 	private String conceptsGraph;
 	@Value("${fr.insee.rmes.bauhaus.concepts.scheme}")
 	private String conceptsScheme;
-	@Value("${fr.insee.rmes.bauhaus.concepts.baseURI}")
-	private String conceptsBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.collections.baseURI}")
-	private String collectionsBaseUri;
+
+
 	
 
 	/******************************************************/
@@ -141,14 +96,8 @@ public class Config {
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.operations.graph}")	//Getter with baseGraph
 	private String operationsGraph;
-	@Value("${fr.insee.rmes.bauhaus.operations.baseURI}")	
-	private String operationsBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.operations.series.baseURI}")	
-	private String opSeriesBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.operations.families.baseURI}")	
-	private String opFamiliesBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.documentations.baseURI}")	
-	private String documentationsBaseUri;
+
+
 	@Value("${fr.insee.rmes.bauhaus.documentations.graph}")	//Getter with baseGraph
 	private String documentationsGraph;
 	@Value("${fr.insee.rmes.bauhaus.documentations.msd.graph}")	//Getter with baseGraph
@@ -157,16 +106,14 @@ public class Config {
 	private String msdConceptsGraph;
 	@Value("${fr.insee.rmes.bauhaus.documentation.geographie.graph}")	//Getter with baseGraph
 	private String documentationsGeoGraph;
-	@Value("${fr.insee.rmes.bauhaus.documentation.geographie.baseURI}")	
-	private String documentationsGeoBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.documentation.titlePrefixLg1}")	
 	private String documentationsTitlePrefixLg1;
 	@Value("${fr.insee.rmes.bauhaus.documentation.titlePrefixLg2}")	
 	private String documentationsTitlePrefixLg2;
-	@Value("${fr.insee.rmes.bauhaus.links.baseURI}")	
+	@Value("${"+LINKS_BASE_URI+"}")
 	private String linksBaseUri;
-	@Value("${fr.insee.rmes.bauhaus.documents.baseURI}")	
-	private String documentsBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.documents.graph}")	//Getter with baseGraph
 	private String documentsGraph;
 	@Value("${fr.insee.rmes.bauhaus.storage.document.gestion}")	
@@ -188,20 +135,15 @@ public class Config {
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.structures.graph}")	//Getter with baseGraph
 	private String structuresGraph;
-	@Value("${fr.insee.rmes.bauhaus.structures.baseURI}")	
-	private String structuresBaseUri;
+
 	@Value("${fr.insee.rmes.bauhaus.structures.components.graph}")	//Getter with baseGraph
 	private String structuresComponentsGraph;
-	@Value("${fr.insee.rmes.bauhaus.structures.components.baseURI}")	
-	private String structuresComponentsBaseUri;
 
 	/******************************************************/
 	/** CODE LISTS		***********************************/
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.codelists.graph}")	//Getter with baseGraph
 	private String codeListsGraph;
-	@Value("${fr.insee.rmes.bauhaus.codeList.baseURI}")	
-	private String codeListsBaseUri;
 	
 	/******************************************************/
 	/** ORGANIZATIONS	***********************************/
@@ -218,41 +160,12 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.geographie.graph}")	 //Getter with baseGraph
 	private String geographyGraph;
 
-	
+	@Value("${"+CODE_LIST_BASE_URI+"}")
+	private String codeListBaseUri;
+	@Value("${"+DOCUMENTS_BASE_URI+"}")
+	private String documentsBaseUri;
 
 
-	/******************************************************/
-	/** PRINTER			***********************************/
-	/******************************************************/
-	public void printMajorConfig() {
-		logger.info("*********************** CONFIG USED ***********************************");
-
-		logger.info("ENV : {}", env);
-		
-		logger.info("SERVEUR RDF : ");
-		
-		logger.info("   GESTION : {} _ REPO : {} _ BASEURI : {}",rdfServerGestion,idRepositoryGestion, baseUriGestion);
-		logger.info("   PUB EXTERNE : {} _ REPO : {} _ BASEURI : {}",rdfServerPublicationExt, idRepositoryPublicationExt, baseUriPublication);
-		logger.info("   PUB INTERNE : {} _ REPO : {}",rdfServerPublicationInt,idRepositoryPublicationInt);
-		
-		logger.info("DOCUMENT STORAGE : ");
-		
-		logger.info("   GESTION : {}", documentsStorageGestion);
-		logger.info("   PUB EXTERNE : {}", documentsStoragePublicationExt);
-		logger.info("   PUB INTERNE : {}", documentsStoragePublicationInt);
-
-
-		
-		logger.info("*********************** END CONFIG USED ***********************************");
-		
-		
-	}
-
-	
-	public Config() {
-		//constructor for spring
-	}
-	
 	/******************************************************/
 	/** INIT STATIC		***********************************/
 	/******************************************************/
@@ -261,24 +174,11 @@ public class Config {
 		GenericQueries.setConfig(this);
 		RdfUtils.setConfig(this);
 		Sugoi.setConfig(this);
-		PublicationUtils.setConfig(this);
 	}
 
 	/******************************************************/
 	/** GETTERS 		***********************************/
 	/******************************************************/
-
-	public String getAppHost() {
-		return appHost;
-	}
-
-	public String getEnv() {
-		return env;
-	}
-
-	public boolean isRequiresSsl() {
-		return requiresSsl;
-	}
 
 	public String getLg1() {
 		return lg1;
@@ -304,37 +204,6 @@ public class Config {
 		return baseUriGestion;
 	}
 
-	public String getRdfServerPublication() {
-		return rdfServerPublicationExt;
-	}
-
-	public String getRepositoryIdPublication() {
-		return idRepositoryPublicationExt;
-	}
-
-	public String getRdfServerPublicationInterne() {
-		return rdfServerPublicationInt;
-	}
-
-	public String getRepositoryIdPublicationInterne() {
-		return idRepositoryPublicationInt;
-	}
-
-	public String getBaseUriPublication() {
-		return baseUriPublication;
-	}
-
-	public String getDefaultContributor() {
-		return defaultContributor;
-	}
-
-	public String getDefaultMailSender() {
-		return defaultMailSender;
-	}
-
-	public String getMaxLengthScopeNote() {
-		return maxLengthScopeNote;
-	}
 
 	public String getConceptsGraph() {
 		return baseGraph + conceptsGraph;
@@ -342,14 +211,6 @@ public class Config {
 
 	public String getConceptsScheme() {
 		return conceptsScheme;
-	}
-
-	public String getConceptsBaseUri() {
-		return conceptsBaseUri;
-	}
-
-	public String getCollectionsBaseUri() {
-		return collectionsBaseUri;
 	}
 
 	public String getClassifFamiliesGraph() {
@@ -360,28 +221,8 @@ public class Config {
 		return baseGraph + operationsGraph;
 	}
 
-	public String getOperationsBaseUri() {
-		return operationsBaseUri;
-	}
-
-	public String getOpSeriesBaseUri() {
-		return opSeriesBaseUri;
-	}
-
-	public String getOpFamiliesBaseUri() {
-		return opFamiliesBaseUri;
-	}
-
-	public String getDocumentationsBaseUri() {
-		return documentationsBaseUri;
-	}
-
 	public String getDocumentationsGraph() {
 		return baseGraph + documentationsGraph;
-	}
-
-	public String getDocumentsBaseUri() {
-		return documentsBaseUri;
 	}
 
 	public String getMsdGraph() {
@@ -396,20 +237,12 @@ public class Config {
 		return baseGraph + documentationsGeoGraph;
 	}
 
-	public String getDocumentationsGeoBaseUri() {
-		return documentationsGeoBaseUri;
-	}
-
 	public String getDocumentationsTitlePrefixLg1() {
 		return documentationsTitlePrefixLg1;
 	}
 
 	public String getDocumentationsTitlePrefixLg2() {
 		return documentationsTitlePrefixLg2;
-	}
-
-	public String getLinksBaseUri() {
-		return linksBaseUri;
 	}
 
 	public String getDocumentsGraph() {
@@ -444,24 +277,12 @@ public class Config {
 		return baseGraph + structuresGraph;
 	}
 
-	public String getStructuresBaseUri() {
-		return structuresBaseUri;
-	}
-
 	public String getStructuresComponentsGraph() {
 		return baseGraph + structuresComponentsGraph;
 	}
 
-	public String getStructuresComponentsBaseUri() {
-		return structuresComponentsBaseUri;
-	}
-
 	public String getCodeListGraph() {
 		return baseGraph + codeListsGraph;
-	}
-
-	public String getCodeListBaseUri() {
-		return codeListsBaseUri;
 	}
 
 	public String getOrganizationsGraph() {
@@ -474,18 +295,6 @@ public class Config {
 
 	public String getGeographyGraph() {
 		return  baseGraph + geographyGraph;
-	}
-
-	public String getSpocServiceUrl() {
-		return spocServiceUrl;
-	}
-
-	public String getSpocUser() {
-		return spocUser;
-	}
-
-	public String getSpocPassword() {
-		return spocPassword;
 	}
 
 	public String getBrokerUrl() {
@@ -502,18 +311,6 @@ public class Config {
 
 	public String getLdapUrl() {
 		return ldapUrl;
-	}
-
-	public String getStampclaim() {
-		return stampClaim;
-	}
-
-	public String getRoleclaim() {
-		return roleClaim;
-	}
-
-	public String getIdclaim() {
-		return idClaim;
 	}
 
 	public String getSugoiUrl() {
@@ -536,20 +333,15 @@ public class Config {
 		return sugoiRealm;
 	}
 
-	public String getSugoiUi() {
-		return sugoiUi;
+	public String getCodeListBaseUri() {
+		return this.codeListBaseUri;
 	}
 
-	public String getSwaggerHost() {
-		return swaggerHost;
+	public String getLinksBaseUri() {
+		return this.linksBaseUri;
 	}
 
-	public String getSwaggerBasepath() {
-		return swaggerBasepath;
+	public String getDocumentsBaseUri() {
+		return this.documentsBaseUri;
 	}
-
-	public String getSwaggerUrl() {
-		return (requiresSsl ? "https" : "http") + "://" + swaggerHost + "/" + swaggerBasepath;
-	}
-
 }

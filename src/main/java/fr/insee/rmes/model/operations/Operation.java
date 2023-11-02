@@ -1,8 +1,8 @@
 package fr.insee.rmes.model.operations;
 
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
-import fr.opensagres.xdocreport.utils.StringUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.util.ObjectUtils;
 
 public class Operation {
 
@@ -58,7 +58,7 @@ public class Operation {
 	}
 
 	public void setId(String id) {
-		if(StringUtils.isNotEmpty(id)) {
+		if(!ObjectUtils.isEmpty(id)) {
 			this.id = id;
 		}
 	}

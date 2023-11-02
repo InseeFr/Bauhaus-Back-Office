@@ -1,11 +1,9 @@
 package fr.insee.rmes.config.auth;
 
-import fr.insee.rmes.config.Config;
-
 public class AuthType {
 
-	public static String getAuthType(Config config) {
-		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") || config.getEnv().equals("PROD")) return "OpenIDConnectAuth";
+	public static String getAuthType(String env) {
+		if (env.equals("pre-prod") || env.equals("prod") || env.equals("PROD")) return "OpenIDConnectAuth";
 		else return "NoAuthImpl";
 	}
 	

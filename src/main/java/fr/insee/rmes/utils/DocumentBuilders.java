@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
+
 import javax.xml.parsers.DocumentBuilder;
-// BASED ON SOURCE: https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#JAXP_DocumentBuilderFactory.2C_SAXParserFactory_and_DOM4J
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 

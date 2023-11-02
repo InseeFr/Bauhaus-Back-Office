@@ -1,11 +1,11 @@
 package fr.insee.rmes.model.concepts;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import fr.insee.rmes.model.links.Link;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class Concept {
 

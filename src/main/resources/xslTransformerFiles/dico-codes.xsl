@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema"  xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" exclude-result-prefixes="#all"
-    version="3.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+                xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" exclude-result-prefixes="#all"
+                version="3.0">
     <xsl:output method="xml" indent="yes" encoding="UTF-8"/>
 
     <!-- the name of the DDI file -->

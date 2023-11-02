@@ -10,9 +10,9 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +25,7 @@ import java.util.*;
 
 @Service
 public class ConceptsCollectionServiceImpl extends RdfService implements ConceptsCollectionService {
-    static final Logger logger = LogManager.getLogger(ConceptsCollectionServiceImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(ConceptsCollectionServiceImpl.class);
 
     @Autowired
     CollectionExportBuilder collectionExport;

@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.webservice.ConceptsResources;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;

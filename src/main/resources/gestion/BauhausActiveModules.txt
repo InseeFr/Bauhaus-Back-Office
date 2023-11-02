@@ -1,5 +1,0 @@
-concepts
-classifications
-operations
-structures
-habilitations

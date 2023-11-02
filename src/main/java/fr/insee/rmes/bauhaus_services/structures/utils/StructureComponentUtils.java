@@ -19,8 +19,6 @@ import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -28,6 +26,8 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,11 +36,12 @@ import java.util.Arrays;
 
 @Component
 public class StructureComponentUtils extends RdfService {
+    static final Logger logger = LoggerFactory.getLogger(StructureComponentUtils.class);
+
     private static final String MAX_LENGTH = "maxLength";
 	private static final String MIN_LENGTH = "minLength";
 	private static final String PATTERN = "pattern";
 	private static final String IO_EXCEPTION = "IOException";
-	static final Logger logger = LogManager.getLogger(StructureComponentUtils.class);
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 

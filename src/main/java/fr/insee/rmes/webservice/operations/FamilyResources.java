@@ -1,18 +1,5 @@
 package fr.insee.rmes.webservice.operations;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
@@ -25,6 +12,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 
 /***************************************************************************************************
@@ -75,7 +68,7 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyById", summary = "Update an existing family" )
 	public ResponseEntity<Object> setFamilyById(
@@ -90,7 +83,7 @@ public class FamilyResources extends OperationsCommonResources {
 	}
 
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping("/family")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createFamily", summary = "Create a new family")
 	public ResponseEntity<Object> createFamily(
@@ -105,7 +98,7 @@ public class FamilyResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	@PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/validate/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(

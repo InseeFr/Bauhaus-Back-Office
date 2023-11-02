@@ -1,8 +1,8 @@
 package fr.insee.rmes.model.notes;
 
-import java.time.LocalDateTime;
-
 import org.eclipse.rdf4j.model.IRI;
+
+import java.time.LocalDateTime;
 
 public class DatableNote {
 	

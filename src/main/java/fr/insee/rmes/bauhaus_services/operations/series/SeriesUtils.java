@@ -12,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
@@ -22,8 +23,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import fr.insee.rmes.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -31,6 +30,8 @@ import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,8 +40,6 @@ import java.util.*;
 
 @Component
 public class SeriesUtils extends RdfService {
-
-
 
 	private static final String ID_SERIE = "idSerie";
 
@@ -65,7 +64,9 @@ public class SeriesUtils extends RdfService {
 	@Autowired
 	private DocumentationsUtils documentationsUtils;
 
-	private static final Logger logger = LogManager.getLogger(SeriesUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(SeriesUtils.class);
+	@Autowired
+	private UriUtils uriUtils;
 
 	/*READ*/
 
@@ -318,7 +319,7 @@ public class SeriesUtils extends RdfService {
 		List<OperationsLink> replaces = series.getReplaces();
 			Optional.ofNullable(replaces)
             .orElseGet(Collections::emptyList).stream().filter(repl -> !repl.isEmpty()).forEach(replace -> {
-				String replUri = ObjectType.getCompleteUriGestion(replace.getType(), replace.getId());
+				String replUri = this.uriUtils.getCompleteUriGestion(replace.getType(), replace.getId());
 				addReplacesAndReplacedBy(model,  RdfUtils.toURI(replUri), seriesURI);
 			});
 		
@@ -326,7 +327,7 @@ public class SeriesUtils extends RdfService {
 		List<OperationsLink> isReplacedBys = series.getIsReplacedBy();
 		Optional.ofNullable(isReplacedBys)
         .orElseGet(Collections::emptyList).stream().filter(isRepl -> !isRepl.isEmpty()).forEach(isRepl -> {
-				String isReplUri = ObjectType.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
+				String isReplUri = this.uriUtils.getCompleteUriGestion(isRepl.getType(), isRepl.getId());
 				addReplacesAndReplacedBy(model, seriesURI, RdfUtils.toURI(isReplUri));
 			});
 		
@@ -350,7 +351,7 @@ public class SeriesUtils extends RdfService {
 		if (links != null) {
 			for (OperationsLink link : links) {
 				if (!link.isEmpty()) {
-					String linkUri = ObjectType.getCompleteUriGestion(link.getType(), link.getId());
+					String linkUri = this.uriUtils.getCompleteUriGestion(link.getType(), link.getId());
 					RdfUtils.addTripleUri(seriesURI, predicate, linkUri, model, RdfUtils.operationsGraph());
 				}
 			}

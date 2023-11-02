@@ -1,25 +1,17 @@
 package fr.insee.rmes.external_services.notifications;
 
-import java.util.Arrays;
-
-import javax.annotation.PostConstruct;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.exceptions.RmesException;
+import javax.annotation.PostConstruct;
+import javax.jms.*;
+import java.util.Arrays;
 
 @Service
 public class RmesNotificationsImpl implements NotificationsContract {
@@ -38,7 +30,7 @@ public class RmesNotificationsImpl implements NotificationsContract {
     private static final long DELAY = 1;
     private static final long DUREE_VIE_MESSAGE = 300000;
 
-    static final Logger logger = LogManager.getLogger(RmesNotificationsImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(RmesNotificationsImpl.class);
 	
 	@Override
 	public void notifyConceptCreation(String id, String uri) throws RmesException {

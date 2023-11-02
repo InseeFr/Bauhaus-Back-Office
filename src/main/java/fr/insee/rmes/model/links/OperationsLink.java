@@ -1,9 +1,9 @@
 package fr.insee.rmes.model.links;
 
-import java.util.Objects;
-
 import fr.opensagres.xdocreport.core.utils.StringUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.Objects;
 
 public class OperationsLink {
 

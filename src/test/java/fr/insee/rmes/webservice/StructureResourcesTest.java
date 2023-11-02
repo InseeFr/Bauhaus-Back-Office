@@ -1,7 +1,7 @@
 package fr.insee.rmes.webservice;
 
-import static org.mockito.Mockito.*;
-
+import fr.insee.rmes.bauhaus_services.structures.StructureService;
+import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +11,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.exceptions.RmesException;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
 class StructureResourcesTest {
 

@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(properties = {
         "fr.insee.rmes.bauhaus.keycloak.client.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.id = XXX",
-        "fr.insee.rmes.bauhaus.auth-server-url= keycloak.interne",
+        "fr.insee.rmes.bauhaus.auth-server-url = keycloak.interne",
         "fr.insee.rmes.bauhaus.keycloak.client.dmz.secret = XXX",
         "fr.insee.rmes.bauhaus.keycloak.client.dmz.id = XXX",
         "fr.insee.rmes.bauhaus.dmz.auth-server-url = keycloak.dmz",
@@ -42,7 +42,6 @@ class KeycloakServicesTest {
 
     @Autowired
     private KeycloakServicesStub keycloakServices;
-    private Token token;
 
     @Test
     void nowPlus1Second() {

@@ -1,14 +1,13 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.famOpeSerUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class FamOpeSerQueries extends GenericQueries{
 

@@ -1,7 +1,5 @@
 package fr.insee.rmes.config.keycloak;
 
-import java.net.URL;
-
 public class KeycloakServer {
 
     private String secret;

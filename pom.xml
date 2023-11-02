@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.8</version>
+		<version>2.7.16</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	
@@ -13,7 +13,7 @@
 	<groupId>fr.insee.rmes</groupId>
 	<artifactId>Bauhaus-BO</artifactId>
 	<packaging>war</packaging>
-	<version>3.6.1</version>
+	<version>3.6.2</version>
 	<name>Bauhaus-Back-Office</name>
 	<description>Back-office services for Bauhaus</description>
 	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -29,18 +29,6 @@
 	</organization>
 	<developers>
 		<developer>
-			<name>Alice Lambois</name>
-			<email>alice.lambois@insee.fr</email>
-		</developer>
-		<developer>
-			<name>Nicolas Laval</name>
-			<email>nicolas.laval@insee.fr</email>
-		</developer>
-		<developer>
-			<name>Olivier Pucher</name>
-			<email>olivier.pucher@insee.fr</email>
-		</developer>
-		<developer>
 			<name>Jérôme Bourgeois</name>
 			<email>jerome.bourgeois@insee.fr</email>
 		</developer>
@@ -49,19 +37,26 @@
 
 	<properties>
 		<final.war.name>bauhaus</final.war.name>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 
-		<springdoc-openapi-ui.version>1.6.6</springdoc-openapi-ui.version>
+		<springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
 		<jackson.version>2.13.1</jackson.version>
-		<rdf4j.version>3.7.7</rdf4j.version>
+		<rdf4j.version>4.3.6</rdf4j.version>
 		<swagger.core.version>2.1.12</swagger.core.version>
-		<log4j2.version>2.17.1</log4j2.version>
-		<xdocreport.version>2.0.3</xdocreport.version>
+		<xdocreport.version>2.0.4</xdocreport.version>
 		<junit.version>5.8.2</junit.version>
 		<jacoco.version>0.8.5</jacoco.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
 		<java-jwt.version>3.4.1</java-jwt.version>
+		<json.version>20230618</json.version>
+		<flexmark.version>0.64.8</flexmark.version>
+		<jaxb.version>4.0.3</jaxb.version>
+		<zt.version>1.16</zt.version>
+		<saxon.version>12.3</saxon.version>
+		<!--<slf4j.version>2.0.9</slf4j.version>
+		<logback.version>1.4.11</logback.version>-->
+
 
 		<!-- SONAR -->
 		<sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
@@ -85,11 +80,22 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
 				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-to-slf4j</artifactId>
 				</exclusion>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-tomcat</artifactId>
+					</exclusion>
 			</exclusions>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
@@ -97,13 +103,13 @@
 		<dependency>
 			<groupId>org.zeroturnaround</groupId>
 			<artifactId>zt-zip</artifactId>
-			<version>1.14</version>
+			<version>${zt.version}</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
-		  <version>2.3.3</version>
+		  <version>${jaxb.version}</version>
 		  <scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -133,14 +139,20 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 
-		<!-- SLF4J / LOG4J -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-log4j2</artifactId>
-		</dependency>
 
 		<!-- SWAGGER -->
 		<dependency>
@@ -154,6 +166,12 @@
 			<groupId>org.eclipse.rdf4j</groupId>
 			<artifactId>rdf4j-repository-http</artifactId>
 			<version>${rdf4j.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>jcl-over-slf4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.rdf4j</groupId>
@@ -170,9 +188,8 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20211205</version>
+			<version>${json.version}</version>
 		</dependency>
-
 
 		<!-- INSEE for JMS -->
 		<dependency>
@@ -186,15 +203,15 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-		    <groupId>jakarta.jms</groupId>
-		    <artifactId>jakarta.jms-api</artifactId>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<!-- SAXON FOR XSLT -->
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
-			<version>11.1.1</version>
+			<version>${saxon.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -218,23 +235,13 @@
 			<artifactId>fr.opensagres.xdocreport.template.freemarker</artifactId>
 			<version>${xdocreport.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>fr.opensagres.xdocreport</groupId>
-			<artifactId>fr.opensagres.xdocreport.converter.odt.odfdom</artifactId>
-			<version>${xdocreport.version}</version>
-			 <exclusions>
-				<exclusion>
-					<groupId>xerces</groupId>
-					<artifactId>xercesImpl</artifactId>
-				</exclusion>
-			</exclusions> 
-		</dependency>
+
 
 		<!-- XHTML to Markdown parser -->
 		<dependency>
 			<groupId>com.vladsch.flexmark</groupId>
-			<artifactId>flexmark-all</artifactId>
-			<version>0.64.0</version>
+			<artifactId>flexmark-html2md-converter</artifactId>
+			<version>0.64.8</version>
 		</dependency>
 	</dependencies>
 
@@ -245,6 +252,9 @@
  			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludeGroupIds>org.apache.tomcat.embed</excludeGroupIds>
+				</configuration>
 			</plugin>	
 			
 			<!-- Plugin tests -->

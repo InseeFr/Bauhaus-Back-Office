@@ -1,5 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.external_services.notifications.NotificationsContract;
+import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -9,18 +19,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
-
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 
 @Repository
 public class IndicatorPublication extends RdfService {
@@ -55,12 +53,12 @@ public class IndicatorPublication extends RdfService {
 						|| pred.endsWith(Constants.CONTRIBUTOR)
 						|| pred.endsWith(Constants.PUBLISHER)
 						|| pred.endsWith("accrualPeriodicity")) {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
-							PublicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
 				}
 				// Literals
 				else {
-					model.add(PublicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							st.getObject(), st.getContext());
 				}
 				// Other URI to transform : none
@@ -74,7 +72,7 @@ public class IndicatorPublication extends RdfService {
 			repoGestion.closeStatements(statements);
 			con.close();
 		}
-		Resource indicatorToPublishRessource = PublicationUtils.tranformBaseURIToPublish(indicator);
+		Resource indicatorToPublishRessource = publicationUtils.tranformBaseURIToPublish(indicator);
 		repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
 
 	}

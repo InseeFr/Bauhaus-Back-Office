@@ -1,11 +1,10 @@
 package fr.insee.rmes.model.operations.documentations;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.List;
 
 public class Documentation {
 

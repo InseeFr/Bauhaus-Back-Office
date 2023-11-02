@@ -1,15 +1,14 @@
 package fr.insee.rmes.model.operations;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.links.OperationsLink;
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
+import java.util.Objects;
 
 public class Indicator {
 
