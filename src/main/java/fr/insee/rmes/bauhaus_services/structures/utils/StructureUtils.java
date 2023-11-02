@@ -94,7 +94,6 @@ public class StructureUtils extends RdfService {
                 componentDefinition.put(REQUIRED, Boolean.parseBoolean(componentDefinitionFlat.getString(REQUIRED)));
             }
 
-
             if(componentDefinitionFlat.has(ORDER)){
                 componentDefinition.put(ORDER, componentDefinitionFlat.getString(ORDER));
             }
@@ -311,7 +310,15 @@ public class StructureUtils extends RdfService {
         if (componentDefinition.getOrder() != null) {
             model.add(componentSpecificationIRI, QB.ORDER, RdfUtils.setLiteralInt(componentDefinition.getOrder()), graph);
         }
-
+        if(componentDefinition.getNotation() != null){
+            model.add(componentSpecificationIRI, SKOS.NOTATION, RdfUtils.setLiteralString(componentDefinition.getNotation()), graph);
+        }
+        if(componentDefinition.getLabelLg1() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg1(), config.getLg1()), graph);
+        }
+        if(componentDefinition.getLabelLg2() != null){
+            model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), config.getLg2()), graph);
+        }
         MutualizedComponent component = componentDefinition.getComponent();
         if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
