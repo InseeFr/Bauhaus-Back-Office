@@ -349,8 +349,7 @@ public class RepositoryUtils {
 	}
 
 	private static void logAndThrowError(String query, RDF4JException e) throws RmesException {
-		logger.error("{} {}",EXECUTE_QUERY_FAILED, query);
-		logger.error(e.getMessage());
+		logger.error("{} {}",EXECUTE_QUERY_FAILED, query, e);
 		throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), EXECUTE_QUERY_FAILED + query);
 	}
 	

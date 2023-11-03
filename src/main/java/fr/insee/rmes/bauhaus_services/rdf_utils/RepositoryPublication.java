@@ -50,7 +50,7 @@ public class RepositoryPublication{
 	static final Logger logger = LoggerFactory.getLogger(RepositoryPublication.class);
 	
 	public RepositoryPublication(@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String rdfServerPublicationExt, 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String idRepositoryPublicationExt,
-								 @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}") String rdfServerPublicationInt, @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}") String idRepositoryPublicationInt,
+								 @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer}") String rdfServerPublicationInt, @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}") String idRepositoryPublicationInt,
 								 @Autowired RepositoryUtils repositoryUtils	) {
 		this.rdfServerPublicationExt=rdfServerPublicationExt;
 		this.idRepositoryPublicationExt=idRepositoryPublicationExt;
