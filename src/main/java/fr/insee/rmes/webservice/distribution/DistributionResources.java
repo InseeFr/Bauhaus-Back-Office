@@ -32,50 +32,33 @@ public class DistributionResources {
     @GetMapping
     @Operation(operationId = "getDistributions", summary = "List of distributions",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public ResponseEntity<Object> getDistributions() {
-        try {
-            String jsonResultat = this.distributionService.getDistributions();
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
-
+    public ResponseEntity<Object> getDistributions() throws RmesException {
+        String jsonResultat = this.distributionService.getDistributions();
+        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
     }
 
     @GetMapping("/{id}")
     @Operation(operationId = "getDistribution", summary = "List of distributions",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public ResponseEntity<Object> getDistribution(@PathVariable(Constants.ID) String id) {
-        try {
-            String jsonResultat = this.distributionService.getDistributionByID(id);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public ResponseEntity<Object> getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+        String jsonResultat = this.distributionService.getDistributionByID(id);
+        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
     }
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a Distribution")
     public ResponseEntity<Object> createDistribution(
-            @Parameter(description = "Distribution", required = true) @RequestBody String body) {
-        try {
-            String id = this.distributionService.create(body);
-            return ResponseEntity.status(HttpStatus.CREATED).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+            @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
+        String id = this.distributionService.create(body);
+        return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDistribution", summary = "Update a Distribution")
     public ResponseEntity<Object> updateDistribution(
             @PathVariable("id") String distributionId,
-            @Parameter(description = "Distribution", required = true) @RequestBody String body) {
-        try {
-            String id = this.distributionService.update(distributionId, body);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+            @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
+        String id = this.distributionService.update(distributionId, body);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 }
