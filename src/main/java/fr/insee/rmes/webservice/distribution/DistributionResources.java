@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,33 +31,30 @@ public class DistributionResources {
     @GetMapping
     @Operation(operationId = "getDistributions", summary = "List of distributions",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public ResponseEntity<Object> getDistributions() throws RmesException {
-        String jsonResultat = this.distributionService.getDistributions();
-        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+    public String getDistributions() throws RmesException {
+        return this.distributionService.getDistributions();
     }
 
     @GetMapping("/{id}")
     @Operation(operationId = "getDistribution", summary = "List of distributions",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public ResponseEntity<Object> getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
-        String jsonResultat = this.distributionService.getDistributionByID(id);
-        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+    public String getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+        return this.distributionService.getDistributionByID(id);
     }
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a Distribution")
-    public ResponseEntity<Object> createDistribution(
+    @ResponseStatus(HttpStatus.CREATED)
+    public String createDistribution(
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
-        String id = this.distributionService.create(body);
-        return ResponseEntity.status(HttpStatus.CREATED).body(id);
+        return this.distributionService.create(body);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDistribution", summary = "Update a Distribution")
-    public ResponseEntity<Object> updateDistribution(
+    public String updateDistribution(
             @PathVariable("id") String distributionId,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
-        String id = this.distributionService.update(distributionId, body);
-        return ResponseEntity.status(HttpStatus.OK).body(id);
+        return this.distributionService.update(distributionId, body);
     }
 }
