@@ -36,6 +36,7 @@ public class DatasetQueries extends GenericQueries {
     public static String getThemes() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("CONCEPTS_GRAPH", config.getBaseGraph() + config.getDatasetsThemeGraph());
+        params.put("LG1", config.getLg1());
         params.put("THEME_TYPE", config.getBaseUriGestion() + config.getDatasetsThemeTypePrefix());
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getThemes.ftlh", params);
     }
