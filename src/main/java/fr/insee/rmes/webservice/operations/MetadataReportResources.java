@@ -173,7 +173,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @param body
 	 * @return
 	 */
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN || T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR || T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
+	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR , T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
