@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.common.iteration.CloseableIteration;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class MockRepositoryResult implements CloseableIteration {
+class MockRepositoryResult implements CloseableIteration<Statement, RepositoryException> {
 
     private final Iterator<Statement> iterator;
 
@@ -55,7 +56,7 @@ class MockRepositoryResult implements CloseableIteration {
     }
 
     @Override
-    public Object next() {
+    public Statement next() {
         return this.iterator.next();
     }
 
@@ -65,7 +66,7 @@ class MockRepositoryResult implements CloseableIteration {
     }
 
     @Override
-    public Stream<Object> stream() {
+    public Stream<Statement> stream() {
         return CloseableIteration.super.stream();
     }
 }
@@ -88,7 +89,7 @@ class CodeListPublicationTest {
     @Test
     void shouldThrowAnExceptionIfTheCodeListRepositoryResultIsEmpty() throws RmesException {
         IRI codeListOrCode = RdfUtils.createIRI("http://code-list");
-        RepositoryResult<Statement> statements = new RepositoryResult<Statement>(new MockRepositoryResult());
+        RepositoryResult<Statement> statements = new RepositoryResult<>(new MockRepositoryResult());
         when(repositoryGestion.getStatements(any(), any())).thenReturn(statements);
         assertThrows(RmesNotFoundException.class, () -> codeListPublication.publishCodeListAndCodes(codeListOrCode,  false));
     }
@@ -103,23 +104,17 @@ class CodeListPublicationTest {
 
         list.add(createStatement("http://subject", "http://predicate", "value"));
 
-        RepositoryResult<Statement> statements = new RepositoryResult<Statement>(new MockRepositoryResult(list));
+        RepositoryResult<Statement> statements = new RepositoryResult<>(new MockRepositoryResult(list));
         when(repositoryGestion.getStatements(any(), any())).thenReturn(statements);
-        when(repositoryGestion.getStatementsPredicateObject(any(), any(), any())).thenReturn(new RepositoryResult<Statement>(new MockRepositoryResult()));
+        when(repositoryGestion.getStatementsPredicateObject(any(), any(), any())).thenReturn(new RepositoryResult<>(new MockRepositoryResult()));
         codeListPublication.publishCodeListAndCodes(codeListOrCode,  false);
 
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
         verify(repositoryPublication, times(1)).publishResource(eq(codeListOrCode), model.capture(), eq(Constants.CODELIST));
 
-        model.getValue().subjects().forEach(subject -> {
-            Assertions.assertEquals("http://subject", subject.stringValue());
-        });
-        model.getValue().predicates().forEach(predicate -> {
-            Assertions.assertEquals("http://predicate", predicate.stringValue());
-        });
-        model.getValue().objects().forEach(object -> {
-            Assertions.assertEquals("value", object.stringValue());
-        });
+        model.getValue().subjects().forEach(subject -> Assertions.assertEquals("http://subject", subject.stringValue()));
+        model.getValue().predicates().forEach(predicate -> Assertions.assertEquals("http://predicate", predicate.stringValue()));
+        model.getValue().objects().forEach(object -> Assertions.assertEquals("value", object.stringValue()));
     }
 
     @Test
@@ -133,8 +128,8 @@ class CodeListPublicationTest {
         list.add(createStatement("http://subject", "http://predicate", "value"));
         list.add(createStatement("http://subject", RDFS.SEEALSO.toString(), "http://see-also"));
 
-        RepositoryResult<Statement> statements = new RepositoryResult<Statement>(new MockRepositoryResult(list));
-        RepositoryResult<Statement> statementsSeeAlso = new RepositoryResult<Statement>(new MockRepositoryResult());
+        RepositoryResult<Statement> statements = new RepositoryResult<>(new MockRepositoryResult(list));
+        RepositoryResult<Statement> statementsSeeAlso = new RepositoryResult<>(new MockRepositoryResult());
 
         when(repositoryGestion.getStatements(any(), any())).thenReturn(statements, statementsSeeAlso);
         assertThrows(RmesNotFoundException.class, () -> codeListPublication.publishCodeListAndCodes(codeListOrCode,  false));
@@ -154,13 +149,13 @@ class CodeListPublicationTest {
         list.add(createStatement("http://subject", RDFS.SEEALSO.toString(), "http://see-also"));
         list.add(createStatement("http://subject", INSEE.VALIDATION_STATE.toString(), ValidationStatus.VALIDATED.toString()));
 
-        RepositoryResult<Statement> statements = new RepositoryResult<Statement>(new MockRepositoryResult(list));
+        RepositoryResult<Statement> statements = new RepositoryResult<>(new MockRepositoryResult(list));
 
         List<Statement> seeAlsoList = new ArrayList<>();
         seeAlsoList.add(createStatement("http://subject2", "http://predicate2", "value"));
         seeAlsoList.add(createStatement("http://subject2", INSEE.VALIDATION_STATE.toString(), ValidationStatus.VALIDATED.toString()));
 
-        RepositoryResult<Statement> statementsSeeAlso = new RepositoryResult<Statement>(new MockRepositoryResult(seeAlsoList));
+        RepositoryResult<Statement> statementsSeeAlso = new RepositoryResult<>(new MockRepositoryResult(seeAlsoList));
 
         when(repositoryGestion.getStatements(any(), any())).thenReturn(statements, statementsSeeAlso);
         when(repositoryGestion.getStatementsPredicateObject(any(), any(), any())).thenReturn(new RepositoryResult<>(new MockRepositoryResult()));
@@ -205,18 +200,18 @@ class CodeListPublicationTest {
         List<Statement> list = new ArrayList<>();
         list.add(createStatement("http://subject", "http://predicate", "value"));
 
-        RepositoryResult<Statement> statements = new RepositoryResult<Statement>(new MockRepositoryResult(list));
+        RepositoryResult<Statement> statements = new RepositoryResult<>(new MockRepositoryResult(list));
 
 
         List<Statement> codesList = new ArrayList<>();
         codesList.add(createStatement("http://subject", SKOS.IN_SCHEME.toString(), "http://code"));
-        RepositoryResult<Statement> statementsCodes = new RepositoryResult<Statement>(new MockRepositoryResult(codesList));
+        RepositoryResult<Statement> statementsCodes = new RepositoryResult<>(new MockRepositoryResult(codesList));
 
 
         List<Statement> codes = new ArrayList<>();
         codes.add(createStatement("http://code", "http://predicate", "value"));
         codes.add(createStatement("http://code", INSEE.VALIDATION_STATE.toString(), ValidationStatus.VALIDATED.toString()));
-        RepositoryResult<Statement> codesStatements = new RepositoryResult<Statement>(new MockRepositoryResult(codes));
+        RepositoryResult<Statement> codesStatements = new RepositoryResult<>(new MockRepositoryResult(codes));
 
         when(repositoryGestion.getStatements(any(), any())).thenReturn(statements, codesStatements);
         when(repositoryGestion.getStatementsPredicateObject(any(), any(), any())).thenReturn(new RepositoryResult<>(statementsCodes));
@@ -251,12 +246,7 @@ class CodeListPublicationTest {
 
             @Override
             public Value getObject() {
-                return new Value() {
-                    @Override
-                    public String stringValue() {
-                        return object;
-                    }
-                };
+                return () -> object;
             }
 
             @Override
