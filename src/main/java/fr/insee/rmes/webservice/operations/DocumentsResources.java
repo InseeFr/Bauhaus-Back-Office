@@ -1,9 +1,10 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
+import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 /**
  * WebService class for resources of Documents and Links
@@ -102,9 +104,12 @@ public class DocumentsResources  extends GenericResources {
 		} catch (RmesException e) {
 			logger.error(e.getDetails());
 			return returnRmesException(e);
+		} catch (NoSuchFileException e) {
+			logger.error("NoSuchFileException {}", e.getMessage());
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.TEXT_PLAIN).body(e.getMessage() + " does not exist");
 		} catch (IOException e) {
 			logger.error("IOException {}", e.getMessage());
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(MediaType.TEXT_PLAIN).body(e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(MediaType.TEXT_PLAIN).body(e.getMessage());
 		}
 	}
 	

@@ -650,7 +650,7 @@ public class DocumentsUtils  extends RdfService  {
 	 * @return Response containing the file (inputStream)
 	 * @throws RmesException
 	 */
-	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
+	public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException, IOException {
 		List<String> pathAndFileName = this.getDocumentPath(id);
 		Path path = Path.of(pathAndFileName.get(0));
 		String fileName = pathAndFileName.get(1);
@@ -661,14 +661,10 @@ public class DocumentsUtils  extends RdfService  {
 		
 		//Get document as resource
 		ByteArrayResource resource = null;
-		try {
-			InputStream input = Files.newInputStream(path);	
-			resource = new ByteArrayResource(IOUtils.toByteArray(input));
-			input.close();
-		} catch (IOException e) {
-			logger.error("Failed to getBytes of resource");
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
+		InputStream input = Files.newInputStream(path);
+		resource = new ByteArrayResource(IOUtils.toByteArray(input));
+		input.close();
+
 		
 		//return the response with document
 		try {

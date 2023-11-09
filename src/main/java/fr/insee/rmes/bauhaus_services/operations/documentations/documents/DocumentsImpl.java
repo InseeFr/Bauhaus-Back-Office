@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 @Service
@@ -92,7 +93,7 @@ public class DocumentsImpl implements DocumentsService {
 	
 
 	@Override
-	public ResponseEntity<Object> downloadDocument(String id) throws RmesException {
+	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
 		return documentsUtils.downloadDocumentFile(id);	
 	}
 	
