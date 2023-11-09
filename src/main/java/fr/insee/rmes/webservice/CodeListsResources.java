@@ -127,27 +127,25 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<Object> getallCodesLists() {
-        String jsonResultat;
+    public ResponseEntity<Object> getAllCodesLists() {
         try {
-            jsonResultat = codeListService.getAllCodesLists(false);
+            String body = codeListService.getAllCodesLists(false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/partial", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getallPartialCodesLists", summary = "Partial List of codes",
+    @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<Object> getallPartialCodesLists() {
-        String jsonResultat;
+    public ResponseEntity<Object> getAllPartialCodesLists() {
         try {
-            jsonResultat = codeListService.getAllCodesLists(true);
+            String body = codeListService.getAllCodesLists(true);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -180,39 +178,60 @@ public class CodeListsResources extends GenericResources {
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getDetailedCodesList(notation, false);
+            String body = codeListService.getDetailedCodesList(notation, false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+    }
+
+    @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getPaginatedCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
+        try {
+            String body = codeListService.getCodesForCodeList(notation, page);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
     }
 
     @GetMapping(value = "/partial/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getDetailedCodesList(notation, true);
+            String body = codeListService.getDetailedCodesList(notation, true);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodeListByNotation", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getCodeListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getCodeListJson(notation);
+            String body = codeListService.getCodeListJson(notation);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+    }
+
+    @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getCodesForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
+        try {
+            String body = codeListService.getCodesJson(notation, page);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
     }
 
     @GetMapping(value = "/partials/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -30,4 +30,8 @@ public interface CodeListService {
     void deleteCodeList(String notation, boolean partial) throws RmesException;
 
     String publishCodeList(String id, boolean b) throws RmesException;
+
+    String getCodesForCodeList(String notation, int page) throws RmesException;
+
+    String getCodesJson(String notation, int page) throws RmesException;
 }

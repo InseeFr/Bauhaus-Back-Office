@@ -1,4 +1,4 @@
-SELECT ?code ?labelLg1 ?labelLg2 ?iri
+SELECT (COUNT(?iri) AS ?count)
 WHERE {
     GRAPH <${CODES_LISTS_GRAPH}> {
         ?codeList rdf:type skos:ConceptScheme .
@@ -11,5 +11,3 @@ WHERE {
         FILTER (lang(?labelLg2) = '${LG2}') .
     }
 }
-ORDER BY ?labelLg1
-LIMIT ${PER_PAGE} OFFSET ${OFFSET}

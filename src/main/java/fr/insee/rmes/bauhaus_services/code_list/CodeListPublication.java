@@ -30,41 +30,30 @@ public class CodeListPublication extends RdfService {
 		}
 	}
 
-	private boolean shouldExcludeTriplet(Statement statement, boolean partial){
+	private boolean shouldExcludeTriplet(Statement statement){
 		String pred = RdfUtils.toString(statement.getPredicate());
-		String value = statement.getObject().stringValue();
-		if(!partial){
-            return pred.contains("rdf:_")
-                    || value.contains("Seq")
-                    || pred.endsWith("validationState")
-                    || pred.endsWith(Constants.CREATOR)
-                    || pred.endsWith(Constants.CONTRIBUTOR);
-		} else {
-            return pred.endsWith("validationState")
-                    || pred.endsWith(Constants.CREATOR)
-                    || pred.endsWith(Constants.CONTRIBUTOR);
-		}
+		return pred.endsWith("validationState")
+				|| pred.endsWith(Constants.CREATOR)
+				|| pred.endsWith(Constants.CONTRIBUTOR);
     }
 
 
 	public void publishCodeListAndCodes(Resource codeListOrCode, boolean partial) throws RmesException {
+
 		Model model = new LinkedHashModel();
 		RepositoryConnection connection = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode);
 
 		try (connection) {
 			checkIfResourceExists(statements, codeListOrCode);
-
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 
-				if (shouldExcludeTriplet(st, partial)) {
+				if (shouldExcludeTriplet(st)) {
 					continue;
 				}
 
-				/*
-				  We also need to publish all triplets linked by the seeAlso predicate
-				 */
+
 				String predicate = RdfUtils.toString(st.getPredicate());
 				String object = st.getObject().stringValue();
 				if (RDFS.SEEALSO.toString().equalsIgnoreCase(predicate)) {
@@ -82,6 +71,7 @@ public class CodeListPublication extends RdfService {
 							st.getContext());
 				}
 			}
+
 
 			addCodesStatement(codeListOrCode, connection);
 
@@ -106,7 +96,7 @@ public class CodeListPublication extends RdfService {
 			while (codeStatements.hasNext()){
 				Statement codeStatement = codeStatements.next();
 
-				if (shouldExcludeTriplet(codeStatement, false)) {
+				if (shouldExcludeTriplet(codeStatement)) {
 					continue;
 				}
 
@@ -141,7 +131,7 @@ public class CodeListPublication extends RdfService {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 
-				if (shouldExcludeTriplet(st, false)) {
+				if (shouldExcludeTriplet(st)) {
 					continue;
 				}
 
