@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -171,7 +170,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		if (!partial && !codeList.has(LAST_LIST_URI_SEGMENT)) {
 			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
-		if(!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty()){
+		if(partial && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
 			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
@@ -195,9 +194,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String setCodesList(String body, boolean partial) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(
-				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		JSONObject codesList = new JSONObject(body);
 
 		this.validateCodeList(codesList, partial);
@@ -219,9 +215,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String setCodesList(String id, String body, boolean partial) throws RmesException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(
-				DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		JSONObject codesList = new JSONObject(body);
 
 		this.validateCodeList(codesList, partial);
@@ -342,55 +335,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDFS.SEEALSO, codeListIri, model, graph);
-			
-			JSONObject original = new JSONObject(getCodeListJson(codeListId));
-			deleteCodes(original);
-			createCodeTriplet(graph, codesList, codeListIri, owlClassUri);
 		}
 		repoGestion.loadSimpleObject(codeListIri, model, null);
 		return codeListId;
 	}
-
-	private void deleteCodes(JSONObject original) {
-		if(!original.has("code")){
-			return;
-		}
-		JSONArray codes = original.getJSONArray("codes");
-		for(int i = 0; i < codes.length(); i++){
-			JSONObject code = codes.getJSONObject(i);
-			try {
-				String iri = code.getString("iri");
-				logger.debug("Deleting code {}", iri);
-				IRI codeIri = RdfUtils.createIRI(iri);
-				repoGestion.deleteObject(codeIri, null);
-			} catch (RmesException e) {
-				logger.error(e.getMessage());
-			}
-
-		}
-	}
-
-	private void createCodeTriplet(Resource graph, JSONObject codesList, IRI codeListIri, IRI uriOwlClass) {
-		if(codesList.has(CODES)){
-			String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
-			JSONObject codes = codesList.getJSONObject(CODES);
-			for (String key : codes.keySet()) {
-				try {
-					JSONObject code = codes.getJSONObject(key);
-
-					Model codeModel = new LinkedHashModel();
-					IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.get(CODE));
-
-					createMainCodeTriplet(graph, codeListIri, code, codeModel, codeIri, uriOwlClass);
-
-					repoGestion.loadSimpleObject(codeIri, codeModel, null);
-				} catch (Exception e) {
-					logger.debug(e.getMessage());
-				}
-			}
-		}
-	}
-
 
 
 	private void createMainCodeTriplet(Resource graph, IRI codeListIri, JSONObject code, Model codeListModel, IRI codeIri, IRI uriOwlClass) {
@@ -451,5 +399,38 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String geCodesListByIRI(String iri) throws RmesException {
 		return repoGestion.getResponseAsArray(CodeListQueries.geCodesListByIRI(iri)).toString();
+	}
+
+	@Override
+	public String updateCodeFromCodeList(String notation, String code, String body) throws RmesException {
+		this.deleteCodeFromCodeList(notation, code);
+		return this.addCodeFromCodeList(notation, body);
+	}
+
+	@Override
+	public String addCodeFromCodeList(String notation, String body) throws RmesException {
+		JSONObject code = new JSONObject(body);
+		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
+
+		IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
+		String lastCodeUriSegment = "code";//codesList.getString(LAST_CODE_URI_SEGMENT);
+		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.getString(CODE));
+		IRI codeListIri = this.generateIri(codesList, false);
+
+		Model codeModel = new LinkedHashModel();
+		createMainCodeTriplet(RdfUtils.codesListGraph(), codeListIri, code, codeModel, codeIri, owlClassUri);
+
+		repoGestion.loadSimpleObject(codeIri, codeModel, null);
+
+		return code.getString(CODE);
+	}
+
+	@Override
+	public String deleteCodeFromCodeList(String notation, String code) throws RmesException {
+		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
+		String lastCodeUriSegment = "code";//codesList.getString(LAST_CODE_URI_SEGMENT);
+		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code);
+		repoGestion.deleteObject(codeIri, null);
+		return null;
 	}
 }

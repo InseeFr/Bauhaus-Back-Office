@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.webservice.codelist;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.exceptions.RmesException;
@@ -32,20 +32,6 @@ class CodeListsResourcesTest {
     void shouldThrowErrorWithGetAllCodesLists() throws RmesException {
         when(codeListService.getAllCodesLists(false)).thenThrow(new RmesException(500, "", ""));
         ResponseEntity<Object> response = codeListsResources.getAllCodesLists();
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
-    @Test
-    void shouldReturn200WithGetAllPartialCodesLists() throws RmesException {
-        when(codeListService.getAllCodesLists(true)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getAllPartialCodesLists();
-        assertEquals("body", response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-    @Test
-    void shouldThrowErrorWithGetAllPartialCodesLists() throws RmesException {
-        when(codeListService.getAllCodesLists(true)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getAllPartialCodesLists();
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -88,6 +74,48 @@ class CodeListsResourcesTest {
     void shouldThrowErrorWithGetCodesForCodeList() throws RmesException {
         when(codeListService.getCodesJson("notation", 1)).thenThrow(new RmesException(500, "", ""));
         ResponseEntity<Object> response = codeListsResources.getCodesForCodeList("notation", 1);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn200WithDeleteCodeForCodeList() throws RmesException {
+        when(codeListService.deleteCodeFromCodeList("notation", "1")).thenReturn("body");
+        ResponseEntity<Object> response = codeListsResources.deleteCodeForCodeList("notation", "1");
+        assertEquals("body", response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+    @Test
+    void shouldThrowErrorWithDeleteCodeForCodeList() throws RmesException {
+        when(codeListService.deleteCodeFromCodeList("notation", "1")).thenThrow(new RmesException(500, "", ""));
+        ResponseEntity<Object> response = codeListsResources.deleteCodeForCodeList("notation", "1");
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn200WithUpdateCodeForCodeList() throws RmesException {
+        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenReturn("body");
+        ResponseEntity<Object> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        assertEquals("body", response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+    @Test
+    void shouldThrowErrorWithUpdateCodeForCodeList() throws RmesException {
+        when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenThrow(new RmesException(500, "", ""));
+        ResponseEntity<Object> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn201WithAddCodeForCodeList() throws RmesException {
+        when(codeListService.addCodeFromCodeList("notation", "body")).thenReturn("body");
+        ResponseEntity<Object> response = codeListsResources.addCodeForCodeList("notation", "body");
+        assertEquals("body", response.getBody());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+    @Test
+    void shouldThrowErrorWithAddCodeForCodeList() throws RmesException {
+        when(codeListService.addCodeFromCodeList("notation", "body")).thenThrow(new RmesException(500, "", ""));
+        ResponseEntity<Object> response = codeListsResources.addCodeForCodeList("notation", "body");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 }
