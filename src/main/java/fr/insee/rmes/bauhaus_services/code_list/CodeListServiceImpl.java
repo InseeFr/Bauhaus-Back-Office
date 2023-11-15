@@ -331,6 +331,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				RdfUtils.addTripleUri(codeListIri, PROV.WAS_DERIVED_FROM, codesList.getString("iriParent"), model, graph);
 			}
 		} else {
+			RdfUtils.addTripleString(codeListIri, RdfUtils.createIRI("http://bauhaus-proprietes-internes-pour-gestion#" + LAST_CODE_URI_SEGMENT), codesList.getString(LAST_CODE_URI_SEGMENT), model, graph);
 			IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
 			RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
@@ -413,7 +414,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
 
 		IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
-		String lastCodeUriSegment = "code";//codesList.getString(LAST_CODE_URI_SEGMENT);
+		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.getString(CODE));
 		IRI codeListIri = this.generateIri(codesList, false);
 
@@ -428,7 +429,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String deleteCodeFromCodeList(String notation, String code) throws RmesException {
 		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
-		String lastCodeUriSegment = "code";//codesList.getString(LAST_CODE_URI_SEGMENT);
+		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code);
 		repoGestion.deleteObject(codeIri, null);
 		return null;
