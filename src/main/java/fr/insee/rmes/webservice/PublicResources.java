@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.config.Modules;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -55,6 +56,9 @@ public class PublicResources extends GenericResources {
     static final Logger logger = LogManager.getLogger(PublicResources.class);
 
     @Autowired
+    Modules modulesConfig;
+
+    @Autowired
     UserRolesManagerService userRolesManagerService;
 
     @Autowired
@@ -73,7 +77,8 @@ public class PublicResources extends GenericResources {
             props.put("lg1", config.getLg1());
             props.put("lg2", config.getLg2());
             props.put("authType", AuthType.getAuthType(config));
-            props.put("modules", config.getActiveModules());
+            props.put("activeModules", modulesConfig.getActiveModules());
+            props.put("modules", modulesConfig.getModules());
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
