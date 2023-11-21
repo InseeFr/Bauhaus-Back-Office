@@ -33,6 +33,15 @@ public class StringUtils {
 		return "<" + RdfUtils.toString(uri) + ">";
 	}
 
+	public static String convertHtmlStringToRaw(String html) {
+		String raw = html
+				.replaceAll("<p>", "\n")
+				.replaceAll("<[^>]*>", "");
 
+		if (raw.startsWith("\n")) {
+			raw = raw.substring(1);
+		}
+		return raw;
+	}
 
 }
