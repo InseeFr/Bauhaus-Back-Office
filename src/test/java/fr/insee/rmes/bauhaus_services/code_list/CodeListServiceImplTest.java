@@ -79,13 +79,14 @@ class CodeListServiceImplTest {
     @Test
     void addCodeFromCodeList() throws RmesException {
         IRI owlClassUri = RdfUtils.createIRI("http://concept/lastClassUriSegment");
-        IRI codeIri = RdfUtils.createIRI("http://code/code");
+        IRI codeIri = RdfUtils.createIRI("http://lastCodeUriSegment/code");
         IRI codesListIri = RdfUtils.createIRI("http://codeLists");
         IRI codesListGraph = RdfUtils.createIRI("http://codesListGraph");
 
         JSONObject codesList = new JSONObject();
         codesList.put("lastClassUriSegment", "lastClassUriSegment");
         codesList.put("lastListUriSegment", "lastListUriSegment");
+        codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
 
         doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
 
@@ -95,7 +96,7 @@ class CodeListServiceImplTest {
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
             mockedFactory.when(() -> RdfUtils.codeListIRI("concept/lastClassUriSegment")).thenReturn(owlClassUri);
-            mockedFactory.when(() -> RdfUtils.codeListIRI("code/code")).thenReturn(codeIri);
+            mockedFactory.when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code")).thenReturn(codeIri);
             mockedFactory.when(() -> RdfUtils.codeListIRI("lastListUriSegment")).thenReturn(codesListIri);
             mockedFactory.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(any(String.class))).thenCallRealMethod();
@@ -107,7 +108,7 @@ class CodeListServiceImplTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(codeIri), model.capture(), eq(null));
 
             assertEquals("code", result);
-            Assertions.assertEquals("[(http://code/code, http://www.w3.org/2004/02/skos/core#notation, \"code\", http://codesListGraph) [http://codesListGraph]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://lastCodeUriSegment/code, http://www.w3.org/2004/02/skos/core#notation, \"code\", http://codesListGraph) [http://codesListGraph]]", model.getValue().toString());
 
         }
 
@@ -115,11 +116,13 @@ class CodeListServiceImplTest {
 
     @Test
     void deleteCodeFromCodeList() throws RmesException {
-        IRI codeIRI = RdfUtils.createIRI("http://code/code");
+        IRI codeIRI = RdfUtils.createIRI("http://lastCodeUriSegment/code");
 
         try (MockedStatic<RdfUtils> mockedFactory = Mockito.mockStatic(RdfUtils.class)) {
-            mockedFactory.when(() -> RdfUtils.codeListIRI("code/code")).thenReturn(codeIRI);
+            mockedFactory.when(() -> RdfUtils.codeListIRI("lastCodeUriSegment/code")).thenReturn(codeIRI);
             JSONObject codesList = new JSONObject();
+            codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
+
             doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
             codeListService.deleteCodeFromCodeList("notation", "code");
             verify(repositoryGestion, times(1)).deleteObject(eq(codeIRI), eq(null));
