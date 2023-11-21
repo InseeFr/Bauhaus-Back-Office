@@ -48,13 +48,12 @@ public class CodeListsResources extends GenericResources {
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        String id = null;
         try {
-            id = codeListService.setCodesList(body, false);
+            String id = codeListService.setCodesList(body, false);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
@@ -63,13 +62,12 @@ public class CodeListsResources extends GenericResources {
     public ResponseEntity<Object> updateCodesList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        String id = null;
         try {
-            id = codeListService.setCodesList(id, body, false);
+            String id = codeListService.setCodesList(componentId, body, false);
+            return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 

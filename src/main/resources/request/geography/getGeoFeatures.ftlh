@@ -3,6 +3,7 @@ FROM <${COG_GRAPH}>
 FROM <${GEO_SIMS_GRAPH}>
  WHERE { 
 		{	?uri igeo:nom ?labelLg1 .
+			?uri igeo:nom ?labelLg2 .
 			?uri igeo:codeINSEE ?code .
 
 			OPTIONAL {
@@ -42,6 +43,7 @@ FROM <${GEO_SIMS_GRAPH}>
 	
 	{
 			?uri rdfs:label ?labelLg1 .
+			?uri rdfs:label ?labelLg2 .
 			?uri a 	igeo:TerritoireFrancais .
 			BIND("Territoire Français" AS ?typeTerritory)
 
@@ -50,6 +52,7 @@ FROM <${GEO_SIMS_GRAPH}>
 	
 	{
 			?uri rdfs:label ?labelLg1 .
+			?uri rdfs:label ?labelLg2 .
 			?uri a 	igeo:Pays .
 			BIND("pays" AS ?typeTerritory)
 

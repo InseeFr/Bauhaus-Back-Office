@@ -7,5 +7,6 @@ FROM <${CONCEPTS_GRAPH}>
         ?uriConceptScheme skos:notation ?idConceptScheme
     }
     FILTER (CONTAINS('${CONCEPT_SCHEME_FILTER}', ?idConceptScheme)) .
+
     FILTER (lang(?label) = '${LG1}') .
 } ORDER BY ASC(?label)
