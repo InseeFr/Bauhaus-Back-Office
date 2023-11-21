@@ -104,14 +104,6 @@ public enum ObjectType {
 		@Override
 		public String getBaseUri() {return "";}
 	},
-	DATASET{
-		@Override
-		public String getLabelType() {return "dataset";}
-		@Override
-		public IRI getUri() {return DCAT.DATASET;}
-		@Override
-		public String getBaseUri() {return config.getDatasetsBaseUri();}
-	},
 	DISTRIBUTION{
 		@Override
 		public String getLabelType() {return "distribution";}
