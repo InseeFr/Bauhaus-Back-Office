@@ -37,6 +37,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.lg2}")
 	private String lg2;
 
+	@Value("${fr.insee.rmes.bauhaus.perPage}")
+	private int perPage;
+
+
 	@Value("${fr.insee.rmes.bauhaus.baseGraph}")
 	private String baseGraph;
 
@@ -627,5 +631,9 @@ public class Config {
 
 	public List<String> getActiveModules() {
 		return activeModules;
+	}
+
+	public int getPerPage() {
+		return perPage;
 	}
 }

@@ -4,7 +4,6 @@ import fr.insee.rmes.exceptions.RmesException;
 
 public interface CodeListService {
 
-
     String getCodeListJson(String codeListUri) throws RmesException;
 
     String getCode(String notation, String id) throws RmesException;
@@ -30,4 +29,14 @@ public interface CodeListService {
     void deleteCodeList(String notation, boolean partial) throws RmesException;
 
     String publishCodeList(String id, boolean b) throws RmesException;
+
+    String getCodesForCodeList(String notation, int page) throws RmesException;
+
+    String getCodesJson(String notation, int page) throws RmesException;
+
+    String updateCodeFromCodeList(String notation, String code, String body) throws RmesException;
+
+    String addCodeFromCodeList(String notation, String body) throws RmesException;
+
+    String deleteCodeFromCodeList(String notation, String code) throws RmesException;
 }
