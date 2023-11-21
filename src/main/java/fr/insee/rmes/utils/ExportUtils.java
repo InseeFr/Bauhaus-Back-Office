@@ -118,7 +118,7 @@ public class ExportUtils {
 
 
             logger.debug("Starting downloading documents for the SIMS {}", simsId);
-            this.exportRubricsDocuments(sims, simsDirectory);
+            Set<String> missingDocuments = this.exportRubricsDocuments(sims, simsDirectory);
             logger.debug("Ending downloading documents for the SIMS {}", simsId);
 
             logger.debug("Zipping the folder for the SIMS {}", simsId);
@@ -128,6 +128,8 @@ public class ExportUtils {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentDisposition(content);
             responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
+            responseHeaders.setAccessControlExposeHeaders(List.of("X-Missing-Documents"));
+            responseHeaders.set("X-Missing-Documents", String.join(",", missingDocuments));
             Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + Constants.DOT_ZIP).toUri());
             return ResponseEntity.ok()
                     .headers(responseHeaders)
@@ -189,9 +191,11 @@ public class ExportUtils {
         }
     }
 
-    private void exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
+    private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
         Set<String> history = new HashSet<>();
         JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
+        Set<String> missingDocuments = new HashSet<>();
+
         for (int i = 0; i < documents.length(); i++) {
             JSONObject document = documents.getJSONObject(i);
             String url = document.getString("url").replace("file://", "");
@@ -199,23 +203,30 @@ public class ExportUtils {
                 history.add(url);
                 logger.debug("Extracting document {}", url);
 
-                String documentFileName = UriUtils.getLastPartFromUri(url);
 
                 Path documentPath = Path.of(url);
-                InputStream inputStream = Files.newInputStream(documentPath);
 
-                Path documentDirectory = Path.of(directory.toString(), "documents");
-                if (!Files.exists(documentDirectory)) {
-                    logger.debug("Creating the documents folder");
-                    Files.createDirectory(documentDirectory);
+                if(!Files.exists(documentPath)){
+                    missingDocuments.add(document.getString("id"));
+                } else {
+                    String documentFileName = UriUtils.getLastPartFromUri(url);
+                    InputStream inputStream = Files.newInputStream(documentPath);
+
+                    Path documentDirectory = Path.of(directory.toString(), "documents");
+                    if (!Files.exists(documentDirectory)) {
+                        logger.debug("Creating the documents folder");
+                        Files.createDirectory(documentDirectory);
+                    }
+
+                    logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
+                    Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
+                    Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
                 }
-
-                logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
-                Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
-                Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
 
             }
         }
+
+        return missingDocuments;
     }
     public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
