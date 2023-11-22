@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.DatasetsConfig;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
@@ -17,9 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 
@@ -27,22 +27,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.baseGraph=http://", "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://", "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/", "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI" })
 public class DatasetServiceImplTest {
 
-    @Mock
+    @MockBean
     SeriesUtils seriesUtils;
 
-    @Mock
+    @MockBean
     Config config;
 
-    @Mock
-    DatasetsConfig datasetsConfig;
-
-    @Mock
+    @MockBean
     RepositoryGestion repositoryGestion;
 
-    @InjectMocks
+    @Autowired
     DatasetServiceImpl datasetService;
 
     @Test
@@ -240,8 +237,6 @@ public class DatasetServiceImplTest {
         ) {
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
-            when(datasetsConfig.getDatasetsGraph()).thenReturn("http://datasetGraph/");
-            when(datasetsConfig.getDatasetsBaseUri()).thenReturn("http://datasetIRI");
 
             datasetQueriesMock.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
@@ -296,9 +291,6 @@ public class DatasetServiceImplTest {
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
-            when(datasetsConfig.getDatasetsGraph()).thenReturn("http://datasetGraph/");
-            when(datasetsConfig.getDatasetsBaseUri()).thenReturn("http://datasetIRI");
-
 
             datasetQueriesMock.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
