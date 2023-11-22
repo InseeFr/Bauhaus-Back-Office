@@ -2,7 +2,6 @@ package fr.insee.rmes.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.rmes.config.Modules;
 import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -23,12 +22,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -56,13 +57,16 @@ public class PublicResources extends GenericResources {
     static final Logger logger = LogManager.getLogger(PublicResources.class);
 
     @Autowired
-    Modules modulesConfig;
-
-    @Autowired
     UserRolesManagerService userRolesManagerService;
 
     @Autowired
     StampsService stampsService;
+
+    @Value("${fr.insee.rmes.bauhaus.activeModules}")
+    private List<String> activeModules;
+
+    @Value("${fr.insee.rmes.bauhaus.modules}")
+    private List<String> modules;
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getInit", summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
@@ -77,8 +81,8 @@ public class PublicResources extends GenericResources {
             props.put("lg1", config.getLg1());
             props.put("lg2", config.getLg2());
             props.put("authType", AuthType.getAuthType(config));
-            props.put("activeModules", modulesConfig.getActiveModules());
-            props.put("modules", modulesConfig.getModules());
+            props.put("activeModules", activeModules);
+            props.put("modules", modules);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
