@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ import java.nio.file.NoSuchFileException;
 @RequestMapping("/documents")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name=Constants.DOCUMENT, description="Document API")
+@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 @ApiResponses(value = { 
 		@ApiResponse(responseCode = "200", description = "Success"), 
 		@ApiResponse(responseCode = "204", description = "No Content"),
