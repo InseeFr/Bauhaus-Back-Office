@@ -56,10 +56,6 @@ public class RdfUtils {
 	public static Resource simsGeographyGraph(){
 		return factory.createIRI(config.getDocumentationsGeoGraph());
 	}
-
-	public static Resource datasetGraph(){
-		return factory.createIRI(config.getDatasetsGraph());
-	}
 	public static Resource structureGraph(){
 		return factory.createIRI(config.getStructuresGraph());
 	}
@@ -133,10 +129,6 @@ public class RdfUtils {
 	
 	public static IRI linkIRI(String id) {
 		return objectIRI(ObjectType.LINK, id);
-	}
-
-	public static IRI datasetIRI(String id) {
-		return objectIRI(ObjectType.DATASET, id);
 	}
 
 	public static IRI distributionIRI(String id) {

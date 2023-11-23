@@ -16,10 +16,23 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
+
+    @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
+    private String datasetsGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
+    private String datasetsBaseUri;
+
+    @Value("${fr.insee.rmes.bauhaus.baseGraph}")
+    private String baseGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
+    private String baseUriGestion;
 
     @Override
     public String getDistributions() throws RmesException {
@@ -56,9 +69,16 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution);
     }
 
+    private String getDatasetsGraph(){
+        return baseGraph + datasetsGraph;
+    }
+
+    private String getDatasetsBaseUri(){
+        return baseUriGestion + datasetsBaseUri;
+    }
 
     private String persist(Distribution distribution) throws RmesException {
-        Resource graph = RdfUtils.datasetGraph();
+        Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
         IRI distributionIRI = RdfUtils.distributionIRI(distribution.getId());
 
@@ -66,11 +86,11 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
         if(previousValue.has("idDataset")){
-            IRI iriDataset = RdfUtils.datasetIRI(previousValue.getString("idDataset"));
+            IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
             repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.DISTRIBUTION, graph, null, distributionIRI);
         }
 
-        RdfUtils.addTripleUri(RdfUtils.datasetIRI(distribution.getIdDataset()), DCAT.DISTRIBUTION, distributionIRI, model, graph);
+        RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.DISTRIBUTION, distributionIRI, model, graph);
 
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);

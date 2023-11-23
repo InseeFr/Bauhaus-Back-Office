@@ -16,9 +16,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
 
@@ -26,19 +27,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.baseGraph=http://", "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://", "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/", "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI" })
 public class DatasetServiceImplTest {
 
-    @Mock
+    @MockBean
     SeriesUtils seriesUtils;
 
-    @Mock
+    @MockBean
     Config config;
 
-    @Mock
+    @MockBean
     RepositoryGestion repositoryGestion;
 
-    @InjectMocks
+    @Autowired
     DatasetServiceImpl datasetService;
 
     @Test
@@ -48,7 +49,7 @@ public class DatasetServiceImplTest {
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(DatasetQueries::getDatasets).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDatasets(any())).thenReturn("query");
             String query = datasetService.getDatasets();
             Assertions.assertEquals(query, "[\"result\"]");
         }
@@ -58,12 +59,12 @@ public class DatasetServiceImplTest {
     void shouldReturnDataset() throws RmesException, JSONException {
         JSONObject object = new JSONObject();
         object.put("id", "1");
-
-        when(repositoryGestion.getResponseAsObject("query")).thenReturn(object);
+        JSONArray array = new JSONArray().put(object);
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.getDataset("1")).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any())).thenReturn("query");
             String query = datasetService.getDatasetByID("1");
-            Assertions.assertEquals(query, "{\"id\":\"1\"}");
+            Assertions.assertEquals(query, "{\"themes\":[],\"id\":\"1\"}");
         }
     }
 
@@ -83,7 +84,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
 
 
@@ -100,7 +101,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
 
@@ -118,7 +119,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfCreatorNotDefinedWhenCreating() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
@@ -137,7 +138,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfContributorNotDefinedWhenCreating() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
@@ -157,7 +158,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfDisseminationStatusNotDefinedWhenCreating() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
@@ -178,7 +179,7 @@ public class DatasetServiceImplTest {
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.lastDatasetId()).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
@@ -234,12 +235,13 @@ public class DatasetServiceImplTest {
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
-            datasetQueriesMock.when(DatasetQueries::lastDatasetId).thenReturn("query");
+
+            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+
+            datasetQueriesMock.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
             dateUtilsMock.when(() -> DateUtils.parseDateTime(anyString())).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
             rdfUtilsMock.when(() -> RdfUtils.seriesIRI("2")).thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.datasetIRI(nextId)).thenReturn(iri);
-            rdfUtilsMock.when(RdfUtils::datasetGraph).thenReturn(SimpleValueFactory.getInstance().createIRI("http://datasetGraph/"));
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
@@ -256,7 +258,7 @@ public class DatasetServiceImplTest {
             body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
             body.put("idSerie", "2");
-            body.put("theme", "theme");
+            body.put("themes", new JSONArray().put("theme"));
 
             when(config.getDistributionsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");
@@ -288,14 +290,14 @@ public class DatasetServiceImplTest {
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
-            datasetQueriesMock.when(DatasetQueries::lastDatasetId).thenReturn("query");
+            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+
+            datasetQueriesMock.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
             dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
             dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
             rdfUtilsMock.when(() -> RdfUtils.seriesIRI("2")).thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.datasetIRI("jd1001")).thenReturn(iri);
             rdfUtilsMock.when(() -> RdfUtils.distributionIRI("d1000")).thenReturn(distributionIRI);
-            rdfUtilsMock.when(RdfUtils::datasetGraph).thenReturn(SimpleValueFactory.getInstance().createIRI("http://datasetGraph/"));
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
@@ -313,7 +315,7 @@ public class DatasetServiceImplTest {
             body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
             body.put("idSerie", "2");
-            body.put("theme", "theme");
+            body.put("themes", new JSONArray().put("theme"));
 
             when(config.getDistributionsGraph()).thenReturn("dataset-graph");
             when(config.getLg1()).thenReturn("fr");

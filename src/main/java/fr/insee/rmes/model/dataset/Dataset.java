@@ -1,5 +1,7 @@
 package fr.insee.rmes.model.dataset;
 
+import java.util.List;
+
 public class Dataset {
     private String id;
     private String labelLg1;
@@ -10,7 +12,7 @@ public class Dataset {
     private String contributor;
     private String disseminationStatus;
     private String idSerie;
-    private String theme;
+    private List<String> themes;
     private String validationState;
     private String created;
     private String updated;
@@ -87,12 +89,12 @@ public class Dataset {
         this.idSerie = idSerie;
     }
 
-    public String getTheme() {
-        return theme;
+    public List<String> getThemes() {
+        return themes;
     }
 
-    public void setTheme(String theme) {
-        this.theme = theme;
+    public void setThemes(List<String> themes) {
+        this.themes = themes;
     }
 
     public String getValidationState() {

@@ -23,7 +23,11 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -31,14 +35,48 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Autowired
     SeriesUtils seriesUtils;
 
+    @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
+    private String datasetsGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
+    private String datasetsBaseUri;
+
+    @Value("${fr.insee.rmes.bauhaus.theme.graph}")
+    private String datasetsThemeGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.theme.conceptSchemeFilter}")
+    private String datasetsConceptSchemeFilter;
+
+    @Value("${fr.insee.rmes.bauhaus.baseGraph}")
+    private String baseGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
+    private String baseUriGestion;
+
     @Override
     public String getDatasets() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets()).toString();
+        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(datasetsGraph)).toString();
     }
 
     @Override
     public String getDatasetByID(String id) throws RmesException {
-        return this.repoGestion.getResponseAsObject(DatasetQueries.getDataset(id)).toString();
+        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, datasetsGraph));
+
+        if(datasetWithThemes.isEmpty()){
+            throw new RmesBadRequestException("This dataset does not exist");
+        }
+
+        JSONObject dataset = datasetWithThemes.getJSONObject(0);
+        List<String> themes = new ArrayList<>();
+        for(int i = 0; i < datasetWithThemes.length(); i++){
+            JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
+            if(tempDataset.has("theme")){
+                themes.add(tempDataset.getString("theme"));
+            }
+        }
+        dataset.put("themes", themes);
+        dataset.remove("theme");
+        return dataset.toString();
     }
 
     @Override
@@ -64,7 +102,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String create(String body) throws RmesException {
         Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
-        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId()), "jd"));
+        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId(datasetsGraph)), "jd"));
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){
@@ -87,14 +125,22 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getThemes() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getThemes()).toString();
+        return this.repoGestion.getResponseAsArray(DatasetQueries.getThemes(datasetsThemeGraph, datasetsConceptSchemeFilter)).toString();
     }
 
+    private String getDatasetsGraph(){
+
+        return baseGraph + datasetsGraph;
+    }
+
+    private String getDatasetsBaseUri(){
+        return baseUriGestion + datasetsBaseUri;
+    }
 
     private String persist(Dataset dataset) throws RmesException {
-        Resource graph = RdfUtils.datasetGraph();
+        Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
-        IRI datasetIri = RdfUtils.datasetIRI(dataset.getId());
+        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
 
         Model model = new LinkedHashModel();
 
@@ -114,7 +160,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
         RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
-        RdfUtils.addTripleUri(datasetIri, DCAT.THEME, dataset.getTheme(), model, graph);
+
+        dataset.getThemes().forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph));
+        ;
 
         JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));
 

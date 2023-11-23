@@ -151,22 +151,6 @@ public class Config {
 	private String classifFamiliesGraph  ;
 
 	/******************************************************/
-	/** DataSets 		***********************************/
-	/******************************************************/
-	@Value("${fr.insee.rmes.bauhaus.datasets.graph}")
-	private String datasetsGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
-	private String datasetsBaseUri;
-
-	@Value("${fr.insee.rmes.bauhaus.theme.graph}")
-	private String datasetsThemeGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.theme.typePrefix}")
-	private String datasetsThemeTypePrefix;
-
-
-	/******************************************************/
 	/** Distributions 	***********************************/
 	/******************************************************/
 	@Value("${fr.insee.rmes.bauhaus.distribution.graph}")
@@ -401,22 +385,6 @@ public class Config {
 
 	public String getClassifFamiliesGraph() {
 		return baseGraph + classifFamiliesGraph;
-	}
-
-	public String getDatasetsGraph() {
-		return baseGraph + datasetsGraph;
-	}
-
-	public String getDatasetsBaseUri() {
-		return datasetsBaseUri;
-	}
-
-	public String getDatasetsThemeGraph() {
-		return datasetsThemeGraph;
-	}
-
-	public String getDatasetsThemeTypePrefix() {
-		return datasetsThemeTypePrefix;
 	}
 
 	public String getDistributionsBaseUri(){
