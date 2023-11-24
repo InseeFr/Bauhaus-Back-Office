@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.webservice.codelist;
 
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/codeList")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Codes lists", description = "Codes list API")
+@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('codelists')")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),
         @ApiResponse(responseCode = "204", description = "No Content"),
@@ -83,183 +86,150 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-    @PostMapping(value = "/partial", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
-    public ResponseEntity<Object> createPartialCodeList(
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        String id = null;
-        try {
-            id = codeListService.setCodesList(body, true);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(id);
-    }
-
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-    @PutMapping(value = "/partial/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a codes list")
-    public ResponseEntity<Object> updatePartialCodeList(
-            @PathVariable(Constants.ID) String componentId,
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        String id = null;
-        try {
-            id = codeListService.setCodesList(id, body, true);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(id);
-    }
-
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-    @DeleteMapping(value = "/partial/{id}")
-    @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
-    public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
-        try {
-            codeListService.deleteCodeList(notation, true);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<Object> getallCodesLists() {
-        String jsonResultat;
+    public ResponseEntity<Object> getAllCodesLists() {
         try {
-            jsonResultat = codeListService.getAllCodesLists(false);
+            String body = codeListService.getAllCodesLists(false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-    }
-
-    @GetMapping(value = "/partial", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getallPartialCodesLists", summary = "Partial List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<Object> getallPartialCodesLists() {
-        String jsonResultat;
-        try {
-            jsonResultat = codeListService.getAllCodesLists(true);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedCodesLisForSearch() {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getDetailedCodesListForSearch(false);
+            String body = codeListService.getDetailedCodesListForSearch(false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
-    @GetMapping(value = "/partial/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() {
-        String jsonResultat;
-        try {
-            jsonResultat = codeListService.getDetailedCodesListForSearch(true);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-    }
+
 
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getDetailedCodesList(notation, false);
+            String body = codeListService.getDetailedCodesList(notation, false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+    }
+
+    @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getPaginatedCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
+        try {
+            String body = codeListService.getCodesForCodeList(notation, page);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
+
+    @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) {
+        try {
+            String body = codeListService.deleteCodeFromCodeList(notation, code);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
+
+    @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "updateCodeForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) {
+        try {
+            String response = codeListService.updateCodeFromCodeList(notation, code, body);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
+
+    @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation,  @Parameter(description = "Code", required = true) @RequestBody String body) {
+        try {
+            String response = codeListService.addCodeFromCodeList(notation, body);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
     }
 
     @GetMapping(value = "/partial/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getDetailedCodesList(notation, true);
+            String body = codeListService.getDetailedCodesList(notation, true);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodeListByNotation", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getCodeListByNotation(@PathVariable("notation") String notation) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getCodeListJson(notation);
+            String body = codeListService.getCodeListJson(notation);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
-    @GetMapping(value = "/partials/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
-    public ResponseEntity<Object> getPartialsByParent(@PathVariable("parentCode") String parentIri) {
+    @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getCodesForCodeList", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
         try {
-            String codesLists = codeListService.getPartialCodeListByParent(parentIri);
-            return ResponseEntity.status(HttpStatus.OK).body(codesLists);
+            String body = codeListService.getCodesJson(notation, page);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
     }
+
+
 
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<Object> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) {
-        String jsonResultat;
         try {
-            jsonResultat = codeListService.getCode(notation, code);
+            String body = codeListService.getCode(notation, code);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
-        return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
     @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Object> publishFullCodeList(
-            @PathVariable(Constants.ID) String id) throws RmesException {
+            @PathVariable(Constants.ID) String id) {
         try {
             codeListService.publishCodeList(id, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
-
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-    @PutMapping("/partial/validate/{id}")
-    @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
-    public ResponseEntity<Object> publishPartialCodeList(
-            @PathVariable(Constants.ID) String id) throws RmesException {
-        try {
-            codeListService.publishCodeList(id, true);
             return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
             return returnRmesException(e);

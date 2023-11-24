@@ -28,3 +28,6 @@ WHERE {
 
 }
 ORDER BY ?labelLg1
+<#if PER_PAGE??>
+LIMIT ${PER_PAGE} OFFSET ${OFFSET}
+</#if>

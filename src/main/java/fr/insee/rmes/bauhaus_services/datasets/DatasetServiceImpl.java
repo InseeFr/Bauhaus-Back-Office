@@ -170,7 +170,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(dataset.getThemes() != null){
             dataset.getThemes().forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph));
         }
-        ;
 
         JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));
 

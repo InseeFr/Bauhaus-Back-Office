@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 
 @Configuration
@@ -37,6 +36,10 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.lg2}")
 	private String lg2;
 
+	@Value("${fr.insee.rmes.bauhaus.perPage}")
+	private int perPage;
+
+
 	@Value("${fr.insee.rmes.bauhaus.baseGraph}")
 	private String baseGraph;
 
@@ -45,10 +48,9 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
 
-	@Value("${fr.insee.rmes.bauhaus.activeModules}")
-	private List<String> activeModules;
 
-  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+
+  	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
 	private int maxFileNameLength;
 	
 
@@ -147,7 +149,6 @@ public class Config {
 	/******************************************************/	
 	@Value("${fr.insee.rmes.bauhaus.classifications.families.graph}")	 //Getter with baseGraph
 	private String classifFamiliesGraph  ;
-
 
 	/******************************************************/
 	/** OPERATIONS		***********************************/
@@ -577,7 +578,7 @@ public class Config {
 		return maxFileNameLength;
 	}
 
-	public List<String> getActiveModules() {
-		return activeModules;
+	public int getPerPage() {
+		return perPage;
 	}
 }

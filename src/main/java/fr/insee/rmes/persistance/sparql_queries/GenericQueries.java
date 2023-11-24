@@ -19,6 +19,4 @@ public class GenericQueries {
 	public static String getAllGraphs() throws RmesException {
 		return FreeMarkerUtils.buildRequest("","getAllGraphs.ftlh", null);	
 	}
-		
-
 }
