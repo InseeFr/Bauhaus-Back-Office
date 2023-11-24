@@ -131,9 +131,6 @@ public class RdfUtils {
 		return objectIRI(ObjectType.LINK, id);
 	}
 
-	public static IRI distributionIRI(String id) {
-		return objectIRI(ObjectType.DISTRIBUTION, id);
-	}
 	public static IRI structureIRI(String id) {
 		return objectIRI(ObjectType.STRUCTURE, id);
 	}

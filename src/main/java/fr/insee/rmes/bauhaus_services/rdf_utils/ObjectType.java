@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.persistance.ontologies.*;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,14 +102,6 @@ public enum ObjectType {
 		public IRI getUri() {return ORG.ORGANIZATION;}
 		@Override
 		public String getBaseUri() {return "";}
-	},
-	DISTRIBUTION{
-		@Override
-		public String getLabelType() {return "distribution";}
-		@Override
-		public IRI getUri() {return DCAT.DISTRIBUTION;}
-		@Override
-		public String getBaseUri() {return config.getDistributionsBaseUri();}
 	},
 	STRUCTURE{
 		@Override

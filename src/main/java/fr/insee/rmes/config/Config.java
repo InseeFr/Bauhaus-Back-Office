@@ -148,14 +148,6 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.classifications.families.graph}")	 //Getter with baseGraph
 	private String classifFamiliesGraph  ;
 
-	/******************************************************/
-	/** Distributions 	***********************************/
-	/******************************************************/
-	@Value("${fr.insee.rmes.bauhaus.distribution.graph}")
-	private String distributionsGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
-	private String distributionsBaseUri;
 
 	/******************************************************/
 	/** OPERATIONS		***********************************/
@@ -383,14 +375,6 @@ public class Config {
 
 	public String getClassifFamiliesGraph() {
 		return baseGraph + classifFamiliesGraph;
-	}
-
-	public String getDistributionsBaseUri(){
-		return distributionsBaseUri;
-	}
-
-	public String getDistributionsGraph() {
-		return baseGraph + distributionsGraph;
 	}
 
 	public String getOperationsGraph() {
