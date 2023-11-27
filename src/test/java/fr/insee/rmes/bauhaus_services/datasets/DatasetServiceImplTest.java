@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
@@ -16,7 +15,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,14 +28,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.baseGraph=http://", "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://", "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/", "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI" })
+@SpringBootTest(properties = {
+        "fr.insee.rmes.bauhaus.baseGraph=http://",
+        "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
+        "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
+        "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
+        "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
+        "fr.insee.rmes.bauhaus.lg1=fr",
+        "fr.insee.rmes.bauhaus.lg2=en"
+})
 public class DatasetServiceImplTest {
 
     @MockBean
     SeriesUtils seriesUtils;
-
-    @MockBean
-    Config config;
 
     @MockBean
     RepositoryGestion repositoryGestion;
@@ -75,7 +81,7 @@ public class DatasetServiceImplTest {
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
-            mockedFactory.when(() -> DistributionQueries.getDatasetDistributions("1")).thenReturn("query");
+            mockedFactory.when(() -> DistributionQueries.getDatasetDistributions(eq("1"), any())).thenReturn("query");
             String query = datasetService.getDistributions("1");
             Assertions.assertEquals(query, "[\"1\"]");
         }
@@ -260,11 +266,6 @@ public class DatasetServiceImplTest {
             body.put("idSerie", "2");
             body.put("themes", new JSONArray().put("theme"));
 
-            when(config.getDistributionsGraph()).thenReturn("dataset-graph");
-            when(config.getLg1()).thenReturn("fr");
-            when(config.getLg2()).thenReturn("en");
-
-            DistributionQueries.setConfig(config);
             JSONArray distributions = new JSONArray();
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
 
@@ -297,7 +298,6 @@ public class DatasetServiceImplTest {
             dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2023-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
             dateUtilsMock.when(() -> DateUtils.parseDateTime(eq("2022-10-19T11:44:23.335590"))).thenReturn(LocalDateTime.parse("2022-10-19T11:44:23.335590"));
             rdfUtilsMock.when(() -> RdfUtils.seriesIRI("2")).thenReturn(SimpleValueFactory.getInstance().createIRI("http://seriesIRI/2"));
-            rdfUtilsMock.when(() -> RdfUtils.distributionIRI("d1000")).thenReturn(distributionIRI);
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralDateTime(any())).thenCallRealMethod();
@@ -317,11 +317,6 @@ public class DatasetServiceImplTest {
             body.put("idSerie", "2");
             body.put("themes", new JSONArray().put("theme"));
 
-            when(config.getDistributionsGraph()).thenReturn("dataset-graph");
-            when(config.getLg1()).thenReturn("fr");
-            when(config.getLg2()).thenReturn("en");
-
-            DistributionQueries.setConfig(config);
             JSONArray distributions = new JSONArray();
             JSONObject d = new JSONObject();
             d.put("id", "d1000");
@@ -335,7 +330,7 @@ public class DatasetServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#Distribution, http://distributionIRI/jd1001, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#Distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals(id, "jd1001");
         }
     }

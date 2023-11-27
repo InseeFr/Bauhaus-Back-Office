@@ -5,28 +5,23 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
 public class DistributionQueriesTest {
-    @Mock
+    @Autowired
     Config config;
 
     @Test
     void shouldCallGetDistributionQuery() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getDistributionsGraph()).thenReturn("distribution-graph");
         DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
@@ -36,16 +31,13 @@ public class DistributionQueriesTest {
                 put("LG2", "en");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = DistributionQueries.getDistributions();
+            String query = DistributionQueries.getDistributions("distribution-graph");
             Assertions.assertEquals(query, "request");
         }
     }
 
     @Test
     void shouldCallGetDistributionByIdQuery() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getDistributionsGraph()).thenReturn("distribution-graph");
         DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
@@ -55,16 +47,13 @@ public class DistributionQueriesTest {
                 put("ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistribution.ftlh"), eq(map))).thenReturn("request");
-            String query = DistributionQueries.getDistribution("1");
+            String query = DistributionQueries.getDistribution("1", "distribution-graph");
             Assertions.assertEquals(query, "request");
         }
     }
 
     @Test
     void shouldCallGetDistributionByDistributionIdQuery() throws RmesException {
-        when(config.getLg1()).thenReturn("fr");
-        when(config.getLg2()).thenReturn("en");
-        when(config.getDistributionsGraph()).thenReturn("distribution-graph");
         DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
@@ -74,21 +63,20 @@ public class DistributionQueriesTest {
                 put("DATASET_ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributions.ftlh"), eq(map))).thenReturn("request");
-            String query = DistributionQueries.getDatasetDistributions("1");
+            String query = DistributionQueries.getDatasetDistributions("1", "distribution-graph");
             Assertions.assertEquals(query, "request");
         }
     }
 
     @Test
     void shouldCallGetLastIdQuery() throws RmesException {
-        when(config.getDistributionsGraph()).thenReturn("distribution-graph");
         DistributionQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
             Map<String, Object> map = new HashMap<>() {{
                 put("DATASET_GRAPH", "distribution-graph");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getLastDatasetId.ftlh"), eq(map))).thenReturn("request");
-            String query = DistributionQueries.lastDatasetId();
+            String query = DistributionQueries.lastDatasetId("distribution-graph");
             Assertions.assertEquals(query, "request");
         }
     }
