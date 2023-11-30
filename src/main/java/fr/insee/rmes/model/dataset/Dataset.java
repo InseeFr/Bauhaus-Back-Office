@@ -8,6 +8,10 @@ public class Dataset {
     private String labelLg2;
     private String descriptionLg1;
     private String descriptionLg2;
+    private String abstractLg1;
+    private String abstractLg2;
+    private String cautionLg1;
+    private String cautionLg2;
     private String creator;
     private String contributor;
     private String disseminationStatus;
@@ -55,6 +59,38 @@ public class Dataset {
 
     public void setDescriptionLg2(String descriptionLg2) {
         this.descriptionLg2 = descriptionLg2;
+    }
+
+    public String getAbstractLg1() {
+        return abstractLg1;
+    }
+
+    public void setAbstractLg1(String abstractLg1) {
+        this.abstractLg1 = abstractLg1;
+    }
+
+    public String getAbstractLg2() {
+        return abstractLg2;
+    }
+
+    public void setAbstractLg2(String abstractLg2) {
+        this.abstractLg2 = abstractLg2;
+    }
+
+    public String getCautionLg1() {
+        return cautionLg1;
+    }
+
+    public void setCautionLg1(String cautionLg1) {
+        this.cautionLg1 = cautionLg1;
+    }
+
+    public String getCautionLg2() {
+        return cautionLg2;
+    }
+
+    public void setCautionLg2(String cautionLg2) {
+        this.cautionLg2 = cautionLg2;
     }
 
     public String getCreator() {

@@ -1,5 +1,5 @@
 SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?creator ?contributor ?disseminationStatus ?idSerie ?theme
-?validationState ?created ?updated
+?validationState ?created ?updated ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
 FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
@@ -20,6 +20,26 @@ WHERE {
     OPTIONAL {
         ?uri dcterms:description ?descriptionLg2
         FILTER (lang(?descriptionLg2) = '${LG2}') .
+    }
+
+    OPTIONAL {
+        ?uri dcterms:abstract ?abstractLg1
+        FILTER (lang(?abstractLg1) = '${LG1}') .
+    }
+
+    OPTIONAL {
+        ?uri dcterms:abstract ?abstractLg2
+        FILTER (lang(?abstractLg2) = '${LG2}') .
+    }
+
+    OPTIONAL {
+        ?uri skos:scopeNote ?cautionLg1
+        FILTER (lang(?cautionLg1) = '${LG1}') .
+    }
+
+    OPTIONAL {
+        ?uri skos:scopeNote ?cautionLg2
+        FILTER (lang(?cautionLg2) = '${LG2}') .
     }
 
     OPTIONAL {
