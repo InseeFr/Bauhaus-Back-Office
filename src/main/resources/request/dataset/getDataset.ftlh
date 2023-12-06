@@ -1,5 +1,7 @@
-SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?creator ?contributor ?disseminationStatus ?idSerie ?theme
-?validationState ?created ?updated ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
+SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?disseminationStatus ?idSerie ?theme
+?validationState ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
+?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
+?updated
 FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
@@ -42,13 +44,27 @@ WHERE {
         FILTER (lang(?cautionLg2) = '${LG2}') .
     }
 
+
     OPTIONAL {
-        ?uri dcterms:creator ?creator .
+        ?catalogRecordUri foaf:primaryTopic ?uri .
     }
 
     OPTIONAL {
-        ?uri dcterms:contributor ?contributor .
+        ?catalogRecordUri dc:creator ?catalogRecordCreator .
     }
+
+    OPTIONAL {
+        ?catalogRecordUri dc:contributor ?catalogRecordContributor .
+    }
+
+    OPTIONAL {
+        ?catalogRecordUri dcterms:created ?catalogRecordCreated .
+    }
+
+    OPTIONAL {
+        ?catalogRecordUri dcterms:modified ?catalogRecordUpdated .
+    }
+
 
     OPTIONAL {
         ?uri insee:disseminationStatus ?disseminationStatus .
@@ -64,16 +80,12 @@ WHERE {
     }
 
     OPTIONAL {
-    ?uri dcterms:created ?created .
+        ?uri insee:validationState ?validationState .
     }
 
     OPTIONAL {
-    ?uri dcterms:modified ?updated .
+        ?uri dcterms:modified ?updated .
     }
 
-    OPTIONAL {
-    ?uri insee:validationState ?validationState .
-    }
-
-    BIND(STRAFTER(STR(?uri),'/catalogues/jeuDeDonnees/') AS ?id) .
+    BIND(STRAFTER(STR(?uri),'/datasets/') AS ?id) .
 }

@@ -66,11 +66,4 @@ public class DatasetResources {
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
         return this.datasetService.update(datasetId, body);
     }
-
-    @GetMapping("/themes")
-    @Operation(operationId = "getThemes", summary = "List of themes",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public String getThemes() throws RmesException {
-        return this.datasetService.getThemes();
-    }
 }

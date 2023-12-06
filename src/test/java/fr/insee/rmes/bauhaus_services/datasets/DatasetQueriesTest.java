@@ -53,6 +53,20 @@ public class DatasetQueriesTest {
     }
 
     @Test
+    void shouldCallGetDatasetCreatorsQuery() throws RmesException {
+        DatasetQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("DATASET_GRAPH", "datasets-graph");
+                put("ID", "1");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetCreators.ftlh"), eq(map))).thenReturn("request");
+            String query = DatasetQueries.getDatasetCreators("1", "datasets-graph");
+            Assertions.assertEquals(query, "request");
+        }
+    }
+
+    @Test
     void shouldCallGetLastDatasetIdQuery() throws RmesException {
         DatasetQueries.setConfig(config);
         try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {

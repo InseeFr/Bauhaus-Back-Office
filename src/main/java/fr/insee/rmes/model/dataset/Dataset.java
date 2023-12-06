@@ -12,14 +12,15 @@ public class Dataset {
     private String abstractLg2;
     private String cautionLg1;
     private String cautionLg2;
-    private String creator;
-    private String contributor;
     private String disseminationStatus;
     private String idSerie;
     private List<String> themes;
     private String validationState;
-    private String created;
     private String updated;
+
+    private List<String> creators;
+
+    private CatalogRecord catalogRecord;
 
     public String getId() {
         return id;
@@ -93,22 +94,6 @@ public class Dataset {
         this.cautionLg2 = cautionLg2;
     }
 
-    public String getCreator() {
-        return creator;
-    }
-
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    public String getContributor() {
-        return contributor;
-    }
-
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
-    }
-
     public String getDisseminationStatus() {
         return disseminationStatus;
     }
@@ -141,19 +126,27 @@ public class Dataset {
         this.validationState = validationState;
     }
 
-    public String getCreated() {
-        return created;
+    public CatalogRecord getCatalogRecord() {
+        return catalogRecord;
     }
 
-    public void setCreated(String created) {
-        this.created = created;
+    public void setCatalogRecord(CatalogRecord catalogRecord) {
+        this.catalogRecord = catalogRecord;
     }
 
     public String getUpdated() {
         return updated;
     }
 
-    public void setUpdated(String udpated) {
-        this.updated = udpated;
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
+
+    public List<String> getCreators() {
+        return creators;
+    }
+
+    public void setCreators(List<String> creators) {
+        this.creators = creators;
     }
 }

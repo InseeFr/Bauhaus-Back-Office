@@ -13,6 +13,4 @@ public interface DatasetService {
     String create(String body) throws RmesException;
 
     String getDistributions(String id) throws RmesException;
-
-    String getThemes() throws RmesException;
 }
