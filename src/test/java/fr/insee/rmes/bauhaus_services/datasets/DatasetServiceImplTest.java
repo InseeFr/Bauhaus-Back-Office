@@ -69,7 +69,7 @@ public class DatasetServiceImplTest {
         object.put("id", "1");
         JSONArray array = new JSONArray().put(object);
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put("creator-1"));
+        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
