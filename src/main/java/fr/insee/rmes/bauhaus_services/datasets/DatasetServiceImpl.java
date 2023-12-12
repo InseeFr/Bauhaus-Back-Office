@@ -91,24 +91,27 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove("theme");
 
-        dataset.put("creators", this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph())));
+        JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
+        List<String> creators = new ArrayList<>();
+        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString("creator")));
+        dataset.put("creators", creators);
 
         JSONObject catalogRecord = new JSONObject();
         if(dataset.has("catalogRecordCreator")){
             catalogRecord.put("creator", dataset.getString("catalogRecordCreator"));
-            catalogRecord.remove("catalogRecordCreator");
+            dataset.remove("catalogRecordCreator");
         }
         if(dataset.has("catalogRecordContributor")){
             catalogRecord.put("contributor", dataset.getString("catalogRecordContributor"));
-            catalogRecord.remove("catalogRecordContributor");
+            dataset.remove("catalogRecordContributor");
         }
         if(dataset.has("catalogRecordCreated")){
             catalogRecord.put("created", dataset.getString("catalogRecordCreated"));
-            catalogRecord.remove("catalogRecordCreated");
+            dataset.remove("catalogRecordCreated");
         }
         if(dataset.has("catalogRecordUpdated")){
             catalogRecord.put("updated", dataset.getString("catalogRecordUpdated"));
-            catalogRecord.remove("catalogRecordUpdated");
+            dataset.remove("catalogRecordUpdated");
         }
         dataset.put("catalogRecord", catalogRecord);
         return dataset.toString();

@@ -30,14 +30,14 @@ public class DatasetResources {
         this.datasetService = datasetService;
     }
 
-    @GetMapping()
+    @GetMapping(produces = "application/json")
     @Operation(operationId = "getDatasets", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDatasets() throws RmesException {
         return this.datasetService.getDatasets();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
