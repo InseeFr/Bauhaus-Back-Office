@@ -238,7 +238,7 @@ public class ExportUtils {
     }
     public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
+        fileName = filesUtils.reduceFileNameSize(fileName.replace(FilesUtils.ODS_EXTENSION, ""));
         InputStream input = exportAsInputStreamODS(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
