@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.User;
@@ -10,7 +9,6 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +19,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -29,6 +28,8 @@ import static org.mockito.Mockito.when;
 class StampsRestrictionServiceImplTest {
 
     String timbre = "FR01-XXX";
+    String timbre2 = "FR02-XXX";
+
     @Mock
     private RepositoryGestion repoGestion;
     @Mock
@@ -52,11 +53,48 @@ class StampsRestrictionServiceImplTest {
     }
 
     @Test
-    void isSeriesManager_OK_whenStampIsManager() throws RmesException {
-        var owners=new JSONArray("[{\"creators\":\""+timbre+"\"}]");
+    void isSeriesManager_OK_whenStampIsManagerWithMultipleCreators() throws RmesException {
+        var owners=new JSONArray("[" +
+                "{\"creators\":\""+timbre+"\"}," +
+                "{\"creators\":\""+timbre2+"\"}" +
+                "]");
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
         when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
         var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
         assertTrue(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
+    }
+
+    @Test
+    void isSeriesManager_OK_whenStampIsManagerWithOneCreator() throws RmesException {
+        var owners=new JSONArray("[" +
+                "{\"creators\":\""+timbre+"\"}" +
+                "]");
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
+        when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        assertTrue(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
+    }
+
+    @Test
+    void isSeriesManager_KO_whenStampIsNotManagerWithOneCreator() throws RmesException {
+        var owners=new JSONArray("[" +
+                "{\"creators\":\""+timbre2+"\"}" +
+                "]");
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
+        when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        assertFalse(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
+    }
+
+    @Test
+    void isSeriesManager_KO_whenStampIsNotManagerWithMultipleCreator() throws RmesException {
+        var owners=new JSONArray("[" +
+                "{\"creators\":\""+timbre2+"\"}," +
+                "{\"creators\":\""+timbre2+"\"}" +
+                "]");
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
+        when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        assertFalse(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
     }
 }
