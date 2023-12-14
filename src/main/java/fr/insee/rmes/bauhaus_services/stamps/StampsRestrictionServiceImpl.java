@@ -54,8 +54,8 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	}
 
 
-	protected boolean isSeriesManager(IRI uri) throws RmesException {
-		return isOwnerForModule(List.of(uri), OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+	protected boolean isSeriesManager(IRI iri) throws RmesException {
+		return isManagerForModule(iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
 
 	private boolean isIndicatorCreator(IRI iri) throws RmesException {
@@ -76,8 +76,9 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
 		var stamp=getUser().getStamp();
 		return StringUtils.hasLength(stamp) &&
-				predicateMatcher.test(owners.toList().stream()
-								.map(o-> findStamp(o, stampKey)),
+				predicateMatcher.test(
+						owners.toList().stream()
+								.map(o -> findStamp(o, stampKey)),
 						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
 				);
 	}
