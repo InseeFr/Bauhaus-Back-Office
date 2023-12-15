@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
         "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
         "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
+        "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
         "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
         "fr.insee.rmes.bauhaus.lg1=fr",
         "fr.insee.rmes.bauhaus.lg2=en"
@@ -67,10 +69,12 @@ public class DatasetServiceImplTest {
         object.put("id", "1");
         JSONArray array = new JSONArray().put(object);
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             String query = datasetService.getDatasetByID("1");
-            Assertions.assertEquals(query, "{\"themes\":[],\"id\":\"1\"}");
+            Assertions.assertEquals(query, "{\"themes\":[],\"catalogRecord\":{},\"creators\":[\"creator-1\"],\"id\":\"1\"}");
         }
     }
 
@@ -148,7 +152,11 @@ public class DatasetServiceImplTest {
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
-            body.put("creator", "creator");
+
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            body.put("catalogRecord", record);
+
 
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -168,9 +176,11 @@ public class DatasetServiceImplTest {
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
-            body.put("creator", "creator");
-            body.put("contributor", "contributor");
 
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            record.put("contributor", "contributor");
+            body.put("catalogRecord", record);
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
                 JSONObject lastId = new JSONObject();
@@ -189,9 +199,11 @@ public class DatasetServiceImplTest {
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
-            body.put("creator", "creator");
-            body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            record.put("contributor", "contributor");
+            body.put("catalogRecord", record);
 
             when(seriesUtils.isSeriesExist(any())).thenReturn(false);
 
@@ -236,6 +248,7 @@ public class DatasetServiceImplTest {
 
     private void createANewDataset(String nextId) throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
@@ -260,11 +273,16 @@ public class DatasetServiceImplTest {
             body.put("labelLg2", "labelLg2");
             body.put("descriptionLg1", "descriptionLg1");
             body.put("descriptionLg2", "descriptionLg2");
-            body.put("creator", "creator");
-            body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
             body.put("idSerie", "2");
             body.put("themes", new JSONArray().put("theme"));
+            body.put("updated", "2023-10-19T11:44:23.335590");
+            body.put("creators", List.of("c1", "c2"));
+
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            record.put("contributor", "contributor");
+            body.put("catalogRecord", record);
 
             JSONArray distributions = new JSONArray();
             when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
@@ -277,7 +295,11 @@ public class DatasetServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]".replaceAll("jd1001", nextId), model.getValue().toString());
+            ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
+            verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
+
+            Assertions.assertEquals("[(http://datasetIRI/jd1000, http://purl.org/dc/terms/identifier, \"jd1000\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/creator, \"c1\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1000, http://purl.org/dc/terms/creator, \"c2\", http://datasetGraph/) [http://datasetGraph/]]".replaceAll("jd1000", nextId), model.getValue().toString());
+            Assertions.assertEquals("[(http://recordIRI/jd1000, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1000, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1000, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1000, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1000, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1000, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]".replaceAll("jd1000", nextId), model2.getValue().toString());
             Assertions.assertEquals(id, nextId);
         }
     }
@@ -285,7 +307,8 @@ public class DatasetServiceImplTest {
     @Test
     void shouldPersistExistingDataset() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
-        IRI distributionIRI = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/jd1001");
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
+
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
@@ -308,14 +331,18 @@ public class DatasetServiceImplTest {
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2");
-            body.put("created", "2022-10-19T11:44:23.335590");
             body.put("descriptionLg1", "descriptionLg1");
             body.put("descriptionLg2", "descriptionLg2");
-            body.put("creator", "creator");
-            body.put("contributor", "contributor");
             body.put("disseminationStatus", "disseminationStatus");
             body.put("idSerie", "2");
             body.put("themes", new JSONArray().put("theme"));
+
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            record.put("contributor", "contributor");
+            record.put("created", "2023-10-19T11:44:23.335590");
+
+            body.put("catalogRecord", record);
 
             JSONArray distributions = new JSONArray();
             JSONObject d = new JSONObject();
@@ -330,7 +357,12 @@ public class DatasetServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#Distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+            ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
+            verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
+
+
+            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#Distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals(id, "jd1001");
         }
     }

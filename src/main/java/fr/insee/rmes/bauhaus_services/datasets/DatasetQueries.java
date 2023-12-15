@@ -26,18 +26,17 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDataset.ftlh", params);
     }
 
+    public static String getDatasetCreators(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetCreators.ftlh", params);
+    }
+
     public static String lastDatasetId(String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
 
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
-    }
-
-    public static String getThemes(String datasetsGraph, String datasetsConceptSchemeFilter) throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("CONCEPTS_GRAPH", config.getBaseGraph() + datasetsGraph);
-        params.put("LG1", config.getLg1());
-        params.put("CONCEPT_SCHEME_FILTER", datasetsConceptSchemeFilter);
-        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getThemes.ftlh", params);
     }
 }
