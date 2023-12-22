@@ -32,7 +32,7 @@ class CodeListServiceImplTest {
     void getCodesJson() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
             mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getCodeListItemsByNotation("notation", 1)).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
@@ -44,7 +44,7 @@ class CodeListServiceImplTest {
             items.put(item);
             when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1));
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
         }
     }
 
@@ -52,7 +52,7 @@ class CodeListServiceImplTest {
     void getCodesForCodeList() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
             mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, 1)).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
@@ -64,7 +64,7 @@ class CodeListServiceImplTest {
             items.put(item);
             when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", 1));
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", 1, null));
         }
     }
 

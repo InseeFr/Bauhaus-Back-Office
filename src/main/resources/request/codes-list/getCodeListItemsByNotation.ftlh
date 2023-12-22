@@ -12,4 +12,6 @@ WHERE {
     }
 }
 ORDER BY ?labelLg1
-LIMIT ${PER_PAGE} OFFSET ${OFFSET}
+<#if PER_PAGE??>
+    LIMIT ${PER_PAGE} OFFSET ${OFFSET}
+</#if>

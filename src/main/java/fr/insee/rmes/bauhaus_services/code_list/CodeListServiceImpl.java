@@ -52,11 +52,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 
 	@Override
-	public String getCodesJson(String notation, int page) throws RmesException {
+	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
-		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page));
+		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page, perPage));
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
@@ -100,7 +100,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			return codeList;
 		}
 		else {
-			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, 0));
+			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, 0, 0));
 			formatCodesForPartialList(codeList, codes);
 			return codeList;
 		}
@@ -108,11 +108,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getCodesForCodeList(String notation, int page) throws RmesException {
+	public String getCodesForCodeList(String notation, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
-		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, page));
+		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, page, perPage));
 
 
 		result.put("total", counter.get("count"));

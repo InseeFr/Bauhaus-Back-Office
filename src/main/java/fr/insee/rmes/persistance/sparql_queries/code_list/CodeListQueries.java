@@ -31,14 +31,39 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 
-	public static String getCodeListItemsByNotation(String notation, int page) throws RmesException {
+	public static int getPerPageConfiguration(Integer perPage){
+		if(perPage == null){
+			return config.getPerPage();
+		}
+		return perPage;
+	}
+
+	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
+		int perPageValue = getPerPageConfiguration(perPage);
+
+		HashMap<String, Object> params = initParams();
+		params.put(NOTATION, notation);
+		params.put(PARTIAL, partial);
+		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		if(perPageValue > 0){
+			params.put("OFFSET", perPageValue * (page - 1));
+			params.put("PER_PAGE", perPageValue);
+		}
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
+	}
+
+	public static String getCodeListItemsByNotation(String notation, int page, Integer perPage) throws RmesException {
+		int perPageValue = getPerPageConfiguration(perPage);
+
 		Map<String, Object> params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put(NOTATION, notation);
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		params.put("OFFSET", config.getPerPage() * (page - 1));
-		params.put("PER_PAGE", config.getPerPage());
+		if(perPageValue > 0){
+			params.put("OFFSET", perPageValue * (page - 1));
+			params.put("PER_PAGE", perPageValue);
+		}
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}
 
@@ -49,18 +74,6 @@ public class CodeListQueries extends GenericQueries {
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
-	}
-
-	public static String getDetailedCodes(String notation, boolean partial, int page) throws RmesException {
-		HashMap<String, Object> params = initParams();
-		params.put(NOTATION, notation);
-		params.put(PARTIAL, partial);
-		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
-		if(page > 0){
-			params.put("OFFSET", config.getPerPage() * (page - 1));
-			params.put("PER_PAGE", config.getPerPage());
-		}
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
