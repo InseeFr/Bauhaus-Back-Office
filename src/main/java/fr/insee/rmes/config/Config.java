@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 
 @Configuration
@@ -49,10 +48,9 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.api.basepath}")	//getSwaggerUrl to have the complete URL
 	private String swaggerBasepath;
 
-	@Value("${fr.insee.rmes.bauhaus.activeModules}")
-	private List<String> activeModules;
 
-  @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
+
+  	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}")
 	private int maxFileNameLength;
 	
 
@@ -151,31 +149,6 @@ public class Config {
 	/******************************************************/	
 	@Value("${fr.insee.rmes.bauhaus.classifications.families.graph}")	 //Getter with baseGraph
 	private String classifFamiliesGraph  ;
-
-	/******************************************************/
-	/** DataSets 		***********************************/
-	/******************************************************/
-	@Value("${fr.insee.rmes.bauhaus.datasets.graph}")
-	private String datasetsGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
-	private String datasetsBaseUri;
-
-	@Value("${fr.insee.rmes.bauhaus.theme.graph}")
-	private String datasetsThemeGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.theme.typePrefix}")
-	private String datasetsThemeTypePrefix;
-
-
-	/******************************************************/
-	/** Distributions 	***********************************/
-	/******************************************************/
-	@Value("${fr.insee.rmes.bauhaus.distribution.graph}")
-	private String distributionsGraph;
-
-	@Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
-	private String distributionsBaseUri;
 
 	/******************************************************/
 	/** OPERATIONS		***********************************/
@@ -405,30 +378,6 @@ public class Config {
 		return baseGraph + classifFamiliesGraph;
 	}
 
-	public String getDatasetsGraph() {
-		return baseGraph + datasetsGraph;
-	}
-
-	public String getDatasetsBaseUri() {
-		return datasetsBaseUri;
-	}
-
-	public String getDatasetsThemeGraph() {
-		return datasetsThemeGraph;
-	}
-
-	public String getDatasetsThemeTypePrefix() {
-		return datasetsThemeTypePrefix;
-	}
-
-	public String getDistributionsBaseUri(){
-		return distributionsBaseUri;
-	}
-
-	public String getDistributionsGraph() {
-		return baseGraph + distributionsGraph;
-	}
-
 	public String getOperationsGraph() {
 		return baseGraph + operationsGraph;
 	}
@@ -629,8 +578,8 @@ public class Config {
 		return maxFileNameLength;
 	}
 
-	public List<String> getActiveModules() {
-		return activeModules;
+	public int getPerPage() {
+		return perPage;
 	}
 
 	public int getPerPage() {

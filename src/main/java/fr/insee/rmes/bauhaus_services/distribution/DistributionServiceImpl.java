@@ -16,25 +16,53 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
 
+    @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
+    private String datasetsGraphSuffix;
+
+    @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
+    private String datasetsBaseUriSuffix;
+
+    @Value("${fr.insee.rmes.bauhaus.baseGraph}")
+    private String baseGraph;
+
+    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
+    private String baseUriGestion;
+
+    @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
+    private String distributionsBaseUriSuffix;
+
+    private String getDistributionGraph(){
+        return baseGraph + datasetsGraphSuffix;
+    }
+
+    private String getDistributionBaseUri(){
+        return baseUriGestion + distributionsBaseUriSuffix;
+    }
+
+    private String getDatasetsBaseUri(){
+        return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
     @Override
     public String getDistributions() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions()).toString();
+        return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph())).toString();
     }
 
     @Override
     public String getDistributionByID(String id) throws RmesException {
-        return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id)).toString();
+        return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
     }
 
     @Override
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
-        distribution.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId()), "d"));
+        distribution.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d"));
 
         this.validate(distribution);
 
@@ -56,21 +84,20 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution);
     }
 
-
     private String persist(Distribution distribution) throws RmesException {
-        Resource graph = RdfUtils.datasetGraph();
+        Resource graph = RdfUtils.createIRI(getDistributionGraph());
 
-        IRI distributionIRI = RdfUtils.distributionIRI(distribution.getId());
+        IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + distribution.getId());
 
         Model model = new LinkedHashModel();
 
         JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
         if(previousValue.has("idDataset")){
-            IRI iriDataset = RdfUtils.datasetIRI(previousValue.getString("idDataset"));
+            IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
             repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.DISTRIBUTION, graph, null, distributionIRI);
         }
 
-        RdfUtils.addTripleUri(RdfUtils.datasetIRI(distribution.getIdDataset()), DCAT.DISTRIBUTION, distributionIRI, model, graph);
+        RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.DISTRIBUTION, distributionIRI, model, graph);
 
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);

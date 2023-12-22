@@ -22,12 +22,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -60,6 +62,12 @@ public class PublicResources extends GenericResources {
     @Autowired
     StampsService stampsService;
 
+    @Value("${fr.insee.rmes.bauhaus.activeModules}")
+    private List<String> activeModules;
+
+    @Value("${fr.insee.rmes.bauhaus.modules}")
+    private List<String> modules;
+
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getInit", summary = "Initial properties", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Init.class)))})
     public ResponseEntity<Object> getProperties() throws RmesException {
@@ -73,7 +81,8 @@ public class PublicResources extends GenericResources {
             props.put("lg1", config.getLg1());
             props.put("lg2", config.getLg2());
             props.put("authType", AuthType.getAuthType(config));
-            props.put("modules", config.getActiveModules());
+            props.put("activeModules", activeModules);
+            props.put("modules", modules);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
