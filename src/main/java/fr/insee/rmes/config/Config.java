@@ -36,7 +36,7 @@ public class Config {
 	@Value("${fr.insee.rmes.bauhaus.lg2}")
 	private String lg2;
 
-	@Value("${fr.insee.rmes.bauhaus.perPage}")
+	@Value("${fr.insee.rmes.bauhaus.per_page}")
 	private int perPage;
 
 
@@ -581,4 +581,5 @@ public class Config {
 	public int getPerPage() {
 		return perPage;
 	}
+
 }

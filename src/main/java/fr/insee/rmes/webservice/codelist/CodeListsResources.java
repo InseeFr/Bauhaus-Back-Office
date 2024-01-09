@@ -128,9 +128,9 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getPaginatedCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
+    public ResponseEntity<Object> getPaginatedCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) {
         try {
-            String body = codeListService.getCodesForCodeList(notation, page);
+            String body = codeListService.getCodesForCodeList(notation, page, perPage);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -200,9 +200,9 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page) {
+    public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) {
         try {
-            String body = codeListService.getCodesJson(notation, page);
+            String body = codeListService.getCodesJson(notation, page, perPage);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);

@@ -30,9 +30,9 @@ public interface CodeListService {
 
     String publishCodeList(String id, boolean b) throws RmesException;
 
-    String getCodesForCodeList(String notation, int page) throws RmesException;
+    String getCodesForCodeList(String notation, int page, Integer perPage) throws RmesException;
 
-    String getCodesJson(String notation, int page) throws RmesException;
+    String getCodesJson(String notation, int page, Integer perPage) throws RmesException;
 
     String updateCodeFromCodeList(String notation, String code, String body) throws RmesException;
 
