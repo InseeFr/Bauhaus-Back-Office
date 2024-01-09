@@ -582,7 +582,4 @@ public class Config {
 		return perPage;
 	}
 
-	public int getPerPage() {
-		return perPage;
-	}
 }
