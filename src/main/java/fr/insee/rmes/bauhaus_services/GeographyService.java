@@ -6,10 +6,6 @@ import org.json.JSONObject;
 
 public interface GeographyService {
 
-	/******************************************************************************************
-	 * COG
-	 * *******************************************************************************************/
-
 	String getGeoFeatures() throws RmesException;
 
 	JSONObject getGeoFeatureById(String id) throws RmesException;
@@ -17,7 +13,6 @@ public interface GeographyService {
 	String createFeature(String body)  throws RmesException;
 
 	JSONObject getGeoFeature(IRI uri) throws RmesException;
-
 
     void updateFeature(String id, String body) throws RmesException;
 }
