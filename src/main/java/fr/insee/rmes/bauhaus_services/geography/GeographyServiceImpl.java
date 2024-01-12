@@ -171,6 +171,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		model.add(geoIRI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(geoFeature.getLabelLg1(), config.getLg1()), RdfUtils.simsGeographyGraph());
 
 		/*Optional*/
+		RdfUtils.addTripleString(geoIRI, SKOS.PREF_LABEL, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleString(geoIRI, IGEO.NOM, geoFeature.getLabelLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg1(), config.getLg1(), model, RdfUtils.simsGeographyGraph());
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
