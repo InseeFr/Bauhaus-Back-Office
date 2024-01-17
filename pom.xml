@@ -1,264 +1,261 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.18</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	
-	
-	<groupId>fr.insee.rmes</groupId>
-	<artifactId>Bauhaus-BO</artifactId>
-	<packaging>war</packaging>
-	<version>3.7.0</version>
-	<name>Bauhaus-Back-Office</name>
-	<description>Back-office services for Bauhaus</description>
-	<url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
-	<licenses>
-		<license>
-			<name>MIT License</name>
-			<url>http://www.opensource.org/licences/MIT</url>
-		</license>
-	</licenses>
-	<organization>
-		<name>INSEE</name>
-		<url>http://www.insee.fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>Jérôme Bourgeois</name>
-			<email>jerome.bourgeois@insee.fr</email>
-		</developer>
-	</developers>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.1</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
 
-	<properties>
-		<final.war.name>bauhaus</final.war.name>
-		<java.version>17</java.version>
-
-		<springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
-		<jackson.version>2.13.1</jackson.version>
-		<rdf4j.version>4.3.6</rdf4j.version>
-		<swagger.core.version>2.1.12</swagger.core.version>
-		<xdocreport.version>2.0.4</xdocreport.version>
-		<junit.version>5.8.2</junit.version>
-		<jacoco.version>0.8.5</jacoco.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
-		<java-jwt.version>3.4.1</java-jwt.version>
-		<json.version>20230618</json.version>
-		<flexmark.version>0.64.8</flexmark.version>
-		<jaxb.version>4.0.3</jaxb.version>
-		<zt.version>1.16</zt.version>
-		<saxon.version>12.3</saxon.version>
-		<!--<slf4j.version>2.0.9</slf4j.version>
-		<logback.version>1.4.11</logback.version>-->
-
-
-		<!-- SONAR -->
-		<sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
-			src/main/java/fr/insee/rmes/modeles/**/*</sonar.exclusions>
-		<sonar.projectKey>${project.groupId}:${project.artifactId}</sonar.projectKey>
-		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
-		<version.maven-jacoco>0.8.5</version.maven-jacoco>
-		<version.maven-sonar>3.7.0.1746</version.maven-sonar>
-		<argLine>-Xms256m -Xmx512m -ea
-			-Dfile.encoding=UTF-8</argLine>
-		<sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-to-slf4j</artifactId>
-				</exclusion>
-					<exclusion>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-starter-tomcat</artifactId>
-					</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-xml</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.zeroturnaround</groupId>
-			<artifactId>zt-zip</artifactId>
-			<version>${zt.version}</version>
-			<type>jar</type>
-		</dependency>
-		<dependency>
-		  <groupId>com.sun.xml.bind</groupId>
-		  <artifactId>jaxb-impl</artifactId>
-		  <version>${jaxb.version}</version>
-		  <scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- SECURITY -->
-		 <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.auth0</groupId>
-			<artifactId>java-jwt</artifactId>
-			<version>${java-jwt.version}</version>
-		</dependency>
- 
-
-		<!-- test -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin.external.google</groupId>
-					<artifactId>android-json</artifactId>
-				</exclusion>
-			</exclusions>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+    <groupId>fr.insee.rmes</groupId>
+    <artifactId>Bauhaus-BO</artifactId>
+    <packaging>jar</packaging>
+    <version>3.8.0</version>
+    <name>Bauhaus-Back-Office</name>
+    <description>Back-office services for Bauhaus</description>
+    <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licences/MIT</url>
+        </license>
+    </licenses>
+    <organization>
+        <name>INSEE</name>
+        <url>http://www.insee.fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>Jérôme Bourgeois</name>
+            <email>jerome.bourgeois@insee.fr</email>
+        </developer>
+    </developers>
 
 
-		<!-- SWAGGER -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>${springdoc-openapi-ui.version}</version>
-		</dependency>
+    <properties>
+        <jar.finalName>bauhaus</jar.finalName>
+        <java.version>21</java.version>
 
-		<!-- RDF -->
-		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-repository-http</artifactId>
-			<version>${rdf4j.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>jcl-over-slf4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-queryresultio-sparqljson</artifactId>
-			<version>${rdf4j.version}</version>
-		</dependency>
-		<!-- to load trig files in database-->
-		<dependency>
-			<groupId>org.eclipse.rdf4j</groupId>
-			<artifactId>rdf4j-rio-trig</artifactId>
-			<version>${rdf4j.version}</version>
-		</dependency> 
-		<!-- Manage JSONObject and JSONArray -->
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>${json.version}</version>
-		</dependency>
-
-		<!-- INSEE for JMS -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
-
-		<!-- SAXON FOR XSLT -->
-		<dependency>
-			<groupId>net.sf.saxon</groupId>
-			<artifactId>Saxon-HE</artifactId>
-			<version>${saxon.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions> 
-		</dependency>
-
-		<!-- FREEMARKER (for queries) -->
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
- 		</dependency>
-		<dependency>
-			<groupId>fr.opensagres.xdocreport</groupId>
-			<artifactId>fr.opensagres.xdocreport.document.odt</artifactId>
-			<version>${xdocreport.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.opensagres.xdocreport</groupId>
-			<artifactId>fr.opensagres.xdocreport.template.freemarker</artifactId>
-			<version>${xdocreport.version}</version>
-		</dependency>
+        <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
+        <jackson.version>2.13.1</jackson.version>
+        <rdf4j.version>4.3.6</rdf4j.version>
+        <swagger.core.version>2.1.12</swagger.core.version>
+        <xdocreport.version>2.0.4</xdocreport.version>
+        <junit.version>5.8.2</junit.version>
+        <jacoco.version>0.8.5</jacoco.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+        <java-jwt.version>3.4.1</java-jwt.version>
+        <json.version>20230618</json.version>
+        <flexmark.version>0.64.8</flexmark.version>
+        <jaxb.version>4.0.3</jaxb.version>
+        <zt.version>1.16</zt.version>
+        <saxon.version>12.3</saxon.version>
+        <!--<slf4j.version>2.0.9</slf4j.version>
+        <logback.version>1.4.11</logback.version>-->
 
 
-		<!-- XHTML to Markdown parser -->
-		<dependency>
-			<groupId>com.vladsch.flexmark</groupId>
-			<artifactId>flexmark-html2md-converter</artifactId>
-			<version>0.64.8</version>
-		</dependency>
-	</dependencies>
+        <!-- SONAR -->
+        <sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
+            src/main/java/fr/insee/rmes/modeles/**/*
+        </sonar.exclusions>
+        <sonar.projectKey>${project.groupId}:${project.artifactId}</sonar.projectKey>
+        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
+        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.language>java</sonar.language>
+        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+        <version.maven-jacoco>0.8.5</version.maven-jacoco>
+        <version.maven-sonar>3.7.0.1746</version.maven-sonar>
+        <argLine>-Xms256m -Xmx512m -ea
+            -Dfile.encoding=UTF-8
+        </argLine>
+        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+    </properties>
 
-	<build>
-		<finalName>${final.war.name}</finalName>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<plugins>
- 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludeGroupIds>org.apache.tomcat.embed</excludeGroupIds>
-				</configuration>
-			</plugin>	
-			
-			<!-- Plugin tests -->
- 			<plugin>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.zeroturnaround</groupId>
+            <artifactId>zt-zip</artifactId>
+            <version>${zt.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxb.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
+        <!-- SECURITY -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${java-jwt.version}</version>
+        </dependency>
+
+
+        <!-- test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- SWAGGER -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi-ui.version}</version>
+        </dependency>
+
+        <!-- RDF -->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-repository-http</artifactId>
+            <version>${rdf4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-queryresultio-sparqljson</artifactId>
+            <version>${rdf4j.version}</version>
+        </dependency>
+        <!-- to load trig files in database-->
+        <dependency>
+            <groupId>org.eclipse.rdf4j</groupId>
+            <artifactId>rdf4j-rio-trig</artifactId>
+            <version>${rdf4j.version}</version>
+        </dependency>
+        <!-- Manage JSONObject and JSONArray -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>${json.version}</version>
+        </dependency>
+
+        <!-- INSEE for JMS -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.jms</groupId>
+            <artifactId>jakarta.jms-api</artifactId>
+        </dependency>
+
+        <!-- SAXON FOR XSLT -->
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+            <version>${saxon.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- FREEMARKER (for queries) -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.opensagres.xdocreport</groupId>
+            <artifactId>fr.opensagres.xdocreport.document.odt</artifactId>
+            <version>${xdocreport.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>fr.opensagres.xdocreport</groupId>
+            <artifactId>fr.opensagres.xdocreport.template.freemarker</artifactId>
+            <version>${xdocreport.version}</version>
+        </dependency>
+
+
+        <!-- XHTML to Markdown parser -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-html2md-converter</artifactId>
+            <version>0.64.8</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Plugin tests -->
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
@@ -287,25 +284,25 @@
                 </executions>
             </plugin>
 
-			<plugin>
-				<groupId>org.sonarsource.scanner.maven</groupId>
-				<artifactId>sonar-maven-plugin</artifactId>
-				<version>${version.maven-sonar}</version>
-			</plugin>
-			<plugin>
-			    <groupId>org.springdoc</groupId>
-			    <artifactId>springdoc-openapi-maven-plugin</artifactId>
-			    <version>0.2</version>
-			    <executions>
-			        <execution>
-			            <phase>integration-test</phase>
-			            <goals>
-			                <goal>generate</goal>
-			            </goals>
-			        </execution>
-			    </executions>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${version.maven-sonar}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
