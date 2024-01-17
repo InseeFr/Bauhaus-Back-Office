@@ -11,3 +11,7 @@ WHERE {
         FILTER (lang(?labelLg2) = '${LG2}') .
     }
 }
+ORDER BY ?labelLg1
+<#if PER_PAGE??>
+    LIMIT ${PER_PAGE} OFFSET ${OFFSET}
+</#if>

@@ -93,6 +93,7 @@ public class ExportUtils {
         }
     }
 
+
     public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
         fileName = filesUtils.reduceFileNameSize(fileName.replace(FilesUtils.ODS_EXTENSION, ""));

@@ -1,19 +1,26 @@
 package fr.insee.rmes.model.dataset;
 
+import java.util.List;
+
 public class Dataset {
     private String id;
     private String labelLg1;
     private String labelLg2;
     private String descriptionLg1;
     private String descriptionLg2;
-    private String creator;
-    private String contributor;
+    private String abstractLg1;
+    private String abstractLg2;
+    private String cautionLg1;
+    private String cautionLg2;
     private String disseminationStatus;
     private String idSerie;
-    private String theme;
+    private List<String> themes;
     private String validationState;
-    private String created;
     private String updated;
+
+    private List<String> creators;
+
+    private CatalogRecord catalogRecord;
 
     public String getId() {
         return id;
@@ -55,20 +62,36 @@ public class Dataset {
         this.descriptionLg2 = descriptionLg2;
     }
 
-    public String getCreator() {
-        return creator;
+    public String getAbstractLg1() {
+        return abstractLg1;
     }
 
-    public void setCreator(String creator) {
-        this.creator = creator;
+    public void setAbstractLg1(String abstractLg1) {
+        this.abstractLg1 = abstractLg1;
     }
 
-    public String getContributor() {
-        return contributor;
+    public String getAbstractLg2() {
+        return abstractLg2;
     }
 
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
+    public void setAbstractLg2(String abstractLg2) {
+        this.abstractLg2 = abstractLg2;
+    }
+
+    public String getCautionLg1() {
+        return cautionLg1;
+    }
+
+    public void setCautionLg1(String cautionLg1) {
+        this.cautionLg1 = cautionLg1;
+    }
+
+    public String getCautionLg2() {
+        return cautionLg2;
+    }
+
+    public void setCautionLg2(String cautionLg2) {
+        this.cautionLg2 = cautionLg2;
     }
 
     public String getDisseminationStatus() {
@@ -87,12 +110,12 @@ public class Dataset {
         this.idSerie = idSerie;
     }
 
-    public String getTheme() {
-        return theme;
+    public List<String> getThemes() {
+        return themes;
     }
 
-    public void setTheme(String theme) {
-        this.theme = theme;
+    public void setThemes(List<String> themes) {
+        this.themes = themes;
     }
 
     public String getValidationState() {
@@ -103,19 +126,27 @@ public class Dataset {
         this.validationState = validationState;
     }
 
-    public String getCreated() {
-        return created;
+    public CatalogRecord getCatalogRecord() {
+        return catalogRecord;
     }
 
-    public void setCreated(String created) {
-        this.created = created;
+    public void setCatalogRecord(CatalogRecord catalogRecord) {
+        this.catalogRecord = catalogRecord;
     }
 
     public String getUpdated() {
         return updated;
     }
 
-    public void setUpdated(String udpated) {
-        this.updated = udpated;
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
+
+    public List<String> getCreators() {
+        return creators;
+    }
+
+    public void setCreators(List<String> creators) {
+        this.creators = creators;
     }
 }

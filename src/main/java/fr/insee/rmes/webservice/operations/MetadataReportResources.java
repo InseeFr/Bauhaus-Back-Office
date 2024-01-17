@@ -8,7 +8,6 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,6 +16,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +30,7 @@ import java.io.IOException;
 @RestController
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
+@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 public class MetadataReportResources extends OperationsCommonResources {
 
 	@Autowired
@@ -187,14 +188,14 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@Parameter(description = "Metadata report to create", required = true,
 	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		logger.info("POST Metadata report");
+		String id = null;
 		try {
-			String id = documentationsService.createMetadataReport(body);
-			if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
-			return ResponseEntity.status(HttpStatus.OK).body(id);
+			id = documentationsService.createMetadataReport(body);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-
+		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	/**

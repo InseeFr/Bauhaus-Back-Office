@@ -12,15 +12,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/datasets")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = Constants.DOCUMENT, description = "DataSet API")
+@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
 public class DatasetResources {
 
     final DatasetService datasetService;
@@ -29,76 +30,40 @@ public class DatasetResources {
         this.datasetService = datasetService;
     }
 
-    @GetMapping
+    @GetMapping(produces = "application/json")
     @Operation(operationId = "getDatasets", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public ResponseEntity<Object> getDatasets() {
-        try {
-            String datasets = this.datasetService.getDatasets();
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(datasets);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public String getDatasets() throws RmesException {
+        return this.datasetService.getDatasets();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public ResponseEntity<Object> getDataset(@PathVariable(Constants.ID) String id) {
-        try {
-            String dataset = this.datasetService.getDatasetByID(id);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(dataset);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+        return this.datasetService.getDatasetByID(id);
     }
 
     @GetMapping("/{id}/distributions")
     @Operation(operationId = "getDistributionsByDataset", summary = "List of distributions for a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public ResponseEntity<Object> getDistributionsByDataset(@PathVariable(Constants.ID) String id) {
-        try {
-            String distributions = this.datasetService.getDistributions(id);
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(distributions);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    public String getDistributionsByDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+        return this.datasetService.getDistributions(id);
     }
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDataset", summary = "Create a Dataset")
-    public ResponseEntity<Object> setDataset(
-            @Parameter(description = "Dataset", required = true) @RequestBody String body) {
-        try {
-            String id = this.datasetService.create(body);
-            return ResponseEntity.status(HttpStatus.CREATED).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+    @ResponseStatus(HttpStatus.CREATED)
+    public String setDataset(
+            @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
+        return this.datasetService.create(body);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDataset", summary = "Update a Dataset")
-    public ResponseEntity<Object> setDataset(
+    public String setDataset(
             @PathVariable("id") String datasetId,
-            @Parameter(description = "Dataset", required = true) @RequestBody String body) {
-        try {
-            String id = this.datasetService.update(datasetId, body);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
-    }
-
-    @GetMapping("/themes")
-    @Operation(operationId = "getThemes", summary = "List of themes",
-            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public ResponseEntity<Object> getThemes() {
-        try {
-            String themes = this.datasetService.getThemes();
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(themes);
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
+            @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
+        return this.datasetService.update(datasetId, body);
     }
 }

@@ -30,10 +30,6 @@ WHERE {
 				?textLg1 rdf:type dcmitype:Text .
 				?textLg1 dcterms:language <${LG1_CL}> .
 				?textLg1 rdf:value ?labelLg1 .
-
-				?textLg1 rdf:value ?textLg1Uri .
-				?textLg1Uri xkos:ExplanatoryNote ?labelLg1
-				FILTER (lang(?labelLg1) = '${LG1}')
 			}
 			BIND(EXISTS{?textLg1 insee:additionalMaterial ?docLg1} AS ?hasDocLg1)
 
@@ -45,11 +41,6 @@ WHERE {
 
 				OPTIONAL{
 					?textLg2 rdf:value ?labelLg2 .
-
-					?textLg2 rdf:value ?textLg2Uri .
-					?textLg2Uri xkos:ExplanatoryNote ?labelLg2
-					FILTER (lang(?labelLg2) = '${LG2}')
-
 				}
 			}
 
