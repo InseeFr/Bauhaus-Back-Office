@@ -2,7 +2,7 @@ package fr.insee.rmes.external_services.authentication.user_roles_manager.sugoiM
 
 import com.fasterxml.jackson.annotation.*;
 
-import javax.annotation.Generated;
+import jakarta.annotation.Generated;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
