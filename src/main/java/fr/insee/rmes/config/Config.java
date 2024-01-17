@@ -5,7 +5,7 @@ import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import static fr.insee.rmes.config.PropertiesKeys.*;
 
