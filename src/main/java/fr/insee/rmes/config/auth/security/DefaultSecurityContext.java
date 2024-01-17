@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableWebSecurity
 @ConditionalOnExpression("!'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
 public class DefaultSecurityContext {
 
@@ -49,16 +51,16 @@ public class DefaultSecurityContext {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.sessionManagement().disable()
+        http.csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
                 .anonymous(anonymous -> {
                     anonymous.authorities(fakeUser.roles().toArray(String[]::new));
                     anonymous.principal(fakeUser.id());
                 })
-                .authorizeRequests().anyRequest().permitAll();
+                .authorizeHttpRequests(
+                        authorizeHttpRequest -> authorizeHttpRequest.anyRequest().permitAll());
         if (requiresSsl) {
-            http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+            http.requiresChannel(channel -> channel.requestMatchers("/**").requiresSecure());
         }
 
         logger.info("Default authentication activated - no auth ");
@@ -69,7 +71,7 @@ public class DefaultSecurityContext {
 
     @Bean
     public UserDecoder getUserProvider() {
-        return principal -> Optional.of(fakeUser);
+		return principal -> Optional.of(User.FAKE_USER);
     }
 
 }

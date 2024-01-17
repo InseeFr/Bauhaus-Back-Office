@@ -1,6 +1,8 @@
 package fr.insee.rmes.config.auth.security;
 
-import com.nimbusds.jose.shaded.json.JSONObject;
+import com.nimbusds.jose.shaded.gson.JsonArray;
+import com.nimbusds.jose.shaded.gson.JsonElement;
+import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import org.slf4j.Logger;
@@ -15,18 +17,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static fr.insee.rmes.config.auth.security.CommonSecurityConfiguration.DEFAULT_ROLE_PREFIX;
 import static java.util.Optional.*;
@@ -63,35 +65,36 @@ public class OpenIDConnectSecurityContext {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.sessionManagement().disable()
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+        http.sessionManagement(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(withDefaults()))
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeRequests()
-                .antMatchers(PUBLIC_RESOURCES_ANT_PATTERNS).permitAll() //PublicResources
-                .antMatchers("/healthcheck").permitAll()
-                .antMatchers("/swagger-ui/*").permitAll()
-                .antMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
-                .antMatchers("/openapi.json").permitAll()
-                .antMatchers("/documents/document/*/file").permitAll()
-                .antMatchers("/operations/operation/codebook").permitAll()
-                .antMatchers(HttpMethod.OPTIONS).permitAll()
-                .anyRequest().authenticated()
-                .expressionHandler(webSecurityExpressionHandler());
+                .authorizeHttpRequests(
+                        authorizeHttpRequest -> authorizeHttpRequest
+                                .requestMatchers(PUBLIC_RESOURCES_ANT_PATTERNS).permitAll() //PublicResources
+                                .requestMatchers("/healthcheck").permitAll()
+                                .requestMatchers("/swagger-ui/*").permitAll()
+                                .requestMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
+                                .requestMatchers("/openapi.json").permitAll()
+                                .requestMatchers("/documents/document/*/file").permitAll()
+                                .requestMatchers("/operations/operation/codebook").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS).permitAll()
+                                .anyRequest().authenticated()
+                );
 
         if (requiresSsl) {
-            http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+            http.requiresChannel(channel->channel.requestMatchers("/**").requiresSecure());
         }
         logger.info("OpenID authentication activated ");
 
         return http.build();
     }
 
-    private DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
-        var expressionHandler = new DefaultWebSecurityExpressionHandler();
-        expressionHandler.setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
-        return expressionHandler;
+    @Bean
+    static GrantedAuthorityDefaults grantedAuthorityDefaults() {
+        return new GrantedAuthorityDefaults(DEFAULT_ROLE_PREFIX);
     }
+
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         var jwtAuthenticationConverter = new JwtAuthenticationConverter();
@@ -117,21 +120,25 @@ public class OpenIDConnectSecurityContext {
             logger.info(LOG_INFO_DEFAULT_STAMP, id);
             stamp = of(TIMBRE_ANONYME);
         }
-        var roles=extractRoles(claims).toList();
+        var roles = extractRoles(claims).toList();
 
         logger.debug("Current User is {}, {} with roles {}", id, stamp, roles);
         return new User(id, roles, stamp.get());
     }
 
-    private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt){
+    private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
         return extractRoles(jwt.getClaims()).map(SimpleGrantedAuthority::new)
-                .map(a->(GrantedAuthority)a).toList();
+                .map(a -> (GrantedAuthority) a).toList();
     }
 
-    private Stream<String> extractRoles(Map<String, Object> claims){
-        var objectForRoles = (JSONObject) claims.get(roleClaim);
-        return objectForRoles == null ? EMPTY_ROLES : ((List<String>) (objectForRoles.get(keyForRolesInRoleClaim))).stream();
+    private Stream<String> extractRoles(Map<String, Object> claims) {
+        var objectForRoles = (JsonObject) claims.get(roleClaim);
+        if (objectForRoles==null){
+            return EMPTY_ROLES;
+        }
+        var jsonArray=(JsonArray) objectForRoles.get(keyForRolesInRoleClaim);
+        return StreamSupport.stream(Spliterators.spliterator(jsonArray.iterator(), jsonArray.size(),0),false)
+                        .map(JsonElement::getAsString);
     }
-
 
 }
