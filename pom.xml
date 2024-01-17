@@ -36,7 +36,6 @@
 
 
     <properties>
-        <jar.finalName>bauhaus</jar.finalName>
         <java.version>21</java.version>
 
         <springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
@@ -247,6 +246,7 @@
     </dependencies>
 
     <build>
+        <finalName>bauhaus</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
