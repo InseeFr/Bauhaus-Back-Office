@@ -1,13 +1,13 @@
 package fr.insee.rmes.bauhaus_services;
 
-import java.io.IOException;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
 
 public interface OperationsDocumentationsService {
 
@@ -26,7 +26,7 @@ public interface OperationsDocumentationsService {
 	//SIMS
 	String getMetadataReport(String id) throws RmesException;
 
-	Documentation getFullSimsForXml(String id) throws RmesException;
+	Documentation getFullSimsForXml(JSONObject sims) throws RmesException;
 
 	String getFullSimsForJson(String id) throws RmesException;
 	

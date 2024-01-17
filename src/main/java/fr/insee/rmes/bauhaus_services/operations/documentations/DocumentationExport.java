@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
@@ -11,64 +12,76 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.utils.EncodingType;
-import fr.insee.rmes.utils.ExportUtils;
-import fr.insee.rmes.utils.XMLUtils;
-import fr.insee.rmes.utils.XsltUtils;
+import fr.insee.rmes.utils.*;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class DocumentationExport {
 
-	
-	@Autowired
-	ExportUtils exportUtils;
-	
-	@Autowired
-	SeriesUtils seriesUtils;
-	
-	@Autowired
-	OperationsUtils operationsUtils;
-	
-	@Autowired
-	IndicatorsUtils indicatorsUtils;
-	
-	@Autowired
-	ParentUtils parentUtils;
-	
-	@Autowired
-	CodeListService codeListServiceImpl;
-	
-	@Autowired
-	OrganizationsService organizationsServiceImpl;
-	
-	@Autowired
-	DocumentationsUtils documentationsUtils;
-	
-	String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
-	String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
-	String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
-	
-	String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
-	String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
+	private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
-	/**
-	 *
-	 * @param id The identifier of the report we want to export
-	 * @param documents a boolean value indicating if we want to include the related documents to the export.
-	 *                  If this value is equal to true, the export will be a .ZIP archive. If equal to false,
-	 *                  the export will be a .ODT file.
-	 */
-	public ResponseEntity<?> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+	final DocumentsUtils documentsUtils;
+
+	final ExportUtils exportUtils;
+	
+	final SeriesUtils seriesUtils;
+	
+	final OperationsUtils operationsUtils;
+	
+	final IndicatorsUtils indicatorsUtils;
+	
+	final ParentUtils parentUtils;
+	
+	final CodeListService codeListServiceImpl;
+	
+	final OrganizationsService organizationsServiceImpl;
+	
+	final DocumentationsUtils documentationsUtils;
+
+	final FilesUtils filesUtils;
+
+	static final String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
+	static final String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
+	static final String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
+
+	static final String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
+	static final String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
+
+	public DocumentationExport(DocumentsUtils documentsUtils, ExportUtils exportUtils, SeriesUtils seriesUtils, OperationsUtils operationsUtils, IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodeListService codeListServiceImpl, OrganizationsService organizationsServiceImpl, DocumentationsUtils documentationsUtils, FilesUtils filesUtils) {
+		this.documentsUtils = documentsUtils;
+		this.exportUtils = exportUtils;
+		this.seriesUtils = seriesUtils;
+		this.operationsUtils = operationsUtils;
+		this.indicatorsUtils = indicatorsUtils;
+		this.parentUtils = parentUtils;
+		this.codeListServiceImpl = codeListServiceImpl;
+		this.organizationsServiceImpl = organizationsServiceImpl;
+		this.documentationsUtils = documentationsUtils;
+		this.filesUtils = filesUtils;
+	}
+
+	public ResponseEntity<?> exportDocumentationAsResponse(JSONObject sims, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2, boolean documents, String goal) throws RmesException {
 
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
@@ -76,57 +89,168 @@ public class DocumentationExport {
 
 
 		if(!documents){
+			var fileName = sims.getString("labelLg1").replaceAll("/[/<>*:?|]/gi", "");
 			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+				return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+				return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
 			}
 		} else {
-			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
-
 			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+				return exportAsZip(sims, xmlContent, xslFile, xmlPatternRmes, zipRmes, "documentation");
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+				return exportAsZip(sims, xmlContent, xslFile, xmlPatternLabel, zipLabel, "documentation");
 			}
 		}
 
 		return ResponseEntity.internalServerError().body("Goal to export is not found");
 	}
-	
+
+	public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+		String simsId = sims.getString("id");
+		logger.debug("Begin to download the SIMS {} with its documents", simsId);
+		String fileName = filesUtils.reduceFileNameSize(sims.getString("labelLg1"));
+
+		try {
+
+			Path directory = Files.createTempDirectory("sims");
+			logger.debug("Creating tempory directory {}", directory.toString());
+			Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
+			logger.debug("Creating tempory directory {}", simsDirectory);
+
+			logger.debug("Generating the InputStream for the SIMS {}", simsId);
+
+			InputStream input = exportUtils.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
+			if (input == null){
+				logger.debug("Error when creating the export of the SIMS {}", simsId);
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't export this object", "");
+			}
+
+			logger.debug("Creating the .odt file for the SIMS {}", simsId);
+			Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + FilesUtils.ODT_EXTENSION));
+			Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
+			logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
+
+
+			logger.debug("Starting downloading documents for the SIMS {}", simsId);
+			Set<String> missingDocuments = this.exportRubricsDocuments(sims, simsDirectory);
+			logger.debug("Ending downloading documents for the SIMS {}", simsId);
+
+			logger.debug("Zipping the folder for the SIMS {}", simsId);
+			FilesUtils.zipDirectory(simsDirectory.toFile());
+
+			logger.debug("Zip created for the SIMS {}", simsId);
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.setContentDisposition(ContentDisposition.builder("attachment").filename(fileName + Constants.DOT_ZIP).build());
+			responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
+
+			responseHeaders.setAccessControlExposeHeaders(List.of("X-Missing-Documents", "Content-Disposition"));
+			responseHeaders.set("X-Missing-Documents", StringUtils.join(missingDocuments, ","));
+			Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + Constants.DOT_ZIP).toUri());
+			return ResponseEntity.ok()
+					.headers(responseHeaders)
+					.body(resource);
+		}
+		catch (Exception exception) {
+			logger.error("Error when downloading the SIMS {} with its documents", simsId, exception);
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), exception.getClass().getSimpleName());
+		}
+	}
+
+	private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
+		Set<String> history = new HashSet<>();
+		JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
+		Set<String> missingDocuments = new HashSet<>();
+
+		for (int i = 0; i < documents.length(); i++) {
+			JSONObject document = documents.getJSONObject(i);
+			String url = document.getString("url").replace("file://", "");
+			if(!history.contains(url)){
+				history.add(url);
+				logger.debug("Extracting document {}", url);
+				Path documentPath = Path.of(url);
+
+				if(!Files.exists(documentPath)){
+					missingDocuments.add(document.getString("id"));
+				} else {
+					String fileName = FilenameUtils.getBaseName(documentPath.getFileName().toString());
+					String extension = FilenameUtils.getExtension(documentPath.getFileName().toString());
+					String documentFileName = String.format("%s.%s", filesUtils.reduceFileNameSize(fileName), extension);
+
+					InputStream inputStream = Files.newInputStream(documentPath);
+
+					Path documentDirectory = Path.of(directory.toString(), "documents");
+					if (!Files.exists(documentDirectory)) {
+						logger.debug("Creating the documents folder");
+						Files.createDirectory(documentDirectory);
+					}
+
+					logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
+					Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
+					Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+				}
+			}
+		}
+
+		return missingDocuments;
+	}
 	public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
-		//Add params to xmlContents
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-
 		return exportUtils.exportFilesAsResponse(xmlContent);
-
 	}
 	
 
-	public ResponseEntity<?> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
+	class ExportMetadatas {
+		JSONObject sims;
+		String targetType;
+		Map<String,String> xmlContent;
+
+		public ExportMetadatas(JSONObject sims, String targetType, Map<String, String> xmlContent) {
+			this.sims = sims;
+			this.targetType = targetType;
+			this.xmlContent = xmlContent;
+		}
+
+		public JSONObject getSims() {
+			return sims;
+		}
+
+		public String getTargetType() {
+			return targetType;
+		}
+
+		public Map<String, String> getXmlContent() {
+			return xmlContent;
+		}
+	}
+	private ExportMetadatas generateMetaDataForExport(String id) throws RmesException {
+		var sims = documentationsUtils.getDocumentationByIdSims(id);
 		Map<String,String> xmlContent = new HashMap<>();
-		String targetType = getXmlContent(id, xmlContent);
-		String msdXML = buildShellSims();
+		String targetType = getXmlContent(id, sims, xmlContent);
+		String msdXML = buildMSDShellSims();
 		xmlContent.put("msdFile", msdXML);
-		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal);
+		return new ExportMetadatas(sims, targetType, xmlContent);
+	}
+
+
+	public ResponseEntity<?> exportDocumentationReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
+		var metadatas = this.generateMetaDataForExport(id);
+		return exportDocumentationAsResponse(metadatas.getSims(), metadatas.getXmlContent(), metadatas.getTargetType(), includeEmptyMas, lg1, lg2, document, goal);
 	}
 	
 
-	public ResponseEntity<Object> exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		Map<String,String> xmlContent = new HashMap<>();
-		String targetType = getXmlContent(id, xmlContent);
-		String msdXML = buildShellSims();
-		xmlContent.put("msdFile", msdXML);
-		return exportXmlFiles(xmlContent,targetType,includeEmptyMas,lg1,lg2);
+	public ResponseEntity<Object> exportDocumentationReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+		var metadatas = this.generateMetaDataForExport(id);
+		return exportXmlFiles(metadatas.getXmlContent(), metadatas.getTargetType(), includeEmptyMas, lg1, lg2);
 	}
 
-	public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
+	public String getXmlContent(String id, JSONObject sims, Map<String, String> xmlContent) throws RmesException {
 		String emptyXML=XMLUtils.produceEmptyXML();
 		Operation operation;
 		Series series;
@@ -179,7 +303,8 @@ public class DocumentationExport {
 
 		String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
 
-		String simsXML=XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(id), "application/xml");
+
+		String simsXML=XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(sims), "application/xml");
 		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
 
 		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
@@ -192,7 +317,6 @@ public class DocumentationExport {
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
-
 		xmlContent.put("simsFile",  simsXML);
 		xmlContent.put("seriesFile",  seriesXML);
 		xmlContent.put("operationFile",  operationXML);
@@ -203,10 +327,8 @@ public class DocumentationExport {
 	}
 	
 
-	private String buildShellSims() throws RmesException {
+	private String buildMSDShellSims() throws RmesException {
 		MSD msd= documentationsUtils.getMSD();
 		return XMLUtils.produceXMLResponse(msd);
 	}
-
-
 }
