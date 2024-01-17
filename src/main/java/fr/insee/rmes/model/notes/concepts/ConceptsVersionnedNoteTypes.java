@@ -2,12 +2,12 @@ package fr.insee.rmes.model.notes.concepts;
 
 
 import fr.insee.rmes.config.Config;
+import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
