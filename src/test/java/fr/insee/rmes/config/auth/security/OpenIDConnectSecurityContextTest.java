@@ -6,8 +6,9 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.OutputStreamAppender;
-import com.nimbusds.jose.shaded.json.JSONArray;
-import com.nimbusds.jose.shaded.json.JSONObject;
+import com.nimbusds.jose.shaded.gson.JsonArray;
+import com.nimbusds.jose.shaded.gson.JsonElement;
+import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import org.jetbrains.annotations.NotNull;
@@ -31,39 +32,39 @@ class OpenIDConnectSecurityContextTest {
     private static final String timbre="DR59-SNDI";
     private static final List<String> roles = List.of("role1", "role2", "role3", "role4", "role5");
 
-    private static final JSONArray rolesOfAccount=initJsonArray("manage-account",
+    private static final JsonArray rolesOfAccount=initJsonArray("manage-account",
                 "manage-account-links",
                 "view-profile");
 
-    private static final JSONArray allowedOrigins = initJsonArray("https://gestion-metadonnees.insee.fr",
+    private static final JsonArray allowedOrigins = initJsonArray("https://gestion-metadonnees.insee.fr",
             "https://preprod.gestion-metadonnees.insee.fr",
             "https://test-gestion-metadonnees.insee.fr");
 
-    private static final JSONArray rolesOfJwt = initJsonArray(roles);
+    private static final JsonArray rolesOfJwt = initJsonArray(roles);
 
-    private static final JSONArray rolesOfRealmAccess = rolesOfJwt;
+    private static final JsonArray rolesOfRealmAccess = rolesOfJwt;
 
     private static final Map<String, Object> jwtDecoded=initJwtDecoded();
 
 
-    private static JSONArray initJsonArray(List<String> elements) {
-        var retour=new JSONArray();
-        retour.addAll(elements);
+    private static JsonArray initJsonArray(List<String> elements) {
+        var retour=new JsonArray();
+        elements.forEach(retour::add);
         return retour;
     }
 
-    private static JSONArray initJsonArray(String... elements) {
+    private static JsonArray initJsonArray(String... elements) {
         return initJsonArray(List.of(elements));
     }
 
     private static Map<String,Object> initJwtDecoded() {
         Map<String, Object> retour =new HashMap<>();
         retour.put("sub", "f:fblabbalbalba:ZZZZZZ");
-        retour.put("resource_access", new JSONObject(Map.of(
-                "account", new JSONObject(Map.of(
+        retour.put("resource_access", simpleJsonObjectOf(
+                "account", simpleJsonObjectOf(
                         "roles", rolesOfAccount)
                 )
-        )));
+        );
         retour.put("matricule", "0000000000054");
         retour.put("allowed-origins", allowedOrigins);
         retour.put("roles", rolesOfJwt);
@@ -74,7 +75,7 @@ class OpenIDConnectSecurityContextTest {
         retour.put("sid", "c3000000-0000-0000-0000-000000000");
         retour.put("aud", List.of("account"));
         retour.put("timbre", timbre);
-        retour.put("realm_access", new JSONObject(Map.of("roles", rolesOfRealmAccess)));
+        retour.put("realm_access", simpleJsonObjectOf("roles", rolesOfRealmAccess));
         retour.put("idminefi", "1010101010101");
         retour.put("azp", "blblblblbl-frontend");
         retour.put("auth_time", 1693372846);
@@ -86,6 +87,12 @@ class OpenIDConnectSecurityContextTest {
         retour.put("family_name", "Vivonne");
         retour.put("jti", "000000-0000-0000-0000-000000000");
         retour.put("email", "fabrice.vivonne@insee.fr");
+        return retour;
+    }
+
+    private static JsonObject simpleJsonObjectOf(String key, JsonElement value) {
+        var retour=new JsonObject();
+        retour.add(key, value);
         return retour;
     }
 

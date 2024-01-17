@@ -22,7 +22,7 @@ public class CommonSecurityConfiguration {
 
     private static final Logger logger= LoggerFactory.getLogger(CommonSecurityConfiguration.class);
 
-    public static final String DEFAULT_ROLE_PREFIX = null ;
+    public static final String DEFAULT_ROLE_PREFIX = "" ;
     private final Optional<String> allowedOrigin ;
 
     public CommonSecurityConfiguration(@Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin){
