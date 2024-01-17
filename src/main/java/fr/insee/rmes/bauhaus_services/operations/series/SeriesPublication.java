@@ -9,8 +9,6 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -28,9 +26,6 @@ public class SeriesPublication extends RdfService {
 	
 	@Autowired
 	ParentUtils ownersUtils;
-	
-
-	static NotificationsContract notification = new RmesNotificationsImpl();
 	
 	public void publishSeries(String seriesId, JSONObject serieJson) throws RmesException {
 		Model model = new LinkedHashModel();
