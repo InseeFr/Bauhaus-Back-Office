@@ -7,8 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -44,12 +43,11 @@ public class CommonSecurityConfiguration {
         return source;
     }
 
-    @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-    public static class CustomGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+    @EnableMethodSecurity(securedEnabled = true)
+    public static class CustomGlobalMethodSecurityConfiguration {
 
-        @Override
-        protected MethodSecurityExpressionHandler createExpressionHandler() {
-            logger.trace("Initializing GlobalMethodSecurityConfiguration with DefaultRolePrefix = {}",DEFAULT_ROLE_PREFIX);
+        @Bean
+        static public MethodSecurityExpressionHandler createExpressionHandler() {
             var expressionHandler = new DefaultMethodSecurityExpressionHandler();
             expressionHandler.setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
             return expressionHandler;
