@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableWebSecurity
 @ConditionalOnExpression("!'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
 public class DefaultSecurityContext {
 
@@ -62,15 +63,15 @@ public class DefaultSecurityContext {
             http.requiresChannel(channel -> channel.requestMatchers("/**").requiresSecure());
         }
 
-        logger.info("Default authentication activated - no auth ");
+		logger.info("Default authentication activated - no auth ");
 
-        return http.build();
+		return http.build();
 
-    }
+	}
 
-    @Bean
-    public UserDecoder getUserProvider() {
+	@Bean
+	public UserDecoder getUserProvider() {
 		return principal -> Optional.of(User.FAKE_USER);
-    }
+	}
 
 }
