@@ -1,9 +1,26 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.code_list.LangService;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.operations.documentations.Documentation;
+import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
+import fr.insee.rmes.model.operations.documentations.MAS;
+import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.SDMX_MM;
+import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
+import fr.insee.rmes.utils.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,33 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.code_list.LangService;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.operations.documentations.Documentation;
-import fr.insee.rmes.model.operations.documentations.DocumentationRubric;
-import fr.insee.rmes.model.operations.documentations.MAS;
-import fr.insee.rmes.model.operations.documentations.MSD;
-import fr.insee.rmes.persistance.ontologies.INSEE;
-import fr.insee.rmes.persistance.ontologies.SDMX_MM;
-import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
-import fr.insee.rmes.utils.DateUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
@@ -94,8 +87,8 @@ public class DocumentationsUtils extends RdfService{
 		return doc;
 	}
 
-	public Documentation getFullSimsForXml(String id) throws RmesException {
-		return buildDocumentationFromJson(getDocumentationByIdSims(id),true);
+	public Documentation getFullSimsForXml(JSONObject sims) throws RmesException {
+		return buildDocumentationFromJson(sims,true);
 	}
 
 	public JSONObject getFullSimsForJson(String id) throws RmesException {
