@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 public class DocumentationExport {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
+	private static final String DENY_LIST_CHARACTERS = "/[/<>*:?|]/gi";
 
 	final DocumentsUtils documentsUtils;
 
@@ -89,7 +90,7 @@ public class DocumentationExport {
 
 
 		if(!documents){
-			var fileName = sims.getString("labelLg1").replaceAll("/[/<>*:?|]/gi", "");
+			var fileName = sims.getString("labelLg1").replaceAll(DENY_LIST_CHARACTERS, "");
 			if (Constants.GOAL_RMES.equals(goal)) {
 				return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
 
@@ -206,7 +207,7 @@ public class DocumentationExport {
 	}
 	
 
-	class ExportMetadatas {
+	static class ExportMetadatas {
 		JSONObject sims;
 		String targetType;
 		Map<String,String> xmlContent;
