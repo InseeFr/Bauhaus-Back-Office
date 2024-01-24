@@ -1,17 +1,21 @@
-SELECT ?id ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?disseminationStatus ?idSerie ?theme
+SELECT ?id ?labelLg1 ?labelLg2 ?subtitleLg1 ?subtitleLg2 ?accrualPeriodicity ?accessRights ?confidentialityStatus ?publisher ?landingPageLg1 ?landingPageLg2
+?updated ?issued
+?disseminationStatus ?processStep ?archiveUnit
+?type ?statisticalUnit ?dataStructure ?observationNumber ?spacialCoverage ?temporalResolution
+?descriptionLg1 ?descriptionLg2  ?idSerie ?theme
 ?validationState ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
 ?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
-?updated
+
 FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
     ?uri dcterms:identifier '${ID}' .
-    ?uri dcterms:title ?labelLg1
-    FILTER (lang(?labelLg1) = '${LG1}') .
+
+    <#include "getDatasetIncludes/generalInformations.ftlh">
 
     OPTIONAL {
-        ?uri dcterms:title ?labelLg2
-        FILTER (lang(?labelLg2) = '${LG2}') .
+        ?uri dcat:landingPage ?landingPageLg2
+        FILTER (lang(?landingPageLg2) = '${LG2}') .
     }
 
     OPTIONAL {
@@ -66,9 +70,8 @@ WHERE {
     }
 
 
-    OPTIONAL {
-        ?uri insee:disseminationStatus ?disseminationStatus .
-    }
+<#include "getDatasetIncludes/generalManagment.ftlh">
+<#include "getDatasetIncludes/statisticsInformations.ftlh">
 
     OPTIONAL {
         ?uri prov:wasGeneratedBy ?wasGeneratedBy .
@@ -81,10 +84,6 @@ WHERE {
 
     OPTIONAL {
         ?uri insee:validationState ?validationState .
-    }
-
-    OPTIONAL {
-        ?uri dcterms:modified ?updated .
     }
 
     BIND(STRAFTER(STR(?uri),'/datasets/') AS ?id) .

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/datasets")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = Constants.DOCUMENT, description = "DataSet API")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
+//@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
 public class DatasetResources {
 
     final DatasetService datasetService;

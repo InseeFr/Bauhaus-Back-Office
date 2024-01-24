@@ -3,32 +3,24 @@ package fr.insee.rmes.model.dataset;
 import java.util.List;
 
 public class Dataset {
-    private String id;
+
+    // Informations Générales
+
     private String labelLg1;
     private String labelLg2;
-    private String descriptionLg1;
-    private String descriptionLg2;
-    private String abstractLg1;
-    private String abstractLg2;
-    private String cautionLg1;
-    private String cautionLg2;
-    private String disseminationStatus;
-    private String idSerie;
-    private List<String> themes;
-    private String validationState;
+    private String subTitleLg1;
+    private String subTitleLg2;
+    private String accrualPeriodicity;
+    private String accessRights;
+    private String confidentialityStatus;
+    private List<String> creators;
+    private String publisher;
+    private String landingPageLg1;
+    private String landingPageLg2;
+
     private String updated;
 
-    private List<String> creators;
-
-    private CatalogRecord catalogRecord;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    private String issued;
 
     public String getLabelLg1() {
         return labelLg1;
@@ -45,6 +37,221 @@ public class Dataset {
     public void setLabelLg2(String labelLg2) {
         this.labelLg2 = labelLg2;
     }
+
+    public String getSubTitleLg1() {
+        return subTitleLg1;
+    }
+
+    public void setSubTitleLg1(String subTitleLg1) {
+        this.subTitleLg1 = subTitleLg1;
+    }
+
+    public String getSubTitleLg2() {
+        return subTitleLg2;
+    }
+
+    public void setSubTitleLg2(String subTitleLg2) {
+        this.subTitleLg2 = subTitleLg2;
+    }
+
+    public String getAccrualPeriodicity() {
+        return accrualPeriodicity;
+    }
+
+    public void setAccrualPeriodicity(String accrualPeriodicity) {
+        this.accrualPeriodicity = accrualPeriodicity;
+    }
+
+    public String getAccessRights() {
+        return accessRights;
+    }
+
+    public void setAccessRights(String accessRights) {
+        this.accessRights = accessRights;
+    }
+
+    public String getConfidentialityStatus() {
+        return confidentialityStatus;
+    }
+
+    public void setConfidentialityStatus(String confidentialityStatus) {
+        this.confidentialityStatus = confidentialityStatus;
+    }
+
+    public List<String> getCreators() {
+        return creators;
+    }
+
+    public void setCreators(List<String> creators) {
+        this.creators = creators;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public String getLandingPageLg1() {
+        return landingPageLg1;
+    }
+
+
+    public void setLandingPageLg1(String landingPageLg1) {
+        this.landingPageLg1 = landingPageLg1;
+    }
+
+    public String getLandingPageLg2() {
+        return landingPageLg2;
+    }
+
+    public void setLandingPageLg2(String landingPageLg2) {
+        this.landingPageLg2 = landingPageLg2;
+    }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(String updated) {
+        this.updated = updated;
+    }
+
+    public String getIssued() {
+        return issued;
+    }
+
+    public void setIssued(String issued) {
+        this.issued = issued;
+    }
+
+    // Internal Managment
+    private String processStep;
+
+    private String archiveUnit;
+
+    public String getProcessStep() {
+        return processStep;
+    }
+
+    public void setProcessStep(String processStep) {
+        this.processStep = processStep;
+    }
+
+    public String getArchiveUnit() {
+        return archiveUnit;
+    }
+
+    public void setArchiveUnit(String archiveUnit) {
+        this.archiveUnit = archiveUnit;
+    }
+
+    // Statistics Informations
+
+    private String type;
+
+    private String statisticalUnit;
+
+    private String dataStructure;
+
+    private Integer observationNumber;
+
+    private Integer timeSeriesNumber;
+
+    private String spacialCoverage;
+
+    private String temporalResolution;
+
+    private List<String> spacialResolutions;
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStatisticalUnit() {
+        return statisticalUnit;
+    }
+
+    public void setStatisticalUnit(String statisticalUnit) {
+        this.statisticalUnit = statisticalUnit;
+    }
+
+    public String getDataStructure() {
+        return dataStructure;
+    }
+
+    public void setDataStructure(String dataStructure) {
+        this.dataStructure = dataStructure;
+    }
+
+    public Integer getObservationNumber() {
+        return observationNumber;
+    }
+
+    public void setObservationNumber(Integer observationNumber) {
+        this.observationNumber = observationNumber;
+    }
+
+    public Integer getTimeSeriesNumber() {
+        return timeSeriesNumber;
+    }
+
+    public void setTimeSeriesNumber(Integer timeSeriesNumber) {
+        this.timeSeriesNumber = timeSeriesNumber;
+    }
+
+    public String getSpacialCoverage() {
+        return spacialCoverage;
+    }
+
+    public void setSpacialCoverage(String spacialCoverage) {
+        this.spacialCoverage = spacialCoverage;
+    }
+
+    public String getTemporalResolution() {
+        return temporalResolution;
+    }
+
+    public void setTemporalResolution(String temporalResolution) {
+        this.temporalResolution = temporalResolution;
+    }
+
+    public List<String> getSpacialResolutions() {
+        return spacialResolutions;
+    }
+
+    public void setSpacialResolutions(List<String> spacialResolutions) {
+        this.spacialResolutions = spacialResolutions;
+    }
+
+    //
+    private String id;
+    private String descriptionLg1;
+    private String descriptionLg2;
+    private String abstractLg1;
+    private String abstractLg2;
+    private String cautionLg1;
+    private String cautionLg2;
+    private String disseminationStatus;
+    private String idSerie;
+    private List<String> themes;
+    private String validationState;
+
+    private CatalogRecord catalogRecord;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
 
     public String getDescriptionLg1() {
         return descriptionLg1;
@@ -132,21 +339,5 @@ public class Dataset {
 
     public void setCatalogRecord(CatalogRecord catalogRecord) {
         this.catalogRecord = catalogRecord;
-    }
-
-    public String getUpdated() {
-        return updated;
-    }
-
-    public void setUpdated(String updated) {
-        this.updated = updated;
-    }
-
-    public List<String> getCreators() {
-        return creators;
-    }
-
-    public void setCreators(List<String> creators) {
-        this.creators = creators;
     }
 }

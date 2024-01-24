@@ -96,6 +96,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString("creator")));
         dataset.put("creators", creators);
 
+        JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
+        List<String> spacialResolutions = new ArrayList<>();
+        spacialResolutionsArray.iterator().forEachRemaining((spacialResolution) -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
+        dataset.put("spacialResolutions", spacialResolutions);
+
+
         JSONObject catalogRecord = new JSONObject();
         if(dataset.has("catalogRecordCreator")){
             catalogRecord.put("creator", dataset.getString("catalogRecordCreator"));
@@ -187,6 +193,60 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
 
     }
+
+    private void persistGeneralInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), config.getLg1()), graph);
+        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), config.getLg2()), graph);
+        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, INSEE.SUBTITLE, dataset.getSubTitleLg2(), config.getLg2(), model, graph);
+
+        RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCRUAL_PERIODICITY, dataset.getAccrualPeriodicity(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, DCTERMS.ACCESS_RIGHTS, dataset.getAccessRights(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, INSEE.CONFIDENTIALITY_STATUS, dataset.getConfidentialityStatus(), model, graph);
+
+        if(dataset.getCreators() != null){
+            dataset.getCreators().forEach(creator -> model.add(datasetIri, DCTERMS.CREATOR, RdfUtils.setLiteralString(creator), graph));
+        }
+
+        RdfUtils.addTripleString(datasetIri, DCTERMS.PUBLISHER, dataset.getPublisher(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), config.getLg2(), model, graph);
+
+        RdfUtils.addTripleDateTime(datasetIri, DCTERMS.MODIFIED, dataset.getUpdated(), model, graph);
+        RdfUtils.addTripleDateTime(datasetIri, DCTERMS.ISSUED, dataset.getIssued(), model, graph);
+
+    }
+
+    private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+        RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
+
+    }
+
+    private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), config.getLg2(), model, graph);
+        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), config.getLg1(), model, graph);
+        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), config.getLg2(), model, graph);
+
+    }
+
+    private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
+        RdfUtils.addTripleUri(datasetIri, DCTERMS.TYPE, dataset.getType(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, INSEE.STATISTICAL_UNIT, dataset.getStatisticalUnit(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, INSEE.STRUCTURE, dataset.getDataStructure(), model, graph);
+        RdfUtils.addTripleInt(datasetIri, INSEE.NUM_OBSERVATIONS, dataset.getObservationNumber().toString(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, DCTERMS.SPATIAL, dataset.getSpacialCoverage(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, DCAT.TEMPORAL_RESOLUTION, dataset.getTemporalResolution(), model, graph);
+
+        if(dataset.getSpacialResolutions() != null){
+            dataset.getSpacialResolutions().forEach(spacialResolution -> RdfUtils.addTripleUri(datasetIri, INSEE.SPATIAL_RESOLUTION, spacialResolution, model, graph));
+        }
+    }
+
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
@@ -196,23 +256,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         model.add(datasetIri, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(dataset.getId()), graph);
         model.add(datasetIri, RDF.TYPE, DCAT.DATASET, graph);
-        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg1(), config.getLg1()), graph);
-        model.add(datasetIri, DCTERMS.TITLE, RdfUtils.setLiteralString(dataset.getLabelLg2(), config.getLg2()), graph);
 
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.DESCRIPTION, dataset.getDescriptionLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), config.getLg1(), model, graph);
-        RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), config.getLg2(), model, graph);
+        this.persistGeneralInformations(datasetIri, dataset, model, graph);
+        this.persistInternalManagment(datasetIri, dataset, model, graph);
+        this.persistNotes(datasetIri, dataset, model, graph);
+        this.persistStatisticsInformations(datasetIri, dataset, model, graph);
 
-        RdfUtils.addTripleDateTime(datasetIri, DCTERMS.MODIFIED, dataset.getUpdated(), model, graph);
-
-        if(dataset.getCreators() != null){
-            dataset.getCreators().forEach(creator -> model.add(datasetIri, DCTERMS.CREATOR, RdfUtils.setLiteralString(creator), graph));
-        }
-
-        RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
         RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
 

@@ -33,6 +33,13 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetCreators.ftlh", params);
     }
 
+    public static String getDatasetSpacialResolutions(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetSpacialResolutions.ftlh", params);
+    }
+
     public static String lastDatasetId(String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
