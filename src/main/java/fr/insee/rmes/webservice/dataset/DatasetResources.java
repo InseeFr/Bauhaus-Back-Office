@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -65,5 +64,11 @@ public class DatasetResources {
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
         return this.datasetService.update(datasetId, body);
+    }
+
+    @GetMapping(value = "/archivageUnits", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getArchivageUnits", summary = "Get all archivage units")
+    public String getArchivageUnits() throws RmesException {
+        return this.datasetService.getArchivageUnits();
     }
 }

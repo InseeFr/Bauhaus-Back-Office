@@ -13,6 +13,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -101,6 +102,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         spacialResolutionsArray.iterator().forEachRemaining((spacialResolution) -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
         dataset.put("spacialResolutions", spacialResolutions);
 
+        JSONArray statisticalUnitArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()));
+        List<String> statisticalUnit = new ArrayList<>();
+        statisticalUnitArray.iterator().forEachRemaining((unit) -> statisticalUnit.add(((JSONObject) unit).getString("statisticalUnit")));
+        dataset.put("statisticalUnit", statisticalUnit);
 
         JSONObject catalogRecord = new JSONObject();
         if(dataset.has("catalogRecordCreator")){
@@ -175,6 +180,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return this.repoGestion.getResponseAsArray(DistributionQueries.getDatasetDistributions(id, getDatasetsGraph())).toString();
     }
 
+    @Override
+    public String getArchivageUnits() throws RmesException {
+        return this.repoGestion.getResponseAsArray(DatasetQueries.getArchivageUnits()).toString();
+    }
+
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
@@ -220,7 +230,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph){
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
-        RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
+        RdfUtils.addTripleString(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
 
     }
 
@@ -236,14 +246,38 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
         RdfUtils.addTripleUri(datasetIri, DCTERMS.TYPE, dataset.getType(), model, graph);
-        RdfUtils.addTripleUri(datasetIri, INSEE.STATISTICAL_UNIT, dataset.getStatisticalUnit(), model, graph);
+
+        if(dataset.getStatisticalUnit() != null){
+            dataset.getStatisticalUnit().forEach(statisticalUnit -> RdfUtils.addTripleUri(datasetIri, INSEE.STATISTICAL_UNIT, statisticalUnit, model, graph));
+        }
         RdfUtils.addTripleUri(datasetIri, INSEE.STRUCTURE, dataset.getDataStructure(), model, graph);
-        RdfUtils.addTripleInt(datasetIri, INSEE.NUM_OBSERVATIONS, dataset.getObservationNumber().toString(), model, graph);
+        if(dataset.getObservationNumber() != null){
+            RdfUtils.addTripleInt(datasetIri, INSEE.NUM_OBSERVATIONS, dataset.getObservationNumber().toString(), model, graph);
+        }
+        if(dataset.getTimeSeriesNumber() != null){
+            RdfUtils.addTripleInt(datasetIri, RdfUtils.createIRI("http://data.europa.eu/m8g/numSeries"), dataset.getTimeSeriesNumber().toString(), model, graph);
+        }
         RdfUtils.addTripleUri(datasetIri, DCTERMS.SPATIAL, dataset.getSpacialCoverage(), model, graph);
         RdfUtils.addTripleUri(datasetIri, DCAT.TEMPORAL_RESOLUTION, dataset.getTemporalResolution(), model, graph);
 
         if(dataset.getSpacialResolutions() != null){
             dataset.getSpacialResolutions().forEach(spacialResolution -> RdfUtils.addTripleUri(datasetIri, INSEE.SPATIAL_RESOLUTION, spacialResolution, model, graph));
+        }
+
+        if(dataset.getTemporalCoverageEndDate() != null && dataset.getTemporalCoverageStartDate() != null){
+            BNode node =  RdfUtils.createBlankNode();
+            model.add(node, RDF.TYPE, DCTERMS.PERIOD_OF_TIME, graph);
+
+            if(dataset.getTemporalCoverageDataType().endsWith("date")){
+                model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
+                model.add(node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
+            } else {
+                model.add(node, DCAT.START_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageStartDate()), graph);
+                model.add(node, DCAT.END_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageEndDate()), graph);
+
+            }
+
+            RdfUtils.addTripleBNode(datasetIri, DCTERMS.TEMPORAL, node, model, graph);
         }
     }
 

@@ -149,12 +149,15 @@ public class Dataset {
     }
 
     // Statistics Informations
-
     private String type;
 
-    private String statisticalUnit;
+    private List<String> statisticalUnit;
 
     private String dataStructure;
+
+    private String temporalCoverageStartDate;
+    private String temporalCoverageEndDate;
+    private String temporalCoverageDataType;
 
     private Integer observationNumber;
 
@@ -173,11 +176,11 @@ public class Dataset {
         this.type = type;
     }
 
-    public String getStatisticalUnit() {
+    public List<String> getStatisticalUnit() {
         return statisticalUnit;
     }
 
-    public void setStatisticalUnit(String statisticalUnit) {
+    public void setStatisticalUnit(List<String> statisticalUnit) {
         this.statisticalUnit = statisticalUnit;
     }
 
@@ -187,6 +190,30 @@ public class Dataset {
 
     public void setDataStructure(String dataStructure) {
         this.dataStructure = dataStructure;
+    }
+
+    public String getTemporalCoverageStartDate() {
+        return temporalCoverageStartDate;
+    }
+
+    public void setTemporalCoverageStartDate(String temporalCoverageStartDate) {
+        this.temporalCoverageStartDate = temporalCoverageStartDate;
+    }
+
+    public String getTemporalCoverageEndDate() {
+        return temporalCoverageEndDate;
+    }
+
+    public void setTemporalCoverageEndDate(String temporalCoverageEndDate) {
+        this.temporalCoverageEndDate = temporalCoverageEndDate;
+    }
+
+    public String getTemporalCoverageDataType() {
+        return temporalCoverageDataType;
+    }
+
+    public void setTemporalCoverageDataType(String temporalCoverageDataType) {
+        this.temporalCoverageDataType = temporalCoverageDataType;
     }
 
     public Integer getObservationNumber() {

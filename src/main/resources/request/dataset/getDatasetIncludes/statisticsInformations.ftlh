@@ -1,9 +1,6 @@
 OPTIONAL {
     ?uri dcterms:type ?type .
 }
-OPTIONAL {
-    ?uri insee:statisticalUnit ?statisticalUnit .
-}
 
 OPTIONAL {
     ?uri insee:structure ?dataStructure .
@@ -19,4 +16,16 @@ OPTIONAL {
 
 OPTIONAL {
     ?uri dcat:temporalResolution ?temporalResolution.
+}
+
+OPTIONAL {
+    ?uri dcterms:temporal ?blankNode .
+    ?blankNode rdf:type dcterms:PeriodOfTime .
+    ?blankNode dcat:startDate ?temporalCoverageStartDate .
+    ?blankNode dcat:endDate ?temporalCoverageEndDate .
+}
+
+
+OPTIONAL {
+    ?uri <http://data.europa.eu/m8g/numSeries> ?timeSeriesNumber.
 }

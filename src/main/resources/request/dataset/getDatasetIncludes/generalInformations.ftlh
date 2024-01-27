@@ -7,13 +7,13 @@ FILTER (lang(?labelLg2) = '${LG2}') .
 }
 
 OPTIONAL {
-    ?uri insee:subtitle ?subtitleLg1
-    FILTER (lang(?subtitleLg1) = '${LG2}') .
+    ?uri insee:subtitle ?subTitleLg1
+    FILTER (lang(?subTitleLg1) = '${LG1}') .
 }
 
 OPTIONAL {
-    ?uri insee:subtitle ?subtitleLg2
-    FILTER (lang(?subtitleLg2) = '${LG2}') .
+    ?uri insee:subtitle ?subTitleLg2
+    FILTER (lang(?subTitleLg2) = '${LG2}') .
 }
 
 OPTIONAL {
