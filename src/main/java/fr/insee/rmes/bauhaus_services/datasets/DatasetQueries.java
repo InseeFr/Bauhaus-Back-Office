@@ -10,6 +10,12 @@ public class DatasetQueries extends GenericQueries {
 
     private static final String ROOT_DIRECTORY = "dataset/";
 
+    public static String getArchivageUnits() throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("LG1", config.getLg1());
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getArchivageUnit.ftlh", params);
+    }
+
     public static String getDatasets(String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
@@ -26,11 +32,23 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDataset.ftlh", params);
     }
 
-    public static String getDatasetCreators(String id, String datasetsGraph) throws RmesException {
+    private static String getDatasetArrays(String path, String datasetsGraph, String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
         params.put("ID", id);
-        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetCreators.ftlh", params);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, path, params);
+    }
+
+    public static String getDatasetCreators(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArrays("getDatasetCreators.ftlh", datasetsGraph, id);
+    }
+
+    public static String getDatasetSpacialResolutions(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArrays("getDatasetSpacialResolutions.ftlh", datasetsGraph, id);
+    }
+
+    public static String getDatasetStatisticalUnits(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArrays("getDatasetStatisticalUnits.ftlh", datasetsGraph, id);
     }
 
     public static String lastDatasetId(String datasetsGraph) throws RmesException {
@@ -39,4 +57,5 @@ public class DatasetQueries extends GenericQueries {
 
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
+
 }

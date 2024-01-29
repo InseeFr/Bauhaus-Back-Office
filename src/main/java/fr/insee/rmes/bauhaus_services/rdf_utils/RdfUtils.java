@@ -28,6 +28,7 @@ public class RdfUtils {
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
+	public static BNode createBlankNode(){ return factory.createBNode(); };
 	public static String getBaseGraph(){
 		return config.getBaseGraph();
 	}
@@ -197,6 +198,11 @@ public class RdfUtils {
 		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
 		return factory.createLiteral(parsedDate, XSD.DATE);
 	}
+
+	public static Literal setLiteralYear(String date) {
+		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
+		return factory.createLiteral(parsedDate, XSD.GYEAR);
+	}
 	
 	public static Literal setLiteralXML(String string) {
 		return factory.createLiteral(string.trim(), RDF.XMLLITERAL);
@@ -282,6 +288,12 @@ public class RdfUtils {
 	public static void addTripleUri(Resource objectURI, IRI predicat, String value, Model model,Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, toURI(value), graph);
+		}
+	}
+
+	public static void addTripleBNode(Resource objectURI, IRI predicat, BNode value, Model model,Resource graph) {
+		if (value != null) {
+			model.add(objectURI, predicat, value, graph);
 		}
 	}
 
