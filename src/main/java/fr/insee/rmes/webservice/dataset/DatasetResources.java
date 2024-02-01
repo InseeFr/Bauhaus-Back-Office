@@ -25,6 +25,8 @@ public class DatasetResources {
 
     final DatasetService datasetService;
 
+    public final String EXAMPLE_NUMBER_OF_OBSERVATION = "{\"observationNumber\":1}";
+
     public DatasetResources(DatasetService datasetService) {
         this.datasetService = datasetService;
     }
@@ -76,7 +78,8 @@ public class DatasetResources {
     @Operation(operationId = "updateObservationNumber", summary = "Update ObsevationNumber of a dataset")
     public void patchDataset(
             @PathVariable("id") String datasetId,
-            @Parameter(description = "Dataset", required = true) @RequestBody Integer observationNumber
+            @Schema(name ="observationNumber",example = EXAMPLE_NUMBER_OF_OBSERVATION )
+            @Parameter(description = "Dataset", required = true) @RequestBody String observationNumber
     ) throws RmesException{
         this.datasetService.patchDataset(datasetId,observationNumber);
     }

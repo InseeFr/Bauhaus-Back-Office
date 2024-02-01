@@ -186,11 +186,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public void patchDataset(String datasetId, Integer observationNumber) throws RmesException {
+    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        if (observationNumber > 0){
-            dataset.setObservationNumber(observationNumber);
+        Integer observationNumberInt = Integer.valueOf(observationNumber);
+        if ( observationNumberInt > 0){
+            dataset.setObservationNumber(observationNumberInt);
         }
         dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
         update(datasetId,dataset.toString());
