@@ -61,8 +61,9 @@ public class CodeListQueries extends GenericQueries {
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		if(perPageValue > 0){
-			params.put("OFFSET", perPageValue * (page - 1));
-			params.put("PER_PAGE", perPageValue);
+			var offset = perPageValue * (page - 1);
+			params.put("OFFSET", String.valueOf(offset));
+			params.put("PER_PAGE", String.valueOf(perPageValue));
 		}
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}

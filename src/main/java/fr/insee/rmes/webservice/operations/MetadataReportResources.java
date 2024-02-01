@@ -1,6 +1,7 @@
 package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
@@ -30,6 +33,8 @@ import java.io.IOException;
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
 public class MetadataReportResources extends OperationsCommonResources {
 
+	@Autowired
+	DocumentationsUtils documentationsUtils;
 
 	/***************************************************************************************************
 	 * DOCUMENTATION
@@ -128,7 +133,8 @@ public class MetadataReportResources extends OperationsCommonResources {
 
 		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
 			try {
-				fullsims = documentationsService.getFullSimsForXml(id);
+				JSONObject sims = documentationsUtils.getDocumentationByIdSims(id);
+				fullsims = documentationsService.getFullSimsForXml(sims);
 			} catch (RmesException e) {
 				return returnRmesException(e);
 			}

@@ -1,18 +1,5 @@
 package fr.insee.rmes.bauhaus_services.operations;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
-
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
@@ -29,6 +16,18 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
 
 @Service
 public class OperationsDocumentationsImpl  extends RdfService implements OperationsDocumentationsService {
@@ -98,8 +97,8 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	}
 
 	@Override
-	public Documentation getFullSimsForXml(String id) throws RmesException {
-		return  documentationsUtils.getFullSimsForXml(id);
+	public Documentation getFullSimsForXml(JSONObject sims) throws RmesException {
+		return  documentationsUtils.getFullSimsForXml(sims);
 	}
 
 	@Override
@@ -155,18 +154,18 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: "+id); 
-		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES);
+		return documentationsExport.exportDocumentationReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES);
 
 	}
 
 	@Override
 	public ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsExport.exportMetadataReport(id,true, true, false, false, Constants.GOAL_COMITE_LABEL);
+			return documentationsExport.exportDocumentationReport(id,true, true, false, false, Constants.GOAL_COMITE_LABEL);
 	}
 
 	@Override
 	public ResponseEntity<Object> exportMetadataReportTempFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-		return documentationsExport.exportMetadataReportFiles(id,includeEmptyMas, lg1, lg2);
+		return documentationsExport.exportDocumentationReportFiles(id,includeEmptyMas, lg1, lg2);
 	}
 
 

@@ -36,8 +36,28 @@ class CodeListQueriesTest {
                 put("NOTATION", "NOTATION");
                 put("LG1", "fr");
                 put("LG2", "en");
-                put("OFFSET", 5);
-                put("PER_PAGE", 5);
+                put("OFFSET", "5");
+                put("PER_PAGE", "5");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
+            String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
+            Assertions.assertEquals(query, "request");
+        }
+    }
+
+    @Test
+    void getCodeListItemsByNotationWithoutPerPageValue() throws RmesException {
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        when(config.getPerPage()).thenReturn(0);
+        CodeListQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("CODES_LISTS_GRAPH", "codelist-graph");
+                put("NOTATION", "NOTATION");
+                put("LG1", "fr");
+                put("LG2", "en");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
