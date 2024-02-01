@@ -71,4 +71,14 @@ public class DatasetResources {
     public String getArchivageUnits() throws RmesException {
         return this.datasetService.getArchivageUnits();
     }
+
+    @PatchMapping(value = "/{id}/observationNumber", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "updateObservationNumber", summary = "Update ObsevationNumber of a dataset")
+    public void patchDataset(
+            @PathVariable("id") String datasetId,
+            @Parameter(description = "Dataset", required = true) @RequestBody Integer observationNumber
+    ) throws RmesException{
+        this.datasetService.patchDataset(datasetId,observationNumber);
+    }
+
 }
