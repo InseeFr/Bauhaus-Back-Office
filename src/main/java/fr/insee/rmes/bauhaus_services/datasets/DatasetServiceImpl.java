@@ -195,6 +195,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         CatalogRecord record = dataset.getCatalogRecord();
 
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
+
+        model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
         model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
         model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(record.getContributor()), graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
