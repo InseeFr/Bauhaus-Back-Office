@@ -1,5 +1,7 @@
 package fr.insee.rmes.config.auth.user;
 
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.roles.Roles;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,22 +10,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.roles.Roles;
-
 @Component("AuthorizeMethodDecider")
 public class AuthorizeMethodDecider {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthorizeMethodDecider.class);
 
-	private User fakeUser;
+	public User fakeUser;
 
 	@Autowired
 	private UserProvider userProvider;
 
 	@Autowired
 	Config config;
-	
+
 	public User getUser() {
 		if (config.getEnv().equals("pre-prod") || config.getEnv().equals("prod") || config.getEnv().equals("PROD")) {
 			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -53,7 +52,7 @@ public class AuthorizeMethodDecider {
 	}
 
 	public boolean isAdmin(User user) {
-		logger.info("Check if user is admin");
+		logger.info("Check if user is admin", user.getRoles().toString());
 		return hasRole(user,Roles.ADMIN);
 	}
 	

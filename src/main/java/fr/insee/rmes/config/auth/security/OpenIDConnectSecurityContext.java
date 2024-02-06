@@ -1,12 +1,8 @@
 package fr.insee.rmes.config.auth.security;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.config.auth.user.UserProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +22,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.config.auth.user.UserProvider;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -73,7 +72,7 @@ public class OpenIDConnectSecurityContext extends WebSecurityConfigurerAdapter  
 	@Bean
 	public UserProvider getUserProvider() {
 		return auth -> {
-			if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication 
+				if ("anonymousUser".equals(auth.getPrincipal())) return null; //init request, or request without authentication
 			final Jwt jwt = (Jwt) auth.getPrincipal();
 			Map<String,Object> claims = jwt.getClaims();
 			JsonParser parser = JsonParserFactory.getJsonParser();
