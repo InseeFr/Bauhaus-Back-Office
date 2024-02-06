@@ -1,8 +1,13 @@
 package fr.insee.rmes.config.auth.user;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +15,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+
 @Component("AuthorizeMethodDecider")
 public class AuthorizeMethodDecider {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthorizeMethodDecider.class);
 
 	public User fakeUser;
+
+	@Autowired
+	private RepositoryGestion repoGestion;
 
 	@Autowired
 	private UserProvider userProvider;
@@ -137,4 +147,47 @@ public class AuthorizeMethodDecider {
 	}
 
 
+	public boolean isStructureOrComponentContributor(String componentString){
+		JSONObject component = new JSONObject(componentString);
+		if(!component.has("contributor")){
+			return false;
+		}
+
+		String componentContributor = component.getString("contributor");
+		return getUser().getStamp().equalsIgnoreCase(componentContributor);
+	}
+
+	private boolean isObjectContributor(String graph, String id, ValidationStatus status) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		params.put("GRAPH", graph);
+		String query =  FreeMarkerUtils.buildRequest("security/", "getContributorAndValidationState.ftlh", params);
+
+		JSONObject response = repoGestion.getResponseAsObject(query);
+
+		if(status != null){
+			if(!status.getValue().equalsIgnoreCase(response.getString("validationState"))){
+				return false;
+			}
+		}
+
+		return isStructureOrComponentContributor(response.toString());
+	}
+
+
+	public boolean isStructureContributor(String id) throws RmesException {
+		return isObjectContributor(config.getStructuresGraph(), id, null);
+	}
+
+	public boolean isComponentContributor(String id) throws RmesException {
+		return isObjectContributor(config.getStructuresComponentsGraph(), id, null);
+	}
+
+	public boolean isStructureContributor(String id, ValidationStatus status) throws RmesException {
+		return isObjectContributor(config.getStructuresGraph(), id, status);
+	}
+
+	public boolean isComponentContributor(String id, ValidationStatus status) throws RmesException {
+		return isObjectContributor(config.getStructuresComponentsGraph(), id, status);
+	}
 }

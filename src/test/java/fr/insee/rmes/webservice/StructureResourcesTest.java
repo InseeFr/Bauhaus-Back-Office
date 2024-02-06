@@ -1,12 +1,14 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,36 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-/**
- * L'utilisateur de "structures et composants" a les droits suivants :
- * • consulter une structure ;
- * • consulter un composant ;
- * • faire une recherche avancée de structure ;
- * • faire une recherche avancée de composant.
- *
- * Le gestionnaire de "structures et composants" est un utilisateur dont le timbre fait partie des timbres figurant dans la propriété dc:contributor de l’objet modifié (liste des timbres des gestionnaires de l’objet). Il a les droits suivants :
- * • les droits de l'utilisateur de "structures et composants"  ;
- * et les droits spécifiques :
- * • créer une structure ;
- * • créer un composant ;
- * • dupliquer une structure ;
- * • modifier une structure ;
- * • modifier un composant ;
- * • supprimer une structure, si elle est provisoire, jamais publiée ;
- * • supprimer un composant, s’il est provisoire, jamais publié ;
- * • publier une structure ;
- * • publier un composant.
- *
- * L'administrateurde "structures et composants" a les droits suivants :
- * • les droits de l'utilisateur de "structures et composants"  ;
- * • les droits du gestionnaire de "structures et composants", quels que soient les timbres figurant dans la propriété dc:contributor de l’objet modifié (liste des timbres des gestionnaires de l’objet) ;
- * et les droits spécifiques :
- * • supprimer une structure, quel que soit son état ;
- * • supprimer un composant, quel que soit son état.
- */
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -63,6 +37,9 @@ class StructureResourcesTest {
 
     @Autowired
     StructureResources structureResources;
+
+    @MockBean
+    RepositoryGestion repositoryGestion;
 
     @Test
     @WithMockUser
@@ -118,14 +95,6 @@ class StructureResourcesTest {
         Assertions.assertEquals("result", response.getBody());
     }
 
-    @Test
-    @WithMockUser
-    void shouldReturnAccessDeniedExceptionWhenPublishingStructureWithoutAdminRights(@Autowired Config config) {
-        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray(), "fakeStampForDvAndQf");
-        Assertions.assertThrows(AccessDeniedException.class, () -> {
-            structureResources.publishStructureById("1");
-        });
-    }
 
     @Test
     @WithMockUser
@@ -136,4 +105,307 @@ class StructureResourcesTest {
         Assertions.assertEquals(200, response.getStatusCode().value());
     }
 
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAStructure() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        doNothing().when(structureService).deleteStructure(anyString());
+        ResponseEntity<?> response = structureResources.deleteStructure("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAComponent() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        doNothing().when(structureComponentService).deleteComponent(anyString());
+        ResponseEntity<?> response = structureResources.deleteComponent("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenCreatingAComponentWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureComponentService.createComponent(anyString())).thenReturn("");
+        ResponseEntity<?> response = structureResources.createComponent("");
+        Assertions.assertEquals(201, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenCreatingAComponentWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.createComponent(anyString())).thenReturn("");
+
+        JSONObject component = new JSONObject();
+        component.put("contributor", "fakeStampForDvAndQf");
+        ResponseEntity<?> response = structureResources.createComponent(component.toString());
+        Assertions.assertEquals(201, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenCreatingAComponentWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.createComponent(anyString())).thenReturn("");
+
+        JSONObject component = new JSONObject();
+        component.put("contributor", "stamp");
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.createComponent(component.toString());
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenCreatingAStructureWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString())).thenReturn("");
+        ResponseEntity<?> response = structureResources.createStructure("");
+        Assertions.assertEquals(201, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenCreatingAStructureWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString())).thenReturn("");
+
+        JSONObject structure = new JSONObject();
+        structure.put("contributor", "fakeStampForDvAndQf");
+        ResponseEntity<?> response = structureResources.createStructure(structure.toString());
+        Assertions.assertEquals(201, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenCreatingAStructureWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString())).thenReturn("");
+
+        JSONObject structure = new JSONObject();
+        structure.put("contributor", "stamp");
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.createStructure(structure.toString());
+        });
+    }
+
+    //////////////
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenUpdatingAStructureWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString(), anyString())).thenReturn("");
+        ResponseEntity<?> response = structureResources.setStructure("1", new JSONObject().toString());
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenUpdatingAStructureWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString(), anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf"));
+
+
+        ResponseEntity<?> response = structureResources.setStructure("1", "");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenUpdatingAStructureWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.setStructure(anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp"));
+
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.setStructure("1", new JSONObject().toString());
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenUpdatingAComponentWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureComponentService.updateComponent(anyString(), any())).thenReturn("");
+        ResponseEntity<?> response = structureResources.updateComponentById("1", new JSONObject().toString());
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenUpdatingAComponentWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.updateComponent(anyString(), any())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf"));
+
+
+        ResponseEntity<?> response = structureResources.updateComponentById("1", "");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenUpdatingAComponentWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.updateComponent(anyString(), any())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp"));
+
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.updateComponentById("1", new JSONObject().toString());
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAStructureWhenContributorAndUnpublished() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureService).deleteStructure(anyString());
+        ResponseEntity<?> response = structureResources.deleteStructure("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnErrorWhenDeletingAStructureWhenUnpublishedBuNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureService).deleteStructure(anyString());
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.deleteStructure("1");
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnErrorWhenDeletingAStructureWhenPublishedBuContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.VALIDATED.toString()));
+        doNothing().when(structureService).deleteStructure(anyString());
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.deleteStructure("1");
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAStructureWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureService).deleteStructure(anyString());
+        ResponseEntity<?> response = structureResources.deleteStructure("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAComponentWhenContributorAndUnpublished() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureComponentService).deleteComponent(anyString());
+        ResponseEntity<?> response = structureResources.deleteComponent("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnErrorWhenDeletingAComponentWhenUnpublishedBuNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureComponentService).deleteComponent(anyString());
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.deleteComponent("1");
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnErrorWhenDeletingAComponentWhenPublishedBuContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.VALIDATED.toString()));
+        doNothing().when(structureComponentService).deleteComponent(anyString());
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.deleteComponent("1");
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenDeletingAComponentWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf").put("validationState", ValidationStatus.UNPUBLISHED.toString()));
+        doNothing().when(structureComponentService).deleteComponent(anyString());
+        ResponseEntity<?> response = structureResources.deleteComponent("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenPublishingAComponentWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureComponentService.publishComponent(anyString())).thenReturn("");
+        ResponseEntity<?> response = structureResources.publishComponentById("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenPublishingAComponentWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.publishComponent(anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf"));
+
+
+        ResponseEntity<?> response = structureResources.publishComponentById("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenPublishingAComponentWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureComponentService.publishComponent(anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp"));
+
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.publishComponentById("1");
+        });
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenPublishingAStructureWhenAdministrator() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(structureService.publishStructureById(anyString())).thenReturn("");
+        ResponseEntity<?> response = structureResources.publishStructureById("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturn200WhenPublishingAStructureWhenContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.publishStructureById(anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "fakeStampForDvAndQf"));
+
+
+        ResponseEntity<?> response = structureResources.publishStructureById("1");
+        Assertions.assertEquals(200, response.getStatusCode().value());
+    }
+
+    @Test
+    @WithMockUser
+    void shouldThrowAnExceptionWhenPublishingAStructureWhenNotContributor() throws RmesException {
+        authorizeMethodDecider.fakeUser = new User("fakeUser", new JSONArray().put(""), "fakeStampForDvAndQf");
+        when(structureService.publishStructureById(anyString())).thenReturn("");
+        when(repositoryGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject().put("contributor", "stamp"));
+
+        Assertions.assertThrows(AccessDeniedException.class, () -> {
+            structureResources.publishStructureById("1");
+        });
+    }
 }
