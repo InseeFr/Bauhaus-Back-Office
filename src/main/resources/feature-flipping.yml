@@ -1,3 +1,4 @@
-feature-flipping:
+fr.insee.rmes.bauhaus.feature-flipping:
   operations:
     families-rich-text-new-structure: false
+

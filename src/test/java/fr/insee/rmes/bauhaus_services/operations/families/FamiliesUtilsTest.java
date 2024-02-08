@@ -11,32 +11,25 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.Mockito.*;
 
 
-@SpringBootTest({
-    "fr.insee.rmes.bauhaus.lg1=fr",
-    "fr.insee.rmes.bauhaus.lg2=en",
-    "feature-flipping.operations.families-rich-text-new-structure=false"
-})
 @ExtendWith(MockitoExtension.class)
 public class FamiliesUtilsTest {
 
-    @Autowired
-    FamiliesUtils familiesUtils;
 
-    @MockBean
-    private RepositoryGestion repoGestion;
-
+    @Mock
+    private RepositoryGestion repositoryGestion;
 
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
+        doNothing().when(repositoryGestion).deleteObject(any(), any());
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+
         ReflectionTestUtils.setField(familiesUtils, "familiesRichTextNexStructure", true);
 
         var family = new Family();
@@ -49,7 +42,7 @@ public class FamiliesUtilsTest {
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
 
         familiesUtils.addAbstractToFamily(family, model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"));
-        verify(repoGestion, times(2)).deleteObject(any(), any());
+        verify(repositoryGestion, times(2)).deleteObject(any(), any());
 
         Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
         Assertions.assertEquals(model.subjects().toArray()[1], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1/resume/fr"));
@@ -58,6 +51,8 @@ public class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
+        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+
         ReflectionTestUtils.setField(familiesUtils, "familiesRichTextNexStructure", false);
 
         var family = new Family();
