@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -42,6 +44,9 @@ public class FamiliesUtils  extends RdfService {
 
 	static final Logger logger = LoggerFactory.getLogger(FamiliesUtils.class);
 
+	@Value("${feature-flipping.operations.families-rich-text-new-structure}")
+	boolean familiesRichTextNexStructure;
+
 	@Autowired
 	FamOpeSerIndUtils famOpeSerUtils;
 	
@@ -52,7 +57,7 @@ public class FamiliesUtils  extends RdfService {
 	ParentUtils ownersUtils;
 
 	public JSONObject getFamilyById(String id) throws RmesException{
-		JSONObject family = repoGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id));
+		JSONObject family = repoGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id, familiesRichTextNexStructure));
 		if (family.length()==0) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		}
@@ -155,8 +160,7 @@ public class FamiliesUtils  extends RdfService {
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
 		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		addAbstractToFamily(family, model, familyURI, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
@@ -164,6 +168,24 @@ public class FamiliesUtils  extends RdfService {
 		
 		repoGestion.loadSimpleObject(familyURI, model);
 	}
+
+	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, graph);
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, graph);
+
+		if(familiesRichTextNexStructure){
+			IRI iri1 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), "resume", model, graph);
+			IRI iri2 = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), "resume", model, graph);
+
+			if(iri1 != null){
+				repoGestion.deleteObject(iri1, null);
+			}
+			if(iri2 != null){
+				repoGestion.deleteObject(iri2, null);
+			}
+		}
+	}
+
 
 
 	public String setFamilyValidation(String id) throws  RmesException  {
