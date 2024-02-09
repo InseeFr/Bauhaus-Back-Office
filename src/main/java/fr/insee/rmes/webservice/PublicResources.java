@@ -68,18 +68,20 @@ public class PublicResources extends GenericResources {
     private final String sugoiUi;
     private final String appHost;
     private final List<String> activeModules;
+    private final List<String> modules;
 
     public PublicResources(@Autowired UserRolesManagerService userRolesManagerService,
                            @Autowired StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
-                           @Value("${fr.insee.rmes.bauhaus.lg1}") String lg2,
-                           @Value("${fr.insee.rmes.bauhaus.lg2}") String lg1,
+                           @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
+                           @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
                            @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}") String defaultMailSender,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
                            @Value("${fr.insee.rmes.bauhaus.sugoi.ui}") String sugoiUi,
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
-                           @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules) {
+                           @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
+                           @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules) {
         this.userRolesManagerService = userRolesManagerService;
         this.stampsService = stampsService;
         this.env = env;
@@ -91,6 +93,7 @@ public class PublicResources extends GenericResources {
         this.sugoiUi = sugoiUi;
         this.appHost = appHost;
         this.activeModules=activeModules;
+        this.modules = modules;
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -106,7 +109,8 @@ public class PublicResources extends GenericResources {
             props.put("lg1", this.lg1);
             props.put("lg2", this.lg2);
             props.put("authType", AuthType.getAuthType(this.env));
-            props.put("modules", this.activeModules);
+            props.put("activeModules", this.activeModules);
+            props.put("modules", this.modules);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
