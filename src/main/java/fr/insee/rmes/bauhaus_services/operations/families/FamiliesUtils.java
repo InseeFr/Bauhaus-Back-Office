@@ -6,8 +6,9 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -22,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -30,30 +32,49 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
-public class FamiliesUtils  extends RdfService {
+public class FamiliesUtils {
 
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
 	static final Logger logger = LoggerFactory.getLogger(FamiliesUtils.class);
 
-	@Autowired
-	FamOpeSerIndUtils famOpeSerUtils;
-	
-	@Autowired
-	FamilyPublication familyPublication;
-	
-	@Autowired
-	ParentUtils ownersUtils;
+
+	boolean familiesRichTextNexStructure;
+	final FamOpeSerIndUtils famOpeSerUtils;
+	final FamilyPublication familyPublication;
+	final ParentUtils ownersUtils;
+	final RepositoryGestion repositoryGestion;
+	final String lg1;
+	final String lg2;
+	final StampsRestrictionsService stampsRestrictionsService;
+	public FamiliesUtils(@Value("${fr.insee.rmes.bauhaus.feature-flipping.operations.families-rich-text-new-structure}") boolean familiesRichTextNexStructure,
+						 FamOpeSerIndUtils famOpeSerUtils,
+						 FamilyPublication familyPublication,
+						 ParentUtils ownersUtils,
+						 RepositoryGestion repositoryGestion,
+						 StampsRestrictionsService stampsRestrictionsService,
+						 @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
+						 @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2) {
+
+		this.familiesRichTextNexStructure = familiesRichTextNexStructure;
+		this.famOpeSerUtils = famOpeSerUtils;
+		this.familyPublication = familyPublication;
+		this.ownersUtils = ownersUtils;
+		this.repositoryGestion = repositoryGestion;
+		this.stampsRestrictionsService = stampsRestrictionsService;
+		this.lg1 = lg1;
+		this.lg2 = lg2;
+	}
 
 	public JSONObject getFamilyById(String id) throws RmesException{
-		JSONObject family = repoGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id));
-		if (family.length()==0) {
+		JSONObject family = repositoryGestion.getResponseAsObject(OpFamiliesQueries.familyQuery(id, familiesRichTextNexStructure));
+		if (family.isEmpty()) {
 			throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Family "+id+ " not found", "Maybe id is wrong");
 		}
 		XhtmlToMarkdownUtils.convertJSONObject(family);
@@ -64,25 +85,25 @@ public class FamiliesUtils  extends RdfService {
 
 
 	private void addFamilySeries(String idFamily, JSONObject family) throws RmesException {
-		JSONArray series = repoGestion.getResponseAsArray(OpFamiliesQueries.getSeries(idFamily));
-		if (series.length() != 0) {
+		JSONArray series = repositoryGestion.getResponseAsArray(OpFamiliesQueries.getSeries(idFamily));
+		if (!series.isEmpty()) {
 			family.put("series", series);
 		}
 	}
 
 	private void addSubjects(String idFamily, JSONObject family) throws RmesException {
-		JSONArray subjects = repoGestion.getResponseAsArray(OpFamiliesQueries.getSubjects(idFamily));
-		if (subjects.length() != 0) {
+		JSONArray subjects = repositoryGestion.getResponseAsArray(OpFamiliesQueries.getSubjects(idFamily));
+		if (!subjects.isEmpty()) {
 			family.put("subjects", subjects);
 		}
 	}
 
 
 	private void validateFamily(Family family) throws RmesException {
-		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), config.getLg1()))){
+		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
-		if(repoGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), config.getLg2()))){
+		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}
@@ -151,18 +172,35 @@ public class FamiliesUtils  extends RdfService {
 		/*Const*/
 		model.add(familyURI, RDF.TYPE, INSEE.FAMILY, RdfUtils.operationsGraph());
 		/*Required*/
-		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), config.getLg1()), RdfUtils.operationsGraph());
+		model.add(familyURI, SKOS.PREF_LABEL, RdfUtils.setLiteralString(family.getPrefLabelLg1(), lg1), RdfUtils.operationsGraph());
 		model.add(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(newStatus.toString()), RdfUtils.operationsGraph());
 		/*Optional*/
-		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleString(familyURI, SKOS.PREF_LABEL, family.getPrefLabelLg2(), lg2, model, RdfUtils.operationsGraph());
+		addAbstractToFamily(family, model, familyURI, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.CREATED, family.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(familyURI, DCTERMS.MODIFIED, family.getUpdated(), model, RdfUtils.operationsGraph());
 
-		repoGestion.keepHierarchicalOperationLinks(familyURI,model);
+		repositoryGestion.keepHierarchicalOperationLinks(familyURI,model);
 		
-		repoGestion.loadSimpleObject(familyURI, model);
+		repositoryGestion.loadSimpleObject(familyURI, model);
+	}
+
+
+	public void addAbstractToFamily(Family family, Model model, IRI familyURI, Resource graph) throws RmesException {
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg1(), lg1, model, graph);
+		RdfUtils.addTripleStringMdToXhtml(familyURI, DCTERMS.ABSTRACT, family.getAbstractLg2(), lg2, model, graph);
+
+		if(familiesRichTextNexStructure){
+			addRichTextToModel(familyURI, family.getAbstractLg1(), lg1, model, graph);
+			addRichTextToModel(familyURI, family.getAbstractLg2(), lg2, model, graph);
+		}
+	}
+
+	private void addRichTextToModel(IRI familyURI, String family, String lang, Model model, Resource graph) throws RmesException {
+		IRI iri = RdfUtils.addTripleStringMdToXhtml2(familyURI, DCTERMS.ABSTRACT, family, lang, "resume", model, graph);
+		if (iri != null) {
+			repositoryGestion.deleteObject(iri, null);
+		}
 	}
 
 
@@ -181,7 +219,7 @@ public class FamiliesUtils  extends RdfService {
 		model.remove(familyURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.operationsGraph());
 		logger.info("Validate family : {}", familyURI);
 
-		repoGestion.objectValidation(familyURI, model);
+		repositoryGestion.objectValidation(familyURI, model);
 			
 		return id;
 	}

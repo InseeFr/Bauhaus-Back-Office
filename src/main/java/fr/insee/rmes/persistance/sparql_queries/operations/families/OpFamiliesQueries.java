@@ -42,12 +42,13 @@ public class OpFamiliesQueries extends GenericQueries{
 	}
 
 
-	public static String familyQuery(String id) throws RmesException {
+	public static String familyQuery(String id, boolean familiesRichTextNextStructure) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);
+		params.put("FAMILIES_RICH_TEXT_NEXT_STRUCTURE", familiesRichTextNextStructure);
 		return  buildRequest("getFamily.ftlh", params);
 	}
 
