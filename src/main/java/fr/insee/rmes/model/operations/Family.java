@@ -57,6 +57,14 @@ public class Family {
 		return abstractLg1;
 	}
 
+	public void setAbstractLg1(String abstractLg1) {
+		this.abstractLg1 = abstractLg1;
+	}
+
+	public void setAbstractLg2(String abstractLg2) {
+		this.abstractLg2 = abstractLg2;
+	}
+
 	public String getAbstractLg2() {
 		return abstractLg2;
 	}
