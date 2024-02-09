@@ -1,46 +1,74 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.exceptions.RmesException;
-import org.assertj.core.api.Assert;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
+import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
+import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
+import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest({
-        "fr.insee.rmes.bauhaus.env=dev",
-        "fr.insee.rmes.bauhaus.lg1=fr",
-        "fr.insee.rmes.bauhaus.lg2=en",
-        "fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote=35",
-        "fr.insee.rmes.bauhaus.concepts.defaultMailSender=email",
-        "fr.insee.rmes.bauhaus.concepts.defaultContributor=stamp",
-        "fr.insee.rmes.bauhaus.sugoi.ui=sugoUi",
-        "fr.insee.rmes.bauhaus.appHost=http://localhost",
-        "fr.insee.rmes.bauhaus.activeModules=operations,concepts",
-        "fr.insee.rmes.bauhaus.modules=operations,concepts"
-})
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+
+
+@WebMvcTest(
+        controllers = PublicResources.class,
+        properties = {
+                "fr.insee.rmes.bauhaus.env=dev",
+                "fr.insee.rmes.bauhaus.lg1=fr",
+                "fr.insee.rmes.bauhaus.lg2=en",
+                "fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote=35",
+                "fr.insee.rmes.bauhaus.concepts.defaultMailSender=email",
+                "fr.insee.rmes.bauhaus.concepts.defaultContributor=stamp",
+                "fr.insee.rmes.bauhaus.sugoi.ui=sugoUi",
+                "fr.insee.rmes.bauhaus.appHost=http://localhost",
+                "fr.insee.rmes.bauhaus.activeModules=operations,concepts",
+                "fr.insee.rmes.bauhaus.modules=operations,concepts"
+        }
+)
+@Import({Config.class,
+        OpenIDConnectSecurityContext.class,
+        DefaultSecurityContext.class,
+        CommonSecurityConfiguration.class,
+        UserProviderFromSecurityContext.class,})
 class PublicResourcesTest {
     @Autowired
-    PublicResources publicResources;
+    private MockMvc mvc;
+
+    @MockBean
+    UserRolesManagerService userRolesManagerService;
+
+    @MockBean
+    StampsService stampsService;
 
     @Test
-    void shouldReturnTheInitPayload() throws RmesException {
-        String body = (String) publicResources.getProperties().getBody();
-        assert body != null;
-        JSONObject properties = new JSONObject(body);
-        Assertions.assertEquals(properties.getString("appHost"), "http://localhost");
-        Assertions.assertEquals(properties.getString("authorizationHost"), "sugoUi");
-        Assertions.assertEquals(properties.getString("defaultContributor"), "stamp");
-        Assertions.assertEquals(properties.getString("defaultMailSender"), "email");
-        Assertions.assertEquals(properties.getString("maxLengthScopeNote"), "35");
-        Assertions.assertEquals(properties.getString("lg1"), "fr");
-        Assertions.assertEquals(properties.getString("lg2"), "en");
-        Assertions.assertEquals(properties.getString("authType"), "NoAuthImpl");
-        Assertions.assertEquals(properties.getJSONArray("activeModules").get(0), "operations");
-        Assertions.assertEquals(properties.getJSONArray("activeModules").get(1), "concepts");
-        Assertions.assertEquals(properties.getJSONArray("modules").get(0), "operations");
-        Assertions.assertEquals(properties.getJSONArray("modules").get(1), "concepts");
+    void shouldReturnTheInitPayload() throws Exception {
+        mvc.perform(get("/init/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer toto")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(content().json("""
+{
+    "authorizationHost":"sugoUi",
+    "defaultMailSender":"email",
+    "lg2":"en",
+    "lg1":"fr",
+    "maxLengthScopeNote":"35",
+    "authType":"NoAuthImpl",
+    "defaultContributor":"stamp",
+    "activeModules":["operations","concepts"],
+    "appHost":"http://localhost",
+    "modules":["operations","concepts"]}
+"""));
+
     }
 }
