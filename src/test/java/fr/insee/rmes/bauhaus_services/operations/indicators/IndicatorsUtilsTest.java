@@ -41,11 +41,11 @@ class IndicatorsUtilsTest {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
 
-        var family = new Family();
-        family.setId("1");
-        family.setAbstractLg1("AbstractLg1");
-        family.setAbstractLg2("setAbstractLg2");
-        IRI familyIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + family.getId());
+        var indicator = new Indicator();
+        indicator.setId("1");
+        indicator.setAbstractLg1("AbstractLg1");
+        indicator.setAbstractLg2("setAbstractLg2");
+        IRI familyIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + indicator.getId());
         Model model = new LinkedHashModel();
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
@@ -62,11 +62,11 @@ class IndicatorsUtilsTest {
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
         IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, famOpeSerIndUtils, null, null, null, null, "fr", "en");
 
-        var family = new Family();
-        family.setId("1");
-        family.setAbstractLg1("AbstractLg1");
-        family.setAbstractLg2("AbstractLg1");
-        IRI familyIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + family.getId());
+        var indicator = new Indicator();
+        indicator.setId("1");
+        indicator.setAbstractLg1("AbstractLg1");
+        indicator.setAbstractLg2("AbstractLg1");
+        IRI familyIri = SimpleValueFactory.getInstance().createIRI("http://purl.org/dc/dcmitype/" + indicator.getId());
         Model model = new LinkedHashModel();
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
