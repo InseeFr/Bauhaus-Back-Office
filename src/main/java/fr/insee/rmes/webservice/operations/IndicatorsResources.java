@@ -119,11 +119,6 @@ public class IndicatorsResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
-	/**
-	 * CREATE
-	 * @param body
-	 * @return
-	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PostMapping(value="/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",

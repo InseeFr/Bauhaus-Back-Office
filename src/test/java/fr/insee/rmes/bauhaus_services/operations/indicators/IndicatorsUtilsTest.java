@@ -1,4 +1,4 @@
-package fr.insee.rmes.bauhaus_services.operations.families;
+package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
@@ -14,20 +14,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
-public class FamiliesUtilsTest {
-
-
+class IndicatorsUtilsTest {
     @Mock
     private RepositoryGestion repositoryGestion;
 
     @Test
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(true, repositoryGestion, null, null, null, null, null, null, null, null, "fr", "en");
 
         var family = new Family();
         family.setId("1");
@@ -38,7 +36,7 @@ public class FamiliesUtilsTest {
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
 
-        familiesUtils.addAbstractToFamily(family, model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"));
+        indicatorsUtils.addMulltiLangValues(model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
         verify(repositoryGestion, times(2)).deleteObject(any(), any());
 
         Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
@@ -48,7 +46,7 @@ public class FamiliesUtilsTest {
 
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
-        FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
+        IndicatorsUtils indicatorsUtils = new IndicatorsUtils(false, repositoryGestion, null, null, null, null, null, null, null, null, "fr", "en");
 
         var family = new Family();
         family.setId("1");
@@ -59,15 +57,15 @@ public class FamiliesUtilsTest {
 
         SimpleValueFactory simpleValueFactory = SimpleValueFactory.getInstance();
 
-        familiesUtils.addAbstractToFamily(family, model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"));
+        indicatorsUtils.addMulltiLangValues(model, familyIri, simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/"), "fr", "en", DCTERMS.ABSTRACT);
 
 
         Assertions.assertEquals(model.subjects().toArray()[0], simpleValueFactory.createIRI("http://purl.org/dc/dcmitype/1"));
 
         Assertions.assertEquals(model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
 
-        Assertions.assertEquals(model.objects().toArray()[0].toString(), "\"<p>AbstractLg1</p>\"@fr");
-        Assertions.assertEquals(model.objects().toArray()[1].toString(), "\"<p>AbstractLg1</p>\"@en");
+        Assertions.assertEquals(model.objects().toArray()[0].toString(), "\"<p>fr</p>\"@fr");
+        Assertions.assertEquals(model.objects().toArray()[1].toString(), "\"<p>en</p>\"@en");
     }
 
 }
