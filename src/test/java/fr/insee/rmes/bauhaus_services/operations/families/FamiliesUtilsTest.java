@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.mockito.Mockito.*;
 
@@ -29,8 +28,6 @@ public class FamiliesUtilsTest {
     void shouldAddAbstractPropertyWithNewSyntaxIfFeatureFlagTrue() throws RmesException {
         doNothing().when(repositoryGestion).deleteObject(any(), any());
         FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
-
-        ReflectionTestUtils.setField(familiesUtils, "familiesRichTextNexStructure", true);
 
         var family = new Family();
         family.setId("1");
@@ -52,8 +49,6 @@ public class FamiliesUtilsTest {
     @Test
     void shouldAddAbstractPropertyWithOldSyntaxIfFeatureFlagFalse() throws RmesException {
         FamiliesUtils familiesUtils = new FamiliesUtils(true, null, null, null, repositoryGestion, null, "fr", "en");
-
-        ReflectionTestUtils.setField(familiesUtils, "familiesRichTextNexStructure", false);
 
         var family = new Family();
         family.setId("1");
