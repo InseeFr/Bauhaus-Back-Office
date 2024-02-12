@@ -53,7 +53,6 @@ public class IndicatorsUtils  extends RdfService {
 	IndicatorPublication indicatorPublication;
 
 	@Autowired
-
 	FamOpeSerIndUtils famOpeSerIndUtils;
 	
 	@Autowired
