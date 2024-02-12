@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -29,6 +30,7 @@ import static fr.insee.rmes.utils.StringUtils.urisAsString;
 
 
 @Service
+@Primary
 public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	
 	private final RepositoryGestion repoGestion;
