@@ -1,5 +1,6 @@
 package fr.insee.rmes.integration.authorizations;
 
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -50,6 +51,9 @@ class PublicResourcesAuthorizationsTest {
 
     @MockBean
     private UserRolesManagerService userRolesManagerService;
+
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
 
     public static Stream<Arguments> endpointsProvider() {
         return Stream.of(PUBLIC_RESOURCES_ANT_PATTERNS).map(Arguments::of);
