@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -42,6 +43,9 @@ class UserResourcesEnvHorsProdTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
 
     @MockBean
     private JwtDecoder jwtDecoder;

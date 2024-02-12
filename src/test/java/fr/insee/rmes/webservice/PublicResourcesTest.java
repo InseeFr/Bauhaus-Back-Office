@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
@@ -45,6 +46,9 @@ class PublicResourcesTest {
 
     @MockBean
     UserRolesManagerService userRolesManagerService;
+
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
 
     @MockBean
     StampsService stampsService;
