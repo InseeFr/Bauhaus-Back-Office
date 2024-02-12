@@ -1,4 +1,5 @@
 fr.insee.rmes.bauhaus.feature-flipping:
   operations:
     families-rich-text-new-structure: false
+    series-rich-text-new-structure: false
 
