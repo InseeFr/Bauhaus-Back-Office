@@ -6,7 +6,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.CatalogRecord;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.Deserializer;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -22,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import javax.xml.catalog.Catalog;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -349,6 +353,38 @@ public class DatasetServiceImplTest {
             Assertions.assertEquals(id, nextId);
         }
     }
+
+    @Test
+    void shouldUpdatedatasetUpdated() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
+        try (
+                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
+        ) {
+            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
+            rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
+            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2024-01-19T11:44:23.335590");
+
+            JSONObject jsonDataset = new JSONObject();
+            jsonDataset.put("descriptionLg1", "descriptionLg1");
+            jsonDataset.put("descriptionLg2", "descriptionLg2");
+            jsonDataset.put("observationNumber", 5);
+
+            JSONObject record = new JSONObject();
+            record.put("creator", "creator");
+            record.put("contributor", "contributor");
+            record.put("created", "2023-10-19T11:44:23.335590");
+            record.put("updated", "2023-12-19T11:44:23.335590");
+            jsonDataset.put("catalogRecord", record);
+            jsonDataset.put("id", "d1000");
+            Dataset dataset = Deserializer.deserializeBody(String.valueOf(jsonDataset), Dataset.class);
+            dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
+            Assertions.assertEquals("2024-01-19T11:44:23.335590", dataset.getCatalogRecord().getUpdated());
+        }
+    }
+
 
 
     @Test
