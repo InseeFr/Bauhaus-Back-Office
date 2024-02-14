@@ -26,6 +26,8 @@ public class QueryUtils {
 					+ "PREFIX sdmx-mm:<http://www.w3.org/ns/sdmx-mm#> \n"
 					+ "PREFIX qb:<http://purl.org/linked-data/cube#> \n"
 					+ "PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#> \n"
+					+ "PREFIX dcat:<http://www.w3.org/ns/dcat#> \n"
+					+ "PREFIX adms: <http://www.w3.org/ns/adms#> \n"
 					+ "PREFIX dcmitype:<http://purl.org/dc/dcmitype/> \n \n" ;
 
 

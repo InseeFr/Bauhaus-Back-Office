@@ -1,16 +1,16 @@
-SELECT DISTINCT ?id ?labelLg1 ?creator ?validationState
+SELECT DISTINCT ?iri ?id ?labelLg1 ?creator ?validationState
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
-    ?component dcterms:identifier ?id ;
-               rdfs:label ?labelLg1 .
-    OPTIONAL {
-        ?component dc:creator ?creator .
-    } .
+?iri dcterms:identifier ?id ;
+rdfs:label ?labelLg1 .
+OPTIONAL {
+?iri dc:creator ?creator .
+} .
 
-    OPTIONAL {
-        ?component insee:validationState ?validationState
-    } .
+OPTIONAL {
+?iri insee:validationState ?validationState
+} .
 
-    FILTER (lang(?labelLg1) = '${LG1}') .
+FILTER (lang(?labelLg1) = '${LG1}') .
 }
 ORDER BY ?labelLg1
