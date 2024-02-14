@@ -1,17 +1,20 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -20,56 +23,132 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CodeListPublication extends RdfService {
 
-	public void publishCodeList(Resource codelist, boolean partial) throws RmesException {
-		
+	private void checkIfResourceExists(RepositoryResult<Statement> statements, Resource codeList) throws RmesNotFoundException {
+		if(!statements.hasNext()){
+			throw new RmesNotFoundException(ErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
+		}
+	}
+
+	private boolean shouldExcludeTriplet(Statement statement){
+		String pred = RdfUtils.toString(statement.getPredicate());
+		return pred.endsWith("validationState")
+				|| pred.endsWith(Constants.CREATOR)
+				|| pred.endsWith(Constants.CONTRIBUTOR);
+	}
+
+
+	public void publishCodeListAndCodes(Resource codeListOrCode) throws RmesException {
+
 		Model model = new LinkedHashModel();
+		RepositoryConnection connection = repoGestion.getConnection();
+		RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode);
 
-		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, codelist);
+		try (connection) {
+			checkIfResourceExists(statements, codeListOrCode);
+			while (statements.hasNext()) {
+				Statement st = statements.next();
 
-		try {	
-			try {
-				if (!statements.hasNext()) {
-					throw new RmesNotFoundException(ErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codelist.stringValue());
+				if (shouldExcludeTriplet(st)) {
+					continue;
 				}
-				while (statements.hasNext()) {
-					Statement st = statements.next();
-					String pred = RdfUtils.toString(st.getPredicate());
-					String value = st.getObject().stringValue();
 
-					if(!partial){
-						if (pred.contains("rdf:_")
-								|| value.contains("Seq")
-								|| pred.endsWith("validationState")
-								|| pred.endsWith(Constants.CREATOR)
-								|| pred.endsWith(Constants.CONTRIBUTOR)) {
-							continue;
-						}
-					} else {
-						if (pred.endsWith("validationState")
-								|| pred.endsWith(Constants.CREATOR)
-								|| pred.endsWith(Constants.CONTRIBUTOR)) {
-							continue;
-						}
-					}
 
+				String predicate = RdfUtils.toString(st.getPredicate());
+				String object = st.getObject().stringValue();
+				if (RDFS.SEEALSO.toString().equalsIgnoreCase(predicate)) {
+					publishSeeAlsoTriplets(object, connection);
+
+					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+							st.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(st.getObject().stringValue())),
+							st.getContext());
+
+				} else {
 					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
 							st.getPredicate(),
 							st.getObject(),
 							st.getContext());
 				}
-			} catch (RepositoryException e) {
-				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
-		
-		} finally {
-			repoGestion.closeStatements(statements);
-			con.close();
+
+
+			addCodesStatement(codeListOrCode, connection);
+
+			Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(codeListOrCode);
+			repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST);
+
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 		}
-		Resource codelistToPublishRessource = publicationUtils.tranformBaseURIToPublish(codelist);
-		repositoryPublication.publishResource(codelistToPublishRessource, model, Constants.CODELIST);
-		
+		finally {
+			repoGestion.closeStatements(statements);
+		}
 	}
 
-}
+	private void addCodesStatement(Resource codeListOrCode, RepositoryConnection connection) throws RmesException {
 
+		RepositoryResult<Statement> statements = repoGestion.getStatementsPredicateObject(connection, SKOS.IN_SCHEME, codeListOrCode);
+		while (statements.hasNext()){
+			Model model = new LinkedHashModel();
+			Statement st = statements.next();
+			RepositoryResult<Statement> codeStatements = repoGestion.getStatements(connection, st.getSubject());
+			while (codeStatements.hasNext()){
+				Statement codeStatement = codeStatements.next();
+
+				if (shouldExcludeTriplet(codeStatement)) {
+					continue;
+				}
+
+
+				if(RDF.TYPE.toString().equalsIgnoreCase(codeStatement.getPredicate().toString()) ||
+						SKOS.IN_SCHEME.toString().equalsIgnoreCase(codeStatement.getPredicate().toString())){
+					model.add(publicationUtils.tranformBaseURIToPublish(codeStatement.getSubject()),
+							codeStatement.getPredicate(),
+							publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(codeStatement.getObject().stringValue())),
+							codeStatement.getContext());
+				} else {
+					model.add(publicationUtils.tranformBaseURIToPublish(codeStatement.getSubject()),
+							codeStatement.getPredicate(),
+							codeStatement.getObject(),
+							codeStatement.getContext());
+				}
+
+			}
+			Resource codePublishResource = publicationUtils.tranformBaseURIToPublish(st.getSubject());
+			repositoryPublication.publishResource(codePublishResource, model, Constants.CODELIST);
+		}
+	}
+
+	private void publishSeeAlsoTriplets(String seeAlso, RepositoryConnection connection) throws RmesException {
+		Model model = new LinkedHashModel();
+
+		IRI seeAlsoIri = RdfUtils.createIRI(seeAlso);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(connection, seeAlsoIri);
+		try {
+			checkIfResourceExists(statements, seeAlsoIri);
+
+			while (statements.hasNext()) {
+				Statement st = statements.next();
+
+				if (shouldExcludeTriplet(st)) {
+					continue;
+				}
+
+				model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()),
+						st.getPredicate(),
+						st.getObject(),
+						st.getContext());
+			}
+
+
+			Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(seeAlsoIri);
+			repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST);
+
+		} catch (RepositoryException e) {
+			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+		}
+		finally {
+			repoGestion.closeStatements(statements);
+		}
+	}
+}
