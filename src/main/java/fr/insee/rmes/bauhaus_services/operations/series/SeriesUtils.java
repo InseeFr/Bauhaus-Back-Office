@@ -516,7 +516,7 @@ public class SeriesUtils  {
 	}
 
 	public boolean isSeriesExist(String iri) throws RmesException {
-		return repoGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesExists(iri));
+		return repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesExists(iri));
 	}
 
 }
