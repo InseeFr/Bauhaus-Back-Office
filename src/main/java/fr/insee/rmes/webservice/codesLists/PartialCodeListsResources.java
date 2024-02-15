@@ -100,7 +100,7 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
-    //@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
     public ResponseEntity<Object> createPartialCodeList(
