@@ -185,6 +185,18 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return this.repoGestion.getResponseAsArray(DatasetQueries.getArchivageUnits()).toString();
     }
 
+    @Override
+    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
+        String datasetByID = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
+        Integer observationNumberInt = Integer.valueOf(observationNumber);
+        if ( observationNumberInt > 0){
+            dataset.setObservationNumber(observationNumberInt);
+        }
+        dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
+        update(datasetId,dataset.toString());
+    }
+
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
