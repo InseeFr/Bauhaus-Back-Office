@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice.codelist;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +20,7 @@ class CodeListsResourcesTest {
     CodeListService codeListService;
 
     @InjectMocks
-    fr.insee.rmes.webservice.codelist.CodeListsResources codeListsResources;
+    CodeListsResources codeListsResources;
 
     @Test
     void shouldReturn200WithGetAllCodesLists() throws RmesException {
@@ -34,21 +35,6 @@ class CodeListsResourcesTest {
         ResponseEntity<Object> response = codeListsResources.getAllCodesLists();
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
-
-    @Test
-    void shouldReturn200WithGetDetailedCodesListByNotation() throws RmesException {
-        when(codeListService.getDetailedCodesList("notation", false)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getDetailedCodesListByNotation("notation");
-        assertEquals("body", response.getBody());
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
-    @Test
-    void shouldThrowErrorWithGetDetailedCodesListByNotation() throws RmesException {
-        when(codeListService.getDetailedCodesList("notation", false)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getDetailedCodesListByNotation("notation");
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-    }
-
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
         when(codeListService.getCodesForCodeList("notation", 1, null)).thenReturn("body");
