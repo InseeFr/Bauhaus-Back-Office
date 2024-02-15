@@ -17,6 +17,7 @@ import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
@@ -24,6 +25,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +58,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Autowired 
 	CollectionExportBuilder collectionExport;
+
+	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength;
+
 
 	@Override
 	public String getConcepts()  throws RmesException{
@@ -239,7 +244,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
-		return CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false)+"-"+concept.getId();
+		return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false) + "-" + concept.getId(), maxLength);
 	}
 	
 	@Override
@@ -284,10 +289,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		collectionsUtils.collectionsValidation(body);
 	}
 
-	/**
-	 * Export collection(s)
-	 * @throws RmesException 
-	 */
 	@Override
 	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException{
 		CollectionForExportOld collection;
@@ -297,7 +298,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
 		Map<String, String> xmlContent = convertCollectionInXml(collection);	
-		String fileName = CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false)+"-"+collection.getId();
+		String fileName = FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId(), maxLength);
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 

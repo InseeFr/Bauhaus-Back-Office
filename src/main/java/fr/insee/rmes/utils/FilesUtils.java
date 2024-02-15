@@ -20,6 +20,9 @@ public class FilesUtils {
 	public static final String ODS_EXTENSION = ".ods";
 	public static final String ZIP_EXTENSION = ".zip";
 
+	public static String reduceFileNameSize(String fileName, int maxLength) {
+		return fileName.substring(0, Math.min(fileName.length(), maxLength));
+	}
 
 	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
 		final File tempFile = File.createTempFile(fileName, fileExtension);
