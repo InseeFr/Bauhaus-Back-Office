@@ -31,13 +31,50 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getAllCodesLists.ftlh", params);
 	}
 
-	public static String getCodeListItemsByNotation(String notation) throws RmesException {
+	public static int getPerPageConfiguration(Integer perPage){
+		if(perPage == null){
+			return config.getPerPage();
+		}
+		return perPage;
+	}
+
+	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
+		int perPageValue = getPerPageConfiguration(perPage);
+
+		HashMap<String, Object> params = initParams();
+		params.put(NOTATION, notation);
+		params.put(PARTIAL, partial);
+		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		if(perPageValue > 0){
+			params.put("OFFSET", perPageValue * (page - 1));
+			params.put("PER_PAGE", perPageValue);
+		}
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
+	}
+
+	public static String getCodeListItemsByNotation(String notation, int page, Integer perPage) throws RmesException {
+		int perPageValue = getPerPageConfiguration(perPage);
+
 		Map<String, Object> params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put(NOTATION, notation);
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
+		if(perPageValue > 0){
+			var offset = perPageValue * (page - 1);
+			params.put("OFFSET", String.valueOf(offset));
+			params.put("PER_PAGE", String.valueOf(perPageValue));
+		}
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
+	}
+
+	public static String countCodesForCodeList(String notation) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(NOTATION, notation);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
@@ -65,7 +102,7 @@ public class CodeListQueries extends GenericQueries {
 				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
 				+ " }}";
 	}
-	
+
 	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"
 				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
@@ -85,10 +122,11 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
-	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
+	public static String getDetailedCodeListByNotation(String notation, String baseInternalUri) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 
@@ -104,19 +142,8 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesForSearch.ftlh", params);
 	}
 
-	public static String getDetailedCodes( String notation, boolean partial) throws RmesException {
-		HashMap<String, Object> params = initParams();
-		params.put(NOTATION, notation);
-		params.put(PARTIAL, partial);
-		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
-	}
 
-	public static String getCodesSeq( String notation) throws RmesException {
-		HashMap<String, Object> params = initParams();
-		params.put(NOTATION, notation);
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesSeq.ftlh", params);
-	}
+
 
 	private static HashMap<String, Object> initParams() {
 		HashMap<String, Object> params = new HashMap<>();
@@ -125,9 +152,9 @@ public class CodeListQueries extends GenericQueries {
 		params.put("LG2", config.getLg2());
 		return params;
 	}
-	
-	  private CodeListQueries() {
-		    throw new IllegalStateException("Utility class");
+
+	private CodeListQueries() {
+		throw new IllegalStateException("Utility class");
 	}
 
 
