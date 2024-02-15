@@ -37,7 +37,6 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-
 	private static final String HAS_COMPOSITION = "hasComposition";
 	static final Logger logger = LoggerFactory.getLogger(GeographyServiceImpl.class);
 

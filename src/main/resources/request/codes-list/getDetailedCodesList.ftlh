@@ -1,9 +1,12 @@
 SELECT DISTINCT ?iri ?id ?labelLg1 ?labelLg2 ?created ?modified ?creator ?contributor ?validationState ?disseminationStatus
-?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment ?iriParent
+?descriptionLg1 ?descriptionLg2 ?lastListUriSegment ?lastClassUriSegment ?iriParent ?lastCodeUriSegment
 FROM <${CODES_LISTS_GRAPH}>
 WHERE {
     ?iri skos:notation '${NOTATION}' ;
     skos:notation ?id .
+    OPTIONAL {
+        ?iri <${BASE_INTERNAL_URI}lastCodeUriSegment> ?lastCodeUriSegment .
+    }
     OPTIONAL {
     ?iri dcterms:created ?created .
     }

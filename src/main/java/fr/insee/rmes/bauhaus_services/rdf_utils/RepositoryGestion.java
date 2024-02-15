@@ -124,21 +124,21 @@ public class RepositoryGestion  {
 
 	public RepositoryResult<Statement> getHasPartStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
-		return getStatementsPredicatObject(con, DCTERMS.HAS_PART,object);
+		return getStatementsPredicateObject(con, DCTERMS.HAS_PART,object);
 	}
 
 	public RepositoryResult<Statement> getReplacesStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
-		return getStatementsPredicatObject(con, DCTERMS.REPLACES,object);
+		return getStatementsPredicateObject(con, DCTERMS.REPLACES,object);
 	}
 
 	public RepositoryResult<Statement> getIsReplacedByStatements(RepositoryConnection con, Resource object)
 			throws RmesException {
-		return getStatementsPredicatObject(con, DCTERMS.IS_REPLACED_BY,object);
+		return getStatementsPredicateObject(con, DCTERMS.IS_REPLACED_BY,object);
 	}
 
 
-	private RepositoryResult<Statement> getStatementsPredicatObject(RepositoryConnection con, IRI predicate, Resource object)
+	public RepositoryResult<Statement> getStatementsPredicateObject(RepositoryConnection con, IRI predicate, Resource object)
 			throws RmesException {
 
 			if (con == null) {

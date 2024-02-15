@@ -15,5 +15,6 @@ WHERE {
         OPTIONAL { ?range rdfs:seeAlso ?uri } .
 
     }
-
 }
+
+ORDER BY ?labelLg1
