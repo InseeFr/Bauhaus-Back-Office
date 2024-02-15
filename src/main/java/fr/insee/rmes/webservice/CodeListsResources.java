@@ -133,6 +133,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
+    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -157,6 +158,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
+    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})

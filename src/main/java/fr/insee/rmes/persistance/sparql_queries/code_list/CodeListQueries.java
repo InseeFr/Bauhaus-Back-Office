@@ -122,10 +122,11 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListByIRI.ftlh", params);
 	}
 
-	public static String getDetailedCodeListByNotation(String notation) throws RmesException {
+	public static String getDetailedCodeListByNotation(String notation, String baseInternalUri) throws RmesException {
 		HashMap<String, Object> params = initParams();
 		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 

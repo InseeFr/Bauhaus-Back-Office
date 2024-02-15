@@ -37,14 +37,15 @@ public class CodeListPublication extends RdfService {
 	}
 
 
-	public void publishCodeListAndCodes(Resource codeListOrCode) throws RmesException {
-
-		Model model = new LinkedHashModel();
-		RepositoryConnection connection = repoGestion.getConnection();
+	private void publishCodeListAndCodesWithConnection(Resource codeListOrCode, RepositoryConnection connection) throws RmesException {
 		RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode);
 
-		try (connection) {
+		try {
+
 			checkIfResourceExists(statements, codeListOrCode);
+
+			Model model = new LinkedHashModel();
+
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 
@@ -71,17 +72,23 @@ public class CodeListPublication extends RdfService {
 				}
 			}
 
-
 			addCodesStatement(codeListOrCode, connection);
 
 			Resource codeListPublishResource = publicationUtils.tranformBaseURIToPublish(codeListOrCode);
 			repositoryPublication.publishResource(codeListPublishResource, model, Constants.CODELIST);
+		} catch (RmesException e) {
+			throw new RuntimeException(e);
+		} finally {
+			repoGestion.closeStatements(statements);
 
+		}
+
+	}
+	public void publishCodeListAndCodes(Resource codeListOrCode) throws RmesException {
+		try (RepositoryConnection connection = repoGestion.getConnection()) {
+			publishCodeListAndCodesWithConnection(codeListOrCode, connection);
 		} catch (RepositoryException e) {
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
-		}
-		finally {
-			repoGestion.closeStatements(statements);
 		}
 	}
 

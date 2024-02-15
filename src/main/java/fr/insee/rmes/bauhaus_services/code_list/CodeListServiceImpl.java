@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -51,6 +52,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Autowired
 	CodeListPublication codeListPublication;
 
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
+	String baseInternalURI;
 
 	@Override
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
@@ -95,7 +98,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
-		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation));
+		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
 
 		if(!partial){
 			return codeList;
@@ -332,7 +335,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				RdfUtils.addTripleUri(codeListIri, PROV.WAS_DERIVED_FROM, codesList.getString("iriParent"), model, graph);
 			}
 		} else {
-			RdfUtils.addTripleString(codeListIri, RdfUtils.createIRI("http://bauhaus-proprietes-internes-pour-gestion#" + LAST_CODE_URI_SEGMENT), codesList.getString(LAST_CODE_URI_SEGMENT), model, graph);
+			RdfUtils.addTripleString(codeListIri, RdfUtils.createIRI(baseInternalURI + LAST_CODE_URI_SEGMENT), codesList.getString(LAST_CODE_URI_SEGMENT), model, graph);
 			IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
 			RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);

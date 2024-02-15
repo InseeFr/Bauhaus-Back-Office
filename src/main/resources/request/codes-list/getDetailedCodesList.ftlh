@@ -5,7 +5,7 @@ WHERE {
     ?iri skos:notation '${NOTATION}' ;
     skos:notation ?id .
     OPTIONAL {
-        ?iri <http://bauhaus-proprietes-internes-pour-gestion#lastCodeUriSegment> ?lastCodeUriSegment .
+        ?iri <${BASE_INTERNAL_URI}lastCodeUriSegment> ?lastCodeUriSegment .
     }
     OPTIONAL {
     ?iri dcterms:created ?created .
