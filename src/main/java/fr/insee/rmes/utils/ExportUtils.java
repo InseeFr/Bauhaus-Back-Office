@@ -10,7 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -36,8 +36,14 @@ public class ExportUtils {
     private static final String ATTACHMENT = "attachment";
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
 
-    @Autowired
-    DocumentsUtils documentsUtils;
+    final int maxLength;
+
+    final DocumentsUtils documentsUtils;
+
+    public ExportUtils(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils) {
+        this.maxLength = maxLength;
+        this.documentsUtils = documentsUtils;
+    }
 
     public static String getExtension(String acceptHeader) {
         if (acceptHeader == null) {
@@ -209,7 +215,7 @@ public class ExportUtils {
                 if(!Files.exists(documentPath)){
                     missingDocuments.add(document.getString("id"));
                 } else {
-                    String documentFileName = UriUtils.getLastPartFromUri(url);
+                    String documentFileName = FilesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url), maxLength);
                     InputStream inputStream = Files.newInputStream(documentPath);
 
                     Path documentDirectory = Path.of(directory.toString(), "documents");

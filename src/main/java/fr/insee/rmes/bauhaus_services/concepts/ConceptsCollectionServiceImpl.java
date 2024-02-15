@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
@@ -14,6 +15,7 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,8 @@ import java.util.*;
 @Service
 public class ConceptsCollectionServiceImpl extends RdfService implements ConceptsCollectionService {
     static final Logger logger = LoggerFactory.getLogger(ConceptsCollectionServiceImpl.class);
+
+    @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength;
 
     @Autowired
     CollectionExportBuilder collectionExport;
@@ -78,7 +82,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = convertCollectionInXml(collection);
             String fileName = getFileNameForExport(collection, lg);
-            if(conceptsIds.size() == 0){
+            if(conceptsIds.isEmpty()){
                 return collectionExport.exportAsResponseODT(fileName,xmlContent,true,true,true, lg);
             }
 
@@ -104,7 +108,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
             List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = convertCollectionInXml(collection);
             String fileName = getFileNameForExport(collection, null);
-            if(conceptsIds.size() == 0){
+            if(conceptsIds.isEmpty()){
                 return collectionExport.exportAsResponseODS(fileName,xmlContent,true,true,true);
             }
             Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds);
@@ -135,7 +139,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
                 String fileName = getFileNameForExport(collection, lg);
                 collections.put(fileName, xmlContent);
 
-                if(conceptsIds.size() > 0){
+                if(!conceptsIds.isEmpty()){
                     Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds);
                     collectionsConcepts.put(fileName, concepts);
                 }
@@ -153,9 +157,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     }
 
     private String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-        if (lg == ConceptsCollectionsResources.Language.lg2){
-            return CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId();
-        }
-        return CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId();
+        String label = lg == ConceptsCollectionsResources.Language.lg2 ? collection.getPrefLabelLg2() : collection.getPrefLabelLg1();
+        return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(label, false)  + "-" + collection.getId(), maxLength);
     }
 }
