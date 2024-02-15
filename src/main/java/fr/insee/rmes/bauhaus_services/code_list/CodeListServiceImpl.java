@@ -259,7 +259,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 			JSONObject codes = codesList.getJSONObject(CODES);
 			for (String key : codes.keySet()) {
-				String codeIri = codes.getJSONObject(key).getString("codeUri");
+				String codeIri = codes.getJSONObject(key).getString("iri");
 				repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
 			}
 		}
@@ -328,7 +328,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				JSONObject codes = codesList.getJSONObject(CODES);
 				for (String key : codes.keySet()) {
 					JSONObject code = codes.getJSONObject(key);
-					RdfUtils.addTripleUri(codeListIri, SKOS.MEMBER, RdfUtils.createIRI(code.getString("codeUri")), model, graph);
+					RdfUtils.addTripleUri(codeListIri, SKOS.MEMBER, RdfUtils.createIRI(code.getString("iri")), model, graph);
 				}
 			}
 			if(codesList.has("iriParent")){

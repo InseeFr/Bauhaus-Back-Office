@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.codelist;
+package fr.insee.rmes.webservice.codesLists;
 
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
@@ -42,7 +42,7 @@ public class CodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
@@ -55,7 +55,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> updateCodesList(
@@ -70,7 +70,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
     public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
@@ -109,18 +109,6 @@ public class CodeListsResources extends GenericResources {
 
 
 
-    @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
-        try {
-            String body = codeListService.getDetailedCodesList(notation, false);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
-
     @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -133,7 +121,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -158,7 +146,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -166,18 +154,6 @@ public class CodeListsResources extends GenericResources {
         try {
             String response = codeListService.addCodeFromCodeList(notation, body);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
-
-    @GetMapping(value = "/partial/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
-        try {
-            String body = codeListService.getDetailedCodesList(notation, true);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
@@ -221,7 +197,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Object> publishFullCodeList(
