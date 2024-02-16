@@ -107,7 +107,17 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-
+    @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
+        try {
+            String body = codeListService.getDetailedCodesList(notation, false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
 
     @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
