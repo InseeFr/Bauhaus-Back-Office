@@ -55,6 +55,9 @@ import org.springframework.web.multipart.MultipartFile;
 @ApiResponse(responseCode = "500", description = "Internal server error") })
 public class ClassificationsResources extends GenericResources {
 
+	public enum Language {
+		lg1, lg2;
+	}
 	static final Logger logger = LoggerFactory.getLogger(ClassificationsResources.class);
 
 	@Autowired

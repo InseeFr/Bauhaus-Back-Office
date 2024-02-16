@@ -15,10 +15,12 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.model.concepts.ConceptForExport;
+import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
+import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,10 +35,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -228,40 +227,89 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response) throws RmesException {
-		Map<String, Map<String, String>> concepts = new HashMap<>();
-		Arrays.asList(ids.split(",")).forEach(id -> {
-			try {
-				ConceptForExport concept = conceptsExport.getConceptData(id);
-				Map<String, String> xmlContent = convertConceptInXml(concept);
-				String fileName = getFileNameForExport(concept);
-				concepts.put(fileName, xmlContent);
-			} catch (RmesException e) {
-				logger.error(e.getMessageAndDetails());
-			}
-		});
-		conceptsExport.exportMultipleConceptsAsZip(concepts, true, true, true, response);
+	public void exportZipConcept(String ids, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException {
+		Map<String, Map<String, String>> collections = new HashMap<>();
+		Map<String, Map<String, InputStream>> collectionsConcepts = new HashMap<>();
+
+		CollectionForExport collection = new CollectionForExport();
+		collection.setId("custom");
+		collection.setPrefLabelLg1("Liste de Concepts");
+		collection.setPrefLabelLg2("Concepts List");
+
+
+		List conceptsIds = Arrays.asList(ids.split("_AND_"));
+		List members = new ArrayList();
+		Map<String, InputStream> concepts = getConceptsExportIS(conceptsIds, members);
+		collection.setMembersLg(members);
+
+
+		Map<String, String> xmlContent = convertCollectionInXml(collection);
+		String fileName = getFileNameForExport(collection, lg);
+		collections.put(fileName, xmlContent);
+
+		if(withConcepts){
+			collectionsConcepts.put(fileName, concepts);
+		}
+
+		if("odt".equalsIgnoreCase(type)){
+			collectionExport.exportMultipleCollectionsAsZipOdt(collections, true, true, true, response, lg, collectionsConcepts, withConcepts);
+
+		} else {
+			collectionExport.exportMultipleCollectionsAsZipOds(collections, true, true, true, response, collectionsConcepts, withConcepts);
+		}
+	}
+
+	public String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
+		if (lg == ConceptsCollectionsResources.Language.lg2){
+			return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId(), this.maxLength);
+		}
+		return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId(), this.maxLength);
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
 		return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false) + "-" + concept.getId(), maxLength);
 	}
-	
+
+	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
+		MembersLg member = new MembersLg();
+		member.setId(concept.getId());
+		member.setCreator(concept.getCreator());
+		member.setPrefLabelLg1(concept.getPrefLabelLg1());
+		member.setPrefLabelLg2(concept.getPrefLabelLg2());
+		member.setIsValidated(concept.getIsValidated());
+		member.setCreated(concept.getCreated());
+		member.setModified(concept.getModified());
+		member.setDefLongueLg1(concept.getDefinitionLg1());
+		member.setDefLongueLg2(concept.getDefinitionLg2());
+
+		member.setDefCourteLg1(concept.getScopeNoteLg1());
+		member.setDefCourteLg2(concept.getScopeNoteLg2());
+
+		member.setEditorialNoteLg1(concept.getEditorialNoteLg1());
+		member.setEditorialNoteLg2(concept.getEditorialNoteLg2());
+		return member;
+	}
+
 	@Override
-	public Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException {
+	public Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) {
 		Map<String,InputStream> ret = new HashMap<>();
 		ids.parallelStream().forEach(id -> {
 			try {
 				ConceptForExport concept = conceptsExport.getConceptData(id);
 				Map<String, String> xmlContent = convertConceptInXml(concept);
-				String fileName = getFileNameForExport(concept);
+				String fileName = conceptsUtils.getConceptExportFileName(concept);
 				ret.put(fileName, conceptsExport.exportAsInputStream(fileName,xmlContent,true,true,true));
+
+				if(members != null){
+					members.add(convertConceptIntoMembers(concept));
+				}
 			} catch (RmesException e) {
 				e.printStackTrace();
 			}
 		});
 		return ret;
 	}
+
 
 	private Map<String, String> convertConceptInXml(ConceptForExport concept) {
 		String conceptXml = XMLUtils.produceXMLResponse(concept);

@@ -254,16 +254,28 @@ public class ConceptsResources  extends GenericResources   {
 		}
 	}
 
+	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
+	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
+	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
+		return conceptsService.getCollectionExport(id, accept);
+	}
+
 	@GetMapping(value = "/concept/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
 	public ResponseEntity<?> exportConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
-			return conceptsService.exportConcept(id, accept);
+		return conceptsService.exportConcept(id, accept);
 	}
 
-	@GetMapping(value = "/concept/export-zip/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
+	@GetMapping(value = "/concept/export-zip/{id}/{type}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/zip" })
 	@Operation(operationId = "exportConcept", summary = "Blob of concept")
-	public void exportZipConcept(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept, HttpServletResponse response) throws RmesException {
-		conceptsService.exportZipConcept(id, accept, response);
+	public void exportZipConcept(
+			@PathVariable(Constants.ID) String id,
+			@PathVariable("type") String type,
+			@RequestParam("langue") ConceptsCollectionsResources.Language lg,
+			@RequestHeader(required=false) String accept,
+			@RequestParam("withConcepts") boolean withConcepts,
+			HttpServletResponse response) throws RmesException {
+		conceptsService.exportZipConcept(id, accept, response, lg, type, withConcepts);
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
@@ -313,11 +325,5 @@ public class ConceptsResources  extends GenericResources   {
 			logger.error(e.getMessage(), e);
 			throw e;
 		}
-	}
-
-	@GetMapping(value = "/collection/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@Operation(operationId = "getCollectionExport", summary = "Blob of collection")
-	public ResponseEntity<?> getCollectionExport(@PathVariable(Constants.ID) String id, @RequestHeader(required=false) String accept) throws RmesException {
-			return conceptsService.getCollectionExport(id, accept);
 	}
 }

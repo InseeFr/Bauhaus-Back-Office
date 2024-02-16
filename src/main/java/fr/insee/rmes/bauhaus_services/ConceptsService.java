@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.MembersLg;
+import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
@@ -39,8 +41,8 @@ public interface ConceptsService {
 
 	ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
 
-	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response) throws RmesException;
-	
+	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
+
 	void setCollection(String body) throws RmesException;
 	
 	void setCollection(String id, String body) throws  RmesException;
@@ -53,5 +55,5 @@ public interface ConceptsService {
 
 	String deleteConcept(String id) throws RmesException;
 
-	Map<String, InputStream> getConceptsExportIS(List<String> ids) throws RmesException;
+	Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) throws RmesException;
 }
