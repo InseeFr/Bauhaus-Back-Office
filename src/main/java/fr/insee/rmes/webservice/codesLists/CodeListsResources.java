@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/codeList")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Codes lists", description = "Codes list API")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('codelists')")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),
         @ApiResponse(responseCode = "204", description = "No Content"),
