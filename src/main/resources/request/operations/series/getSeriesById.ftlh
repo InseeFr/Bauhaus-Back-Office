@@ -18,25 +18,26 @@ WHERE {
 
     OPTIONAL {
         ?series dcterms:abstract ?abstractLg1Uri .
-        ?abstractLg1Uri xkos:ExplanatoryNote ?abstractLg1
-        FILTER (lang(?abstractLg1) = '${LG1}')
+        ?abstractLg1Uri evoc:noteLiteral ?abstractLg1 .
+        ?abstractLg1Uri xsd:language '${LG1}'^^xsd:language
     }
 
     OPTIONAL {
         ?series dcterms:abstract ?abstractLg2Uri .
-        ?abstractLg2Uri xkos:ExplanatoryNote ?abstractLg2
-        FILTER (lang(?abstractLg2) = '${LG2}')
+        ?abstractLg2Uri evoc:noteLiteral ?abstractLg2 .
+        ?abstractLg2Uri xsd:language '${LG2}'^^xsd:language
     }
 
     OPTIONAL {
         ?series skos:historyNote ?historyNoteLg1Uri .
-        ?historyNoteLg1Uri xkos:ExplanatoryNote ?historyNoteLg1
-        FILTER (lang(?historyNoteLg1) = '${LG1}')
+        ?historyNoteLg1Uri evoc:noteLiteral ?historyNoteLg1 .
+        ?historyNoteLg1Uri xsd:language '${LG1}'^^xsd:language
     }
+
     OPTIONAL {
         ?series skos:historyNote ?historyNoteLg2Uri .
-        ?historyNoteLg2Uri xkos:ExplanatoryNote ?abstractLg2
-        FILTER (lang(?abstractLg2) = '${LG2}')
+        ?historyNoteLg2Uri evoc:noteLiteral ?historyNoteLg2 .
+        ?historyNoteLg2Uri xsd:language '${LG2}'^^xsd:language
     }
 </#if>
 
