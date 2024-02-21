@@ -9,11 +9,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CodeListQueries extends GenericQueries {
-
+	static Map<String, Object> params;
 	private static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
 	private static final String CODES_LIST = "codes-list/";
 	private static final String PARTIAL = "PARTIAL";
 	private static final String NOTATION = "NOTATION";
+	private static final String URI_CODESLIST = "URI_CODESLIST";
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -172,5 +173,9 @@ public class CodeListQueries extends GenericQueries {
 		HashMap<String, Object> params = initParams();
 		params.put("IRI", iri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
+	}
+
+	private static String buildCodesListRequest(String fileName, Map<String, Object> params) throws RmesException  {
+		return FreeMarkerUtils.buildRequest("codes-list/", fileName, params);
 	}
 }

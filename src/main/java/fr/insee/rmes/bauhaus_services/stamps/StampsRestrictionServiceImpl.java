@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
@@ -70,6 +71,9 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+	}
+	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
 	}
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {

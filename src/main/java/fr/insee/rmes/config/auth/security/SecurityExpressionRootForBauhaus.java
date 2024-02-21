@@ -130,12 +130,21 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     public boolean isContributorOfSerie(String seriesId) {
-        logger.trace("Check if {} is contributor for srie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
+        logger.trace("Check if {} is contributor for serie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
+    }
+
+    public boolean isContributorOfCodesList(String codesListId){
+        logger.trace("Check if {} is contributor for codesList {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
+    }
+
+    private boolean isManagerForCodesListId(String codesListId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
 
     private Optional<String> getStamp() {

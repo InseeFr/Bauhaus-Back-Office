@@ -34,8 +34,20 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
+	public boolean isCodesListManagerWithStamp(String codesListId, String stamp) {
+		try {
+			return isCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, codesListId);
+			return false;
+		}
+	}
+
 	private IRI findIRI(String seriesId) {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
 	}
 
+	private IRI findCodesListIRI(String codesListId) {
+		return RdfUtils.objectIRI(ObjectType.CODE_LIST, codesListId);
+	}
 }
