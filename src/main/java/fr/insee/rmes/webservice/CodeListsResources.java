@@ -43,7 +43,7 @@ public class CodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
@@ -57,9 +57,9 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a codes list")
+    @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
@@ -73,7 +73,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
     public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
@@ -85,7 +85,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @PostMapping(value = "/partial", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
     public ResponseEntity<Object> createPartialCodeList(
@@ -99,7 +99,7 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @PutMapping(value = "/partial/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> updatePartialCodeList(
@@ -114,7 +114,7 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @DeleteMapping(value = "/partial/{id}")
     @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
@@ -242,7 +242,7 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Object> publishFullCodeList(
@@ -255,7 +255,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @PutMapping("/partial/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
     public ResponseEntity<Object> publishPartialCodeList(
