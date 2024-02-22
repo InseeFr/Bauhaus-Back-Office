@@ -23,9 +23,11 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
     }
 
-    public static String getDataset(String id, String datasetsGraph) throws RmesException {
+
+    public static String getDataset(String id, String datasetsGraph,String operationsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
+        params.put("OPERATION_GRAPH", operationsGraph);
         params.put("LG1", config.getLg1());
         params.put("LG2", config.getLg2());
         params.put("ID", id);

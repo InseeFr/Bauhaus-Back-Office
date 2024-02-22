@@ -47,7 +47,7 @@ public class DatasetQueriesTest {
                 put("ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDataset.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetQueries.getDataset("1", "datasets-graph");
+            String query = DatasetQueries.getDataset("1", "datasets-graph","operations-graph");
             Assertions.assertEquals(query, "request");
         }
     }

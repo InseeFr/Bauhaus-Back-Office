@@ -8,6 +8,7 @@ SELECT ?id ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?ac
 ?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
 
 FROM <${DATASET_GRAPH}>
+FROM <${OPERATION_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
     ?uri dcterms:identifier '${ID}' .
@@ -76,8 +77,15 @@ WHERE {
 
     OPTIONAL {
         ?uri prov:wasGeneratedBy ?wasGeneratedBy .
-        BIND(STRAFTER(STR(?wasGeneratedBy),'/operations/serie/') AS ?idSerie) .
+        OPTIONAL {
+            ?wasGeneratedBy dcterms:isPartOf ?serie .
+            BIND(STRAFTER(STR(?serie),'/operations/serie/') AS ?idSerieOption1) .
+        }
+        BIND(STRAFTER(STR(?wasGeneratedBy),'/operations/serie/') AS ?idSerieOption2) .
+        BIND(COALESCE(?idSerieOption1, ?idSerieOption2) AS ?idSerie) .
     }
+
+
 
     OPTIONAL {
         ?uri dcat:theme ?theme .
