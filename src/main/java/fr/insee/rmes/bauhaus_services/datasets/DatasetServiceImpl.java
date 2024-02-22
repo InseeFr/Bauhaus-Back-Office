@@ -37,6 +37,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
     private String datasetsGraphSuffix;
 
+    @Value("${fr.insee.rmes.bauhaus.operations.graph}")
+    private String operationsGraphSuffix;
+
     @Value("${fr.insee.rmes.bauhaus.datasets.baseURI}")
     private String datasetsBaseUriSuffix;
 
@@ -52,9 +55,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
     private String distributionsBaseUriSuffix;
 
+
+
     private String getDatasetsGraph(){
         return baseGraph + datasetsGraphSuffix;
     }
+
+    private String getOperationsGraph(){return  baseGraph + operationsGraphSuffix; }
 
     private String getDistributionBaseUri(){
         return baseUriGestion + distributionsBaseUriSuffix;
@@ -75,7 +82,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDatasetByID(String id) throws RmesException {
-        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
+        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(),getOperationsGraph()));
 
         if(datasetWithThemes.isEmpty()){
             throw new RmesBadRequestException("This dataset does not exist");
@@ -186,15 +193,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
+    public String patchDataset(String datasetId, String observationNumber) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        Integer observationNumberInt = Integer.valueOf(observationNumber);
+        JSONObject jsonDataset = new JSONObject(datasetByID);
+        JSONObject jsonObservationNumber = new JSONObject(observationNumber);
+        Integer observationNumberInt = (Integer) jsonObservationNumber.get("observationNumber");
         if ( observationNumberInt > 0){
-            dataset.setObservationNumber(observationNumberInt);
+            jsonDataset.put("observationNumber",observationNumberInt);
         }
-        dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
-        update(datasetId,dataset.toString());
+        JSONObject catalogRecord = (JSONObject) jsonDataset.get("catalogRecord");
+        catalogRecord.put("updated",DateUtils.getCurrentDate());
+        return update(datasetId,jsonDataset.toString());
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
