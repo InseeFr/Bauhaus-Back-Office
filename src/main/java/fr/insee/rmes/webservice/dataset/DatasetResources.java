@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class DatasetResources {
 
     final DatasetService datasetService;
-
-    public final String EXAMPLE_NUMBER_OF_OBSERVATION = "{\"observationNumber\":1}";
+    public final String EXAMPLE_NUMBER_OF_OBSERVATION = "{\"observationNumber\":2}";
 
     public DatasetResources(DatasetService datasetService) {
         this.datasetService = datasetService;
@@ -76,12 +76,12 @@ public class DatasetResources {
 
     @PatchMapping(value = "/{id}/observationNumber", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateObservationNumber", summary = "Update ObsevationNumber of a dataset")
-    public void patchDataset(
+    public String patchDataset(
             @PathVariable("id") String datasetId,
             @Schema(name ="observationNumber",example = EXAMPLE_NUMBER_OF_OBSERVATION )
-            @Parameter(description = "Dataset", required = true) @RequestBody String observationNumber
+            @Parameter(description = "observationNumber", required = true) @RequestBody String observationNumber
     ) throws RmesException{
-        this.datasetService.patchDataset(datasetId,observationNumber);
+        return this.datasetService.patchDataset(datasetId,observationNumber);
     }
 
 }
