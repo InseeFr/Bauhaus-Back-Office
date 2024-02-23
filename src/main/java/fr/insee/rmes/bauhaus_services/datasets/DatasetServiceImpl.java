@@ -143,10 +143,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return dataset.toString();
     }
 
-    @Override
-    public String update(String datasetId, String body) throws RmesException {
-
-        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+    private String update(String datasetId, Dataset dataset) throws RmesException {
         dataset.setId(datasetId);
 
         if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())){
@@ -166,6 +163,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
 
         return this.persist(dataset);
+    }
+    @Override
+    public String update(String datasetId, String body) throws RmesException {
+        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        return this.update(datasetId, dataset);
     }
 
     @Override
@@ -198,6 +200,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String getArchivageUnits() throws RmesException {
         return this.repoGestion.getResponseAsArray(DatasetQueries.getArchivageUnits()).toString();
+    }
+
+    @Override
+    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
+        String datasetByID = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
+        int observationNumberInt = Integer.parseInt(observationNumber);
+        if ( observationNumberInt > 0){
+            dataset.setObservationNumber(observationNumberInt);
+        }
+        update(datasetId, dataset);
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
