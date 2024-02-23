@@ -16,5 +16,7 @@ public interface DatasetService {
 
     String getArchivageUnits() throws RmesException;
 
+    void patchDataset(String datasetId, String observationNumber) throws RmesException;
+
     String getDatasetsForDistributionCreation(String stamp) throws RmesException;
 }
