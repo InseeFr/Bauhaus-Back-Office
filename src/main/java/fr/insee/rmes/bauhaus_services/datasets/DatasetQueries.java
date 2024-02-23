@@ -16,10 +16,14 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getArchivageUnit.ftlh", params);
     }
 
-    public static String getDatasets(String datasetsGraph) throws RmesException {
+    public static String getDatasets(String datasetsGraph, String stamp) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("DATASET_GRAPH", datasetsGraph);
         params.put("LG1", config.getLg1());
+
+        if(stamp != null){
+            params.put("STAMP", stamp);
+        }
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasets.ftlh", params);
     }
 

@@ -1,6 +1,9 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
+import fr.insee.rmes.config.auth.security.UserDecoder;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.junit.jupiter.api.Assertions;
@@ -10,7 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import java.util.List;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,6 +26,12 @@ public class DistributionResourcesTest {
 
     @Mock
     DistributionService distributionService;
+
+    @Mock
+    DatasetService datasetService;
+
+    @Mock
+    UserDecoder userDecoder;
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
@@ -31,6 +43,20 @@ public class DistributionResourcesTest {
     void shouldReturn200IfRmesExceptionWhenFetchingDistributionById() throws RmesException {
         when(distributionService.getDistributionByID(anyString())).thenReturn("result");
         Assertions.assertEquals("result", distributionResources.getDistribution(""));
+    }
+
+    @Test
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException {
+        when(datasetService.getDatasets()).thenReturn("result");
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of("Administrateur_RMESGNCS"), "fakeStampForDvAndQf")));
+        Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
+    }
+
+    @Test
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException {
+        when(datasetService.getDatasetsForDistributionCreation(eq("fakeStampForDvAndQf"))).thenReturn("result");
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), "fakeStampForDvAndQf")));
+        Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
     }
 
     @Test

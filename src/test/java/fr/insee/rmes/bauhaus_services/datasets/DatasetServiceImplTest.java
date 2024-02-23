@@ -59,8 +59,21 @@ public class DatasetServiceImplTest {
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.getDatasets(any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             String query = datasetService.getDatasets();
+            Assertions.assertEquals(query, "[\"result\"]");
+        }
+    }
+
+    @Test
+    void getDatasetsForDistributionCreationWithStamp() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put("result");
+
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
+            String query = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
             Assertions.assertEquals(query, "[\"result\"]");
         }
     }
