@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -60,7 +61,7 @@ public class CodeListsResources extends GenericResources {
     public ResponseEntity<Object> updateCodesList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        try {
+       try {
             String id = codeListService.setCodesList(componentId, body, false);
             return ResponseEntity.status(HttpStatus.OK).body(id);
         } catch (RmesException e) {
