@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=operations"}
+                "fr.insee.rmes.bauhaus.activeModules=codeLists"}
 )
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
@@ -58,18 +58,40 @@ public class TestCodeListsResourcesEnvProd {
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 
-    int codeListId=10;
+    int codesListId=10;
 
     @Test
     void putCodeListAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
-        mvc.perform(put("/codeList/" + codeListId).header("Authorization", "Bearer toto")
+        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void putSeriesAsCodesListContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
 
+        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void putSeriesAsCodesListContributor_badSerie() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(codesListId+1),timbre)).thenReturn(true);
+
+        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
 }
