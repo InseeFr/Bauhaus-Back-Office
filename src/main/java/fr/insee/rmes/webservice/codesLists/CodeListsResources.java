@@ -42,7 +42,7 @@ public class CodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+    @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
@@ -87,7 +87,7 @@ public class CodeListsResources extends GenericResources {
     @PostMapping(value = "/partial", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
     public ResponseEntity<Object> createPartialCodeList(
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
+            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
         String id = null;
         try {
             id = codeListService.setCodesList(body, true);
