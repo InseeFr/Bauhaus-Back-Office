@@ -6,9 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.utils.DateUtils;
-import fr.insee.rmes.utils.Deserializer;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -262,33 +260,43 @@ public class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldUpdatedatasetUpdated() throws RmesException {
+    void shouldPatchDataset() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
-        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
-        try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
-        ) {
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
-            rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
-            dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2024-01-19T11:44:23.335590");
 
-            JSONObject jsonDataset = new JSONObject();
-            jsonDataset.put("descriptionLg1", "descriptionLg1");
-            jsonDataset.put("descriptionLg2", "descriptionLg2");
-            jsonDataset.put("observationNumber", 5);
+        String datasetId = "jd1001";
+        String observation = "5";
 
-            JSONObject record = new JSONObject();
-            record.put("creator", "creator");
-            record.put("contributor", "contributor");
-            record.put("created", "2023-10-19T11:44:23.335590");
-            record.put("updated", "2023-12-19T11:44:23.335590");
-            jsonDataset.put("catalogRecord", record);
-            jsonDataset.put("id", "d1000");
-            Dataset dataset = Deserializer.deserializeBody(String.valueOf(jsonDataset), Dataset.class);
-            dataset.getCatalogRecord().setUpdated(DateUtils.getCurrentDate());
-            Assertions.assertEquals("2024-01-19T11:44:23.335590", dataset.getCatalogRecord().getUpdated());
+        JSONObject object = new JSONObject();
+        object.put("id", datasetId);
+        generateGeneralInformation(object);
+        object.put("disseminationStatus", "http://disseminationStatus");
+        object.put("catalogRecordCreator", "creator");
+        object.put("catalogRecordContributor", "contributor");
+
+        JSONArray distributions = new JSONArray();
+        JSONObject d = new JSONObject();
+        d.put("id", "d1000");
+        distributions.put(d);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(distributions);
+
+        JSONArray array = new JSONArray().put(object);
+        when(seriesUtils.isSeriesExist(any())).thenReturn(true);
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
+        when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
+        when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.getDataset(eq(datasetId), any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
+            mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
+            mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
+
+             datasetService.patchDataset(datasetId, observation);
+
+            ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+            verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
+
+            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, \"creator-1\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, \"c3\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, http://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, http://statisticalUnit-1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"5\"^^<http://www.w3.org/2001/XMLSchema#int>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions-1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#Distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
         }
     }
 
