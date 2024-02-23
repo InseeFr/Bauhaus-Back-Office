@@ -35,7 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
-                "logging.level.fr.insee.rmes.config.auth=TRACE"})
+                "logging.level.fr.insee.rmes.config.auth=TRACE",
+        })
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,

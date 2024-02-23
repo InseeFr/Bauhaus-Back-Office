@@ -3,8 +3,10 @@ package fr.insee.rmes.integration.authorizations;
 import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.webservice.GeographyResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +28,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "jwt.stamp-claim=" + STAMP_CLAIM,
                 "jwt.role-claim=" + ROLE_CLAIM,
                 "jwt.id-claim=" + ID_CLAIM,
-                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM
+                "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
+                "logging.level.org.springframework.security=DEBUG",
+                "logging.level.org.springframework.security.web.access=TRACE",
+                "logging.level.fr.insee.rmes.config.auth=TRACE",
+                "fr.insee.rmes.bauhaus.fakeuser.name=Bibi",
+                "fr.insee.rmes.bauhaus.fakeuser.roles="+ Roles.CONCEPT_CREATOR
         }
 )
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
-        UserProviderFromSecurityContext.class})
+        UserProviderFromSecurityContext.class,
+        FakeUserConfiguration.class})
 class TestGeographyResourcesAuthorizationsEnvHorsProd {
 
     @Autowired
@@ -54,7 +62,7 @@ class TestGeographyResourcesAuthorizationsEnvHorsProd {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bidon"));
 
         mvc.perform(get("/geo/territories").header("Authorization", "Bearer toto")
-                .accept(MediaType.APPLICATION_JSON))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
