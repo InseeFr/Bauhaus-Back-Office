@@ -62,10 +62,6 @@ public class ConceptsUtils extends RdfService {
 		return getAbstractExportFileName(concept.getId(), concept.getPrefLabelLg1(), concept.getPrefLabelLg2(), ConceptsCollectionsResources.Language.lg1);
 	}
 
-	public String getCollectionExportFileName(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
-		return getAbstractExportFileName(collection.getId(), collection.getPrefLabelLg1(), collection.getPrefLabelLg2(), lg);
-	}
-
 	private String getAbstractExportFileName(String id, String labelLg1, String labelLg2, ConceptsCollectionsResources.Language lg){
 		var initialFileName = getInitialFileName(labelLg1, labelLg2, lg);
 		return FilesUtils.reduceFileNameSize(id + "-" + FilesUtils.removeAsciiCharacters(CaseUtils.toCamelCase(initialFileName, false)), maxLength);
@@ -230,10 +226,6 @@ public class ConceptsUtils extends RdfService {
 			result = repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
-	}
-
-	public JSONArray getConceptVersions(String uriConcept) throws RmesException{
-		return repoGestion.getResponseAsArray(ConceptsQueries.getConceptVersions(uriConcept));
 	}
 
 	public boolean checkIfConceptExists(String id) throws RmesException {
