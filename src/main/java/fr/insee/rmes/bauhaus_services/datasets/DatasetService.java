@@ -15,4 +15,6 @@ public interface DatasetService {
     String getDistributions(String id) throws RmesException;
 
     String getArchivageUnits() throws RmesException;
+
+    String getDatasetsForDistributionCreation() throws RmesException;
 }

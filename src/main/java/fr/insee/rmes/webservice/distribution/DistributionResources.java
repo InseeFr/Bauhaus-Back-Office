@@ -1,8 +1,10 @@
 package fr.insee.rmes.webservice.distribution;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,9 +27,11 @@ import org.springframework.web.bind.annotation.*;
 public class DistributionResources {
 
     final DistributionService distributionService;
+    final DatasetService datasetService;
 
-    public DistributionResources(DistributionService distributionService) {
+    public DistributionResources(DistributionService distributionService, DatasetService datasetService) {
         this.distributionService = distributionService;
+        this.datasetService = datasetService;
     }
 
     @GetMapping
@@ -42,6 +46,13 @@ public class DistributionResources {
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
     public String getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
+    }
+
+    @GetMapping("/datasets")
+    @Operation(operationId = "getDatasetsForDistributionCreation", summary = "List of datasets",
+            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Dataset.class))))})
+    public String getDatasetsForDistributionCreation() throws RmesException {
+        return this.datasetService.getDatasetsForDistributionCreation();
     }
 
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)

@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
@@ -21,6 +22,9 @@ public class DistributionResourcesTest {
     @Mock
     DistributionService distributionService;
 
+    @Mock
+    DatasetService datasetService;
+
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
         when(distributionService.getDistributions()).thenReturn("result");
@@ -31,6 +35,12 @@ public class DistributionResourcesTest {
     void shouldReturn200IfRmesExceptionWhenFetchingDistributionById() throws RmesException {
         when(distributionService.getDistributionByID(anyString())).thenReturn("result");
         Assertions.assertEquals("result", distributionResources.getDistribution(""));
+    }
+
+    @Test
+    void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreation() throws RmesException {
+        when(datasetService.getDatasetsForDistributionCreation()).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation());
     }
 
     @Test

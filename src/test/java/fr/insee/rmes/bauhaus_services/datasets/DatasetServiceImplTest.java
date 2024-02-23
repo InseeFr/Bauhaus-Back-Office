@@ -4,6 +4,8 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.DateUtils;
@@ -26,6 +28,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,6 +47,9 @@ import static org.mockito.Mockito.*;
 public class DatasetServiceImplTest {
 
     @MockBean
+    UserProviderFromSecurityContext userProviderFromSecurityContext;
+
+    @MockBean
     SeriesUtils seriesUtils;
 
     @MockBean
@@ -59,8 +65,38 @@ public class DatasetServiceImplTest {
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.getDatasets(any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             String query = datasetService.getDatasets();
+            Assertions.assertEquals(query, "[\"result\"]");
+        }
+    }
+
+    @Test
+    void getDatasetsForDistributionCreationWhenAdmin() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put("result");
+
+        User admin = new User("fakeUser",List.of("Administrateur_RMESGNCS"), "fakeStampForDvAndQf");
+        when(userProviderFromSecurityContext.findUser()).thenReturn(Optional.of(admin));
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
+            String query = datasetService.getDatasetsForDistributionCreation();
+            Assertions.assertEquals(query, "[\"result\"]");
+        }
+    }
+
+    @Test
+    void getDatasetsForDistributionCreationWhenNotAdmin() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put("result");
+
+        User admin = new User("fakeUser",List.of(), "fakeStampForDvAndQf");
+        when(userProviderFromSecurityContext.findUser()).thenReturn(Optional.of(admin));
+        when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
+            String query = datasetService.getDatasetsForDistributionCreation();
             Assertions.assertEquals(query, "[\"result\"]");
         }
     }

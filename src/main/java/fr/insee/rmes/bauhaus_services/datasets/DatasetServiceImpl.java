@@ -4,6 +4,9 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
@@ -30,6 +33,9 @@ import java.util.List;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
+
+    @Autowired
+    UserProviderFromSecurityContext userProviderFromSecurityContext;
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -70,7 +76,25 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDatasets() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph())).toString();
+        return this.getDatasets(false);
+    }
+
+    @Override
+    public String getDatasetsForDistributionCreation() throws RmesException {
+        return this.getDatasets(true);
+    }
+
+    private String getDatasets(boolean withRoleCheck) throws RmesException {
+        String stamp = null;
+        if(withRoleCheck){
+            User user = userProviderFromSecurityContext.findUser().get();
+            if(!user.hasRole(Roles.ADMIN)){
+                stamp = user.getStamp();
+            }
+
+        }
+
+        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp)).toString();
     }
 
     @Override
