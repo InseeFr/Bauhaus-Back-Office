@@ -76,24 +76,15 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDatasets() throws RmesException {
-        return this.getDatasets(false);
+        return this.getDatasets(null);
     }
 
     @Override
-    public String getDatasetsForDistributionCreation() throws RmesException {
-        return this.getDatasets(true);
+    public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
+        return this.getDatasets(stamp);
     }
 
-    private String getDatasets(boolean withRoleCheck) throws RmesException {
-        String stamp = null;
-        if(withRoleCheck){
-            User user = userProviderFromSecurityContext.findUser().get();
-            if(!user.hasRole(Roles.ADMIN)){
-                stamp = user.getStamp();
-            }
-
-        }
-
+    private String getDatasets(String stamp) throws RmesException {
         return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp)).toString();
     }
 
