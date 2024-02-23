@@ -4,7 +4,7 @@ import java.util.List;
 
 public record User(String id, List<String> roles, Stamp stamp) {
 
-	public static final User FAKE_USER=new User("fakeUser",List.of("ROLE_offline_access", "Administrateur_RMESGNCS", "ROLE_uma_authorization"), "fakeStampForDvAndQf");
+	public static final User FAKE_USER = new User("fakeUser",List.of("ROLE_offline_access", "Administrateur_RMESGNCS", "ROLE_uma_authorization"), "fakeStampForDvAndQf");
 	public static final User EMPTY_USER = new User();
 
 	private User() {

@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.codelist;
+package fr.insee.rmes.webservice.codesLists;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -38,18 +38,6 @@ public class PartialCodeListsResources extends GenericResources {
 
     @Autowired
     CodeListService codeListService;
-
-    @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
-        try {
-            String body = codeListService.getDetailedCodesList(notation, false);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",

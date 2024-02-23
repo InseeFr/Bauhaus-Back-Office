@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/codeList")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Codes lists", description = "Codes list API")
-@ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('codelists')")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),
         @ApiResponse(responseCode = "204", description = "No Content"),
@@ -107,7 +106,17 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-
+    @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
+        try {
+            String body = codeListService.getDetailedCodesList(notation, false);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
 
     @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
@@ -134,6 +143,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
+    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
