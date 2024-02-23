@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.codelist;
+package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.exceptions.RmesException;
