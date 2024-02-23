@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
+import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
@@ -243,19 +244,27 @@ public class RdfUtils {
 		}
 	}
 
-	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicat, String value, String lang, String prefix, Model model, Resource graph) {
+	public static IRI addTripleStringMdToXhtml2(IRI objectURI, IRI predicate, String value, String lang, String prefix, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			IRI uri = factory.createIRI(objectURI.toString() + "/" + prefix + "/" + lang);
-			addTripleUri(objectURI, predicat, uri, model, graph);
-			addTripleString(uri, XKOS.EXPLANATORY_NOTE, XhtmlToMarkdownUtils.markdownToXhtml(value), lang, model, graph);
+			addTripleUri(objectURI, predicate, uri, model, graph);
+			addTripleUri(uri, RDF.TYPE, XKOS.EXPLANATORY_NOTE, model, graph);
+			addTripleLiteralXML(uri, EVOC.NOTE_LITERAL, XhtmlToMarkdownUtils.markdownToXhtml(value), model, graph);
+			addTripleLanguage(uri, XSD.LANGUAGE, lang, model, graph);
 			return uri;
 		}
 		return null;
 	}
 
-	public static void addTripleDateTime(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
+	public static void addTripleLanguage(IRI objectURI, IRI predicate, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
-			model.add(objectURI, predicat, RdfUtils.setLiteralDateTime(value), graph);
+			model.add(objectURI, predicate, RdfUtils.setLiteralLanguage(value), graph);
+		}
+	}
+
+	public static void addTripleDateTime(IRI objectURI, IRI predicate, String value, Model model, Resource graph) {
+		if (value != null && !value.isEmpty()) {
+			model.add(objectURI, predicate, RdfUtils.setLiteralDateTime(value), graph);
 		}
 	}
 	public static void addTripleDate(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
