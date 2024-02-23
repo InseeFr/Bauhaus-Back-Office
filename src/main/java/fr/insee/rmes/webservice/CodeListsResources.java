@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -61,9 +62,9 @@ public class CodeListsResources extends GenericResources {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
-            @PathVariable(Constants.ID) String componentId,
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
-        String id = null;
+            @PathVariable(Constants.ID) @P("codesListId") String id,
+            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
+
         try {
             id = codeListService.setCodesList(id, body, false);
         } catch (RmesException e) {
