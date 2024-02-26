@@ -24,6 +24,7 @@ import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=codeLists"}
+                "fr.insee.rmes.bauhaus.activeModules=codelists"}
 )
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
@@ -61,7 +62,7 @@ public class TestCodeListsResourcesEnvProd {
     int codesListId=10;
 
     @Test
-    void putCodeListAdmin_ok() throws Exception {
+    void putCodesListAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
@@ -72,7 +73,7 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void putSeriesAsCodesListContributor_ok() throws Exception {
+    void putCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
         when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
 
@@ -84,14 +85,58 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void putSeriesAsCodesListContributor_badSerie() throws Exception {
+    void putCodesListAsCodesListContributor_badSerie() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(codesListId+1),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId+1),timbre)).thenReturn(true);
 
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void putCodesListAsCodesListContributor_noAuth() throws Exception {
+        mvc.perform(put("/codeList/" + codesListId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void putCodesListAsCodesListContributor_badRole() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("toto"));
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
+
+        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void postCodesListAdmin_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+
+        mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void postCodesListAsCodesListContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
+
+        mvc.perform(post("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
     }
 }
