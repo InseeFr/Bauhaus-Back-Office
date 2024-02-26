@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
         CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,})
+        UserProviderFromSecurityContext.class,
+        FakeUserConfiguration.class})
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
@@ -61,18 +63,18 @@ class PublicResourcesTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(content().json("""
-{
-    "authorizationHost":"sugoUi",
-    "defaultMailSender":"email",
-    "lg2":"en",
-    "lg1":"fr",
-    "maxLengthScopeNote":"35",
-    "authType":"NoAuthImpl",
-    "defaultContributor":"stamp",
-    "activeModules":["operations","concepts"],
-    "appHost":"http://localhost",
-    "modules":["operations","concepts"]}
-"""));
+                        {
+                            "authorizationHost":"sugoUi",
+                            "defaultMailSender":"email",
+                            "lg2":"en",
+                            "lg1":"fr",
+                            "maxLengthScopeNote":"35",
+                            "authType":"NoAuthImpl",
+                            "defaultContributor":"stamp",
+                            "activeModules":["operations","concepts"],
+                            "appHost":"http://localhost",
+                            "modules":["operations","concepts"]}
+                        """));
 
     }
 }
