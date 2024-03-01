@@ -1,14 +1,24 @@
 package fr.insee.rmes.config.auth.security;
 
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.config.Config;
+import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.roles.Roles;
+import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
@@ -134,11 +144,30 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
     }
 
+//    for PUT
     public boolean isContributorOfCodesList(String codesListId){
-        logger.trace("Check if {} is contributor for codesList {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
+        logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
+//    for POST
+    public boolean isCodesListContributor(String contributorString) throws RmesException {
+        FakeUserConfiguration fakeUser = new FakeUserConfiguration();
+        logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
+        JSONObject contrib = new JSONObject(contributorString);
+        if(!contrib.has("contributor")){
+            return false;
+        }
+        String codesListContributor = contrib.getString("contributor");
+
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && fakeUser.stamp().equals(codesListContributor);
+    }
+
+//for DELETE
+    public boolean isContributorOfCodesList(String codesListId, ValidationStatus status) {
+        logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForCodesListId(codesListId,status);
+    }
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
     }
@@ -146,6 +175,10 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
+    public boolean isManagerDeleteForCodesListId(String codesListId,ValidationStatus status) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStampWithValidationStatus(requireNonNull(codesListId), requireNonNull(status), stamp)).orElse(false);
+    }
+
 
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);

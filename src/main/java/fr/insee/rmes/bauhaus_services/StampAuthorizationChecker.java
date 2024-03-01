@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,17 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 			return false;
 		}
 	}
+
+	public boolean isCodesListManagerWithStampWithValidationStatus(String codesListId, ValidationStatus status, String stamp) {
+		try {
+			return isCodesListManagerWithStampWithValidationStatus(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(status),requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, codesListId);
+			return false;
+		}
+	}
+
+
 
 	private IRI findIRI(String seriesId) {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
