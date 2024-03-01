@@ -172,28 +172,24 @@ public class TestCodeListsResourcesEnvProd {
                 .andExpect(status().isForbidden());
     }
 
-//    ça ne marche pas sans content - mais pourquoi il faut un content ??
     @Test
     void deleteCodesListAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
-        mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+        mvc.perform(delete("/codeList/" + codesListId)
+                        .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
-    //    ça ne marche pas sans content - pourquoi il faut un content ??
     @Test
     void deleteCodesList_noAuth() throws Exception {
         mvc.perform(delete("/codeList/" + codesListId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
-//    ça ne marche pas sans content - pourquoi il faut un content ??
 //    ne marche pas car codeListId est à null (mode debug)
     @Test
     void deleteUnpublishedCodesListAsCodesListContributor_ok() throws Exception {
@@ -203,8 +199,7 @@ public class TestCodeListsResourcesEnvProd {
         when(securityExpressionRootForBauhaus.isContributorOfCodesList(String.valueOf(codesListId),status)).thenReturn(true);
         mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }
