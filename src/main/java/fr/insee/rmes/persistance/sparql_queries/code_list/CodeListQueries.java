@@ -78,6 +78,12 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
 	}
 
+	public static String getContributorsCodesListUriWithValidationStatus(String uriCodesList) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_CODESLIST, uriCodesList);
+		return buildCodesListRequest("getCodesListContributorsByUriWithValidationStatusQuery.ftlh", params);
+	}
+
 	public static String getCodeListLabelByNotation(String notation) {
 		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
 				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
