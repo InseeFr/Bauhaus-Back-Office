@@ -362,7 +362,7 @@ public class StructureUtils extends RdfService {
 
     private void validateStructure(Structure structure) throws RmesException {
         checkUnicityForStructure(structure);
-        if (structure.getId() == null) {
+        if (structure.getIdentifiant() == null) {
             throw new RmesBadRequestException("The property identifiant is required");
         }
         if (structure.getLabelLg1() == null) {
