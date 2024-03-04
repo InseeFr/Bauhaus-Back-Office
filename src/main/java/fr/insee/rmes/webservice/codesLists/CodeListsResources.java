@@ -70,10 +70,10 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId, T(fr.insee.rmes.model.ValidationStatus).UNPUBLISHED)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedCodesList(#codesListId)")
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
-    public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
+    public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) {
         try {
             codeListService.deleteCodeList(notation, false);
             return ResponseEntity.status(HttpStatus.OK).build();

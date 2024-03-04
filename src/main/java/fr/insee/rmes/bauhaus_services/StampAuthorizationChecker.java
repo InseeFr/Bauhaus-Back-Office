@@ -44,9 +44,9 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
-	public boolean isCodesListManagerWithStampWithValidationStatus(String codesListId, ValidationStatus status, String stamp) {
+	public boolean isUnpublishedCodesListManagerWithStamp(String codesListId, String stamp) {
 		try {
-			return isCodesListManagerWithStampWithValidationStatus(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(status),requireNonNull(stamp));
+			return isUnpublishedCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)),requireNonNull(stamp));
 		} catch (RmesException e) {
 			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, codesListId);
 			return false;
