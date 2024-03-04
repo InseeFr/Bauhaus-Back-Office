@@ -11,6 +11,7 @@ import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -88,15 +90,16 @@ public class TestSeriesResourcesEnvProd {
     }
 
     @Test
-    void putSeriesAsSeriesContributor_badSerie() throws Exception {
+    void putSeriesAsSeriesContributor_badSerieTimbre() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId+1),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),timbre)).thenReturn(false);
 
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
+        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),timbre);
     }
 
     @Test
@@ -109,8 +112,8 @@ public class TestSeriesResourcesEnvProd {
     }
 
     @Test
-    void putSeriesAsSeriesContributor_badRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("toto"));
+    void putSeriesAsNotSeriesContributor() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
         when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),timbre)).thenReturn(true);
 
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")

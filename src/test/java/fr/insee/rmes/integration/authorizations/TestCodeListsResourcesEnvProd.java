@@ -15,6 +15,7 @@ import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.CodeListsResources;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -93,7 +94,7 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void putCodesListAsCodesListContributor_badSerie() throws Exception {
+    void putCodesListAsCodesListContributor_badCodesList() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
         when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId+1),timbre)).thenReturn(true);
 
@@ -136,19 +137,15 @@ public class TestCodeListsResourcesEnvProd {
                 .andExpect(status().isOk());
     }
 
-//    dans isCodesListContributor, on prend le FakeUser avec ses attributs par défaut, donc notamment un stamp vide
-//    donc la méthode ne va pas : il faut récupérer le stamp du user
     @Test
     void postCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        FakeUserConfiguration fakeUserConfiguration=new FakeUserConfiguration();
-        fakeUserConfiguration.setStamp(Optional.of("fakeStampForDvAndQf"));
         when(securityExpressionRootForBauhaus.isCodesListContributor(anyString())).thenReturn(true);
 
         mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \"fakeStampForDvAndQf\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
                 .andExpect(status().isOk());
     }
 
@@ -162,14 +159,15 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void postCodesListAsCodesListContributor_badRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("toto"));
+    void postCodesListAsNotCodesListContributor() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
         when(securityExpressionRootForBauhaus.isCodesListContributor(anyString())).thenReturn(true);
-        mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+        mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
+        Mockito.verify(securityExpressionRootForBauhaus).isCodesListContributor(anyString());
     }
 
     @Test
@@ -194,9 +192,7 @@ public class TestCodeListsResourcesEnvProd {
     @Test
     void deleteUnpublishedCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-
-//        when(stampAuthorizationChecker.isCodesListManagerWithStampWithValidationStatus(String.valueOf(codesListId),status,timbre)).thenReturn(true);
-        when(securityExpressionRootForBauhaus.isContributorOfCodesList(String.valueOf(codesListId),status)).thenReturn(true);
+        when(stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
         mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
