@@ -13,7 +13,7 @@ import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
 import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.webservice.CodeListsResources;
+import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +64,7 @@ public class TestCodeListsResourcesEnvProd {
     StampAuthorizationChecker stampAuthorizationChecker;
     @MockBean
     SecurityExpressionRootForBauhaus securityExpressionRootForBauhaus;
-    private final String idep = "xxxxux";
+    private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
     int codesListId=10;
@@ -91,18 +91,19 @@ public class TestCodeListsResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 
     @Test
-    void putCodesListAsCodesListContributor_badCodesList() throws Exception {
+    void putCodesListAsCodesListContributor_badCodesListTimbre() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId+1),timbre)).thenReturn(true);
-
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
+        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 
     @Test
@@ -116,9 +117,7 @@ public class TestCodeListsResourcesEnvProd {
 
     @Test
     void putCodesListAsCodesListContributor_badRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("toto"));
-        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
-
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -129,7 +128,6 @@ public class TestCodeListsResourcesEnvProd {
     @Test
     void postCodesListAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
-
         mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -140,8 +138,6 @@ public class TestCodeListsResourcesEnvProd {
     @Test
     void postCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(securityExpressionRootForBauhaus.isCodesListContributor(anyString())).thenReturn(true);
-
         mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -161,13 +157,11 @@ public class TestCodeListsResourcesEnvProd {
     @Test
     void postCodesListAsNotCodesListContributor() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        when(securityExpressionRootForBauhaus.isCodesListContributor(anyString())).thenReturn(true);
         mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
-        Mockito.verify(securityExpressionRootForBauhaus).isCodesListContributor(anyString());
     }
 
     @Test
@@ -188,7 +182,6 @@ public class TestCodeListsResourcesEnvProd {
                 .andExpect(status().isUnauthorized());
     }
 
-//    ne marche pas car codeListId est à null (mode debug)
     @Test
     void deleteUnpublishedCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
@@ -197,5 +190,6 @@ public class TestCodeListsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 }

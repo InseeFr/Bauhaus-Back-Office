@@ -69,7 +69,6 @@ public class TestSeriesResourcesEnvProd {
     @Test
     void putSeriesAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
-
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -87,6 +86,7 @@ public class TestSeriesResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),timbre);
     }
 
     @Test
@@ -114,8 +114,6 @@ public class TestSeriesResourcesEnvProd {
     @Test
     void putSeriesAsNotSeriesContributor() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),timbre)).thenReturn(true);
-
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
