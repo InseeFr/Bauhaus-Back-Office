@@ -2,7 +2,6 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
@@ -11,7 +10,6 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
-import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Test;
@@ -25,11 +23,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -190,6 +186,17 @@ public class TestCodeListsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
+    }
+
+    @Test
+    void deletePublishedCodesListAsCodesListContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
+        mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
         Mockito.verify(stampAuthorizationChecker).isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 }
