@@ -64,9 +64,6 @@
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <version.maven-jacoco>0.8.5</version.maven-jacoco>
         <version.maven-sonar>3.7.0.1746</version.maven-sonar>
-        <argLine>-Xms256m -Xmx512m -ea
-            -Dfile.encoding=UTF-8
-        </argLine>
         <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
     </properties>
 
@@ -250,19 +247,6 @@
                 <groupId>org.sonarsource.scanner.maven</groupId>
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>${version.maven-sonar}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-maven-plugin</artifactId>
-                <version>0.2</version>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,7 +33,6 @@ import static java.util.Optional.*;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
-@EnableWebSecurity
 @ConditionalOnExpression("'PROD'.equalsIgnoreCase('${fr.insee.rmes.bauhaus.env}')")
 public class OpenIDConnectSecurityContext {
 
@@ -109,7 +107,7 @@ public class OpenIDConnectSecurityContext {
                 of(buildUserFromToken(((Jwt) principal).getClaims()));
     }
 
-    public User buildUserFromToken(Map<String, Object> claims) throws RmesException {
+    protected User buildUserFromToken(Map<String, Object> claims) throws RmesException {
         if (claims.isEmpty()) {
             throw new RmesException(HttpStatus.UNAUTHORIZED, "Must be authentified", "empty claims for JWT");
         }
@@ -127,7 +125,7 @@ public class OpenIDConnectSecurityContext {
 
     private Collection<GrantedAuthority> extractAuthoritiesFromJwt(Jwt jwt) {
         return extractRoles(jwt.getClaims()).map(SimpleGrantedAuthority::new)
-                .map(a -> (GrantedAuthority) a).toList();
+                .map(GrantedAuthority.class::cast).toList();
     }
 
     private Stream<String> extractRoles(Map<String, Object> claims) {
