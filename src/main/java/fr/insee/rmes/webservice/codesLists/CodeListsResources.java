@@ -54,19 +54,19 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
-
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
-            @PathVariable(Constants.ID) String componentId,
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
-       try {
-            String id = codeListService.setCodesList(componentId, body, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
+            @PathVariable(Constants.ID) @P("codesListId") String id,
+            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
+
+        try {
+            id = codeListService.setCodesList(id, body, false);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 
