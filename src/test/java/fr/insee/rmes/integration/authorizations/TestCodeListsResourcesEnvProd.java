@@ -15,6 +15,7 @@ import fr.insee.rmes.config.auth.user.FakeUserConfiguration;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.CodeListsResources;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -90,6 +91,7 @@ public class TestCodeListsResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 
     @Test
