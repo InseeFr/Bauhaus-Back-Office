@@ -36,24 +36,20 @@
 
 
     <properties>
-        <jar.finalName>bauhaus</jar.finalName>
         <java.version>21</java.version>
 
-		<springdoc-openapi-ui.version>1.7.0</springdoc-openapi-ui.version>
-		<!--<jackson.version>2.13.1</jackson.version>-->
-		<rdf4j.version>4.3.9</rdf4j.version>
-		<!-- A VIRER-->
-        <swagger.core.version>2.1.12</swagger.core.version>
-		<xdocreport.version>2.0.4</xdocreport.version>
-		<junit.version>5.8.2</junit.version>
-		<jacoco.version>0.8.5</jacoco.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java-jwt.version>3.4.1</java-jwt.version>
-		<json.version>20231013</json.version>
-		<flexmark.version>0.64.8</flexmark.version>
-		<jaxb.version>4.0.3</jaxb.version>
-		<zt.version>1.16</zt.version>
-		<saxon.version>12.3</saxon.version>
+        <springdoc.version>2.3.0</springdoc.version>
+        <rdf4j.version>4.3.9</rdf4j.version>
+        <xdocreport.version>2.0.4</xdocreport.version>
+        <junit.version>5.8.2</junit.version>
+        <jacoco.version>0.8.5</jacoco.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java-jwt.version>3.4.1</java-jwt.version>
+        <json.version>20231013</json.version>
+        <flexmark.version>0.64.8</flexmark.version>
+        <jaxb.version>4.0.3</jaxb.version>
+        <zt.version>1.16</zt.version>
+        <saxon.version>12.3</saxon.version>
 
 
         <!-- SONAR -->
@@ -78,17 +74,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-<!--            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-to-slf4j</artifactId>
-                </exclusion>
-            </exclusions>-->
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
         </dependency>
 
         <dependency>
@@ -106,10 +91,6 @@
             <artifactId>jaxb-impl</artifactId>
             <version>${jaxb.version}</version>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
         <dependency>
@@ -134,30 +115,29 @@
         </dependency>
 
 
-		<!-- test -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.vaadin.external.google</groupId>
-					<artifactId>android-json</artifactId>
-				</exclusion>
-			</exclusions>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <!-- test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.vaadin.external.google</groupId>
+                    <artifactId>android-json</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 
-        <!-- SWAGGER -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc-openapi-ui.version}</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
         <!-- RDF -->
@@ -190,22 +170,6 @@
             <version>${json.version}</version>
         </dependency>
 
-        <!-- INSEE for JMS -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.jms</groupId>
-            <artifactId>jakarta.jms-api</artifactId>
-        </dependency>
-
         <!-- SAXON FOR XSLT -->
         <dependency>
             <groupId>net.sf.saxon</groupId>
@@ -236,13 +200,13 @@
         </dependency>
 
 
-		<!-- XHTML to Markdown parser -->
-		<dependency>
-			<groupId>com.vladsch.flexmark</groupId>
-			<artifactId>flexmark-html2md-converter</artifactId>
-			<version>${flexmark.version}</version>
-		</dependency>
-	</dependencies>
+        <!-- XHTML to Markdown parser -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-html2md-converter</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
