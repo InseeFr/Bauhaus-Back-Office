@@ -76,8 +76,8 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
 	}
-	public boolean isCodesListManagerWithStampWithValidationStatus(IRI iri, ValidationStatus status, String stamp) throws RmesException {
-		return isManagerDeleteForModule(stamp, iri, status, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
+	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
 	}
 
 
@@ -94,8 +94,8 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 
-	private boolean isManagerDeleteForModule(String stamp, IRI uri, ValidationStatus status, QueryGenerator queryGenerator, String stampKey) throws RmesException {
-		logger.trace("Check management delete access for {} with stamp {} and validation status{}",uri, stampKey, status);
+	private boolean isManagerDeleteForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+		logger.trace("Check management delete access for {} with stamp {} and validation status",uri, stampKey);
 		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 

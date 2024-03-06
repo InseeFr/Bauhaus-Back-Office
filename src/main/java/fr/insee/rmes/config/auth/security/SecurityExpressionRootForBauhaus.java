@@ -152,21 +152,25 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
 //    for POST
     public boolean isCodesListContributor(String contributorString) throws RmesException {
-        FakeUserConfiguration fakeUser = new FakeUserConfiguration();
+
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
         JSONObject contrib = new JSONObject(contributorString);
         if(!contrib.has("contributor")){
             return false;
         }
         String codesListContributor = contrib.getString("contributor");
-
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && fakeUser.stamp().equals(codesListContributor);
+        Optional<String> timbreUtilisateur=getStamp();
+        boolean timbreOK = false;
+        if (timbreUtilisateur.isPresent()) {
+            timbreOK = codesListContributor.equals(timbreUtilisateur.get());
+        }
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
     }
 
 //for DELETE
-    public boolean isContributorOfCodesList(String codesListId, ValidationStatus status) {
+    public boolean isContributorOfUnpublishedCodesList(String codesListId) {
         logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForCodesListId(codesListId,status);
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
     }
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
@@ -175,8 +179,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
-    public boolean isManagerDeleteForCodesListId(String codesListId,ValidationStatus status) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStampWithValidationStatus(requireNonNull(codesListId), requireNonNull(status), stamp)).orElse(false);
+    public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
 
 
