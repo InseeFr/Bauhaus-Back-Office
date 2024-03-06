@@ -257,11 +257,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 				throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
 			}
 
-			JSONObject codes = codesList.getJSONObject(CODES);
-			for (String key : codes.keySet()) {
-				String codeIri = codes.getJSONObject(key).getString("iri");
-				repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
-			}
+//				JSONObject codes = codesList.getJSONObject(CODES);
+//					for (String key : codes.keySet()) {
+//						String codeIri = codes.getJSONObject(key).getString("iri");
+//						repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
+//					}
+
 		}
 
 		repoGestion.deleteObject(RdfUtils.toURI(iri), null);
