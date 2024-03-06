@@ -58,8 +58,7 @@ public class TestCodeListsResourcesEnvProd {
     protected OperationsDocumentationsService documentationsService;
     @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
-    @MockBean
-    SecurityExpressionRootForBauhaus securityExpressionRootForBauhaus;
+
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
