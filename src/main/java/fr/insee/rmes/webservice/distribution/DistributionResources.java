@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/distribution")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name= Constants.DOCUMENT, description="Distribution API")
+@Tag(name= "Distribution", description="Distribution API")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
 public class DistributionResources {
 
