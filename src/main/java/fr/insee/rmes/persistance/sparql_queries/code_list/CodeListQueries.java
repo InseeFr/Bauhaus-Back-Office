@@ -69,6 +69,11 @@ public class CodeListQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListItemsByNotation.ftlh", params);
 	}
 
+	public static String getContributorsByCodesListUri(String uriCodesList) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_CODESLIST, uriCodesList);
+		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
+	}
 	public static String countCodesForCodeList(String notation) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
