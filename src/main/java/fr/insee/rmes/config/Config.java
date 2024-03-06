@@ -1,6 +1,7 @@
 package fr.insee.rmes.config;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -44,13 +45,18 @@ public class Config {
     /** EXTERNAL SERVICES *********************************/
     /******************************************************/
 
-    //BROKER
-    @Value("${fr.insee.rmes.bauhaus.broker.url}")
-    private String brokerUrl;
-    @Value("${fr.insee.rmes.bauhaus.broker.user}")
-    private String brokerUser;
-    @Value("${fr.insee.rmes.bauhaus.broker.password}")
-    private String brokerPassword;
+    //LDAP
+    //LDAP
+    @Value("${fr.insee.rmes.bauhaus.sugoi.url}")
+    private String sugoiUrl;
+    @Value("${fr.insee.rmes.bauhaus.sugoi.id}")
+    private String sugoiUser;
+    @Value("${fr.insee.rmes.bauhaus.sugoi.password}")
+    private String sugoiPassword;
+    @Value("${fr.insee.rmes.bauhaus.sugoi.application}")
+    private String sugoiApp;
+    @Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
+    private String sugoiRealm;
 
 
     /******************************************************/
@@ -152,6 +158,7 @@ public class Config {
     private void init() {
         GenericQueries.setConfig(this);
         RdfUtils.setConfig(this);
+        Sugoi.setConfig(this);
     }
 
     /******************************************************/
@@ -275,16 +282,24 @@ public class Config {
         return baseGraph + geographyGraph;
     }
 
-    public String getBrokerUrl() {
-        return brokerUrl;
+    public String getSugoiUrl() {
+        return sugoiUrl;
     }
 
-    public String getBrokerUser() {
-        return brokerUser;
+    public String getSugoiUser() {
+        return sugoiUser;
     }
 
-    public String getBrokerPassword() {
-        return brokerPassword;
+    public String getSugoiPassword() {
+        return sugoiPassword;
+    }
+
+    public String getSugoiApp() {
+        return sugoiApp;
+    }
+
+    public String getSugoiRealm() {
+        return sugoiRealm;
     }
 
     public String getCodeListBaseUri() {
