@@ -3,15 +3,14 @@ package fr.insee.rmes.config;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import static fr.insee.rmes.config.PropertiesKeys.*;
 
 
-@Configuration
+@Component
 public class Config {
 
 
