@@ -58,9 +58,8 @@ public class CodeListsResources extends GenericResources {
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
-            @PathVariable(Constants.ID) @P("codesListId") String id,
-            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
-
+            @PathVariable(Constants.ID) String componentId,
+            @Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
             id = codeListService.setCodesList(id, body, false);
         } catch (RmesException e) {
