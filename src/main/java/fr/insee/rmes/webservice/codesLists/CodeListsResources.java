@@ -42,7 +42,7 @@ public class CodeListsResources extends GenericResources {
     CodeListService codeListService;
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
-    @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
