@@ -299,8 +299,14 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             model.add(node, RDF.TYPE, DCTERMS.PERIOD_OF_TIME, graph);
 
             if(dataset.getTemporalCoverageDataType().endsWith("date")){
-                model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
-                model.add(node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
+
+                if(!dataset.getTemporalCoverageStartDate().isEmpty()){
+                    model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
+                }
+                if(!dataset.getTemporalCoverageEndDate().isEmpty()){
+                    model.add(node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
+                }
+
             } else {
                 model.add(node, DCAT.START_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageStartDate()), graph);
                 model.add(node, DCAT.END_DATE, RdfUtils.setLiteralYear(dataset.getTemporalCoverageEndDate()), graph);
