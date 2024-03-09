@@ -51,6 +51,18 @@ public class PartialCodeListsResources extends GenericResources {
         }
     }
 
+    @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
+        try {
+            String body = codeListService.getDetailedCodesList(notation, true);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
+    }
+
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPartialsByParent", summary = "Get partials by Parent IRI",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
