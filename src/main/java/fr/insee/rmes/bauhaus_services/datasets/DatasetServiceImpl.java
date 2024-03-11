@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -300,10 +301,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
             if(dataset.getTemporalCoverageDataType().endsWith("date")){
 
-                if(!dataset.getTemporalCoverageStartDate().isEmpty()){
+                if(StringUtils.hasLength(dataset.getTemporalCoverageStartDate())){
                     model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
                 }
-                if(!dataset.getTemporalCoverageEndDate().isEmpty()){
+                if(StringUtils.hasLength(dataset.getTemporalCoverageEndDate())){
                     model.add(node, DCAT.END_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageEndDate()), graph);
                 }
 
