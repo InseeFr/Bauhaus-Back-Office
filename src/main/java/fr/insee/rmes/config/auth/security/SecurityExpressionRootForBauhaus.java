@@ -143,7 +143,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
 //    for POST
-    public boolean isCodesListContributor(String contributorString) throws RmesException {
+    public boolean isCodesListContributor(String contributorString) {
 
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
         JSONObject contrib = new JSONObject(contributorString);

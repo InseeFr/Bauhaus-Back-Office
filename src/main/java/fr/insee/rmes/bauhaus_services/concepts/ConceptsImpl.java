@@ -237,8 +237,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		collection.setPrefLabelLg2("Concepts List");
 
 
-		List conceptsIds = Arrays.asList(ids.split("_AND_"));
-		List members = new ArrayList();
+		List<String> conceptsIds = Arrays.asList(ids.split("_AND_"));
+		List<MembersLg> members = new ArrayList<>();
 		Map<String, InputStream> concepts = getConceptsExportIS(conceptsIds, members);
 		collection.setMembersLg(members);
 

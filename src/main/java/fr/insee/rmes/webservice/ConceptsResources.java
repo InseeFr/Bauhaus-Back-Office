@@ -244,7 +244,7 @@ public class ConceptsResources  extends GenericResources   {
 	@Operation(operationId = "setConceptsValidation", summary = "Concepts validation")
 	public ResponseEntity<Object> setConceptsValidation(
 			@Parameter(description = "Id, put '0' if multiple ids", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = "Concept ids", required = true) @RequestBody String body) throws RmesException {
+			@Parameter(description = "Concept ids", required = true) @RequestBody String body) {
 		try {
 			conceptsService.setConceptsValidation(body);
 			return ResponseEntity.noContent().build();

@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -162,11 +163,11 @@ public class DocumentsUtils extends RdfService {
         logger.info("Generate document id");
 
         JSONObject json = repoGestion.getResponseAsObject(DocumentsQueries.lastDocumentID());
-        Integer id = getIdFromJson(json) == null ? 999 : getIdFromJson(json);
+        int id = getIdFromJson(json) == null ? 999 : getIdFromJson(json);
 
         json = repoGestion.getResponseAsObject(DocumentsQueries.lastLinkID());
         id = (getIdFromJson(json) == null ? id : Math.max(getIdFromJson(json), id)) + 1;
-        return id.toString();
+        return Integer.toString(id);
     }
 
     public Integer getIdFromJson(JSONObject json) {
@@ -247,7 +248,7 @@ public class DocumentsUtils extends RdfService {
         }
 
         try {
-            new URL(url);
+            URI.create(url).toURL();
         } catch (MalformedURLException e) {
             logger.debug("The Link {} is not valid", id);
             throw new RmesNotAcceptableException(ErrorCodes.LINK_BAD_URL, "A link must be a valid url. ", id);

@@ -132,8 +132,8 @@ public class DocumentsPublication  extends RdfService{
 		Resource document = RdfUtils.documentIRI(documentId);
 		
 		try {
-			JSONArray tuples = repoGestion.getResponseAsArray(""
-					+ "select ?predicat ?obj FROM <"+RdfUtils.documentsGraph()+"> "
+			JSONArray tuples = repoGestion.getResponseAsArray(
+                    "select ?predicat ?obj FROM <"+RdfUtils.documentsGraph()+"> "
 					+ "WHERE {"
 					+ "?document ?predicat ?obj . "
 					+ "FILTER (?document = <"+document+">) "

@@ -147,56 +147,6 @@ public class ExportUtils {
         }
     }
 
-    public ResponseEntity<Resource> exportAsZipODS(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        String simsId = sims.getString("id");
-        logger.debug("Begin to download the SIMS {} with its documents", simsId);
-        String fileName = sims.getString("labelLg1");
-
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + Constants.DOT_ZIP).build();
-
-        try {
-
-            Path directory = Files.createTempDirectory("sims");
-            logger.debug("Creating tempory directory {}", directory.toString());
-            Path simsDirectory = Files.createDirectory(Path.of(directory.toString(), fileName));
-            logger.debug("Creating tempory directory {}", simsDirectory.toString());
-
-            logger.debug("Generating the InputStream for the SIMS {}", simsId);
-
-            InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODS_EXTENSION);
-            if (input == null){
-                logger.debug("Error when creating the export of the SIMS {}", simsId);
-                throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't export this object", "");
-            }
-
-            logger.debug("Creating the .odt file for the SIMS {}", simsId);
-            Path tempFile = Files.createFile(Path.of(simsDirectory.toString(), fileName + FilesUtils.ODS_EXTENSION));
-            Files.write(tempFile, input.readAllBytes(), StandardOpenOption.APPEND);
-            logger.debug("Finishing the creation of the .odt file for the SIMS {}", simsId);
-
-
-            logger.debug("Starting downloading documents for the SIMS {}", simsId);
-            this.exportRubricsDocuments(sims, simsDirectory);
-            logger.debug("Ending downloading documents for the SIMS {}", simsId);
-
-            logger.debug("Zipping the folder for the SIMS {}", simsId);
-            FilesUtils.zipDirectory(simsDirectory.toFile());
-
-            logger.debug("Zip created for the SIMS {}", simsId);
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.setContentDisposition(content);
-            responseHeaders.set(HttpHeaders.CONTENT_TYPE, "application/zip");
-            Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + Constants.DOT_ZIP).toUri());
-            return ResponseEntity.ok()
-                    .headers(responseHeaders)
-                    .body(resource);
-        }
-        catch (Exception exception) {
-            logger.error("Error when downloading the SIMS {} with its documents", simsId, exception);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), exception.getClass().getSimpleName());
-        }
-    }
-
     private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
         Set<String> history = new HashSet<>();
         JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
@@ -216,17 +166,17 @@ public class ExportUtils {
                     missingDocuments.add(document.getString("id"));
                 } else {
                     String documentFileName = FilesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url), maxLength);
-                    InputStream inputStream = Files.newInputStream(documentPath);
+                    try (InputStream inputStream = Files.newInputStream(documentPath)){
+                        Path documentDirectory = Path.of(directory.toString(), "documents");
+                        if (!Files.exists(documentDirectory)) {
+                            logger.debug("Creating the documents folder");
+                            Files.createDirectory(documentDirectory);
+                        }
 
-                    Path documentDirectory = Path.of(directory.toString(), "documents");
-                    if (!Files.exists(documentDirectory)) {
-                        logger.debug("Creating the documents folder");
-                        Files.createDirectory(documentDirectory);
+                        logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
+                        Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
+                        Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
                     }
-
-                    logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
-                    Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
-                    Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
                 }
 
             }
