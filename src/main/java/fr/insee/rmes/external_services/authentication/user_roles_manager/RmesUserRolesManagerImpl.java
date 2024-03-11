@@ -88,7 +88,7 @@ public record RmesUserRolesManagerImpl(Config config, RestTemplateUtils restTemp
     }
 
 
-    public String getAgentsSugoi() throws RmesException {
+    private String getAgentsSugoi() throws RmesException {
         String searchUserSugoiTarget = config.getSugoiUrl() + SUGOI_REALM_SEARCH_PATH + config.getSugoiRealm() + "/users";
 
         TreeSet<JSONObject> agents = new TreeSet<>(new JSONComparator(Constants.LABEL));
