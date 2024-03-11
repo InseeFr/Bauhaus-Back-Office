@@ -14,6 +14,7 @@ import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.Collator;

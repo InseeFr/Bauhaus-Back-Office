@@ -4,16 +4,11 @@ import fr.insee.rmes.bauhaus_services.keycloak.KeycloakServices;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.http.HTTPRepository;
 
+
 public interface RepositoryInitiator {
     static RepositoryInitiator newInstance(Type type, KeycloakServices keycloakServices) {
-        switch (type) {
-            case ENABLED:
-                return new RepositoryInitiatorWithAuthent(keycloakServices);
-            case DISABLED:
-                return new RepositoryInitiator() {};
-            default:
-                return new RepositoryInitiator() {};
-        }
+        return type==Type.ENABLED ? new RepositoryInitiatorWithAuthent(keycloakServices):new RepositoryInitiator() {
+            };
     }
 
     default Repository initRepository(String rdfServer, String repositoryID) throws Exception{
@@ -23,5 +18,5 @@ public interface RepositoryInitiator {
         return repo;
     }
 
-    public enum Type {ENABLED , DISABLED}
+    enum Type {ENABLED , DISABLED}
 }

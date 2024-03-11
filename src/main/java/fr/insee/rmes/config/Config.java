@@ -1,7 +1,6 @@
 package fr.insee.rmes.config;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.external_services.authentication.user_roles_manager.Sugoi;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,29 +38,6 @@ public class Config {
     private String idRepositoryGestion;
     @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
     private String baseUriGestion;
-
-    /******************************************************/
-    /** EXTERNAL SERVICES *********************************/
-    /******************************************************/
-
-    //LDAP
-    //LDAP
-    @Value("${fr.insee.rmes.bauhaus.sugoi.url}")
-    private String sugoiUrl;
-    @Value("${fr.insee.rmes.bauhaus.sugoi.id}")
-    private String sugoiUser;
-    @Value("${fr.insee.rmes.bauhaus.sugoi.password}")
-    private String sugoiPassword;
-    @Value("${fr.insee.rmes.bauhaus.sugoi.application}")
-    private String sugoiApp;
-    @Value("${fr.insee.rmes.bauhaus.sugoi.realm}")
-    private String sugoiRealm;
-
-
-    /******************************************************/
-    /** CONCEPTS 		***********************************/
-    /******************************************************/
-
 
     @Value("${fr.insee.rmes.bauhaus.concepts.graph}") //Getter with baseGraph
     private String conceptsGraph;
@@ -157,7 +133,6 @@ public class Config {
     private void init() {
         GenericQueries.setConfig(this);
         RdfUtils.setConfig(this);
-        Sugoi.setConfig(this);
     }
 
     /******************************************************/
@@ -279,26 +254,6 @@ public class Config {
 
     public String getGeographyGraph() {
         return baseGraph + geographyGraph;
-    }
-
-    public String getSugoiUrl() {
-        return sugoiUrl;
-    }
-
-    public String getSugoiUser() {
-        return sugoiUser;
-    }
-
-    public String getSugoiPassword() {
-        return sugoiPassword;
-    }
-
-    public String getSugoiApp() {
-        return sugoiApp;
-    }
-
-    public String getSugoiRealm() {
-        return sugoiRealm;
     }
 
     public String getCodeListBaseUri() {

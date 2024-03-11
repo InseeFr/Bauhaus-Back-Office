@@ -9,6 +9,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.*;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,7 +18,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.Map;
 

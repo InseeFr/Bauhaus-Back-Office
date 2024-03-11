@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -20,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class RepositoryGestion  {
 	@Autowired
 	private RepositoryUtils repositoryUtils;
 
-	private static final String FAILURE_LOAD_OBJECT = "Failure load object : ";
+	private static final String FAILURE_LOAD_OBJECT = "Failure load object : {}";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
 
