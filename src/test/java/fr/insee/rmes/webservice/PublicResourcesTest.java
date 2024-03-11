@@ -44,7 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
-
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
     @MockBean
     StampsService stampsService;
 

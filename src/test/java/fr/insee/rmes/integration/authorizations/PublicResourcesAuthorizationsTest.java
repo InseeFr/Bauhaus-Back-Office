@@ -45,7 +45,8 @@ class PublicResourcesAuthorizationsTest {
 
     @Autowired
     private MockMvc mvc;
-
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
     @MockBean
     private StampsService stampsService;
 
