@@ -189,7 +189,7 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void deletePublishedCodesListAsCodesListContributor_ok() throws Exception {
+    void deletePublishedCodesListAsCodesListContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
         when(stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
         mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
