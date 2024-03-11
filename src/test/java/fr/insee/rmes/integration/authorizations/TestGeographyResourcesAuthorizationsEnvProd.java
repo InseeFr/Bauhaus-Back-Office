@@ -1,6 +1,7 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.GeographyService;
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -44,6 +45,10 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @MockBean
     private GeographyService geographyService;
+
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
+
 
     @MockBean
     private JwtDecoder jwtDecoder;

@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -41,7 +42,7 @@ public class CodeListsResources extends GenericResources {
     @Autowired
     CodeListService codeListService;
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
     public ResponseEntity<Object> setCodesList(
@@ -53,26 +54,26 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
-
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a codes list")
+    @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
-            @PathVariable(Constants.ID) String componentId,
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
+            @PathVariable(Constants.ID) @P("codesListId") String id,
+            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
+
         try {
-            String id = codeListService.setCodesList(componentId, body, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
+            id = codeListService.setCodesList(id, body, false);
         } catch (RmesException e) {
             return returnRmesException(e);
         }
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedCodesList(#codesListId)")
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
-    public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) String notation) {
+    public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) {
         try {
             codeListService.deleteCodeList(notation, false);
             return ResponseEntity.status(HttpStatus.OK).build();
@@ -80,7 +81,6 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
-
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "List of codes",
@@ -207,7 +207,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Object> publishFullCodeList(
@@ -219,4 +219,5 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
+
 }
