@@ -42,7 +42,7 @@ public class OpenIDConnectSecurityContext {
     public static final String TIMBRE_ANONYME = "bauhausGuest_STAMP";
     private static final Stream<String> EMPTY_ROLES = Stream.empty();
     public static final String LOG_INFO_DEFAULT_STAMP = "User {} uses default stamp";
-    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/stamps", "/disseminationStatus", "/roles"};
+    public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/stamps", "/disseminationStatus"};
 
     private final String stampClaim;
 
