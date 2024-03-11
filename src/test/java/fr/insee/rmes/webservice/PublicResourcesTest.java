@@ -2,7 +2,6 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -42,9 +41,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PublicResourcesTest {
     @Autowired
     private MockMvc mvc;
-
-    @MockBean
-    UserRolesManagerService userRolesManagerService;
 
     @MockBean
     StampsService stampsService;

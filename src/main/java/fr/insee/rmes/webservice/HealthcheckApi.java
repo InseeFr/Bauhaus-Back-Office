@@ -2,7 +2,6 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.exceptions.RmesException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -34,19 +33,17 @@ import java.util.StringJoiner;
 @RequestMapping("healthcheck")
 public class HealthcheckApi extends GenericResources {
 
-    private static final String CONNEXION_LDAP = "- Connexion LDAP - Sugoi";
 
     protected static final String OK_STATE = ": OK \n";
 
     protected static final String KO_STATE = ": KO \n";
 
-    String sparlQuery = "SELECT * { ?s a ?t } LIMIT 1";
+    private static final String SPARL_QUERY = "SELECT * { ?s a ?t } LIMIT 1";
 
     private final RepositoryGestion repoGestion;
 
     private final RepositoryPublication repositoryPublication;
 
-    private final UserRolesManagerService userService;
     private final String documentsStoragePublicationInterne;
     private final String documentsStoragePublicationExterne;
     private final  String documentsStorageGestion;
@@ -57,13 +54,11 @@ public class HealthcheckApi extends GenericResources {
 
     public HealthcheckApi(@Autowired RepositoryGestion repoGestion,
                           @Autowired RepositoryPublication repositoryPublication,
-                          @Autowired UserRolesManagerService userService,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}") String documentsStoragePublicationInterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
-        this.userService = userService;
         this.documentsStoragePublicationInterne = documentsStoragePublicationInterne;
         this.documentsStoragePublicationExterne = documentsStoragePublicationExterne;
         this.documentsStorageGestion = documentsStorageGestion;
@@ -79,7 +74,6 @@ public class HealthcheckApi extends GenericResources {
 
         checkDatabase(errorMessage, stateResult);
         checkStrorage(errorMessage, stateResult);
-        checkSugoi(errorMessage, stateResult);
 
 
         //print result in log
@@ -94,24 +88,9 @@ public class HealthcheckApi extends GenericResources {
         }
     }
 
-    private void checkSugoi(StringJoiner errorMessage, StringJoiner stateResult) {
-        stateResult.add("LDAP connexion \n");
-        try {
-            String result = userService.checkSugoiConnexion();
-            if ("OK".equals(result)) {
-                stateResult.add(CONNEXION_LDAP).add(OK_STATE);
-            } else {
-                errorMessage.add("- Sugoi No functional error but return an empty string \n");
-                stateResult.add(CONNEXION_LDAP).add(KO_STATE);
-            }
-        } catch (RmesException e) {
-            errorMessage.add("- " + e.getMessage() + " \n");
-            stateResult.add(CONNEXION_LDAP).add(KO_STATE);
-        }
-    }
 
     private void checkStrorage(StringJoiner errorMessage, StringJoiner stateResult) {
-        stateResult = stateResult.add("Document storage \n");
+        stateResult.add("Document storage \n");
         checkDocumentStorage(this.documentsStorageGestion, "Gestion", stateResult, errorMessage);
         checkDocumentStorage(this.documentsStoragePublicationExterne, "Publication Externe", stateResult, errorMessage);
         checkDocumentStorage(this.documentsStoragePublicationInterne, "Publication Interne", stateResult, errorMessage);
@@ -131,7 +110,7 @@ public class HealthcheckApi extends GenericResources {
 
     private void checkDatabaseConnexion(StringJoiner errorMessage, StringJoiner stateResult, RequestExecutor executeRequest, String repoName) {
         try {
-            if (StringUtils.isEmpty(executeRequest.execute(sparlQuery))) {
+            if (StringUtils.isEmpty(executeRequest.execute(SPARL_QUERY))) {
                 errorMessage.add("-").add(repoName).add("doesn't return statement \n");
                 stateResult.add(" -").add(repoName).add(KO_STATE);
             } else {
@@ -139,7 +118,7 @@ public class HealthcheckApi extends GenericResources {
             }
         } catch (Exception e) {
             errorMessage.add("-").add(repoName).add(e.getMessage()).add("\n");
-            logger.error("Test connexion "+repoName, e);
+            logger.error("Test connexion {}", repoName, e);
             stateResult.add(" -").add(repoName).add(KO_STATE);
         }
     }
