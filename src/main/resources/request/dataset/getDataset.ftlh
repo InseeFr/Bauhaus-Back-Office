@@ -10,6 +10,7 @@ SELECT ?id ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?ac
 FROM <${DATASET_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
+    ?uri dcterms:identifier ?id .
     ?uri dcterms:identifier '${ID}' .
 
     <#include "getDatasetIncludes/generalInformations.ftlh">
@@ -86,6 +87,4 @@ WHERE {
     OPTIONAL {
         ?uri insee:validationState ?validationState .
     }
-
-    BIND(STRAFTER(STR(?uri),'/datasets/') AS ?id) .
 }
