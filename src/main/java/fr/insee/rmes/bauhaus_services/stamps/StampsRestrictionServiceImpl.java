@@ -33,6 +33,11 @@ import static fr.insee.rmes.utils.StringUtils.urisAsString;
 
 @Service
 @Primary
+@Deprecated
+/*
+All authorizations checks including those over data (stamps, ...) must be processed in @PreAuthorize in controllers
+so this class shall not be used and therefore should be removed
+ */
 public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	
 	private final RepositoryGestion repoGestion;
