@@ -3,8 +3,6 @@ package fr.insee.rmes.webservice;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.config.auth.AuthType;
-import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.exceptions.RmesException;
@@ -56,8 +54,6 @@ public class PublicResources extends GenericResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 
-    private final UserRolesManagerService userRolesManagerService;
-
     private final StampsService stampsService;
     private  final String env;
     private final  String lg2;
@@ -70,8 +66,7 @@ public class PublicResources extends GenericResources {
     private final List<String> activeModules;
     private final List<String> modules;
 
-    public PublicResources(@Autowired UserRolesManagerService userRolesManagerService,
-                           @Autowired StampsService stampsService,
+    public PublicResources(@Autowired StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
                            @Value("${fr.insee.rmes.bauhaus.lg2}") String lg2,
@@ -82,7 +77,6 @@ public class PublicResources extends GenericResources {
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules) {
-        this.userRolesManagerService = userRolesManagerService;
         this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
@@ -142,16 +136,5 @@ public class PublicResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(dsList.toString());
     }
 
-    @GetMapping(value = "/roles", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getRoles", summary = "List of roles", responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Roles.class))))})
-    public ResponseEntity<Object> getRoles() {
-        String entity = null;
-        try {
-            entity = userRolesManagerService.getRoles();
-        } catch (RmesException e) {
-            return ResponseEntity.status(e.getStatus()).body(e.getDetails());
-        }
-        return ResponseEntity.status(HttpStatus.SC_OK).body(entity);
-    }
 
 }

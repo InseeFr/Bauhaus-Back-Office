@@ -2,7 +2,6 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
-import fr.insee.rmes.config.auth.roles.UserRolesManagerService;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -47,9 +46,6 @@ class PublicResourcesAuthorizationsTest {
 
     @MockBean
     private StampsService stampsService;
-
-    @MockBean
-    private UserRolesManagerService userRolesManagerService;
 
     public static Stream<Arguments> endpointsProvider() {
         return Stream.of(PUBLIC_RESOURCES_ANT_PATTERNS).map(Arguments::of);
