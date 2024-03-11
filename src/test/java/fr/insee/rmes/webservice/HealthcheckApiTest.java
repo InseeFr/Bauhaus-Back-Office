@@ -24,7 +24,7 @@ class HealthcheckApiTest {
         //Given
         RepositoryGestion repoGestionStub=new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub=new RepositoryPublicationStub();
-        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, null, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
+        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
         StringJoiner errorMessage = new StringJoiner(" ");
         StringJoiner stateResult = new StringJoiner(" ");
 
@@ -47,7 +47,7 @@ class HealthcheckApiTest {
         //Given
         RepositoryGestion repoGestionStub=new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub=new RepositoryPublicationStubInternalError();
-        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, null, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
+        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
         StringJoiner errorMessage = new StringJoiner(" ");
         StringJoiner stateResult = new StringJoiner(" ");
 
