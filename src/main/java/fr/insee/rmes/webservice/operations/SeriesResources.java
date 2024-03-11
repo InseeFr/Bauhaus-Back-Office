@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -99,14 +100,12 @@ public class SeriesResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
-			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
+	@PreAuthorize("isAdmin() || isContributorOfSerie(#seriesId)")
 	@PutMapping(value = "/series/{id}",
 		consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
 	public ResponseEntity<Object> setSeriesById(
-			@PathVariable(Constants.ID) String id, 
+			@PathVariable(Constants.ID) @P("seriesId") String id,
 			@Parameter(description = "Series to update", required = true,
 			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) {
 		try {

@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -52,11 +53,13 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private OperationsService operationsService;
 
     @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
+
+    @MockBean
     private JwtDecoder jwtDecoder;
 
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
-
 
 
     @Test
@@ -68,22 +71,21 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
                         .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
-{
-    "rubrics": [],
-    "idSeries": "",
-    "labelLg2": "Quality report: Monthly tendency survey in industry 2023",
-    "labelLg1": "Rapport qualité : Enquête mensuelle de conjoncture dans l'industrie 2023",
-    "idOperation": "s2098",
-    "created": "2022-12-12T14:25:53.275014",
-    "idIndicator": "",
-    "id": "2079",
-    "updated": "2023-10-02T19:14:12.465548575",
-    "validationState": "Validated"
-  }
-"""))
+                                {
+                                    "rubrics": [],
+                                    "idSeries": "",
+                                    "labelLg2": "Quality report: Monthly tendency survey in industry 2023",
+                                    "labelLg1": "Rapport qualité : Enquête mensuelle de conjoncture dans l'industrie 2023",
+                                    "idOperation": "s2098",
+                                    "created": "2022-12-12T14:25:53.275014",
+                                    "idIndicator": "",
+                                    "id": "2079",
+                                    "updated": "2023-10-02T19:14:12.465548575",
+                                    "validationState": "Validated"
+                                  }
+                                """))
                 .andExpect(status().isOk());
     }
-
 
 
     @Test
@@ -95,23 +97,21 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
                         .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON)
                         .content("""
-{
-    "rubrics": [],
-    "idSeries": "",
-    "labelLg2": "Quality report: Monthly tendency survey in industry 2023",
-    "labelLg1": "Rapport qualité : Enquête mensuelle de conjoncture dans l'industrie 2023",
-    "idOperation": "s2098",
-    "created": "2022-12-12T14:25:53.275014",
-    "idIndicator": "",
-    "id": "2079",
-    "updated": "2023-10-02T19:14:12.465548575",
-    "validationState": "Validated"
-  }
-"""))
+                                {
+                                    "rubrics": [],
+                                    "idSeries": "",
+                                    "labelLg2": "Quality report: Monthly tendency survey in industry 2023",
+                                    "labelLg1": "Rapport qualité : Enquête mensuelle de conjoncture dans l'industrie 2023",
+                                    "idOperation": "s2098",
+                                    "created": "2022-12-12T14:25:53.275014",
+                                    "idIndicator": "",
+                                    "id": "2079",
+                                    "updated": "2023-10-02T19:14:12.465548575",
+                                    "validationState": "Validated"
+                                  }
+                                """))
                 .andExpect(status().isOk());
     }
-
-
 
 
 }

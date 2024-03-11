@@ -7,6 +7,8 @@ import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
@@ -15,6 +17,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -28,9 +32,26 @@ import static fr.insee.rmes.utils.StringUtils.urisAsString;
 
 
 @Service
-public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) implements StampsRestrictionsService {
+@Primary
+@Deprecated
+/*
+All authorizations checks including those over data (stamps, ...) must be processed in @PreAuthorize in controllers
+so this class shall not be used and therefore should be removed
+ */
+public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
+	
+	private final RepositoryGestion repoGestion;
+	private final AuthorizeMethodDecider authorizeMethodDecider;
+	private final UserProvider userProvider;
 
 	private static final Logger logger = LoggerFactory.getLogger(StampsRestrictionServiceImpl.class);
+
+	@Autowired
+	public StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) {
+		this.repoGestion = repoGestion;
+		this.authorizeMethodDecider = authorizeMethodDecider;
+		this.userProvider = userProvider;
+	}
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -46,41 +67,61 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 	}
 
 	private boolean isConceptOwner(List<IRI> uris) throws RmesException {
-		return isOwnerForModule(uris, ConceptsQueries::getOwner, Constants.OWNER);
+		return isOwnerForModule(getStamp(), uris, ConceptsQueries::getOwner, Constants.OWNER);
 	}
 
 	private boolean isConceptManager(IRI uri) throws RmesException {
-		return isManagerForModule(uri, ConceptsQueries::getManager, Constants.MANAGER);
+		return isManagerForModule(getStamp(), uri, ConceptsQueries::getManager, Constants.MANAGER);
+	}
+
+
+	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+	}
+	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
+	}
+	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
 	}
 
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
-		return isManagerForModule(iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+		return isSeriesManagerWithStamp(iri, getStamp());
 	}
 
 	private boolean isIndicatorCreator(IRI iri) throws RmesException {
-		return isOwnerForModule(List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
+		return isOwnerForModule(getStamp(), List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
 
-	private boolean isManagerForModule(IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+	private boolean isManagerForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check management access for {} with stamp {}",uri, stampKey);
-		return checkResponsabilityForModule(List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
+		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 
-	private boolean isOwnerForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+	private boolean isManagerDeleteForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+		logger.trace("Check management delete access for {} with stamp {} and validation status",uri, stampKey);
+		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
+	}
+
+
+	private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
-		return checkResponsabilityForModule(uris, queryGenerator, stampKey, Stream::allMatch);
+		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
 	}
 
-	private boolean checkResponsabilityForModule(List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
+	private boolean checkResponsabilityForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
 		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
-		var stamp=getUser().getStamp();
 		return StringUtils.hasLength(stamp) &&
 				predicateMatcher.test(
 						owners.toList().stream()
 								.map(o -> findStamp(o, stampKey)),
 						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
 				);
+	}
+
+	protected String getStamp() {
+		return getUser().getStamp();
 	}
 
 	private Object findStamp(Object o, String stampKey) {
@@ -110,7 +151,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 	@Override
 	public boolean canModifySims(IRI seriesOrIndicatorUri) throws RmesException {
-		return (authorizeMethodDecider.isAdmin() || authorizeMethodDecider.isCnis() || (isSeriesManager(seriesOrIndicatorUri) && authorizeMethodDecider.isSeriesContributor())
+		return (authorizeMethodDecider.isAdmin() || authorizeMethodDecider.isCnis() || (isSeriesManagerWithStamp(seriesOrIndicatorUri, getStamp()) && authorizeMethodDecider.isSeriesContributor())
 				|| (isIndicatorCreator(seriesOrIndicatorUri) && authorizeMethodDecider.isIndicatorContributor()));
 	}
 
@@ -140,12 +181,12 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 	@Override
 	public boolean canCreateOperation(IRI seriesURI) throws RmesException {
-		return (authorizeMethodDecider.isAdmin() || (isSeriesManager(seriesURI) && authorizeMethodDecider.isSeriesContributor()));
+		return (authorizeMethodDecider.isAdmin() || (isSeriesManagerWithStamp(seriesURI, getStamp()) && authorizeMethodDecider.isSeriesContributor()));
 	}
 
 	@Override
 	public boolean canCreateSims(IRI seriesOrIndicatorUri) throws RmesException {
-		return (authorizeMethodDecider.isAdmin() || (isSeriesManager(seriesOrIndicatorUri) && authorizeMethodDecider.isSeriesContributor())
+		return (authorizeMethodDecider.isAdmin() || (isSeriesManagerWithStamp(seriesOrIndicatorUri, getStamp()) && authorizeMethodDecider.isSeriesContributor())
 				|| (isIndicatorCreator(seriesOrIndicatorUri) && authorizeMethodDecider.isIndicatorContributor()));
 	}
 
@@ -162,7 +203,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 	@Override
 	public boolean canModifySeries(IRI uri) throws RmesException {
-		return ((isSeriesManager(uri) && authorizeMethodDecider.isSeriesContributor()) || authorizeMethodDecider.isAdmin() || authorizeMethodDecider.isCnis() );
+		return ((isSeriesManagerWithStamp(uri, getStamp()) && authorizeMethodDecider.isSeriesContributor()) || authorizeMethodDecider.isAdmin() || authorizeMethodDecider.isCnis() );
 	}
 
 	@Override
@@ -172,7 +213,7 @@ public record StampsRestrictionServiceImpl(RepositoryGestion repoGestion, Author
 
 	@Override
 	public boolean canValidateSeries(IRI uri) throws RmesException {
-		return (authorizeMethodDecider.isAdmin() || (isSeriesManager(uri) && authorizeMethodDecider.isSeriesContributor()));
+		return (authorizeMethodDecider.isAdmin() || (isSeriesManagerWithStamp(uri, getStamp()) && authorizeMethodDecider.isSeriesContributor()));
 	}
 
 	@Override

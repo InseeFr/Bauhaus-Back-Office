@@ -1,5 +1,6 @@
 package fr.insee.rmes.integration.authorizations;
 
+import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "jwt.role-claim.roles=" + KEY_FOR_ROLES_IN_ROLE_CLAIM,
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
-                "logging.level.fr.insee.rmes.config.auth=TRACE"})
+                "logging.level.fr.insee.rmes.config.auth=TRACE",
+        })
 @Import({Config.class,
         OpenIDConnectSecurityContext.class,
         DefaultSecurityContext.class,
@@ -43,7 +45,8 @@ class PublicResourcesAuthorizationsTest {
 
     @Autowired
     private MockMvc mvc;
-
+    @MockBean
+    StampAuthorizationChecker stampAuthorizationChecker;
     @MockBean
     private StampsService stampsService;
 
