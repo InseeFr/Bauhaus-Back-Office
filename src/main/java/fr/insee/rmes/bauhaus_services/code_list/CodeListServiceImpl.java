@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -29,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import static fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils.getResponseAsObject;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -256,13 +259,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			if(!partials.isEmpty()){
 				throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
 			}
-
-//				JSONObject codes = codesList.getJSONObject(CODES);
-//					for (String key : codes.keySet()) {
-//						String codeIri = codes.getJSONObject(key).getString("iri");
-//						repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
-//					}
-
+			if(codesList.has(CODES)) {
+				JSONObject codes = codesList.getJSONObject(CODES);
+				for (String key : codes.keySet()) {
+					String codeIri = codes.getJSONObject(key).getString("iri");
+					repoGestion.deleteObject(RdfUtils.toURI(codeIri), null);
+				}
+			}
 		}
 
 		repoGestion.deleteObject(RdfUtils.toURI(iri), null);
