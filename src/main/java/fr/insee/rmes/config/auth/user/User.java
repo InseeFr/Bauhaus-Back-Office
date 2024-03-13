@@ -1,7 +1,5 @@
 package fr.insee.rmes.config.auth.user;
 
-import fr.insee.rmes.config.auth.roles.Roles;
-
 import java.util.List;
 
 public record User(String id, List<String> roles, Stamp stamp) {

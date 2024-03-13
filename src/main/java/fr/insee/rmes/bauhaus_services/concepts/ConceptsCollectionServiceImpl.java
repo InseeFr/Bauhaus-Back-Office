@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.concepts;
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
-import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -11,6 +10,7 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -21,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.*;
 
@@ -30,8 +29,8 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     static final Logger logger = LoggerFactory.getLogger(ConceptsCollectionServiceImpl.class);
 
     int maxLength;
-    private CollectionExportBuilder collectionExport;
-    private ConceptsService conceptsService;
+    private final CollectionExportBuilder collectionExport;
+    private final ConceptsService conceptsService;
 
     public ConceptsCollectionServiceImpl(
             CollectionExportBuilder collectionExport,
@@ -71,7 +70,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     }
 
     private List<String> getCollectionConceptsIds(String collectionId) throws RmesException {
-        List conceptsIds = new ArrayList<String>();
+        List<String> conceptsIds = new ArrayList<>();
         JSONArray concepts = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(collectionId));
         for(int i = 0; i < concepts.length(); i++){
             conceptsIds.add(concepts.getJSONObject(i).getString("id"));
@@ -85,7 +84,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
         try {
             CollectionForExport collection = collectionExport.getCollectionData(id);
-            List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
+            List<String> conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = convertCollectionInXml(collection);
 
             String fileName = getFileNameForExport(collection, lg);
@@ -112,7 +111,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
         try {
             CollectionForExport collection = collectionExport.getCollectionData(id);
-            List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
+            List<String>  conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
             Map<String, String> xmlContent = convertCollectionInXml(collection);
 
             String fileName = getFileNameForExport(collection, null);
@@ -141,7 +140,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
         Arrays.asList(ids.split("_AND_")).forEach(id -> {
             try {
-                List conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
+                List<String>  conceptsIds = withConcepts ? getCollectionConceptsIds(id) : Collections.emptyList();
 
                 CollectionForExport collection = collectionExport.getCollectionData(id);
                 Map<String, String> xmlContent = convertCollectionInXml(collection);

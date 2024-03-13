@@ -61,7 +61,7 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
         props.insert(0, """
                 ===============================================================================================
                                                 Valeurs des properties pour :
-                %s                                        
+                %s
                 ===============================================================================================
                 """.formatted(this.propertySourceNames.stream().reduce("",(l, e)->l+System.lineSeparator()+"- "+e )));
         info(props::toString);

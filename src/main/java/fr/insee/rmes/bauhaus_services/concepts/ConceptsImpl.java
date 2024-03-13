@@ -21,6 +21,7 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,7 +34,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.*;
 
@@ -237,8 +237,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		collection.setPrefLabelLg2("Concepts List");
 
 
-		List conceptsIds = Arrays.asList(ids.split("_AND_"));
-		List members = new ArrayList();
+		List<String> conceptsIds = Arrays.asList(ids.split("_AND_"));
+		List<MembersLg> members = new ArrayList<>();
 		Map<String, InputStream> concepts = getConceptsExportIS(conceptsIds, members);
 		collection.setMembersLg(members);
 

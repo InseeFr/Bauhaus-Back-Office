@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +38,12 @@ import org.springframework.web.bind.annotation.*;
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class CodeListsResources extends GenericResources {
 
+    private final CodeListService codeListService;
+
     @Autowired
-    CodeListService codeListService;
+    public CodeListsResources(CodeListService codeListService) {
+        this.codeListService = codeListService;
+    }
 
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -54,6 +57,7 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
+
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
@@ -68,6 +72,7 @@ public class CodeListsResources extends GenericResources {
         }
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
+
 
 
     @PreAuthorize("isAdmin() || isContributorOfUnpublishedCodesList(#codesListId)")
@@ -160,7 +165,7 @@ public class CodeListsResources extends GenericResources {
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation,  @Parameter(description = "Code", required = true) @RequestBody String body) {
+    public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) {
         try {
             String response = codeListService.addCodeFromCodeList(notation, body);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -192,7 +197,6 @@ public class CodeListsResources extends GenericResources {
             return returnRmesException(e);
         }
     }
-
 
 
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)

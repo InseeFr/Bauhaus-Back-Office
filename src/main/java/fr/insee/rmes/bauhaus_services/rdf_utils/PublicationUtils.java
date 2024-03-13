@@ -2,11 +2,11 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.model.ValidationStatus;
+import jakarta.validation.constraints.NotNull;
 import org.eclipse.rdf4j.model.Resource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 
 import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_GESTION;

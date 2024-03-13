@@ -1,7 +1,8 @@
 package fr.insee.rmes.integration.authorizations;
 
-import com.nimbusds.jose.shaded.json.JSONArray;
-import com.nimbusds.jose.shaded.json.JSONObject;
+
+import com.nimbusds.jose.shaded.gson.JsonArray;
+import com.nimbusds.jose.shaded.gson.JsonObject;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
@@ -27,11 +28,11 @@ public class TokenForTestsConfiguration {
                 .build());
     }
 
-    private static JSONObject jsonRoles(List<String> roles) {
-        var jsonObject = new JSONObject();
-        var jsonArray=new JSONArray();
-        jsonArray.addAll(roles);
-        jsonObject.put(KEY_FOR_ROLES_IN_ROLE_CLAIM, jsonArray);
+    private static JsonObject jsonRoles(List<String> roles) {
+        var jsonObject = new JsonObject();
+        var jsonArray=new JsonArray();
+        roles.forEach(jsonArray::add);
+        jsonObject.add(KEY_FOR_ROLES_IN_ROLE_CLAIM, jsonArray);
         return jsonObject;
     }
 

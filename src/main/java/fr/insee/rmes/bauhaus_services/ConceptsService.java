@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
