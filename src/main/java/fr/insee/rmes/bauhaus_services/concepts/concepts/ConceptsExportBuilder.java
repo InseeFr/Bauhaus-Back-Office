@@ -17,88 +17,80 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.Map;
 
 @Component
 public class ConceptsExportBuilder extends RdfService {
 
-	private static final String CONCEPT_VERSION = "conceptVersion";
-	@Autowired
-	ConceptsUtils conceptsUtils;
+    private static final String CONCEPT_VERSION = "conceptVersion";
+    @Autowired
+    ConceptsUtils conceptsUtils;
 
-	@Autowired
-	ExportUtils exportUtils;
-	
-	String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
-	String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
-	String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
-	
-	private void transformAltLabelListInString(JSONObject general) {
-		if (general.has(Constants.ALT_LABEL_LG1)) {
-			general.put(Constants.ALT_LABEL_LG1,
-					JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
-		} else {
-			general.remove(Constants.ALT_LABEL_LG1);
-		}
-		if (general.has(Constants.ALT_LABEL_LG2)) {
-			general.put(Constants.ALT_LABEL_LG2,
-					JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
-		} else {
-			general.remove(Constants.ALT_LABEL_LG2);
-		}
-	}
+    @Autowired
+    ExportUtils exportUtils;
 
-	public ConceptForExport getConceptData(String id) throws RmesException {
-		ConceptForExport concept = null;
-		JSONObject general = conceptsUtils.getConceptById(id);
-		transformAltLabelListInString(general);
+    String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
+    String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
+    String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
-		JSONArray links = repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
-		JSONObject notes = repoGestion.getResponseAsObject(
-				ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
+    private void transformAltLabelListInString(JSONObject general) {
+        if (general.has(Constants.ALT_LABEL_LG1)) {
+            general.put(Constants.ALT_LABEL_LG1,
+                    JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG1)));
+        } else {
+            general.remove(Constants.ALT_LABEL_LG1);
+        }
+        if (general.has(Constants.ALT_LABEL_LG2)) {
+            general.put(Constants.ALT_LABEL_LG2,
+                    JSONUtils.jsonArrayOfStringToString(general.getJSONArray(Constants.ALT_LABEL_LG2)));
+        } else {
+            general.remove(Constants.ALT_LABEL_LG2);
+        }
+    }
 
-		// Deserialization in the `ConceptForExport` class
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-		try {
-			concept = mapper.readValue(general.toString(), ConceptForExport.class);
-			concept.addLinks(links);
-			concept.addNotes(notes);
+    public ConceptForExport getConceptData(String id) throws RmesException {
+        ConceptForExport concept;
+        JSONObject general = conceptsUtils.getConceptById(id);
+        transformAltLabelListInString(general);
 
-			// format specific data
-			concept.setIsValidated(ExportUtils.toValidationStatus(concept.getIsValidated(),false));
-			concept.setDisseminationStatus(ExportUtils.toLabel(concept.getDisseminationStatus()));
-			concept.setCreated(DateUtils.toDate(concept.getCreated()));
-			concept.setModified(DateUtils.toDate(concept.getModified()));
-			concept.setValid(DateUtils.toDate(concept.getValid()));
+        JSONArray links = repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id));
+        JSONObject notes = repoGestion.getResponseAsObject(
+                ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
 
-		} catch (JsonProcessingException e) {
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-		}
-		return concept;
+        // Deserialization in the `ConceptForExport` class
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        try {
+            concept = mapper.readValue(general.toString(), ConceptForExport.class);
+            concept.addLinks(links);
+            concept.addNotes(notes);
 
-	}
+            // format specific data
+            concept.setIsValidated(ExportUtils.toValidationStatus(concept.getIsValidated(), false));
+            concept.setDisseminationStatus(ExportUtils.toLabel(concept.getDisseminationStatus()));
+            concept.setCreated(DateUtils.toDate(concept.getCreated()));
+            concept.setModified(DateUtils.toDate(concept.getModified()));
+            concept.setValid(DateUtils.toDate(concept.getValid()));
 
-	public ResponseEntity<Resource>  exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT);
-	}
+        } catch (JsonProcessingException e) {
+            throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
+        }
+        return concept;
 
-	public void exportMultipleConceptsAsZip(Map<String, Map<String, String>> concepts, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+    }
 
-		concepts.values().stream().forEach(concept -> concept.put(Constants.PARAMETERS_FILE, parametersXML));
-		exportUtils.exportMultipleResourceAsZip(concepts,xslFile,xmlPattern,zip, Constants.CONCEPT, response);
-	}
+    public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        return exportUtils.exportAsResponse(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
+    }
 
-	public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
-		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
-		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsInputStream(fileName, xmlContent,xslFile,xmlPattern,zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
-	}
-	
+    public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+        return exportUtils.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
+    }
+
 }

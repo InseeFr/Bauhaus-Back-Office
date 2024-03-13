@@ -2,9 +2,8 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-
-import javax.servlet.http.HttpServletResponse;
 
 public interface ConceptsCollectionService {
     String getCollections() throws RmesException;

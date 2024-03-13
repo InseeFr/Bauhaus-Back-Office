@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;

@@ -1,7 +1,0 @@
-{
-  "realm": "agents-insee-interne",
-  "bearer-only": true,
-  "auth-server-url": "https://auth.insee.test/auth",
-  "ssl-required": "external",
-  "resource": "localhost-api"
-}

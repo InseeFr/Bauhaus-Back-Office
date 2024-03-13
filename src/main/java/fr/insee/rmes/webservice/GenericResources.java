@@ -13,8 +13,8 @@ public class GenericResources {
 	protected static final Logger logger = LoggerFactory.getLogger(GenericResources.class);
 
 	protected ResponseEntity<Object> returnRmesException(RmesException e) {
-		logger.error(e.getMessage(), e);
-		return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
+		logger.error(e.getMessageAndDetails(), e);
+		return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getMessage());
 	}
 
 }

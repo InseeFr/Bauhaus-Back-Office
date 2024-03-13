@@ -49,27 +49,28 @@ public class DefaultSecurityContext {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.sessionManagement().disable()
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
                 .anonymous(anonymous -> {
                     anonymous.authorities(fakeUser.roles().toArray(String[]::new));
                     anonymous.principal(fakeUser.id());
                 })
-                .authorizeRequests().anyRequest().permitAll();
+                .authorizeHttpRequests(
+                        authorizeHttpRequest -> authorizeHttpRequest.anyRequest().permitAll());
         if (requiresSsl) {
-            http.antMatcher("/**").requiresChannel().anyRequest().requiresSecure();
+            http.requiresChannel(channel -> channel.requestMatchers("/**").requiresSecure());
         }
 
-        logger.info("Default authentication activated - no auth ");
+		logger.info("Default authentication activated - no auth ");
 
-        return http.build();
+		return http.build();
 
-    }
+	}
 
-    @Bean
-    public UserDecoder getUserProvider() {
-        return principal -> Optional.of(fakeUser);
-    }
+	@Bean
+	public UserDecoder getUserProvider() {
+		return principal -> Optional.of(User.FAKE_USER);
+	}
 
 }

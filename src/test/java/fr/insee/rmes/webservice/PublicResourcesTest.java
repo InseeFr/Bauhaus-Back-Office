@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest(
@@ -51,11 +52,12 @@ class PublicResourcesTest {
 
     @Test
     void shouldReturnTheInitPayload() throws Exception {
-        mvc.perform(get("/init/")
+        mvc.perform(get("/init")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON)
                 )
+                .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
                             "authorizationHost":"sugoUi",

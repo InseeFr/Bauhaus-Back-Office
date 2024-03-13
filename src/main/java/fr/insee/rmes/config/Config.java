@@ -2,15 +2,14 @@ package fr.insee.rmes.config;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
+import org.springframework.stereotype.Component;
 
 import static fr.insee.rmes.config.PropertiesKeys.*;
 
 
-@Configuration
+@Component
 public class Config {
 
 
@@ -39,24 +38,6 @@ public class Config {
     private String idRepositoryGestion;
     @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
     private String baseUriGestion;
-
-    /******************************************************/
-    /** EXTERNAL SERVICES *********************************/
-    /******************************************************/
-
-    //BROKER
-    @Value("${fr.insee.rmes.bauhaus.broker.url}")
-    private String brokerUrl;
-    @Value("${fr.insee.rmes.bauhaus.broker.user}")
-    private String brokerUser;
-    @Value("${fr.insee.rmes.bauhaus.broker.password}")
-    private String brokerPassword;
-
-
-    /******************************************************/
-    /** CONCEPTS 		***********************************/
-    /******************************************************/
-
 
     @Value("${fr.insee.rmes.bauhaus.concepts.graph}") //Getter with baseGraph
     private String conceptsGraph;
@@ -273,18 +254,6 @@ public class Config {
 
     public String getGeographyGraph() {
         return baseGraph + geographyGraph;
-    }
-
-    public String getBrokerUrl() {
-        return brokerUrl;
-    }
-
-    public String getBrokerUser() {
-        return brokerUser;
-    }
-
-    public String getBrokerPassword() {
-        return brokerPassword;
     }
 
     public String getCodeListBaseUri() {

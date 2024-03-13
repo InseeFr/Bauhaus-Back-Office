@@ -7,8 +7,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.external_services.notifications.NotificationsContract;
-import fr.insee.rmes.external_services.notifications.RmesNotificationsImpl;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,8 +20,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class DocumentationPublication extends RdfService {
-
-	static NotificationsContract notification = new RmesNotificationsImpl();
 	
 	@Autowired 
 	DocumentsPublication documentsPublication;

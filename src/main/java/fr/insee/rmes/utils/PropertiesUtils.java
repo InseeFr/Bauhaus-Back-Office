@@ -1,7 +1,6 @@
 
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;

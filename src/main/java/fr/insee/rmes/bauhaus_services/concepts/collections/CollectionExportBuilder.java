@@ -14,6 +14,7 @@ import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.Collator;
@@ -54,7 +54,7 @@ public class CollectionExportBuilder extends RdfService {
 	
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
-		CollectionForExport collection = null;
+		CollectionForExport collection;
 		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionConceptsQuery(id));
 
@@ -194,7 +194,7 @@ public class CollectionExportBuilder extends RdfService {
 	}
 
 	public CollectionForExportOld getCollectionDataOld(String id) throws RmesException {
-		CollectionForExportOld collection = null;
+		CollectionForExportOld collection;
 		JSONObject json = repoGestion.getResponseAsObject(CollectionsQueries.collectionQuery(id));
 		JSONArray members = repoGestion.getResponseAsArray(CollectionsQueries.collectionMembersQuery(id));
 
@@ -205,17 +205,17 @@ public class CollectionExportBuilder extends RdfService {
 
 		instance.setStrength(Collator.NO_DECOMPOSITION);
 
-		Collections.sort( orderMembers, new Comparator<JSONObject>() {
-			private static final String KEY_NAME = "prefLabelLg1";
+		Collections.sort( orderMembers, new Comparator<>() {
+            private static final String KEY_NAME = "prefLabelLg1";
 
-			@Override
-			public int compare(JSONObject a, JSONObject b) {
-				String valA = (String) a.get(KEY_NAME);
-				String valB = (String) b.get(KEY_NAME);
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = (String) a.get(KEY_NAME);
+                String valB = (String) b.get(KEY_NAME);
 
-				return instance.compare(valA.toLowerCase(), valB.toLowerCase());
-			}
-		});
+                return instance.compare(valA.toLowerCase(), valB.toLowerCase());
+            }
+        });
 
 
 		JSONArray orderMembersJSONArray = new JSONArray(orderMembers);
