@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.Distribution;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -66,6 +67,13 @@ public class DatasetResources {
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
         return this.datasetService.update(datasetId, body);
+    }
+
+    @PutMapping("/{id}/validate")
+    @Operation(operationId = "publishDataset", summary = "Publish a Dataset",
+            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
+    public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+        return this.datasetService.publishDataset(id);
     }
 
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)

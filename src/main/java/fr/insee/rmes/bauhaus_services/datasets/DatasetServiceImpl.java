@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -81,6 +82,18 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
         return this.getDatasets(stamp);
+    }
+
+    @Override
+    public String publishDataset(String id) throws RmesException {
+        Model model = new LinkedHashModel();
+        IRI iri = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
+
+        publicationUtils.publishResource(iri, Set.of("validationState"));
+        model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
+        repoGestion.objectValidation(iri, model);
+
+        return id;
     }
 
     private String getDatasets(String stamp) throws RmesException {
