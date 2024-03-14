@@ -4,7 +4,9 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
@@ -18,6 +20,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
@@ -83,6 +87,19 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         return this.persist(distribution);
     }
+
+    @Override
+    public String publishDistribution(String id) throws RmesException {
+        Model model = new LinkedHashModel();
+        IRI iri = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
+
+        publicationUtils.publishResource(iri, Set.of("validationState"));
+        model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
+        repoGestion.objectValidation(iri, model);
+
+        return id;
+    }
+
 
     private String persist(Distribution distribution) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDistributionGraph());

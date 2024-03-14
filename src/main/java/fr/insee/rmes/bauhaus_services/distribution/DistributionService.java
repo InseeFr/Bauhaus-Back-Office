@@ -11,4 +11,6 @@ public interface DistributionService {
     String create(String body) throws RmesException;
 
     String update(String id, String body) throws RmesException;
+
+    String publishDistribution(String id) throws RmesException;
 }

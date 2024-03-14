@@ -1,24 +1,39 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import jakarta.validation.constraints.NotNull;
+import org.apache.http.HttpStatus;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_GESTION;
 import static fr.insee.rmes.config.PropertiesKeys.BASE_URI_PUBLICATION;
 import static java.util.Objects.requireNonNull;
 
 @Service
-public record PublicationUtils(String baseUriGestion, String baseUriPublication) {
+public record PublicationUtils(String baseUriGestion, String baseUriPublication, RepositoryGestion repositoryGestion, RepositoryPublication repositoryPublication) {
     public PublicationUtils(@Value("${" + BASE_URI_GESTION + "}") String baseUriGestion,
-                            @Value("${" + BASE_URI_PUBLICATION + "}") String baseUriPublication) {
+                            @Value("${" + BASE_URI_PUBLICATION + "}") String baseUriPublication,
+                            RepositoryGestion repositoryGestion,
+                            RepositoryPublication repositoryPublication) {
         this.baseUriGestion = baseUriGestion;
         this.baseUriPublication = baseUriPublication;
+        this.repositoryGestion = repositoryGestion;
+        this.repositoryPublication = repositoryPublication;
     }
 
     public Resource tranformBaseURIToPublish(Resource resource) {
@@ -35,5 +50,34 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication)
         return ValidationStatus.UNPUBLISHED.getValue().equals(status) || Constants.UNDEFINED.equals(status);
     }
 
+    public void publishResource(Resource resource, Set<String> denyList) throws RmesException {
+        Model model = new LinkedHashModel();
+        RepositoryConnection connection = repositoryGestion.getConnection();
+        RepositoryResult<Statement> statements = repositoryGestion.getStatements(connection, resource);
 
+        try {
+            try {
+                while (statements.hasNext()) {
+                    Statement statement = statements.next();
+                    String predicate = RdfUtils.toString(statement.getPredicate());
+
+                    boolean isDeniedPredicate = !denyList.stream().filter(predicate::endsWith).toList().isEmpty();
+                    if(!isDeniedPredicate){
+                        model.add(tranformBaseURIToPublish(statement.getSubject()),
+                                statement.getPredicate(),
+                                statement.getObject(),
+                                statement.getContext());
+                    }
+                }
+            } catch (RepositoryException e) {
+                throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
+            }
+
+        } finally {
+            repositoryGestion.closeStatements(statements);
+            connection.close();
+        }
+        Resource resourceToPublish = tranformBaseURIToPublish(resource);
+        repositoryPublication.publishResource(resourceToPublish, model, null);
+    }
 }
