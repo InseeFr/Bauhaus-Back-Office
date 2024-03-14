@@ -94,7 +94,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         IRI iri = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("validationState"));
-        model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.operationsGraph());
+        model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDistributionGraph()));
         repoGestion.objectValidation(iri, model);
 
         return id;
