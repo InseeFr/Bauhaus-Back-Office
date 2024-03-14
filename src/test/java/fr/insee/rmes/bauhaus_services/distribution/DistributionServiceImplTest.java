@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
@@ -38,6 +40,9 @@ import static org.mockito.Mockito.*;
 public class DistributionServiceImplTest {
     @MockBean
     RepositoryGestion repositoryGestion;
+
+    @MockBean
+    PublicationUtils publicationUtils;
 
     @Autowired
     DistributionServiceImpl distributionService;
@@ -268,5 +273,18 @@ public class DistributionServiceImplTest {
     @Test
     void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringUpdate(){
         Assertions.assertThrows(RmesException.class, () -> distributionService.update("d1000", ""));
+    }
+
+    @Test
+    void shouldPublishADistribution() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
+
+        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of("validationState")));
+        String id = distributionService.publishDistribution("1");
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+
+        verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
+        Assertions.assertEquals("[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+        Assertions.assertEquals("1", id);
     }
 }

@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +47,9 @@ public class DatasetServiceImplTest {
 
     @MockBean
     SeriesUtils seriesUtils;
+
+    @MockBean
+    PublicationUtils publicationUtils;
 
     @MockBean
     RepositoryGestion repositoryGestion;
@@ -477,6 +482,19 @@ public class DatasetServiceImplTest {
             Assertions.assertEquals("[(http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals(id, "jd1001");
         }
+    }
+
+    @Test
+    void shouldPublishADataset() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
+
+        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of("validationState")));
+        String id = datasetService.publishDataset("1");
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+
+        verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
+        Assertions.assertEquals("[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+        Assertions.assertEquals("1", id);
     }
 
     @Test
