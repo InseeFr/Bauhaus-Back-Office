@@ -70,4 +70,10 @@ public class DistributionResourcesTest {
         when(distributionService.update(anyString(), anyString())).thenReturn("result");
         Assertions.assertEquals("result", distributionResources.updateDistribution("", ""));
     }
+
+    @Test
+    void shouldCallPublishDistribution() throws RmesException {
+        when(distributionResources.publishDistribution(eq("1"))).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.publishDistribution("1"));
+    }
 }
