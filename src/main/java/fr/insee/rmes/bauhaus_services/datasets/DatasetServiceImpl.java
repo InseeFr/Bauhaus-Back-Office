@@ -88,8 +88,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public String publishDataset(String id) throws RmesException {
         Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
+        IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
-        publicationUtils.publishResource(iri, Set.of("validationState"));
+        publicationUtils.publishResource(iri, Set.of());
+        publicationUtils.publishResource(catalogRecordIri, Set.of("creator", "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         repoGestion.objectValidation(iri, model);
 

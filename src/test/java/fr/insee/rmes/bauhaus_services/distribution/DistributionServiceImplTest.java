@@ -279,7 +279,7 @@ public class DistributionServiceImplTest {
     void shouldPublishADistribution() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
 
-        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of("validationState")));
+        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of()));
         String id = distributionService.publishDistribution("1");
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 

@@ -487,13 +487,16 @@ public class DatasetServiceImplTest {
     @Test
     void shouldPublishADataset() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
+        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
 
-        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of("validationState")));
+        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of()));
+        doNothing().when(publicationUtils).publishResource(eq(catalogRecordIri), eq(Set.of("creator", "contributor")));
+
         String id = datasetService.publishDataset("1");
-        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        ArgumentCaptor<Model> modelIri = ArgumentCaptor.forClass(Model.class);
 
-        verify(repositoryGestion, times(1)).objectValidation(eq(iri), model.capture());
-        Assertions.assertEquals("[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+        verify(repositoryGestion, times(1)).objectValidation(eq(iri), modelIri.capture());
+        Assertions.assertEquals("[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", modelIri.getValue().toString());
         Assertions.assertEquals("1", id);
     }
 

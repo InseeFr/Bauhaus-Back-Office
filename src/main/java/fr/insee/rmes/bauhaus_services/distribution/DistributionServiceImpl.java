@@ -93,7 +93,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         Model model = new LinkedHashModel();
         IRI iri = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
 
-        publicationUtils.publishResource(iri, Set.of("validationState"));
+        publicationUtils.publishResource(iri, Set.of());
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDistributionGraph()));
         repoGestion.objectValidation(iri, model);
 

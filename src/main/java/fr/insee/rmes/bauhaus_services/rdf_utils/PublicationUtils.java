@@ -1,9 +1,7 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import jakarta.validation.constraints.NotNull;
 import org.apache.http.HttpStatus;
@@ -62,11 +60,19 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
                     String predicate = RdfUtils.toString(statement.getPredicate());
 
                     boolean isDeniedPredicate = !denyList.stream().filter(predicate::endsWith).toList().isEmpty();
+
                     if(!isDeniedPredicate){
-                        model.add(tranformBaseURIToPublish(statement.getSubject()),
-                                statement.getPredicate(),
-                                statement.getObject(),
-                                statement.getContext());
+                        try {
+                            model.add(tranformBaseURIToPublish(statement.getSubject()),
+                                    statement.getPredicate(),
+                                    tranformBaseURIToPublish((Resource) statement.getObject()),
+                                    statement.getContext());
+                        } catch(ClassCastException ignored){
+                            model.add(tranformBaseURIToPublish(statement.getSubject()),
+                                    statement.getPredicate(),
+                                    statement.getObject(),
+                                    statement.getContext());
+                        }
                     }
                 }
             } catch (RepositoryException e) {
