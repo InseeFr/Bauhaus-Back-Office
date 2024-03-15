@@ -75,7 +75,7 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void putCodesListAsCodesListContributor_ok() throws Exception {
+    void putCodesListAsCodesListContributor_stampOK() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
         when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
 
@@ -88,7 +88,7 @@ public class TestCodeListsResourcesEnvProd {
     }
 
     @Test
-    void putCodesListAsCodesListContributor_badCodesListTimbre() throws Exception {
+    void putCodesListAsCodesListContributor_badCodesListStamp() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
         when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")

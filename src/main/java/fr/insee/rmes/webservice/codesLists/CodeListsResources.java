@@ -58,7 +58,8 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+//    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+    @PreAuthorize("isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
@@ -135,7 +136,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -148,7 +149,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
@@ -161,7 +162,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin()")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
