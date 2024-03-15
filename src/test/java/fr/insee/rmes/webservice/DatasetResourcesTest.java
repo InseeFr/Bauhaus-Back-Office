@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,5 +51,11 @@ public class DatasetResourcesTest {
     void shouldReturn200IfRmesExceptionWhenUpdatingADataset() throws RmesException {
         when(datasetService.update(anyString(), anyString())).thenReturn("result");
         Assertions.assertEquals("result", datasetResources.setDataset("", ""));
+    }
+
+    @Test
+    void shouldCallPublishDataset() throws RmesException {
+        when(datasetService.publishDataset(eq("1"))).thenReturn("result");
+        Assertions.assertEquals("result", datasetResources.publishDataset("1"));
     }
 }

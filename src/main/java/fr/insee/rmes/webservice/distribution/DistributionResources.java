@@ -54,6 +54,13 @@ public class DistributionResources {
         return this.distributionService.getDistributionByID(id);
     }
 
+    @PutMapping("/{id}/validate")
+    @Operation(operationId = "publishDistribution", summary = "Publish a Distribution",
+            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
+    public String publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+        return this.distributionService.publishDistribution(id);
+    }
+
     @GetMapping("/datasets")
     @Operation(operationId = "getDatasetsForDistributionCreation", summary = "List of datasets",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Dataset.class))))})

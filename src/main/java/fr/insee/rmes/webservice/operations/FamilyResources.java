@@ -37,28 +37,27 @@ public class FamilyResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
 	public ResponseEntity<Object> getFamilies() throws RmesException {
-		String jsonResultat = operationsService.getFamilies();
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+		String families = operationsService.getFamilies();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(families);
 	}
 
 	@GetMapping("/families/advanced-search")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamiliesForSearch", summary = "List of families for search",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Family.class))))})
 	public ResponseEntity<Object> getFamiliesForSearch() throws RmesException {
-		String jsonResultat = operationsService.getFamiliesForSearch();
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+		String families = operationsService.getFamiliesForSearch();
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(families);
 	}
 
 	@GetMapping("/families/{id}/seriesWithReport")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithReport", summary = "Series with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= Operation.class)))})
 	public ResponseEntity<Object> getSeriesWithReport(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = operationsService.getSeriesWithReport(id);
+			String series = operationsService.getSeriesWithReport(id);
+			return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(series);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
 	}
 
 	@GetMapping("/family/{id}")
@@ -66,8 +65,8 @@ public class FamilyResources extends OperationsCommonResources {
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Family.class)))}
 			)
 	public ResponseEntity<Object> getFamilyByID(@PathVariable(Constants.ID) String id) throws RmesException {
-		String jsonResultat = operationsService.getFamilyByID(id);
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+		String family = operationsService.getFamilyByID(id);
+		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(family);
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
@@ -91,20 +90,19 @@ public class FamilyResources extends OperationsCommonResources {
 	public ResponseEntity<Object> createFamily(
 			@Parameter(description = "Family to create", required = true, content = @Content(schema = @Schema(implementation = Family.class))) 
 			@RequestBody String body) {
-		String id = null;
 		try {
-			id = operationsService.createFamily(body);
+			String id = operationsService.createFamily(body);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PutMapping("/family/validate/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(
-			@PathVariable(Constants.ID) String id) throws RmesException {
+			@PathVariable(Constants.ID) String id) {
 		try {
 			operationsService.setFamilyValidation(id);
 			return ResponseEntity.status(HttpStatus.OK).body(id);
