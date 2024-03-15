@@ -11,6 +11,7 @@ import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,7 +84,9 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
 	}
-
+	public boolean isStructureManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByStructureUri, Constants.CONTRIBUTORS);
+	}
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
 		return isSeriesManagerWithStamp(iri, getStamp());

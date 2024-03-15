@@ -136,13 +136,13 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
     }
 
-//    for PUT
+//    for PUT CodesList
     public boolean isContributorOfCodesList(String codesListId){
         logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
-//    for POST
+//    for POST CodesList
     public boolean isCodesListContributor(String contributorString) {
 
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
@@ -159,11 +159,21 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
     }
 
-//for DELETE
+//for DELETE CodesList
     public boolean isContributorOfUnpublishedCodesList(String codesListId) {
         logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
     }
+
+//    for PUT structure
+    public boolean isStructureContributor(String structureId){
+        logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
+    }
+
+
+
+
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
     }
@@ -173,6 +183,9 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
     public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
+    }
+    private boolean isManagerForStructureId(String structureId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
 
 

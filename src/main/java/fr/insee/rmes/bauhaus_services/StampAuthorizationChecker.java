@@ -43,6 +43,16 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
+	public boolean isStructureManagerWithStamp(String structureId, String stamp) {
+		try {
+			return isStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, structureId);
+			return false;
+		}
+	}
+
+
 	public boolean isUnpublishedCodesListManagerWithStamp(String codesListId, String stamp) {
 		try {
 			return isUnpublishedCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)),requireNonNull(stamp));
@@ -61,4 +71,8 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 	private IRI findCodesListIRI(String codesListId) {
 		return RdfUtils.objectIRI(ObjectType.CODE_LIST, codesListId);
 	}
+	private IRI findStructureIRI(String structureId) {
+		return RdfUtils.objectIRI(ObjectType.STRUCTURE, structureId);
+	}
+
 }

@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -91,10 +92,10 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isStructureContributor(#id)")
     @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
-    public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) @P("id") String id) {
         try {
             String response = structureService.publishStructureById(id);
             return ResponseEntity.status(HttpStatus.SC_OK).body(response);
@@ -115,7 +116,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isStructureOrComponentContributor(#body)")
     @PostMapping(value = "/structure",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Create a structure")
@@ -129,12 +130,13 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+//    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
+    @PreAuthorize("isStructureContributor(#structureId)")
     @PutMapping(value = "/structure/{structureId}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Update a structure")
     public ResponseEntity<Object> setStructure(
-    		@PathVariable("structureId") String structureId, 
+    		@PathVariable("structureId") @P("structureId") String structureId,
     		@Parameter(description = "Structure", required = true) @RequestBody String body) {
         try {
             String id = structureService.setStructure(structureId, body);
@@ -144,10 +146,10 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedStructureOrComponent(#structureId)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") String structureId) {
+    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId") String structureId) {
         try {
             structureService.deleteStructure(structureId);
             return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
@@ -200,10 +202,10 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @GetMapping(value = "/components/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishComponentById", summary = "Publish a component")
-    public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) @P("structureId") String id) {
         try {
             String jsonResultat = structureComponentService.publishComponent(id);
             return ResponseEntity.status(HttpStatus.SC_OK).body(jsonResultat);
@@ -212,10 +214,10 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedStructureOrComponent(#id)")
     @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
-    public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) @P("id") String id) {
         try {
             structureComponentService.deleteComponent(id);
             return ResponseEntity.status(HttpStatus.SC_OK).build();
@@ -224,11 +226,11 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isComponentContributor(#componentId)")
     @PutMapping(value = "/components/{id}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateComponent", summary = "Update a component")
-    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) String componentId, 
+    public ResponseEntity<Object> updateComponentById(@PathVariable(Constants.ID) @P("componentId") String componentId,
     		@Parameter(description = "Component", required = true) @RequestBody String body) {
         try {
             String id = structureComponentService.updateComponent(componentId, body);
@@ -238,7 +240,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+    @PreAuthorize("isAdmin() || isStructureOrComponentContributor(#body)")
     @PostMapping(value = "/components",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createComponent", summary = "create a component")
