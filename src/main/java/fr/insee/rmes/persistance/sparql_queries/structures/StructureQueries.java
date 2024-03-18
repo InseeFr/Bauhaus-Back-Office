@@ -1,5 +1,8 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
+import fr.insee.rmes.bauhaus_services.Constants;
+import org.eclipse.rdf4j.model.IRI;
+
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -16,36 +19,36 @@ public class StructureQueries extends GenericQueries{
 	static Map<String, Object> params;
 	private static final String URI_STRUCTURE = "URI_STRUCTURE";
 	public static String 	getStructures() throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		return buildStructureRequest("getStructures.ftlh", params);
 	}
 
 	public static String getValidationStatus(String id) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("id", id);
 		return buildStructureRequest("getValidationStatus.ftlh", params);
 	}
 	public static String getStructuresAttachments(String structureId, String id) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("STRUCTURE_ID", structureId);
 		params.put("COMPONENT_SPECIFICATION_ID", id);
 		return buildStructureRequest("getAttachment.ftlh", params);
 	}
 
 	public static String getComponentsForStructure(Object id) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("ID", id);
 		return buildStructureRequest("getComponentsForAStructure.ftlh", params);
 	}
 
 	public static String getStructureById(String structureId) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("ID", structureId);
 		return buildStructureRequest("getStructure.ftlh", params);
 	}
 
 	public static String checkUnicityMutualizedComponent(String componentId, String conceptUri, String codeListUri, String type) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
@@ -55,7 +58,7 @@ public class StructureQueries extends GenericQueries{
 		return buildStructureRequest("checkUnicityMutualizedComponent.ftlh", params);
 	}
 	public static String checkUnicityStructure(String structureId, String[] ids) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 
 		params.put("NB_COMPONENT", ids.length);
 		params.put("IDS", ids);
@@ -65,7 +68,7 @@ public class StructureQueries extends GenericQueries{
 	}
 	
 	public static String getComponents(boolean attributes, boolean dimensions, boolean measures) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 
 		List<String> types = new ArrayList<>();
 		if(attributes){
@@ -83,38 +86,38 @@ public class StructureQueries extends GenericQueries{
 	}
 
 	public static String getComponent(String id) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("ID", id);
 		return buildStructureRequest("getMutualizedComponent.ftlh", params);
 	}
 
 	public static String getStructuresForComponent(String id) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("ID", id);
 		return buildStructureRequest("getStructuresForMutualizedComponent.ftlh", params);
 	}
 
 	public static String lastId(String namespaceSuffix, String type) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("NAMESPACE", namespaceSuffix);
 		params.put("TYPE", type);
 
 		return buildStructureRequest("getLastIdByType.ftlh", params);
 	}
 	public static String lastStructureId() throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 
 		return buildStructureRequest("getLastIdStructure.ftlh", params);
 	}
 
 	public static String getUnValidatedComponent(String structureById) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("ID", structureById);
 		return buildStructureRequest("getUnValidatedComponent.ftlh", params);
 	}
 
 	public static String getUriClasseOwl(String codeList) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		if (params==null) {initParams();}
 		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
 		params.put("CODES_LIST", codeList);
 
@@ -126,14 +129,13 @@ public class StructureQueries extends GenericQueries{
 	}
 
 
-	private static HashMap<String, Object> initParams() {
-		HashMap<String, Object> params = new HashMap<>();
+	private static void initParams() {
+		params = new HashMap<>();
 		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
 		params.put("STRUCTURES_GRAPH", config.getStructuresGraph());
 		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		return params;
 	}
 	
 	  private StructureQueries() {
@@ -141,9 +143,7 @@ public class StructureQueries extends GenericQueries{
 	}
 
 	public static String getContributorsByStructureUri(String uriStructure) throws RmesException {
-		if (params==null) {
-			initParams();
-		}
+        if (params==null) {initParams();}
 		params.put(URI_STRUCTURE, uriStructure);
 		return buildStructureRequest("getStructureContributorsByUriQuery.ftlh", params);
 	}
