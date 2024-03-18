@@ -1,13 +1,12 @@
-SELECT ?creators
+SELECT ?contributors
 FROM <${CODES_LISTS_GRAPH}>
-	WHERE	{
-		{
-			?codesList dc:contributor ?CODES_LISTS_GRAPH .
-			VALUES ?codesList { ${URI_CODESLIST?no_esc}}
-		}
-		UNION
-		{
-			?series dc:creator ?creators .
-			?series dcterms:hasPart ${URI_SERIES?no_esc}
-		}
-	}
+WHERE {
+    BIND(STRAFTER(STR(?o),'http://bauhaus/codes/') AS ?lastCodeUriSegment) .
+    BIND(STRBEFORE(STRAFTER(STR('${URI_CODESLIST?no_esc}'),'http://bauhaus/codes/'),'>') AS ?lastCodeUriSegmentWithId) .
+?s ?p ?o .
+?o skos:notation ?lastCodeUriSegmentWithId .
+?o dc:contributor ?contributors
+}
+
+
+

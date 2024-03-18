@@ -42,7 +42,7 @@ public class CodeListQueries extends GenericQueries {
 	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
 		int perPageValue = getPerPageConfiguration(perPage);
 
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
@@ -135,7 +135,7 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getDetailedCodeListByNotation(String notation, String baseInternalUri) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
@@ -143,13 +143,13 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesListForSearch.ftlh", params);
 	}
 
 	public static String getCodesForSearch( boolean partial) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesForSearch.ftlh", params);
 	}
@@ -157,12 +157,11 @@ public class CodeListQueries extends GenericQueries {
 
 
 
-	private static HashMap<String, Object> initParams() {
-		HashMap<String, Object> params = new HashMap<>();
+	private static void initParams() {
+		params = new HashMap<>();
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		return params;
 	}
 
 	private CodeListQueries() {
@@ -171,7 +170,7 @@ public class CodeListQueries extends GenericQueries {
 
 
 	public static String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put("ID", id);
 		params.put("IRI", iri);
 		params.put("SEE_ALSO", seeAlso);
@@ -181,7 +180,7 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getPartialCodeListByParentUri(String iri) throws RmesException {
-		HashMap<String, Object> params = initParams();
+		initParams();
 		params.put("IRI", iri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
 	}

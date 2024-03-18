@@ -59,7 +59,7 @@ public class CodeListsResources extends GenericResources {
     }
 
 //    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
-    @PreAuthorize("isContributorOfCodesList(#codesListId)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
     public ResponseEntity<Object> updateCodesList(
