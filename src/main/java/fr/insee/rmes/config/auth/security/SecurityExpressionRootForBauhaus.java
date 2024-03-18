@@ -165,14 +165,34 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
     }
 
-//    for PUT structure
+//for PUT structure
     public boolean isStructureContributor(String structureId){
         logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
     }
 
+//for POST structure
+public boolean isStructureOrComponentContributor(String contributorString) {
 
+    logger.trace("Check if {} can create the structure", methodSecurityExpressionRoot.getPrincipal());
+    JSONObject contrib = new JSONObject(contributorString);
+    if(!contrib.has("contributor")){
+        return false;
+    }
+    String structureContributor = contrib.getString("contributor");
+    Optional<String> timbreUtilisateur=getStamp();
+    boolean timbreOK = false;
+    if (timbreUtilisateur.isPresent()) {
+        timbreOK = structureContributor.equals(timbreUtilisateur.get());
+    }
+    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && timbreOK;
+}
 
+//for DELETE structure
+public boolean isContributorOfUnpublishedStructureOrComponent(String structureId) {
+    logger.trace("Check if {} is contributor for structure {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), structureId);
+    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedStructure(structureId);
+}
 
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
@@ -187,7 +207,9 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForStructureId(String structureId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
-
+    public boolean isManagerDeleteForUnpublishedStructure(String structureId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
+    }
 
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);

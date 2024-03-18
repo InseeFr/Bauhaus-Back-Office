@@ -29,8 +29,7 @@ import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguratio
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
 import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = StructureResources.class,
@@ -140,6 +139,65 @@ public class TestStructuresResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void postStructure_noAuth() throws Exception {
+        mvc.perform(put("/structures/structure")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void postStructureAsNotStructureContributor() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
+        mvc.perform(post("/structures/structure/").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteStructureAdmin_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        mvc.perform(delete("/structures/structure/" + structureId)
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteStructure_noAuth() throws Exception {
+        mvc.perform(delete("/structures/structure/" + structureId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteUnpublishedStructureAsStructureContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(true);
+        mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre);
+    }
+
+    @Test
+    void deletePublishedStructureAsStructureContributor_forbidden() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(false);
+        mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre);
     }
 
 }

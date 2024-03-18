@@ -147,6 +147,10 @@ public class StructureQueries extends GenericQueries{
 		params.put(URI_STRUCTURE, uriStructure);
 		return buildStructureRequest("getStructureContributorsByUriQuery.ftlh", params);
 	}
-
+	public static String getContributorsStructureUriWithValidationStatus(String uriStructure) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_STRUCTURE, uriStructure);
+		return buildStructureRequest("getStructureContributorsByUriWithValidationStatusQuery.ftlh", params);
+	}
 
 }
