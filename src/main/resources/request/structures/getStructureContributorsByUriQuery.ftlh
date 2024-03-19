@@ -5,5 +5,4 @@ FROM <${STRUCTURES_GRAPH}>
 			?structure dc:contributor ?contributors .
 			VALUES ?structure { ${URI_STRUCTURE?no_esc}}
 		}
-
 	}
