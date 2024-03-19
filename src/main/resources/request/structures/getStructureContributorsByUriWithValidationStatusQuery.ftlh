@@ -1,8 +1,7 @@
 SELECT DISTINCT ?contributors
 FROM <${STRUCTURES_GRAPH}>
 WHERE {
-    BIND ('${URI_STRUCTURE?no_esc}' as ?a)
+    BIND (${URI_STRUCTURE?no_esc} as ?a)
      ?a    dc:contributor ?contributors .
-     ?a    insee:validationState ?validation
 }
 

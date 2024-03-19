@@ -130,8 +130,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-//    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
-    @PreAuthorize("isStructureContributor(#structureId)")
+    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @PutMapping(value = "/structure/{structureId}",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Update a structure")
