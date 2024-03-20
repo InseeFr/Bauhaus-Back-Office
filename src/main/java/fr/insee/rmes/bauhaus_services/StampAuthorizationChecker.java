@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -7,18 +8,24 @@ import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import org.eclipse.rdf4j.model.IRI;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import static java.util.Objects.requireNonNull;
 
 @Component
 public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
-
+	CodeListServiceImpl codeListService=new CodeListServiceImpl();
 	private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
+	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
+	String baseInternalUri;
+	@Autowired
+	protected RepositoryGestion repoGestion;
 
 	@Autowired
 	public StampAuthorizationChecker(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) {
@@ -77,8 +84,16 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
 	}
 
-	private IRI findCodesListIRI(String codesListId) {
-		return RdfUtils.objectIRI(ObjectType.CODE_LIST, codesListId);
+
+
+
+	private IRI findCodesListIRI(String codesListId) throws RmesException {
+		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(codesListId, baseInternalUri));
+		String uriString=codeList.getString("iri");
+		IRI uriCodesList= RdfUtils.codesListIRI(uriString);
+		return uriCodesList;
+
+
 	}
 	private IRI findStructureIRI(String structureId) {
 		return RdfUtils.objectIRI(ObjectType.STRUCTURE, structureId);

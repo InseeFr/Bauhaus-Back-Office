@@ -143,6 +143,11 @@ public class RdfUtils {
 		return objectIRI(ObjectType.CODE_LIST, id);
 	}
 
+	public static IRI codesListIRI(String StringUri) {
+		return factory.createIRI(StringUri);
+	}
+
+
 	public static IRI createIRI(String uri){
 		return factory.createIRI(uri);
 	}

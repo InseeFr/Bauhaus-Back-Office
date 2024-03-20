@@ -1,7 +1,6 @@
-SELECT ?contributor ?validationState
-FROM <${GRAPH}>
+SELECT DISTINCT ?contributors
+FROM <${CODES_LISTS_GRAPH}>
 WHERE {
-    ?object dc:contributor ?contributor .
-    ?object insee:validationState ?validationState .
-    ?object skos:notation "${ID}"
+    BIND (${URI_CODESLIST?no_esc} as ?a)
+     ?a    dc:contributor ?contributors .
 }
