@@ -8,7 +8,11 @@ import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.structures.MutualizedComponent;
+import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
-	CodeListServiceImpl codeListService=new CodeListServiceImpl();
+	CodeListServiceImpl codeListService = new CodeListServiceImpl();
 	private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
 	String baseInternalUri;
@@ -62,7 +66,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 
 	public boolean isUnpublishedCodesListManagerWithStamp(String codesListId, String stamp) {
 		try {
-			return isUnpublishedCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)),requireNonNull(stamp));
+			return isUnpublishedCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
 		} catch (RmesException e) {
 			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, codesListId);
 			return false;
@@ -71,32 +75,46 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 
 	public boolean isUnpublishedStructureManagerWithStamp(String structureId, String stamp) {
 		try {
-			return isUnpublishedStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)),requireNonNull(stamp));
+			return isUnpublishedStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)), requireNonNull(stamp));
 		} catch (RmesException e) {
 			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, structureId);
 			return false;
 		}
 	}
 
-
+	public boolean isComponentManagerWithStamp(String componentId, String stamp) {
+		try {
+			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, componentId);
+			return false;
+		}
+	}
 
 	private IRI findIRI(String seriesId) {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
 	}
 
-
-
-
 	private IRI findCodesListIRI(String codesListId) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(codesListId, baseInternalUri));
-		String uriString=codeList.getString("iri");
-		IRI uriCodesList= RdfUtils.codesListIRI(uriString);
+		String uriString = codeList.getString("iri");
+		IRI uriCodesList = RdfUtils.codesListIRI(uriString);
 		return uriCodesList;
-
-
 	}
+
 	private IRI findStructureIRI(String structureId) {
 		return RdfUtils.objectIRI(ObjectType.STRUCTURE, structureId);
 	}
 
+	private IRI findComponentIRI(String componentId) throws RmesException {
+		JSONObject type = repoGestion.getResponseAsObject(StructureQueries.getComponentType(componentId));
+		String componentType = type.getString("type");
+		if (componentType.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+			return RdfUtils.structureComponentAttributeIRI(componentId);
+		} else if (componentType.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+			return RdfUtils.structureComponentDimensionIRI(componentId);
+		} else {
+			return RdfUtils.structureComponentMeasureIRI(componentId);
+		}
+	}
 }

@@ -66,6 +66,7 @@ public class TestStructuresResourcesEnvProd {
     private final String timbre = "XX59-YYY";
 
     int structureId=10;
+    int componentId=12;
     ValidationStatus status= UNPUBLISHED;
 
     @Test
@@ -198,6 +199,49 @@ public class TestStructuresResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
         Mockito.verify(stampAuthorizationChecker).isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre);
+    }
+
+    @Test
+    void putComponentAdmin_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void putComponentAsComponentContributor_StampOK() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
+        mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+    }
+
+    @Test
+    void putComponentAsComponentContributor_badComponentStamp() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
+        mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+    }
+
+    @Test
+    void putComponentAsComponentContributor_noAuth() throws Exception {
+        mvc.perform(put("/structures/components/" + componentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
     }
 
 }

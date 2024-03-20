@@ -189,10 +189,17 @@ public boolean isStructureOrComponentContributor(String contributorString) {
 }
 
 //for DELETE structure
-public boolean isContributorOfUnpublishedStructureOrComponent(String structureId) {
+public boolean isContributorOfUnpublishedStructure(String structureId) {
     logger.trace("Check if {} is contributor for structure {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), structureId);
     return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedStructure(structureId);
 }
+
+//for PUT composant
+public boolean isComponentContributor(String componentId){
+    logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
+    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
+}
+
 
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
@@ -210,6 +217,10 @@ public boolean isContributorOfUnpublishedStructureOrComponent(String structureId
     public boolean isManagerDeleteForUnpublishedStructure(String structureId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
+    private boolean isManagerForComponentId(String componentId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
+    }
+
 
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);

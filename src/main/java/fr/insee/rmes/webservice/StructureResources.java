@@ -145,7 +145,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isContributorOfUnpublishedStructureOrComponent(#structureId)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedStructure(#structureId)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
     public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId") String structureId) {
@@ -213,7 +213,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isContributorOfUnpublishedStructureOrComponent(#id)")
+    @PreAuthorize("isAdmin() || isContributorOfUnpublishedComponent(#id)")
     @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
     public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) @P("id") String id) {

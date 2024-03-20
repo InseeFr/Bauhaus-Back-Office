@@ -18,6 +18,7 @@ import java.util.Map;
 public class StructureQueries extends GenericQueries{
 	static Map<String, Object> params;
 	private static final String URI_STRUCTURE = "URI_STRUCTURE";
+	private static final String URI_COMPONENT = "URI_COMPONENT";
 	public static String 	getStructures() throws RmesException {
 		if (params==null) {initParams();}
 		return buildStructureRequest("getStructures.ftlh", params);
@@ -97,6 +98,12 @@ public class StructureQueries extends GenericQueries{
 		return buildStructureRequest("getStructuresForMutualizedComponent.ftlh", params);
 	}
 
+	public static String getComponentType(String id) throws RmesException {
+		if (params==null) {initParams();}
+		params.put("ID", id);
+		return buildStructureRequest("getComponentType.ftlh", params);
+	}
+
 	public static String lastId(String namespaceSuffix, String type) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("NAMESPACE", namespaceSuffix);
@@ -151,6 +158,12 @@ public class StructureQueries extends GenericQueries{
 		if (params==null) {initParams();}
 		params.put(URI_STRUCTURE, uriStructure);
 		return buildStructureRequest("getStructureContributorsByUriWithValidationStatusQuery.ftlh", params);
+	}
+
+	public static String getContributorsByComponentUri(String uriComponent) throws RmesException {
+		if (params==null) {initParams();}
+		params.put(URI_COMPONENT, uriComponent);
+		return buildStructureRequest("getComponentContributorsByUriQuery.ftlh", params);
 	}
 
 }
