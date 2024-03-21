@@ -136,7 +136,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
     }
 
-//    for PUT CodesList
+//    for PUT and DELETE CodesList
     public boolean isContributorOfCodesList(String codesListId){
         logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
@@ -157,12 +157,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
             timbreOK = codesListContributor.equals(timbreUtilisateur.get());
         }
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
-    }
-
-//  for DELETE CodesList
-    public boolean isContributorOfUnpublishedCodesList(String codesListId) {
-        logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
 //for PUT and DELETE structure
