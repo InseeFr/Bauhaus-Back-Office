@@ -141,6 +141,14 @@ public class CodeListQueries extends GenericQueries {
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
+	public static String getCodeListIRIByNotation(String notation, String baseInternalUri) throws RmesException {
+		initParams();
+		params.put(NOTATION, notation);
+		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put("BASE_INTERNAL_URI", baseInternalUri);
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListIRIByNotation.ftlh", params);
+	}
+
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
 		initParams();
