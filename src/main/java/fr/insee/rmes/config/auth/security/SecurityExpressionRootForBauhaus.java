@@ -165,7 +165,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
-//for PUT structure
+//for PUT and DELETE structure
     public boolean isStructureContributor(String structureId){
         logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
@@ -188,11 +188,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && timbreOK;
     }
 
-    //for DELETE structure
-    public boolean isContributorOfUnpublishedStructure(String structureId) {
-        logger.trace("Check if {} is contributor for structure {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), structureId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedStructure(structureId);
-    }
 
     //for PUT composant
     public boolean isComponentContributor(String componentId){
@@ -215,9 +210,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
     private boolean isManagerForStructureId(String structureId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
-    }
-    public boolean isManagerDeleteForUnpublishedStructure(String structureId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
     private boolean isManagerForComponentId(String componentId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);

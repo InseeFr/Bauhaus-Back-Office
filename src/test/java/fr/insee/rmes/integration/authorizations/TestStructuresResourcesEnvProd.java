@@ -182,23 +182,23 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void deleteUnpublishedStructureAsStructureContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(true);
         mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
     }
 
     @Test
     void deletePublishedStructureAsStructureContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(false);
         mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
     }
 
     @Test
