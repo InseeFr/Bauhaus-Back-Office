@@ -162,7 +162,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 //  for DELETE CodesList
     public boolean isContributorOfUnpublishedCodesList(String codesListId) {
         logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
 //for PUT structure
@@ -212,9 +212,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
     private boolean isManagerForCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
-    }
-    public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
     private boolean isManagerForStructureId(String structureId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);

@@ -64,15 +64,6 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 	}
 
 
-	public boolean isUnpublishedCodesListManagerWithStamp(String codesListId, String stamp) {
-		try {
-			return isUnpublishedCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
-		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, codesListId);
-			return false;
-		}
-	}
-
 	public boolean isUnpublishedStructureManagerWithStamp(String structureId, String stamp) {
 		try {
 			return isUnpublishedStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)), requireNonNull(stamp));

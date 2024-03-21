@@ -75,7 +75,7 @@ public class CodeListsResources extends GenericResources {
 
 
 
-    @PreAuthorize("isAdmin() || isContributorOfUnpublishedCodesList(#codesListId)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a codes list")
     public ResponseEntity<Object> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) {

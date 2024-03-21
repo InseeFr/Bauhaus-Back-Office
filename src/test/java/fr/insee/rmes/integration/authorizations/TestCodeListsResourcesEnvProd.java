@@ -178,22 +178,22 @@ public class TestCodeListsResourcesEnvProd {
     @Test
     void deleteUnpublishedCodesListAsCodesListContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(true);
         mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 
     @Test
     void deletePublishedCodesListAsCodesListContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isCodesListManagerWithStamp(String.valueOf(codesListId),timbre)).thenReturn(false);
         mvc.perform(delete("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isCodesListManagerWithStamp(String.valueOf(codesListId),timbre);
     }
 }

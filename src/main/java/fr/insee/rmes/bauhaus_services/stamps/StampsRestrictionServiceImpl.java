@@ -81,9 +81,6 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
 	}
-	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
-	}
 	public boolean isStructureManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByStructureUri, Constants.CONTRIBUTORS);
 	}
