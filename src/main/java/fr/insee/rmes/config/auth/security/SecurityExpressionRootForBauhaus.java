@@ -159,7 +159,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
     }
 
-//for DELETE CodesList
+//  for DELETE CodesList
     public boolean isContributorOfUnpublishedCodesList(String codesListId) {
         logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
@@ -171,35 +171,40 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
     }
 
-//for POST structure
-public boolean isStructureOrComponentContributor(String contributorString) {
+//  for POST structure or component
+    public boolean isStructureAndComponentContributor(String contributorString) {
 
-    logger.trace("Check if {} can create the structure", methodSecurityExpressionRoot.getPrincipal());
-    JSONObject contrib = new JSONObject(contributorString);
-    if(!contrib.has("contributor")){
-        return false;
+        logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
+        JSONObject contrib = new JSONObject(contributorString);
+        if(!contrib.has("contributor")){
+            return false;
+        }
+        String structureContributor = contrib.getString("contributor");
+        Optional<String> timbreUtilisateur=getStamp();
+        boolean timbreOK = false;
+        if (timbreUtilisateur.isPresent()) {
+            timbreOK = structureContributor.equals(timbreUtilisateur.get());
+        }
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && timbreOK;
     }
-    String structureContributor = contrib.getString("contributor");
-    Optional<String> timbreUtilisateur=getStamp();
-    boolean timbreOK = false;
-    if (timbreUtilisateur.isPresent()) {
-        timbreOK = structureContributor.equals(timbreUtilisateur.get());
+
+    //for DELETE structure
+    public boolean isContributorOfUnpublishedStructure(String structureId) {
+        logger.trace("Check if {} is contributor for structure {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), structureId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedStructure(structureId);
     }
-    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && timbreOK;
-}
 
-//for DELETE structure
-public boolean isContributorOfUnpublishedStructure(String structureId) {
-    logger.trace("Check if {} is contributor for structure {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), structureId);
-    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedStructure(structureId);
-}
+    //for PUT composant
+    public boolean isComponentContributor(String componentId){
+        logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
+    }
 
-//for PUT composant
-public boolean isComponentContributor(String componentId){
-    logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
-    return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
-}
-
+    //for DELETE component
+    public boolean isContributorOfUnpublishedComponent(String componentId) {
+        logger.trace("Check if {} is contributor for component {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), componentId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedComponent(componentId);
+    }
 
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
@@ -220,7 +225,9 @@ public boolean isComponentContributor(String componentId){
     private boolean isManagerForComponentId(String componentId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
     }
-
+    public boolean isManagerDeleteForUnpublishedComponent(String componentId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
+    }
 
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);

@@ -244,4 +244,46 @@ public class TestStructuresResourcesEnvProd {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void deleteComponentAdmin_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        mvc.perform(delete("/structures/components/" + componentId)
+                        .header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteComponent_noAuth() throws Exception {
+        mvc.perform(delete("/structures/components/" + componentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deleteUnpublishedComponentAsStructureContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
+        mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre);
+    }
+
+    @Test
+    void deletePublishedComponentAsStructureContributor_forbidden() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        when(stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
+        mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+        Mockito.verify(stampAuthorizationChecker).isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre);
+    }
+
+
+
 }

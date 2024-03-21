@@ -91,6 +91,14 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
+	public boolean isUnpublishedComponentManagerWithStamp(String componentId, String stamp) {
+		try {
+			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, componentId);
+			return false;
+		}
+	}
 	private IRI findIRI(String seriesId) {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
 	}

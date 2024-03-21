@@ -116,7 +116,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isStructureOrComponentContributor(#body)")
+    @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
     @PostMapping(value = "/structure",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setStructure", summary = "Create a structure")
@@ -239,7 +239,7 @@ public class StructureResources  extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isStructureOrComponentContributor(#body)")
+    @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
     @PostMapping(value = "/components",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createComponent", summary = "create a component")
