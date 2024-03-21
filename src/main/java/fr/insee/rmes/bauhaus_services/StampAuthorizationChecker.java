@@ -49,7 +49,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, codesListId);
+			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, codesListId);
 			return false;
 		}
 	}
@@ -58,7 +58,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, structureId);
+			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, structureId);
 			return false;
 		}
 	}
@@ -67,19 +67,11 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, componentId);
+			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, componentId);
 			return false;
 		}
 	}
 
-	public boolean isUnpublishedComponentManagerWithStamp(String componentId, String stamp) {
-		try {
-			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
-		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to delete {}", stamp, componentId);
-			return false;
-		}
-	}
 	private IRI findIRI(String seriesId) {
 		return RdfUtils.objectIRI(ObjectType.SERIES, seriesId);
 	}

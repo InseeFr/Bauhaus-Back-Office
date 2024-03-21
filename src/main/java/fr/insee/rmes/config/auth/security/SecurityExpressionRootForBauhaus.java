@@ -189,17 +189,12 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
 
-    //for PUT composant
+    //for PUT and DELETE component
     public boolean isComponentContributor(String componentId){
         logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
     }
 
-    //for DELETE component
-    public boolean isContributorOfUnpublishedComponent(String componentId) {
-        logger.trace("Check if {} is contributor for component {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), componentId);
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerDeleteForUnpublishedComponent(componentId);
-    }
 
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
@@ -214,10 +209,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForComponentId(String componentId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
     }
-    public boolean isManagerDeleteForUnpublishedComponent(String componentId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
-    }
-
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);
     }
