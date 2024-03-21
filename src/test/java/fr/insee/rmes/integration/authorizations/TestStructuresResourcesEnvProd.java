@@ -265,23 +265,23 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void deleteUnpublishedComponentAsStructureContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
         mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
     }
 
     @Test
     void deletePublishedComponentAsStructureContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
         mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isUnpublishedComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
     }
 
 
