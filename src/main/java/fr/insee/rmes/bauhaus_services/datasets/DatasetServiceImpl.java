@@ -259,10 +259,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.CONFIDENTIALITY_STATUS, dataset.getConfidentialityStatus(), model, graph);
 
         if(dataset.getCreators() != null){
-            dataset.getCreators().forEach(creator -> model.add(datasetIri, DCTERMS.CREATOR, RdfUtils.setLiteralString(creator), graph));
+            dataset.getCreators().forEach(creator -> RdfUtils.addTripleUri(datasetIri, DCTERMS.CREATOR, creator, model, graph));
         }
 
-        RdfUtils.addTripleString(datasetIri, DCTERMS.PUBLISHER, dataset.getPublisher(), model, graph);
+        RdfUtils.addTripleUri(datasetIri, DCTERMS.PUBLISHER, dataset.getPublisher(), model, graph);
+
         RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(datasetIri, DCAT.LANDING_PAGE, dataset.getLandingPageLg2(), config.getLg2(), model, graph);
 
@@ -274,8 +275,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistInternalManagment(IRI datasetIri, Dataset dataset, Model model, Resource graph){
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
-        RdfUtils.addTripleString(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
-
+        RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
     }
 
     private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){

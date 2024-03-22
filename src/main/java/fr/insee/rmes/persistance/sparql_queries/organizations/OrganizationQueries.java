@@ -1,6 +1,10 @@
 package fr.insee.rmes.persistance.sparql_queries.organizations;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.HashMap;
 
 public class OrganizationQueries extends GenericQueries{
 
@@ -36,23 +40,12 @@ public class OrganizationQueries extends GenericQueries{
 				+ "} \n" ;
 	}
 
-	public static String organizationsQuery() {
-		return "SELECT DISTINCT ?id ?label ?altLabel \n"
-				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
-				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
-
-				+ "WHERE { \n"
-				//id
-				+ "?organization dcterms:identifier ?id . \n"
-
-				//labels
-				+ "OPTIONAL { ?organization skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + config.getLg1() + "')} \n"
-				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
-
-				+ "} \n" 
-				+ "GROUP BY ?id ?label ?altLabel \n"
-				+ "ORDER BY ?label ";
+	public static String organizationsQuery() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
+		params.put("ORGANIZATIONS_INSEE_GRAPH", config.getOrganizationsGraph());
+		params.put("LG1", config.getLg1());
+		return FreeMarkerUtils.buildRequest("organizations/", "getOrganizations.ftlh", params);
 	}
 
 	public static String organizationsTwoLangsQuery() {
