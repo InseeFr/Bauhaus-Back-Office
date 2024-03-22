@@ -302,6 +302,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             RdfUtils.addTripleInt(datasetIri, RdfUtils.createIRI("http://data.europa.eu/m8g/numSeries"), dataset.getTimeSeriesNumber().toString(), model, graph);
         }
         RdfUtils.addTripleUri(datasetIri, DCTERMS.SPATIAL, dataset.getSpacialCoverage(), model, graph);
+        RdfUtils.addTripleDate(datasetIri, INSEE.SPATIAL_TEMPORAL, dataset.getSpacialTemporal(), model, graph);
         RdfUtils.addTripleUri(datasetIri, DCAT.TEMPORAL_RESOLUTION, dataset.getTemporalResolution(), model, graph);
 
         if(dataset.getSpacialResolutions() != null){

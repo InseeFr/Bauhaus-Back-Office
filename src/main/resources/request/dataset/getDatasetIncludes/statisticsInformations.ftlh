@@ -15,6 +15,10 @@ OPTIONAL {
 }
 
 OPTIONAL {
+    ?uri insee:spatialTemporal ?spacialTemporal .
+}
+
+OPTIONAL {
     ?uri dcat:temporalResolution ?temporalResolution.
 }
 

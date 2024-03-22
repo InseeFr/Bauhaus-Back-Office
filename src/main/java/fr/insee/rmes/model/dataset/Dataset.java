@@ -165,6 +165,8 @@ public class Dataset {
 
     private String spacialCoverage;
 
+    private String spacialTemporal;
+
     private String temporalResolution;
 
     private List<String> spacialResolutions;
@@ -238,6 +240,14 @@ public class Dataset {
 
     public void setSpacialCoverage(String spacialCoverage) {
         this.spacialCoverage = spacialCoverage;
+    }
+
+    public String getSpacialTemporal() {
+        return spacialTemporal;
+    }
+
+    public void setSpacialTemporal(String spacialTemporal) {
+        this.spacialTemporal = spacialTemporal;
     }
 
     public String getTemporalResolution() {
