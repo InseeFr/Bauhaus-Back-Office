@@ -66,6 +66,8 @@ public class PublicResources extends GenericResources {
     private final List<String> activeModules;
     private final List<String> modules;
 
+    private final String version;
+
     public PublicResources(@Autowired StampsService stampsService,
                            @Value("${fr.insee.rmes.bauhaus.env}") String env,
                            @Value("${fr.insee.rmes.bauhaus.lg1}") String lg1,
@@ -76,7 +78,8 @@ public class PublicResources extends GenericResources {
                            @Value("${fr.insee.rmes.bauhaus.sugoi.ui}") String sugoiUi,
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
-                           @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules) {
+                           @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
+                           @Value("${fr.insee.rmes.bauhaus.version}") String version) {
         this.stampsService = stampsService;
         this.env = env;
         this.lg2 = lg2;
@@ -88,6 +91,7 @@ public class PublicResources extends GenericResources {
         this.appHost = appHost;
         this.activeModules=activeModules;
         this.modules = modules;
+        this.version = version;
     }
 
     @GetMapping(value = "/init", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -105,6 +109,7 @@ public class PublicResources extends GenericResources {
             props.put("authType", AuthType.getAuthType(this.env));
             props.put("activeModules", this.activeModules);
             props.put("modules", this.modules);
+            props.put("version", this.version);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
