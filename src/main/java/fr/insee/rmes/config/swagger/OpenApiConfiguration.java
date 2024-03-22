@@ -21,7 +21,7 @@ public class OpenApiConfiguration   {
     public static final String TITLE="Bauhaus";
 
     @Bean
-    public OpenAPI openAPI(@Value("${springdoc.version}") String appVersion) {
+    public OpenAPI openAPI(@Value("${fr.insee.rmes.bauhaus.version}") String appVersion) {
         return new OpenAPI()
                 .info(new Info()
                         .title(TITLE)
