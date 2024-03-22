@@ -3,10 +3,10 @@ package fr.insee.rmes.config.auth.security;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -143,43 +143,30 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
 //    for POST CodesList
-    public boolean isCodesListContributor(String contributorString) {
-
+    public boolean isCodesListContributor(String body) {
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
-        JSONObject contrib = new JSONObject(contributorString);
-        if(!contrib.has("contributor")){
-            return false;
-        }
-        String codesListContributor = contrib.getString("contributor");
-        Optional<String> timbreUtilisateur=getStamp();
-        boolean timbreOK = false;
-        if (timbreUtilisateur.isPresent()) {
-            timbreOK = codesListContributor.equals(timbreUtilisateur.get());
-        }
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR)&& checkStampIsContributor(body);
     }
 
-//for PUT and DELETE structure
+    private boolean checkStampIsContributor(String body) {
+        Optional<String> stamp = getStamp();
+        return stamp.isPresent() && stamp.get().equalsIgnoreCase(extractContributorStampFromBody(body));
+    }
+
+    private static @Nullable String extractContributorStampFromBody(String body) {
+        return (new JSONObject(body)).optString("contributor");
+    }
+
+    //for PUT and DELETE structure
     public boolean isStructureContributor(String structureId){
         logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
     }
 
 //  for POST structure or component
-    public boolean isStructureAndComponentContributor(String contributorString) {
-
+    public boolean isStructureAndComponentContributor(String body) {
         logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
-        JSONObject contrib = new JSONObject(contributorString);
-        if(!contrib.has("contributor")){
-            return false;
-        }
-        String structureContributor = contrib.getString("contributor");
-        Optional<String> timbreUtilisateur=getStamp();
-        boolean timbreOK = false;
-        if (timbreUtilisateur.isPresent()) {
-            timbreOK = structureContributor.equals(timbreUtilisateur.get());
-        }
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && timbreOK;
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR)&& checkStampIsContributor(body);
     }
 
 
