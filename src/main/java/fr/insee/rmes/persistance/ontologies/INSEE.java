@@ -50,5 +50,6 @@ public class INSEE {
 	public static final IRI NUM_OBSERVATIONS = INSEE.createIRI("numObservations");
 
 	public static final IRI SPATIAL_RESOLUTION = INSEE.createIRI("spatialResolution");
+	public static final IRI SPATIAL_TEMPORAL = INSEE.createIRI("spatialTemporal");
 
 }

@@ -1,7 +1,7 @@
 SELECT ?id ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?accessRights ?confidentialityStatus ?publisher ?landingPageLg1 ?landingPageLg2
 ?updated ?issued
 ?disseminationStatus ?processStep ?archiveUnit
-?type ?dataStructure ?timeSeriesNumber ?observationNumber ?spacialCoverage ?temporalResolution
+?type ?dataStructure ?timeSeriesNumber ?observationNumber ?spacialCoverage ?spacialTemporal ?temporalResolution
 ?temporalCoverageStartDate ?temporalCoverageEndDate (datatype(?temporalCoverageEndDate) AS ?temporalCoverageDataType)
 ?descriptionLg1 ?descriptionLg2  ?idSerie ?theme
 ?validationState ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
