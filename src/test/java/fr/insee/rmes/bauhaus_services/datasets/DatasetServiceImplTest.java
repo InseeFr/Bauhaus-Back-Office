@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -269,7 +270,6 @@ public class DatasetServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/jd1001");
 
         String datasetId = "jd1001";
-        String observation = "5";
 
         JSONObject object = new JSONObject();
         object.put("id", datasetId);
@@ -296,7 +296,9 @@ public class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
 
-             datasetService.patchDataset(datasetId, observation);
+            PatchDataset dataset = new PatchDataset();
+            dataset.setObservationNumber(5);
+             datasetService.patchDataset(datasetId, dataset);
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
