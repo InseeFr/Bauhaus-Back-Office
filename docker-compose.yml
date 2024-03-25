@@ -1,16 +1,15 @@
-version: "3"
+name: bauhaus
 services:
-  back:
+  bauhaus-back:
     build: .
     ports:
       - "8080:8080"
     links:
-      - graphdb
-    depends_on:
-      - graphdb
+      - graphdb:localhost
   graphdb:
-    image: dhlabbasel/graphdb-free
-    volumes:
-      - ./graphdb:/graphdb/data/
+    image: ontotext/graphdb:latest
+    restart: always
     ports:
       - "7200:7200"
+    environment:
+      GDB_JAVA_OPTS: "-Xmx1g -Xms512M"
