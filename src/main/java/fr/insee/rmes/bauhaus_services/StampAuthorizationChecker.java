@@ -12,6 +12,8 @@ import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONObject;
@@ -20,20 +22,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
 import static java.util.Objects.requireNonNull;
 
 @Component
 public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
-	CodeListServiceImpl codeListService = new CodeListServiceImpl();
 	private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
-	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
-	String baseInternalUri;
-	@Autowired
-	protected RepositoryGestion repoGestion;
+	private String baseInternalUri;
 
 	@Autowired
-	public StampAuthorizationChecker(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) {
+	public StampAuthorizationChecker(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider,@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}") String baseInternalUri) {
 		super(repoGestion, authorizeMethodDecider, userProvider);
+		this.baseInternalUri=baseInternalUri;
 	}
 
 	public boolean isSeriesManagerWithStamp(String seriesId, String stamp) {
@@ -63,6 +64,18 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
+
+
+	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
+	}
+	public boolean isComponentManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByComponentUri, Constants.CONTRIBUTORS);
+	}
+	public boolean isStructureManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByStructureUri, Constants.CONTRIBUTORS);
+	}
+
 	public boolean isComponentManagerWithStamp(String componentId, String stamp) {
 		try {
 			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
@@ -79,7 +92,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 	private IRI findCodesListIRI(String codesListId) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListIRIByNotation(codesListId, baseInternalUri));
 		String uriString = codeList.getString("iri");
-		IRI uriCodesList = RdfUtils.codesListIRI(uriString);
+		IRI uriCodesList = RdfUtils.createIRI(uriString);
 		return uriCodesList;
 	}
 
@@ -98,4 +111,5 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 			return RdfUtils.structureComponentMeasureIRI(componentId);
 		}
 	}
+
 }

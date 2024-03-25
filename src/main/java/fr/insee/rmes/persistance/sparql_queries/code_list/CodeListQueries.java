@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CodeListQueries extends GenericQueries {
-	static Map<String, Object> params;
 	private static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
 	private static final String CODES_LIST = "codes-list/";
 	private static final String PARTIAL = "PARTIAL";
@@ -40,9 +39,9 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
-
-		initParams();
+		initParams(params);
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
@@ -70,7 +69,8 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getContributorsByCodesListUri(String uriCodesList) throws RmesException {
-		if (params==null) {initParams();}
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(URI_CODESLIST, uriCodesList);
 		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
 	}
@@ -84,7 +84,8 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getContributorsCodesListUriWithValidationStatus(String uriCodesList) throws RmesException {
-		if (params==null) {initParams();}
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(URI_CODESLIST, uriCodesList);
 		return buildCodesListRequest("getCodesListContributorsByUriWithValidationStatusQuery.ftlh", params);
 	}
@@ -135,14 +136,16 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getDetailedCodeListByNotation(String notation, String baseInternalUri) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
 	public static String getCodeListIRIByNotation(String notation, String baseInternalUri) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(NOTATION, notation);
 		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
@@ -151,13 +154,15 @@ public class CodeListQueries extends GenericQueries {
 
 
 	public static String getCodesListsForSearch(boolean partial) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesListForSearch.ftlh", params);
 	}
 
 	public static String getCodesForSearch( boolean partial) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put(PARTIAL, partial);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodesForSearch.ftlh", params);
 	}
@@ -165,8 +170,7 @@ public class CodeListQueries extends GenericQueries {
 
 
 
-	private static void initParams() {
-		params = new HashMap<>();
+	private static void initParams(HashMap<String, Object> params) {
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
@@ -178,7 +182,8 @@ public class CodeListQueries extends GenericQueries {
 
 
 	public static String checkCodeListUnicity(String id, String iri, String seeAlso, boolean partial) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put("ID", id);
 		params.put("IRI", iri);
 		params.put("SEE_ALSO", seeAlso);
@@ -188,7 +193,8 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getPartialCodeListByParentUri(String iri) throws RmesException {
-		initParams();
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
 		params.put("IRI", iri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getPartialCodeListByParentUri.ftlh", params);
 	}

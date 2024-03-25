@@ -40,7 +40,7 @@ so this class shall not be used and therefore should be removed
  */
 public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	
-	private final RepositoryGestion repoGestion;
+	protected final RepositoryGestion repoGestion;
 	private final AuthorizeMethodDecider authorizeMethodDecider;
 	private final UserProvider userProvider;
 
@@ -70,22 +70,8 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return isOwnerForModule(getStamp(), uris, ConceptsQueries::getOwner, Constants.OWNER);
 	}
 
-	private boolean isConceptManager(IRI uri) throws RmesException {
-		return isManagerForModule(getStamp(), uri, ConceptsQueries::getManager, Constants.MANAGER);
-	}
-
-
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
-	}
-	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
-	}
-	public boolean isStructureManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByStructureUri, Constants.CONTRIBUTORS);
-	}
-	public boolean isComponentManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, StructureQueries::getContributorsByComponentUri, Constants.CONTRIBUTORS);
 	}
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
 		return isSeriesManagerWithStamp(iri, getStamp());
@@ -94,8 +80,10 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	private boolean isIndicatorCreator(IRI iri) throws RmesException {
 		return isOwnerForModule(getStamp(), List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
-
-	private boolean isManagerForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+	private boolean isConceptManager(IRI uri) throws RmesException {
+		return isManagerForModule(getStamp(), uri, ConceptsQueries::getManager, Constants.MANAGER);
+	}
+	protected boolean isManagerForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check management access for {} with stamp {}",uri, stampKey);
 		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
@@ -237,7 +225,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 
-	private interface QueryGenerator {
+	protected interface QueryGenerator {
 		String generate(String query) throws RmesException;
 	}
 }
