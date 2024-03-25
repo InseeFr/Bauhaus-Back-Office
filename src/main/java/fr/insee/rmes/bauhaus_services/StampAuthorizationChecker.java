@@ -34,6 +34,24 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		}
 	}
 
+	public boolean isDatasetManagerWithStamp(String datasetId, String stamp) {
+		try {
+			return isDatasetManagerWithStamp(findDatasetIRI(requireNonNull(datasetId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, datasetId);
+			return false;
+		}
+	}
+
+	public boolean isDistributionManagerWithStamp(String datasetId, String stamp) {
+		try {
+			return isDistributionManagerWithStamp(findDistributionIRI(requireNonNull(datasetId)), requireNonNull(stamp));
+		} catch (RmesException e) {
+			logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, datasetId);
+			return false;
+		}
+	}
+
 	public boolean isCodesListManagerWithStamp(String codesListId, String stamp) {
 		try {
 			return isCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
@@ -60,5 +78,13 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 
 	private IRI findCodesListIRI(String codesListId) {
 		return RdfUtils.objectIRI(ObjectType.CODE_LIST, codesListId);
+	}
+
+	private IRI findDatasetIRI(String datasetId) {
+		return RdfUtils.objectIRI(ObjectType.DATASET, datasetId);
+	}
+
+	private IRI findDistributionIRI(String distributionId) {
+		return RdfUtils.objectIRI(ObjectType.DISTRIBUTION, distributionId);
 	}
 }

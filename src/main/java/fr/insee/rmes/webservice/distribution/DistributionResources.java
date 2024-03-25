@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,10 +56,11 @@ public class DistributionResources {
     }
 
     @PutMapping("/{id}/validate")
+    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @Operation(operationId = "publishDistribution", summary = "Publish a Distribution",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public String publishDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.distributionService.publishDistribution(id);
+    public String publishDistribution(@PathVariable(Constants.ID) String distributionId) throws RmesException {
+        return this.distributionService.publishDistribution(distributionId);
     }
 
     @GetMapping("/datasets")
@@ -73,6 +75,7 @@ public class DistributionResources {
         return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a Distribution")
     @ResponseStatus(HttpStatus.CREATED)
@@ -81,11 +84,20 @@ public class DistributionResources {
         return this.distributionService.create(body);
     }
 
+    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDistribution", summary = "Update a Distribution")
     public String updateDistribution(
             @PathVariable("id") String distributionId,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
         return this.distributionService.update(distributionId, body);
+    }
+
+    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
+    @DeleteMapping("/{id}")
+    @Operation(operationId = "deleteDataset", summary = "Delete a Dataset",
+            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
+    public String deleteDataset(@PathVariable(Constants.ID) String distributionId) throws RmesException {
+        return "Not Yet Implemented";
     }
 }

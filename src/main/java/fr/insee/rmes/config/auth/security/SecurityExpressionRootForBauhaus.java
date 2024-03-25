@@ -3,7 +3,6 @@ package fr.insee.rmes.config.auth.security;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +130,21 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.ADMIN);
     }
 
+    public boolean isDatasetContributor() {
+        logger.trace("Check if {} is dataset contributor", methodSecurityExpressionRoot.getPrincipal());
+        return hasRole(Roles.DATASET_CONTRIBUTOR);
+    }
+
+    public boolean isDatasetContributorWithStamp(String datasetId){
+        logger.trace("Check if {} is contributor for dataset {}", methodSecurityExpressionRoot.getPrincipal(), datasetId);
+        return isDatasetContributor() && isManagerForDatasetId(datasetId);
+    }
+
+    public boolean isDistributionContributorWithStamp(String distributionId){
+        logger.trace("Check if {} is contributor for distribution {}", methodSecurityExpressionRoot.getPrincipal(), distributionId);
+        return isDatasetContributor() && isManagerForDistributionId(distributionId);
+    }
+
     public boolean isContributorOfSerie(String seriesId) {
         logger.trace("Check if {} is contributor for serie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
@@ -171,14 +185,20 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
+
+    private boolean isManagerForDatasetId(String datasetId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isDatasetManagerWithStamp(requireNonNull(datasetId), stamp)).orElse(false);
+    }
+    private boolean isManagerForDistributionId(String distributionId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isDistributionManagerWithStamp(requireNonNull(distributionId), stamp)).orElse(false);
+    }
+
     public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
 
-
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);
     }
-
 
 }
