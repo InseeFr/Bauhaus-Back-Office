@@ -29,6 +29,7 @@ import static java.util.Objects.requireNonNull;
 @Component
 public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 	private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
+	public static final String CHECKING_AUTHORIZATION_ERROR_MESSAGE = "Error while checking authorization for user with stamp {} to modify or delete {}";
 	private String baseInternalUri;
 
 	@Autowired
@@ -50,7 +51,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isCodesListManagerWithStamp(findCodesListIRI(requireNonNull(codesListId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, codesListId);
+			logger.error(CHECKING_AUTHORIZATION_ERROR_MESSAGE, stamp, codesListId);
 			return false;
 		}
 	}
@@ -59,7 +60,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isStructureManagerWithStamp(findStructureIRI(requireNonNull(structureId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, structureId);
+			logger.error(CHECKING_AUTHORIZATION_ERROR_MESSAGE, stamp, structureId);
 			return false;
 		}
 	}
@@ -80,7 +81,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 		try {
 			return isComponentManagerWithStamp(findComponentIRI(requireNonNull(componentId)), requireNonNull(stamp));
 		} catch (RmesException e) {
-			logger.error("Error while checking authorization for user with stamp {} to modify or delete {}", stamp, componentId);
+			logger.error(CHECKING_AUTHORIZATION_ERROR_MESSAGE, stamp, componentId);
 			return false;
 		}
 	}

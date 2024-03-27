@@ -18,6 +18,8 @@ import java.util.Map;
 public class StructureQueries extends GenericQueries{
 	private static final String URI_STRUCTURE = "URI_STRUCTURE";
 	private static final String URI_COMPONENT = "URI_COMPONENT";
+	public static final String CODES_LISTS_GRAPH = "CODES_LISTS_GRAPH";
+
 	public static String 	getStructures() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
@@ -58,7 +60,7 @@ public class StructureQueries extends GenericQueries{
 		params.put("COMPONENT_ID", componentId);
 		params.put("CONCEPT_URI", INSEE.STRUCTURE_CONCEPT + conceptUri);
 		params.put("CODE_LIST_URI", codeListUri);
-		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("CONCEPT_GRAPH", config.getConceptsGraph());
 		params.put("TYPE", type);
 		return buildStructureRequest("checkUnicityMutualizedComponent.ftlh", params);
@@ -137,7 +139,7 @@ public class StructureQueries extends GenericQueries{
 	public static String getUriClasseOwl(String codeList) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
-		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("CODES_LIST", codeList);
 
 		return buildStructureRequest("getUriClasseOwl.ftlh", params);
@@ -151,7 +153,7 @@ public class StructureQueries extends GenericQueries{
 	private static void initParams(HashMap<String, Object> params) {
 		params.put("STRUCTURES_COMPONENTS_GRAPH", config.getStructuresComponentsGraph());
 		params.put("STRUCTURES_GRAPH", config.getStructuresGraph());
-		params.put("CODES_LISTS_GRAPH", config.getCodeListGraph());
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 	}

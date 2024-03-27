@@ -14,6 +14,7 @@ public class CodeListQueries extends GenericQueries {
 	private static final String PARTIAL = "PARTIAL";
 	private static final String NOTATION = "NOTATION";
 	private static final String URI_CODESLIST = "URI_CODESLIST";
+	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
 
 	public static String isCodesListValidated(String codesListUri) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -44,7 +45,7 @@ public class CodeListQueries extends GenericQueries {
 		initParams(params);
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
-		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
 		if(perPageValue > 0){
 			params.put("OFFSET", perPageValue * (page - 1));
 			params.put("PER_PAGE", perPageValue);
@@ -139,7 +140,7 @@ public class CodeListQueries extends GenericQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
 		params.put(NOTATION, notation);
-		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodesList.ftlh", params);
 	}
@@ -147,7 +148,7 @@ public class CodeListQueries extends GenericQueries {
 		HashMap<String, Object> params = new HashMap<>();
 		initParams(params);
 		params.put(NOTATION, notation);
-		params.put("CODE_LIST_BASE_URI", config.getCodeListBaseUri());
+		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
 		params.put("BASE_INTERNAL_URI", baseInternalUri);
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getCodeListIRIByNotation.ftlh", params);
 	}
@@ -200,6 +201,6 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	private static String buildCodesListRequest(String fileName, Map<String, Object> params) throws RmesException  {
-		return FreeMarkerUtils.buildRequest("codes-list/", fileName, params);
+		return FreeMarkerUtils.buildRequest(CODES_LIST, fileName, params);
 	}
 }
