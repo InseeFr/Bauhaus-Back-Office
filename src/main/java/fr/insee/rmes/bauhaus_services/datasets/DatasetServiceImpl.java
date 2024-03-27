@@ -33,6 +33,11 @@ import java.util.List;
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
+    public static final String THEME = "theme";
+    public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
+    public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
+    public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
+    public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     @Autowired
     UserProviderFromSecurityContext userProviderFromSecurityContext;
 
@@ -99,12 +104,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         List<String> themes = new ArrayList<>();
         for(int i = 0; i < datasetWithThemes.length(); i++){
             JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
-            if(tempDataset.has("theme")){
-                themes.add(tempDataset.getString("theme"));
+            if(tempDataset.has(THEME)){
+                themes.add(tempDataset.getString(THEME));
             }
         }
         dataset.put("themes", themes);
-        dataset.remove("theme");
+        dataset.remove(THEME);
 
         JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
         List<String> creators = new ArrayList<>();
@@ -122,21 +127,21 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("statisticalUnit", statisticalUnit);
 
         JSONObject catalogRecord = new JSONObject();
-        if(dataset.has("catalogRecordCreator")){
-            catalogRecord.put("creator", dataset.getString("catalogRecordCreator"));
-            dataset.remove("catalogRecordCreator");
+        if(dataset.has(CATALOG_RECORD_CREATOR)){
+            catalogRecord.put("creator", dataset.getString(CATALOG_RECORD_CREATOR));
+            dataset.remove(CATALOG_RECORD_CREATOR);
         }
-        if(dataset.has("catalogRecordContributor")){
-            catalogRecord.put("contributor", dataset.getString("catalogRecordContributor"));
-            dataset.remove("catalogRecordContributor");
+        if(dataset.has(CATALOG_RECORD_CONTRIBUTOR)){
+            catalogRecord.put("contributor", dataset.getString(CATALOG_RECORD_CONTRIBUTOR));
+            dataset.remove(CATALOG_RECORD_CONTRIBUTOR);
         }
-        if(dataset.has("catalogRecordCreated")){
-            catalogRecord.put("created", dataset.getString("catalogRecordCreated"));
-            dataset.remove("catalogRecordCreated");
+        if(dataset.has(CATALOG_RECORD_CREATED)){
+            catalogRecord.put("created", dataset.getString(CATALOG_RECORD_CREATED));
+            dataset.remove(CATALOG_RECORD_CREATED);
         }
-        if(dataset.has("catalogRecordUpdated")){
-            catalogRecord.put("updated", dataset.getString("catalogRecordUpdated"));
-            dataset.remove("catalogRecordUpdated");
+        if(dataset.has(CATALOG_RECORD_UPDATED)){
+            catalogRecord.put("updated", dataset.getString(CATALOG_RECORD_UPDATED));
+            dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
         return dataset.toString();
