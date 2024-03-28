@@ -43,4 +43,10 @@ public class DistributionQueries extends GenericQueries {
         params.put("DATASET_GRAPH", distributionGraph);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
+
+    public static String getContributorsByDistributionUri(String uri) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DISTRIBUTION_GRAPH_URI", uri);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributionContributorsByUriQuery.ftlh", params);
+    }
 }

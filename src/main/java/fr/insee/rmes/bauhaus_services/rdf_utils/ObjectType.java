@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.persistance.ontologies.*;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
@@ -29,6 +30,10 @@ public enum ObjectType {
 	ORGANIZATION("organization", ORG.ORGANIZATION, null, s->""),
 	STRUCTURE("structure", QB.DATA_STRUCTURE_DEFINITION, STRUCTURES_BASE_URI, identity()),
 	CODE_LIST(Constants.CODELIST, QB.CODE_LIST, CODE_LIST_BASE_URI, identity()),
+	DATASET(Constants.DATASET, DCAT.DATASET, DATASET_BASE_URI, identity()),
+	DISTRIBUTION(Constants.DISTRIBUTION, DCAT.DISTRIBUTION, DISTRIBUTION_BASE_URI, identity()),
+
+
 	MEASURE_PROPERTY("measureProperty", QB.MEASURE_PROPERTY, STRUCTURES_COMPONENTS_BASE_URI, s->s+"mesure"),
 	ATTRIBUTE_PROPERTY("attributeProperty", QB.ATTRIBUTE_PROPERTY, STRUCTURES_COMPONENTS_BASE_URI, s->s+"attribut"),
 

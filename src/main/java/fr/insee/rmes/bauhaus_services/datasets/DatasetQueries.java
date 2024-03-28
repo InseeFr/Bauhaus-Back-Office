@@ -62,4 +62,11 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
 
+    public static String getContributorsByDatasetUri(String iri) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("DATASET_GRAPH_URI", iri);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsContributorsByUriQuery.ftlh", params);
+    }
+
+
 }

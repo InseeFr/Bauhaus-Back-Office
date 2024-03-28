@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
+import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -80,6 +82,16 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
 	}
+
+	public boolean isDatasetManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, DatasetQueries::getContributorsByDatasetUri, Constants.CONTRIBUTORS);
+	}
+
+	public boolean isDistributionManagerWithStamp(IRI iri, String stamp) throws RmesException {
+		return isManagerForModule(stamp, iri, DistributionQueries::getContributorsByDistributionUri, Constants.CONTRIBUTORS);
+	}
+
+
 	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
 	}
