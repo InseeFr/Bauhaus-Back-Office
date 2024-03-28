@@ -114,6 +114,7 @@ public class RepositoryGestion  {
 			con = repositoryUtils.initRepository(config.getRdfServerGestion(),
 					config.getRepositoryIdGestion()).getConnection();
 		}
+
 		try {
 			statements = con.getStatements(subject, null, null, false);
 		} catch (RepositoryException e) {
