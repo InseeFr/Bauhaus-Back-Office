@@ -77,7 +77,9 @@ public class OrganizationsResources  extends GenericResources {
 			}
 		}
 		else try {
+			logger.info("[OrganizationsResources] Starting fetching organizations");
 			resultat = organizationsService.getOrganizationsJson();
+			logger.info("[OrganizationsResources] fetching organizations is now done");
 		} catch (RmesException e) {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
