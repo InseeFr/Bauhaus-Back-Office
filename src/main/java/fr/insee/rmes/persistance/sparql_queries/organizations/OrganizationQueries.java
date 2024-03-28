@@ -43,7 +43,7 @@ public class OrganizationQueries extends GenericQueries{
 	public static String organizationsQuery() throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
-		params.put("ORGANIZATIONS_INSEE_GRAPH", config.getOrganizationsGraph());
+		params.put("ORGANIZATIONS_INSEE_GRAPH", config.getOrgInseeGraph());
 		params.put("LG1", config.getLg1());
 		return FreeMarkerUtils.buildRequest("organizations/", "getOrganizations.ftlh", params);
 	}
