@@ -35,6 +35,9 @@ public class ExportUtils {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ATTACHMENT = "attachment";
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
+    public static final String CAN_T_GENERATE_CODEBOOK = "Can't generate codebook";
+    public static final String NULL_STREAM = "Stream is null";
+    public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     final int maxLength;
 
@@ -68,7 +71,7 @@ public class ExportUtils {
         ZipEntry entry = new ZipEntry(filename + FilesUtils.ODT_EXTENSION);
         InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
         if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
         zos.putNextEntry(entry);
         input.transferTo(zos);
         zos.closeEntry(); // close the entry. Note: not closing the zos just yet as we need to add more files to our ZIP
@@ -80,7 +83,7 @@ public class ExportUtils {
 
         response.addHeader(HttpHeaders.ACCEPT, "*/*");
         response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader("Content-Disposition", "attachment; filename=\"" + zipFileName + "\"");
+        response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
         response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
 
@@ -189,7 +192,7 @@ public class ExportUtils {
         fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
         InputStream input = exportAsInputStreamODS(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
         if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
 
         ByteArrayResource resource = null;
         try {
@@ -207,7 +210,7 @@ public class ExportUtils {
         responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
         responseHeaders.setContentDisposition(content);
         List<String> allowHeaders = new ArrayList<>();
-        allowHeaders.add("Content-Disposition");
+        allowHeaders.add(CONTENT_DISPOSITION);
         allowHeaders.add("Access-Control-Allow-Origin");
         allowHeaders.add("Access-Control-Allow-Credentials");
         responseHeaders.setAccessControlExposeHeaders(allowHeaders);
@@ -227,7 +230,7 @@ public class ExportUtils {
 
         InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
         if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook", "Stream is null");
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
 
         ByteArrayResource resource = null;
         try {
@@ -245,7 +248,7 @@ public class ExportUtils {
         responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
         responseHeaders.setContentDisposition(content);
         List<String> allowHeaders = new ArrayList<>();
-        allowHeaders.add("Content-Disposition");
+        allowHeaders.add(CONTENT_DISPOSITION);
         allowHeaders.add("Access-Control-Allow-Origin");
         allowHeaders.add("Access-Control-Allow-Credentials");
         responseHeaders.setAccessControlExposeHeaders(allowHeaders);
