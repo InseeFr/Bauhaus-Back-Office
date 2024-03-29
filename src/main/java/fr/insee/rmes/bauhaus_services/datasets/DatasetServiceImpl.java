@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -217,13 +218,34 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
+    public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        int observationNumberInt = Integer.parseInt(observationNumber);
-        if ( observationNumberInt > 0){
-            dataset.setObservationNumber(observationNumberInt);
+
+        if ( patchDataset.getIssued() != null){
+            dataset.setIssued(patchDataset.getIssued());
         }
+
+        if ( patchDataset.getUpdated() != null){
+            dataset.setUpdated(patchDataset.getUpdated());
+        }
+
+        if ( patchDataset.getTemporalCoverageStartDate() != null){
+            dataset.setTemporalCoverageStartDate(patchDataset.getTemporalCoverageStartDate());
+        }
+
+        if ( patchDataset.getTemporalCoverageEndDate() != null){
+            dataset.setTemporalCoverageEndDate(patchDataset.getTemporalCoverageEndDate());
+        }
+
+        if ( patchDataset.getObservationNumber() != null && patchDataset.getObservationNumber() > 0){
+            dataset.setObservationNumber(patchDataset.getObservationNumber());
+        }
+
+        if ( patchDataset.getTimeSeriesNumber() != null){
+            dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
+        }
+
         update(datasetId, dataset);
     }
 
@@ -313,7 +335,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             BNode node =  RdfUtils.createBlankNode();
             model.add(node, RDF.TYPE, DCTERMS.PERIOD_OF_TIME, graph);
 
-            if(dataset.getTemporalCoverageDataType().endsWith("date")){
+            if(dataset.getTemporalCoverageDataType() != null && dataset.getTemporalCoverageDataType().endsWith("date")){
 
                 if(StringUtils.hasLength(dataset.getTemporalCoverageStartDate())){
                     model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);
