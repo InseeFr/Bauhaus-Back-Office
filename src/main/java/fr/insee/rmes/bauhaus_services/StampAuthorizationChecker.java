@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.bauhaus_services.code_list.CodeListServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
@@ -8,12 +7,8 @@ import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
-import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONObject;
@@ -22,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import static java.util.Objects.requireNonNull;
 
@@ -126,7 +120,6 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
 	private IRI findDistributionIRI(String distributionId) {
 		return RdfUtils.objectIRI(ObjectType.DISTRIBUTION, distributionId);
 	}
-}
 
 	private IRI findComponentIRI(String componentId) throws RmesException {
 		JSONObject type = repoGestion.getResponseAsObject(StructureQueries.getComponentType(componentId));

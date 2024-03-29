@@ -207,10 +207,6 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isDistributionManagerWithStamp(requireNonNull(distributionId), stamp)).orElse(false);
     }
 
-    public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
-    }
-
     private boolean isManagerForStructureId(String structureId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
