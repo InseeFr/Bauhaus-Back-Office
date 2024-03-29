@@ -11,6 +11,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.StructureResources;
 import org.junit.jupiter.api.Test;
@@ -82,25 +83,25 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void putStructureAsStructureContributor_StampOK() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre))).thenReturn(true);
         mvc.perform(put("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre));
     }
 
     @Test
     void putStructureAsStructureContributor_badStructureStamp() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre))).thenReturn(false);
         mvc.perform(put("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre));
     }
 
     @Test
@@ -182,23 +183,23 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void deleteUnpublishedStructureAsStructureContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre))).thenReturn(true);
         mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre));
     }
 
     @Test
     void deletePublishedStructureAsStructureContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre))).thenReturn(false);
         mvc.perform(delete("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isStructureManagerWithStamp(String.valueOf(structureId),new Stamp(timbre));
     }
 
     @Test
@@ -214,25 +215,25 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void putComponentAsComponentContributor_StampOK() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre))).thenReturn(true);
         mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre));
     }
 
     @Test
     void putComponentAsComponentContributor_badComponentStamp() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre))).thenReturn(false);
         mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre));
     }
 
     @Test
@@ -265,23 +266,23 @@ public class TestStructuresResourcesEnvProd {
     @Test
     void deleteUnpublishedComponentAsStructureContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre))).thenReturn(true);
         mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre));
     }
 
     @Test
     void deletePublishedComponentAsStructureContributor_forbidden() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre))).thenReturn(false);
         mvc.perform(delete("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isComponentManagerWithStamp(String.valueOf(componentId),new Stamp(timbre));
     }
 
 

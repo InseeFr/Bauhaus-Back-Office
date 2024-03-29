@@ -29,6 +29,9 @@ public record PropertiesKeys() {
 
     public static final String DOCUMENTS_BASE_URI ="fr.insee.rmes.bauhaus.documents.baseURI";
 
+    public static final String DATASET_BASE_URI ="fr.insee.rmes.bauhaus.datasets.baseURI";
+    public static final String DISTRIBUTION_BASE_URI ="fr.insee.rmes.bauhaus.distribution.baseURI";
+
     public static final String BASE_URI_GESTION ="fr.insee.rmes.bauhaus.sesame.gestion.baseURI";
 
     public static final String BASE_URI_PUBLICATION ="fr.insee.rmes.bauhaus.sesame.publication.baseURI";

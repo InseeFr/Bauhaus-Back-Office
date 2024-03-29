@@ -80,4 +80,17 @@ public class DistributionQueriesTest {
             Assertions.assertEquals(query, "request");
         }
     }
+
+    @Test
+    void shouldCallGetContributorsByDistributionUri() throws RmesException {
+        DistributionQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("DISTRIBUTION_GRAPH_URI", "distribution-graph-uri");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("distribution/"), eq("getDistributionContributorsByUriQuery.ftlh"), eq(map))).thenReturn("request");
+            String query = DistributionQueries.getContributorsByDistributionUri("distribution-graph-uri");
+            Assertions.assertEquals(query, "request");
+        }
+    }
 }
