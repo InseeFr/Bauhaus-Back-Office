@@ -1,63 +1,25 @@
 package fr.insee.rmes.model.dataset;
 
-public class PatchDataset {
-    private String updated;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 
-    private String issued;
+import java.util.List;
 
-    private Integer observationNumber;
+public record PatchDataset (String updated, String issued, Integer observationNumber, Integer timeSeriesNumber,
+                            String temporalCoverageStartDate, String temporalCoverageEndDate){
 
-    private Integer timeSeriesNumber;
-
-    private String temporalCoverageStartDate;
-
-    private String temporalCoverageEndDate;
-
-    public String getUpdated() {
-        return updated;
+    public PatchDataset {
+        if (observationNumber!=null && observationNumber<=0){
+            throw new RmesRuntimeBadRequestException("observationNumber must be greater than zero");
+        }
     }
 
-    public void setUpdated(String updated) {
-        this.updated = updated;
-    }
+    public List<String> listNonNullProperties(){
+        if (this instanceof PatchDataset(String updated, String issued, Integer observationNumber, Integer timeSeriesNumber,
+                String temporalCoverageStartDate, String temporalCoverageEndDate)){
 
-    public String getIssued() {
-        return issued;
-    }
-
-    public void setIssued(String issued) {
-        this.issued = issued;
-    }
-
-    public Integer getObservationNumber() {
-        return observationNumber;
-    }
-
-    public void setObservationNumber(Integer observationNumber) {
-        this.observationNumber = observationNumber;
-    }
-
-    public Integer getTimeSeriesNumber() {
-        return timeSeriesNumber;
-    }
-
-    public void setTimeSeriesNumber(Integer timeSeriesNumber) {
-        this.timeSeriesNumber = timeSeriesNumber;
-    }
-
-    public String getTemporalCoverageStartDate() {
-        return temporalCoverageStartDate;
-    }
-
-    public void setTemporalCoverageStartDate(String temporalCoverageStartDate) {
-        this.temporalCoverageStartDate = temporalCoverageStartDate;
-    }
-
-    public String getTemporalCoverageEndDate() {
-        return temporalCoverageEndDate;
-    }
-
-    public void setTemporalCoverageEndDate(String temporalCoverageEndDate) {
-        this.temporalCoverageEndDate = temporalCoverageEndDate;
+        }
     }
 }
+
+

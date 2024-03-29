@@ -23,9 +23,12 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -222,6 +225,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
 
+        /*copyPropertiesNotNull
+
         if ( patchDataset.getIssued() != null){
             dataset.setIssued(patchDataset.getIssued());
         }
@@ -244,7 +249,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         if ( patchDataset.getTimeSeriesNumber() != null){
             dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
-        }
+        }*/
 
         update(datasetId, dataset);
     }

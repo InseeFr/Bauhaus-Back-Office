@@ -296,9 +296,8 @@ public class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
 
-            PatchDataset dataset = new PatchDataset();
-            dataset.setObservationNumber(5);
-             datasetService.patchDataset(datasetId, dataset);
+            PatchDataset dataset = new PatchDataset(null, null, 5, null, null, null);
+            datasetService.patchDataset(datasetId, dataset);
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
