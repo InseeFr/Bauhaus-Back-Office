@@ -8,8 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConceptsQueries extends GenericQueries{
-	
+
 	private static final String URI_CONCEPT = "uriConcept";
+	public static final String CONCEPTS_GRAPH = "CONCEPTS_GRAPH";
 	static Map<String,Object> params ;
 	
 	private ConceptsQueries() {
@@ -29,7 +30,7 @@ public class ConceptsQueries extends GenericQueries{
 	
 	public static String conceptsQuery() throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 	
@@ -111,7 +112,7 @@ public class ConceptsQueries extends GenericQueries{
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
 	}
 	
@@ -184,7 +185,7 @@ public class ConceptsQueries extends GenericQueries{
 	public static String conceptLinks(String idConcept) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("ID_CONCEPT", idConcept);
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
 		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
@@ -268,7 +269,7 @@ public class ConceptsQueries extends GenericQueries{
 
 	public static String isConceptValidated(String conceptId) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		params.put("ID", conceptId);
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}

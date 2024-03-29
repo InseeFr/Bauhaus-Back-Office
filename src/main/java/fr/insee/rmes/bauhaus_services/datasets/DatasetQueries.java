@@ -9,6 +9,7 @@ import java.util.HashMap;
 public class DatasetQueries extends GenericQueries {
 
     private static final String ROOT_DIRECTORY = "dataset/";
+    public static final String DATASET_GRAPH = "DATASET_GRAPH";
 
     public static String getArchivageUnits() throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
@@ -18,7 +19,7 @@ public class DatasetQueries extends GenericQueries {
 
     public static String getDatasets(String datasetsGraph, String stamp) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put(DATASET_GRAPH, datasetsGraph);
         params.put("LG1", config.getLg1());
 
         if(stamp != null){
@@ -29,7 +30,7 @@ public class DatasetQueries extends GenericQueries {
 
     public static String getDataset(String id, String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put(DATASET_GRAPH, datasetsGraph);
         params.put("LG1", config.getLg1());
         params.put("LG2", config.getLg2());
         params.put("ID", id);
@@ -38,7 +39,7 @@ public class DatasetQueries extends GenericQueries {
 
     private static String getDatasetArrays(String path, String datasetsGraph, String id) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put(DATASET_GRAPH, datasetsGraph);
         params.put("ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, path, params);
     }
@@ -57,7 +58,7 @@ public class DatasetQueries extends GenericQueries {
 
     public static String lastDatasetId(String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
-        params.put("DATASET_GRAPH", datasetsGraph);
+        params.put(DATASET_GRAPH, datasetsGraph);
 
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }

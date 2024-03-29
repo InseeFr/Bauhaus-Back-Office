@@ -44,6 +44,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private static final String LAST_CODE_URI_SEGMENT = "lastCodeUriSegment";
 
 	static final Logger logger = LoggerFactory.getLogger(CodeListServiceImpl.class);
+	public static final String VALIDATION_STATE = "validationState";
+	public static final String CONCEPT = "concept/";
 
 
 	@Autowired
@@ -190,7 +192,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private boolean checkCodeListUnicity(boolean partial, JSONObject codeList, String iri) throws RmesException {
 		String id = codeList.getString(Constants.ID);
 		if(!partial) {
-			IRI seeAlso = RdfUtils.codeListIRI("concept/" + codeList.getString(LAST_CLASS_URI_SEGMENT));
+			IRI seeAlso = RdfUtils.codeListIRI(CONCEPT + codeList.getString(LAST_CLASS_URI_SEGMENT));
 			return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, RdfUtils.toString(seeAlso), false));
 		}
 		return repoGestion.getResponseAsBoolean(CodeListQueries.checkCodeListUnicity(id, iri, "", true));
@@ -247,7 +249,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONObject codesList = getDetailedCodesListJson(notation, partial);
 		String iri = codesList.getString("iri");
 
-		if(!codesList.getString("validationState").equalsIgnoreCase("Unpublished")){
+		if(!codesList.getString(VALIDATION_STATE).equalsIgnoreCase("Unpublished")){
 			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
 		}
 
@@ -292,7 +294,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {
 		String codeListId = codesList.getString(Constants.ID);
 
-		if(codesList.has("validationState") && codesList.getString("validationState").equalsIgnoreCase(ValidationStatus.VALIDATED.getValue())){
+		if(codesList.has(VALIDATION_STATE) && codesList.getString(VALIDATION_STATE).equalsIgnoreCase(ValidationStatus.VALIDATED.getValue())){
 			model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graph);
 		} else {
 			model.add(codeListIri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);
@@ -337,7 +339,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			}
 		} else {
 			RdfUtils.addTripleString(codeListIri, RdfUtils.createIRI(baseInternalURI + LAST_CODE_URI_SEGMENT), codesList.getString(LAST_CODE_URI_SEGMENT), model, graph);
-			IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
+			IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
 			RdfUtils.addTripleUri(codeListIri, RDFS.SEEALSO, owlClassUri, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDF.TYPE, OWL.CLASS, model, graph);
 			RdfUtils.addTripleUri(owlClassUri, RDFS.SEEALSO, codeListIri, model, graph);
@@ -418,7 +420,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		JSONObject code = new JSONObject(body);
 		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
 
-		IRI owlClassUri = RdfUtils.codeListIRI("concept/" + codesList.getString(LAST_CLASS_URI_SEGMENT));
+		IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code.getString(CODE));
 		IRI codeListIri = this.generateIri(codesList, false);

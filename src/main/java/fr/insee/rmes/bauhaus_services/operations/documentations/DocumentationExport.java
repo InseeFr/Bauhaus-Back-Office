@@ -29,7 +29,8 @@ import java.util.stream.Collectors;
 @Component
 public class DocumentationExport {
 
-	
+
+	public static final String DOCUMENTATION = "documentation";
 	@Autowired
 	ExportUtils exportUtils;
 	
@@ -77,21 +78,21 @@ public class DocumentationExport {
 
 		if(!documents){
 			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
 			}
 		} else {
 			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
 
 			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, "documentation");
+				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
 
 			}
 			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, "documentation");
+				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
 			}
 		}
 
