@@ -374,9 +374,15 @@ public class StructureUtils extends RdfService {
     }
 
     public void deleteStructure(String structureId) throws RmesException {
-        IRI structureIri = RdfUtils.structureIRI(structureId);
-        repoGestion.clearStructureNodeAndComponents(structureIri);
-        repoGestion.deleteObject(structureIri, null);
+        String structureState = getValidationStatus(structureId);
+        if(!structureState.equalsIgnoreCase("Unpublished")){
+            throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+        }
+        else {
+            IRI structureIri = RdfUtils.structureIRI(structureId);
+            repoGestion.clearStructureNodeAndComponents(structureIri);
+            repoGestion.deleteObject(structureIri, null);
+        }
     }
 
     public String publishStructure(JSONObject structure) throws RmesException {

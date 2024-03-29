@@ -3,10 +3,10 @@ package fr.insee.rmes.config.auth.security;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
@@ -136,34 +136,47 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
     }
 
-//    for PUT
+//    for PUT and DELETE CodesList
     public boolean isContributorOfCodesList(String codesListId){
         logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
-//    for POST
-    public boolean isCodesListContributor(String contributorString) {
-
+//    for POST CodesList
+    public boolean isCodesListContributor(String body) {
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
-        JSONObject contrib = new JSONObject(contributorString);
-        if(!contrib.has("contributor")){
-            return false;
-        }
-        String codesListContributor = contrib.getString("contributor");
-        Optional<String> timbreUtilisateur=getStamp();
-        boolean timbreOK = false;
-        if (timbreUtilisateur.isPresent()) {
-            timbreOK = codesListContributor.equals(timbreUtilisateur.get());
-        }
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR)&& checkStampIsContributor(body);
     }
 
-//for DELETE
-    public boolean isContributorOfUnpublishedCodesList(String codesListId) {
-        logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
+    private boolean checkStampIsContributor(String body) {
+        Optional<String> stamp = getStamp();
+        return stamp.isPresent() && stamp.get().equalsIgnoreCase(extractContributorStampFromBody(body));
     }
+
+    private static @Nullable String extractContributorStampFromBody(String body) {
+        return (new JSONObject(body)).optString("contributor");
+    }
+
+    //for PUT and DELETE structure
+    public boolean isStructureContributor(String structureId){
+        logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
+    }
+
+//  for POST structure or component
+    public boolean isStructureAndComponentContributor(String body) {
+        logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR)&& checkStampIsContributor(body);
+    }
+
+
+    //for PUT and DELETE component
+    public boolean isComponentContributor(String componentId){
+        logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
+    }
+
+
     private boolean isManagerForSerieId(String seriesId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
     }
@@ -171,11 +184,12 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private boolean isManagerForCodesListId(String codesListId) {
         return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
     }
-    public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
+    private boolean isManagerForStructureId(String structureId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
     }
-
-
+    private boolean isManagerForComponentId(String componentId) {
+        return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
+    }
     private Optional<String> getStamp() {
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);
     }
