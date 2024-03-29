@@ -9,6 +9,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import org.junit.jupiter.api.Test;
@@ -185,7 +186,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldUpdateADatasetIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,7 +197,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldNotUpdateADatasetIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -226,7 +227,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldPublishADatasetIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/datasets/" + datasetId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -236,7 +237,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldNotPublishADatasetIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/datasets/" + datasetId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -264,7 +265,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldDeleteADatasetIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -275,7 +276,7 @@ public class TestDatasetsResourcesEnvProd {
 
     @Test
     void shouldNotDeleteADatasetIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)

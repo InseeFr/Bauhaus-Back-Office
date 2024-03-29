@@ -10,6 +10,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.junit.jupiter.api.Test;
@@ -162,7 +163,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldUpdateADistributionIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -173,7 +174,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldNotUpdateADistributionIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -203,7 +204,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldPublishADistributionIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/distribution/" + distributionId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -213,7 +214,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldNotPublishADistributionIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(put("/distribution/" + distributionId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -241,7 +242,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldDeleteADistributionIfDatasetContributorBasedOnStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(true);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -252,7 +253,7 @@ public class TestDistributionsResourcesEnvProd {
 
     @Test
     void shouldNotDeleteADistributionIfDatasetContributorWithoutStamp() throws Exception {
-        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isDistributionManagerWithStamp(String.valueOf(distributionId),new Stamp(timbre))).thenReturn(false);
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)

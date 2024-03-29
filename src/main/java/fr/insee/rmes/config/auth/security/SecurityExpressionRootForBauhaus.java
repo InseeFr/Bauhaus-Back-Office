@@ -3,6 +3,7 @@ package fr.insee.rmes.config.auth.security;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 import static java.util.Objects.requireNonNull;
 
@@ -164,8 +166,8 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     private boolean checkStampIsContributor(String body) {
-        Optional<String> stamp = getStamp();
-        return stamp.isPresent() && stamp.get().equalsIgnoreCase(extractContributorStampFromBody(body));
+        Optional<Stamp> stamp = getStamp();
+        return stamp.isPresent() && stamp.get().stamp().equalsIgnoreCase(extractContributorStampFromBody(body));
     }
 
     private static @Nullable String extractContributorStampFromBody(String body) {
@@ -191,31 +193,40 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
     }
 
+    private boolean userHasStampWichManageResource(String resourceId, BiPredicate<String, Stamp> stampIsManager){
+        if (resourceId==null){
+            throw new RmesRuntimeBadRequestException("id must be not null");
+        }
+        var stamp = getStamp();
+        return stamp.isPresent() && stampIsManager.test(resourceId, stamp.get());
+    }
+
 
     private boolean isManagerForSerieId(String seriesId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
+        return userHasStampWichManageResource(seriesId, this.stampAuthorizationChecker::isSeriesManagerWithStamp);
     }
 
     private boolean isManagerForCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
+        return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
     }
 
     private boolean isManagerForDatasetId(String datasetId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isDatasetManagerWithStamp(requireNonNull(datasetId), stamp)).orElse(false);
+        return userHasStampWichManageResource(datasetId, this.stampAuthorizationChecker::isDatasetManagerWithStamp);
     }
     private boolean isManagerForDistributionId(String distributionId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isDistributionManagerWithStamp(requireNonNull(distributionId), stamp)).orElse(false);
+        return userHasStampWichManageResource(distributionId, this.stampAuthorizationChecker::isDistributionManagerWithStamp);
     }
 
     private boolean isManagerForStructureId(String structureId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isStructureManagerWithStamp(requireNonNull(structureId), stamp)).orElse(false);
+        return userHasStampWichManageResource(structureId, this.stampAuthorizationChecker::isStructureManagerWithStamp);
     }
+
     private boolean isManagerForComponentId(String componentId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isComponentManagerWithStamp(requireNonNull(componentId), stamp)).orElse(false);
+        return userHasStampWichManageResource(componentId, this.stampAuthorizationChecker::isComponentManagerWithStamp);
     }
   
-    private Optional<String> getStamp() {
-        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);
+    private Optional<Stamp> getStamp() {
+        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
     }
 
 }

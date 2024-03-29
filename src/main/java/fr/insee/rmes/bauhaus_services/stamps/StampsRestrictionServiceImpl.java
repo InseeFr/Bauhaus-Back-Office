@@ -1,15 +1,12 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
-import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
@@ -74,21 +71,6 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
-	public boolean isCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, CodeListQueries::getContributorsByCodesListUri, Constants.CONTRIBUTORS);
-	}
-
-	public boolean isDatasetManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, DatasetQueries::getContributorsByDatasetUri, Constants.CONTRIBUTORS);
-	}
-
-	public boolean isDistributionManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, DistributionQueries::getContributorsByDistributionUri, Constants.CONTRIBUTORS);
-	}
-
-	public boolean isUnpublishedCodesListManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerDeleteForModule(stamp, iri, CodeListQueries::getContributorsCodesListUriWithValidationStatus, Constants.CONTRIBUTORS);
-	}
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
 		return isSeriesManagerWithStamp(iri, getStamp());
@@ -105,13 +87,8 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 
-	private boolean isManagerDeleteForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
-		logger.trace("Check management delete access for {} with stamp {} and validation status",uri, stampKey);
-		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
-	}
 
-
-	private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+    private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
 		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
 	}
