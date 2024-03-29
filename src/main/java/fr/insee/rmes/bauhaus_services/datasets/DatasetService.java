@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.PatchDataset;
 
 public interface DatasetService {
 
@@ -16,7 +17,7 @@ public interface DatasetService {
 
     String getArchivageUnits() throws RmesException;
 
-    void patchDataset(String datasetId, String observationNumber) throws RmesException;
+    void patchDataset(String datasetId, PatchDataset observationNumber) throws RmesException;
 
     String getDatasetsForDistributionCreation(String stamp) throws RmesException;
 
