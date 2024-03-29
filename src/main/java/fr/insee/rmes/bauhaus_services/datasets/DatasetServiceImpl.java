@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -34,6 +35,11 @@ import java.util.Set;
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
+    public static final String THEME = "theme";
+    public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
+    public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
+    public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
+    public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     @Autowired
     UserProviderFromSecurityContext userProviderFromSecurityContext;
 
@@ -90,7 +96,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
-        publicationUtils.publishResource(iri, Set.of());
+        publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of("creator", "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         repoGestion.objectValidation(iri, model);
@@ -114,12 +120,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         List<String> themes = new ArrayList<>();
         for(int i = 0; i < datasetWithThemes.length(); i++){
             JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
-            if(tempDataset.has("theme")){
-                themes.add(tempDataset.getString("theme"));
+            if(tempDataset.has(THEME)){
+                themes.add(tempDataset.getString(THEME));
             }
         }
         dataset.put("themes", themes);
-        dataset.remove("theme");
+        dataset.remove(THEME);
 
         JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
         List<String> creators = new ArrayList<>();
@@ -137,21 +143,21 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("statisticalUnit", statisticalUnit);
 
         JSONObject catalogRecord = new JSONObject();
-        if(dataset.has("catalogRecordCreator")){
-            catalogRecord.put("creator", dataset.getString("catalogRecordCreator"));
-            dataset.remove("catalogRecordCreator");
+        if(dataset.has(CATALOG_RECORD_CREATOR)){
+            catalogRecord.put("creator", dataset.getString(CATALOG_RECORD_CREATOR));
+            dataset.remove(CATALOG_RECORD_CREATOR);
         }
-        if(dataset.has("catalogRecordContributor")){
-            catalogRecord.put("contributor", dataset.getString("catalogRecordContributor"));
-            dataset.remove("catalogRecordContributor");
+        if(dataset.has(CATALOG_RECORD_CONTRIBUTOR)){
+            catalogRecord.put("contributor", dataset.getString(CATALOG_RECORD_CONTRIBUTOR));
+            dataset.remove(CATALOG_RECORD_CONTRIBUTOR);
         }
-        if(dataset.has("catalogRecordCreated")){
-            catalogRecord.put("created", dataset.getString("catalogRecordCreated"));
-            dataset.remove("catalogRecordCreated");
+        if(dataset.has(CATALOG_RECORD_CREATED)){
+            catalogRecord.put("created", dataset.getString(CATALOG_RECORD_CREATED));
+            dataset.remove(CATALOG_RECORD_CREATED);
         }
-        if(dataset.has("catalogRecordUpdated")){
-            catalogRecord.put("updated", dataset.getString("catalogRecordUpdated"));
-            dataset.remove("catalogRecordUpdated");
+        if(dataset.has(CATALOG_RECORD_UPDATED)){
+            catalogRecord.put("updated", dataset.getString(CATALOG_RECORD_UPDATED));
+            dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
         return dataset.toString();
@@ -217,13 +223,34 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public void patchDataset(String datasetId, String observationNumber) throws RmesException {
+    public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        int observationNumberInt = Integer.parseInt(observationNumber);
-        if ( observationNumberInt > 0){
-            dataset.setObservationNumber(observationNumberInt);
+
+        if ( patchDataset.getIssued() != null){
+            dataset.setIssued(patchDataset.getIssued());
         }
+
+        if ( patchDataset.getUpdated() != null){
+            dataset.setUpdated(patchDataset.getUpdated());
+        }
+
+        if ( patchDataset.getTemporalCoverageStartDate() != null){
+            dataset.setTemporalCoverageStartDate(patchDataset.getTemporalCoverageStartDate());
+        }
+
+        if ( patchDataset.getTemporalCoverageEndDate() != null){
+            dataset.setTemporalCoverageEndDate(patchDataset.getTemporalCoverageEndDate());
+        }
+
+        if ( patchDataset.getObservationNumber() != null && patchDataset.getObservationNumber() > 0){
+            dataset.setObservationNumber(patchDataset.getObservationNumber());
+        }
+
+        if ( patchDataset.getTimeSeriesNumber() != null){
+            dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
+        }
+
         update(datasetId, dataset);
     }
 
@@ -313,7 +340,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             BNode node =  RdfUtils.createBlankNode();
             model.add(node, RDF.TYPE, DCTERMS.PERIOD_OF_TIME, graph);
 
-            if(dataset.getTemporalCoverageDataType().endsWith("date")){
+            if(dataset.getTemporalCoverageDataType() != null && dataset.getTemporalCoverageDataType().endsWith("date")){
 
                 if(StringUtils.hasLength(dataset.getTemporalCoverageStartDate())){
                     model.add(node, DCAT.START_DATE, RdfUtils.setLiteralDate(dataset.getTemporalCoverageStartDate()), graph);

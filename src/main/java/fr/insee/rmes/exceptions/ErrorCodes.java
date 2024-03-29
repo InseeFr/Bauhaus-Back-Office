@@ -84,6 +84,7 @@ public class ErrorCodes {
 	public static final int CODE_LIST_DELETE_ONLY_UNPUBLISHED = 1103;
 	public static final int CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL = 1104;
 	public static final int CODE_LIST_UNKNOWN_ID = 1105;
+	public static final int STRUCTURE_DELETE_ONLY_UNPUBLISHED = 1103;
 
 
 	/*

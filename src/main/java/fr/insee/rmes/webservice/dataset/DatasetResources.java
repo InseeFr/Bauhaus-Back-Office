@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PatchDataset;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -87,15 +88,13 @@ public class DatasetResources {
         return this.datasetService.getArchivageUnits();
     }
 
-    @PatchMapping(value = "/{id}/observationNumber", consumes = APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateObservationNumber", summary = "Update Observation number of a dataset")
     public void patchDataset(
             @PathVariable("id") String datasetId,
-            @Schema(name ="observationNumber", example = "1" )
-            @Parameter(description = "Dataset", required = true)
-            @RequestBody String observationNumber
+            @RequestBody PatchDataset dataset
     ) throws RmesException{
-        this.datasetService.patchDataset(datasetId, observationNumber);
+        this.datasetService.patchDataset(datasetId, dataset);
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")

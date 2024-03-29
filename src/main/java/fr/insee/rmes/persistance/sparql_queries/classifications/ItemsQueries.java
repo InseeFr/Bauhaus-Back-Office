@@ -9,6 +9,9 @@ import java.util.Map;
 
 public class ItemsQueries extends GenericQueries{
 
+	public static final String CLASSIFICATION_ID = "CLASSIFICATION_ID";
+	public static final String ITEM_ID = "ITEM_ID";
+
 	private ItemsQueries() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -21,8 +24,8 @@ public class ItemsQueries extends GenericQueries{
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		params.put("CLASSIFICATION_ID", classificationId);
-		params.put("ITEM_ID", itemId);
+		params.put(CLASSIFICATION_ID, classificationId);
+		params.put(ITEM_ID, itemId);
 
 		return buildRequest("getClassificationItem.ftlh", params);
 	}
@@ -31,8 +34,8 @@ public class ItemsQueries extends GenericQueries{
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		params.put("CLASSIFICATION_ID", classificationId);
-		params.put("ITEM_ID", itemId);
+		params.put(CLASSIFICATION_ID, classificationId);
+		params.put(ITEM_ID, itemId);
 
 		return buildRequest("getClassificationItemAltLabels.ftlh", params);
 	}
@@ -41,8 +44,8 @@ public class ItemsQueries extends GenericQueries{
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		params.put("CLASSIFICATION_ID", classificationId);
-		params.put("ITEM_ID", itemId);
+		params.put(CLASSIFICATION_ID, classificationId);
+		params.put(ITEM_ID, itemId);
 		params.put("CONCEPT_VERSION", conceptVersion);
 
 		return buildRequest("getClassificationItemNotes.ftlh", params);
@@ -52,8 +55,8 @@ public class ItemsQueries extends GenericQueries{
 		Map<String,Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
-		params.put("CLASSIFICATION_ID", classificationId);
-		params.put("ITEM_ID", itemId);
+		params.put(CLASSIFICATION_ID, classificationId);
+		params.put(ITEM_ID, itemId);
 
 		return buildRequest("getClassificationItemNarrowers.ftlh", params);
 	}

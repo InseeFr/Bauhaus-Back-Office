@@ -20,7 +20,7 @@ public class Roles {
 	public static final String CODESLIST_CONTRIBUTOR = "Gestionnaire_liste_codes_RMESGNCS";
 	public static final String INDICATOR_CONTRIBUTOR = "Gestionnaire_indicateur_RMESGNCS";
 	public static final String DATASET_CONTRIBUTOR = "Gestionnaire_jeu_donnees_RMESGNCS";
-
+	public static final String STRUCTURES_CONTRIBUTOR = "Gestionnaire_structures_RMESGNCS";
 	public static final String CNIS = "CNIS_RMESGNCS";
 
 }

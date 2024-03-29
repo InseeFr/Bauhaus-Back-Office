@@ -150,7 +150,7 @@ public class StructureComponentUtils extends RdfService {
 
             if(componentsWithSameCodelistAndConcept){
                 throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
-                        "A component with the same code list and concept already exists", "");
+                        "A component with the same codes list and concept already exists", "");
             }
         }
 
