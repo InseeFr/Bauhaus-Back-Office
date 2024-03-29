@@ -123,4 +123,17 @@ public class DatasetQueriesTest {
             Assertions.assertEquals(query, "request");
         }
     }
+
+    @Test
+    void shouldCallGetContributorsByDatasetUri() throws RmesException {
+        DatasetQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("DATASET_GRAPH_URI", "datasets-graph-uri");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetsContributorsByUriQuery.ftlh"), eq(map))).thenReturn("request");
+            String query = DatasetQueries.getContributorsByDatasetUri("datasets-graph-uri");
+            Assertions.assertEquals(query, "request");
+        }
+    }
 }

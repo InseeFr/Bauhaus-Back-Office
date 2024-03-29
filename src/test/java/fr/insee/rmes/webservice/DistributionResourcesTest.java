@@ -76,4 +76,5 @@ public class DistributionResourcesTest {
         when(distributionResources.publishDistribution(eq("1"))).thenReturn("result");
         Assertions.assertEquals("result", distributionResources.publishDistribution("1"));
     }
+
 }

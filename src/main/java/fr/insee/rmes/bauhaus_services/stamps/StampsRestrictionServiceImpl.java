@@ -71,6 +71,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
 		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
+
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
 		return isSeriesManagerWithStamp(iri, getStamp());
 	}
@@ -86,13 +87,8 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
 	}
 
-	private boolean isManagerDeleteForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
-		logger.trace("Check management delete access for {} with stamp {} and validation status",uri, stampKey);
-		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
-	}
 
-
-	private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
+    private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
 		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
 	}

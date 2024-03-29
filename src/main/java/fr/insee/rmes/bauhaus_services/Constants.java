@@ -18,6 +18,8 @@ public class Constants {
 	public static final String CREATORS = "creators";
 
 	/*D*/
+	public static final String DATASET = "dataset";
+	public static final String DISTRIBUTION = "distribution";
 	public static final String DATA_COLLECTOR = "dataCollector";
 	public static final String DATA_COLLECTORS = "dataCollectors";
 	public static final String DEF_COURTE_LG1 = "defCourteLg1";
