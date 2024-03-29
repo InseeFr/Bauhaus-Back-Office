@@ -5,6 +5,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class DistributionQueries extends GenericQueries {
 
@@ -40,8 +41,7 @@ public class DistributionQueries extends GenericQueries {
     }
 
     public static String lastDatasetId(String distributionGraph) throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put(DATASET_GRAPH, distributionGraph);
+        Map<String, Object> params = Map.of(DATASET_GRAPH, distributionGraph);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
 

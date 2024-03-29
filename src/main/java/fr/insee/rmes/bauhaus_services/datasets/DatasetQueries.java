@@ -5,6 +5,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class DatasetQueries extends GenericQueries {
 
@@ -12,8 +13,7 @@ public class DatasetQueries extends GenericQueries {
     public static final String DATASET_GRAPH = "DATASET_GRAPH";
 
     public static String getArchivageUnits() throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("LG1", config.getLg1());
+        Map<String, Object> params = Map.of("LG1", config.getLg1());
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getArchivageUnit.ftlh", params);
     }
 
@@ -57,17 +57,12 @@ public class DatasetQueries extends GenericQueries {
     }
 
     public static String lastDatasetId(String datasetsGraph) throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put(DATASET_GRAPH, datasetsGraph);
-
+        Map<String, Object> params = Map.of(DATASET_GRAPH, datasetsGraph);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLastDatasetId.ftlh", params);
     }
 
     public static String getContributorsByDatasetUri(String iri) throws RmesException {
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("DATASET_GRAPH_URI", iri);
+        Map<String, Object> params = Map.of("DATASET_GRAPH_URI", iri);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetsContributorsByUriQuery.ftlh", params);
     }
-
-
 }

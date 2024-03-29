@@ -12,10 +12,12 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,9 +101,17 @@ public class DatasetResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @DeleteMapping("/{id}")
-    @Operation(operationId = "deleteDataset", summary = "Delete a Dataset",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public String deleteDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
-        return "Not Yet Implemented";
+    @Operation(
+            operationId = "deleteDataset",
+            summary = "Delete a Dataset"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
+            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented")
+    })
+    public ResponseEntity deleteDataset(
+            @PathVariable(Constants.ID) String datasetId
+    ) {
+        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 }
