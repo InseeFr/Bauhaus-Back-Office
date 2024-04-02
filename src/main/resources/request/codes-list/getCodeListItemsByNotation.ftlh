@@ -11,7 +11,7 @@ WHERE {
         FILTER (lang(?labelLg2) = '${LG2}') .
     }
 }
-ORDER BY ?labelLg1
+ORDER BY ?code
 <#if PER_PAGE??>
     LIMIT ${PER_PAGE} OFFSET ${OFFSET}
 </#if>

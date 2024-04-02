@@ -27,15 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/codeList")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Codes lists", description = "Codes list API")
-@ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Success"),
-        @ApiResponse(responseCode = "204", description = "No Content"),
-        @ApiResponse(responseCode = "400", description = "Bad Request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized"),
-        @ApiResponse(responseCode = "403", description = "Forbidden"),
-        @ApiResponse(responseCode = "404", description = "Not found"),
-        @ApiResponse(responseCode = "406", description = "Not Acceptable"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")})
+@ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Success"), @ApiResponse(responseCode = "204", description = "No Content"), @ApiResponse(responseCode = "400", description = "Bad Request"), @ApiResponse(responseCode = "401", description = "Unauthorized"), @ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not found"), @ApiResponse(responseCode = "406", description = "Not Acceptable"), @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class CodeListsResources extends GenericResources {
 
     private final CodeListService codeListService;
@@ -48,8 +40,7 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a codes list")
-    public ResponseEntity<Object> setCodesList(
-            @Parameter(description = "Code List", required = true) @RequestBody String body) {
+    public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
             String id = codeListService.setCodesList(body, false);
             return ResponseEntity.status(HttpStatus.OK).body(id);
@@ -61,9 +52,7 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a codes list")
-    public ResponseEntity<Object> updateCodesList(
-            @PathVariable(Constants.ID) @P("codesListId") String id,
-            @Parameter(description = "Codes list", required = true) @RequestBody String body) {
+    public ResponseEntity<Object> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Codes list", required = true) @RequestBody String body) {
 
         try {
             id = codeListService.setCodesList(id, body, false);
@@ -72,7 +61,6 @@ public class CodeListsResources extends GenericResources {
         }
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
-
 
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
@@ -88,8 +76,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAllCodesLists", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
+    @Operation(operationId = "getAllCodesLists", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
     public ResponseEntity<Object> getAllCodesLists() {
         try {
             String body = codeListService.getAllCodesLists(false);
@@ -100,8 +87,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedCodesLisForSearch() {
         try {
             String body = codeListService.getDetailedCodesListForSearch(false);
@@ -112,8 +98,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "getDetailedCodesListByNotation", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
         try {
             String body = codeListService.getDetailedCodesList(notation, false);
@@ -123,10 +108,17 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @GetMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getPaginatedCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) {
+    @GetMapping(value = "/detailed/{notation}/codes")
+    @Operation(
+            operationId = "getPaginatedCodesForCodeList",
+            summary = "List of codes",
+            responses = {
+                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))
+            })
+    public ResponseEntity<Object> getPaginatedCodesForCodeList(
+            @PathVariable("notation") String notation,
+            @RequestParam("page") int page,
+            @RequestParam(value = "per_page", required = false) Integer perPage) {
         try {
             String body = codeListService.getCodesForCodeList(notation, page, perPage);
             return ResponseEntity.status(HttpStatus.OK).body(body);
@@ -137,8 +129,7 @@ public class CodeListsResources extends GenericResources {
 
     @PreAuthorize("isAdmin()")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) {
         try {
             String body = codeListService.deleteCodeFromCodeList(notation, code);
@@ -150,8 +141,7 @@ public class CodeListsResources extends GenericResources {
 
     @PreAuthorize("isAdmin()")
     @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateCodeForCodeList", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "updateCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) {
         try {
             String response = codeListService.updateCodeFromCodeList(notation, code, body);
@@ -163,8 +153,7 @@ public class CodeListsResources extends GenericResources {
 
     @PreAuthorize("isAdmin()")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "addCodeForCodeList", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "addCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) {
         try {
             String response = codeListService.addCodeFromCodeList(notation, body);
@@ -175,8 +164,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodeListByNotation", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "getCodeListByNotation", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getCodeListByNotation(@PathVariable("notation") String notation) {
         try {
             String body = codeListService.getCodeListJson(notation);
@@ -187,8 +175,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodesForCodeList", summary = "List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) {
         try {
             String body = codeListService.getCodesJson(notation, page, perPage);
@@ -200,8 +187,7 @@ public class CodeListsResources extends GenericResources {
 
 
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
+    @Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<Object> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) {
         try {
             String body = codeListService.getCode(notation, code);
@@ -214,8 +200,7 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
-    public ResponseEntity<Object> publishFullCodeList(
-            @PathVariable(Constants.ID) String id) {
+    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) {
         try {
             codeListService.publishCodeList(id, false);
             return ResponseEntity.status(HttpStatus.OK).body(id);
