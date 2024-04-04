@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
-          path: bauhaus-back-office/target/*.jar
+          path: target/*.jar
 
   docker:
     needs:
@@ -74,7 +74,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: app-jar
-          path: bauhaus-back-office/target/
+          path: target/
 
       - name: Publish to Docker Hub
         uses: elgohr/Publish-Docker-Github-Action@v5
