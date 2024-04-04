@@ -83,4 +83,3 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           tags: "latest, ${{ needs.check-version.outputs.release-version }}"
-          workdir: bauhaus-back-office
