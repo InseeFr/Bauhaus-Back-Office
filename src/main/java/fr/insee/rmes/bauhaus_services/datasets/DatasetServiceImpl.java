@@ -442,9 +442,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
         }
-        /*
+
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");
-        }*/
+        }
     }
 }
