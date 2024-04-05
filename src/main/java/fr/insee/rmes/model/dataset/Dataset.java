@@ -22,6 +22,8 @@ public class Dataset {
 
     private String issued;
 
+    private String altIdentifier;
+
     public String getLabelLg1() {
         return labelLg1;
     }
@@ -376,5 +378,13 @@ public class Dataset {
 
     public void setCatalogRecord(CatalogRecord catalogRecord) {
         this.catalogRecord = catalogRecord;
+    }
+
+    public String getAltIdentifier() {
+        return altIdentifier;
+    }
+
+    public void setAltIdentifier(String altIdentifier) {
+        this.altIdentifier = altIdentifier;
     }
 }
