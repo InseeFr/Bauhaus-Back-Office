@@ -292,4 +292,46 @@ public class TestDatasetsResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void shouldPatchADatasetIfAdmin() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"observationNumber\": 1}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldPatchADatasetIfDatasetContributorBasedOnStamp() throws Exception {
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(true);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
+        mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"observationNumber\": 1}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldNotPatchADatasetIfDatasetContributorWithoutStamp() throws Exception {
+        when(stampAuthorizationChecker.isDatasetManagerWithStamp(String.valueOf(datasetId),new Stamp(timbre))).thenReturn(false);
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.DATASET_CONTRIBUTOR));
+        mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"observationNumber\": 1}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldNotPatchADataset() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
+        mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"observationNumber\": 1}"))
+                .andExpect(status().isForbidden());
+    }
 }

@@ -90,8 +90,9 @@ public class DatasetResources {
         return this.datasetService.getArchivageUnits();
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateObservationNumber", summary = "Update Observation number of a dataset")
+    @Operation(operationId = "patchDataset", summary = "Update a dataset")
     public void patchDataset(
             @PathVariable("id") String datasetId,
             @RequestBody PatchDataset dataset
