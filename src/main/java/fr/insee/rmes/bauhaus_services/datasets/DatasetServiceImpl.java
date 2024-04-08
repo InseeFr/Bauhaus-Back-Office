@@ -388,7 +388,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             if (distribution.has("id")) {
                 String id = distribution.getString("id");
                 IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
-                RdfUtils.addTripleUri(datasetIri, DCAT.DISTRIBUTION, distributionIRI, model, graph);
+                RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
             }
         }
 
