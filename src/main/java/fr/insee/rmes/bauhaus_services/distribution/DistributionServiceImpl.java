@@ -111,10 +111,10 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
         if(previousValue.has("idDataset")){
             IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
-            repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.DISTRIBUTION, graph, null, distributionIRI);
+            repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.HAS_DISTRIBUTION, graph, null, distributionIRI);
         }
 
-        RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.DISTRIBUTION, distributionIRI, model, graph);
+        RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
 
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);

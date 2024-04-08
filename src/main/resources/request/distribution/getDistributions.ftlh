@@ -6,7 +6,7 @@ WHERE {
     ?uri dcterms:identifier ?id .
     
     ?uriDataset rdf:type dcat:Dataset .
-	?uriDataset dcat:Distribution ?uri .
+	?uriDataset dcat:distribution ?uri .
 
 <#if DATASET_ID != "">
 	?uriDataset dcterms:identifier '${DATASET_ID}' .

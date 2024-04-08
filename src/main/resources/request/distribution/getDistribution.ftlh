@@ -8,7 +8,7 @@ WHERE {
     ?uri dcterms:identifier ?id .
     
     ?uriDataset rdf:type dcat:Dataset .
-	?uriDataset dcat:Distribution ?uri .
+	?uriDataset dcat:distribution ?uri .
     
     ?uriDataset dcterms:identifier ?idDataset .
     
