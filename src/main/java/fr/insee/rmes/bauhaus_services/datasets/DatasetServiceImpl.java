@@ -25,6 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -40,6 +41,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
+    public static final String CREATOR = "creator";
     @Autowired
     UserProviderFromSecurityContext userProviderFromSecurityContext;
 
@@ -97,7 +99,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        publicationUtils.publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         repoGestion.objectValidation(iri, model);
 
@@ -113,7 +115,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
 
         if(datasetWithThemes.isEmpty()){
-            throw new RmesBadRequestException("This dataset does not exist");
+            throw new RmesException(HttpStatus.NOT_FOUND, "This dataset does not exist", "The id " + id + " does not correspond to any dataset");
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);
@@ -129,7 +131,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
         List<String> creators = new ArrayList<>();
-        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString("creator")));
+        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString(CREATOR)));
         dataset.put("creators", creators);
 
         JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
@@ -144,7 +146,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONObject catalogRecord = new JSONObject();
         if(dataset.has(CATALOG_RECORD_CREATOR)){
-            catalogRecord.put("creator", dataset.getString(CATALOG_RECORD_CREATOR));
+            catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
             dataset.remove(CATALOG_RECORD_CREATOR);
         }
         if(dataset.has(CATALOG_RECORD_CONTRIBUTOR)){
