@@ -74,6 +74,10 @@ public class Config {
     @Value("${" + LINKS_BASE_URI + "}")
     private String linksBaseUri;
 
+    @Value("${fr.insee.rmes.bauhaus.storage.system}")
+    private String storageSystem;
+    @Value ("${minio.bucket.name}")
+    private String bucketMinio;
     @Value("${fr.insee.rmes.bauhaus.documents.graph}")    //Getter with baseGraph
     private String documentsGraph;
     @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}")
@@ -163,7 +167,7 @@ public class Config {
         return baseUriGestion;
     }
 
-
+    public String getStorageSystem() {return storageSystem.toString();}
     public String getConceptsGraph() {
         return baseGraph + conceptsGraph;
     }
@@ -211,7 +215,9 @@ public class Config {
     public String getDocumentsStorageGestion() {
         return documentsStorageGestion;
     }
-
+    public String getBucketMinio() {
+        return bucketMinio;
+    }
     public String getDocumentsStoragePublicationExterne() {
         return documentsStoragePublicationExt;
     }

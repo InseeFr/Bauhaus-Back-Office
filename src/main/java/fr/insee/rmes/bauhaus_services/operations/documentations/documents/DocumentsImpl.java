@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
+import fr.insee.rmes.bauhaus_services.MinioService;
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -20,7 +22,12 @@ public class DocumentsImpl implements DocumentsService {
 
 	@Autowired 
 	DocumentsUtils documentsUtils;
-	
+	@Autowired
+	protected Config config;
+
+	@Autowired
+	MinioService minioService;
+
 	public DocumentsImpl() {
 		//Utility class
 	}
@@ -52,7 +59,7 @@ public class DocumentsImpl implements DocumentsService {
 	 * @see fr.insee.rmes.bauhaus_services.DocumentsService#createDocument(java.lang.String)
 	 */
 	@Override
-	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException {
+	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException, IOException {
 		logger.debug("Creating document {}", documentName);
 		documentsUtils.checkFileNameValidity(documentName);
 
@@ -78,7 +85,12 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public HttpStatus deleteDocument(String id) throws RmesException {
-		return documentsUtils.deleteDocument(id, false);
+		if (config.getStorageSystem().contains("S3")) {
+			return documentsUtils.deleteDocumentFileMinio(id);
+		} else {
+			return documentsUtils.deleteDocument(id, false);
+		}
+
 	}
 
 	/*
@@ -89,12 +101,16 @@ public class DocumentsImpl implements DocumentsService {
 	public String changeDocument(String docId, InputStream documentFile, String documentName)
 			throws RmesException {
 		return documentsUtils.changeFile(docId,documentFile,documentName);		
-	}	
-	
+	}
+
 
 	@Override
 	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
-		return documentsUtils.downloadDocumentFile(id);	
+		if (config.getStorageSystem().contains("S3")) {
+			return documentsUtils.downloadDocumentFileMinio(id);
+		} else {
+			return documentsUtils.downloadDocumentFile(id);
+		}
 	}
 	
 	/*
@@ -105,7 +121,7 @@ public class DocumentsImpl implements DocumentsService {
 	 * Create new link
 	 */
 	@Override
-	public String setLink(String body) throws RmesException {
+	public String setLink(String body) throws RmesException, IOException {
 		String id = documentsUtils.createDocumentID();
 		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,true, null, null);
