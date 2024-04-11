@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class DistributionResourcesTest {
+class DistributionResourcesTest {
     @InjectMocks
     private DistributionResources distributionResources;
 
@@ -54,7 +54,7 @@ public class DistributionResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException {
-        when(datasetService.getDatasetsForDistributionCreation(eq("fakeStampForDvAndQf"))).thenReturn("result");
+        when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn("result");
         when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), "fakeStampForDvAndQf")));
         Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
     }
@@ -73,7 +73,7 @@ public class DistributionResourcesTest {
 
     @Test
     void shouldCallPublishDistribution() throws RmesException {
-        when(distributionResources.publishDistribution(eq("1"))).thenReturn("result");
+        when(distributionResources.publishDistribution("1")).thenReturn("result");
         Assertions.assertEquals("result", distributionResources.publishDistribution("1"));
     }
 

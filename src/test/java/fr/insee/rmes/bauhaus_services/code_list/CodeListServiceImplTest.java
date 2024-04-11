@@ -36,13 +36,13 @@ class CodeListServiceImplTest {
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject(eq("query"))).thenReturn(count);
+            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
             JSONObject item = new JSONObject();
             item.put("id", "id");
             JSONArray items = new JSONArray();
             items.put(item);
-            when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
+            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
             assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
         }
@@ -56,13 +56,13 @@ class CodeListServiceImplTest {
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject(eq("query"))).thenReturn(count);
+            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
             JSONObject item = new JSONObject();
             item.put("id", "id");
             JSONArray items = new JSONArray();
             items.put(item);
-            when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
+            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
             assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", 1, null));
         }
@@ -73,7 +73,7 @@ class CodeListServiceImplTest {
         doReturn(null).when(codeListService).deleteCodeFromCodeList("notation", "code");
         doReturn("code").when(codeListService).addCodeFromCodeList("notation", "body");
         String code = codeListService.updateCodeFromCodeList("notation", "code", "body");
-        assertEquals(code, "code");
+        assertEquals("code", code);
     }
 
     @Test
@@ -125,7 +125,7 @@ class CodeListServiceImplTest {
 
             doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
             codeListService.deleteCodeFromCodeList("notation", "code");
-            verify(repositoryGestion, times(1)).deleteObject(eq(codeIRI), eq(null));
+            verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
         }
     }
 }
