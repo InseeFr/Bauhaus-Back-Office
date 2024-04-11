@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
@@ -15,6 +16,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
+import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -25,7 +27,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -115,7 +116,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
 
         if(datasetWithThemes.isEmpty()){
-            throw new RmesException(HttpStatus.NOT_FOUND, "This dataset does not exist", "The id " + id + " does not correspond to any dataset");
+            throw new RmesNotFoundException(HttpStatus.SC_NOT_FOUND, "This dataset does not exist", "The id " + id + " does not correspond to any dataset");
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);

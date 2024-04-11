@@ -4,15 +4,15 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.CatalogRecord;
-import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
+import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,7 +22,6 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -68,9 +67,9 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         if (distrib.has("id")){
         return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
         } else {
-            throw new RmesException(HttpStatus.NOT_FOUND, "Non existent distribution identifier", "The id " + id + " does not correspond to any distribution");
+            throw new RmesNotFoundException(HttpStatus.SC_NOT_FOUND, "This distribution does not exist", "The id " + id + " does not correspond to any distribution");
         }
-        }
+    }
 
     @Override
     public String create(String body) throws RmesException {
