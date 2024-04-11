@@ -116,7 +116,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
 
         if(datasetWithThemes.isEmpty()){
-            throw new RmesNotFoundException(HttpStatus.SC_NOT_FOUND, "This dataset does not exist", "The id " + id + " does not correspond to any dataset");
+            throw new RmesNotFoundException("This dataset does not exist");
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);

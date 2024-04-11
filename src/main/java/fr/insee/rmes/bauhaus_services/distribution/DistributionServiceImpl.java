@@ -12,7 +12,6 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
-import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -67,14 +66,15 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         if (distrib.has("id")){
         return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
         } else {
-            throw new RmesNotFoundException(HttpStatus.SC_NOT_FOUND, "This distribution does not exist", "The id " + id + " does not correspond to any distribution");
+            throw new RmesNotFoundException("This distribution does not exist");
         }
     }
 
     @Override
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
-        distribution.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d"));
+        String idnewt = IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d");
+        distribution.setId(idnewt);
 
         this.validate(distribution);
 
