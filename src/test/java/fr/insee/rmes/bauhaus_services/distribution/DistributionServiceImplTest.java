@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+
+
 @SpringBootTest(properties = {
         "fr.insee.rmes.bauhaus.baseGraph=http://",
         "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
@@ -37,7 +39,8 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.lg1=fr",
         "fr.insee.rmes.bauhaus.lg2=en"
 })
-public class DistributionServiceImplTest {
+
+class DistributionServiceImplTest {
     @MockBean
     RepositoryGestion repositoryGestion;
 
@@ -46,6 +49,7 @@ public class DistributionServiceImplTest {
 
     @Autowired
     DistributionServiceImpl distributionService;
+    public static final String DISTRIB = "{\"id\":\"d1000\"}";
 
     @Test
     void shouldReturnDistributions() throws RmesException {
@@ -56,7 +60,7 @@ public class DistributionServiceImplTest {
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistributions(any())).thenReturn("query");
             String query = distributionService.getDistributions();
-            Assertions.assertEquals(query, "[\"result\"]");
+            Assertions.assertEquals("[\"result\"]", query);
         }
     }
 
@@ -69,7 +73,7 @@ public class DistributionServiceImplTest {
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistribution(eq("1"), any())).thenReturn("query");
             String query = distributionService.getDistributionByID("1");
-            Assertions.assertEquals(query, "{\"id\":\"1\"}");
+            Assertions.assertEquals("{\"id\":\"1\"}", query);
         }
     }
 
@@ -86,7 +90,7 @@ public class DistributionServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property idDataset is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property idDataset is required\"}", exception.getDetails());
         }
     }
 
@@ -103,7 +107,7 @@ public class DistributionServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property labelLg1 is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property labelLg1 is required\"}", exception.getDetails());
         }
     }
 
@@ -121,7 +125,7 @@ public class DistributionServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property labelLg2 is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property labelLg2 is required\"}", exception.getDetails());
         }
     }
 
@@ -155,6 +159,7 @@ public class DistributionServiceImplTest {
     }
 
     private void createANewDistribution(String nextId) throws RmesException {
+        JSONObject mockJSON = new JSONObject(DISTRIB);
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
@@ -166,7 +171,7 @@ public class DistributionServiceImplTest {
 
             datasetQueriesMock.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
             datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq(nextId), any())).thenReturn("query " + nextId);
-            when(repositoryGestion.getResponseAsObject(eq("query " + nextId))).thenReturn(new JSONObject());
+            when(repositoryGestion.getResponseAsObject(eq("query " + nextId))).thenReturn(mockJSON);
 
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
             dateUtilsMock.when(() -> DateUtils.parseDateTime(anyString())).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
@@ -210,6 +215,7 @@ public class DistributionServiceImplTest {
 
     private void shouldUpdateExistingDistribution(boolean withDataSetRemoval) throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1001");
+
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
@@ -219,10 +225,12 @@ public class DistributionServiceImplTest {
             datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq("d1001"), any())).thenReturn("query d1001");
 
             if(!withDataSetRemoval){
-                when(repositoryGestion.getResponseAsObject(eq("query d1001"))).thenReturn(new JSONObject());
+                JSONObject mockJSON = new JSONObject(DISTRIB);
+                when(repositoryGestion.getResponseAsObject(eq("query d1001"))).thenReturn(mockJSON);
             } else {
                 JSONObject distribution = new JSONObject();
                 distribution.put("idDataset", "idDataset2");
+                distribution.put("id", "id");
                 when(repositoryGestion.getResponseAsObject(eq("query d1001"))).thenReturn(distribution);
             }
 
@@ -261,7 +269,7 @@ public class DistributionServiceImplTest {
                 verify(repositoryGestion, times(1)).deleteTripletByPredicateAndValue(any(), any(), any(), any(), any());
             }
             Assertions.assertEquals("[(http://distributionIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"taille\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
-            Assertions.assertEquals(id, "d1001");
+            Assertions.assertEquals("d1001", id);
         }
     }
 
@@ -279,7 +287,7 @@ public class DistributionServiceImplTest {
     void shouldPublishADistribution() throws RmesException {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/1");
 
-        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of()));
+        doNothing().when(publicationUtils).publishResource(iri, Set.of());
         String id = distributionService.publishDistribution("1");
         ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
