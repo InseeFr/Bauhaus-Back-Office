@@ -171,7 +171,7 @@ class DistributionServiceImplTest {
 
             datasetQueriesMock.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
             datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq(nextId), any())).thenReturn("query " + nextId);
-            when(repositoryGestion.getResponseAsObject(eq("query " + nextId))).thenReturn(mockJSON);
+            when(repositoryGestion.getResponseAsObject("query " + nextId)).thenReturn(mockJSON);
 
             dateUtilsMock.when(DateUtils::getCurrentDate).thenReturn("2023-10-19T11:44:23.335590");
             dateUtilsMock.when(() -> DateUtils.parseDateTime(anyString())).thenReturn(LocalDateTime.parse("2023-10-19T11:44:23.335590"));
@@ -226,12 +226,12 @@ class DistributionServiceImplTest {
 
             if(!withDataSetRemoval){
                 JSONObject mockJSON = new JSONObject(DISTRIB);
-                when(repositoryGestion.getResponseAsObject(eq("query d1001"))).thenReturn(mockJSON);
+                when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(mockJSON);
             } else {
                 JSONObject distribution = new JSONObject();
                 distribution.put("idDataset", "idDataset2");
                 distribution.put("id", "id");
-                when(repositoryGestion.getResponseAsObject(eq("query d1001"))).thenReturn(distribution);
+                when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(distribution);
             }
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
