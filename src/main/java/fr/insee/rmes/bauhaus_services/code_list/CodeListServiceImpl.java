@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
 
@@ -106,7 +108,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			return codeList;
 		}
 		else {
-			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, 0, 0));
+			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, null, 0, 0));
 			formatCodesForPartialList(codeList, codes);
 			return codeList;
 		}
@@ -114,11 +116,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getCodesForCodeList(String notation, int page, Integer perPage) throws RmesException {
+	public String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
-		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, page, perPage));
+		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, search, page, perPage));
 
 
 		result.put("total", counter.get("count"));

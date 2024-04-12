@@ -4,8 +4,10 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CodeListQueries extends GenericQueries {
@@ -39,13 +41,23 @@ public class CodeListQueries extends GenericQueries {
 		return perPage;
 	}
 
-	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
+	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
 		initParams(params);
 		params.put(NOTATION, notation);
 		params.put(PARTIAL, partial);
 		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+
+		if(search != null){
+			search.forEach(s -> {
+				if(!StringUtils.isEmpty(s)){
+					String key = s.startsWith("code:") ? "SEARCH_CODE" : "SEARCH_LABEL_LG1";
+					params.put(key, s.substring(s.indexOf(":") + 1 ));
+				}
+			});
+		}
+
 		if(perPageValue > 0){
 			params.put("OFFSET", perPageValue * (page - 1));
 			params.put("PER_PAGE", perPageValue);

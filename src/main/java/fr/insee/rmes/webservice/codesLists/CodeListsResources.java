@@ -23,6 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(value = "/codeList")
 @SecurityRequirement(name = "bearerAuth")
@@ -117,10 +119,11 @@ public class CodeListsResources extends GenericResources {
             })
     public ResponseEntity<Object> getPaginatedCodesForCodeList(
             @PathVariable("notation") String notation,
+            @RequestParam(value = "search", required = false) List<String> search,
             @RequestParam("page") int page,
             @RequestParam(value = "per_page", required = false) Integer perPage) {
         try {
-            String body = codeListService.getCodesForCodeList(notation, page, perPage);
+            String body = codeListService.getCodesForCodeList(notation, search, page, perPage);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);

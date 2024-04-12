@@ -10,6 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,15 +39,15 @@ class CodeListsResourcesTest {
     }
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesForCodeList("notation", 1, null)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", 1, null);
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null)).thenReturn("body");
+        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null);
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithGetPaginatedCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesForCodeList("notation", 1, null)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", 1, null);
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null)).thenThrow(new RmesException(500, "", ""));
+        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
