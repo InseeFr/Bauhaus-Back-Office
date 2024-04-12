@@ -1,9 +1,6 @@
 name: Build release candidate
 
-on:
-  push:
-    branches:
-      - 468-docker-and-compose #temp branch
+on: release
 
 jobs:
   check-version:
