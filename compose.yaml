@@ -1,0 +1,15 @@
+name: bauhaus
+services:
+  bauhaus-back:
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - graphdb:localhost
+  graphdb:
+    image: ontotext/graphdb:latest
+    restart: always
+    ports:
+      - "7200:7200"
+    environment:
+      GDB_JAVA_OPTS: "-Xmx1g -Xms512M"
