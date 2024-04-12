@@ -18,4 +18,16 @@ public class PatchDistribution {
         return url;
     }
 
+    public void setTaille(String taille) {
+            this.taille = taille;
+    }
+
+    public PatchDistribution(String updated, String taille, String url) {
+        this.updated = updated;
+        this.taille = taille;
+        this.url = url;
+    }
+
+    public PatchDistribution() {
+    }
 }

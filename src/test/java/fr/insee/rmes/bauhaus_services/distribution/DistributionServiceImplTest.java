@@ -5,6 +5,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -24,6 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -46,10 +51,12 @@ class DistributionServiceImplTest {
 
     @MockBean
     PublicationUtils publicationUtils;
-
+    public static final String EMPTY_JSON_OBJECT = "{}";
     @Autowired
     DistributionServiceImpl distributionService;
     public static final String DISTRIB = "{\"id\":\"d1000\"}";
+    public static final String DISTRIB_A_PATCHER = "{\"taille\":\"3\",\"labelLg2\":\"test_patch\",\"labelLg1\":\"test_patch\",\"created\":\"2024-04-10T16:34:09.651166561\",\"idDataset\":\"jd1004\",\"id\":\"d1004\",\"updated\":\"2024-04-07T16:34:09.651166561\",\"url\":\"http://test\"}";
+    public static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\", http://datasetGraph/) [http://datasetGraph/]]";
 
     @Test
     void shouldReturnDistributions() throws RmesException {
@@ -208,6 +215,7 @@ class DistributionServiceImplTest {
     void shouldPersistExistingDistributionWithPreviousDatasetRemoval() throws RmesException {
         shouldUpdateExistingDistribution(true);
     }
+
     @Test
     void shouldPersistExistingDistributionWithoutPreviousDatasetRemoval() throws RmesException {
         shouldUpdateExistingDistribution(false);
@@ -224,7 +232,7 @@ class DistributionServiceImplTest {
             datasetQueriesMock.when(() -> DistributionQueries.lastDatasetId(any())).thenReturn("query");
             datasetQueriesMock.when(() -> DistributionQueries.getDistribution(eq("d1001"), any())).thenReturn("query d1001");
 
-            if(!withDataSetRemoval){
+            if (!withDataSetRemoval) {
                 JSONObject mockJSON = new JSONObject(DISTRIB);
                 when(repositoryGestion.getResponseAsObject("query d1001")).thenReturn(mockJSON);
             } else {
@@ -265,7 +273,7 @@ class DistributionServiceImplTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
-            if(withDataSetRemoval){
+            if (withDataSetRemoval) {
                 verify(repositoryGestion, times(1)).deleteTripletByPredicateAndValue(any(), any(), any(), any(), any());
             }
             Assertions.assertEquals("[(http://distributionIRI/d1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1001, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/identifier, \"d1001\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/created, \"2022-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://purl.org/dc/terms/format, \"format\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#byteSize, \"taille\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1001, http://www.w3.org/ns/dcat#downloadURL, \"url\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
@@ -274,12 +282,12 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringCreation(){
+    void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringCreation() {
         Assertions.assertThrows(RmesException.class, () -> distributionService.create(""));
     }
 
     @Test
-    void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringUpdate(){
+    void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringUpdate() {
         Assertions.assertThrows(RmesException.class, () -> distributionService.update("d1000", ""));
     }
 
@@ -295,4 +303,36 @@ class DistributionServiceImplTest {
         Assertions.assertEquals("[(http://distributionIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
         Assertions.assertEquals("1", id);
     }
+
+    @Test
+    void getDistributionByID_shouldReturn404IfInexistentId() throws RmesException {
+        JSONObject mockJSON = new JSONObject(EMPTY_JSON_OBJECT);
+        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
+
+        assertThatThrownBy(() -> distributionService.getDistributionByID("1")).isInstanceOf(RmesNotFoundException.class)
+                .matches(rmesException -> ((RmesNotFoundException) rmesException).getStatus() == 404);
+    }
+
+
+    @Test
+    void shouldPatchReturn400IfNoOneOfRequiredAttributes() throws RmesException {
+        PatchDistribution patch = new PatchDistribution();
+        JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
+        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
+        assertThatThrownBy(() -> distributionService.PatchDistribution("d1004", patch)).isInstanceOf(RmesBadRequestException.class)
+                .matches(rmesException -> ((RmesBadRequestException) rmesException).getStatus() == 400);
+    }
+
+    @Test
+    void shouldPatchTailleDistribution() throws RmesException {
+        IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/d1004");
+        PatchDistribution patch = new PatchDistribution("2024-04-05T16:34:09.651166561", "5","http://test2");
+        JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
+        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
+        distributionService.PatchDistribution("d1004", patch);
+        ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
+        verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
+        Assertions.assertEquals(DISTRIB_PATCHEE,model.getValue().toString());
+    }
+
 }

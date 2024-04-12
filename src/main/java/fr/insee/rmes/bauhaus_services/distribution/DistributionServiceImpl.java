@@ -25,6 +25,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.ResponseEntity.status;
+
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
 
@@ -165,7 +168,9 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public void PatchDistribution(String distributionId, PatchDistribution patchDistribution) throws RmesException {
         String distributionByID = getDistributionByID(distributionId);
         Distribution distribution = Deserializer.deserializeBody(distributionByID, Distribution.class);
-
+        if  (patchDistribution.getUpdated() == null && patchDistribution.getTaille() == null && patchDistribution.getUrl() == null){
+            throw new RmesBadRequestException("One of these attributes is required : updated, taille or url");
+        }
         if (patchDistribution.getUpdated() != null){
             distribution.setUpdated(patchDistribution.getUpdated());
         }
