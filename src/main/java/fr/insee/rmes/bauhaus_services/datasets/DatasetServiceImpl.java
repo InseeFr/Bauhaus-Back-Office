@@ -11,6 +11,7 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -64,8 +65,18 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
     private String distributionsBaseUriSuffix;
 
+    @Value("${fr.insee.rmes.bauhaus.adms.graph}")
+    private String admsGraphSuffix;
+
+    @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}")
+    private String identifiantsAlternatifsBaseUri;
+
     private String getDatasetsGraph(){
         return baseGraph + datasetsGraphSuffix;
+    }
+
+    private String getAdmsGraph(){
+        return baseGraph + admsGraphSuffix;
     }
 
     private String getDistributionBaseUri(){
@@ -74,6 +85,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
+    private String getDatasetsAdmsBaseUri(){
+        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
     }
 
     private String getCatalogRecordBaseUri(){
@@ -110,7 +125,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDatasetByID(String id) throws RmesException {
-        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
+        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
             throw new RmesBadRequestException("This dataset does not exist");
@@ -303,6 +318,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
+
+        if(dataset.getAltIdentifier() != null){
+            Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
+            IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
+            IRI a = ADMS.HAS_IDENTIFIER;
+            RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
+            RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, model, admsGraph);
+            RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), model, admsGraph);
+        }
+
     }
 
     private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){
@@ -417,6 +442,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
         }
+
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");
         }

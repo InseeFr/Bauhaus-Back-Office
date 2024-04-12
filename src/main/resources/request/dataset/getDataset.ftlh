@@ -1,4 +1,4 @@
-SELECT ?id ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?accessRights ?confidentialityStatus ?publisher ?landingPageLg1 ?landingPageLg2
+SELECT ?id ?altIdentifier ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?accessRights ?confidentialityStatus ?publisher ?landingPageLg1 ?landingPageLg2
 ?updated ?issued
 ?disseminationStatus ?processStep ?archiveUnit
 ?type ?dataStructure ?timeSeriesNumber ?observationNumber ?spacialCoverage ?spacialTemporal ?temporalResolution
@@ -8,6 +8,7 @@ SELECT ?id ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrualPeriodicity ?ac
 ?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
 
 FROM <${DATASET_GRAPH}>
+FROM <${ADMS_GRAPH}>
 WHERE {
     ?uri rdf:type dcat:Dataset .
     ?uri dcterms:identifier ?id .
@@ -15,6 +16,11 @@ WHERE {
 
     <#include "getDatasetIncludes/generalInformations.ftlh">
 
+    OPTIONAL {
+        ?uri adms:identifier ?admsIdentifierUri .
+        ?admsIdentifierUri rdf:type adms:Identifier .
+        ?admsIdentifierUri skos:notation ?altIdentifier .
+    }
     OPTIONAL {
         ?uri dcat:landingPage ?landingPageLg2
         FILTER (lang(?landingPageLg2) = '${LG2}') .

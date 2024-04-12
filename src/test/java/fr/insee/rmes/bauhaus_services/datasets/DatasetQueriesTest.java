@@ -60,10 +60,11 @@ public class DatasetQueriesTest {
                 put("LG1", "fr");
                 put("LG2", "en");
                 put("DATASET_GRAPH", "datasets-graph");
+                put("ADMS_GRAPH", "adms-graph");
                 put("ID", "1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDataset.ftlh"), eq(map))).thenReturn("request");
-            String query = DatasetQueries.getDataset("1", "datasets-graph");
+            String query = DatasetQueries.getDataset("1", "datasets-graph", "adms-graph");
             Assertions.assertEquals(query, "request");
         }
     }
