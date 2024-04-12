@@ -41,6 +41,8 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.datasets.baseURI=datasetIRI",
         "fr.insee.rmes.bauhaus.datasets.record.baseURI=recordIRI",
         "fr.insee.rmes.bauhaus.distribution.baseURI=distributionIRI",
+        "fr.insee.rmes.bauhaus.adms.graph=adms",
+        "fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI=identifiantsAlternatifs",
         "fr.insee.rmes.bauhaus.lg1=fr",
         "fr.insee.rmes.bauhaus.lg2=en"
 })
@@ -94,7 +96,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
@@ -291,7 +293,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
-            mockedFactory.when(() -> DatasetQueries.getDataset(eq(datasetId), any())).thenReturn("query");
+            mockedFactory.when(() -> DatasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
@@ -441,6 +443,7 @@ class DatasetServiceImplTest {
             rdfUtilsMock.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(), any(), any(String.class), any(), any())).thenCallRealMethod();
+            rdfUtilsMock.when(() -> RdfUtils.addTripleUri(any(), any(), any(IRI.class), any(), any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleDateTime(any(), any(), any(), any(), any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.setLiteralInt(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.addTripleBNode(any(), any(), any(), any(), any())).thenCallRealMethod();
@@ -456,6 +459,7 @@ class DatasetServiceImplTest {
             body.put("descriptionLg2", "descriptionLg2");
             body.put("idSerie", "2");
             body.put("themes", new JSONArray().put("http://theme"));
+            body.put("altIdentifier", "1");
 
             JSONObject record = new JSONObject();
             record.put("creator", "creator");
@@ -483,6 +487,7 @@ class DatasetServiceImplTest {
             Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://seriesIRI/2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals("[(http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals("jd1001", id);
+
         }
     }
 

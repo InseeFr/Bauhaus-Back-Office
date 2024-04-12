@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -52,7 +54,7 @@ class CodeListServiceImplTest {
     void getCodesForCodeList() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
             mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, 1, null)).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
@@ -64,7 +66,7 @@ class CodeListServiceImplTest {
             items.put(item);
             when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", 1, null));
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null));
         }
     }
 
