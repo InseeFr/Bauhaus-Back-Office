@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,7 +86,7 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-        JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/fr"));
+        JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
         formatDateInJsonArray(allDocs);
         return allDocs;
     }
