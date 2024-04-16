@@ -195,7 +195,7 @@
                 <xsl:with-param name="xpath-string" select="$xpath-string"/>
             </xsl:apply-templates>
         </xsl:variable>
-        <xsl:attribute name="{name()}" select="concat(substring-before(.,'${'),$ddi-content,substring-after(.,'}'))"/>
+        <xsl:attribute name="{local-name()}" namespace="namespace-uri()" select="concat(substring-before(.,'${'),$ddi-content,substring-after(.,'}'))"/>
     </xsl:template>
 
     <xd:doc>
