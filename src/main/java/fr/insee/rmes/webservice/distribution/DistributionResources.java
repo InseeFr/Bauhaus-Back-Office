@@ -121,6 +121,6 @@ public class DistributionResources {
             @PathVariable("id") String distributionId,
             @RequestBody PatchDistribution distribution
     ) throws RmesException{
-        this.distributionService.PatchDistribution(distributionId, distribution);
+        this.distributionService.patchDistribution(distributionId, distribution);
     }
 }

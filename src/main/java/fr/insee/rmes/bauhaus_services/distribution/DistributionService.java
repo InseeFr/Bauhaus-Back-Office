@@ -15,5 +15,5 @@ public interface DistributionService {
 
     String publishDistribution(String id) throws RmesException;
 
-    void PatchDistribution(String distributionId, PatchDistribution distribution) throws RmesException;
+    void patchDistribution(String distributionId, PatchDistribution distribution) throws RmesException;
 }

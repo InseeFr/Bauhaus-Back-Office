@@ -2,7 +2,7 @@ package fr.insee.rmes.model.dataset;
 
 public class PatchDistribution {
     private String updated;
-    private String taille;
+    private String byteSize;
     private String url;
 
 
@@ -10,21 +10,21 @@ public class PatchDistribution {
     public String getUpdated() {
         return updated;
     }
-    public String getTaille() {
-        return taille;
+    public String getByteSize() {
+        return byteSize;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setTaille(String taille) {
-            this.taille = taille;
+    public void setByteSize(String byteSize) {
+            this.byteSize = byteSize;
     }
 
-    public PatchDistribution(String updated, String taille, String url) {
+    public PatchDistribution(String updated, String byteSize, String url) {
         this.updated = updated;
-        this.taille = taille;
+        this.byteSize = byteSize;
         this.url = url;
     }
 

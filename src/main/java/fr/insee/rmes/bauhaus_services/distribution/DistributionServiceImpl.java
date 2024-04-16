@@ -25,8 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.ResponseEntity.status;
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
@@ -144,7 +142,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.MODIFIED, distribution.getUpdated(), model, graph);
 
         RdfUtils.addTripleString(distributionIRI, DCTERMS.FORMAT, distribution.getFormat(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getTaille(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getByteSize(), model, graph);
         RdfUtils.addTripleString(distributionIRI, DCAT.DOWNLOAD_URL, distribution.getUrl(), model, graph);
 
         repoGestion.loadSimpleObject(distributionIRI, model, null);
@@ -165,17 +163,17 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     @Override
-    public void PatchDistribution(String distributionId, PatchDistribution patchDistribution) throws RmesException {
+    public void patchDistribution(String distributionId, PatchDistribution patchDistribution) throws RmesException {
         String distributionByID = getDistributionByID(distributionId);
         Distribution distribution = Deserializer.deserializeBody(distributionByID, Distribution.class);
-        if  (patchDistribution.getUpdated() == null && patchDistribution.getTaille() == null && patchDistribution.getUrl() == null){
-            throw new RmesBadRequestException("One of these attributes is required : updated, taille or url");
+        if  (patchDistribution.getUpdated() == null && patchDistribution.getByteSize() == null && patchDistribution.getUrl() == null){
+            throw new RmesBadRequestException("One of these attributes is required : updated, byteSize or url");
         }
         if (patchDistribution.getUpdated() != null){
             distribution.setUpdated(patchDistribution.getUpdated());
         }
-        if (patchDistribution.getTaille() != null){
-            distribution.setTaille(patchDistribution.getTaille());
+        if (patchDistribution.getByteSize() != null){
+            distribution.setByteSize(patchDistribution.getByteSize());
         }
         if (patchDistribution.getUrl() != null){
             distribution.setUrl(patchDistribution.getUrl());
