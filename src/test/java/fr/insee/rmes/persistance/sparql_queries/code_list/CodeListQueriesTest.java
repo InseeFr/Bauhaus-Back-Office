@@ -78,9 +78,10 @@ class CodeListQueriesTest {
                 put("NOTATION", "NOTATION");
                 put("LG1", "fr");
                 put("LG2", "en");
+                put("SEARCH_CODE", "code");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("countNumberOfCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.countCodesForCodeList("NOTATION");
+            String query = CodeListQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
             Assertions.assertEquals(query, "request");
         }
     }
