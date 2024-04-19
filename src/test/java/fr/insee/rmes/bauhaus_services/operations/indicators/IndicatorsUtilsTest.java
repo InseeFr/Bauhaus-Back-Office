@@ -78,8 +78,8 @@ class IndicatorsUtilsTest {
 
         Assertions.assertEquals(model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
 
-        Assertions.assertEquals(model.objects().toArray()[0].toString(), "\"<p>fr</p>\"@fr");
-        Assertions.assertEquals(model.objects().toArray()[1].toString(), "\"<p>en</p>\"@en");
+        Assertions.assertEquals("\"<p>fr</p>\"@fr", model.objects().toArray()[0].toString());
+        Assertions.assertEquals("\"<p>en</p>\"@en", model.objects().toArray()[1].toString());
     }
 
     @Test

@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class FamiliesUtilsTest {
+class FamiliesUtilsTest {
 
 
     @Mock
@@ -66,8 +66,8 @@ public class FamiliesUtilsTest {
 
         Assertions.assertEquals(model.predicates().toArray()[0], simpleValueFactory.createIRI(DCTERMS.ABSTRACT.toString()));
 
-        Assertions.assertEquals(model.objects().toArray()[0].toString(), "\"<p>AbstractLg1</p>\"@fr");
-        Assertions.assertEquals(model.objects().toArray()[1].toString(), "\"<p>AbstractLg1</p>\"@en");
+        Assertions.assertEquals("\"<p>AbstractLg1</p>\"@fr", model.objects().toArray()[0].toString());
+        Assertions.assertEquals("\"<p>AbstractLg1</p>\"@en", model.objects().toArray()[1].toString());
     }
 
 }

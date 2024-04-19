@@ -34,7 +34,7 @@ class ThemeServiceImplTest {
         try (MockedStatic<ThemeQueries> mockedFactory = Mockito.mockStatic(ThemeQueries.class)) {
             mockedFactory.when(() -> ThemeQueries.getThemes(eq("filter2"), eq("graph"), eq("filter1"))).thenReturn("query");
             JSONArray response = themeService.getThemes("filter2");
-            Assertions.assertEquals(response.get(0), "result");
+            Assertions.assertEquals("result", response.get(0));
         }
     }
 }

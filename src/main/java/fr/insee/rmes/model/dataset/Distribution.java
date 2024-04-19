@@ -10,7 +10,7 @@ public class Distribution {
     String created;
     String updated;
     String format;
-    String taille;
+    String byteSize;
     String url;
 
     public String getId() {
@@ -85,12 +85,12 @@ public class Distribution {
         this.format = format;
     }
 
-    public String getTaille() {
-        return taille;
+    public String getByteSize() {
+        return byteSize;
     }
 
-    public void setTaille(String taille) {
-        this.taille = taille;
+    public void setByteSize(String byteSize) {
+        this.byteSize = byteSize;
     }
 
     public String getUrl() {
