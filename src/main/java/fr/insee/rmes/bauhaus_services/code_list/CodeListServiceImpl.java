@@ -63,7 +63,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
-		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
+		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, null));
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page, perPage));
 
 		result.put("total", counter.get("count"));
@@ -160,7 +160,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
-		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
+		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, search));
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, search, page, perPage));
 		JSONObject broaderNarrowerCloseMatchByCode = groupByBroaderNarrowerCloseMatchByCode(notation);
 
