@@ -32,7 +32,7 @@ class ThemeQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("theme/"), eq("getThemes.ftlh"), eq(map))).thenReturn("request");
             String query = ThemeQueries.getThemes("filter1,filter2", "concepts-graph", "filter3");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -48,7 +48,7 @@ class ThemeQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("theme/"), eq("getThemes.ftlh"), eq(map))).thenReturn("request");
             String query = ThemeQueries.getThemes(null, "concepts-graph", "filter3");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 }

@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
@@ -16,6 +17,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
+import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -32,15 +34,19 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
+
+    private static Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
     public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
+    public static final String CREATOR = "creator";
     @Autowired
     UserProviderFromSecurityContext userProviderFromSecurityContext;
 
@@ -112,7 +118,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        publicationUtils.publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         repoGestion.objectValidation(iri, model);
 
@@ -128,7 +134,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
-            throw new RmesBadRequestException("This dataset does not exist");
+            throw new RmesNotFoundException("This dataset does not exist");
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);
@@ -144,7 +150,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
         List<String> creators = new ArrayList<>();
-        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString("creator")));
+        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString(CREATOR)));
         dataset.put("creators", creators);
 
         JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
@@ -159,7 +165,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONObject catalogRecord = new JSONObject();
         if(dataset.has(CATALOG_RECORD_CREATOR)){
-            catalogRecord.put("creator", dataset.getString(CATALOG_RECORD_CREATOR));
+            catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
             dataset.remove(CATALOG_RECORD_CREATOR);
         }
         if(dataset.has(CATALOG_RECORD_CONTRIBUTOR)){
@@ -442,7 +448,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
         }
-
+        if (dataset.getAltIdentifier() != null && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
+            throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
+        }
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");
         }

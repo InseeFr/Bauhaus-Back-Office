@@ -46,7 +46,7 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.lg1=fr",
         "fr.insee.rmes.bauhaus.lg2=en"
 })
-public class DatasetServiceImplTest {
+class DatasetServiceImplTest {
 
     @MockBean
     SeriesUtils seriesUtils;
@@ -69,7 +69,7 @@ public class DatasetServiceImplTest {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             String query = datasetService.getDatasets();
-            Assertions.assertEquals(query, "[\"result\"]");
+            Assertions.assertEquals("[\"result\"]", query);
         }
     }
 
@@ -82,7 +82,7 @@ public class DatasetServiceImplTest {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
             String query = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
-            Assertions.assertEquals(query, "[\"result\"]");
+            Assertions.assertEquals("[\"result\"]", query);
         }
     }
 
@@ -101,7 +101,7 @@ public class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
             String query = datasetService.getDatasetByID("1");
-            Assertions.assertEquals(query, "{\"themes\":[],\"catalogRecord\":{},\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"id\":\"1\",\"spacialResolutions\":[\"spacialResolutions-1\"]}");
+            Assertions.assertEquals("{\"themes\":[],\"catalogRecord\":{},\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"id\":\"1\",\"spacialResolutions\":[\"spacialResolutions-1\"]}", query);
         }
     }
 
@@ -114,7 +114,7 @@ public class DatasetServiceImplTest {
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDatasetDistributions(eq("1"), any())).thenReturn("query");
             String query = datasetService.getDistributions("1");
-            Assertions.assertEquals(query, "[\"1\"]");
+            Assertions.assertEquals("[\"1\"]", query);
         }
     }
 
@@ -131,7 +131,7 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property labelLg1 is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property labelLg1 is required\"}", exception.getDetails());
         }
     }
 
@@ -149,7 +149,7 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property labelLg2 is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property labelLg2 is required\"}", exception.getDetails());
         }
     }
 
@@ -168,7 +168,7 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property creator is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property creator is required\"}", exception.getDetails());
         }
     }
 
@@ -192,7 +192,7 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property contributor is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property contributor is required\"}", exception.getDetails());
         }
     }
 
@@ -212,12 +212,56 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property disseminationStatus is required\"}");
+            Assertions.assertEquals("{\"message\":\"The property disseminationStatus is required\"}", exception.getDetails());
+        }
+    }
+
+    @Test
+    void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException {
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
+            JSONObject body = new JSONObject();
+            body.put("labelLg1", "labelLg1");
+            body.put("labelLg2", "labelLg2R");
+            body.put("disseminationStatus", "disseminationStatus");
+            body.put("altIdentifier", "%abc");
+            body.put("catalogRecord", this.generateCatalogRecord());
+
+            when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
+                JSONObject lastId = new JSONObject();
+                lastId.put("id", "1000");
+                return lastId;
+            });
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property altIdentifier contains forbidden characters\"}");
         }
     }
 
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
+            JSONObject body = new JSONObject();
+            body.put("labelLg1", "labelLg1");
+            body.put("labelLg2", "labelLg2R");
+            body.put("disseminationStatus", "disseminationStatus");
+            body.put("altIdentifier", "abc");
+            body.put("catalogRecord", this.generateCatalogRecord());
+
+            when(seriesUtils.isSeriesExist(any())).thenReturn(false);
+
+            when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
+                JSONObject lastId = new JSONObject();
+                lastId.put("id", "1000");
+                return lastId;
+            });
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The series does not exist\"}");
+        }
+    }
+
+    @Test
+    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -234,7 +278,7 @@ public class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The series does not exist\"}");
+            Assertions.assertEquals("{\"message\":\"The series does not exist\"}", exception.getDetails());
         }
     }
 
@@ -486,7 +530,7 @@ public class DatasetServiceImplTest {
 
             Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/datasetIRI/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://identifiantsAlternatifs/datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier, http://adms) [http://adms], (http://identifiantsAlternatifs/datasetIRI/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\", http://adms) [http://adms], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://seriesIRI/2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]", model2.getValue().toString());
-            Assertions.assertEquals(id, "jd1001");
+            Assertions.assertEquals("jd1001", id);
         }
     }
 
@@ -495,8 +539,8 @@ public class DatasetServiceImplTest {
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/1");
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://catalogRecordIRI/1");
 
-        doNothing().when(publicationUtils).publishResource(eq(iri), eq(Set.of()));
-        doNothing().when(publicationUtils).publishResource(eq(catalogRecordIri), eq(Set.of("creator", "contributor")));
+        doNothing().when(publicationUtils).publishResource(iri, Set.of());
+        doNothing().when(publicationUtils).publishResource(catalogRecordIri, Set.of("creator", "contributor"));
 
         String id = datasetService.publishDataset("1");
         ArgumentCaptor<Model> modelIri = ArgumentCaptor.forClass(Model.class);

@@ -41,7 +41,23 @@ public class CodeListQueries extends GenericQueries {
 		return perPage;
 	}
 
-	private static void addSearchPredicates(Map<String, Object> params, List<String> search) {
+	public static String getBroaderNarrowerCloseMatch(String notation) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put(NOTATION, notation);
+
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getBroaderNarrowerCloseMatch.ftlh", params);
+	}
+
+	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		int perPageValue = getPerPageConfiguration(perPage);
+		initParams(params);
+		params.put(NOTATION, notation);
+		params.put(PARTIAL, partial);
+		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+
+  private static void addSearchPredicates(Map<String, Object> params, List<String> search) {
 		if(search != null){
 			search.forEach(s -> {
 				if(!StringUtils.isEmpty(s)){
