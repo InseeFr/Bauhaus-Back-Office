@@ -17,6 +17,7 @@ public class RmesException extends Exception {
 	private final int status;
 	private final String details;
 
+
 	/**
 	 *
 	 * @param status
@@ -26,7 +27,7 @@ public class RmesException extends Exception {
 	public RmesException(int status, String message, String details) {
 		super();
 		this.status = status;
-		this.details = createDetails(null, message, details);		
+		this.details = createDetails(null, message, details);
 	}
 
 	public RmesException(int status, String message, JSONArray details) {
