@@ -34,9 +34,12 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
+
+    private static Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
@@ -445,7 +448,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
         }
-
+        if (dataset.getAltIdentifier() != null && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
+            throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
+        }
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");
         }

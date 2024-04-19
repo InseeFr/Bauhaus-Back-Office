@@ -217,7 +217,51 @@ class DatasetServiceImplTest {
     }
 
     @Test
+    void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException {
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
+            JSONObject body = new JSONObject();
+            body.put("labelLg1", "labelLg1");
+            body.put("labelLg2", "labelLg2R");
+            body.put("disseminationStatus", "disseminationStatus");
+            body.put("altIdentifier", "%abc");
+            body.put("catalogRecord", this.generateCatalogRecord());
+
+            when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
+                JSONObject lastId = new JSONObject();
+                lastId.put("id", "1000");
+                return lastId;
+            });
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property altIdentifier contains forbidden characters\"}");
+        }
+    }
+
+    @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
+        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+            mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
+            JSONObject body = new JSONObject();
+            body.put("labelLg1", "labelLg1");
+            body.put("labelLg2", "labelLg2R");
+            body.put("disseminationStatus", "disseminationStatus");
+            body.put("altIdentifier", "abc");
+            body.put("catalogRecord", this.generateCatalogRecord());
+
+            when(seriesUtils.isSeriesExist(any())).thenReturn(false);
+
+            when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
+                JSONObject lastId = new JSONObject();
+                lastId.put("id", "1000");
+                return lastId;
+            });
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The series does not exist\"}");
+        }
+    }
+
+    @Test
+    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException {
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
