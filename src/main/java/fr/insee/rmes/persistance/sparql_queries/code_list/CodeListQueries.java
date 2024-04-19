@@ -41,6 +41,14 @@ public class CodeListQueries extends GenericQueries {
 		return perPage;
 	}
 
+	public static String getBroaderNarrowerCloseMatch(String notation) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put(NOTATION, notation);
+
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getBroaderNarrowerCloseMatch.ftlh", params);
+	}
+
 	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);

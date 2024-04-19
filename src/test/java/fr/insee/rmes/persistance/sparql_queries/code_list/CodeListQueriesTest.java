@@ -135,6 +135,25 @@ class CodeListQueriesTest {
     }
 
     @Test
+    void getBroaderNarrowerCloseMatch() throws RmesException {
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        CodeListQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("CODES_LISTS_GRAPH", "codelist-graph");
+                put("LG1", "fr");
+                put("LG2", "en");
+                put("NOTATION", "NOTATION");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getBroaderNarrowerCloseMatch.ftlh"), eq(map))).thenReturn("request");
+            String query = CodeListQueries.getBroaderNarrowerCloseMatch("NOTATION");
+            Assertions.assertEquals(query, "request");
+        }
+    }
+
+    @Test
     void getDetailedCodesWithoutSearch() throws RmesException {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");

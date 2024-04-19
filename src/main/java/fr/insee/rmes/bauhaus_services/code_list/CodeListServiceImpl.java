@@ -115,13 +115,60 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	}
 
+	/**
+	 * In order to avoid multiple loops, we group by the data by the code only once.
+	 */
+	private JSONObject groupByBroaderNarrowerCloseMatchByCode(String notation) throws RmesException {
+		JSONObject broaderNarrowerCloseMatchByCode = new JSONObject();
+
+		JSONArray broaderNarrowerCloseMatch = repoGestion.getResponseAsArray(CodeListQueries.getBroaderNarrowerCloseMatch(notation));
+		for(var i = 0; i < broaderNarrowerCloseMatch.length(); i++){
+			JSONObject broaderNarrowerCloseMatchCode = broaderNarrowerCloseMatch.getJSONObject(i);
+
+			String mainCode = broaderNarrowerCloseMatchCode.getString("code");
+			String linkCode = broaderNarrowerCloseMatchCode.getString("linkCode");
+			String linkType = broaderNarrowerCloseMatchCode.getString("linkType");
+			if(!broaderNarrowerCloseMatchByCode.has(mainCode)){
+				broaderNarrowerCloseMatchByCode.put(mainCode,
+						new JSONObject()
+								.put("broader", new JSONArray())
+								.put("narrower", new JSONArray())
+								.put("closeMatch", new JSONArray()));
+			}
+
+			JSONObject codeToUpdate = broaderNarrowerCloseMatchByCode.getJSONObject(mainCode);
+			codeToUpdate.getJSONArray(linkType).put(linkCode);
+		}
+		return broaderNarrowerCloseMatchByCode;
+	}
+
+	private void addLinkCodeToItem(JSONObject item, String key, JSONObject broaderNarrowerCloseMatchForCode){
+		if(broaderNarrowerCloseMatchForCode.getJSONArray(key).length() > 0){
+			item.put(key, broaderNarrowerCloseMatchForCode.getJSONArray(key));
+		}
+	}
+
+	private void addBroaderNarrowerCloseMatchToItem(JSONObject item, JSONObject broaderNarrowerCloseMatchByCode){
+		if(broaderNarrowerCloseMatchByCode.has(item.getString("code"))){
+			JSONObject broaderNarrowerCloseMatchForCode = broaderNarrowerCloseMatchByCode.getJSONObject(item.getString("code"));
+			addLinkCodeToItem(item, "broader", broaderNarrowerCloseMatchForCode);
+			addLinkCodeToItem(item, "narrower", broaderNarrowerCloseMatchForCode);
+			addLinkCodeToItem(item, "closeMatch", broaderNarrowerCloseMatchForCode);
+		}
+	}
 	@Override
 	public String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, search, page, perPage));
+		JSONObject broaderNarrowerCloseMatchByCode = groupByBroaderNarrowerCloseMatchByCode(notation);
 
+
+		for(var i = 0; i < items.length(); i++){
+			JSONObject item = items.getJSONObject(i);
+			addBroaderNarrowerCloseMatchToItem(item, broaderNarrowerCloseMatchByCode);
+		}
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
