@@ -13,14 +13,18 @@ public class RmesNotAcceptableException extends RmesException {
 
 	public RmesNotAcceptableException(String message, JSONArray details) {
 		super(HttpStatus.SC_NOT_ACCEPTABLE, message, details);
-	}	
-	
+	}
+
+
 	public RmesNotAcceptableException(int errorCode, String message, String details) {
 		super(HttpStatus.SC_NOT_ACCEPTABLE, errorCode, message, details);
 	}
 
 	public RmesNotAcceptableException(int errorCode, String message, JSONArray details) {
 		super(HttpStatus.SC_NOT_ACCEPTABLE, errorCode, message, details);
-	}	
-	
+	}
+
+	public RmesNotAcceptableException(int errorCode, String message) {
+		super(HttpStatus.SC_NOT_ACCEPTABLE, errorCode, message);
+	}
 }
