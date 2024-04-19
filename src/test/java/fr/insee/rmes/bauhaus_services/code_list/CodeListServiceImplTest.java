@@ -33,7 +33,7 @@ class CodeListServiceImplTest {
     @Test
     void getCodesJson() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
+            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", null)).thenReturn("query");
             mockedFactory.when(() -> CodeListQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
@@ -53,7 +53,7 @@ class CodeListServiceImplTest {
     @Test
     void getCodesForCodeList() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
+            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
             mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null)).thenReturn("query2");
             mockedFactory.when(() -> CodeListQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
