@@ -54,7 +54,7 @@ class CodeListServiceImplTest {
     void getCodesForCodeList() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
             mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null)).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
             mockedFactory.when(() -> CodeListQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
             JSONObject count = new JSONObject();
@@ -75,7 +75,7 @@ class CodeListServiceImplTest {
             relatedList.put(related);
             when(repositoryGestion.getResponseAsArray(eq("query3"))).thenReturn(relatedList);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null));
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
         }
     }
 
