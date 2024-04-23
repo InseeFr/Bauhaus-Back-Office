@@ -24,7 +24,4 @@ public class RmesNotAcceptableException extends RmesException {
 		super(HttpStatus.SC_NOT_ACCEPTABLE, errorCode, message, details);
 	}
 
-	public RmesNotAcceptableException(int errorCode, String message) {
-		super(HttpStatus.SC_NOT_ACCEPTABLE, errorCode, message);
-	}
 }

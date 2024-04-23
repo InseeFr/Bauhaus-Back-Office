@@ -25,6 +25,10 @@ public class RmesBadRequestException extends RmesException {
 
 	public RmesBadRequestException(int errorCode, String message, JSONArray details) {
 		super(HttpStatus.SC_BAD_REQUEST, errorCode, message, details);
-	}	
-	
+	}
+
+	public RmesBadRequestException(int errorCode, String message) {
+		super(HttpStatus.SC_BAD_REQUEST, errorCode, message);
+	}
+
 }

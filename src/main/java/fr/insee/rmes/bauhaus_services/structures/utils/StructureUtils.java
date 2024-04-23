@@ -373,7 +373,7 @@ public class StructureUtils extends RdfService {
     public void deleteStructure(String structureId) throws RmesException {
         String structureState = getValidationStatus(structureId);
         if(!structureState.equalsIgnoreCase("Unpublished")){
-            throw new RmesNotAcceptableException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+            throw new RmesBadRequestException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted", "");
         }
         else {
             IRI structureIri = RdfUtils.structureIRI(structureId);
