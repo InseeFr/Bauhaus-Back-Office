@@ -8,10 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.geography.GeoFeature;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.IGEO;
@@ -107,6 +104,10 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 
 	@Override
 	public void updateFeature(String id, String body) throws RmesException {
+
+		// Est-ce il existe une geographie ayant l'id passé en paramètre
+		// si c'est non => 404
+
 		if(!stampsRestrictionsService.canManageDocumentsAndLinks()) {
 			throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_RIGHTS_DENIED, "Only an admin or a manager can create a new geo feature.");
 		}
@@ -115,7 +116,10 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		GeoFeature geoFeature = new GeoFeature();
 		try {
 			geoFeature = mapper.readValue(body,GeoFeature.class);
+
 			geoFeature.setId(id);
+
+
 			if (geoFeature.getCode()==null) {
 				geoFeature.setCode(geoFeature.getId());
 			}
@@ -149,20 +153,28 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	}
 	
 	public String createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
-		Model model = new LinkedHashModel();
-		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getId())) {
-			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
+
+		if (StringUtils.isEmpty(geoFeature.getId())) {
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_UNKNOWN, "id is mandatory");
 		}
+
 		if (StringUtils.isEmpty(geoFeature.getLabelLg1())) {
-			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 not found", CAN_T_READ_REQUEST_BODY);
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 is mandatory");
 		}
+
+		if (StringUtils.isEmpty(geoFeature.getLabelLg2())) {
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg2 is mandatory");
+		}
+
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
 		//We check the unicity of the label
 		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeoQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
 		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
-			throw new RmesUnauthorizedException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The label already exists", new JSONArray());
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The labelLg1 already exists");
 		}
+
+		Model model = new LinkedHashModel();
 
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
