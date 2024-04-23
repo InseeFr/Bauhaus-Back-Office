@@ -3,27 +3,16 @@ package fr.insee.rmes.exceptions;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 
 public class RmesException extends Exception {
-
 	private static final String CODE = "code";
-
 	private static final String DETAILS_STRING = "details";
-
 	private static final String MESSAGE = "message";
-
 	private static final long serialVersionUID = -7959158367542389147L;
-
 	private final int status;
 	private final String details;
 
-
-	/**
-	 *
-	 * @param status
-	 * @param message
-	 * @param details
-	 */
 	public RmesException(int status, String message, String details) {
 		super();
 		this.status = status;
@@ -94,10 +83,8 @@ public class RmesException extends Exception {
 	private String createDetails(Integer errorCode, String message, String detailsParam) {
 		JSONObject det = new JSONObject();
 		if (errorCode != null) det.put(CODE, errorCode);
-		if (message != null) det.put(MESSAGE, message);
-		if (details != null) det.put(DETAILS_STRING, detailsParam);
+		if (!StringUtils.isEmpty(message)) det.put(MESSAGE, message);
+		if (!StringUtils.isEmpty(detailsParam)) det.put(DETAILS_STRING, detailsParam);
 		return det.toString();
-		
 	}
-	
 }

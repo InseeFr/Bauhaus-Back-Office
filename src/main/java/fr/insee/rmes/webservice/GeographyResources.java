@@ -48,7 +48,7 @@ public class GeographyResources  extends GenericResources {
 	 * COG
 	 ******************************************************************************************************/
 	@GetMapping(value = "/territories", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getGeoFeatures", summary = "List of geofeatures", 
+	@Operation(operationId = "getGeoFeatures", summary = "List of geofeatures",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=GeoFeature.class))))})
 	public ResponseEntity<Object> getGeoFeatures() throws RmesException {
 		String jsonResultat = geoService.getGeoFeatures();
@@ -56,7 +56,7 @@ public class GeographyResources  extends GenericResources {
 	}
 	
 	@GetMapping(value = "/territory/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getGeoFeature", summary = "Geofeature", 
+	@Operation(operationId = "getGeoFeature", summary = "Geofeature",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=GeoFeature.class)))})
 	public ResponseEntity<Object> getGeoFeature(@PathVariable(Constants.ID) String id) throws RmesException {
 		String jsonResultat = geoService.getGeoFeatureById(id).toString();
@@ -66,7 +66,7 @@ public class GeographyResources  extends GenericResources {
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping(value = "/territory", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "createGeograohy", summary = "Create feature")
+	@Operation(operationId = "createGeograohy", summary = "Create feature")
 	public ResponseEntity<Object> createGeography(
 			@Parameter(description = "Geo Feature to create", required = true, 
             content = @Content(schema = @Schema(implementation = GeoFeature.class))) @RequestBody String body) {

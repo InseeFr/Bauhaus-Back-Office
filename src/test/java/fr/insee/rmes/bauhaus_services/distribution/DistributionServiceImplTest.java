@@ -42,7 +42,6 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.lg1=fr",
         "fr.insee.rmes.bauhaus.lg2=en"
 })
-
 class DistributionServiceImplTest {
     @MockBean
     RepositoryGestion repositoryGestion;
