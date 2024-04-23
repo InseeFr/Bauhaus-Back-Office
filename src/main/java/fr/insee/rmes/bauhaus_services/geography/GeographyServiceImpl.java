@@ -148,15 +148,15 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	public String createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
 
 		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getId())) {
-			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
 		}
 
 		if (StringUtils.isEmpty(geoFeature.getLabelLg1())) {
-			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 is mandatory", CAN_T_READ_REQUEST_BODY);
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 is mandatory", CAN_T_READ_REQUEST_BODY);
 		}
 
 		if (StringUtils.isEmpty(geoFeature.getLabelLg2())) {
-			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg2 is mandatory", CAN_T_READ_REQUEST_BODY);
+			throw new RmesBadRequestException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg2 is mandatory", CAN_T_READ_REQUEST_BODY);
 		}
 
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
