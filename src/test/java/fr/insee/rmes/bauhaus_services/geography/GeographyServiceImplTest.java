@@ -17,14 +17,14 @@ class GeographyServiceImplTest {
     GeographyServiceImpl geographyService;
 
     @Test
-    void shouldReturnNotAcceptableExeptionIfMissingId() {
+    void shouldReturnBadRequestExceptionIfMissingId() {
         GeoFeature feature = new GeoFeature();
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
         Assertions.assertEquals("{\"code\":845,\"message\":\"id is mandatory\"}", exception.getDetails());
     }
 
     @Test
-    void shouldReturnNotAcceptableExeptionIfMissingLabelLg1() {
+    void shouldReturnBadRequestExceptionIfMissingLabelLg1() {
         GeoFeature feature = new GeoFeature();
         feature.setId("id");
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
@@ -32,7 +32,7 @@ class GeographyServiceImplTest {
     }
 
     @Test
-    void shouldReturnNotAcceptableExeptionIfMissingLabelLg2() {
+    void shouldReturnBadRequestExceptionIfMissingLabelLg2() {
         GeoFeature feature = new GeoFeature();
         feature.setId("id");
         feature.setLabelLg1("labelLg1");
