@@ -8,10 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.geography.GeoFeature;
 import fr.insee.rmes.persistance.ontologies.GEO;
 import fr.insee.rmes.persistance.ontologies.IGEO;
@@ -149,20 +146,28 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 	}
 	
 	public String createRdfGeoFeature(GeoFeature geoFeature) throws RmesException {
-		Model model = new LinkedHashModel();
+
 		if (geoFeature == null || StringUtils.isEmpty(geoFeature.getId())) {
-			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
+			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_UNKNOWN, "No uri found", CAN_T_READ_REQUEST_BODY);
 		}
+
 		if (StringUtils.isEmpty(geoFeature.getLabelLg1())) {
-			throw new RmesNotFoundException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 not found", CAN_T_READ_REQUEST_BODY);
+			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg1 is mandatory", CAN_T_READ_REQUEST_BODY);
 		}
+
+		if (StringUtils.isEmpty(geoFeature.getLabelLg2())) {
+			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_INCORRECT_BODY, "LabelLg2 is mandatory", CAN_T_READ_REQUEST_BODY);
+		}
+
 		IRI geoIRI = RdfUtils.objectIRI(ObjectType.GEO_STAT_TERRITORY, geoFeature.getId());
 
 		//We check the unicity of the label
 		JSONObject checkUnicityTerritory = repoGestion.getResponseAsObject(GeoQueries.checkUnicityTerritory(geoFeature.getLabelLg1()));
 		if(checkUnicityTerritory.has("territory") && !checkUnicityTerritory.getString("territory").equalsIgnoreCase(geoFeature.getUri())){
-			throw new RmesUnauthorizedException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The label already exists", new JSONArray());
+			throw new RmesNotAcceptableException(ErrorCodes.GEOFEATURE_EXISTING_LABEL, "The labelLg1 already exists", new JSONArray());
 		}
+
+		Model model = new LinkedHashModel();
 
 		/*Const*/
 		model.add(geoIRI, RDF.TYPE, IGEO.TERRITOIRE_STATISTIQUE, RdfUtils.simsGeographyGraph());
