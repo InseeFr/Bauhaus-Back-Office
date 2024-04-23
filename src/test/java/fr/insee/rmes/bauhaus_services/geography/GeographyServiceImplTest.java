@@ -20,7 +20,7 @@ class GeographyServiceImplTest {
     void shouldReturnNotAcceptableExeptionIfMissingId() {
         GeoFeature feature = new GeoFeature();
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> geographyService.createRdfGeoFeature(feature));
-        Assertions.assertEquals("{\"code\":845,\"message\":\"No uri found\"}", exception.getDetails());
+        Assertions.assertEquals("{\"code\":845,\"message\":\"id is mandatory\"}", exception.getDetails());
     }
 
     @Test
