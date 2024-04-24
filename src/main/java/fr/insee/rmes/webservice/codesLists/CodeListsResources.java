@@ -121,9 +121,10 @@ public class CodeListsResources extends GenericResources {
             @PathVariable("notation") String notation,
             @RequestParam(value = "search", required = false) List<String> search,
             @RequestParam("page") int page,
-            @RequestParam(value = "per_page", required = false) Integer perPage) {
+            @RequestParam(value = "per_page", required = false) Integer perPage,
+            @RequestParam(value = "sort", required = false) String sort) {
         try {
-            String body = codeListService.getCodesForCodeList(notation, search, page, perPage);
+            String body = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);

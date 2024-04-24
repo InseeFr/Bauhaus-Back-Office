@@ -105,9 +105,10 @@ class CodeListQueriesTest {
                 put("OFFSET", 5);
                 put("PER_PAGE", 5);
                 put("SEARCH_CODE", "search");
+                put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null);
+            String query = CodeListQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
             Assertions.assertEquals(query, "request");
         }
     }
@@ -128,9 +129,11 @@ class CodeListQueriesTest {
                 put("PARTIAL", true);
                 put("CODE_LIST_BASE_URI", "codelist-base-uri");
                 put("SEARCH_CODE", "search");
+                put("SORT", "labelLg1");
+
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0);
+            String query = CodeListQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
             Assertions.assertEquals(query, "request");
         }
     }
@@ -169,9 +172,10 @@ class CodeListQueriesTest {
                 put("NOTATION", "NOTATION");
                 put("PARTIAL", true);
                 put("CODE_LIST_BASE_URI", "codelist-base-uri");
+                put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.getDetailedCodes("NOTATION", true,null, 0, 0);
+            String query = CodeListQueries.getDetailedCodes("NOTATION", true,null, 0, 0, "labelLg1");
             Assertions.assertEquals(query, "request");
         }
     }

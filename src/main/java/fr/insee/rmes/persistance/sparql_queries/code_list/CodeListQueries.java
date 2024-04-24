@@ -60,7 +60,7 @@ public class CodeListQueries extends GenericQueries {
 		}
 	}
 
-	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage) throws RmesException {
+	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		Map<String, Object> params = new HashMap<>();
 		int perPageValue = getPerPageConfiguration(perPage);
 		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
@@ -69,6 +69,7 @@ public class CodeListQueries extends GenericQueries {
 		params.put("LG2", config.getLg2());
 		params.put(PARTIAL, partial);
 		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+		params.put("SORT", sort == null ? "code" : sort);
 
 		addSearchPredicates(params, search);
 

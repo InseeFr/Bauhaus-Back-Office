@@ -39,15 +39,15 @@ class CodeListsResourcesTest {
     }
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null);
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn("body");
+        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithGetPaginatedCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null);
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenThrow(new RmesException(500, "", ""));
+        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
