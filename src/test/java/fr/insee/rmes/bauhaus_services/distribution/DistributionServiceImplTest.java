@@ -305,9 +305,8 @@ class DistributionServiceImplTest {
     void getDistributionByID_shouldReturn404IfInexistentId() throws RmesException {
         JSONObject mockJSON = new JSONObject(EMPTY_JSON_OBJECT);
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-
-        assertThatThrownBy(() -> distributionService.getDistributionByID("1")).isInstanceOf(RmesNotFoundException.class)
-                .matches(rmesException -> ((RmesNotFoundException) rmesException).getStatus() == 404);
+        RmesException exception = assertThrows(RmesNotFoundException.class, () -> distributionService.getDistributionByID("1"));
+        Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This distribution does not exist\"}", exception.getDetails());
     }
 
 
@@ -316,8 +315,8 @@ class DistributionServiceImplTest {
         PatchDistribution patch = new PatchDistribution();
         JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);
-        assertThatThrownBy(() -> distributionService.patchDistribution("d1004", patch)).isInstanceOf(RmesBadRequestException.class)
-                .matches(rmesException -> ((RmesBadRequestException) rmesException).getStatus() == 400);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () ->distributionService.patchDistribution("d1004", patch));
+        Assertions.assertEquals("{\"code\":1201,\"message\":\"One of these attributes is required : updated, byteSize or url\"}", exception.getDetails());
     }
 
     @Test
