@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_INCORRECT_BODY;
+
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
@@ -167,7 +169,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         String distributionByID = getDistributionByID(distributionId);
         Distribution distribution = Deserializer.deserializeBody(distributionByID, Distribution.class);
         if  (patchDistribution.getUpdated() == null && patchDistribution.getByteSize() == null && patchDistribution.getUrl() == null){
-            throw new RmesBadRequestException("One of these attributes is required : updated, byteSize or url");
+            throw new RmesBadRequestException(DISTRIUBTION_INCORRECT_BODY,"One of these attributes is required : updated, byteSize or url");
         }
         if (patchDistribution.getUpdated() != null){
             distribution.setUpdated(patchDistribution.getUpdated());
