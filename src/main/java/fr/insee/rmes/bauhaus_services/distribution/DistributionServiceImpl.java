@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
 
-import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_INCORRECT_BODY;
 
 
 @Service
