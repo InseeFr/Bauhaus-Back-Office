@@ -311,7 +311,7 @@ class DistributionServiceImplTest {
 
 
     @Test
-    void shouldPatchReturn400IfNoOneOfRequiredAttributes() throws RmesException {
+    void shouldPatchDistributionReturn400IfNoOneOfRequiredAttributes() throws RmesException {
         PatchDistribution patch = new PatchDistribution();
         JSONObject getDistrib = new JSONObject(DISTRIB_A_PATCHER);
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(getDistrib);

@@ -128,8 +128,10 @@ public class ErrorCodes {
 	public static final int CLASSIFICATION_UNKNOWN_ID = 1141;
 	public static final int CLASSIFICATION_INCORRECT_BODY = 1142;
 
-	//DISTRIBUTION
-	public static final int DISTRIUBTION_INCORRECT_BODY = 1201;
+	//DATASET and DISTRIBUTION
+	public static final int DISTRIUBTION_PATCH_INCORRECT_BODY = 1201;
+	public static final int DATASET_PATCH_INCORRECT_BODY = 1202;
+
 
 
 	/*
