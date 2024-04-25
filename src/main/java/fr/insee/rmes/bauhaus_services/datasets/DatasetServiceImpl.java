@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static fr.insee.rmes.exceptions.ErrorCodes.*;
+
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
@@ -247,6 +249,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
+        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getObservationNumber() == null
+                && patchDataset.getTimeSeriesNumber() == null && patchDataset.getTemporalCoverageStartDate() == null
+                && patchDataset.getTemporalCoverageEndDate() == null){
+            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate");
+        }
 
         if ( patchDataset.getIssued() != null){
             dataset.setIssued(patchDataset.getIssued());
