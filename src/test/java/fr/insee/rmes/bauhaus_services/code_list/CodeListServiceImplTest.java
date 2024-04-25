@@ -73,7 +73,7 @@ class CodeListServiceImplTest {
             related.put("linkType", "broader");
             JSONArray relatedList = new JSONArray();
             relatedList.put(related);
-            when(repositoryGestion.getResponseAsArray(eq("query3"))).thenReturn(relatedList);
+            when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
 
             assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
         }

@@ -59,7 +59,7 @@ public class DatasetResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createDataset", summary = "Create a Dataset")
+    @Operation(operationId = "createDataset", summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
     public String setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
@@ -68,7 +68,7 @@ public class DatasetResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDataset", summary = "Update a Dataset")
+    @Operation(operationId = "updateDataset", summary = "Update a dataset")
     public String setDataset(
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
@@ -78,7 +78,7 @@ public class DatasetResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping("/{id}/validate")
-    @Operation(operationId = "publishDataset", summary = "Publish a Dataset",
+    @Operation(operationId = "publishDataset", summary = "Publish a dataset",
             responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
         return this.datasetService.publishDataset(datasetId);
@@ -104,7 +104,7 @@ public class DatasetResources {
     @DeleteMapping("/{id}")
     @Operation(
             operationId = "deleteDataset",
-            summary = "Delete a Dataset"
+            summary = "Delete a dataset"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),

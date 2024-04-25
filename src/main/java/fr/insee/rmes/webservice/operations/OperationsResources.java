@@ -51,7 +51,7 @@ public class OperationsResources extends OperationsCommonResources {
 
 	@GetMapping(value = "/operation/{id}", produces = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Operation", responses = {
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Get an operation", responses = {
 			@ApiResponse(content = @Content(/* mediaType = "application/json", */ schema = @Schema(implementation = Operation.class))) })
 	public ResponseEntity<Object> getOperationByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
@@ -186,7 +186,7 @@ public class OperationsResources extends OperationsCommonResources {
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update operation")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update an operation")
 	public ResponseEntity<Object> setOperationById(@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Operation to update", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) {
 		try {

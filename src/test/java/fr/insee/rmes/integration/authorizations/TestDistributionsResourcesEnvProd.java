@@ -47,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
-public class TestDistributionsResourcesEnvProd {
+class TestDistributionsResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;

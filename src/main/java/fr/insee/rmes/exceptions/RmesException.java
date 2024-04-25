@@ -83,8 +83,8 @@ public class RmesException extends Exception {
 	private String createDetails(Integer errorCode, String message, String detailsParam) {
 		JSONObject det = new JSONObject();
 		if (errorCode != null) det.put(CODE, errorCode);
-		if (!StringUtils.isEmpty(message)) det.put(MESSAGE, message);
-		if (!StringUtils.isEmpty(detailsParam)) det.put(DETAILS_STRING, detailsParam);
+		if (StringUtils.hasLength(message)) det.put(MESSAGE, message);
+		if (StringUtils.hasLength(detailsParam)) det.put(DETAILS_STRING, detailsParam);
 		return det.toString();
 	}
 }

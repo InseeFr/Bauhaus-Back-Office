@@ -51,7 +51,7 @@ public class StructureResources  extends GenericResources {
     StructureComponent structureComponentService;
 
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructures", summary = "List of Structures",
+    @Operation(operationId = "getStructures", summary = "List of structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructures() {
         String jsonResultat;
@@ -64,7 +64,7 @@ public class StructureResources  extends GenericResources {
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructuresForSearch", summary = "List of Structures for advanced search",
+    @Operation(operationId = "getStructuresForSearch", summary = "List of structures for advanced search",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
     public ResponseEntity<Object> getStructuresForSearch() {
         try {
@@ -105,7 +105,7 @@ public class StructureResources  extends GenericResources {
     }
 
     @GetMapping(value = "/structure/{id}/details", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getStructureByIdDetails", summary = "Get all a details of a structure",
+    @Operation(operationId = "getStructureByIdDetails", summary = "Get all details of a structure",
             responses = {@ApiResponse(content = @Content(schema = @Schema(implementation = StructureById.class)))})
     public ResponseEntity<Object> getStructureByIdDetails(@PathVariable(Constants.ID) String id) {
         try {
@@ -191,7 +191,7 @@ public class StructureResources  extends GenericResources {
     }
 
     @GetMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getComponentById", summary = "Get all mutualized components")
+    @Operation(operationId = "getComponentById", summary = "Get a component")
     public ResponseEntity<Object> getComponentById(@PathVariable(Constants.ID) String id) {
         try {
             String jsonResultat = structureComponentService.getComponent(id);
@@ -215,7 +215,7 @@ public class StructureResources  extends GenericResources {
 
     @PreAuthorize("isAdmin() || isComponentContributor(#id)")
     @DeleteMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "deleteComponentById", summary = "delete a mutualized component")
+    @Operation(operationId = "deleteComponentById", summary = "Delete a mutualized component")
     public ResponseEntity<Object> deleteComponentById(@PathVariable(Constants.ID) @P("id") String id) {
         try {
             structureComponentService.deleteComponent(id);
@@ -242,7 +242,7 @@ public class StructureResources  extends GenericResources {
     @PreAuthorize("isAdmin() || isStructureAndComponentContributor(#body)")
     @PostMapping(value = "/components",
     		consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createComponent", summary = "create a component")
+    @Operation(operationId = "createComponent", summary = "Create a component")
     public ResponseEntity<Object> createComponent(
     		@Parameter(description = "Component", required = true) @RequestBody String body) {
         try {

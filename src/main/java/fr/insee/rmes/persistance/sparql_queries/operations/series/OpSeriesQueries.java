@@ -15,8 +15,6 @@ public class OpSeriesQueries extends GenericQueries{
 		throw new IllegalStateException("Utility class");
 	}
 
-	private static StringBuilder variables;
-	private static StringBuilder whereClause;
 	static Map<String, Object> params;
 	
 	private static final String ID_SERIES = "ID_SERIES";

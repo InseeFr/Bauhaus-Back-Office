@@ -50,7 +50,7 @@ public class SeriesResources extends OperationsCommonResources {
 
 	@GetMapping(value = "/series/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesByID", 
-	summary = "Series", responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Series.class)))})
+	summary = "Get a series", responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Series.class)))})
 	public ResponseEntity<Object> getSeriesByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
 		String resultat;
@@ -103,7 +103,7 @@ public class SeriesResources extends OperationsCommonResources {
 	@PreAuthorize("isAdmin() || isContributorOfSerie(#seriesId)")
 	@PutMapping(value = "/series/{id}",
 		consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update series")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesById", summary = "Update a series")
 	public ResponseEntity<Object> setSeriesById(
 			@PathVariable(Constants.ID) @P("seriesId") String id,
 			@Parameter(description = "Series to update", required = true,

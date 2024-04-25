@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/codeList/partial")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Partial Codes lists", description = "Partial Codes list API")
+@Tag(name = "Partial Code lists", description = "Partial Code list API")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Success"),
         @ApiResponse(responseCode = "204", description = "No Content"),
@@ -102,7 +102,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createPartialCodeList", summary = "Create a codes list")
+    @Operation(operationId = "createPartialCodeList", summary = "Create a code list")
     public ResponseEntity<Object> createPartialCodeList(
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
@@ -115,7 +115,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "setCodesList", summary = "Create a codes list")
+    @Operation(operationId = "setCodesList", summary = "Create a code list")
     public ResponseEntity<Object> updatePartialCodeList(
             @PathVariable(Constants.ID) String componentId,
             @Parameter(description = "Code List", required = true) @RequestBody String body) {
@@ -129,7 +129,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
     @DeleteMapping(value = "/{id}")
-    @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial codes list")
+    @Operation(operationId = "deletePartialCodeList", summary = "Delete a partial code list")
     public ResponseEntity<Object> deletePartialCodeList(@PathVariable(Constants.ID) String notation) {
         try {
             codeListService.deleteCodeList(notation, true);

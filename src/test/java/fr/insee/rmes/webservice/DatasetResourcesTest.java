@@ -55,7 +55,7 @@ public class DatasetResourcesTest {
 
     @Test
     void shouldCallPublishDataset() throws RmesException {
-        when(datasetService.publishDataset(eq("1"))).thenReturn("result");
+        when(datasetService.publishDataset("1")).thenReturn("result");
         Assertions.assertEquals("result", datasetResources.publishDataset("1"));
     }
 }

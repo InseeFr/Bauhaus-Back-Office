@@ -42,7 +42,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -62,7 +62,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request",query);
         }
     }
 
@@ -82,7 +82,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("countNumberOfCodes.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -109,7 +109,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -134,7 +134,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -153,7 +153,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getBroaderNarrowerCloseMatch.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getBroaderNarrowerCloseMatch("NOTATION");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -176,7 +176,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getDetailedCodes("NOTATION", true,null, 0, 0, "labelLg1");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 }
