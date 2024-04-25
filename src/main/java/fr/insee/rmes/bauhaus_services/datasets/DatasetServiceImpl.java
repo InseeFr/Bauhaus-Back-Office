@@ -17,7 +17,6 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
-import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -152,17 +151,17 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
         List<String> creators = new ArrayList<>();
-        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString(CREATOR)));
+        creatorsArray.iterator().forEachRemaining(creator -> creators.add(((JSONObject) creator).getString(CREATOR)));
         dataset.put("creators", creators);
 
         JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
         List<String> spacialResolutions = new ArrayList<>();
-        spacialResolutionsArray.iterator().forEachRemaining((spacialResolution) -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
+        spacialResolutionsArray.iterator().forEachRemaining(spacialResolution -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
         dataset.put("spacialResolutions", spacialResolutions);
 
         JSONArray statisticalUnitArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()));
         List<String> statisticalUnit = new ArrayList<>();
-        statisticalUnitArray.iterator().forEachRemaining((unit) -> statisticalUnit.add(((JSONObject) unit).getString("statisticalUnit")));
+        statisticalUnitArray.iterator().forEachRemaining(unit -> statisticalUnit.add(((JSONObject) unit).getString("statisticalUnit")));
         dataset.put("statisticalUnit", statisticalUnit);
 
         JSONObject catalogRecord = new JSONObject();
@@ -335,7 +334,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(dataset.getAltIdentifier() != null){
             Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
             IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
-            IRI a = ADMS.HAS_IDENTIFIER;
             RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
             RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, model, admsGraph);
             RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), model, admsGraph);
