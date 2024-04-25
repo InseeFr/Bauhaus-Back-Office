@@ -62,7 +62,7 @@ public class DistributionResources {
 
     @PutMapping("/{id}/validate")
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
-    @Operation(operationId = "publishDistribution", summary = "Publish a Distribution",
+    @Operation(operationId = "publishDistribution", summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDistribution(@PathVariable(Constants.ID) String distributionId) throws RmesException {
         return this.distributionService.publishDistribution(distributionId);
@@ -82,7 +82,7 @@ public class DistributionResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createDistribution", summary = "Create a Distribution")
+    @Operation(operationId = "createDistribution", summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -91,7 +91,7 @@ public class DistributionResources {
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDistribution", summary = "Update a Distribution")
+    @Operation(operationId = "updateDistribution", summary = "Update a distribution")
     public String updateDistribution(
             @PathVariable("id") String distributionId,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -102,7 +102,7 @@ public class DistributionResources {
     @DeleteMapping("/{id}")
     @Operation(
             operationId = "deleteDistribution",
-            summary = "Delete a Distribution"
+            summary = "Delete a distribution"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),

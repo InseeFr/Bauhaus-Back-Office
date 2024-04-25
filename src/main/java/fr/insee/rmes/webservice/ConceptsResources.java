@@ -87,7 +87,7 @@ public class ConceptsResources  extends GenericResources   {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CREATOR)")
 	@DeleteMapping(value="/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "deleteConcept", summary = "deletion")
+	@Operation(operationId = "deleteConcept", summary = "Delete a concept")
 	public ResponseEntity<Object> deleteConcept(@PathVariable(Constants.ID) String id) {
 		try {
 			conceptsService.deleteConcept(id);
@@ -110,7 +110,7 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@GetMapping(value = "/concept/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getConceptByID", summary = "Concept", 
+	@Operation(operationId = "getConceptByID", summary = "Get a concept",
 		responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = ConceptById.class)))})																 
 	public ResponseEntity<Object> getConceptByID(@PathVariable(Constants.ID) String id) {
 		try {
@@ -183,7 +183,7 @@ public class ConceptsResources  extends GenericResources   {
 	}
 
 	@GetMapping(value = "/collection/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getCollectionByID", summary = "Get a collection byt its identifier",
+	@Operation(operationId = "getCollectionByID", summary = "Get a collection by its identifier",
 			responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = CollectionById.class)))})		
 	public ResponseEntity<Object> getCollectionByID(@PathVariable(Constants.ID) String id) {
 		try {
@@ -224,7 +224,7 @@ public class ConceptsResources  extends GenericResources   {
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR)")
 	@PutMapping(value="/concept/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setConceptById", summary = "Update concept")
+	@Operation(operationId = "setConceptById", summary = "Update a concept")
 	public ResponseEntity<Object> setConcept(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Concept", required = true) @RequestBody String body) {
@@ -295,7 +295,7 @@ public class ConceptsResources  extends GenericResources   {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CONCEPT_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).COLLECTION_CREATOR)")
 	@PutMapping(value = "/collection/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "setCollectionById", summary = "Update collection")
+	@Operation(operationId = "setCollectionById", summary = "Update a collection")
 	public ResponseEntity<Object> setCollection(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
 			@Parameter(description = "Collection", required = true) @RequestBody String body) throws RmesException {

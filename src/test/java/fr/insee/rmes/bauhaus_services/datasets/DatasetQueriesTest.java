@@ -32,7 +32,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasets.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDatasets("datasets-graph", null);
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -48,7 +48,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasets.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDatasets("datasets-graph", "stamp");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -65,7 +65,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDataset.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDataset("1", "datasets-graph", "adms-graph");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -80,7 +80,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetCreators.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDatasetCreators("1", "datasets-graph");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -94,7 +94,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetSpacialResolutions.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDatasetSpacialResolutions("1", "datasets-graph");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -108,7 +108,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetStatisticalUnits.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getDatasetStatisticalUnits("1", "datasets-graph");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -121,7 +121,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getLastDatasetId.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.lastDatasetId("datasets-graph");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -134,7 +134,7 @@ public class DatasetQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("dataset/"), eq("getDatasetsContributorsByUriQuery.ftlh"), eq(map))).thenReturn("request");
             String query = DatasetQueries.getContributorsByDatasetUri("datasets-graph-uri");
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request",query);
         }
     }
 }

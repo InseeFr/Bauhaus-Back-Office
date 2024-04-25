@@ -1,8 +1,5 @@
 package fr.insee.rmes.persistance.sparql_queries.structures;
 
-import fr.insee.rmes.bauhaus_services.Constants;
-import org.eclipse.rdf4j.model.IRI;
-
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;

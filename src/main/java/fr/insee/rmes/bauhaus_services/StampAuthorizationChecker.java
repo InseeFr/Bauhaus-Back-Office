@@ -27,6 +27,7 @@ import static java.util.Objects.requireNonNull;
 public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
     private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
     public static final String CHECKING_AUTHORIZATION_ERROR_MESSAGE = "Error while checking authorization for user with stamp {} to modify or delete {}";
+    public static final String ERROR_AUTHORIZATION = "Error while checking authorization for user with stamp {} to modify {}";
     private final String baseInternalUri;
 
     @Autowired
@@ -39,7 +40,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
         try {
             return isSeriesManagerWithStamp(findIRI(requireNonNull(seriesId)), requireNonNull(stamp).stamp());
         } catch (RmesException e) {
-            logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, seriesId);
+            logger.error(ERROR_AUTHORIZATION, stamp, seriesId);
             return false;
         }
     }
@@ -48,7 +49,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
         try {
             return isDatasetManagerWithStamp(findDatasetIRI(requireNonNull(datasetId)), requireNonNull(stamp).stamp());
         } catch (RmesException e) {
-            logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, datasetId);
+            logger.error(ERROR_AUTHORIZATION, stamp, datasetId);
             return false;
         }
     }
@@ -61,7 +62,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
         try {
             return isDistributionManagerWithStamp(findDistributionIRI(requireNonNull(datasetId)), requireNonNull(stamp).stamp());
         } catch (RmesException e) {
-            logger.error("Error while checking authorization for user with stamp {} to modify {}", stamp, datasetId);
+            logger.error(ERROR_AUTHORIZATION, stamp, datasetId);
             return false;
         }
     }
