@@ -133,6 +133,7 @@ public class ErrorCodes {
 	public static final int DATASET_PATCH_INCORRECT_BODY = 1202;
 
 
+
 	/*
 	 *  406 NOTACCEPTABLEEXCEPTIONS
 	 */

@@ -33,7 +33,7 @@ WHERE {
         FILTER (contains(lcase(str(?labelLg1)),lcase("${SEARCH_LABEL_LG1}")))
     </#if>
 }
-ORDER BY ?code
+ORDER BY ?${SORT}
 <#if PER_PAGE??>
 LIMIT ${PER_PAGE} OFFSET ${OFFSET}
 </#if>
