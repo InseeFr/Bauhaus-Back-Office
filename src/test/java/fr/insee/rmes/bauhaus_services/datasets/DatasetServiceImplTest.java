@@ -1,12 +1,14 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
+import fr.insee.rmes.bauhaus_services.distribution.DistributionServiceImpl;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
@@ -53,12 +55,34 @@ class DatasetServiceImplTest {
 
     @MockBean
     PublicationUtils publicationUtils;
-
     @MockBean
     RepositoryGestion repositoryGestion;
-
     @Autowired
     DatasetServiceImpl datasetService;
+
+
+    public static final String DATASET_WITH_THEME = """
+            [
+               {
+                  "observationNumber":"1000",
+                  "id":"jd1000",
+                  "issued":"2024-03-01T00:00:00",
+                  "timeSeriesNumber":"10",
+                  "temporalCoverageEndDate":"2024-01-01",
+                  "temporalCoverageStartDate":"2024-01-01",
+                  "updated":"2024-04-01T00:00:00",
+               },
+               {
+                  "observationNumber":"1000",
+                  "id":"jd1000",
+                  "issued":"2024-03-01T00:00:00",
+                  "timeSeriesNumber":"10",
+                  "temporalCoverageEndDate":"2024-01-01",
+                  "temporalCoverageStartDate":"2024-01-01",
+                  "updated":"2024-04-01T00:00:00",
+               }
+            ]""";
+    public static final String EMPTY_ARRAY = "[]";
 
     @Test
     void shouldReturnDatasets() throws RmesException {
@@ -233,7 +257,7 @@ class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The property altIdentifier contains forbidden characters\"}");
+            Assertions.assertEquals("{\"message\":\"The property altIdentifier contains forbidden characters\"}", exception.getDetails());
         }
     }
 
@@ -256,7 +280,7 @@ class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals(exception.getDetails(), "{\"message\":\"The series does not exist\"}");
+            Assertions.assertEquals("{\"message\":\"The series does not exist\"}", exception.getDetails());
         }
     }
 
@@ -559,4 +583,33 @@ class DatasetServiceImplTest {
     void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringUpdate(){
         Assertions.assertThrows(RmesException.class, () -> datasetService.update("d1000", ""));
     }
+
+    @Test
+    void shouldPatchDatasetReturn400IfNoOneOfRequiredAttributesPatchEmpty() throws RmesException {
+        PatchDataset patch = new PatchDataset();
+        JSONArray datasetWithTheme = new JSONArray(DATASET_WITH_THEME);
+        JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
+
+        try (
+                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
+        )
+        {
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
+        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(datasetWithTheme);
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
+        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDatasetSpacialResolutions(any(), any())).thenReturn("query3 ");
+        when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDatasetStatisticalUnits(any(), any())).thenReturn("query4 ");
+        when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
+
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
+        Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate\"}", exception.getDetails());
+        }
+    }
+
 }
