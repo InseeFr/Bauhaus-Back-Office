@@ -10,6 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
@@ -117,7 +118,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			JSONObject details = new JSONObject();
 			details.put("idConcept", id);
 			details.put("graphs", graphArray);
-			throw new RmesUnauthorizedException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
+			throw new RmesBadRequestException(ErrorCodes.CONCEPT_DELETION_SEVERAL_GRAPHS,
 					THE_CONCEPT+id+" cannot be deleted because it is used in several graphs.",
 					details);
 			
@@ -128,7 +129,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			JSONObject details = new JSONObject();
 			details.put("idConcept", id);
 			details.put("linkedConcepts", listConcepts);
-			throw new RmesUnauthorizedException(
+			throw new RmesBadRequestException(
 					ErrorCodes.CONCEPT_DELETION_LINKED,
 					THE_CONCEPT+id+" cannot be deleted because it is linked to other concepts.",
 					details);

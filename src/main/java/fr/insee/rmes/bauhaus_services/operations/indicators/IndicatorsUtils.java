@@ -11,10 +11,7 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUt
 import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerIndUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
@@ -93,10 +90,10 @@ public class IndicatorsUtils {
 
 	private void validate(Indicator indicator) throws RmesException {
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
 		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
 		}
 	}
 

@@ -2,6 +2,7 @@ package fr.insee.rmes.exceptions;
 
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class RmesBadRequestException extends RmesException {
 
@@ -30,4 +31,6 @@ public class RmesBadRequestException extends RmesException {
 	public RmesBadRequestException(int errorCode, String message) {
 		super(HttpStatus.SC_BAD_REQUEST, errorCode, message, "");
 	}
+	public RmesBadRequestException(int errorCode, String message, JSONObject details) {
+		super(HttpStatus.SC_FORBIDDEN, errorCode, message, details);	}
 }
