@@ -93,7 +93,7 @@ public class StructureResources  extends GenericResources {
     }
 
     @PreAuthorize("isAdmin() || isStructureContributor(#id)")
-    @GetMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/structure/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishStructureById", summary = "Publish a structure")
     public ResponseEntity<Object> publishStructureById(@PathVariable(Constants.ID) @P("id") String id) {
         try {
@@ -202,7 +202,7 @@ public class StructureResources  extends GenericResources {
     }
 
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
-    @GetMapping(value = "/components/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/components/{id}/publish", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "publishComponentById", summary = "Publish a component")
     public ResponseEntity<Object> publishComponentById(@PathVariable(Constants.ID) @P("structureId") String id) {
         try {
