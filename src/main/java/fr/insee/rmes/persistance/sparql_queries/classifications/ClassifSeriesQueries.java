@@ -1,18 +1,19 @@
 package fr.insee.rmes.persistance.sparql_queries.classifications;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClassifSeriesQueries extends GenericQueries {
 	
-	public static String seriesQuery() {
-		return "SELECT DISTINCT ?id ?label \n"
-			+ "WHERE { GRAPH<"+ config.getClassifFamiliesGraph() + "> { \n"
-			+ "?series skos:prefLabel ?label . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-			+ "FILTER(REGEX(STR(?series),'/serieDeNomenclatures/')) . \n"
-			+ "BIND(STRAFTER(STR(?series),'/codes/serieDeNomenclatures/') AS ?id) } \n"
-			+ "} \n"
-			+ "ORDER BY ?label ";	
+	public static String seriesQuery() throws RmesException {
+		Map params = new HashMap();
+		params.put("GRAPH", config.getClassifFamiliesGraph());
+		params.put("LG1", config.getLg1());
+		return FreeMarkerUtils.buildRequest("classifications/series/", "getSeries.ftlh", params);
 	}
 	
 	public static String oneSeriesQuery(String id) {
