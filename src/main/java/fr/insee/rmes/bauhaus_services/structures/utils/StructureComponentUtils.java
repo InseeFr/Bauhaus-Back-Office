@@ -149,7 +149,7 @@ public class StructureComponentUtils extends RdfService {
             boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
 
             if(componentsWithSameCodelistAndConcept){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_UNICITY,
                         "A component with the same codes list and concept already exists", "");
             }
         }
@@ -337,19 +337,19 @@ public class StructureComponentUtils extends RdfService {
     public String publishComponent(JSONObject component) throws RmesException {
 
         if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
         if(jsonObjecthasPropertyNullOrEmpty(component, "disseminationStatus")){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
         if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
         }
 
         if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
         }
 
 

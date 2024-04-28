@@ -9,10 +9,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -101,10 +98,10 @@ public class FamiliesUtils {
 
 	private void validateFamily(Family family) throws RmesException {
 		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg1(), lg1))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another family.");
 		}
 		if(repositoryGestion.getResponseAsBoolean(OpFamiliesQueries.checkPrefLabelUnicity(family.getId(), family.getPrefLabelLg2(), lg2))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_FAMILY_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another family.");
 		}
 	}
 

@@ -226,7 +226,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
 		if(partial && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
 
@@ -256,7 +256,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		IRI codeListIri = this.generateIri(codesList, partial);
 
 		if(this.checkCodeListUnicity(partial, codesList, RdfUtils.toString(codeListIri))){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_UNICITY,
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_UNICITY,
 					"The identifier, IRI and OWL class should be unique", "");
 		}
 
@@ -299,13 +299,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		String iri = codesList.getString("iri");
 
 		if(!codesList.getString(VALIDATION_STATE).equalsIgnoreCase("Unpublished")){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
 		}
 
 		if(!partial){
 			JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(iri));
 			if(!partials.isEmpty()){
-				throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
+				throw new RmesBadRequestException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
 			}
 			if(codesList.has(CODES)) {
 				JSONObject codes = codesList.getJSONObject(CODES);

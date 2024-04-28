@@ -52,10 +52,10 @@ public class OperationsUtils extends RdfService{
 
 	private void validate(Operation operation) throws RmesException {
 		if(repoGestion.getResponseAsBoolean(OperationsQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg1(), config.getLg1()))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another operation.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another operation.");
 		}
 		if(repoGestion.getResponseAsBoolean(OperationsQueries.checkPrefLabelUnicity(operation.getId(), operation.getPrefLabelLg2(), config.getLg2()))){
-			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another operation.");
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_OPERATION_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another operation.");
 		}
 	}
 

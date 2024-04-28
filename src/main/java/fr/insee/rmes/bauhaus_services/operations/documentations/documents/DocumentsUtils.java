@@ -381,7 +381,7 @@ public class DocumentsUtils extends RdfService {
     private void checkDocumentReference(String docId, String uri) throws RmesException {
         JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
         if (jsonResultat.length() > 0) {
-            throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
+            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_DELETION_LINKED,
                     "The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
                             + " sims, including: " + ((JSONObject) jsonResultat.get(0)).get(Constants.TEXT).toString(),
                     jsonResultat);
@@ -486,13 +486,13 @@ public class DocumentsUtils extends RdfService {
     }
 
     private void uploadFile(InputStream documentFile, String documentName, String url, Boolean sameName)
-            throws RmesUnauthorizedException {
+            throws RmesBadRequestException {
         // upload file in storage folder
         logger.debug("URL : {}", url);
         Path path = Paths.get(url.replace(SCHEME_FILE, ""));
         logger.debug("PATH : {}", path);
         if (!Boolean.TRUE.equals(sameName) && path.toFile().exists()) {
-            throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
+            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
         try {
@@ -506,10 +506,10 @@ public class DocumentsUtils extends RdfService {
 
     private void validate(Document document) throws RmesException {
         if (repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
         if (repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
     }
 

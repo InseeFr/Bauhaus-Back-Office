@@ -5,10 +5,7 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.*;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -34,7 +31,7 @@ public class SeriesPublication extends RdfService {
 		String status= ownersUtils.getValidationStatus(familyId);
 		
 		if(PublicationUtils.isPublished(status)) {
-			throw new RmesUnauthorizedException(
+			throw new RmesBadRequestException(
 					ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY,
 					"This Series cannot be published before its family is published", 
 					"Series: "+seriesId+" ; Family: "+familyId);

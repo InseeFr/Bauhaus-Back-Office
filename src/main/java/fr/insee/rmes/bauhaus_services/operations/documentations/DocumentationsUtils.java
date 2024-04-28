@@ -253,7 +253,7 @@ public class DocumentationsUtils extends RdfService{
 		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
 		String status = parentUtils.getValidationStatus(targetId);
 		if (PublicationUtils.isPublished(status)) {
-			throw new RmesUnauthorizedException(ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
+			throw new RmesBadRequestException(ErrorCodes.SIMS_VALIDATION_UNPUBLISHED_TARGET,
 					"This metadataReport cannot be published before its target is published. ",
 					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
 		}
