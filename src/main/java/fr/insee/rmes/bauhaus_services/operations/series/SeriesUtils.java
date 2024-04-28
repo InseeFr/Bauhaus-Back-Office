@@ -102,10 +102,10 @@ public class SeriesUtils {
 
     private void validate(Series series) throws RmesException {
         if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg1(), lg1))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another series.");
         }
         if (repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity(series.getId(), series.getPrefLabelLg2(), lg2))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_SERIES_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another series.");
         }
     }
 
@@ -422,7 +422,7 @@ public class SeriesUtils {
         // Tester l'existence de la famille
         String idFamily = series.getFamily().getId();
         if (!famOpeSerIndUtils.checkIfObjectExists(ObjectType.FAMILY, idFamily)) {
-            throw new RmesUnauthorizedException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.SERIES_UNKNOWN_FAMILY, "Unknown family: " + idFamily, new JSONArray());
         }
 
         IRI familyURI = RdfUtils.objectIRI(ObjectType.FAMILY, idFamily);
