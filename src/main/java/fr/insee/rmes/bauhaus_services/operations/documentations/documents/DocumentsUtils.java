@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.MinioService;
+import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -60,7 +60,7 @@ public class DocumentsUtils extends RdfService {
     ParentUtils ownersUtils;
 
     @Autowired
-    MinioService minioService;
+    MinioFilesOperation minioService;
     /*
      * METHODS LINKS TO THE SIMS - RUBRICS
      */

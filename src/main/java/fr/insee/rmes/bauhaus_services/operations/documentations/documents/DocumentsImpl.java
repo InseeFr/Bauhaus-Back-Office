@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.MinioService;
+import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
@@ -26,7 +26,7 @@ public class DocumentsImpl implements DocumentsService {
 	protected Config config;
 
 	@Autowired
-	MinioService minioService;
+	MinioFilesOperation minioService;
 
 	public DocumentsImpl() {
 		//Utility class
