@@ -249,7 +249,6 @@ public class DocumentsUtils extends RdfService {
             } else {
                 uploadFile(documentFile, documentName, url, false);
             }
-
         }
 
         //Write RDF graph in database
@@ -573,7 +572,7 @@ public class DocumentsUtils extends RdfService {
         logger.debug("URL : {}", url);
         Path path = Paths.get(url.replace(SCHEME_FILE, ""));
         logger.debug("PATH : {}", path);
-        if (!Boolean.TRUE.equals(sameName) && path.toFile().exists()) {
+        if (!sameName && path.toFile().exists()) {
             throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
@@ -738,7 +737,7 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    public List<String> getDocumentPath(String id) throws RmesException {
+    private List<String> getDocumentPath(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
         String fileName = getDocumentNameFromUrl(url);
