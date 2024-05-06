@@ -17,7 +17,7 @@ class FreeMarkerUtilsTest {
                 .doesNotThrowAnyException();
         assertThat(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .isEqualTo("""
-                        SELECT DISTINCT ?g\s
+                        SELECT DISTINCT ?g
                         WHERE {
                           GRAPH ?g {?a ?b ?c }
                         }""");
