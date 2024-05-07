@@ -225,7 +225,7 @@ public class StructureUtils extends RdfService {
             		.map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
             boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
-                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
+                throw new RmesBadRequestException(ErrorCodes.STRUCTURE_UNICITY,
                         "A structure with the same components already exists", "");
             }
         }
@@ -376,7 +376,7 @@ public class StructureUtils extends RdfService {
     public void deleteStructure(String structureId) throws RmesException {
         String structureState = getValidationStatus(structureId);
         if(!structureState.equalsIgnoreCase("Unpublished")){
-            throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+            throw new RmesBadRequestException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
         }
         else {
             IRI structureIri = RdfUtils.structureIRI(structureId);
@@ -387,11 +387,11 @@ public class StructureUtils extends RdfService {
 
     public String publishStructure(JSONObject structure) throws RmesException {
         if(structure.isNull(Constants.CREATOR) || "".equals(structure.getString(Constants.CREATOR))){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
         if(structure.isNull("disseminationStatus") || "".equals(structure.getString("disseminationStatus"))){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
         String id = structure.getString(Constants.ID);

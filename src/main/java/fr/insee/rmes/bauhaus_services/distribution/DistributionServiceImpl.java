@@ -4,8 +4,10 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
@@ -22,6 +24,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
+
+
 
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
@@ -60,13 +65,19 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String getDistributionByID(String id) throws RmesException {
+        JSONObject distrib=repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
+        if (distrib.has("id")){
         return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
+        } else {
+            throw new RmesNotFoundException("This distribution does not exist");
+        }
     }
 
     @Override
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
-        distribution.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d"));
+        String idnewt = IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d");
+        distribution.setId(idnewt);
 
         this.validate(distribution);
 
@@ -84,6 +95,12 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         this.validate(distribution);
 
         distribution.setUpdated(DateUtils.getCurrentDate());
+
+        return this.persist(distribution);
+    }
+
+    private String update(String distributionId, Distribution distribution) throws RmesException {
+        distribution.setId(distributionId);
 
         return this.persist(distribution);
     }
@@ -127,7 +144,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         RdfUtils.addTripleDateTime(distributionIRI, DCTERMS.MODIFIED, distribution.getUpdated(), model, graph);
 
         RdfUtils.addTripleString(distributionIRI, DCTERMS.FORMAT, distribution.getFormat(), model, graph);
-        RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getTaille(), model, graph);
+        RdfUtils.addTripleString(distributionIRI, DCAT.BYTE_SIZE, distribution.getByteSize(), model, graph);
         RdfUtils.addTripleString(distributionIRI, DCAT.DOWNLOAD_URL, distribution.getUrl(), model, graph);
 
         repoGestion.loadSimpleObject(distributionIRI, model, null);
@@ -146,4 +163,24 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             throw new RmesBadRequestException("The property labelLg2 is required");
         }
     }
+
+    @Override
+    public void patchDistribution(String distributionId, PatchDistribution patchDistribution) throws RmesException {
+        String distributionByID = getDistributionByID(distributionId);
+        Distribution distribution = Deserializer.deserializeBody(distributionByID, Distribution.class);
+        if  (patchDistribution.getUpdated() == null && patchDistribution.getByteSize() == null && patchDistribution.getUrl() == null){
+            throw new RmesBadRequestException(DISTRIUBTION_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, byteSize or url");
+        }
+        if (patchDistribution.getUpdated() != null){
+            distribution.setUpdated(patchDistribution.getUpdated());
+        }
+        if (patchDistribution.getByteSize() != null){
+            distribution.setByteSize(patchDistribution.getByteSize());
+        }
+        if (patchDistribution.getUrl() != null){
+            distribution.setUrl(patchDistribution.getUrl());
+        }
+        update(distributionId, distribution);
+    }
+
 }

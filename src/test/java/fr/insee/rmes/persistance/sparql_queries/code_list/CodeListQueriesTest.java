@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -41,7 +42,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -61,7 +62,7 @@ class CodeListQueriesTest {
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getCodeListItemsByNotation.ftlh"), eq(map))).thenReturn("request");
             String query = CodeListQueries.getCodeListItemsByNotation("NOTATION", 2, null);
-            Assertions.assertEquals(query, "request");
+            Assertions.assertEquals("request",query);
         }
     }
 
@@ -77,10 +78,11 @@ class CodeListQueriesTest {
                 put("NOTATION", "NOTATION");
                 put("LG1", "fr");
                 put("LG2", "en");
+                put("SEARCH_CODE", "code");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("countNumberOfCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.countCodesForCodeList("NOTATION");
-            Assertions.assertEquals(query, "request");
+            String query = CodeListQueries.countCodesForCodeList("NOTATION", List.of("code:code"));
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -102,10 +104,12 @@ class CodeListQueriesTest {
                 put("CODE_LIST_BASE_URI", "codelist-base-uri");
                 put("OFFSET", 5);
                 put("PER_PAGE", 5);
+                put("SEARCH_CODE", "search");
+                put("SORT", "labelLg1");
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.getDetailedCodes("NOTATION", false,2, null);
-            Assertions.assertEquals(query, "request");
+            String query = CodeListQueries.getDetailedCodes("NOTATION", false, List.of("code:search"), 2, null, "labelLg1");
+            Assertions.assertEquals("request", query);
         }
     }
 
@@ -124,10 +128,55 @@ class CodeListQueriesTest {
                 put("NOTATION", "NOTATION");
                 put("PARTIAL", true);
                 put("CODE_LIST_BASE_URI", "codelist-base-uri");
+                put("SEARCH_CODE", "search");
+                put("SORT", "labelLg1");
+
             }};
             mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
-            String query = CodeListQueries.getDetailedCodes("NOTATION", true,0, 0);
-            Assertions.assertEquals(query, "request");
+            String query = CodeListQueries.getDetailedCodes("NOTATION", true, List.of("code:search"), 0, 0, "labelLg1");
+            Assertions.assertEquals("request", query);
+        }
+    }
+
+    @Test
+    void getBroaderNarrowerCloseMatch() throws RmesException {
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        CodeListQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("CODES_LISTS_GRAPH", "codelist-graph");
+                put("LG1", "fr");
+                put("LG2", "en");
+                put("NOTATION", "NOTATION");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getBroaderNarrowerCloseMatch.ftlh"), eq(map))).thenReturn("request");
+            String query = CodeListQueries.getBroaderNarrowerCloseMatch("NOTATION");
+            Assertions.assertEquals("request", query);
+        }
+    }
+
+    @Test
+    void getDetailedCodesWithoutSearch() throws RmesException {
+        when(config.getLg1()).thenReturn("fr");
+        when(config.getLg2()).thenReturn("en");
+        when(config.getCodeListGraph()).thenReturn("codelist-graph");
+        when(config.getCodeListBaseUri()).thenReturn("codelist-base-uri");
+        CodeListQueries.setConfig(config);
+        try (MockedStatic<FreeMarkerUtils> mockedFactory = Mockito.mockStatic(FreeMarkerUtils.class)) {
+            Map<String, Object> map = new HashMap<>() {{
+                put("CODES_LISTS_GRAPH", "codelist-graph");
+                put("LG1", "fr");
+                put("LG2", "en");
+                put("NOTATION", "NOTATION");
+                put("PARTIAL", true);
+                put("CODE_LIST_BASE_URI", "codelist-base-uri");
+                put("SORT", "labelLg1");
+            }};
+            mockedFactory.when(() -> FreeMarkerUtils.buildRequest(eq("codes-list/"), eq("getDetailedCodes.ftlh"), eq(map))).thenReturn("request");
+            String query = CodeListQueries.getDetailedCodes("NOTATION", true,null, 0, 0, "labelLg1");
+            Assertions.assertEquals("request", query);
         }
     }
 }

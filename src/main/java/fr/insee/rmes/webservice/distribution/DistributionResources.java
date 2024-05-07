@@ -8,6 +8,7 @@ import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PatchDistribution;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping("/distribution")
@@ -59,7 +62,7 @@ public class DistributionResources {
 
     @PutMapping("/{id}/validate")
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
-    @Operation(operationId = "publishDistribution", summary = "Publish a Distribution",
+    @Operation(operationId = "publishDistribution", summary = "Publish a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDistribution(@PathVariable(Constants.ID) String distributionId) throws RmesException {
         return this.distributionService.publishDistribution(distributionId);
@@ -79,7 +82,7 @@ public class DistributionResources {
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createDistribution", summary = "Create a Distribution")
+    @Operation(operationId = "createDistribution", summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -88,7 +91,7 @@ public class DistributionResources {
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDistribution", summary = "Update a Distribution")
+    @Operation(operationId = "updateDistribution", summary = "Update a distribution")
     public String updateDistribution(
             @PathVariable("id") String distributionId,
             @Parameter(description = "Distribution", required = true) @RequestBody String body) throws RmesException {
@@ -99,7 +102,7 @@ public class DistributionResources {
     @DeleteMapping("/{id}")
     @Operation(
             operationId = "deleteDistribution",
-            summary = "Delete a Distribution"
+            summary = "Delete a distribution"
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
@@ -109,5 +112,15 @@ public class DistributionResources {
             @PathVariable(Constants.ID) String distributionId
     ) {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
+    @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
+    @Operation(operationId = "patchDistribution", summary = "Update a distribution")
+    public void patchDistribution(
+            @PathVariable("id") String distributionId,
+            @RequestBody PatchDistribution distribution
+    ) throws RmesException{
+        this.distributionService.patchDistribution(distributionId, distribution);
     }
 }

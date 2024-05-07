@@ -58,7 +58,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	}
 
 	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Indicator", 
+	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Get an indicator",
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true)@RequestHeader(required=false) String accept) {
@@ -88,7 +88,7 @@ public class IndicatorsResources extends OperationsCommonResources {
 	//TODO Test : admin then INDICATOR_CONTRIBUTOR with stamp fit then not
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update indicator")
+	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update an indicator")
 	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
 			@Parameter(description = "Indicator to update", required = true,

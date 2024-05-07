@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
 
@@ -61,7 +63,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
 		JSONObject result = new JSONObject();
 
-		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
+		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, null));
 		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page, perPage));
 
 		result.put("total", counter.get("count"));
@@ -106,20 +108,67 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			return codeList;
 		}
 		else {
-			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, 0, 0));
+			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, null, 0, 0, null));
 			formatCodesForPartialList(codeList, codes);
 			return codeList;
 		}
 
 	}
 
+	/**
+	 * In order to avoid multiple loops, we group by the data by the code only once.
+	 */
+	private JSONObject groupByBroaderNarrowerCloseMatchByCode(String notation) throws RmesException {
+		JSONObject broaderNarrowerCloseMatchByCode = new JSONObject();
+
+		JSONArray broaderNarrowerCloseMatch = repoGestion.getResponseAsArray(CodeListQueries.getBroaderNarrowerCloseMatch(notation));
+		for(var i = 0; i < broaderNarrowerCloseMatch.length(); i++){
+			JSONObject broaderNarrowerCloseMatchCode = broaderNarrowerCloseMatch.getJSONObject(i);
+
+			String mainCode = broaderNarrowerCloseMatchCode.getString("code");
+			String linkCode = broaderNarrowerCloseMatchCode.getString("linkCode");
+			String linkType = broaderNarrowerCloseMatchCode.getString("linkType");
+			if(!broaderNarrowerCloseMatchByCode.has(mainCode)){
+				broaderNarrowerCloseMatchByCode.put(mainCode,
+						new JSONObject()
+								.put("broader", new JSONArray())
+								.put("narrower", new JSONArray())
+								.put("closeMatch", new JSONArray()));
+			}
+
+			JSONObject codeToUpdate = broaderNarrowerCloseMatchByCode.getJSONObject(mainCode);
+			codeToUpdate.getJSONArray(linkType).put(linkCode);
+		}
+		return broaderNarrowerCloseMatchByCode;
+	}
+
+	private void addLinkCodeToItem(JSONObject item, String key, JSONObject broaderNarrowerCloseMatchForCode){
+		if(broaderNarrowerCloseMatchForCode.getJSONArray(key).length() > 0){
+			item.put(key, broaderNarrowerCloseMatchForCode.getJSONArray(key));
+		}
+	}
+
+	private void addBroaderNarrowerCloseMatchToItem(JSONObject item, JSONObject broaderNarrowerCloseMatchByCode){
+		if(broaderNarrowerCloseMatchByCode.has(item.getString("code"))){
+			JSONObject broaderNarrowerCloseMatchForCode = broaderNarrowerCloseMatchByCode.getJSONObject(item.getString("code"));
+			addLinkCodeToItem(item, "broader", broaderNarrowerCloseMatchForCode);
+			addLinkCodeToItem(item, "narrower", broaderNarrowerCloseMatchForCode);
+			addLinkCodeToItem(item, "closeMatch", broaderNarrowerCloseMatchForCode);
+		}
+	}
 	@Override
-	public String getCodesForCodeList(String notation, int page, Integer perPage) throws RmesException {
+	public String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		JSONObject result = new JSONObject();
 
-		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation));
-		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, page, perPage));
+		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, search));
+		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, false, search, page, perPage, sort));
+		JSONObject broaderNarrowerCloseMatchByCode = groupByBroaderNarrowerCloseMatchByCode(notation);
 
+
+		for(var i = 0; i < items.length(); i++){
+			JSONObject item = items.getJSONObject(i);
+			addBroaderNarrowerCloseMatchToItem(item, broaderNarrowerCloseMatchByCode);
+		}
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
@@ -177,7 +226,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			throw new RmesBadRequestException("The lastListUriSegment of the list should be defined");
 		}
 		if(partial && (!codeList.has(CODES) || codeList.getJSONObject(CODES).keySet().isEmpty())){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_AT_LEAST_ONE_CODE, "A code list should contain at least one code");
 		}
 	}
 
@@ -207,7 +256,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		IRI codeListIri = this.generateIri(codesList, partial);
 
 		if(this.checkCodeListUnicity(partial, codesList, RdfUtils.toString(codeListIri))){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_UNICITY,
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_UNICITY,
 					"The identifier, IRI and OWL class should be unique", "");
 		}
 
@@ -250,13 +299,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		String iri = codesList.getString("iri");
 
 		if(!codesList.getString(VALIDATION_STATE).equalsIgnoreCase("Unpublished")){
-			throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+			throw new RmesBadRequestException(ErrorCodes.CODE_LIST_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
 		}
 
 		if(!partial){
 			JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(iri));
 			if(!partials.isEmpty()){
-				throw new RmesUnauthorizedException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
+				throw new RmesBadRequestException(ErrorCodes.CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL, "Only codelist with partial codelists can be deleted");
 			}
 			if(codesList.has(CODES)) {
 				JSONObject codes = codesList.getJSONObject(CODES);

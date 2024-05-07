@@ -4,8 +4,10 @@ package fr.insee.rmes.persistance.sparql_queries.code_list;
 import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CodeListQueries extends GenericQueries {
@@ -39,18 +41,53 @@ public class CodeListQueries extends GenericQueries {
 		return perPage;
 	}
 
-	public static String getDetailedCodes(String notation, boolean partial, int page, Integer perPage) throws RmesException {
+	public static String getBroaderNarrowerCloseMatch(String notation) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
-		int perPageValue = getPerPageConfiguration(perPage);
 		initParams(params);
 		params.put(NOTATION, notation);
+
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "getBroaderNarrowerCloseMatch.ftlh", params);
+	}
+
+	private static void addSearchPredicates(Map<String, Object> params, List<String> search) {
+		if(search != null){
+			search.forEach(s -> {
+				if(!StringUtils.isEmpty(s)){
+					String key = s.startsWith("code:") ? "SEARCH_CODE" : "SEARCH_LABEL_LG1";
+					params.put(key, s.substring(s.indexOf(":") + 1 ));
+				}
+			});
+		}
+	}
+
+	public static String getDetailedCodes(String notation, boolean partial, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		int perPageValue = getPerPageConfiguration(perPage);
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(NOTATION, notation);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		params.put(PARTIAL, partial);
 		params.put(CODE_LIST_BASE_URI, config.getCodeListBaseUri());
+		params.put("SORT", sort == null ? "code" : sort);
+
+		addSearchPredicates(params, search);
+
 		if(perPageValue > 0){
 			params.put("OFFSET", perPageValue * (page - 1));
 			params.put("PER_PAGE", perPageValue);
 		}
 		return FreeMarkerUtils.buildRequest(CODES_LIST, "getDetailedCodes.ftlh", params);
+	}
+
+	public static String countCodesForCodeList(String notation, List<String> search) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
+		params.put(NOTATION, notation);
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		addSearchPredicates(params, search);
+		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
 	}
 
 	public static String getCodeListItemsByNotation(String notation, int page, Integer perPage) throws RmesException {
@@ -74,21 +111,6 @@ public class CodeListQueries extends GenericQueries {
 		initParams(params);
 		params.put(URI_CODESLIST, uriCodesList);
 		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
-	}
-	public static String countCodesForCodeList(String notation) throws RmesException {
-		Map<String, Object> params = new HashMap<>();
-		params.put(CODES_LISTS_GRAPH, config.getCodeListGraph());
-		params.put(NOTATION, notation);
-		params.put("LG1", config.getLg1());
-		params.put("LG2", config.getLg2());
-		return FreeMarkerUtils.buildRequest(CODES_LIST, "countNumberOfCodes.ftlh", params);
-	}
-
-	public static String getContributorsCodesListUriWithValidationStatus(String uriCodesList) throws RmesException {
-		HashMap<String, Object> params = new HashMap<>();
-		initParams(params);
-		params.put(URI_CODESLIST, uriCodesList);
-		return buildCodesListRequest("getCodesListContributorsByUriWithValidationStatusQuery.ftlh", params);
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
