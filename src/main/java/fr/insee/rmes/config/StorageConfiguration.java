@@ -4,23 +4,29 @@ import fr.insee.rmes.bauhaus_services.FileSystemOperation;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
 import io.minio.MinioClient;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class StorageConfiguration {
 
     @Bean
-    @ConditionalOnProperty(name = "storage.type", havingValue = "minio")
-    public FilesOperations filesMinioOperations(MinioClient minioClient, @Value("${minio.bucket.name}") String bucketName) {
-        return new MinioFilesOperation(minioClient, bucketName);
+    @Profile("s3")
+    public FilesOperations filesMinioOperations(MinioConfig minioConfig) {
+        return new MinioFilesOperation(minioClient(minioConfig), minioConfig.bucketName());
+    }
+
+    private MinioClient minioClient(MinioConfig minioConfig) {
+        return MinioClient.builder()
+                .endpoint(minioConfig.url())
+                .credentials(minioConfig.accessName(), minioConfig.secretKey())
+                .build();
     }
 
 
     @Bean
-    @ConditionalOnProperty(name = "storage.type", havingValue = "filesystem")
+    @Profile("! s3")
     public FilesOperations filesSytemOperations() {
         return new FileSystemOperation();
     }

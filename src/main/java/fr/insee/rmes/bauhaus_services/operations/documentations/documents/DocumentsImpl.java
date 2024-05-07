@@ -1,13 +1,10 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.DocumentsService;
-import fr.insee.rmes.bauhaus_services.MinioFilesOperation;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,26 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Service
-public class DocumentsImpl implements DocumentsService {
+public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsService {
 
 	private static final  Logger logger = LoggerFactory.getLogger(DocumentsImpl.class);
 
-	@Autowired 
-	DocumentsUtils documentsUtils;
-	@Autowired
-	protected Config config;
-
-	@Autowired
-	MinioFilesOperation minioService;
-
-	public DocumentsImpl() {
-		//Utility class
-	}
-
-	/*
-	 * Get 
-	 */
-	
 	@Override
 	public String getDocuments() throws RmesException {
 		logger.debug("Starting to get documents list");
@@ -85,12 +66,7 @@ public class DocumentsImpl implements DocumentsService {
 	 */
 	@Override
 	public HttpStatus deleteDocument(String id) throws RmesException {
-		if (config.getStorageSystem().contains("S3")) {
-			return documentsUtils.deleteDocumentFileMinio(id);
-		} else {
-			return documentsUtils.deleteDocument(id, false);
-		}
-
+		return documentsUtils.deleteDocument(id, false);
 	}
 
 	/*
@@ -106,11 +82,7 @@ public class DocumentsImpl implements DocumentsService {
 
 	@Override
 	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
-		if (config.getStorageSystem().contains("S3")) {
-			return documentsUtils.downloadDocumentFileMinio(id);
-		} else {
-			return documentsUtils.downloadDocumentFile(id);
-		}
+		return documentsUtils.downloadDocumentFile(id);
 	}
 	
 	/*

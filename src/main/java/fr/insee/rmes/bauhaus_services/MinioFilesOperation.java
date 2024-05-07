@@ -4,28 +4,17 @@ import io.minio.*;
 import io.minio.errors.MinioException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-@Service
-public class MinioFilesOperation implements FilesOperations {
+public record MinioFilesOperation(MinioClient minioClient, String bucketName) implements FilesOperations {
 
     private static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
-
-    private final MinioClient minioClient;
-    private final String bucketName;
-
-    @Autowired
-    public MinioFilesOperation(MinioClient minioClient, @Value("${minio.bucket.name}") String bucketName) {
-        this.minioClient = minioClient;
-        this.bucketName = bucketName;
-    }
 
     @Override
     public InputStream read(String objectName) {
@@ -41,11 +30,11 @@ public class MinioFilesOperation implements FilesOperations {
     }
 
     @Override
-    public void write(InputStream content, String objectName) {
+    public void write(InputStream content, Path objectName) {
         try {
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(objectName)
+                    .object(objectName.getFileName().toString())
                     .stream(content, content.available(), -1)
                     .build());
         } catch (Exception e) {
@@ -72,6 +61,13 @@ public class MinioFilesOperation implements FilesOperations {
             throw new RuntimeException("Error copying file from " + srcObjectName + " to " + destObjectName, e);
         }
     }
+
+
+    @Override
+    public boolean dirExists(Path gestionStorageFolder) {
+        return true;
+    }
+
     public void uploadFile(String bucketName, String objectName, InputStream documentFile, long size, String contentType) throws Exception {
         try {
             minioClient.putObject(

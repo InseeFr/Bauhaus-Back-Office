@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -34,16 +35,13 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -55,8 +53,15 @@ public class DocumentsUtils extends RdfService {
     private static final String SCHEME_FILE = "file://";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
 
+    private final ParentUtils ownersUtils;
+
+    private final FilesOperations filesOperations;
+
     @Autowired
-    ParentUtils ownersUtils;
+    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations) {
+        this.ownersUtils = ownersUtils;
+        this.filesOperations = filesOperations;
+    }
 
     /*
      * METHODS LINKS TO THE SIMS - RUBRICS
@@ -226,26 +231,7 @@ public class DocumentsUtils extends RdfService {
             logger.info("URL CREATED : {}", url);
             document.setUrl(url);
 
-
-            if(config.getStorageSystem().contains("S3")) {
-                int size = 0;
-                try {
-                    size = documentFile.available();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                String contentType = URLConnection.guessContentTypeFromName(documentName);
-                if (contentType == null) {
-                    contentType = "application/octet-stream";
-                }
-                try {
-                    minioService.uploadFile(config.getBucketMinio(), documentName, documentFile,size,contentType);
-                } catch (Exception e) {
-                    logger.error("Erreur lors de l'upload vers MinIO: {}", e.getMessage());
-                }
-            } else {
-                uploadFile(documentFile, documentName, url, false);
-            }
+            uploadFile(documentFile, documentName, url, false);
         }
 
         //Write RDF graph in database
@@ -396,25 +382,6 @@ public class DocumentsUtils extends RdfService {
         return repoGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri));
     }
 
-    public HttpStatus deleteDocumentFileMinio(String id) throws RmesException {
-        String bucketName = config.getBucketMinio();
-        List<String> pathAndFileName = this.getDocumentPath(id);
-        String objectName = pathAndFileName.get(1);
-        JSONObject jsonDoc = getDocument(id, false);
-        String uri = jsonDoc.getString(Constants.URI);
-        String url = getDocumentUrlFromDocument(jsonDoc);
-        IRI docUri = RdfUtils.toURI(uri);
-        checkDocumentReference(id, uri);
-
-            try {
-                minioService.deleteFile(bucketName, objectName);
-            } catch (Exception e) {
-                logger.error("Erreur lors de la suppression du fichier MinIO : {}", e.getMessage());
-                return HttpStatus.INTERNAL_SERVER_ERROR;
-            }
-        return repoGestion.executeUpdate(DocumentsQueries.deleteDocumentQuery(docUri));
-    }
-
     // Check that the document is not referred to by any sims
     private void checkDocumentReference(String docId, String uri) throws RmesException {
         JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
@@ -498,59 +465,18 @@ public class DocumentsUtils extends RdfService {
         // Same documentName -> keep the same URL
         if (oldName.equals(documentName)) {
             logger.info("Replacing file {} at the same Url", documentName);
-            if(config.getStorageSystem().contains("S3")) {
-                int size = 0;
-                try {
-                    size = documentFile.available();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                String contentType = URLConnection.guessContentTypeFromName(documentName);
-                if (contentType == null) {
-                    contentType = "application/octet-stream";
-                }
-                try {
-                    minioService.uploadFile(config.getBucketMinio(), documentName, documentFile,size,contentType);
-                } catch (Exception e) {
-                    logger.error("Erreur lors de l'upload vers MinIO: {}", e.getMessage());
-                }
-            } else {
-                uploadFile(documentFile, documentName, docUrl, true);
-            }
+            uploadFile(documentFile, documentName, docUrl, true);
         }
         // Different documentName -> create a new URL
         else {
             // Delete the old file
             logger.info("Delete old file {}, with URL {}", documentName, docUrl);
-            if (config.getStorageSystem().contains("S3")) {
-                deleteDocumentFileMinio(docId);
-            }
-            else {
-                deleteFile(docUrl);
-            }
+            deleteFile(docUrl);
 
             // Upload the new file
             newUrl = createFileUrl(documentName);
             logger.info("Try to replace file {}, new URL is {}", documentName, newUrl);
-            if(config.getStorageSystem().contains("S3")) {
-                int size = 0;
-                try {
-                    size = documentFile.available();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                String contentType = URLConnection.guessContentTypeFromName(documentName);
-                if (contentType == null) {
-                    contentType = "application/octet-stream";
-                }
-                try {
-                    minioService.uploadFile(config.getBucketMinio(), documentName, documentFile,size,contentType);
-                } catch (Exception e) {
-                    logger.error("Erreur lors de l'upload vers MinIO: {}", e.getMessage());
-                }
-            } else {
-                uploadFile(documentFile, documentName, newUrl, false);
-            }
+            uploadFile(documentFile, documentName, newUrl, false);
             // Update document's url
             changeDocumentsURL(docId, addSchemeFile(docUrl), addSchemeFile(newUrl));
         }
@@ -573,12 +499,8 @@ public class DocumentsUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
-        try {
-            Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING);
-            // don't throw an error if a file already exists under this name
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        filesOperations.write(documentFile, path);
+        // don't throw an error if a file already exists under this name
     }
 
 
@@ -651,12 +573,12 @@ public class DocumentsUtils extends RdfService {
     }
 
     private String createFileUrl(String name) throws RmesException {
-        String url;
-        if(config.getStorageSystem().contains("S3")){
-            url = config.getDocumentsStorageGestion()+"/"+name;
-        } else {
-            url = getGestionStorageFolderPath().resolve(name).toString();
+        Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
+        if (! filesOperations.dirExists(gestionStorageFolder)){
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
+                    "config.DOCUMENTS_STORAGE");
         }
+        String url= gestionStorageFolder.resolve(name).toString();
         Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
         Matcher m = p.matcher(url);
         if (m.find()) {// absolute URL
@@ -776,44 +698,5 @@ public class DocumentsUtils extends RdfService {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file");
         }
     }
-
-    public ResponseEntity<Object> downloadDocumentFileMinio(String id) throws RmesException {
-        String bucketName = config.getBucketMinio();
-        List<String> pathAndFileName = this.getDocumentPath(id);
-        String objectName = pathAndFileName.get(1);;
-
-        try {
-            InputStream inputStream = minioService.downloadFile(bucketName, objectName);
-
-            ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
-                    .filename(objectName)
-                    .build();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentDisposition(contentDisposition);
-
-            ByteArrayResource resource = new ByteArrayResource(IOUtils.toByteArray(inputStream));
-            inputStream.close();
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            logger.error("Erreur lors du téléchargement du fichier MinIO : {}", e.getMessage());
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Erreur lors du téléchargement du fichier MinIO", e.getMessage());
-        }
-    }
-    private Path getGestionStorageFolderPath() throws RmesException {
-            Path path = null;
-            File dir = new File(config.getDocumentsStorageGestion());
-            if (dir.exists()) {
-                path = Paths.get(config.getDocumentsStorageGestion());
-            } else {
-                throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found" ,
-                        "config.DOCUMENTS_STORAGE");
-            }
-            return path;
-        }
 
 }

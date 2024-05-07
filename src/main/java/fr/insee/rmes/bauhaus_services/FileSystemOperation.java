@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services;
 
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-@Service
+
+import static java.util.Objects.requireNonNull;
+
 public class FileSystemOperation implements FilesOperations {
     @Override
     public void delete(String path) {
@@ -28,9 +29,9 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public void write(InputStream content, String destPath) {
+    public void write(InputStream content, Path destPath) {
         try {
-            Files.copy(content, Paths.get(destPath), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(content, destPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Failed to write file: " + destPath, e);
         }
@@ -43,5 +44,10 @@ public class FileSystemOperation implements FilesOperations {
         } catch (IOException e) {
             throw new RuntimeException("Failed to copy file from " + srcPath + " to " + destPath, e);
         }
+    }
+
+    @Override
+    public boolean dirExists(Path gestionStorageFolder) {
+        return Files.isDirectory(requireNonNull(gestionStorageFolder));
     }
 }
