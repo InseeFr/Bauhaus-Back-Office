@@ -45,6 +45,7 @@ public class OrganizationQueries extends GenericQueries{
 		params.put("ORGANIZATIONS_GRAPH", config.getOrganizationsGraph());
 		params.put("ORGANIZATIONS_INSEE_GRAPH", config.getOrgInseeGraph());
 		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
 		return FreeMarkerUtils.buildRequest("organizations/", "getOrganizations.ftlh", params);
 	}
 
