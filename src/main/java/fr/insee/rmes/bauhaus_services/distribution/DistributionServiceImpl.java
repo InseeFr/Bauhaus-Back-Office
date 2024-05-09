@@ -84,7 +84,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         distribution.setCreated(DateUtils.getCurrentDate());
         distribution.setUpdated(distribution.getCreated());
 
-        return this.persist(distribution);
+        return this.persist(distribution, true);
     }
 
     @Override
@@ -96,13 +96,13 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         distribution.setUpdated(DateUtils.getCurrentDate());
 
-        return this.persist(distribution);
+        return this.persist(distribution, false);
     }
 
     private String update(String distributionId, Distribution distribution) throws RmesException {
         distribution.setId(distributionId);
 
-        return this.persist(distribution);
+        return this.persist(distribution, false);
     }
 
     @Override
@@ -118,17 +118,19 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
 
-    private String persist(Distribution distribution) throws RmesException {
+    private String persist(Distribution distribution, boolean creation) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDistributionGraph());
 
         IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + distribution.getId());
 
         Model model = new LinkedHashModel();
 
-        JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
-        if(previousValue.has("idDataset")){
-            IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
-            repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.HAS_DISTRIBUTION, graph, null, distributionIRI);
+        if(!creation){
+            JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
+            if(previousValue.has("idDataset")){
+                IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
+                repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.HAS_DISTRIBUTION, graph, null, distributionIRI);
+            }
         }
 
         RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
