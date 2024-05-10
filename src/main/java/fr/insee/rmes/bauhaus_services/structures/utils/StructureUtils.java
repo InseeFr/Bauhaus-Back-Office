@@ -87,6 +87,7 @@ public class StructureUtils extends RdfService {
 
             JSONObject componentDefinition= new JSONObject();
 
+
             componentDefinition.put(ATTACHMENT, attachments);
 
 
@@ -125,7 +126,11 @@ public class StructureUtils extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_CREATED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
+
+            getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
+            componentDefinitionFlat.remove("component");
             componentDefinition.put("component", componentDefinitionFlat);
+
 
             componentDefinitions.put(componentDefinition);
         }
@@ -253,7 +258,8 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DCTERMS.IS_REQUIRED_BY, structure.getIsRequiredBy(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
-        RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);
+        structure.getContributor().forEach(contributor -> RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
+
         RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         repoGestion.loadSimpleObject(structureIri, model, null);
