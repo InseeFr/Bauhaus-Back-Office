@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState
+SELECT DISTINCT ?component ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 ?descriptionLg2 ?validationState
 ?created ?modified ?creator ?contributor ?disseminationStatus ?minLength ?maxLength ?minInclusive ?maxInclusive ?pattern ?fullCodeListValue
 ?attributeIRI ?valueIri ?altLabelLg1 ?altLabelLg2
 FROM <${STRUCTURES_COMPONENTS_GRAPH}>

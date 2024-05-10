@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -45,6 +46,10 @@ public class StructureImpl  extends RdfService implements StructureService {
 	public String getStructureById(String id) throws RmesException {
 		logger.info("Starting to get structure");
 		JSONObject structure = repoGestion.getResponseAsObject(StructureQueries.getStructureById(id));
+
+		IRI iri = RdfUtils.structureIRI(id);
+		getMultipleTripletsForObject(structure, "contributor", StructureQueries.getStructureContributors(iri), "contributor");
+
 		return structureUtils.formatStructure(structure, id).toString();
 	}
 

@@ -1,4 +1,4 @@
-SELECT DISTINCT ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified 
+SELECT DISTINCT ?component ?componentDefinitionId ?componentDefinitionCreated ?componentDefinitionModified
 ?id ?identifiant ?labelLg1 ?labelLg2 ?type ?concept ?codeList ?range ?descriptionLg1 
 ?descriptionLg2 ?validationState ?order ?created ?modified ?required ?creator 
 ?contributor ?disseminationStatus ?notation ?csLabelLg1 ?csLabelLg2
