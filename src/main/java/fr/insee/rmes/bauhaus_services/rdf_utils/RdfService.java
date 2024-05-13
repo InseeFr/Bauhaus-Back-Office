@@ -43,6 +43,9 @@ public abstract class RdfService {
 	public void getMultipleTripletsForObject(JSONObject object, String objectKey, String query, String queryKey) throws RmesException {
 		JSONArray array = this.repoGestion.getResponseAsArray(query);
 		List<String> results = new ArrayList<>();
+		if(array == null){
+			return;
+		}
 		array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
 		object.put(objectKey, results);
 	}
