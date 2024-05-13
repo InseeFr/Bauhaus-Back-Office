@@ -1,6 +1,5 @@
 package fr.insee.rmes.model.dataset;
 
-
 public class PatchDataset {
     private String updated;
 
@@ -60,8 +59,5 @@ public class PatchDataset {
 
     public void setTemporalCoverageEndDate(String temporalCoverageEndDate) {
         this.temporalCoverageEndDate = temporalCoverageEndDate;
-    }
-
-    public PatchDataset() {
     }
 }
