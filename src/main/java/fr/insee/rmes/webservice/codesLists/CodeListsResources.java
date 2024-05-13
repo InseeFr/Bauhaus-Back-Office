@@ -143,7 +143,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin()")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
     @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) {
@@ -155,7 +155,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin()")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) {
@@ -201,7 +201,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-    @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
+    @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
     @PutMapping("/validate/{id}")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) {
