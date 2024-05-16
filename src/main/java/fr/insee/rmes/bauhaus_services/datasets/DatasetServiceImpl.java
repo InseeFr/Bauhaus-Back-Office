@@ -248,10 +248,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getObservationNumber() == null
-                && patchDataset.getTimeSeriesNumber() == null && patchDataset.getTemporalCoverageStartDate() == null
-                && patchDataset.getTemporalCoverageEndDate() == null){
-            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate");
+        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
+                && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
+            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
 
         if ( patchDataset.getIssued() != null){
@@ -262,20 +261,19 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.setUpdated(patchDataset.getUpdated());
         }
 
-        if ( patchDataset.getTemporalCoverageStartDate() != null){
-            dataset.setTemporalCoverageStartDate(patchDataset.getTemporalCoverageStartDate());
+        if ( patchDataset.getTemporal() != null){
+            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
+            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+            dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
+            dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.getTemporalCoverageEndDate() != null){
-            dataset.setTemporalCoverageEndDate(patchDataset.getTemporalCoverageEndDate());
+        if ( patchDataset.getNumObservations() != null && patchDataset.getNumObservations() > 0){
+            dataset.setObservationNumber(patchDataset.getNumObservations());
         }
 
-        if ( patchDataset.getObservationNumber() != null && patchDataset.getObservationNumber() > 0){
-            dataset.setObservationNumber(patchDataset.getObservationNumber());
-        }
-
-        if ( patchDataset.getTimeSeriesNumber() != null){
-            dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
+        if ( patchDataset.getNumSeries() != null){
+            dataset.setTimeSeriesNumber(patchDataset.getNumSeries());
         }
 
         update(datasetId, dataset);
