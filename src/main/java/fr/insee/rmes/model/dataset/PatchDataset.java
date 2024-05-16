@@ -1,17 +1,18 @@
 package fr.insee.rmes.model.dataset;
 
+
 public class PatchDataset {
     private String updated;
 
     private String issued;
 
-    private Integer observationNumber;
+    private Integer numObservations;
 
-    private Integer timeSeriesNumber;
+    private Integer numSeries;
 
-    private String temporalCoverageStartDate;
+    private Temporal temporal;
 
-    private String temporalCoverageEndDate;
+
 
     public String getUpdated() {
         return updated;
@@ -29,35 +30,27 @@ public class PatchDataset {
         this.issued = issued;
     }
 
-    public Integer getObservationNumber() {
-        return observationNumber;
+    public Integer getNumObservations() {
+        return numObservations;
     }
 
-    public void setObservationNumber(Integer observationNumber) {
-        this.observationNumber = observationNumber;
+    public void setNumObservations(Integer numObservations) {
+        this.numObservations = numObservations;
     }
 
-    public Integer getTimeSeriesNumber() {
-        return timeSeriesNumber;
+    public Integer getNumSeries() {
+        return numSeries;
     }
 
-    public void setTimeSeriesNumber(Integer timeSeriesNumber) {
-        this.timeSeriesNumber = timeSeriesNumber;
+    public void setNumSeries(Integer numSeries) {
+        this.numSeries = numSeries;
     }
 
-    public String getTemporalCoverageStartDate() {
-        return temporalCoverageStartDate;
+    public Temporal getTemporal() {
+        return temporal;
     }
 
-    public void setTemporalCoverageStartDate(String temporalCoverageStartDate) {
-        this.temporalCoverageStartDate = temporalCoverageStartDate;
-    }
-
-    public String getTemporalCoverageEndDate() {
-        return temporalCoverageEndDate;
-    }
-
-    public void setTemporalCoverageEndDate(String temporalCoverageEndDate) {
-        this.temporalCoverageEndDate = temporalCoverageEndDate;
+    public void setTemporal(Temporal temporal) {
+        this.temporal = temporal;
     }
 }
