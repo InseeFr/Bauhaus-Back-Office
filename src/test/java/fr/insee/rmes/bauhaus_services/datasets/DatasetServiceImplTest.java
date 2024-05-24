@@ -372,6 +372,7 @@ class DatasetServiceImplTest {
             dataset.setObservationNumber(5);
             datasetService.patchDataset(datasetId, dataset);
 
+
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
 
@@ -610,7 +611,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
 
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
-        Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate\"}", exception.getDetails());
+        Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
         }
     }
 
