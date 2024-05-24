@@ -369,7 +369,7 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
 
             PatchDataset dataset = new PatchDataset();
-            dataset.setObservationNumber(5);
+            dataset.setNumObservations(5);
             datasetService.patchDataset(datasetId, dataset);
 
 
