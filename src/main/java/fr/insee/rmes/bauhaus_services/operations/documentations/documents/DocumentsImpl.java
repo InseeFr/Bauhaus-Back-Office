@@ -18,11 +18,10 @@ public class DocumentsImpl implements DocumentsService {
 
 	private static final  Logger logger = LoggerFactory.getLogger(DocumentsImpl.class);
 
-	@Autowired 
-	DocumentsUtils documentsUtils;
+	final DocumentsUtils documentsUtils;
 	
-	public DocumentsImpl() {
-		//Utility class
+	public DocumentsImpl(DocumentsUtils documentsUtils) {
+		this.documentsUtils = documentsUtils;
 	}
 
 	/*
@@ -47,9 +46,15 @@ public class DocumentsImpl implements DocumentsService {
 		return documentsUtils.getDocument(id, true);
 	}
 
-	/*
-	 * Create
-	 * @see fr.insee.rmes.bauhaus_services.DocumentsService#createDocument(java.lang.String)
+	/**
+	 * Method to create a new document and upload the corresponding file at the same time.
+	 *
+	 * @param body the metadata of the document we want to create
+	 * @param documentFile the file that will be linked to the document
+	 * @param documentName the name of file
+	 * @return the identifier of the newly created document
+	 * @throws fr.insee.rmes.exceptions.RmesNotAcceptableException if the name of the file is not correct
+	 * @throws RmesException
 	 */
 	@Override
 	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException {
@@ -59,8 +64,27 @@ public class DocumentsImpl implements DocumentsService {
 		String id = documentsUtils.createDocumentID();
 		logger.debug("Creating document {} with the identifier {}", documentName, id);
 
-		documentsUtils.createDocument(id,body,false, documentFile,documentName);
+		documentsUtils.createDocument(id, body,false, documentFile,documentName);
 		return id;
+	}
+
+	/**
+	 * Method to change the uploaded file of an existing document.
+	 *
+	 * @param docId the identifier of the document we want to change the file
+	 * @param documentFile the file that will be linked to the document
+	 * @param documentName the name of file
+	 * @return the url of the newly uploaded file
+	 * @throws fr.insee.rmes.exceptions.RmesNotAcceptableException if the name of the file is not correct
+	 * @throws RmesException
+	 */
+	@Override
+	public String changeDocument(String docId, InputStream documentFile, String documentName)
+			throws RmesException {
+
+		logger.debug("Updating document {} with the identifier {}", documentName, docId);
+		documentsUtils.checkFileNameValidity(documentName);
+		return documentsUtils.changeFile(docId,documentFile,documentName);
 	}
 
 	/*
@@ -80,17 +104,6 @@ public class DocumentsImpl implements DocumentsService {
 	public HttpStatus deleteDocument(String id) throws RmesException {
 		return documentsUtils.deleteDocument(id, false);
 	}
-
-	/*
-	 * Change an uploaded document 
-	 * Keep the document links
-	 */
-	@Override
-	public String changeDocument(String docId, InputStream documentFile, String documentName)
-			throws RmesException {
-		return documentsUtils.changeFile(docId,documentFile,documentName);		
-	}	
-	
 
 	@Override
 	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {

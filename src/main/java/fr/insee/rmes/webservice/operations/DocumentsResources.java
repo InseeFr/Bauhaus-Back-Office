@@ -54,10 +54,6 @@ public class DocumentsResources  extends GenericResources {
 	@Autowired
 	DocumentsService documentsService;
 
-	/*
-	 * DOCUMENTS AND LINKS
-	 */
-	
 	/**
 	 * Get the list of all documents and links
 	 * @return
