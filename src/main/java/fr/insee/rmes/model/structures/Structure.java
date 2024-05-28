@@ -14,7 +14,7 @@ public class Structure {
 	private String descriptionLg2;
 	private List<ComponentDefinition> componentDefinitions;
 	private String created;
-	private String contributor;
+	private List<String> contributor;
 	private String creator;
     private String disseminationStatus;
     private String isRequiredBy;
@@ -109,11 +109,11 @@ public class Structure {
 		this.creator = creator;
 	}
 
-	public String getContributor() {
+	public List<String> getContributor() {
 		return contributor;
 	}
 
-	public void setContributor(String contributor) {
+	public void setContributor(List<String> contributor) {
 		this.contributor = contributor;
 	}
 

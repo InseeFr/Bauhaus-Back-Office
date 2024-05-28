@@ -11,7 +11,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
@@ -103,6 +102,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
+		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 
 		if(!partial){
 			return codeList;
@@ -372,7 +372,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
 		}
 		if(codesList.has(Constants.CONTRIBUTOR)){
-			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString(Constants.CONTRIBUTOR), model, graph);
+			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
 		}
 
 		if(partial){

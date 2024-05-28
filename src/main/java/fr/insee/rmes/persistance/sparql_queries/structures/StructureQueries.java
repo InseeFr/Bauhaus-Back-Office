@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
+import org.eclipse.rdf4j.model.IRI;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -172,5 +173,17 @@ public class StructureQueries extends GenericQueries{
 		params.put(URI_COMPONENT, uriComponent);
 		return buildStructureRequest("getComponentContributorsByUriQuery.ftlh", params);
 	}
+
+	public static String getStructureContributors(IRI iri) throws RmesException {
+		Map<String, Object> params = Map.of("GRAPH", config.getStructuresGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
+	}
+
+	public static String getComponentContributors(String iri) throws RmesException {
+		Map<String, Object> params = Map.of("GRAPH", config.getStructuresComponentsGraph(), "IRI", iri, "PREDICATE", "dc:contributor");
+		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
+	}
+
+
 
 }

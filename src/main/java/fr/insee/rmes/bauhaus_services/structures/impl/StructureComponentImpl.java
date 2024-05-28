@@ -57,6 +57,10 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
 
         // We first format linked attributes if they exists
         JSONObject component = new JSONObject(response.getJSONObject(0).toMap());
+
+        getMultipleTripletsForObject(component, "contributor", StructureQueries.getComponentContributors(component.getString("component")), "contributor");
+        component.remove("component");
+
         if(component.has(ATTRIBUTE_IRI)){
             component.remove(ATTRIBUTE_IRI);
         }
