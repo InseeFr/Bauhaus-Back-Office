@@ -1,8 +1,10 @@
 package fr.insee.rmes.model.dataset;
 
+import java.util.List;
+
 public class CatalogRecord {
     private String creator;
-    private String contributor;
+    private List<String> contributor;
     private String created;
     private String updated;
 
@@ -14,11 +16,11 @@ public class CatalogRecord {
         this.creator = creator;
     }
 
-    public String getContributor() {
+    public List<String> getContributor() {
         return contributor;
     }
 
-    public void setContributor(String contributor) {
+    public void setContributor(List<String> contributor) {
         this.contributor = contributor;
     }
 

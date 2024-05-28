@@ -225,4 +225,10 @@ public class CodeListQueries extends GenericQueries {
 	private static String buildCodesListRequest(String fileName, Map<String, Object> params) throws RmesException  {
 		return FreeMarkerUtils.buildRequest(CODES_LIST, fileName, params);
 	}
+
+	public static String getCodesListContributors(String IRI) throws RmesException {
+		Map<String, Object> params = Map.of("GRAPH", config.getCodeListGraph(), "IRI", IRI, "PREDICATE", "dc:contributor");
+		return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
+
+	}
 }

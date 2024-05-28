@@ -29,10 +29,6 @@ WHERE {
     } .
 
     OPTIONAL {
-        ?structure dc:contributor ?contributor .
-    } .
-
-    OPTIONAL {
         ?structure insee:validationState ?validationState
     } .
 
