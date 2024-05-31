@@ -2,7 +2,6 @@ package fr.insee.rmes.webservice.dataset;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.config.RBACConfiguration;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
