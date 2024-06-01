@@ -1,7 +1,12 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.config.auth.user.User;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
+import fr.insee.rmes.external_services.rbac.RBACService;
+import fr.insee.rmes.model.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,13 +17,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * WebService class for resources of Concepts
@@ -44,18 +50,40 @@ import org.springframework.web.bind.annotation.RestController;
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
-public class UserResources extends GenericResources {
+public class UserResources {
 
     static final Logger logger = LoggerFactory.getLogger(UserResources.class);
 
     private final StampsService stampsService;
+    private final RBACService rbacService;
+    private final UserDecoder userDecoder;
 
 
-    @Autowired
-    public UserResources(StampsService stampsService) {
+    public UserResources(StampsService stampsService, RBACService rbacService, UserDecoder userDecoder) {
         this.stampsService = stampsService;
+        this.rbacService = rbacService;
+        this.userDecoder = userDecoder;
     }
 
+    @GetMapping(
+            value = "/info",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            operationId = "getUserInformation",
+            summary = "Get information about the logged-in user",
+            responses = {
+                    @ApiResponse(content = @Content(mediaType = "application/json"))
+            }
+    )
+    public Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
+        User user = this.userDecoder.fromPrincipal(principal).get();
+        return rbacService.computeRbac(user.roles());
+    }
+
+    /**
+     * @deprecated
+     */
     @GetMapping(value = "/stamp",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStamp", summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
