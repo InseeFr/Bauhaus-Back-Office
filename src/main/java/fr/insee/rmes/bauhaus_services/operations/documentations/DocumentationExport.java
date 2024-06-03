@@ -3,10 +3,12 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -17,6 +19,7 @@ import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.utils.XsltUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -69,34 +72,34 @@ public class DocumentationExport {
 	 *                  If this value is equal to true, the export will be a .ZIP archive. If equal to false,
 	 *                  the export will be a .ODT file.
 	 */
-	public ResponseEntity<?> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
-			boolean lg2, boolean documents, String goal) throws RmesException {
+	public ResponseEntity<Resource> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+													 boolean lg2, boolean documents, String goal) throws RmesException {
 
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 
+		if(!Constants.GOAL_RMES.equals(goal) && !Constants.GOAL_COMITE_LABEL.equals(goal)){
+			throw new RmesBadRequestException("The goal is unknown");
+		}
 
 		if(!documents){
 			if (Constants.GOAL_RMES.equals(goal)) {
 				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
 
-			}
-			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
+			} else {
 				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
-			}
-		} else {
-			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
-
-			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
-
-			}
-			if (Constants.GOAL_COMITE_LABEL.equals(goal)) {
-				return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
 			}
 		}
 
-		return ResponseEntity.internalServerError().body("Goal to export is not found");
+		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
+
+		if (Constants.GOAL_RMES.equals(goal)) {
+			return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
+
+		} else {
+			return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
+
+		}
 	}
 	
 	public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
@@ -110,7 +113,7 @@ public class DocumentationExport {
 	}
 	
 
-	public ResponseEntity<?> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
+	public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
 		String msdXML = buildShellSims();
@@ -183,13 +186,14 @@ public class DocumentationExport {
 		String simsXML=XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(id), "application/xml");
 		neededCodeLists.addAll(XMLUtils.getTagValues(simsXML,Constants.CODELIST));
 
-		neededCodeLists=neededCodeLists.stream().distinct().collect(Collectors.toList());
+		neededCodeLists = neededCodeLists.stream().distinct().collect(Collectors.toList());
 
-		String codeListsXML="";
-		codeListsXML=codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
+		String codeListsXML = "";
+		codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
 
 		for(String code : neededCodeLists) {
-			codeListsXML=codeListsXML.concat(XMLUtils.produceXMLResponse(codeListServiceImpl.getCodeList(code)));
+			CodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
+			codeListsXML=codeListsXML.concat(XMLUtils.produceXMLResponse(codeList));
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 

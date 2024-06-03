@@ -14,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,8 +25,11 @@ import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = MetadataReportResources.class,
@@ -61,6 +67,49 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 
+    @Test
+    public void testGetSimsExport() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+
+        String id = "1234";
+        boolean includeEmptyMas = true;
+        boolean lg1 = true;
+        boolean lg2 = true;
+        boolean document = true;
+        Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
+
+        when(documentationsService.exportMetadataReport(eq(id), eq(includeEmptyMas), eq(lg1), eq(lg2), eq(document)))
+                .thenReturn(ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource));
+
+        mvc.perform(get("/operations/metadataReport/export/{id}", id)
+                        .header("Authorization", "Bearer toto")
+                        .param("emptyMas", String.valueOf(includeEmptyMas))
+                        .param("lg1", String.valueOf(lg1))
+                        .param("lg2", String.valueOf(lg2))
+                        .param("document", String.valueOf(document))
+                        .accept(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(content().string("Mocked Document Content"));
+    }
+
+    @Test
+    public void testGetSimsExport_DefaultValues() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+
+        String id = "1234";
+        Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
+
+        when(documentationsService.exportMetadataReport(eq(id), eq(true), eq(true), eq(true), eq(true)))
+                .thenReturn(ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource));
+
+        mvc.perform(get("/operations/metadataReport/export/{id}", id)
+                        .header("Authorization", "Bearer toto")
+                        .accept(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_OCTET_STREAM))
+                .andExpect(content().string("Mocked Document Content"));
+    }
 
     @Test
     void postMetadataReportAdmin_OK() throws Exception {

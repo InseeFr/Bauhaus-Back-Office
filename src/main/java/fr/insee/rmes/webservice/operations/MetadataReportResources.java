@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -269,7 +270,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 */
 	@GetMapping(value = "/metadataReport/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
-	public ResponseEntity<?> getSimsExport(
+	public ResponseEntity<Resource> getSimsExport(
 			@Parameter(
 				description = "Identifiant de la documentation (format : [0-9]{4})",
 				required = true,
@@ -278,22 +279,17 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@PathVariable(Constants.ID) String id,
 
 			@Parameter(description = "Inclure les champs vides")
-			@RequestParam("emptyMas") Boolean includeEmptyMas,
+			@RequestParam(value = "emptyMas", defaultValue = "true") Boolean includeEmptyMas,
 
 			@Parameter(description = "Version française")
-			@RequestParam("lg1")  Boolean lg1,
+			@RequestParam(value = "lg1", defaultValue = "true")  Boolean lg1,
 
 			@Parameter(description = "Version anglaise")
-			@RequestParam("lg2")  Boolean lg2,
+			@RequestParam(value = "lg2", defaultValue = "true")  Boolean lg2,
 
 			@Parameter(description = "With documents")
-			@RequestParam("document")  Boolean document
+			@RequestParam(value = "document", defaultValue = "true")  Boolean document
 			) throws RmesException {
-
-		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (lg1==null) {lg1=true;}
-		if (lg2==null) {lg2=true;}
-		if (document==null) {document=true;}
 		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2, document);
 	}
 

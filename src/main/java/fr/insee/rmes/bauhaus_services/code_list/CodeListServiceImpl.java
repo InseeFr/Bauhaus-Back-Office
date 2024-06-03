@@ -91,8 +91,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public CodeList getCodeList(String notation) throws RmesException {
-		return buildCodeListFromJson(getCodeListJson(notation));
+	public CodeList getCodeListAndCodesForExport(String notation) throws RmesException {
+		JSONObject codeList = new JSONObject(getCodeListJson(notation));
+		JSONObject codesResponse = new JSONObject(getCodesJson(notation,1, 0));
+		codeList.put("codes", codesResponse.getJSONArray("items"));
+		return buildCodeListFromJson(codeList.toString());
 	}
 
 	@Override
