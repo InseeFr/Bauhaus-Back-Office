@@ -2,6 +2,7 @@ package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.exceptions.RmesException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Structure {
@@ -113,8 +114,8 @@ public class Structure {
 		return contributor;
 	}
 
-	public void setContributor(List<String> contributor) {
-		this.contributor = contributor;
+	public void setContributor(List<String> contributors) {
+		this.contributor = contributors == null ? new ArrayList<>() : contributors;
 	}
 
     public String getDisseminationStatus() {

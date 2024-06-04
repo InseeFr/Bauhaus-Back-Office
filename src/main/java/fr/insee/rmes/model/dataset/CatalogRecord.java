@@ -39,4 +39,8 @@ public class CatalogRecord {
     public void setUpdated(String udpated) {
         this.updated = udpated;
     }
+
+    public boolean hasContributor(){
+        return this.contributor != null && !contributor.isEmpty();
+    }
 }

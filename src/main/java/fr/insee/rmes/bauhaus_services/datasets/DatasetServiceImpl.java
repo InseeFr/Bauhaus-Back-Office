@@ -17,9 +17,11 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,10 +44,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
-    public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
+
     @Autowired
     UserProviderFromSecurityContext userProviderFromSecurityContext;
 
@@ -100,8 +102,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
 
-    static ValueFactory factory =  SimpleValueFactory.getInstance();
-
     @Override
     public String getDatasets() throws RmesException {
         return this.getDatasets(null);
@@ -149,16 +149,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
-        getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
+        updateJsonObjectSettingTripletForKey(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
 
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
-        getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
-        getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
+        updateJsonObjectSettingTripletForKey(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
+        updateJsonObjectSettingTripletForKey(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
 
 
 
         JSONObject catalogRecord = new JSONObject();
-        getMultipleTripletsForObject(catalogRecord, "contributor", DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), "contributor");
+        updateJsonObjectSettingTripletForKey(catalogRecord, "contributor", DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), "contributor");
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
@@ -438,7 +438,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getCatalogRecord().getCreator() == null) {
             throw new RmesBadRequestException("The property creator is required");
         }
-        if (dataset.getCatalogRecord().getContributor() == null || dataset.getCatalogRecord().getContributor().isEmpty()) {
+        if (!dataset.getCatalogRecord().hasContributor()) {
             throw new RmesBadRequestException("The property contributor is required");
         }
         if (dataset.getDisseminationStatus() == null) {

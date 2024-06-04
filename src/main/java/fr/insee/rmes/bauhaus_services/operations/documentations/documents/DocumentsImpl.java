@@ -5,7 +5,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,10 +22,6 @@ public class DocumentsImpl implements DocumentsService {
 	public DocumentsImpl(DocumentsUtils documentsUtils) {
 		this.documentsUtils = documentsUtils;
 	}
-
-	/*
-	 * Get 
-	 */
 	
 	@Override
 	public String getDocuments() throws RmesException {
@@ -97,9 +92,6 @@ public class DocumentsImpl implements DocumentsService {
 		return id;
 	}
 
-	/*
-	 * Delete 
-	 */
 	@Override
 	public HttpStatus deleteDocument(String id) throws RmesException {
 		return documentsUtils.deleteDocument(id, false);
@@ -110,13 +102,6 @@ public class DocumentsImpl implements DocumentsService {
 		return documentsUtils.downloadDocumentFile(id);	
 	}
 	
-	/*
-	 * LINKS
-	 */
-	
-	/**
-	 * Create new link
-	 */
 	@Override
 	public String setLink(String body) throws RmesException {
 		String id = documentsUtils.createDocumentID();
@@ -125,10 +110,6 @@ public class DocumentsImpl implements DocumentsService {
 		return id;
 	}
 	
-	/**
-	 * Update a link
-	 * @return 
-	 */
 	@Override
 	public String setLink(String id, String body) throws RmesException {
 		documentsUtils.setDocument(id,body, true);
@@ -138,6 +119,5 @@ public class DocumentsImpl implements DocumentsService {
 	@Override
 	public HttpStatus deleteLink(String id) throws RmesException {
 		return documentsUtils.deleteDocument(id, true);
-
 	}
 }

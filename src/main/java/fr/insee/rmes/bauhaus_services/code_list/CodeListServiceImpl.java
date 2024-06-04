@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -102,7 +103,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
-		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
+		updateJsonObjectSettingTripletForKey(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 
 		if(!partial){
 			return codeList;
@@ -338,7 +339,13 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		return id;
 	}
 
+	private Stream<String> allContributors(JSONObject codesList){
+		return codesList.getJSONArray(Constants.CONTRIBUTOR).toList().stream().map(Object::toString);
+	}
 
+	private static void addContributor(Model model, Resource graph, IRI codeListIri, String contributor) {
+		RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, contributor, model, graph);
+	}
 
 	private String createOrUpdateCodeList(Model model, Resource graph, JSONObject codesList, IRI codeListIri, boolean partial) throws RmesException {
 		String codeListId = codesList.getString(Constants.ID);
@@ -372,7 +379,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
 		}
 		if(codesList.has(Constants.CONTRIBUTOR)){
-			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
+			allContributors(codesList).forEach(contributor -> addContributor(model, graph, codeListIri, contributor));
 		}
 
 		if(partial){

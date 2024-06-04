@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.exceptions.RmesException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,7 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -19,6 +21,27 @@ class DocumentsImplTest {
 
     @Autowired
     private DocumentsImpl documentService;
+
+    @Test
+    public void testGetDocuments() throws RmesException {
+        JSONArray documents = new JSONArray("[\"document\"]");
+        when(documentsUtils.getAllDocuments()).thenReturn(documents);
+        assertEquals(documentService.getDocuments(), documents.toString());
+    }
+
+    @Test
+    public void testGetDocument() throws RmesException {
+        JSONObject document = new JSONObject().put("id", "1");
+        when(documentsUtils.getDocument(eq("1"), eq(false))).thenReturn(document);
+        assertEquals(documentService.getDocument("1"), document);
+    }
+
+    @Test
+    public void testGetLink() throws RmesException {
+        JSONObject document = new JSONObject().put("id", "1");
+        when(documentsUtils.getDocument(eq("1"), eq(true))).thenReturn(document);
+        assertEquals(documentService.getLink("1"), document);
+    }
 
     @Test
     public void testCreateDocument() throws RmesException {

@@ -40,14 +40,13 @@ public abstract class RdfService {
 		model.add(subject, predicateIRI, object, st.getContext());
 	}
 
-	public void getMultipleTripletsForObject(JSONObject object, String objectKey, String query, String queryKey) throws RmesException {
+	public void updateJsonObjectSettingTripletForKey(JSONObject object, String objectKey, String query, String queryKey) throws RmesException {
 		JSONArray array = this.repoGestion.getResponseAsArray(query);
 		List<String> results = new ArrayList<>();
-		if(array == null){
-			return;
+		if(array != null){
+			array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
+			object.put(objectKey, results);
 		}
-		array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
-		object.put(objectKey, results);
 	}
 	
 }
