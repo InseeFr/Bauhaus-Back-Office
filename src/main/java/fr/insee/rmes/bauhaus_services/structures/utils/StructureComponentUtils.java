@@ -8,7 +8,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -184,7 +183,9 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(componentURI, DC.CREATOR, component.getCreator(), model, graph);
-        RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
+
+        component.getContributor().forEach(contributor ->  RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, contributor, model, graph));
+
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
         jsonComponent.keySet().stream().forEach(key -> {

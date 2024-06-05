@@ -17,11 +17,9 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.IdGenerator;
-import org.eclipse.rdf4j.model.BNode;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -35,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static fr.insee.rmes.exceptions.ErrorCodes.*;
+import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -102,6 +100,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
 
+    static ValueFactory factory =  SimpleValueFactory.getInstance();
+
     @Override
     public String getDatasets() throws RmesException {
         return this.getDatasets(null);
@@ -149,30 +149,22 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.put("themes", themes);
         dataset.remove(THEME);
 
-        JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
-        List<String> creators = new ArrayList<>();
-        creatorsArray.iterator().forEachRemaining(creator -> creators.add(((JSONObject) creator).getString(CREATOR)));
-        dataset.put("creators", creators);
+        getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
 
-        JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
-        List<String> spacialResolutions = new ArrayList<>();
-        spacialResolutionsArray.iterator().forEachRemaining(spacialResolution -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
-        dataset.put("spacialResolutions", spacialResolutions);
+        IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
+        getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
+        getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
 
-        JSONArray statisticalUnitArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()));
-        List<String> statisticalUnit = new ArrayList<>();
-        statisticalUnitArray.iterator().forEachRemaining(unit -> statisticalUnit.add(((JSONObject) unit).getString("statisticalUnit")));
-        dataset.put("statisticalUnit", statisticalUnit);
+
 
         JSONObject catalogRecord = new JSONObject();
+        getMultipleTripletsForObject(catalogRecord, "contributor", DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), "contributor");
+
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
             dataset.remove(CATALOG_RECORD_CREATOR);
         }
-        if(dataset.has(CATALOG_RECORD_CONTRIBUTOR)){
-            catalogRecord.put("contributor", dataset.getString(CATALOG_RECORD_CONTRIBUTOR));
-            dataset.remove(CATALOG_RECORD_CONTRIBUTOR);
-        }
+
         if(dataset.has(CATALOG_RECORD_CREATED)){
             catalogRecord.put("created", dataset.getString(CATALOG_RECORD_CREATED));
             dataset.remove(CATALOG_RECORD_CREATED);
@@ -248,10 +240,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getObservationNumber() == null
-                && patchDataset.getTimeSeriesNumber() == null && patchDataset.getTemporalCoverageStartDate() == null
-                && patchDataset.getTemporalCoverageEndDate() == null){
-            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate");
+        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
+                && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
+            throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
 
         if ( patchDataset.getIssued() != null){
@@ -262,20 +253,19 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.setUpdated(patchDataset.getUpdated());
         }
 
-        if ( patchDataset.getTemporalCoverageStartDate() != null){
-            dataset.setTemporalCoverageStartDate(patchDataset.getTemporalCoverageStartDate());
+        if ( patchDataset.getTemporal() != null){
+            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
+            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+            dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
+            dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.getTemporalCoverageEndDate() != null){
-            dataset.setTemporalCoverageEndDate(patchDataset.getTemporalCoverageEndDate());
+        if ( patchDataset.getNumObservations() != null && patchDataset.getNumObservations() > 0){
+            dataset.setObservationNumber(patchDataset.getNumObservations());
         }
 
-        if ( patchDataset.getObservationNumber() != null && patchDataset.getObservationNumber() > 0){
-            dataset.setObservationNumber(patchDataset.getObservationNumber());
-        }
-
-        if ( patchDataset.getTimeSeriesNumber() != null){
-            dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
+        if ( patchDataset.getNumSeries() != null){
+            dataset.setTimeSeriesNumber(patchDataset.getNumSeries());
         }
 
         update(datasetId, dataset);
@@ -294,7 +284,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
         model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
-        model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(record.getContributor()), graph);
+
+        record.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, record.getUpdated(), model, graph);
 
@@ -447,7 +438,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getCatalogRecord().getCreator() == null) {
             throw new RmesBadRequestException("The property creator is required");
         }
-        if (dataset.getCatalogRecord().getContributor() == null) {
+        if (dataset.getCatalogRecord().getContributor() == null || dataset.getCatalogRecord().getContributor().isEmpty()) {
             throw new RmesBadRequestException("The property contributor is required");
         }
         if (dataset.getDisseminationStatus() == null) {

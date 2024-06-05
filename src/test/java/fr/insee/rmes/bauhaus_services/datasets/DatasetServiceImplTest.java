@@ -346,7 +346,7 @@ class DatasetServiceImplTest {
         generateGeneralInformation(object);
         object.put("disseminationStatus", "http://disseminationStatus");
         object.put("catalogRecordCreator", "creator");
-        object.put("catalogRecordContributor", "contributor");
+        object.put("catalogRecordContributor", List.of("contributor"));
 
         JSONArray distributions = new JSONArray();
         JSONObject d = new JSONObject();
@@ -358,17 +358,20 @@ class DatasetServiceImplTest {
         when(seriesUtils.isSeriesExist(any())).thenReturn(true);
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "http://creator-1")));
+        when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "contributor")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
         try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
+            mockedFactory.when(() -> DatasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributor");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
 
             PatchDataset dataset = new PatchDataset();
-            dataset.setObservationNumber(5);
-             datasetService.patchDataset(datasetId, dataset);
+            dataset.setNumObservations(5);
+            datasetService.patchDataset(datasetId, dataset);
+
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
@@ -411,7 +414,7 @@ class DatasetServiceImplTest {
     private JSONObject generateCatalogRecord() {
         JSONObject record = new JSONObject();
         record.put("creator", "creator");
-        record.put("contributor", "contributor");
+        record.put("contributor", List.of("contributor"));
         return record;
     }
 
@@ -531,7 +534,7 @@ class DatasetServiceImplTest {
 
             JSONObject record = new JSONObject();
             record.put("creator", "creator");
-            record.put("contributor", "contributor");
+            record.put("contributor", List.of("contributor"));
             record.put("created", "2023-10-19T11:44:23.335590");
 
             body.put("catalogRecord", record);
@@ -608,7 +611,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
 
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
-        Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, observationNumber, timeSeriesNumber, temporalCoverageStartDate or temporalCoverageEndDate\"}", exception.getDetails());
+        Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
         }
     }
 
