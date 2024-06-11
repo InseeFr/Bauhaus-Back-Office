@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
@@ -34,7 +35,9 @@ public class DocumentsPublication  extends RdfService{
 
 	@Autowired
 	DocumentsUtils docUtils;
-	
+
+	@Autowired
+	FilesOperations filesOperations;
 
 	static final Logger logger = LoggerFactory.getLogger(DocumentsPublication.class);
 
@@ -65,19 +68,13 @@ public class DocumentsPublication  extends RdfService{
 			Resource linkResource = RdfUtils.objectIRIPublication(ObjectType.LINK,id);
 			repositoryPublication.publishResource(linkResource, getLinkModelToPublish(id), ObjectType.LINK.labelType());
 		}
-		
-		
-		
+
 	}
 
 	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
-		Path file = Paths.get(originalPath);
-		Path targetPathInt = Paths.get(config.getDocumentsStoragePublicationInterne());
-		Path targetPathExt = Paths.get(config.getDocumentsStoragePublicationExterne());
-
 		try {
-			Files.copy(file, targetPathInt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(file, targetPathExt.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
+			filesOperations.copy(originalPath, config.getDocumentsStoragePublicationInterne());
+			filesOperations.copy(originalPath, config.getDocumentsStoragePublicationExterne());
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass() + e.getMessage(),

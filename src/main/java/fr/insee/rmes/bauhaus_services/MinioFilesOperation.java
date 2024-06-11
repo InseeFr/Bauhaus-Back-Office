@@ -12,29 +12,42 @@ import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-public record MinioFilesOperation(MinioClient minioClient, String bucketName) implements FilesOperations {
+public record MinioFilesOperation(MinioClient minioClient, String bucketName, String directoryGestion, String directoryPublication) implements FilesOperations {
 
     private static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
 
     @Override
-    public InputStream read(String objectName) {
+    public InputStream read(String pathFile) {
+        String objectName= extractFileName(pathFile);
+
         try {
             return minioClient.getObject(GetObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(objectName)
+                    .object(directoryGestion +"/"+ objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
             logger.error("Error reading file: {}", e.getMessage());
             throw new RuntimeException("Error reading file: " + objectName, e);
         }
     }
+    public static String extractFileName(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return "";
+        }
+        int lastSlashIndex = filePath.lastIndexOf('/');
+        if (lastSlashIndex == -1) {
+            return filePath; // The path does not contain a slash, return the whole string
+        }
+        return filePath.substring(lastSlashIndex + 1);
+    }
+
 
     @Override
     public void write(InputStream content, Path objectName) {
         try {
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(objectName.getFileName().toString())
+                    .object(directoryGestion +"/"+ objectName.getFileName().toString())
                     .stream(content, content.available(), -1)
                     .build());
         } catch (Exception e) {
@@ -44,16 +57,17 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
     }
 
     @Override
-    public void copy(String srcObjectName, String destObjectName) {
+    public void copy(String srcObjectName, String destObjectName) throws IOException {
+
         try {
             CopySource source = CopySource.builder()
                     .bucket(bucketName)
-                    .object(srcObjectName)
+                    .object(directoryGestion +"/"+ extractFileName(srcObjectName))
                     .build();
 
             minioClient.copyObject(CopyObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(destObjectName)
+                    .object(directoryPublication +"/"+ extractFileName(srcObjectName))
                     .source(source)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
@@ -68,33 +82,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
         return true;
     }
 
-    public void uploadFile(String bucketName, String objectName, InputStream documentFile, long size, String contentType) throws Exception {
-        try {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .stream(documentFile, size, -1)
-                            .contentType(contentType)
-                            .build());
-        } catch (MinioException e) {
-            throw new Exception("Erreur lors de l'upload du fichier : " + e.getMessage(), e);
-        }
-    }
-    public void deleteFile(String bucketName, String objectName) {
-        try {
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .build());
-        } catch (MinioException e) {
-            logger.error("Erreur lors de la suppression du fichier : {}", e.getMessage());
-        } catch (IOException | InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @Override
+     @Override
     public void delete(String objectName) {
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
@@ -107,16 +95,5 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName) im
         }
     }
 
-    public InputStream downloadFile(String bucketName, String objectName) throws Exception {
-        try {
-            return minioClient.getObject(
-                    GetObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .build());
-        } catch (MinioException e) {
-            throw new Exception("Erreur lors du téléchargement du fichier : " + e.getMessage(), e);
-        }
-    }
 }
 

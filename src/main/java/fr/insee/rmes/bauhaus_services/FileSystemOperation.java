@@ -38,7 +38,7 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public void copy(String srcPath, String destPath) {
+    public void copy(String srcPath, String destPath) throws IOException {
         try {
             Files.copy(Paths.get(srcPath), Paths.get(destPath), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

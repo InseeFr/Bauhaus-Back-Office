@@ -14,7 +14,7 @@ public class StorageConfiguration {
     @Bean
     @Profile("s3")
     public FilesOperations filesMinioOperations(MinioConfig minioConfig) {
-        return new MinioFilesOperation(minioClient(minioConfig), minioConfig.bucketName());
+        return new MinioFilesOperation(minioClient(minioConfig), minioConfig.bucketName(),minioConfig.directoryGestion(),minioConfig.directoryPublication());
     }
 
     private MinioClient minioClient(MinioConfig minioConfig) {

@@ -241,20 +241,31 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public void loadSimpleObject(IRI object, Model model, RepositoryConnection conn) throws RmesException {
-
 		try {
 			if (conn == null) {
 				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();
 			}
+
+			if (conn == null || !conn.isOpen()) {
+				logger.error("Connection is null or closed");
+				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Connection is null or closed", FAILURE_LOAD_OBJECT + object);
+			}
+
+			logger.info("Removing existing triples for object: " + object);
 			conn.remove(object, null, null);
+
+			logger.info("Adding new triples");
+			model.forEach(statement -> {
+				logger.info("Triple: " + statement.toString());
+			});
+
 			conn.add(model);
 			conn.close();
 		} catch (RepositoryException e) {
-			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(FAILURE_LOAD_OBJECT, object);
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
-
 		}
 	}
 
