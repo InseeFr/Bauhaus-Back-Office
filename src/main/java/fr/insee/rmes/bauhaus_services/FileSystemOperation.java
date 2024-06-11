@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-
 import static java.util.Objects.requireNonNull;
 
 public class FileSystemOperation implements FilesOperations {
@@ -39,8 +38,10 @@ public class FileSystemOperation implements FilesOperations {
 
     @Override
     public void copy(String srcPath, String destPath) throws IOException {
+        Path file = Paths.get(srcPath);
+        Path targetPath = Paths.get(destPath);
         try {
-            Files.copy(Paths.get(srcPath), Paths.get(destPath), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file, targetPath.resolve(file).getFileName(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Failed to copy file from " + srcPath + " to " + destPath, e);
         }
