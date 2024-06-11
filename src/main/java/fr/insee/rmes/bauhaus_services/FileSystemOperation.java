@@ -41,9 +41,9 @@ public class FileSystemOperation implements FilesOperations {
         Path file = Paths.get(srcPath);
         Path targetPath = Paths.get(destPath);
         try {
-            Files.copy(file, targetPath.resolve(file).getFileName(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(file, targetPath.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to copy file from " + srcPath + " to " + destPath, e);
+            throw new RuntimeException("Failed to copy file : " + srcPath + " to " + destPath, e);
         }
     }
 
