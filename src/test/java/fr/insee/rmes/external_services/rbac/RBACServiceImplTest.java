@@ -1,7 +1,7 @@
 package fr.insee.rmes.external_services.rbac;
 
 import fr.insee.rmes.config.auth.RBACConfiguration;
-import fr.insee.rmes.model.RBAC;
+import fr.insee.rmes.model.rbac.RBAC;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class RBACServiceImplTest {
@@ -40,7 +39,7 @@ class RBACServiceImplTest {
         Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> privileges = Map.of(
                 RBAC.APPLICATION.concept, Map.of(RBAC.PRIVILEGE.read, RBAC.STRATEGY.ALL, RBAC.PRIVILEGE.delete, RBAC.STRATEGY.STAMP)
         );
-        when(configuration.getRbac()).thenReturn(Map.of("ADMIN", privileges));
+        //when(configuration.getRbac()).thenReturn(Map.of("ADMIN", privileges));
 
         Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> values = rbacService.computeRbac(List.of("ADMIN"));
         assertEquals(values, privileges);
@@ -63,7 +62,7 @@ class RBACServiceImplTest {
                 RBAC.APPLICATION.classification, Map.of(RBAC.PRIVILEGE.read, RBAC.STRATEGY.ALL, RBAC.PRIVILEGE.delete, RBAC.STRATEGY.ALL)
         );
 
-        when(configuration.getRbac()).thenReturn(Map.of("ADMIN", adminPrivileges, "USER", userPrivileges));
+        //when(configuration.getRbac()).thenReturn(Map.of("ADMIN", adminPrivileges, "USER", userPrivileges));
 
 
 

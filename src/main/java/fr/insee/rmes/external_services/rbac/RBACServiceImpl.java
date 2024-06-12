@@ -1,7 +1,7 @@
 package fr.insee.rmes.external_services.rbac;
 
 import fr.insee.rmes.config.auth.RBACConfiguration;
-import fr.insee.rmes.model.RBAC;
+import fr.insee.rmes.model.rbac.RBAC;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public class RBACServiceImpl implements RBACService {
 
     @Override
     public Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> computeRbac(List<String> roles) {
-        if(roles.isEmpty()){
+        /*if(roles.isEmpty()){
             return Map.of();
         }
 
@@ -34,7 +34,8 @@ public class RBACServiceImpl implements RBACService {
             }
         }
 
-        return results;
+        return results;*/
+        return Map.of();
     }
 
     private void mergePrivileges(Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> target,

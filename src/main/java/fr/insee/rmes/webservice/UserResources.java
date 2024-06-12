@@ -6,7 +6,7 @@ import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external_services.authentication.stamps.StampsService;
 import fr.insee.rmes.external_services.rbac.RBACService;
-import fr.insee.rmes.model.RBAC;
+import fr.insee.rmes.model.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
