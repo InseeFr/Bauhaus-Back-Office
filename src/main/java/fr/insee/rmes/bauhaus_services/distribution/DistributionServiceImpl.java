@@ -72,7 +72,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public String getDistributionByID(String id) throws RmesException {
         JSONObject distrib=repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
         if (distrib.has("id")){
-        return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
+            return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
         } else {
             throw new RmesNotFoundException("This distribution does not exist");
         }
@@ -126,19 +126,16 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public ResponseEntity deleteDistributionId(String distributionId) throws RmesException{
         String distributionString = getDistributionByID(distributionId);
         JSONObject distributionJson = new JSONObject(distributionString);
-        if (distributionJson.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         if (distributionJson.has("validationState")){
             String validationState = distributionJson.getString("validationState");
-            if ( validationState != "Unpublished"){
+            if (!validationState.equals("Unpublished")){
                 return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
             }
         }
         IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
         Resource graph = RdfUtils.createIRI(getDistributionBaseUri() + "/" + distributionId);
-        String distrutionURI = getDistributionBaseUri() + "/" + distributionId;
-        repoGestion.deleteObject(RdfUtils.createIRI(distrutionURI),null);
+        String distributionURI = getDistributionBaseUri() + "/" + distributionId;
+        repoGestion.deleteObject(RdfUtils.createIRI(distributionURI),null);
         repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph,null);
         return new ResponseEntity<>(HttpStatus.OK);
 
