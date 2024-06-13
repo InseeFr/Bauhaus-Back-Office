@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.PatchDataset;
+import org.springframework.http.ResponseEntity;
 
 public interface DatasetService {
 
@@ -22,4 +23,6 @@ public interface DatasetService {
     String getDatasetsForDistributionCreation(String stamp) throws RmesException;
 
     String publishDataset(String id) throws RmesException;
+
+    void deleteDatasetId(String datasetId) throws RmesException;
 }

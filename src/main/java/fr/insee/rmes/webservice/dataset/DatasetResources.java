@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import fr.insee.rmes.webservice.GenericResources;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -44,7 +45,7 @@ public class DatasetResources {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @Operation(operationId = "getDataset", summary = "List of datasets",
+    @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
@@ -107,12 +108,16 @@ public class DatasetResources {
             summary = "Delete a dataset"
     )
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "The dataset has been  deleted"),
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented")
+            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented"),
+            @ApiResponse(responseCode = "406", description = "Only unpublished datasets can be deleted"),
+            @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted")
     })
-    public ResponseEntity deleteDataset(
-            @PathVariable(Constants.ID) String datasetId
-    ) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Object> deleteDataset(
+            @PathVariable(Constants.ID) String id) throws RmesException
+     {
+             datasetService.deleteDatasetId(id);
+             return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

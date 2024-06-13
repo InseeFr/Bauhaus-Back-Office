@@ -25,6 +25,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -34,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
+import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -269,6 +272,31 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
 
         update(datasetId, dataset);
+    }
+
+    @Override
+    public void deleteDatasetId(String datasetId) throws RmesException{
+        String datasetString = getDatasetByID(datasetId);
+        JSONObject datasetJson = new JSONObject(datasetString);
+        if (datasetJson.has("validationState")){
+            String validationState = datasetJson.getString("validationState");
+            if (!"Unpublished".equalsIgnoreCase(validationState)){
+                throw new RmesBadRequestException(String.valueOf(HttpStatus.NOT_ACCEPTABLE),"Only unpublished datasets can be deleted");
+            }
+        }
+        //si le dataset a une ou plusieurs distributions, on ne peut pas la supprimer
+        if (!this.getDistributions(datasetId).equals("[]")){
+            throw new RmesBadRequestException(String.valueOf(HttpStatus.BAD_REQUEST),"Only dataset without any distribution can be deleted");
+        }
+
+
+        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+        Resource graph = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+        repoGestion.deleteObject(RdfUtils.toURI(datasetURI), null);
+        repoGestion.deleteTripletByPredicate(datasetIRI,DCAT.DATASET,graph,null);
+
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
