@@ -106,7 +106,8 @@ public class DistributionResources {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented")
+            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented"),
+            @ApiResponse(responseCode = "406", description = "This distribution is not unpublished thus it can not be deleted.")
     })
     public ResponseEntity deleteDistribution(
             @PathVariable(Constants.ID) String distributionId
