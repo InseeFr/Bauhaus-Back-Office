@@ -81,7 +81,7 @@ public class DistributionResources {
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
@@ -90,7 +90,7 @@ public class DistributionResources {
     }
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDistribution", summary = "Update a distribution")
     public String updateDistribution(
             @PathVariable("id") String distributionId,
@@ -110,8 +110,9 @@ public class DistributionResources {
     })
     public ResponseEntity deleteDistribution(
             @PathVariable(Constants.ID) String distributionId
-    ) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    )throws RmesException{
+
+        return this.distributionService.deleteDistributionId(distributionId);
     }
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")

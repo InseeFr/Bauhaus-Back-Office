@@ -2,6 +2,8 @@ package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -20,7 +22,10 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -115,6 +120,28 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         repoGestion.objectValidation(iri, model);
 
         return id;
+    }
+
+    @Override
+    public ResponseEntity deleteDistributionId(String distributionId) throws RmesException{
+        String distributionString = getDistributionByID(distributionId);
+        JSONObject distributionJson = new JSONObject(distributionString);
+        if (distributionJson.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        if (distributionJson.has("validationState")){
+            String validationState = distributionJson.getString("validationState");
+            if ( validationState != "Unpublished"){
+                return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+        IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
+        Resource graph = RdfUtils.createIRI(getDistributionBaseUri() + "/" + distributionId);
+        String distrutionURI = getDistributionBaseUri() + "/" + distributionId;
+        repoGestion.deleteObject(RdfUtils.createIRI(distrutionURI),null);
+        repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph,null);
+        return new ResponseEntity<>(HttpStatus.OK);
+
     }
 
 
