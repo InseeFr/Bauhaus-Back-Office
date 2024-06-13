@@ -87,4 +87,10 @@ public class RmesException extends Exception {
 		if (StringUtils.hasLength(detailsParam)) det.put(DETAILS_STRING, detailsParam);
 		return det.toString();
 	}
+
+	public RmesException(int status, String message, String details, Throwable cause) {
+		super(message, cause);
+		this.status = status;
+		this.details = createDetails(null, message, details);
+	}
 }

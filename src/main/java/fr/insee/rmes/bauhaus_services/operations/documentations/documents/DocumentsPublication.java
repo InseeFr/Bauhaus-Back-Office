@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesFileException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.*;
@@ -55,7 +56,6 @@ public class DocumentsPublication  extends RdfService{
 			String filename = docUtils.getDocumentNameFromUrl(originalPath);
 			// Publish the physical files
 			copyFileInPublicationFolders(originalPath);
-			
 			// Change url in document (getModelToPublish) and publish the RDF
 			Resource document = RdfUtils.objectIRIPublication(ObjectType.DOCUMENT,docId);
 			repositoryPublication.publishResource(document, getModelToPublish(docId,filename), ObjectType.DOCUMENT.labelType());
@@ -71,17 +71,18 @@ public class DocumentsPublication  extends RdfService{
 
 	}
 
-	private void copyFileInPublicationFolders(String originalPath) throws RmesException {
+	private void copyFileInPublicationFolders(String originalPath) throws RmesFileException {
 		try {
 			filesOperations.copy(originalPath, config.getDocumentsStoragePublicationInterne());
 			filesOperations.copy(originalPath, config.getDocumentsStoragePublicationExterne());
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getClass() + e.getMessage(),
-					e.getClass() + " - Can't copy files");
+		} catch (Exception e) { // Capture toute exception
+			throw new RmesFileException("Error copying file from " + originalPath + " to publication folders", e);
 		}
 	}
-	
+
+
+
+
 	private Model getModelToPublish(String documentId, String filename) throws RmesException {
 		Model model = new LinkedHashModel();
 		Resource document = RdfUtils.documentIRI(documentId);
