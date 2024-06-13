@@ -57,7 +57,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     }
 
     @Override
-    public void copy(String srcObjectName, String destObjectName) throws IOException {
+    public void copy(String srcObjectName, String destObjectName)  {
 
         try {
             CopySource source = CopySource.builder()

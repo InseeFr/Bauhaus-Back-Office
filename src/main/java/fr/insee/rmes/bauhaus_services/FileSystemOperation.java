@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.exceptions.RmesFileException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,7 +16,7 @@ public class FileSystemOperation implements FilesOperations {
         try {
             Files.delete(Paths.get(path));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to delete file: " + path, e);
+            throw new RmesFileException("Failed to delete file: " + path, e);
         }
     }
 
@@ -23,7 +25,7 @@ public class FileSystemOperation implements FilesOperations {
         try {
             return Files.newInputStream(Paths.get(fileName));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read file: " + fileName, e);
+            throw new RmesFileException("Failed to read file: " + fileName, e);
         }
     }
 
@@ -32,18 +34,18 @@ public class FileSystemOperation implements FilesOperations {
         try {
             Files.copy(content, destPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to write file: " + destPath, e);
+            throw new RmesFileException("Failed to write file: " + destPath, e);
         }
     }
 
     @Override
-    public void copy(String srcPath, String destPath) throws IOException {
+    public void copy(String srcPath, String destPath)  {
         Path file = Paths.get(srcPath);
         Path targetPath = Paths.get(destPath);
         try {
             Files.copy(file, targetPath.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to copy file : " + srcPath + " to " + destPath, e);
+            throw new RmesFileException("Failed to copy file : " + srcPath + " to " + destPath, e);
         }
     }
 

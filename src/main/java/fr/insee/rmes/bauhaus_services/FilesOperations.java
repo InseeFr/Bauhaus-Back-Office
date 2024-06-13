@@ -9,7 +9,7 @@ public interface FilesOperations {
     void delete(String path);
     InputStream read(String path);
     void write(InputStream content, Path destPath);
-    void copy(String srcPath, String destPath) throws IOException;
+    void copy(String srcPath, String destPath);
 
     boolean dirExists(Path gestionStorageFolder);
 }

@@ -16,7 +16,6 @@ import fr.insee.rmes.persistance.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.UriUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -31,8 +30,10 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 
@@ -672,34 +673,31 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException, IOException {
-
         List<String> pathAndFileName = this.getDocumentPath(id);
 
-      try {
-                String filePath = pathAndFileName.get(0); // Récupérez le chemin ou le nom de l'objet basé sur l'ID
-                InputStream inputStream = filesOperations.read(filePath); // Lire via l'abstraction
-                byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
+        String filePath = pathAndFileName.getFirst();; // Récupérez le chemin ou le nom de l'objet basé sur l'ID
+        try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
+            byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
-                headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
 
-                //return the response with document
-                try {
-                    return ResponseEntity.ok()
-                            .headers(headers)
-                            .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                            .body(data);
-                } catch (Exception e) {
-                    logger.error(e.getMessage());
-                    throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file");
-                }
-            } catch (Exception e) {
-                logger.error("Error downloading document: ", e);
-                throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "tot","toto");
-            }
-
+            // return the response with document
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(data);
+        } catch (IOException e) {
+            logger.error("I/O error downloading document: ", e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
+        } catch (Exception e) {
+            logger.error("Error downloading document: ", e);
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error", "Error downloading file");
         }
+    }
+
+
 
     private String getFileName(String path) {
         // Extraire juste le nom de fichier du chemin
