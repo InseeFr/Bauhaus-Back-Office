@@ -1,5 +1,5 @@
 SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?updated
-?format ?byteSize ?url
+?format ?byteSize ?url ?validationState
 FROM <${DATASET_GRAPH}>
 WHERE {
 	?uri rdf:type dcat:Distribution .
