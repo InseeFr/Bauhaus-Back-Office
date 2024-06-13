@@ -53,7 +53,7 @@ class DocumentsUtilsTest {
             "'...', '{\"code\":362,\"details\":\"...\",\"message\":\"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens\"}'",
             "'-', '{\"code\":362,\"details\":\"-\",\"message\":\"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens\"}'",
             "'-.', '{\"code\":362,\"details\":\"-.\",\"message\":\"FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens\"}'",
-    })
+   })
     @ParameterizedTest
     void test_checkFileNameValidity_throwsWhenNameInvalid(String fileName, String exceptionDetail) {
         RmesNotAcceptableException exception = assertThrows(RmesNotAcceptableException.class, () -> {

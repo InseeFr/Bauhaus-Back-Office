@@ -610,14 +610,15 @@ public class DocumentsUtils extends RdfService {
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
         }
 
-        Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
+        Pattern p = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
         Matcher m = p.matcher(fileName);
-        if (m.find()) {
+        if (!m.matches()) {
             logger.info("There is a forbidden character in the FileName ");
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
                     "FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
                     fileName);
         }
+
         logger.debug("The file name {} is valid", fileName);
     }
 
