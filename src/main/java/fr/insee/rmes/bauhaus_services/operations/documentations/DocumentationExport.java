@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static fr.insee.rmes.bauhaus_services.Constants.GOAL_COMITE_LABEL;
+import static fr.insee.rmes.bauhaus_services.Constants.GOAL_RMES;
+
 @Component
 public class DocumentationExport {
 
@@ -59,11 +62,11 @@ public class DocumentationExport {
 	DocumentationsUtils documentationsUtils;
 	
 	String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
-	String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
-	String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
+	static String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
+	static String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
 	
-	String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
-	String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
+	static String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
+	static String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
 
 	/**
 	 *
@@ -75,33 +78,24 @@ public class DocumentationExport {
 	public ResponseEntity<Resource> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 													 boolean lg2, boolean documents, String goal) throws RmesException {
 
+		PatternAndZip patternAndZip = PatternAndZip.of(goal);
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-
-		if(!Constants.GOAL_RMES.equals(goal) && !Constants.GOAL_COMITE_LABEL.equals(goal)){
-			throw new RmesBadRequestException("The goal is unknown");
+		Exporter exporter;
+		if (documents){
+			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
+			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation );
+		}else{
+			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsResponse(id, xml, xsl, xmlPattern, zip, documentation );
 		}
+		return export(exporter, xmlContent, patternAndZip);
 
-		if(!documents){
-			if (Constants.GOAL_RMES.equals(goal)) {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
-
-			} else {
-				return exportUtils.exportAsResponse(id, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
-			}
-		}
-
-		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
-
-		if (Constants.GOAL_RMES.equals(goal)) {
-			return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternRmes,zipRmes, DOCUMENTATION);
-
-		} else {
-			return exportUtils.exportAsZip(sims, xmlContent,xslFile,xmlPatternLabel,zipLabel, DOCUMENTATION);
-
-		}
 	}
-	
+
+	private ResponseEntity<Resource> export(Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
+		return exporter.export(xmlContent, xslFile, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
+	}
+
 	public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
 			boolean lg2) throws RmesException {
 		//Add params to xmlContents
@@ -162,11 +156,11 @@ public class DocumentationExport {
 					indicatorsUtils.getIndicatorById(idDatabase,true));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.TYPELIST));
 			neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML,Constants.ACCRUAL_PERIODICITY_LIST));
-			String idSeries=XMLUtils.getTagValues(
+			String idSeries= XMLUtils.getTagValues(
 					XMLUtils.getTagValues(
 							indicatorXML,
-							Constants.WASGENERATEDBY).iterator().next(),
-					Constants.ID).iterator().next();
+							Constants.WASGENERATEDBY).getFirst(),
+					Constants.ID).getFirst();
 			series=seriesUtils.getSeriesById(idSeries,EncodingType.XML);
 			seriesXML = XMLUtils.produceXMLResponse(series);
 			neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML,Constants.TYPELIST));
@@ -213,5 +207,17 @@ public class DocumentationExport {
 		return XMLUtils.produceXMLResponse(msd);
 	}
 
+	private interface Exporter{
+		ResponseEntity<Resource> export(Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException;
+	}
 
+	private record PatternAndZip(String xmlPattern, String zip) {
+		public static PatternAndZip of(String goal) throws RmesBadRequestException {
+			return switch (goal){
+				case GOAL_RMES -> new PatternAndZip(xmlPatternRmes, zipRmes);
+				case GOAL_COMITE_LABEL -> new PatternAndZip(xmlPatternLabel,zipLabel);
+				default -> throw new RmesBadRequestException("The goal is unknown");
+			};
+		}
+	}
 }
