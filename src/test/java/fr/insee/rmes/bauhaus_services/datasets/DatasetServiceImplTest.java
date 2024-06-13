@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
@@ -613,6 +614,28 @@ class DatasetServiceImplTest {
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
         Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
         }
+    }
+
+    @Test
+    void shouldDeleteNotExistingDatasetReturn404() throws RmesException {
+        JSONArray mockJSON = new JSONArray("[]");
+        when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
+        RmesException exception = assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
+    }
+
+    @Test
+    void shouldDeleteNotUnpublishedDatasetReturnNOT_ACCEPTABLE() throws RmesException {
+        JSONArray mockJSON = new JSONArray("[{\n" +
+                "  \"id\": idTest,\n" +
+                "  \"validationState\": \"Not Unpublished\",\n" +
+                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
+                "}\n" +
+                "]");
+
+        when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals("{\"message\":\"Only unpublished datasets can be deleted\"}", exception.getDetails());
     }
 
 }
