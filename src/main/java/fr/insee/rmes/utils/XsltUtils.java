@@ -7,10 +7,8 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.XMLConstants;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -34,9 +32,7 @@ public class XsltUtils {
 			PrintStream printStream, Path tempDir) throws TransformerException {
 		// prepare transformer
 		StreamSource xsrc = new StreamSource(xslFileIS);
-		TransformerFactory transformerFactory = new net.sf.saxon.TransformerFactoryImpl();
-		transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-		Transformer xsltTransformer = transformerFactory.newTransformer(xsrc);
+		Transformer xsltTransformer = XMLUtils.getTransformerFactory().newTransformer(xsrc);
 
 		// Pass parameters in a file to the transformer
 		xmlContent.forEach((paramName, xmlData) -> {

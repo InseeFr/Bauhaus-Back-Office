@@ -20,6 +20,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,7 +40,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
@@ -57,7 +57,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
 
-	
+
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
 
@@ -81,7 +81,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	/***************************************************************************************************
 	 * SERIES
-	 * 
+	 *
 	 *****************************************************************************************************/
 
 
@@ -175,7 +175,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	/***************************************************************************************************
 	 * OPERATIONS
-	 * 
+	 *
 	 *****************************************************************************************************/
 
 
@@ -187,7 +187,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {		
+	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {
 		//Prepare file
 		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		InputStream is = transformFileOutputStreamInInputStream(os);
@@ -214,7 +214,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		         .contentLength(resource.contentLength())
 		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 		         .body(resource);
-		
+
 	}
 
 	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
@@ -276,17 +276,16 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	public static void transformerStringWithXsl(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(new StringReader(ddi));
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
 	}
+
 	public static void transformerFileWithXsl(File input,InputStream xslCheckReference, File output) throws Exception {
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslCheckReference);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
@@ -327,9 +326,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	public static void transformerInputStreamWithXsl(InputStream input,InputStream xslCheckReference, File output) throws Exception {
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslCheckReference);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
