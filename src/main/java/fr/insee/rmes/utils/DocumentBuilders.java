@@ -1,10 +1,8 @@
 package fr.insee.rmes.utils;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLInputFactory;
 
 public interface DocumentBuilders
 {
