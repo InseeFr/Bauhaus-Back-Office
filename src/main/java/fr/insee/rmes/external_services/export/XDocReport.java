@@ -13,7 +13,6 @@ import freemarker.ext.dom.NodeModel;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -22,10 +21,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 
 @Component
-public class XDocReport {
-
-	@Autowired
-	VarBookExportBuilder varBookExport;
+public record XDocReport(VarBookExportBuilder varBookExport) {
 
 	static final Logger logger = LoggerFactory.getLogger(XDocReport.class);
 

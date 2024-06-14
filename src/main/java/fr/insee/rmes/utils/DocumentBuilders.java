@@ -1,8 +1,10 @@
 package fr.insee.rmes.utils;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
 
 public interface DocumentBuilders
 {
@@ -14,6 +16,7 @@ public interface DocumentBuilders
     static DocumentBuilder createSaferDocumentBuilder(ParserConfigurer parserConfigurer) throws ParserConfigurationException
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
         factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
