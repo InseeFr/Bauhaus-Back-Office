@@ -31,7 +31,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 @Component
-public class VarBookExportBuilder {
+public record VarBookExportBuilder() {
 
 	private static final String REFERENCE = "Reference";
 
