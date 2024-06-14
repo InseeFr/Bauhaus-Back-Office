@@ -633,9 +633,21 @@ class DatasetServiceImplTest {
                 "}\n" +
                 "]");
 
-        when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
+        JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
+        try (
+                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
+        )
+        {
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
+        when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
+
+        datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
+        when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
+
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("{\"message\":\"Only unpublished datasets can be deleted\"}", exception.getDetails());
+        Assertions.assertEquals("{\"details\":\"Only unpublished datasets can be deleted\",\"message\":\"406 NOT_ACCEPTABLE\"}", exception.getDetails());
+        }
     }
 
 }
