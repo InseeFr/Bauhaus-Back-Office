@@ -5,7 +5,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,21 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Service
-public class DocumentsImpl implements DocumentsService {
+public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsService {
 
 	private static final  Logger logger = LoggerFactory.getLogger(DocumentsImpl.class);
 
-	final DocumentsUtils documentsUtils;
-	
-	public DocumentsImpl(DocumentsUtils documentsUtils) {
-		//Utility class
-		this.documentsUtils = documentsUtils;
-	}
-
-	/*
-	 * Get 
-	 */
-	
 	@Override
 	public String getDocuments() throws RmesException {
 		logger.debug("Starting to get documents list");

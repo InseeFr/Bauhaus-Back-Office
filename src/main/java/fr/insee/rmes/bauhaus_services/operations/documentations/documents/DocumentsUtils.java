@@ -53,6 +53,7 @@ public class DocumentsUtils extends RdfService {
 
     private static final String SCHEME_FILE = "file://";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
+    public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
     @Autowired
     ParentUtils ownersUtils;
@@ -610,8 +611,7 @@ public class DocumentsUtils extends RdfService {
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
         }
 
-        Pattern p = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
-        Matcher m = p.matcher(fileName);
+        Matcher m = VALID_FILENAME_PATTERN.matcher(fileName);
         if (!m.matches()) {
             logger.info("There is a forbidden character in the FileName ");
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
