@@ -14,10 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RBACConfigurationTest {
 
     @Autowired
-    private RBACConfiguration rebacConfiguration;
+    private RBACConfiguration rbacConfiguration;
 
     @Test
     void testReadRbacConfig() {
-        assertThat(rebacConfiguration.allModulesAccessPrivileges()).isNotNull();
+        assertThat(rbacConfiguration.allModulesAccessPrivileges()).isNotNull();
     }
 }
