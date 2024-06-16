@@ -5,6 +5,7 @@ import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 
@@ -44,7 +45,7 @@ public interface OperationsDocumentationsService {
 	HttpStatus deleteMetadataReport(String id) throws RmesException;
 	
 	/** export **/
-	ResponseEntity<?> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException;
+	ResponseEntity<Resource> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException;
 
 	ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException;
 

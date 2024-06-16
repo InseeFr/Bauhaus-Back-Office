@@ -8,6 +8,7 @@ import fr.insee.rmes.model.operations.documentations.MAS;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.OperationsCommonResources;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,85 +37,90 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * DOCUMENTATION
 	 ******************************************************************************************************/
 
-	@GetMapping(value = "/metadataStructureDefinition", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMsd", summary = "Metadata structure definition",
-	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = MAS.class)))})
+	@GetMapping(
+			value = "/metadataStructureDefinition",
+			produces = {
+					MediaType.APPLICATION_JSON_VALUE,
+					MediaType.APPLICATION_XML_VALUE
+			}
+	)
+	@Operation(
+			operationId = "getMsd",
+			summary = "Metadata structure definition",
+			responses = {
+					@ApiResponse(content = @Content(schema = @Schema(implementation = MAS.class)))
+			}
+	)
 	public ResponseEntity<Object> getMSD(
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-		MSD msd ;
-		String jsonResultat = null ;
 
-		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-			try {
-				msd = documentationsService.getMSD();
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
-			return ResponseEntity.ok(XMLUtils.produceResponse(msd, accept));
+		try {
+			return switch (accept) {
+				case MediaType.APPLICATION_XML_VALUE -> {
+					var msd = documentationsService.getMSD();
+					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, accept));
+				}
+				case MediaType.APPLICATION_JSON_VALUE -> {
+					var jsonResultat = documentationsService.getMSDJson();
+					yield ResponseEntity.ok(jsonResultat);
+				}
+				default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+			};
+		} catch (RmesException e) {
+			return returnRmesException(e);
 		}
 
-		else {
-			try {
-				jsonResultat = documentationsService.getMSDJson();
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-		}
 	}
 
 	@GetMapping(value = "/metadataAttribute/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMA", summary = "Metadata attribute specification and property",
+	@Operation(operationId = "getMA", summary = "Metadata attribute specification and property",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Attribute.class)))})
 	public ResponseEntity<Object> getMetadataAttribute(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = documentationsService.getMetadataAttribute(id);
+			String metadataAttribute = documentationsService.getMetadataAttribute(id);
+			return ResponseEntity.ok(metadataAttribute);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/metadataAttributes", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMAs", summary = "Metadata attributes specification and property",
+	@Operation(operationId = "getMAs", summary = "Metadata attributes specification and property",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type="array",implementation = Attribute.class)))})
 	public ResponseEntity<Object> getMetadataAttributes() {
-		String jsonResultat;
 		try {
-			jsonResultat = documentationsService.getMetadataAttributes();
+			String metadataAttribute = documentationsService.getMetadataAttributes();
+			return ResponseEntity.ok(metadataAttribute);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 
 	@GetMapping(value = "/metadataReport/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Metadata report for an id",
+	@Operation(operationId = "getMetadataReport", summary = "Metadata report for an id",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReport(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = documentationsService.getMetadataReport(id);
+			String metadataReport = documentationsService.getMetadataReport(id);
+			return ResponseEntity.ok(metadataReport);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	@GetMapping(value = "/metadataReport/default", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata report",
+	@Operation(operationId = "getMetadataReportDefaultValue", summary = "Get default value for metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReportDefaultValue() throws IOException {
-		return ResponseEntity.status(HttpStatus.OK).body(documentationsService.getMetadataReportDefaultValue());
+		return ResponseEntity.ok(documentationsService.getMetadataReportDefaultValue());
 	}
 
 	@GetMapping(value = "/metadataReport/fullSims/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getFullSims", summary = "Full sims for an id",
+	@Operation(operationId = "getFullSims", summary = "Full sims for an id",
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getFullSims(
@@ -124,31 +130,23 @@ public class MetadataReportResources extends OperationsCommonResources {
 					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-		Documentation fullsims;
-		String jsonResultat;
 
-		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-			try {
-				fullsims = documentationsService.getFullSimsForXml(id);
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
 
-			return ResponseEntity.ok(XMLUtils.produceResponse(fullsims, accept));
+		try {
+			return switch (accept) {
+				case MediaType.APPLICATION_XML_VALUE -> {
+					var documentation = documentationsService.getFullSimsForXml(id);
+					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept));
+				}
+				case MediaType.APPLICATION_JSON_VALUE -> {
+					var jsonResultat = documentationsService.getFullSimsForJson(id);
+					yield ResponseEntity.ok(jsonResultat);
+				}
+				default -> ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+			};
+		} catch (RmesException e) {
+			return returnRmesException(e);
 		}
-
-		else {
-			try {
-				jsonResultat = documentationsService.getFullSimsForJson(id);
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
-			return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-		}
-
-
-
-
 	}
 
 	/**
@@ -157,17 +155,16 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @return
 	 */
 	@GetMapping(value = "/metadataReport/Owner/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id",
+	@Operation(operationId = "getMetadataReport", summary = "Owner stamp for a Metadata report's id",
 	responses = { @ApiResponse(content = @Content(mediaType = "application/json" , schema = @Schema(implementation = Documentation.class)
 			))})
 	public ResponseEntity<Object> getMetadataReportOwner(@PathVariable(Constants.ID) String id) {
-		String jsonResultat;
 		try {
-			jsonResultat = documentationsService.getMetadataReportOwner(id);
+			String metadataReportOwner = documentationsService.getMetadataReportOwner(id);
+			return ResponseEntity.status(HttpStatus.OK).body(metadataReportOwner);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
 
 	/**
@@ -177,20 +174,19 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR , T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PostMapping(value = "/metadataReport", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReport", summary = "Create metadata report",
+	@Operation(operationId = "setMetadataReport", summary = "Create metadata report",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
 	public ResponseEntity<Object> setMetadataReport(
 			@Parameter(description = "Metadata report to create", required = true,
 	content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		logger.info("POST Metadata report");
-		String id = null;
 		try {
-			id = documentationsService.createMetadataReport(body);
+			String id = documentationsService.createMetadataReport(body);
+			if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		if (id == null) {return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(id);}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	/**
@@ -204,17 +200,17 @@ public class MetadataReportResources extends OperationsCommonResources {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).CNIS)")
 	@PutMapping(value = "/metadataReport/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
+	@Operation(operationId = "setMetadataReportById", summary = "Update metadata report")
 	public ResponseEntity<Object> setMetadataReportById(
 			@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Report to update", required = true,
 			content = @Content(schema = @Schema(implementation = Documentation.class))) @RequestBody String body) {
 		try {
 			documentationsService.setMetadataReport(id, body);
+			return ResponseEntity.noContent().build();
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.noContent().build();
 	}
 
 	/**
@@ -224,16 +220,17 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@DeleteMapping(value = "/metadataReport/delete/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
+	@Operation(operationId = "deleteMetadataReportById", summary = "Delete metadata report")
 	public ResponseEntity<Object> deleteMetadataReportById(
 			@PathVariable(Constants.ID) String id) {
-		HttpStatus result=HttpStatus.NO_CONTENT;
 		try {
+			HttpStatus result = HttpStatus.NO_CONTENT;
 			result = documentationsService.deleteMetadataReport(id);
+			return ResponseEntity.status(result.value()).build();
+
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(result.value()).build();
 	}
 
 
@@ -247,15 +244,15 @@ public class MetadataReportResources extends OperationsCommonResources {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
+	@Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public ResponseEntity<Object> setSimsValidation(
 			@PathVariable(Constants.ID) String id) {
 		try {
 			documentationsService.publishMetadataReport(id);
+			return ResponseEntity.status(HttpStatus.OK).body(id);
 		} catch (RmesException e) {
 			return returnRmesException(e);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 
@@ -268,7 +265,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
+	@Operation(operationId = "getSimsExport", summary = "Produce a document with a metadata report")
 	public ResponseEntity<?> getSimsExport(
 			@Parameter(
 				description = "Identifiant de la documentation (format : [0-9]{4})",
@@ -278,22 +275,19 @@ public class MetadataReportResources extends OperationsCommonResources {
 			@PathVariable(Constants.ID) String id,
 
 			@Parameter(description = "Inclure les champs vides")
-			@RequestParam("emptyMas") Boolean includeEmptyMas,
+			@RequestParam(name = "emptyMas", defaultValue = "true") boolean includeEmptyMas,
 
 			@Parameter(description = "Version française")
-			@RequestParam("lg1")  Boolean lg1,
+			@RequestParam(name = "lg1", defaultValue = "true")  boolean lg1,
 
 			@Parameter(description = "Version anglaise")
-			@RequestParam("lg2")  Boolean lg2,
+			@RequestParam(name = "lg2", defaultValue = "true")  boolean lg2,
 
 			@Parameter(description = "With documents")
-			@RequestParam("document")  Boolean document
+			@RequestParam(name = "document", defaultValue = "true")  boolean document
 			) throws RmesException {
 
-		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (lg1==null) {lg1=true;}
-		if (lg2==null) {lg2=true;}
-		if (document==null) {document=true;}
+
 		return documentationsService.exportMetadataReport(id,includeEmptyMas,lg1,lg2, document);
 	}
 
@@ -303,7 +297,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/label/{id}", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExportLabel", summary = "Produce a document with a metadata report")
+	@Operation(operationId = "getSimsExportLabel", summary = "Produce a document with a metadata report")
 	public ResponseEntity<?> getSimsExportForLabel(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
@@ -322,7 +316,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 	 * @return response
 	 */
 	@GetMapping(value = "/metadataReport/export/{id}/tempFiles", produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text" })
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getSimsExportFiles", summary = "Get xml files used to produce a document with a metadata report")
+	@Operation(operationId = "getSimsExportFiles", summary = "Get xml files used to produce a document with a metadata report")
 	public ResponseEntity<Object> getSimsExportFiles(@Parameter(
 			description = "Identifiant de la documentation (format : [0-9]{4})",
 			required = true,
@@ -330,25 +324,21 @@ public class MetadataReportResources extends OperationsCommonResources {
 			,
 			@Parameter(
 					description = "Inclure les champs vides"
-            )  @RequestParam("emptyMas") Boolean includeEmptyMas
-			,
+            )
+			@RequestParam(name = "emptyMas", defaultValue = "true") boolean includeEmptyMas,
 			@Parameter(
 					description = "Version française"
-            ) @RequestParam("lg1")  Boolean lg1
-			,
+            )
+			@RequestParam(name = "lg1", defaultValue = "true")  boolean lg1,
 			@Parameter(
 					description = "Version anglaise"
-            ) @RequestParam("lg2")  Boolean lg2
-			) {
-		if (includeEmptyMas==null) {includeEmptyMas=true;}
-		if (lg1==null) {lg1=true;}
-		if (lg2==null) {lg2=true;}
+            )
+			@RequestParam(name = "lg2", defaultValue = "true")  boolean lg2
+		) {
 		try {
 			return documentationsService.exportMetadataReportTempFiles(id,includeEmptyMas,lg1,lg2);
 		} catch (RmesException e) {
 			return ResponseEntity.badRequest().build();
-					}
-
+		}
 	}
-
 }

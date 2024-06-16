@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public interface CodeListService {
 
     String setCodesList(String id, String body, boolean partial) throws RmesException;
 
-    Object getCodeList(String code) throws RmesException;
+    CodeList getCodeListAndCodesForExport(String code) throws RmesException;
 
     String getPartialCodeListByParent(String parentIRI) throws RmesException;
 
