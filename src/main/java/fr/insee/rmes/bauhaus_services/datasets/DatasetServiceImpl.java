@@ -91,7 +91,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return baseUriGestion + distributionsBaseUriSuffix;
     }
 
-    private String getDatasetsBaseUri(){
+    protected String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
     }
 
@@ -284,7 +284,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
                 throw new RmesBadRequestException(String.valueOf(HttpStatus.NOT_ACCEPTABLE),"Only unpublished datasets can be deleted");
             }
         }
-        //si le dataset a une ou plusieurs distributions, on ne peut pas la supprimer
+        //if le dataset has one or more distributions, it cannot be deleted
         if (!this.getDistributions(datasetId).equals("[]")){
             throw new RmesBadRequestException(String.valueOf(HttpStatus.BAD_REQUEST),"Only dataset without any distribution can be deleted");
         }
