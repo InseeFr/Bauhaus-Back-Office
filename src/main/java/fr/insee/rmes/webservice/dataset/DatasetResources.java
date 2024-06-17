@@ -115,9 +115,9 @@ public class DatasetResources {
             @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted")
     })
     public ResponseEntity<Object> deleteDataset(
-            @PathVariable(Constants.ID) String id) throws RmesException
+            @PathVariable(Constants.ID) String datasetId) throws RmesException
      {
-             datasetService.deleteDatasetId(id);
+             datasetService.deleteDatasetId(datasetId);
              return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

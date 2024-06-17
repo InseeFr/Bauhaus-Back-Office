@@ -260,7 +260,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotImplemented());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -270,7 +270,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotImplemented());
+                .andExpect(status().isOk());
     }
 
 
