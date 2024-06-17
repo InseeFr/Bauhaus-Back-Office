@@ -674,7 +674,7 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void ShouldDeleteDataSet() throws RmesException{
+    void shouldDeleteDataSet() throws RmesException{
         JSONArray mockJSON = new JSONArray("[{\n" +
                 "  \"id\": idTest,\n" +
                 "  \"validationState\": \"Unpublished\",\n" +
