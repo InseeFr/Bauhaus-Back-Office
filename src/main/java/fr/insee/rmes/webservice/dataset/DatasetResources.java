@@ -6,6 +6,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import fr.insee.rmes.webservice.GenericResources;
+
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -29,7 +30,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Dataset", description = "DataSet API")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
-public class DatasetResources {
+public class DatasetResources extends GenericResources {
 
     final DatasetService datasetService;
 
@@ -115,9 +116,12 @@ public class DatasetResources {
             @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted")
     })
     public ResponseEntity<Object> deleteDataset(
-            @PathVariable(Constants.ID) String datasetId) throws RmesException
-     {
-             datasetService.deleteDatasetId(datasetId);
-             return ResponseEntity.status(HttpStatus.OK).build();
+            @PathVariable(Constants.ID) String datasetId) throws RmesException {
+        try {
+            datasetService.deleteDatasetId(datasetId);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
     }
 }
