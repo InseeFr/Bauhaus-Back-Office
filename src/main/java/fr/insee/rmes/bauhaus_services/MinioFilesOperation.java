@@ -1,10 +1,10 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.exceptions.RmesFileException;
 import io.minio.*;
-import io.minio.errors.MinioException;
+import io.minio.errors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +17,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     private static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
 
     @Override
-    public InputStream read(String pathFile) {
+    public InputStream read(String pathFile){
         String objectName= extractFileName(pathFile);
 
         try {
@@ -26,19 +26,14 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .object(directoryGestion +"/"+ objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            logger.error("Error reading file: {}", e.getMessage());
-            throw new RuntimeException("Error reading file: " + objectName, e);
+            throw new RmesFileException("Error reading file: " + objectName, e);
         }
     }
-    public static String extractFileName(String filePath) {
+    private static String extractFileName(String filePath) {
         if (filePath == null || filePath.isEmpty()) {
             return "";
         }
-        int lastSlashIndex = filePath.lastIndexOf('/');
-        if (lastSlashIndex == -1) {
-            return filePath; // The path does not contain a slash, return the whole string
-        }
-        return filePath.substring(lastSlashIndex + 1);
+        return Path.of(filePath).getFileName().toString();
     }
 
 
@@ -50,9 +45,10 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .object(directoryGestion +"/"+ objectName.getFileName().toString())
                     .stream(content, content.available(), -1)
                     .build());
-        } catch (Exception e) {
-            logger.error("Error writing file: {}", e.getMessage());
-            throw new RuntimeException("Error writing file: " + objectName, e);
+        } catch (IOException | ErrorResponseException | InsufficientDataException | InternalException |
+                 InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException |
+                 XmlParserException e) {
+            throw new RmesFileException("Error writing file: " + objectName, e);
         }
     }
 
@@ -71,8 +67,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .source(source)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            logger.error("Error copying file from {} to {}: {}", srcObjectName, destObjectName, e.getMessage());
-            throw new RuntimeException("Error copying file from " + srcObjectName + " to " + destObjectName, e);
+            throw new RmesFileException("Error copying file from " + srcObjectName + " to " + destObjectName, e);
         }
     }
 
@@ -90,8 +85,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .object(objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            logger.error("Error deleting file: {}", e.getMessage());
-            throw new RuntimeException("Error deleting file: " + objectName, e);
+            throw new RmesFileException("Error deleting file: " + objectName, e);
         }
     }
 

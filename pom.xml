@@ -49,6 +49,7 @@
         <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
         <saxon.version>12.4</saxon.version>
+        <minio.version>8.5.10</minio.version>
 
 
         <!-- SONAR -->
@@ -74,7 +75,7 @@
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
-            <version>8.5.10</version>
+            <version>${minio.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>

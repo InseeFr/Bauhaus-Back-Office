@@ -33,8 +33,8 @@ public abstract class RdfService {
 		IRI predicateIRI = RdfUtils
 				.createIRI(publicationUtils.tranformBaseURIToPublish(st.getPredicate()).stringValue());
 		Value object = st.getObject();
-		if (st.getObject() instanceof Resource) {
-			object = publicationUtils.tranformBaseURIToPublish((Resource) st.getObject());
+		if (st.getObject() instanceof Resource resource) {
+            object = publicationUtils.tranformBaseURIToPublish(resource);
 		}
 
 		model.add(subject, predicateIRI, object, st.getContext());

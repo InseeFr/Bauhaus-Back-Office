@@ -4,7 +4,6 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
-import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -17,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -25,24 +23,20 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
-@Component("RepositoryGestion")
-public class RepositoryGestion  {
-
-	@Autowired
-	Config config;
-
-	@Autowired
-	private RepositoryUtils repositoryUtils;
+@Component
+public record RepositoryGestion(Config config, RepositoryUtils repositoryUtils )  {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : {}";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
-	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
 
 	static final Logger logger = LoggerFactory.getLogger(RepositoryGestion.class);
 
-	@PostConstruct
-	public void init() {
+
+	public RepositoryGestion(Config config, RepositoryUtils repositoryUtils) {
+        this.repositoryUtils = repositoryUtils;
+        this.config = config;
 		repositoryUtils.initRepository(config.getRdfServerGestion(),
 				config.getRepositoryIdGestion());
 	}
@@ -199,19 +193,7 @@ public class RepositoryGestion  {
 	}
 
 	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, RepositoryConnection conn, Value value) throws RmesException {
-		try {
-			if (conn == null) {
-				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-			}
-			conn.remove(object, predicate, value, graph);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_LOAD_OBJECT , object);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
-
-		}
+        processConnection(connection-> connection.remove(object, predicate, value, graph), conn, "delete triplet whose object is "+ object);
 	}
 
 	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
@@ -219,19 +201,7 @@ public class RepositoryGestion  {
 	}
 
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
-		try {
-			if (conn == null) {
-				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-			}
-			conn.add(model);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_LOAD_OBJECT , object);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
-
-		}
+        processConnection(connection-> connection.add(model), conn, FAILURE_LOAD_OBJECT + object);
 	}
 
 	/**
@@ -241,49 +211,21 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public void loadSimpleObject(IRI object, Model model, RepositoryConnection conn) throws RmesException {
-		try {
-			if (conn == null) {
-				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-			}
 
-			if (conn == null || !conn.isOpen()) {
-				logger.error("Connection is null or closed");
-				throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Connection is null or closed", FAILURE_LOAD_OBJECT + object);
-			}
+        processConnection(connection-> {
+            logger.info("Removing existing triples for object: {}", object);
+            connection.remove(object, null, null);
 
-			logger.info("Removing existing triples for object: " + object);
-			conn.remove(object, null, null);
+            logger.info("Adding new triples");
+            model.forEach(statement -> logger.info("Triplet: {}", statement));
 
-			logger.info("Adding new triples");
-			model.forEach(statement -> {
-				logger.info("Triple: " + statement.toString());
-			});
+            connection.add(model);
+        }, conn, FAILURE_LOAD_OBJECT + object);
 
-			conn.add(model);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_LOAD_OBJECT, object);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
-		}
 	}
 
 	public void deleteObject(IRI object, RepositoryConnection conn) throws RmesException {
-
-		try {
-			if (conn == null) {
-				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-			}
-			conn.remove(object, null, null);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_DELETE_OBJECT , object);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_DELETE_OBJECT + object);
-
-		}
+        processConnection(connection-> connection.remove(object, null, null), conn, "delete " + object);
 	}
 
 	/**
@@ -293,22 +235,25 @@ public class RepositoryGestion  {
 	 * @throws RmesException
 	 */
 	public void replaceGraph(Resource graph, Model model, RepositoryConnection conn) throws RmesException {
-
-		try {
-			if (conn == null) {
-				conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-			}
-			conn.clear(graph);
-			conn.add(model);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_REPLACE_GRAPH, graph);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_REPLACE_GRAPH + graph);
-
-		}
+        processConnection(connection->{
+            connection.clear(graph);
+            connection.add(model);
+        }, conn, FAILURE_REPLACE_GRAPH + graph);
 	}
+
+    private void processConnection(Consumer<RepositoryConnection> processor, RepositoryConnection initialConnection, String message)throws RmesException{
+        try {
+            if (initialConnection == null) {
+                initialConnection = repositoryUtils.initRepository(config.getRdfServerGestion(),
+                        config.getRepositoryIdGestion()).getConnection();
+            }
+            processor.accept(initialConnection);
+            initialConnection.close();
+        } catch (RepositoryException e) {
+            throw new RmesException("Failure while "+message, e);
+        }
+    }
+
 
 	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
 		return repositoryUtils.persistFile(input, format, graph, repositoryUtils.initRepository(config.getRdfServerGestion(),
@@ -321,7 +266,7 @@ public class RepositoryGestion  {
 		try (RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
 						config.getRepositoryIdGestion()).getConnection();)
 		{
-			clearReplaceLinks(object, conn);
+			clearReplaceLinks(object);
 			loadSimpleObject(object, model, conn);
 		} catch (RepositoryException e) {
 			throwsRmesException(e, FAILURE_LOAD_OBJECT + object);
@@ -359,37 +304,32 @@ public class RepositoryGestion  {
 	}
 
 	public void clearConceptLinks(Resource concept) throws RmesException {
-		RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-				config.getRepositoryIdGestion()).getConnection();
-		List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
-		getStatementsAndRemove(concept, conn, typeOfLink);
+        List<IRI> typeOfLink = Arrays.asList(SKOS.BROADER, SKOS.NARROWER, SKOS.RELATED, DCTERMS.IS_REPLACED_BY);
+		getStatementsAndRemove(concept, typeOfLink);
 	}
 
-	public void clearReplaceLinks(Resource object, RepositoryConnection conn) throws RmesException {
-		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-				config.getRepositoryIdGestion()).getConnection();
-		List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
-		getStatementsAndRemove(object, conn, typeOfLink);
+	private void clearReplaceLinks(Resource object) throws RmesException {
+        List<IRI> typeOfLink = Arrays.asList(DCTERMS.REPLACES, DCTERMS.IS_REPLACED_BY);
+		getStatementsAndRemove(object, typeOfLink);
 	}
 
-	private  void getStatementsAndRemove(Resource object, RepositoryConnection conn, List<IRI> typeOfLink)
+	private  void getStatementsAndRemove(Resource object, List<IRI> typeOfLink)
 			throws RmesException {
-		conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-				config.getRepositoryIdGestion()).getConnection();
-		for (IRI predicat : typeOfLink) {
-			RepositoryResult<Statement> statements = null;
-			try {
-				statements = conn.getStatements(null, predicat, object, false);
-			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure get " + predicat + " links from " + object);
-			}
-			try {
-				conn.remove(statements);
-			} catch (RepositoryException e) {
-				throwsRmesException(e, "Failure remove " + predicat + " links from " + object);
+        String exceptionCirucmstances = "";
+        try(RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
+                config.getRepositoryIdGestion()).getConnection()){
+            for (IRI predicat : typeOfLink) {
+                RepositoryResult<Statement> statements = null;
+                exceptionCirucmstances="get " + predicat + " links from " + object;
+                statements = conn.getStatements(null, predicat, object, false);
+                exceptionCirucmstances="remove " + predicat + " links from " + object;
+                conn.remove(statements);
+            }
+        }catch (RepositoryException e) {
 
-			}
-		}
+            throwsRmesException(e, "Failure "+exceptionCirucmstances);
+        }
+
 	}
 
 	public void clearStructureNodeAndComponents(Resource structure) throws RmesException {
@@ -397,26 +337,10 @@ public class RepositoryGestion  {
 				config.getRepositoryIdGestion()));
 	}
 
-	public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
-		List<IRI> typeOfLink = Arrays.asList(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF);
 
-		try (
-				RepositoryConnection conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
-						config.getRepositoryIdGestion()).getConnection();
-		){
-			getHierarchicalOperationLinksModel(object, model, typeOfLink, conn);
-		} catch (RmesException e) {
-			throw e;
-		} catch (Exception e) {
-			throwsRmesException(e, "Failure keepHierarchicalOperationLinks : " + object);
-		}
-
-	}
-
-	private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink,
-			RepositoryConnection conn) throws RmesException {
-		conn=repositoryUtils.initRepository(config.getRdfServerGestion(),
-				config.getRepositoryIdGestion()).getConnection();
+	private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink) throws RmesException {
+        RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
+                config.getRepositoryIdGestion()).getConnection();
 		for (IRI predicat : typeOfLink) {
 			RepositoryResult<Statement> statements;
 			try {
@@ -467,8 +391,7 @@ public class RepositoryGestion  {
 			connection.add(model);
 			connection.close();
 		} catch (RepositoryException e) {
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT);
+            throw new RmesException("Failure override triplets" + simsUri, e);
 		}
 	}
 

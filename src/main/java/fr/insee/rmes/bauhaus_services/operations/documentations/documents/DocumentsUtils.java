@@ -44,7 +44,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -491,7 +490,7 @@ public class DocumentsUtils extends RdfService {
         return SCHEME_FILE + url;
     }
 
-    private void uploadFile(InputStream documentFile, String documentName, String url, Boolean sameName)
+    private void uploadFile(InputStream documentFile, String documentName, String url, boolean sameName)
             throws RmesBadRequestException {
         // upload file in storage folder
         logger.debug("URL : {}", url);
@@ -658,11 +657,10 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    private List<String> getDocumentPath(String id) throws RmesException {
+    private String getDocumentFilename(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
-        String fileName = getDocumentNameFromUrl(url);
-        return Arrays.asList(url, fileName);
+        return getDocumentNameFromUrl(url);
     }
 
     /**
@@ -672,16 +670,15 @@ public class DocumentsUtils extends RdfService {
      * @return Response containing the file (inputStream)
      * @throws RmesException
      */
-    public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException, IOException {
-        List<String> pathAndFileName = this.getDocumentPath(id);
+    public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
+        String filePath = getDocumentFilename(id);
 
-        String filePath = pathAndFileName.getFirst();; // Récupérez le chemin ou le nom de l'objet basé sur l'ID
         try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
             byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
             // return the response with document
             return ResponseEntity.ok()
@@ -689,11 +686,7 @@ public class DocumentsUtils extends RdfService {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(data);
         } catch (IOException e) {
-            logger.error("I/O error downloading document: ", e);
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
-        } catch (Exception e) {
-            logger.error("Error downloading document: ", e);
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error", "Error downloading file");
         }
     }
 
