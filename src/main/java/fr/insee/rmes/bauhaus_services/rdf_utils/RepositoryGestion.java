@@ -4,6 +4,7 @@ import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.EVOC;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import jakarta.annotation.PostConstruct;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -26,20 +27,27 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Component
-public record RepositoryGestion(Config config, RepositoryUtils repositoryUtils )  {
+public class RepositoryGestion {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : {}";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
 
 	static final Logger logger = LoggerFactory.getLogger(RepositoryGestion.class);
 
+    private final Config config;
+    private final RepositoryUtils repositoryUtils;
 
-	public RepositoryGestion(Config config, RepositoryUtils repositoryUtils) {
+
+    public RepositoryGestion(Config config, RepositoryUtils repositoryUtils) {
         this.repositoryUtils = repositoryUtils;
         this.config = config;
-		repositoryUtils.initRepository(config.getRdfServerGestion(),
-				config.getRepositoryIdGestion());
 	}
+
+    @PostConstruct
+    public void init(){
+        repositoryUtils.initRepository(config.getRdfServerGestion(),
+                config.getRepositoryIdGestion());
+    }
 
 
 	/**
@@ -337,6 +345,9 @@ public record RepositoryGestion(Config config, RepositoryUtils repositoryUtils )
 				config.getRepositoryIdGestion()));
 	}
 
+    public void keepHierarchicalOperationLinks(Resource object, Model model) throws RmesException {
+        getHierarchicalOperationLinksModel(object, model, List.of(DCTERMS.HAS_PART, DCTERMS.IS_PART_OF));
+    }
 
 	private void getHierarchicalOperationLinksModel(Resource object, Model model, List<IRI> typeOfLink) throws RmesException {
         RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
