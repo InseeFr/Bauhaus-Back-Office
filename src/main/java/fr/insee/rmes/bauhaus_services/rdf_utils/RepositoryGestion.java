@@ -214,8 +214,27 @@ public class RepositoryGestion  {
 		}
 	}
 
+	public void deleteTripletByPredicateAndValue(Resource object, IRI predicate, Resource graph, Value value) throws RmesException {
+		try {
+			RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()).getConnection();
+
+			conn.remove(object, predicate, value, graph);
+			conn.close();
+		} catch (RepositoryException e) {
+			logger.error(FAILURE_LOAD_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_LOAD_OBJECT + object);
+
+		}
+	}
+
 	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph, RepositoryConnection conn) throws RmesException {
 		deleteTripletByPredicateAndValue(object, predicate, graph, conn, null);
+	}
+
+	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph) throws RmesException {
+		deleteTripletByPredicateAndValue(object, predicate, graph, null);
 	}
 
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
@@ -272,6 +291,20 @@ public class RepositoryGestion  {
 			logger.error(e.getMessage());
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_DELETE_OBJECT + object);
 
+		}
+	}
+
+	public void deleteObject(IRI object) throws RmesException {
+		try {
+			RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
+					config.getRepositoryIdGestion()).getConnection();
+
+			conn.remove(object, null, null);
+			conn.close();
+		} catch (RepositoryException e) {
+       		logger.error(FAILURE_DELETE_OBJECT , object);
+			logger.error(e.getMessage());
+			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_DELETE_OBJECT + object);
 		}
 	}
 

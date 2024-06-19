@@ -26,17 +26,14 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
-import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
+
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -93,6 +90,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     protected String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
+    protected IRI getDatasetIri(String datasetId){
+        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        return iri;
     }
 
     private String getDatasetsAdmsBaseUri(){
@@ -276,27 +278,43 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void deleteDatasetId(String datasetId) throws RmesException{
-        String datasetString = getDatasetByID(datasetId);
-        JSONObject datasetJson = new JSONObject(datasetString);
-        if (datasetJson.has("validationState")){
-            String validationState = datasetJson.getString("validationState");
-            if (!"Unpublished".equalsIgnoreCase(validationState)){
-                throw new RmesBadRequestException(String.valueOf(HttpStatus.NOT_ACCEPTABLE),"Only unpublished datasets can be deleted");
+        try {
+            String datasetString = getDatasetByID(datasetId);
+            Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+            if (!isUnpublished(dataset)){
+                throw new RmesBadRequestException(String.valueOf(HttpStatus.NOT_ACCEPTABLE), "Only unpublished datasets can be deleted");
             }
+
+            //if the dataset has one or more distributions, it cannot be deleted
+            if (hasDistribution(dataset)) {
+                throw new RmesBadRequestException(String.valueOf(HttpStatus.BAD_REQUEST), "Only dataset without any distribution can be deleted");
+            }
+
+            IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+            IRI graph = getDatasetIri(datasetId);
+            String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+            repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+            repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
         }
-        //if le dataset has one or more distributions, it cannot be deleted
-        if (!this.getDistributions(datasetId).equals("[]")){
-            throw new RmesBadRequestException(String.valueOf(HttpStatus.BAD_REQUEST),"Only dataset without any distribution can be deleted");
+        catch (RmesException e){
+            throw new RuntimeException(e);
         }
+    }
 
+    private boolean isUnpublished(Dataset dataset) {
+        if ("Unpublished".equalsIgnoreCase(dataset.getValidationState())) {
+            return true;
+        }
+        else return false;
+    }
 
-        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
-        Resource graph = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
-
-        repoGestion.deleteObject(RdfUtils.toURI(datasetURI), null);
-        repoGestion.deleteTripletByPredicate(datasetIRI,DCAT.DATASET,graph,null);
-
+    private boolean hasDistribution(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        if (!getDistributions(datasetId).equals("[]")) {
+            return true;
+        }
+        else return false;
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

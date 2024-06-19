@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.PatchDataset;
-import org.springframework.http.ResponseEntity;
 
 public interface DatasetService {
 

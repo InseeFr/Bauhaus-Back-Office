@@ -6,7 +6,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDataset;
-import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -30,7 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Dataset", description = "DataSet API")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
-public class DatasetResources extends GenericResources {
+public class DatasetResources {
 
     final DatasetService datasetService;
 
@@ -113,15 +112,13 @@ public class DatasetResources extends GenericResources {
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
             @ApiResponse(responseCode = "501", description = "This endpoint is not implemented"),
             @ApiResponse(responseCode = "406", description = "Only unpublished datasets can be deleted"),
-            @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted")
+            @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted"),
+            @ApiResponse(responseCode = "404", description = "This dataset does not exist")
     })
-    public ResponseEntity<Object> deleteDataset(
+    public ResponseEntity<Void> deleteDataset(
             @PathVariable(Constants.ID) String datasetId) throws RmesException {
-        try {
-            datasetService.deleteDatasetId(datasetId);
-            return ResponseEntity.status(HttpStatus.OK).build();
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+
+        datasetService.deleteDatasetId(datasetId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

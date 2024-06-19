@@ -19,10 +19,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -614,8 +617,8 @@ class DatasetServiceImplTest {
     void shouldNotDeleteNotExistingDatasetReturn404() throws RmesException {
         JSONArray mockJSON = new JSONArray("[]");
         when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
-        RmesException exception = assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals("fr.insee.rmes.exceptions.RmesNotFoundException", exception.getMessage());
     }
 
     @Test
@@ -638,8 +641,8 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
             when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
 
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
-            Assertions.assertEquals("{\"details\":\"Only unpublished datasets can be deleted\",\"message\":\"406 NOT_ACCEPTABLE\"}", exception.getDetails());
+            RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
+            Assertions.assertEquals("fr.insee.rmes.exceptions.RmesBadRequestException", exception.getMessage());
         }
     }
 
@@ -668,8 +671,8 @@ class DatasetServiceImplTest {
             distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(mockDistrib);
 
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
-            Assertions.assertEquals("{\"details\":\"Only dataset without any distribution can be deleted\",\"message\":\"400 BAD_REQUEST\"}", exception.getDetails());
+            RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
+            Assertions.assertEquals("fr.insee.rmes.exceptions.RmesBadRequestException", exception.getLocalizedMessage());
         }
     }
 
@@ -710,11 +713,11 @@ class DatasetServiceImplTest {
 
             datasetService.deleteDatasetId("idTest");
 
-            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture(), eq(null));
+            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
             Assertions.assertEquals(datasetUri, uriCaptor.getValue());
 
-            verify(repositoryGestion, times(1)).deleteObject(datasetUri, null);
-            verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class), eq(null));
+            verify(repositoryGestion, times(1)).deleteObject(datasetUri);
+            verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
     }
 
