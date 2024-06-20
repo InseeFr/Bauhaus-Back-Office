@@ -237,7 +237,7 @@ class TestDistributionsResourcesEnvProd {
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotImplemented());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -247,7 +247,7 @@ class TestDistributionsResourcesEnvProd {
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotImplemented());
+                .andExpect(status().isOk());
     }
 
 
