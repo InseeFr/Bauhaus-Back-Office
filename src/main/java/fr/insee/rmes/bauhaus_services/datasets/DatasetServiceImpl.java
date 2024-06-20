@@ -207,7 +207,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String create(String body) throws RmesException {
         Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
-        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId(getDatasetsGraph())), "jd"));
+        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId(getDatasetsGraph()))));
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){

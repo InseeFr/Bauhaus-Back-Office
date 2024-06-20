@@ -76,7 +76,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Override
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
-        String idnewt = IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d");
+        String idnewt = IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())));
         distribution.setId(idnewt);
 
         this.validate(distribution);
