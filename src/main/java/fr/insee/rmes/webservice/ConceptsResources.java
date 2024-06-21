@@ -52,11 +52,14 @@ public class ConceptsResources  extends GenericResources   {
 	
 	static final Logger logger = LoggerFactory.getLogger(ConceptsResources.class);
 	
-	@Autowired
-	ConceptsService conceptsService;
+	final ConceptsService conceptsService;
 
-	@Autowired
-	ConceptsCollectionService conceptsCollectionService;
+	final ConceptsCollectionService conceptsCollectionService;
+
+	public ConceptsResources(ConceptsService conceptsService, ConceptsCollectionService conceptsCollectionService) {
+		this.conceptsService = conceptsService;
+		this.conceptsCollectionService = conceptsCollectionService;
+	}
 
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",

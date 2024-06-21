@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationJsonMixIn;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import org.apache.commons.text.StringEscapeUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -36,7 +35,7 @@ public class XMLUtils {
 	private static final String AMP = "&amp;";
 	static final Logger logger = LoggerFactory.getLogger(XMLUtils.class);
 	
-	  private XMLUtils() {
+	private XMLUtils() {
 		    throw new IllegalStateException("Utility class");
 	}
 
@@ -184,7 +183,7 @@ public class XMLUtils {
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
 	}
 
-	private static @NotNull TransformerFactory initTransformerFactory() {
+	private static TransformerFactory initTransformerFactory() {
 		TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
         try {
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -192,7 +191,7 @@ public class XMLUtils {
             logger.info(XMLConstants.FEATURE_SECURE_PROCESSING+" unsuported for net.sf.saxon.TransformerFactoryImpl");
         }
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "file,jar:file");
 		return factory;
 	}
 	
