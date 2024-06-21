@@ -120,7 +120,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String publishDataset(String id) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
+        IRI iri = getDatasetIri(id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
@@ -320,7 +320,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
-        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
+        IRI datasetIri = getDatasetIri(dataset.getId());
 
         Model model = new LinkedHashModel();
 
@@ -435,7 +435,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
-        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
+        IRI datasetIri = getDatasetIri(dataset.getId());
 
         Model model = new LinkedHashModel();
 
