@@ -9,6 +9,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FileUtilsTest {
 
+	@Test
+	public void testGetExtension() {
+		// Test with null input
+		assertEquals(".odt", FilesUtils.getExtension(null));
+
+		// Test with "application/octet-stream"
+		assertEquals(".pdf", FilesUtils.getExtension("application/octet-stream"));
+
+		// Test with "flatODT"
+		assertEquals(".fodt", FilesUtils.getExtension("flatODT"));
+
+		// Test with "XML"
+		assertEquals(".xml", FilesUtils.getExtension("XML"));
+
+		// Test with "application/vnd.oasis.opendocument.text"
+		assertEquals(".odt", FilesUtils.getExtension("application/vnd.oasis.opendocument.text"));
+
+		// Test with unknown input
+		assertEquals(".odt", FilesUtils.getExtension("unknown/type"));
+	}
+
 	@ParameterizedTest
 	@ValueSource(strings = { "Carrières complètes ", "carrières-complètes", "  Carrières    complètes  " })
 	void givenCleanFileName_whenString_thenResponseIsClean(String name) throws RmesException {
