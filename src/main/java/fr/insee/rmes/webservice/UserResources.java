@@ -76,7 +76,7 @@ public class UserResources {
                     @ApiResponse(content = @Content(mediaType = "application/json"))
             }
     )
-    public Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
+    public Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
         User user = this.userDecoder.fromPrincipal(principal).get();
         return rbacService.computeRbac(user.roles());
     }

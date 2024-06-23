@@ -7,5 +7,5 @@ import java.util.Map;
 
 public interface RBACService {
 
-    Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> computeRbac(List<String> roles);
+    Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> computeRbac(List<String> roles);
 }

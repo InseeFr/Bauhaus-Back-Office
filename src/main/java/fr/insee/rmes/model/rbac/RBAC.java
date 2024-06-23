@@ -1,27 +1,27 @@
 package fr.insee.rmes.model.rbac;
 
 public class RBAC {
-    public enum APPLICATION {
-        concept,
-        collection,
-        family,
-        serie,
-        operation,
-        indicator,
-        sims,
-        classification
+    public enum Module {
+        CONCEPT,
+        COLLECTION,
+        FAMILY,
+        SERIE,
+        OPERATION,
+        INDICATOR,
+        SIMS,
+        CLASSIFICATION
     }
 
-    public enum PRIVILEGE {
-        create,
-        read,
-        update,
-        delete,
-        publish,
-        validate
+    public enum Privilege {
+        CREATE,
+        READ,
+        UPDATE,
+        DELETE,
+        PUBLISH,
+        VALIDATE
     }
 
-    public enum STRATEGY {
+    public enum Strategy {
         ALL, STAMP
     }
 }
