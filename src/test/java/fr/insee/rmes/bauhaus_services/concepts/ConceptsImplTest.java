@@ -4,7 +4,6 @@ import fr.insee.rmes.Stubber;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
@@ -20,6 +19,8 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.diff.Diff;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -100,119 +102,30 @@ class ConceptsImplTest {
         // THEN
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        assertThat(getOdtContent(result.getBody().getByteArray())).isEqualTo(expectedXmlForOdtContent);
+        Diff inputsDiffs = DiffBuilder.compare(expectedXmlForOdtContent)
+                .withTest(getOdtContent(result.getBody().getByteArray()))
+                .ignoreWhitespace()
+                .ignoreComments()
+                .build();
+        assertFalse(inputsDiffs.hasDifferences(), inputsDiffs.fullDescription());
     }
 
     private String getOdtContent(byte[] byteArray) {
         try (InputStream inputStream = new ByteArrayInputStream(byteArray);
              ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
-            ZipEntry zipEntry;
-            while((zipEntry= zipInputStream.getNextEntry()) != null &&
-                    ! "content.xml".equals(zipEntry.getName())) {
-            }
+            setoffStreamToEntryContentXML(zipInputStream);
             return new String(zipInputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    @Test
-    void json(){
-        var json= """
-                {
-                  "head" : {
-                    "vars" : [
-                      "definitionLg1",
-                      "definitionLg2",
-                      "scopeNoteLg1",
-                      "scopeNoteLg2",
-                      "editorialNoteLg1",
-                      "editorialNoteLg2",
-                      "changeNoteLg1",
-                      "changeNoteLg2"
-                    ]
-                  },
-                  "results" : {
-                    "bindings" : [
-                      {
-                        "definitionLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.</p></div>"
-                        },
-                        "definitionLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.</p></div>"
-                        },
-                        "scopeNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.</p></div>"
-                        },
-                        "scopeNoteLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.</p></div>"
-                        },
-                        "editorialNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Les accidents corporels de la circulation sont définis par l'arrêté du 27 mars 2007 relatif aux conditions d'élaboration des statistiques relatives aux accidents corporels de la circulation.</p></div>"
-                        },
-                        "editorialNoteLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Accidents involving bodily injury are defined by the order of 27 March 2007 relating to the conditions for compiling statistics on accidents involving bodily injury.</p></div>"
-                        },
-                        "changeNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Ajout définition courte</p></div>"
-                        }
-                      },
-                      {
-                        "definitionLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.</p></div>"
-                        },
-                        "definitionLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.</p></div>"
-                        },
-                        "scopeNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.</p></div>"
-                        },
-                        "scopeNoteLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>A traffic accident is defined as an accident involving at least one vehicle on a road open to public traffic in which at least one person is injured or killed.</p></div>"
-                        },
-                        "editorialNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Les accidents corporels de la circulation sont définis par l'arrêté du 27 mars 2007 relatif aux conditions d'élaboration des statistiques relatives aux accidents corporels de la circulation.</p></div>"
-                        },
-                        "editorialNoteLg2" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Accidents involving bodily injury are defined by the order of 27 March 2007 relating to the conditions for compiling statistics on accidents involving bodily injury.</p></div>"
-                        },
-                        "changeNoteLg1" : {
-                          "datatype" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#XMLLiteral",
-                          "type" : "literal",
-                          "value" : "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Ajout définition courte</p></div>"
-                        }
-                      }
-                    ]
-                  }
-                }
-                """;
-        System.out.println(RepositoryUtils.sparqlJSONToResultArrayValues(new JSONObject(json)).get(0));
+    private static void setoffStreamToEntryContentXML(ZipInputStream zipInputStream) throws IOException {
+        ZipEntry zipEntry;
+        while((zipEntry= zipInputStream.getNextEntry()) != null &&
+                ! "content.xml".equals(zipEntry.getName())) {
+            //loop until entry content.xml found
+        }
     }
 
 }
