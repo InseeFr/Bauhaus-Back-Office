@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,7 +56,12 @@ class DocumentsImplTest {
         when(documentsUtils.createDocumentID()).thenReturn(generatedId);
         doNothing().when(documentsUtils).createDocument(generatedId, body, false, documentFile, documentName);
 
-        String result = documentService.createDocument(body, documentFile, documentName);
+        String result = null;
+        try {
+            result = documentService.createDocument(body, documentFile, documentName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         assertEquals(generatedId, result);
         verify(documentsUtils).checkFileNameValidity(documentName);

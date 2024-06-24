@@ -88,18 +88,6 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 	}
 
 
-	/*
-	 * Change an uploaded document 
-	 * Keep the document links
-	 */
-	@Override
-	public String changeDocument(String docId, InputStream documentFile, String documentName)
-			throws RmesException {
-		return documentsUtils.changeFile(docId,documentFile,documentName);		
-	}
-
-
-
 	@Override
 	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
 		return documentsUtils.downloadDocumentFile(id);
