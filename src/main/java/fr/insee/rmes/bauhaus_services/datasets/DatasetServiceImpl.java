@@ -93,7 +93,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private String getDatasetsAdmsBaseUri(){
-        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
+        return baseUriGestion + identifiantsAlternatifsBaseUri;
     }
 
     private String getCatalogRecordBaseUri(){
