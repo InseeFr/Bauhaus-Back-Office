@@ -10,14 +10,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,11 +28,6 @@ class DocumentsUtilsTest {
     RepositoryGestion repositoryGestion;
 
     DocumentsUtils documentsUtils=new DocumentsUtils(null, null);
-
-    @BeforeEach
-    void setUp() {
-        ReflectionTestUtils.setField(documentsUtils, "repoGestion", repositoryGestion);
-    }
 
     @BeforeAll
     static void initGenericQueries(){
