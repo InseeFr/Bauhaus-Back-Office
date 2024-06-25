@@ -35,9 +35,9 @@ public class ExportUtils {
     private static final String CONTENT_TYPE = "Content-Type";
     private static final String ATTACHMENT = "attachment";
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
-    public static final String CAN_T_GENERATE_CODEBOOK = "Can't generate codebook";
-    public static final String NULL_STREAM = "Stream is null";
-    public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    private static final String CAN_T_GENERATE_CODEBOOK = "Can't generate codebook";
+    private static final String NULL_STREAM = "Stream is null";
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     final int maxLength;
 
@@ -46,56 +46,6 @@ public class ExportUtils {
     public ExportUtils(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils) {
         this.maxLength = maxLength;
         this.documentsUtils = documentsUtils;
-    }
-
-    public static String getExtension(String acceptHeader) {
-        if (acceptHeader == null) {
-            return FilesUtils.ODT_EXTENSION;
-        } else if (acceptHeader.equals("application/octet-stream")) {
-            return ".pdf";
-        } else if (acceptHeader.equals("flatODT")) {
-            return ".fodt";
-        } else if (acceptHeader.equals("XML")) {
-            return ".xml";
-        } else if (acceptHeader.equals("application/vnd.oasis.opendocument.text")) {
-            return FilesUtils.ODT_EXTENSION;
-        } else {
-            return FilesUtils.ODT_EXTENSION;
-            // default --> odt
-        }
-    }
-
-    private void addZipEntry(String filename, Map<String, String> xmlContent, ZipOutputStream zos, String xslFile, String xmlPattern, String zip, String objectType)
-            throws IOException, RmesException {
-        filename = filename.replace(FilesUtils.ODT_EXTENSION, "");
-        ZipEntry entry = new ZipEntry(filename + FilesUtils.ODT_EXTENSION);
-        InputStream input = exportAsInputStream(filename, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
-        if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
-        zos.putNextEntry(entry);
-        input.transferTo(zos);
-        zos.closeEntry(); // close the entry. Note: not closing the zos just yet as we need to add more files to our ZIP
-    }
-
-    public void exportMultipleResourceAsZip(Map<String, Map<String, String>> resources, String xslFile, String xmlPattern, String zip, String objectType, HttpServletResponse response) throws RmesException {
-
-        String zipFileName = "concepts" + FilesUtils.ZIP_EXTENSION;
-
-        response.addHeader(HttpHeaders.ACCEPT, "*/*");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.addHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + zipFileName + "\"");
-        response.addHeader(CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition, Access-Control-Allow-Origin, Access-Control-Allow-Credentials");
-
-        try (ZipOutputStream zipOutputStreamStream = new ZipOutputStream(response.getOutputStream())) {
-            Iterator<String> resourceIterator = resources.keySet().iterator();
-            while (resourceIterator.hasNext()) {
-                String key = resourceIterator.next();
-                this.addZipEntry(key, resources.get(key), zipOutputStreamStream, xslFile, xmlPattern, zip, objectType);
-            }
-        } catch (IOException e1) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "IOException on " + zipFileName, e1.getMessage());
-        }
     }
 
     public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
@@ -187,10 +137,21 @@ public class ExportUtils {
 
         return missingDocuments;
     }
-    public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+
+
+    public ResponseEntity<Resource> exportAsODT(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+        return exportAsFileByExtension(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION, "application/vnd.oasis.opendocument.text");
+    }
+
+    public ResponseEntity<Resource> exportAsODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+        return exportAsFileByExtension(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODS_EXTENSION, "application/vnd.oasis.opendocument.spreadsheet");
+    }
+
+    private ResponseEntity<Resource> exportAsFileByExtension(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension, String contentType) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
-        InputStream input = exportAsInputStreamODS(fileName, xmlContent, xslFile, xmlPattern, zip, objectType);
+        fileName = fileName.replace(extension, "");
+
+        InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension);
         if (input == null)
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
 
@@ -205,7 +166,7 @@ public class ExportUtils {
         logger.debug("End To export {} as Response", objectType);
 
         //Prepare response headers
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + FilesUtils.ODS_EXTENSION).build();
+        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + extension).build();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
         responseHeaders.setContentDisposition(content);
@@ -214,7 +175,7 @@ public class ExportUtils {
         allowHeaders.add("Access-Control-Allow-Origin");
         allowHeaders.add("Access-Control-Allow-Credentials");
         responseHeaders.setAccessControlExposeHeaders(allowHeaders);
-        responseHeaders.add(CONTENT_TYPE, "application/vnd.oasis.opendocument.spreadsheet");
+        responseHeaders.add(CONTENT_TYPE, contentType);
 
         return ResponseEntity.ok()
                 .headers(responseHeaders)
@@ -222,99 +183,6 @@ public class ExportUtils {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
-
-
-    public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(FilesUtils.ODT_EXTENSION, ""); //Remove extension if exists
-
-        InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);
-        if (input == null)
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, CAN_T_GENERATE_CODEBOOK, NULL_STREAM);
-
-        ByteArrayResource resource = null;
-        try {
-            resource = new ByteArrayResource(IOUtils.toByteArray(input));
-            input.close();
-        } catch (IOException e) {
-            logger.error("Failed to getBytes of resource");
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-        }
-        logger.debug("End To export {} as Response", objectType);
-
-        //Prepare response headers
-        ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName + FilesUtils.ODT_EXTENSION).build();
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.set(HttpHeaders.ACCEPT, "*/*");
-        responseHeaders.setContentDisposition(content);
-        List<String> allowHeaders = new ArrayList<>();
-        allowHeaders.add(CONTENT_DISPOSITION);
-        allowHeaders.add("Access-Control-Allow-Origin");
-        allowHeaders.add("Access-Control-Allow-Credentials");
-        responseHeaders.setAccessControlExposeHeaders(allowHeaders);
-        responseHeaders.add(CONTENT_TYPE, "application/vnd.oasis.opendocument.text");
-
-        return ResponseEntity.ok()
-                .headers(responseHeaders)
-                .contentLength(resource.contentLength())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
-
-    }
-
-    public InputStream exportAsInputStreamODS(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
-        logger.debug("Begin To export {} as InputStream", objectType);
-
-        File output = null;
-        InputStream odsFileIS = null;
-        InputStream xslFileIS = null;
-        InputStream zipToCompleteIS = null;
-        fileName = fileName.replace(FilesUtils.ODS_EXTENSION, ""); //Remove extension if exists
-
-
-        try {
-            xslFileIS = getClass().getResourceAsStream(xslFile);
-            odsFileIS = getClass().getResourceAsStream(xmlPattern);
-            zipToCompleteIS = getClass().getResourceAsStream(zip);
-
-            // prepare output
-            output = File.createTempFile(Constants.OUTPUT, getExtension(Constants.XML));
-            output.deleteOnExit();
-
-        } catch (IOException ioe) {
-            logger.error(ioe.getMessage());
-        }
-
-        try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
-             PrintStream printStream = new PrintStream(osOutputFile);) {
-
-            Path tempDir = Files.createTempDirectory("forExport");
-            Path finalPath = Paths.get(tempDir.toString(), fileName + FilesUtils.ODT_EXTENSION);
-
-            // transform
-            XsltUtils.xsltTransform(xmlContent, odsFileIS, xslFileIS, printStream, tempDir);
-            // create ods
-            XsltUtils.createOdtFromXml(output, finalPath, zipToCompleteIS, tempDir);
-
-            logger.debug("End To export {} as InputStream", objectType);
-
-            return Files.newInputStream(finalPath);
-        } catch (IOException | TransformerException e) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e.getClass().getSimpleName());
-        } finally {
-            try {
-                if (odsFileIS != null)
-                    odsFileIS.close();
-                if (xslFileIS != null)
-                    xslFileIS.close();
-                if (zipToCompleteIS != null)
-                    zipToCompleteIS.close();
-            } catch (IOException ioe) {
-                logger.error(ioe.getMessage());
-            }
-        }
-    }
-
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as InputStream", objectType);
@@ -332,7 +200,7 @@ public class ExportUtils {
             zipToCompleteIS = getClass().getResourceAsStream(zip);
 
             // prepare output
-            output = File.createTempFile(Constants.OUTPUT, getExtension(Constants.XML));
+            output = File.createTempFile(Constants.OUTPUT, FilesUtils.getExtension(Constants.XML));
             output.deleteOnExit();
 
         } catch (IOException ioe) {
@@ -405,12 +273,6 @@ public class ExportUtils {
         }
 
 
-    }
-
-
-
-    public static String toLabel(String dsURL) {
-        return DisseminationStatus.getEnumLabel(dsURL);
     }
 
     public static String toValidationStatus(String boolStatus, boolean fem) {

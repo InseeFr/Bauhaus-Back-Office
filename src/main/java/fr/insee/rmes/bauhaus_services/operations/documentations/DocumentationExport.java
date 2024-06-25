@@ -88,7 +88,7 @@ public class DocumentationExport {
 			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
 			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation );
 		} else{
-			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsResponse(id, xml, xsl, xmlPattern, zip, documentation );
+			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsODT(id, xml, xsl, xmlPattern, zip, documentation );
 		}
 		return export(exporter, xmlContent, patternAndZip);
 	}

@@ -37,21 +37,20 @@ public class CollectionExportBuilder extends RdfService {
 	
 	@Autowired
 	ExportUtils exportUtils;
-	
-	String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
-	String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
-	String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
-	String zipold = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
+
+	private final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
+	private final String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
+	private final String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
+	private final String zipold = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
+	private final String xmlPatternFR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
+	private final String xmlPatternEN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
+	private final String xmlPatternODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
+	private final String zipODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
+
 	final Collator instance = Collator.getInstance();
 
 	private static final String CONTENT_TYPE = "Content-Type";
 
-	String xmlPatternFR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
-	String xmlPatternEN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
-	String xmlPatternODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
-	String zipODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
-	
-	
 
 	public CollectionForExport getCollectionData(String id) throws RmesException {
 		CollectionForExport collection;
@@ -106,7 +105,7 @@ public class CollectionExportBuilder extends RdfService {
 	public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsResponse(fileName, xmlContent,xslFile,xmlPattern,zipold, Constants.COLLECTION);
+		return exportUtils.exportAsODT(fileName, xmlContent,xslFile,xmlPattern,zipold, Constants.COLLECTION);
 	}
 
 
@@ -114,13 +113,13 @@ public class CollectionExportBuilder extends RdfService {
 		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
-		return exportUtils.exportAsResponse(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
+		return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.COLLECTION);
 	}
 
 	public ResponseEntity<Resource> exportAsResponseODS(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-		return exportUtils.exportAsResponseODS(fileName, xmlContent,xslFile,xmlPatternODS,zipODS, Constants.COLLECTION);
+		return exportUtils.exportAsODS(fileName, xmlContent,xslFile,xmlPatternODS,zipODS, Constants.COLLECTION);
 	}
 
 	public void exportMultipleCollectionsAsZipOdt(Map<String, Map<String, String>> collections, boolean lg1, boolean lg2, boolean includeEmptyFields, HttpServletResponse response, ConceptsCollectionsResources.Language lg, Map<String, Map<String, InputStream>> concepts, boolean withConcepts) throws RmesException {

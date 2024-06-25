@@ -20,6 +20,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -202,7 +203,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		}
 
 		//Prepare response headers
-		String fileName = "Codebook"+ ExportUtils.getExtension(accept);
+		String fileName = "Codebook"+ FilesUtils.getExtension(accept);
 		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
@@ -271,7 +272,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		HashMap<String,String> contentXML= new HashMap<>();
 		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
 
-		return exportUtils.exportAsResponse("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
+		return exportUtils.exportAsODT("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
 
 	}
 

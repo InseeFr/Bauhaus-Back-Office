@@ -78,7 +78,7 @@ class DocumentationExportTest {
 
         when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
-        when(exportUtils.exportAsResponse(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
+        when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
 
         ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
         assertEquals(ResponseEntity.ok().body(resource), response);
