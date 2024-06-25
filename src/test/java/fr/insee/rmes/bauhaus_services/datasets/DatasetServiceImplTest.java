@@ -11,6 +11,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -308,31 +309,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldPersistNewDatasetWithAndIncrementedId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
         createANewDataset("jd1001");
-    }
-
-    @Test
-    void shouldPersistNewDatasetWithTheDefaultId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            return lastId;
-        });
-        createANewDataset("jd1000");
-    }
-
-    @Test
-    void shouldPersistNewDatasetWithTheDefaultIdIfUndefined() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "undefined");
-            return lastId;
-        });
-        createANewDataset("jd1000");
     }
 
     @Test
@@ -419,13 +396,16 @@ class DatasetServiceImplTest {
     }
 
     private void createANewDataset(String nextId) throws RmesException {
-        IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
-        IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<IdGenerator> idGeneratorMock = Mockito.mockStatic(IdGenerator.class)
         ) {
+            idGeneratorMock.when(() -> IdGenerator.generateNextId()).thenReturn(nextId);
+
+            IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
+            IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.toURI(anyString())).thenCallRealMethod();

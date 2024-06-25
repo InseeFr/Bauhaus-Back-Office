@@ -8,6 +8,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -134,31 +135,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldPersistNewDistributionWithAndIncrementedId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        createANewDistribution("d1001");
-    }
-
-    @Test
     void shouldPersistNewDistributionWithTheDefaultId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            return lastId;
-        });
-        createANewDistribution("d1000");
-    }
-
-    @Test
-    void shouldPersistNewDistributionWithTheDefaultIdIfUndefined() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "undefined");
-            return lastId;
-        });
         createANewDistribution("d1000");
     }
 
@@ -167,8 +144,11 @@ class DistributionServiceImplTest {
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<IdGenerator> idGeneratorMock = Mockito.mockStatic(IdGenerator.class)
         ) {
+            idGeneratorMock.when(() -> IdGenerator.generateNextId()).thenReturn(nextId);
+
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
