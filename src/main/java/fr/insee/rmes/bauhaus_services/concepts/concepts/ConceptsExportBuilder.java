@@ -13,7 +13,6 @@ import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -25,15 +24,19 @@ import java.util.Map;
 public class ConceptsExportBuilder extends RdfService {
 
     private static final String CONCEPT_VERSION = "conceptVersion";
-    @Autowired
-    ConceptsUtils conceptsUtils;
 
-    @Autowired
-    ExportUtils exportUtils;
+    private final ConceptsUtils conceptsUtils;
 
-    String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
-    String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
-    String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
+    private final ExportUtils exportUtils;
+
+    private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
+    private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
+    private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
+
+    public ConceptsExportBuilder(ConceptsUtils conceptsUtils, ExportUtils exportUtils) {
+        this.conceptsUtils = conceptsUtils;
+        this.exportUtils = exportUtils;
+    }
 
     private void transformAltLabelListInString(JSONObject general) {
         if (general.has(Constants.ALT_LABEL_LG1)) {
