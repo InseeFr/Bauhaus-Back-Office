@@ -251,7 +251,7 @@ public class DocumentsResources  extends GenericResources {
 	public ResponseEntity<Object> setLink(
 			@Parameter(description = "Link", required = true, schema = @Schema(implementation=Document.class))
 			@RequestParam(value="body") String body
-			) {
+			) throws IOException {
 		String id = null;
 		try {
 			id = documentsService.setLink(body);

@@ -25,7 +25,7 @@ public interface DocumentsService {
 	/**
 	 * Create a document
 	 */
-	String createDocument(String body, InputStream documentFile, String documentName) throws RmesException ;
+	String createDocument(String body, InputStream documentFile, String documentName) throws RmesException, IOException;
 	
 	/**
 	 * Update
@@ -52,7 +52,7 @@ public interface DocumentsService {
 	 * LINKS
 	 */
 	
-	String setLink(String body) throws RmesException;
+	String setLink(String body) throws RmesException, IOException;
 
 	Object getLink(String id) throws RmesException;
 

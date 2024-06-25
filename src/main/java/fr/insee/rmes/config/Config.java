@@ -163,7 +163,6 @@ public class Config {
         return baseUriGestion;
     }
 
-
     public String getConceptsGraph() {
         return baseGraph + conceptsGraph;
     }
