@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.webservice.exceptions.handlers;
 
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import org.springframework.http.ResponseEntity;
