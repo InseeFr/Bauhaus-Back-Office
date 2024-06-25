@@ -118,7 +118,6 @@ public class OperationsResources extends OperationsCommonResources {
 			produces = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_OCTET_STREAM_VALUE,"application/vnd.oasis.opendocument.text" }
 	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getCodeBookV2", summary = "Produce a codebook from a DDI")
-
 	public  ResponseEntity<?> getCodeBookV2(
 
 			@Parameter(schema = @Schema(type = "string", format = "String", description = "Accept"))

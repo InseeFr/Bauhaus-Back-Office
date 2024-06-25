@@ -7,6 +7,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.ConceptForExport;
+import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.*;
 import org.apache.http.HttpStatus;
@@ -72,7 +73,7 @@ public class ConceptsExportBuilder extends RdfService {
 
             // format specific data
             concept.setIsValidated(ExportUtils.toValidationStatus(concept.getIsValidated(), false));
-            concept.setDisseminationStatus(ExportUtils.toLabel(concept.getDisseminationStatus()));
+            concept.setDisseminationStatus(DisseminationStatus.getEnumLabel(concept.getDisseminationStatus()));
             concept.setCreated(DateUtils.toDate(concept.getCreated()));
             concept.setModified(DateUtils.toDate(concept.getModified()));
             concept.setValid(DateUtils.toDate(concept.getValid()));
@@ -87,7 +88,7 @@ public class ConceptsExportBuilder extends RdfService {
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-        return exportUtils.exportAsResponse(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
+        return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
     }
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {

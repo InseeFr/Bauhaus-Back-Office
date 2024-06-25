@@ -6,3 +6,4 @@ public record RdfServiceStubber(RdfService rdfService) {
         rdfService.repoGestion=repoGestion;
     }
 }
+
