@@ -1,0 +1,126 @@
+rbac:
+  config:
+    Administrateur_RMESGNCS:
+        concept:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        collection:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        family:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        serie:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        operation:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        indicator:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        sims:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+        classification:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
+    Utilisateur_RMESGNCS:
+      concept:
+        read: ALL
+      collection:
+        read: ALL
+      family:
+        read: ALL
+      serie:
+        read: ALL
+      operation:
+        read: ALL
+      indicator:
+        read: ALL
+      sims:
+        read: ALL
+      classification:
+        read: ALL
+    Gestionnaire_concept_RMESGNCS:
+      concept:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+    Gestionnaire_ensemble_concepts_RMESGNCS:
+      concept:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+    Gestionnaire_serie_RMESGNCS:
+      serie:
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+      operation:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+      sims:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+    Gestionnaire_indicateur_RMESGNCS:
+      serie:
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+      indicator:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
+      sims:
+        create: STAMP
+        read: STAMP
+        update: STAMP
+        publish: STAMP
+        validate: STAMP
