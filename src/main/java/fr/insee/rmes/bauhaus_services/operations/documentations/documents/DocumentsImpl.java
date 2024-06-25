@@ -46,7 +46,7 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 	 * @throws RmesException
 	 */
 	@Override
-	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException {
+	public String createDocument(String body, InputStream documentFile, String documentName) throws RmesException, IOException {
 		logger.debug("Creating document {}", documentName);
 		documentsUtils.checkFileNameValidity(documentName);
 
@@ -90,11 +90,11 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 
 	@Override
 	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
-		return documentsUtils.downloadDocumentFile(id);	
+		return documentsUtils.downloadDocumentFile(id);
 	}
 	
 	@Override
-	public String setLink(String body) throws RmesException {
+	public String setLink(String body) throws RmesException, IOException {
 		String id = documentsUtils.createDocumentID();
 		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,true, null, null);
