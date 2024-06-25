@@ -31,6 +31,7 @@ public class RepositoryGestion {
 
 	private static final String FAILURE_LOAD_OBJECT = "Failure load object : {}";
 	private static final String FAILURE_REPLACE_GRAPH = "Failure replace graph : ";
+	private static final String FAILURE_DELETE_OBJECT = "Failure delete object";
 
 	static final Logger logger = LoggerFactory.getLogger(RepositoryGestion.class);
 
