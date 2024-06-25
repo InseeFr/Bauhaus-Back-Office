@@ -28,7 +28,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,23 +45,26 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
 
-	
-	@Autowired 
-	ConceptsUtils conceptsUtils;
+	private final ConceptsUtils conceptsUtils;
 
-	@Autowired 
-	CollectionsUtils collectionsUtils;
+	private final CollectionsUtils collectionsUtils;
 
-	@Autowired 
-	ConceptsExportBuilder conceptsExport;
-	
-	@Autowired 
-	CollectionExportBuilder collectionExport;
+	private final ConceptsExportBuilder conceptsExport;
 
-	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength;
+	private final CollectionExportBuilder collectionExport;
+
+	private final int maxLength;
+
+    public ConceptsImpl(ConceptsUtils conceptsUtils, CollectionsUtils collectionsUtils, ConceptsExportBuilder conceptsExport, CollectionExportBuilder collectionExport, @Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
+        this.conceptsUtils = conceptsUtils;
+        this.collectionsUtils = collectionsUtils;
+        this.conceptsExport = conceptsExport;
+        this.collectionExport = collectionExport;
+        this.maxLength = maxLength;
+    }
 
 
-	@Override
+    @Override
 	public String getConcepts()  throws RmesException{
 		logger.info("Starting to get concepts list");
 		String resQuery = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();

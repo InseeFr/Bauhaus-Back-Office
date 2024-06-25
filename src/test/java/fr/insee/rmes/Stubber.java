@@ -8,3 +8,4 @@ public interface Stubber {
         return new RdfServiceStubber(rdfService);
     }
 }
+
