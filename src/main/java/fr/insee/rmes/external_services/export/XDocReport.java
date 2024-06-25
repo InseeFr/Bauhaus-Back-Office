@@ -2,8 +2,6 @@ package fr.insee.rmes.external_services.export;
 
 import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.opensagres.xdocreport.converter.ConverterTypeTo;
-import fr.opensagres.xdocreport.converter.Options;
 import fr.opensagres.xdocreport.core.XDocReportException;
 import fr.opensagres.xdocreport.document.IXDocReport;
 import fr.opensagres.xdocreport.document.registry.XDocReportRegistry;
@@ -13,7 +11,6 @@ import freemarker.ext.dom.NodeModel;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -22,33 +19,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 
 @Component
-public class XDocReport {
-
-	@Autowired
-	VarBookExportBuilder varBookExport;
+public record XDocReport(VarBookExportBuilder varBookExport) {
 
 	static final Logger logger = LoggerFactory.getLogger(XDocReport.class);
-
-	public OutputStream exportVariableBookInPdf(String xmlFilename, String odtTemplate) throws RmesException  {
-		// 1) Load DOCX into XWPFDocument
-		IXDocReport report;
-		OutputStream oFile = null;
-		try {
-			report = getReportTemplate(odtTemplate);
-		// 2) Create Java model context 
-		IContext context = getXmlData(report, xmlFilename);
-
-		// 3) Generate report by merging Java model with the ODT and convert it to PDF
-			oFile = createOutputFile(true); 
-			Options options = Options.getTo(ConverterTypeTo.PDF);
-
-			report.convert(context, options, oFile);
-		} catch (XDocReportException | IOException e) {
-			logger.error(e.getMessage());
-		}
-		return oFile;		
-
-	}
 
 	@Deprecated
 	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws IOException, XDocReportException, RmesException {

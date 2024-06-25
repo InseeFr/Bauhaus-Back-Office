@@ -64,7 +64,13 @@ public class RmesException extends Exception {
 		this.details = createDetails(null, message, details);
 	}
 
-	public RestMessage toRestMessage(){
+    public RmesException(String message, Exception e) {
+        super(message, e);
+        this.details=e.getMessage();
+        this.status=HttpStatus.INTERNAL_SERVER_ERROR.value();
+    }
+
+    public RestMessage toRestMessage(){
 		return new RestMessage(this.status, this.getMessage(), this.details);
 	}
 
@@ -86,5 +92,11 @@ public class RmesException extends Exception {
 		if (StringUtils.hasLength(message)) det.put(MESSAGE, message);
 		if (StringUtils.hasLength(detailsParam)) det.put(DETAILS_STRING, detailsParam);
 		return det.toString();
+	}
+
+	public RmesException(int status, String message, String details, Throwable cause) {
+		super(message, cause);
+		this.status = status;
+		this.details = createDetails(null, message, details);
 	}
 }
