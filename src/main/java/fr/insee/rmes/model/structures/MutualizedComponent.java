@@ -2,6 +2,8 @@ package fr.insee.rmes.model.structures;
 
 import fr.insee.rmes.exceptions.RmesException;
 
+import java.util.List;
+
 public class MutualizedComponent {
 
     private String identifiant;
@@ -26,7 +28,7 @@ public class MutualizedComponent {
     private String updated;
 
     private String creator;
-    private String contributor;
+    private List<String> contributor;
     private String disseminationStatus;
 
     private String minLength;
@@ -167,11 +169,11 @@ public class MutualizedComponent {
         this.creator = creator;
     }
 
-    public String getContributor() {
+    public List<String> getContributor() {
         return contributor;
     }
 
-    public void setContributor(String contributor) {
+    public void setContributor(List<String> contributor) {
         this.contributor = contributor;
     }
 

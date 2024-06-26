@@ -17,10 +17,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.StringReader;
@@ -34,18 +31,22 @@ import java.util.regex.Pattern;
 
 public class XMLUtils {
 
+	private static final TransformerFactory factory = initTransformerFactory();
 	private static final String AMP = "&amp;";
 	static final Logger logger = LoggerFactory.getLogger(XMLUtils.class);
 	
-	  private XMLUtils() {
+	private XMLUtils() {
 		    throw new IllegalStateException("Utility class");
 	}
 
 
-	public static final String toString(Document xml)
+	public static TransformerFactory getTransformerFactory(){
+		  return factory;
+	}
+
+	public static String toString(Document xml)
 			throws TransformerFactoryConfigurationError, TransformerException {
-		TransformerFactory tf = TransformerFactory.newInstance();
-		Transformer transformer = tf.newTransformer();
+		Transformer transformer = getTransformerFactory().newTransformer();
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
 		return out.toString();
@@ -180,6 +181,18 @@ public class XMLUtils {
 		ret = pattern3.matcher(ret).replaceAll(Constants.XML_SUP_REPLACEMENT);
 		
 		return new String(ret.getBytes(), StandardCharsets.UTF_8);
+	}
+
+	private static TransformerFactory initTransformerFactory() {
+		TransformerFactory factory = new net.sf.saxon.TransformerFactoryImpl();
+        try {
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (TransformerConfigurationException ignored) {
+            logger.info(XMLConstants.FEATURE_SECURE_PROCESSING+" unsuported for net.sf.saxon.TransformerFactoryImpl");
+        }
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "file,jar:file");
+		return factory;
 	}
 	
 }

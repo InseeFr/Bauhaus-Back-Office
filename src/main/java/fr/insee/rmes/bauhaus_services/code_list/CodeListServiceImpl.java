@@ -11,7 +11,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
@@ -31,6 +30,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Spliterators;
+import java.util.stream.Stream;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -59,41 +60,54 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}")
 	String baseInternalURI;
 
+    private final ObjectMapper mapper = new ObjectMapper();
+
 	@Override
 	public String getCodesJson(String notation, int page, Integer perPage) throws RmesException {
-		JSONObject result = new JSONObject();
-
-		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, null));
-		JSONArray items = repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page, perPage));
-
-		result.put("total", counter.get("count"));
-		result.put("page", page);
-		result.put("items", items);
-
-		return result.toString();
+        return getCodesAsJSONObject(notation, page, perPage).toString();
 	}
 
-	@Override
+    private JSONObject getCodesAsJSONObject(String notation, int page, Integer perPage) throws RmesException {
+        JSONObject result = new JSONObject();
+
+        JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, null));
+
+        result.put("total", counter.get("count"));
+        result.put("page", page);
+        result.put("items", getItemsWithPagination(notation, page, perPage));
+        return result;
+    }
+
+    private JSONArray getItemsWithPagination(String notation, int page, Integer perPage) throws RmesException {
+        return repoGestion.getResponseAsArray(CodeListQueries.getCodeListItemsByNotation(notation, page, perPage));
+    }
+
+    @Override
 	public String getCodeListJson(String notation) throws RmesException{
-		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
-		codeList.put(Constants.NOTATION,notation);
-		return QueryUtils.correctEmptyGroupConcat(codeList.toString());
+        return getCodeListAsJSONObject(notation).toString();
 	}
 
-	public CodeList buildCodeListFromJson(String codeListJson) {
-		ObjectMapper mapper = new ObjectMapper();
-		CodeList codeList = new CodeList();
+    private JSONObject getCodeListAsJSONObject(String notation) throws RmesException {
+        JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListLabelByNotation(notation));
+        return codeList.put(Constants.NOTATION, notation);
+    }
+
+    private CodeList buildCodeListFromJson(JSONObject codeListJson) {
+		CodeList codeList;
 		try {
-			codeList = mapper.readValue(codeListJson, CodeList.class);
+            codeList = mapper.readValue(codeListJson.toString(), CodeList.class);
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
+            codeList=new CodeList();
 		}
 		return codeList;
 	}
 
 	@Override
-	public CodeList getCodeList(String notation) throws RmesException {
-		return buildCodeListFromJson(getCodeListJson(notation));
+	public CodeList getCodeListAndCodesForExport(String notation) throws RmesException {
+		JSONObject codeList = getCodeListAsJSONObject(notation);
+		codeList.put("codes", getItemsWithPagination(notation,1, 0));
+		return buildCodeListFromJson(codeList);
 	}
 
 	@Override
@@ -103,6 +117,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
+		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 
 		if(!partial){
 			return codeList;
@@ -372,7 +387,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			RdfUtils.addTripleString(codeListIri, DC.CREATOR, codesList.getString(Constants.CREATOR), model, graph);
 		}
 		if(codesList.has(Constants.CONTRIBUTOR)){
-			RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, codesList.getString(Constants.CONTRIBUTOR), model, graph);
+			codesList.getJSONArray(Constants.CONTRIBUTOR).toList().forEach(c -> RdfUtils.addTripleString(codeListIri, DC.CONTRIBUTOR, (String) c, model, graph));
 		}
 
 		if(partial){
