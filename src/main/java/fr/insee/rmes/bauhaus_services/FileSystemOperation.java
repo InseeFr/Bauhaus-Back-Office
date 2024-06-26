@@ -1,6 +1,8 @@
 package fr.insee.rmes.bauhaus_services;
 
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +13,10 @@ import java.nio.file.StandardCopyOption;
 import static java.util.Objects.requireNonNull;
 
 public class FileSystemOperation implements FilesOperations {
+
+    @Autowired
+    protected Config config;
+
     @Override
     public void delete(String path) {
         try {
@@ -23,7 +29,7 @@ public class FileSystemOperation implements FilesOperations {
     @Override
     public InputStream read(String fileName) {
         try {
-            return Files.newInputStream(Paths.get(fileName));
+            return Files.newInputStream(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
         } catch (IOException e) {
             throw new RmesFileException("Failed to read file: " + fileName, e);
         }
