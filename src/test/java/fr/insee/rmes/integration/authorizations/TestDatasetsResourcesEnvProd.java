@@ -318,7 +318,7 @@ class TestDatasetsResourcesEnvProd {
     }
 
     @Test
-    void shouldNotDeleteAnUnpublishedDataset() throws Exception {
+    void shouldNotDeleteNotUnpublishedDataset() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         dataset=new Dataset();
         dataset.setValidationState("Published");

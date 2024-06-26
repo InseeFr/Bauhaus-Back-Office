@@ -81,7 +81,7 @@ public class DatasetResources {
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping("/{id}/validate")
     @Operation(operationId = "publishDataset", summary = "Publish a dataset",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
         return this.datasetService.publishDataset(datasetId);
     }
@@ -98,7 +98,7 @@ public class DatasetResources {
     public void patchDataset(
             @PathVariable("id") String datasetId,
             @RequestBody PatchDataset dataset
-    ) throws RmesException{
+    ) throws RmesException {
         this.datasetService.patchDataset(datasetId, dataset);
     }
 
@@ -111,14 +111,10 @@ public class DatasetResources {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The dataset has been  deleted"),
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented"),
-            @ApiResponse(responseCode = "406", description = "Only unpublished datasets can be deleted"),
-            @ApiResponse(responseCode = "400", description = "Only dataset without any distribution can be deleted"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "This dataset does not exist")
     })
-    public ResponseEntity<Void> deleteDataset(
-            @PathVariable(Constants.ID) String datasetId) throws RmesException {
-
+    public ResponseEntity<Void> deleteDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
         datasetService.deleteDatasetId(datasetId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

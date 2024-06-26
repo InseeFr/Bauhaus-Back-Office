@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -24,7 +25,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -46,6 +46,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
+
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -276,43 +277,32 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void deleteDatasetId(String datasetId) throws RmesException{
-        try {
-            String datasetString = getDatasetByID(datasetId);
-            Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
-            if (!isUnpublished(dataset)){
-                throw new RmesBadRequestException(String.valueOf(HttpStatus.NOT_ACCEPTABLE), "Only unpublished datasets can be deleted");
-            }
-
-            //if the dataset has one or more distributions, it cannot be deleted
-            if (hasDistribution(dataset)) {
-                throw new RmesBadRequestException(String.valueOf(HttpStatus.BAD_REQUEST), "Only dataset without any distribution can be deleted");
-            }
-
-            IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
-            IRI graph = getDatasetIri(datasetId);
-            String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
-
-            repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
-            repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+        String datasetString = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+        if (!isUnpublished(dataset)){
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
-        catch (RmesException e){
-            throw new RuntimeException(e);
+
+        //if the dataset has one or more distributions, it cannot be deleted
+        if (hasDistribution(dataset)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
         }
+
+        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+        IRI graph = getDatasetIri(datasetId);
+        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+        repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
     }
 
     private boolean isUnpublished(Dataset dataset) {
-        if ("Unpublished".equalsIgnoreCase(dataset.getValidationState())) {
-            return true;
-        }
-        else return false;
+        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
     }
 
     private boolean hasDistribution(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
-        if (!getDistributions(datasetId).equals("[]")) {
-            return true;
-        }
-        else return false;
+        return !getDistributions(datasetId).equals("[]");
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
