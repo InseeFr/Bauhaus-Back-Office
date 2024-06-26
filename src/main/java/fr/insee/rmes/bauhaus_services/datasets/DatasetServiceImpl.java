@@ -283,7 +283,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
 
-        //if the dataset has one or more distributions, it cannot be deleted
         if (hasDistribution(dataset)) {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
         }

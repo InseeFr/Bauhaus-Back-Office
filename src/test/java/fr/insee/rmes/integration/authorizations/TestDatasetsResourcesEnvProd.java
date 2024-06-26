@@ -325,7 +325,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(result-> assertThat(result.getResponse().getStatus()).isIn(HttpStatus.BAD_REQUEST.value(), HttpStatus.CONFLICT.value()))
+                .andExpect(result-> assertThat(result.getResponse().getStatus()).isIn(HttpStatus.BAD_REQUEST.value()))
                 .andExpect(content().string(containsString("Only unpublished datasets can be deleted")));
     }
 
