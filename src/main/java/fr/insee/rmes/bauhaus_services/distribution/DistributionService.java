@@ -18,5 +18,5 @@ public interface DistributionService {
 
     void patchDistribution(String distributionId, PatchDistribution distribution) throws RmesException;
 
-    ResponseEntity deleteDistributionId(String distributionId) throws RmesException;
+    void deleteDistributionId(String distributionId) throws RmesException;
 }

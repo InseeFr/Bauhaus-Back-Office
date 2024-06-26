@@ -337,23 +337,15 @@ class DistributionServiceImplTest {
 
 
     @Test
-    void shouldDeleteDistributionReturnNOT_ACCEPTABLE() throws RmesException {
+    void shouldNotDeleteNotUnpublishedDistributionAndReturn400() throws RmesException {
         JSONObject mockJSON = new JSONObject("{\n" +
                 "  \"id\": \"idTest\",\n" +
                 "  \"validationState\": \"Not Unpublished\"\n" +
                 "}");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-        Assertions.assertEquals(new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE), distributionService.deleteDistributionId("idTest"));
-    }
+        RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId("idTest"));
+        Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());
 
-    @Test
-    void shouldDeleteDistributionReturnOK() throws RmesException {
-        JSONObject mockJSON = new JSONObject("{\n" +
-                "  \"id\": \"idTest\",\n" +
-                "  \"validationState\": \"Unpublished\"\n" +
-                "}");
-        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-        Assertions.assertEquals(new ResponseEntity<>(HttpStatus.OK), distributionService.deleteDistributionId("idTest"));
     }
 
 }
