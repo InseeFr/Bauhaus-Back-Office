@@ -617,8 +617,8 @@ class DatasetServiceImplTest {
     void shouldNotDeleteNotExistingDatasetReturn404() throws RmesException {
         JSONArray mockJSON = new JSONArray("[]");
         when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
-        Assertions.assertEquals("fr.insee.rmes.exceptions.RmesNotFoundException", exception.getMessage());
+        RmesNotFoundException exception = assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
+        Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
     }
 
     @Test
@@ -641,8 +641,8 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
             when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
 
-            RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
-            Assertions.assertEquals("fr.insee.rmes.exceptions.RmesBadRequestException", exception.getMessage());
+            RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
+            Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished datasets can be deleted\"}", exception.getDetails());
         }
     }
 
@@ -671,8 +671,8 @@ class DatasetServiceImplTest {
             distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(mockDistrib);
 
-            RuntimeException exception = assertThrows(RuntimeException.class, () -> datasetService.deleteDatasetId("idTest"));
-            Assertions.assertEquals("fr.insee.rmes.exceptions.RmesBadRequestException", exception.getLocalizedMessage());
+            RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.deleteDatasetId("idTest"));
+            Assertions.assertEquals("{\"code\":1204,\"message\":\"Only dataset without any distribution can be deleted\"}", exception.getDetails());
         }
     }
 
