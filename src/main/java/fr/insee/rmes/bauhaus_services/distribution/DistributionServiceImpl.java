@@ -79,6 +79,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
         String idnewt = IdGenerator.generateNextId(repoGestion.getResponseAsObject(DistributionQueries.lastDatasetId(getDistributionGraph())), "d");
         distribution.setId(idnewt);
+        distribution.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         this.validate(distribution);
 
@@ -92,6 +93,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public String update(String id, String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
         distribution.setId(id);
+        distribution.setValidationState(ValidationStatus.MODIFIED.toString());
 
         this.validate(distribution);
 
@@ -113,6 +115,9 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         publicationUtils.publishResource(iri, Set.of());
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDistributionGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDistributionGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDistributionGraph()));
+
         repoGestion.objectValidation(iri, model);
 
         return id;
