@@ -65,12 +65,13 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String getDistributionByID(String id) throws RmesException {
-        JSONObject distrib=repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
-        if (distrib.has("id")){
-        return this.repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph())).toString();
-        } else {
+        JSONObject distribution = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
+
+        if (distribution.isEmpty()){
             throw new RmesNotFoundException("This distribution does not exist");
         }
+
+        return distribution.toString();
     }
 
     @Override
