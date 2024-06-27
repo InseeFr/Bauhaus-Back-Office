@@ -53,6 +53,6 @@ WHERE {
 	}
 
     OPTIONAL {
-        ?uriDataset insee:validationState ?validationState .
+        ?uri insee:validationState ?validationState .
     }
 }
