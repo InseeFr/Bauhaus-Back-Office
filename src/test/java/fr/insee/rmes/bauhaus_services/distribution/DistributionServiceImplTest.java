@@ -11,6 +11,7 @@ import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,13 +23,8 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import java.time.LocalDateTime;
 import java.util.Set;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -347,5 +343,33 @@ class DistributionServiceImplTest {
         Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());
 
     }
+
+    @Test
+    void shouldDeleteDistribution() throws RmesException{
+        JSONObject mockJSON = new JSONObject("{\"id\":\"idtest\",\"validationState\":\"Unpublished\"}");
+        String stringDistributionIri = "http://bauhaus/catalogues/distribution/idtest";
+        IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
+        try(
+                MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                )
+        {
+            distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");
+            when(repositoryGestion.getResponseAsObject("query1 ")).thenReturn(mockJSON);
+            rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(distributionUri);
+            rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(distributionUri);
+
+            // Capture the argument passed to deleteObject
+            ArgumentCaptor<IRI> uriCaptor = ArgumentCaptor.forClass(IRI.class);
+            distributionService.deleteDistributionId("idTest");
+            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
+            Assertions.assertEquals(distributionUri, uriCaptor.getValue());
+            verify(repositoryGestion, times(1)).deleteObject(distributionUri);
+            verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DISTRIBUTION), any(IRI.class));
+        }
+
+    }
+
+
 
 }
