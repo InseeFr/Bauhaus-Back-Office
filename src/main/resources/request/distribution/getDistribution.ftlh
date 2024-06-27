@@ -1,4 +1,4 @@
-SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?updated
+SELECT ?id ?idDataset ?labelLg1 ?labelLg2 ?descriptionLg1 ?descriptionLg2 ?created ?updated ?validationState
 ?format ?byteSize ?url
 FROM <${DATASET_GRAPH}>
 WHERE {
