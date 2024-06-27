@@ -121,6 +121,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
+
         repoGestion.objectValidation(iri, model);
 
         return id;

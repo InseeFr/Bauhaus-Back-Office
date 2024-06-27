@@ -12,6 +12,7 @@ public class Distribution {
     String format;
     String byteSize;
     String url;
+    String validationState;
 
     public String getId() {
         return id;
@@ -99,5 +100,13 @@ public class Distribution {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getValidationState() {
+        return validationState;
+    }
+
+    public void setValidationState(String validationState) {
+        this.validationState = validationState;
     }
 }
