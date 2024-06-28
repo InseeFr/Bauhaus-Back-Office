@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.PatchDistribution;
+import org.springframework.http.ResponseEntity;
 
 public interface DistributionService {
 
@@ -16,4 +17,6 @@ public interface DistributionService {
     String publishDistribution(String id) throws RmesException;
 
     void patchDistribution(String distributionId, PatchDistribution distribution) throws RmesException;
+
+    void deleteDistributionId(String distributionId) throws RmesException;
 }
