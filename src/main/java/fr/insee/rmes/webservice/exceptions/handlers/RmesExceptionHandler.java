@@ -10,8 +10,16 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @ControllerAdvice(assignableTypes = {DatasetResources.class, DistributionResources.class})
 public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(RmesException.class)
-    public final ResponseEntity<Object> handleException(RmesException exception) {
+
+    @ExceptionHandler({RmesBadRequestException.class, RmesNotFoundException.class, RmesNotAcceptableException.class, RmesUnauthorizedException.class})
+    public final ResponseEntity<String> handleSubclassesOfRmesException(RmesException exception) {
         return ResponseEntity.status(exception.getStatus()).body(exception.getDetails());
     }
+
+    @ExceptionHandler(RmesException.class)
+    public final ResponseEntity<String> handleRmesException(RmesException exception){
+        logger.error(exception.getMessageAndDetails(), exception);
+        return ResponseEntity.internalServerError().body(exception.getMessage());
+    }
+
 }
