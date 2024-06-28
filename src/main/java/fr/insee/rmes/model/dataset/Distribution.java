@@ -13,15 +13,6 @@ public class Distribution {
     String byteSize;
     String url;
 
-    public String getValidationState() {
-        return validationState;
-    }
-
-    public void setValidationState(String validationState) {
-        this.validationState = validationState;
-    }
-
-    String validationState;
 
     public String getId() {
         return id;
