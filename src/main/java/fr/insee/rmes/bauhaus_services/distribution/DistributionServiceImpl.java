@@ -2,14 +2,10 @@ package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -24,10 +20,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -65,10 +58,6 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return baseUriGestion + datasetsBaseUriSuffix;
     }
 
-    protected IRI getDatasetIri(String datasetId){
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        return iri;
-    }
     @Override
     public String getDistributions() throws RmesException {
         return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph())).toString();
@@ -122,7 +111,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Override
     public String publishDistribution(String id) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI iri = getDatasetIri(id);
+        IRI iri = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of());
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDistributionGraph()));
@@ -134,39 +123,23 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return id;
     }
 
-    @Override
-    public void deleteDistributionId(String distributionId) throws RmesException{
-        String distributionString = getDistributionByID(distributionId);
-        Distribution distribution = Deserializer.deserializeBody(distributionString, Distribution.class);
-        if (!isUnpublished(distribution)){
-            throw new RmesBadRequestException(ErrorCodes.DISTRIBUTION_DELETE_ONLY_UNPUBLISHED, "Only unpublished distributions can be deleted");
-        }
-        IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
-        Resource graph = getDatasetIri(distributionId);
-        String distributionURI = getDistributionBaseUri() + "/" + distributionId;
-        repoGestion.deleteObject(RdfUtils.createIRI(distributionURI));
-        repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph);
-    }
-    private boolean isUnpublished(Distribution distribution) {
-        return "Unpublished".equalsIgnoreCase(distribution.getValidationState());
-    }
 
     private String persist(Distribution distribution, boolean creation) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDistributionGraph());
 
-        IRI distributionIRI = getDatasetIri(distribution.getId());
+        IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + distribution.getId());
 
         Model model = new LinkedHashModel();
 
         if(!creation){
             JSONObject previousValue = new JSONObject(this.getDistributionByID(distribution.getId()));
             if(previousValue.has("idDataset")){
-                IRI iriDataset = getDatasetIri(previousValue.getString("idDataset"));
+                IRI iriDataset = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + previousValue.getString("idDataset"));
                 repoGestion.deleteTripletByPredicateAndValue(iriDataset, DCAT.HAS_DISTRIBUTION, graph, null, distributionIRI);
             }
         }
 
-        RdfUtils.addTripleUri(getDatasetIri(distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
+        RdfUtils.addTripleUri(RdfUtils.createIRI(getDatasetsBaseUri() + "/" + distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
 
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);

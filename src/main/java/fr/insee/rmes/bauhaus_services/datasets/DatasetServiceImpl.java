@@ -38,7 +38,6 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
-    public static final String CONTRIBUTOR = "contributor";
     private static Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static final String THEME = "theme";
@@ -120,7 +119,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
         model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
@@ -162,7 +161,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
 
         JSONObject catalogRecord = new JSONObject();
-        getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+        getMultipleTripletsForObject(catalogRecord, "contributor", DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), "contributor");
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
