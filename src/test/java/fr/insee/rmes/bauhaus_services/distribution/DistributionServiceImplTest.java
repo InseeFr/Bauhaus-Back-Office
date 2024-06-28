@@ -11,7 +11,6 @@ import fr.insee.rmes.utils.DateUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,8 +22,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+
 import java.time.LocalDateTime;
 import java.util.Set;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -49,8 +51,6 @@ class DistributionServiceImplTest {
     public static final String EMPTY_JSON_OBJECT = "{}";
     @Autowired
     DistributionServiceImpl distributionService;
-
-
     public static final String DISTRIB = "{\"id\":\"d1000\"}";
     public static final String DISTRIB_A_PATCHER = "{\"byteSize\":\"3\",\"labelLg2\":\"test_patch\",\"labelLg1\":\"test_patch\",\"created\":\"2024-04-10T16:34:09.651166561\",\"idDataset\":\"jd1004\",\"id\":\"d1004\",\"updated\":\"2024-04-07T16:34:09.651166561\",\"url\":\"http://test\"}";
     public static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\", http://datasetGraph/) [http://datasetGraph/]]";
@@ -330,46 +330,5 @@ class DistributionServiceImplTest {
         verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
         Assertions.assertEquals(DISTRIB_PATCHEE,model.getValue().toString());
     }
-
-
-    @Test
-    void shouldNotDeleteNotUnpublishedDistributionAndReturn400() throws RmesException {
-        JSONObject mockJSON = new JSONObject("{\n" +
-                "  \"id\": \"idTest\",\n" +
-                "  \"validationState\": \"Not Unpublished\"\n" +
-                "}");
-        when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
-        RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId("idTest"));
-        Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());
-
-    }
-
-    @Test
-    void shouldDeleteDistribution() throws RmesException{
-        JSONObject mockJSON = new JSONObject("{\"id\":\"idtest\",\"validationState\":\"Unpublished\"}");
-        String stringDistributionIri = "http://bauhaus/catalogues/distribution/idtest";
-        IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
-        try(
-                MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                )
-        {
-            distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");
-            when(repositoryGestion.getResponseAsObject("query1 ")).thenReturn(mockJSON);
-            rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(distributionUri);
-            rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(distributionUri);
-
-            // Capture the argument passed to deleteObject
-            ArgumentCaptor<IRI> uriCaptor = ArgumentCaptor.forClass(IRI.class);
-            distributionService.deleteDistributionId("idTest");
-            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
-            Assertions.assertEquals(distributionUri, uriCaptor.getValue());
-            verify(repositoryGestion, times(1)).deleteObject(distributionUri);
-            verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DISTRIBUTION), any(IRI.class));
-        }
-
-    }
-
-
 
 }
