@@ -14,7 +14,6 @@ public class Distribution {
     String url;
     String validationState;
 
-
     public String getId() {
         return id;
     }

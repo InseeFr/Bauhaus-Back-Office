@@ -1,6 +1,5 @@
 package fr.insee.rmes.integration.authorizations;
 
-
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
@@ -12,6 +11,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,8 +63,8 @@ class TestDistributionsResourcesEnvProd {
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
-
     int distributionId =10;
+    ValidationStatus status= UNPUBLISHED;
 
     @Test
     void shouldGetDistributionsWithAnyRole() throws Exception {
@@ -236,7 +237,7 @@ class TestDistributionsResourcesEnvProd {
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotImplemented());
     }
 
     @Test
@@ -246,7 +247,7 @@ class TestDistributionsResourcesEnvProd {
         mvc.perform(delete("/distribution/" + distributionId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNotImplemented());
     }
 
 
@@ -268,5 +269,4 @@ class TestDistributionsResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
-
 }
