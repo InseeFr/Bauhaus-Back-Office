@@ -1,6 +1,5 @@
-package fr.insee.rmes.webservice.exceptions.handlers;
+package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.springframework.http.ResponseEntity;
