@@ -54,9 +54,6 @@ public class CodeListsResources extends GenericResources {
 //    }
     public ResponseEntity<CodeList> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.setCodesList(body, false);
-        if (id.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/")
