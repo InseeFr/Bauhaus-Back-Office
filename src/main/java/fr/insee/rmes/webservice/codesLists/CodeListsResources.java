@@ -22,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -42,14 +44,29 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a code list")
-    public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) {
-        try {
-            String id = codeListService.setCodesList(body, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return returnRmesException(e);
+//    public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) {
+//        try {
+//            String id = codeListService.setCodesList(body, false);
+//            return ResponseEntity.status(HttpStatus.OK).body(id);
+//        } catch (RmesException e) {
+//            return returnRmesException(e);
+//        }
+//    }
+    public ResponseEntity<CodeList> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
+        String id = codeListService.setCodesList(body, false);
+        if (id.isEmpty()) {
+            return ResponseEntity.noContent().build();
         }
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/")
+                .buildAndExpand(id)
+                .toUri();
+        CodeList codeList = new CodeList(id);
+//        return ResponseEntity.created(location).build();
+        return ResponseEntity.created(location).body(codeList);
     }
+
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)

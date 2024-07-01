@@ -6,7 +6,7 @@ import java.util.List;
 
 public class CodeList {
 
-	@Schema(description="Code list's notation")
+	@Schema(description="Code list notation")
 	public String notation;
 
 	@Schema(description = "Label lg1", required = true)
@@ -18,6 +18,10 @@ public class CodeList {
 	@Schema(description = "List of codes")
 	public List<CodeLabelTwoLangs> codes;
 
+	public CodeList(String notation) {
+		this.notation = notation;
+	}
 
-
+	public CodeList() {
+	}
 }
