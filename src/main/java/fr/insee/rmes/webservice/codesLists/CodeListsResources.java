@@ -40,7 +40,7 @@ public class CodeListsResources extends GenericResources {
     }
 
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a code list")
     public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) {
         try {
