@@ -78,8 +78,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
         distribution.setId(IdGenerator.generateNextId());
-
-
+        distribution.setValidationState(ValidationStatus.UNPUBLISHED.toString());
         this.validate(distribution);
 
         distribution.setCreated(DateUtils.getCurrentDate());
