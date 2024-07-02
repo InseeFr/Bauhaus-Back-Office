@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -33,6 +34,7 @@ public class DatasetResources {
     final DatasetService datasetService;
 
     public DatasetResources(DatasetService datasetService) {
+
         this.datasetService = datasetService;
     }
 
@@ -44,7 +46,7 @@ public class DatasetResources {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @Operation(operationId = "getDataset", summary = "List of datasets",
+    @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
@@ -79,7 +81,7 @@ public class DatasetResources {
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping("/{id}/validate")
     @Operation(operationId = "publishDataset", summary = "Publish a dataset",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
         return this.datasetService.publishDataset(datasetId);
     }
@@ -96,7 +98,7 @@ public class DatasetResources {
     public void patchDataset(
             @PathVariable("id") String datasetId,
             @RequestBody PatchDataset dataset
-    ) throws RmesException{
+    ) throws RmesException {
         this.datasetService.patchDataset(datasetId, dataset);
     }
 
@@ -107,12 +109,13 @@ public class DatasetResources {
             summary = "Delete a dataset"
     )
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "The dataset has been  deleted"),
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented")
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "This dataset does not exist")
     })
-    public ResponseEntity deleteDataset(
-            @PathVariable(Constants.ID) String datasetId
-    ) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Void> deleteDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
+        datasetService.deleteDatasetId(datasetId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

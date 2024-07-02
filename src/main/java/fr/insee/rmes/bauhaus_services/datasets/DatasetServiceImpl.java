@@ -4,7 +4,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -35,19 +35,18 @@ import java.util.regex.Pattern;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
+
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
-    private static Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
+    private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
-    public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
-    @Autowired
-    UserProviderFromSecurityContext userProviderFromSecurityContext;
+
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -88,8 +87,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return baseUriGestion + distributionsBaseUriSuffix;
     }
 
-    private String getDatasetsBaseUri(){
+    protected String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
+    protected IRI getDatasetIri(String datasetId){
+        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        return iri;
     }
 
     private String getDatasetsAdmsBaseUri(){
@@ -115,12 +119,15 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String publishDataset(String id) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
+        IRI iri = getDatasetIri(id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
         publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
+
         repoGestion.objectValidation(iri, model);
 
         return id;
@@ -271,10 +278,39 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         update(datasetId, dataset);
     }
 
+    @Override
+    public void deleteDatasetId(String datasetId) throws RmesException{
+        String datasetString = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+        if (!isUnpublished(dataset)){
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+        }
+
+        if (hasDistribution(dataset)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
+        }
+
+        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+        IRI graph = getDatasetIri(datasetId);
+        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+        repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+    }
+
+    private boolean isUnpublished(Dataset dataset) {
+        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
+    }
+
+    private boolean hasDistribution(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        return !getDistributions(datasetId).equals("[]");
+    }
+
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
-        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
+        IRI datasetIri = getDatasetIri(dataset.getId());
 
         Model model = new LinkedHashModel();
 
@@ -389,7 +425,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
-        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
+        IRI datasetIri = getDatasetIri(dataset.getId());
 
         Model model = new LinkedHashModel();
 

@@ -7,6 +7,7 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.external_services.authentication.stamps.RmesStampsImpl;
+import fr.insee.rmes.external_services.rbac.RBACService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -46,7 +47,8 @@ class UserResourcesEnvProdTest {
 
     @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
-
+    @MockBean
+    private RBACService rbacService;
     @MockBean
     private JwtDecoder jwtDecoder;
 
