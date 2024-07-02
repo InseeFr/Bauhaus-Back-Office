@@ -1,6 +1,5 @@
 package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import fr.insee.rmes.webservice.distribution.DistributionResources;

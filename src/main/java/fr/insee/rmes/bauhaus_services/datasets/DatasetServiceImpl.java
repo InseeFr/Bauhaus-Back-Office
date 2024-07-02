@@ -46,6 +46,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
+    public static final String CONTRIBUTOR = "contributor";
 
 
     @Autowired
@@ -123,7 +124,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
-        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, "contributor"));
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
         model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
         model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
@@ -165,7 +166,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
 
         JSONObject catalogRecord = new JSONObject();
-        getMultipleTripletsForObject(catalogRecord, "contributor", DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), "contributor");
+        getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
 
         if(dataset.has(CATALOG_RECORD_CREATOR)){
             catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
@@ -314,16 +315,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         Model model = new LinkedHashModel();
 
-        CatalogRecord record = dataset.getCatalogRecord();
+        CatalogRecord catalogRecord = dataset.getCatalogRecord();
 
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
-        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
+        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(catalogRecord.getCreator()), graph);
 
-        record.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, record.getUpdated(), model, graph);
+        catalogRecord.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
         repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
 
