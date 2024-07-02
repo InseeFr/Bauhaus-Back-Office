@@ -31,6 +31,8 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_B
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
 
+    private final IdGenerator idGenerator = new IdGenerator();
+
     @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
     private String datasetsGraphSuffix;
 
@@ -77,7 +79,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Override
     public String create(String body) throws RmesException {
         Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
-        distribution.setId(IdGenerator.generateNextId());
+        distribution.setId(idGenerator.generateNextId());
         distribution.setValidationState(ValidationStatus.UNPUBLISHED.toString());
         this.validate(distribution);
 

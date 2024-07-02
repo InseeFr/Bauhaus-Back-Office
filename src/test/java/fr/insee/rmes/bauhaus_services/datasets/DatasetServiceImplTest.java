@@ -60,6 +60,7 @@ class DatasetServiceImplTest {
     RepositoryGestion repositoryGestion;
     @Autowired
     DatasetServiceImpl datasetService;
+    public static final IdGenerator idGenerator = new IdGenerator();
 
 
     public static final String DATASET_WITH_THEME = """
@@ -402,7 +403,7 @@ class DatasetServiceImplTest {
                 MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
                 MockedStatic<IdGenerator> idGeneratorMock = Mockito.mockStatic(IdGenerator.class)
         ) {
-            idGeneratorMock.when(() -> IdGenerator.generateNextId()).thenReturn(nextId);
+            idGeneratorMock.when(idGenerator::generateNextId).thenReturn(nextId);
 
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
             IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/" + nextId);
