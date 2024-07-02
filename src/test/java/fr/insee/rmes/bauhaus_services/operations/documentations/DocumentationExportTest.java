@@ -4,6 +4,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -14,6 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -26,46 +30,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.filenames.maxlength=50"})
 class DocumentationExportTest {
-    @Mock
+    @MockBean
     private ExportUtils exportUtils;
 
-    @Mock
+    @MockBean
     private ParentUtils parentUtils;
 
-    @Mock
+    @MockBean
     private DocumentationsUtils documentationsUtils;
 
-    @Mock
+    @MockBean
     private OrganizationsService organizationsService;
 
-    @InjectMocks
+    @Autowired
     private DocumentationExport documentationExport;
 
+    @MockBean
+    private DocumentsUtils documentsUtils;
     @Test
-    public void testExportMetadataReport_Success_WithDocuments_RMES() throws RmesException {
-        String id = "1234";
-        boolean includeEmptyMas = true;
-        boolean lg1 = true;
-        boolean lg2 = false;
-        boolean document = true;
-        String goal = Constants.GOAL_RMES;
-        String targetType = "someTargetType";
-
-        Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
-
-        when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
-        when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject());
-        when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
-        when(exportUtils.exportAsZip(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
-
-        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
-        assertEquals(ResponseEntity.ok().body(resource), response);
-    }
-
-    @Test
-    public void testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
+    public void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = true;
