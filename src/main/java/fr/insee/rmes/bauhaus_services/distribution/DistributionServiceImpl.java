@@ -31,7 +31,6 @@ import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_B
 @Service
 public class DistributionServiceImpl extends RdfService implements DistributionService {
 
-    private final IdGenerator idGenerator = new IdGenerator();
 
     @Value("${fr.insee.rmes.bauhaus.datasets.graph}")
     private String datasetsGraphSuffix;

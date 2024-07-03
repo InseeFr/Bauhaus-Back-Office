@@ -46,7 +46,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
-    private final IdGenerator idGenerator = new IdGenerator();
 
     @Autowired
     SeriesUtils seriesUtils;
