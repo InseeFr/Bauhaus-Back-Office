@@ -223,6 +223,7 @@ public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
 			"DR67-SES54",
 			"DR67-SES67",
 			"DR67-SNTDA",
+			"DR67-SNTDA57",
 			"DR69-DIR",
 			"DR69-ETB63",
 			"DR69-ETB69",
