@@ -8,6 +8,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +50,15 @@ class DistributionServiceImplTest {
 
     @MockBean
     PublicationUtils publicationUtils;
+    @MockBean
+    IdGenerator idGenerator;
     public static final String EMPTY_JSON_OBJECT = "{}";
     @Autowired
     DistributionServiceImpl distributionService;
     public static final String DISTRIB = "{\"id\":\"d1000\"}";
     public static final String DISTRIB_A_PATCHER = "{\"byteSize\":\"3\",\"labelLg2\":\"test_patch\",\"labelLg1\":\"test_patch\",\"created\":\"2024-04-10T16:34:09.651166561\",\"idDataset\":\"jd1004\",\"id\":\"d1004\",\"updated\":\"2024-04-07T16:34:09.651166561\",\"url\":\"http://test\"}";
     public static final String DISTRIB_PATCHEE = "[(http://distributionIRI/jd1004, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1004, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/identifier, \"d1004\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Distribution, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/title, \"test_patch\"@en, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/created, \"2024-04-10T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://purl.org/dc/terms/modified, \"2024-04-05T16:34:09.651166561\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#byteSize, \"5\", http://datasetGraph/) [http://datasetGraph/], (http://distributionIRI/d1004, http://www.w3.org/ns/dcat#downloadURL, \"http://test2\", http://datasetGraph/) [http://datasetGraph/]]";
+
 
     @Test
     void shouldReturnDistributions() throws RmesException {
@@ -134,31 +139,7 @@ class DistributionServiceImplTest {
     }
 
     @Test
-    void shouldPersistNewDistributionWithAndIncrementedId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "1000");
-            return lastId;
-        });
-        createANewDistribution("d1001");
-    }
-
-    @Test
     void shouldPersistNewDistributionWithTheDefaultId() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            return lastId;
-        });
-        createANewDistribution("d1000");
-    }
-
-    @Test
-    void shouldPersistNewDistributionWithTheDefaultIdIfUndefined() throws RmesException {
-        when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
-            JSONObject lastId = new JSONObject();
-            lastId.put("id", "undefined");
-            return lastId;
-        });
         createANewDistribution("d1000");
     }
 
@@ -167,8 +148,9 @@ class DistributionServiceImplTest {
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
         ) {
+            when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
 
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
