@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.rdf_utils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -16,6 +17,9 @@ public abstract class RdfService {
 
 	@Autowired
 	protected RepositoryGestion repoGestion;
+
+	@Autowired
+	protected IdGenerator idGenerator;
 
 	@Autowired
 	protected RepositoryPublication repositoryPublication;
