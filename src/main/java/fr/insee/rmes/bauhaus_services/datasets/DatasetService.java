@@ -22,4 +22,6 @@ public interface DatasetService {
     String getDatasetsForDistributionCreation(String stamp) throws RmesException;
 
     String publishDataset(String id) throws RmesException;
+
+    void deleteDatasetId(String datasetId) throws RmesException;
 }

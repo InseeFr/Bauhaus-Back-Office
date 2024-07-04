@@ -132,6 +132,8 @@ public class ErrorCodes {
 	public static final int DISTRIUBTION_PATCH_INCORRECT_BODY = 1201;
 	public static final int DATASET_PATCH_INCORRECT_BODY = 1202;
 	public static final int DISTRIBUTION_DELETE_ONLY_UNPUBLISHED = 1203;
+	public static final int DATASET_DELETE_ONLY_UNPUBLISHED = 1203 ;
+	public static final int DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION = 1204 ;
 
 
 	/*
