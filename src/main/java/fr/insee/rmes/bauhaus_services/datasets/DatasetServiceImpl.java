@@ -90,7 +90,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return baseUriGestion + distributionsBaseUriSuffix;
     }
 
-    private String getDatasetsBaseUri(){
+    protected String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
     }
 
@@ -490,4 +490,5 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException("The series does not exist");
         }
     }
+
 }
