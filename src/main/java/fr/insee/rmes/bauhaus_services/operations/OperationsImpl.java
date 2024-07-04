@@ -190,8 +190,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {
 		//Prepare file
-		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
-		InputStream is = transformFileOutputStreamInInputStream(os);
+		InputStream is = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
 		if (is == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
 		ByteArrayResource resource = null;
 		try {
