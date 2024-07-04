@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -91,6 +92,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
+    protected IRI getDatasetIri(String datasetId){
+        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        return iri;
     }
 
     private String getDatasetsAdmsBaseUri(){
@@ -273,6 +279,35 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
 
         update(datasetId, dataset);
+    }
+
+    @Override
+    public void deleteDatasetId(String datasetId) throws RmesException{
+        String datasetString = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+        if (!isUnpublished(dataset)){
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+        }
+
+        if (hasDistribution(dataset)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
+        }
+
+        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+        IRI graph = getDatasetIri(datasetId);
+        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+        repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+    }
+
+    private boolean isUnpublished(Dataset dataset) {
+        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
+    }
+
+    private boolean hasDistribution(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        return !getDistributions(datasetId).equals("[]");
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

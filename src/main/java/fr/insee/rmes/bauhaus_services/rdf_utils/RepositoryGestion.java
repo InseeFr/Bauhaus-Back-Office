@@ -228,10 +228,6 @@ public class RepositoryGestion {
 	}
 
 
-	public void deleteTripletByPredicate(Resource object, IRI predicate, Resource graph) throws RmesException {
-		deleteTripletByPredicateAndValue(object, predicate, graph, null);
-	}
-
 	public void loadSimpleObjectWithoutDeletion(IRI object, Model model, RepositoryConnection conn) throws RmesException {
         processConnection(connection-> connection.add(model), conn, FAILURE_LOAD_OBJECT + object);
 	}
