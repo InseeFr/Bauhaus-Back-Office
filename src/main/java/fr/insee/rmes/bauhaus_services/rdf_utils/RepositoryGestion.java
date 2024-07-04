@@ -257,17 +257,7 @@ public class RepositoryGestion {
 	}
 
 	public void deleteObject(IRI object) throws RmesException {
-		try {
-			RepositoryConnection conn = repositoryUtils.initRepository(config.getRdfServerGestion(),
-					config.getRepositoryIdGestion()).getConnection();
-
-			conn.remove(object, null, null);
-			conn.close();
-		} catch (RepositoryException e) {
-			logger.error(FAILURE_DELETE_OBJECT , object);
-			logger.error(e.getMessage());
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), FAILURE_DELETE_OBJECT + object);
-		}
+		deleteObject(object, null);
 	}
 
 	/**
