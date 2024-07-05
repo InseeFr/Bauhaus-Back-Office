@@ -1,56 +1,106 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
+import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
+import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
+import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(properties = { "fr.insee.rmes.bauhaus.filenames.maxlength=50"})
+@ExtendWith(MockitoExtension.class)
 class DocumentationExportTest {
-    @MockBean
+    @Mock
+    private SeriesUtils seriesUtils;
+
+    @Mock
+    private OperationsUtils operationsUtils;
+
+    @Mock
+    private IndicatorsUtils indicatorsUtils;
+
+    @Mock
     private ExportUtils exportUtils;
 
-    @MockBean
+    @Mock
+    private CodeListService codeListService;
+
+    @Mock
     private ParentUtils parentUtils;
 
-    @MockBean
+    @Mock
     private DocumentationsUtils documentationsUtils;
 
-    @MockBean
+    @Mock
     private OrganizationsService organizationsService;
 
-    @Autowired
-    private DocumentationExport documentationExport;
-
-    @MockBean
+    @Mock
     private DocumentsUtils documentsUtils;
+
+    @Test
+    public void testExportAsZip_success() throws Exception {
+        JSONObject document = new JSONObject();
+        document.put("url", "file://doc.doc");
+        document.put("id", "1");
+
+        when(documentsUtils.getDocumentsUriAndUrlForSims("sims123")).thenReturn(new JSONArray().put(document));
+        var sims = new JSONObject();
+        sims.put("id", "sims123");
+        sims.put("labelLg1", "simsLabel");
+
+        var xmlContent = new HashMap<String, String>();
+        var xslFile = "xslFile";
+        var xmlPattern = "xmlPattern";
+        var zip = "zip";
+        var objectType = "objectType";
+
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
+
+
+        InputStream inputStreamMock = mock(InputStream.class);
+        when(exportUtils.exportAsInputStream(eq("simsLabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
+                .thenReturn(inputStreamMock);
+        when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
+
+        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(response.getHeaders().get("X-Missing-Documents").get(0), "1");
+    }
+
     @Test
     public void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
+
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = true;
@@ -71,6 +121,8 @@ class DocumentationExportTest {
 
     @Test
     public void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
+
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = true;
@@ -90,6 +142,8 @@ class DocumentationExportTest {
 
     @Test
     public void testExportXmlFiles_Success() throws RmesException {
+        DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
+
         Map<String, String> xmlContent = new HashMap<>();
         boolean includeEmptyMas = true;
         boolean lg1 = true;

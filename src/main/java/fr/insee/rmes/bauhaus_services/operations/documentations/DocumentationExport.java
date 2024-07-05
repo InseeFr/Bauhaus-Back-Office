@@ -9,7 +9,6 @@ import fr.insee.rmes.bauhaus_services.operations.documentations.documents.Docume
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
 import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,12 +60,12 @@ public class DocumentationExport {
 	
 	final DocumentationsUtils documentationsUtils;
 	final DocumentsUtils documentsUtils;
-	static String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
-	static String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
-	static String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
+	static final String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
+	static final String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
+	static final String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
 	
-	static String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
-	static String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
+	static final String xmlPatternLabel = "/xslTransformerFiles/simsLabel/labelPatternContent.xml";
+	static final String zipLabel = "/xslTransformerFiles/simsLabel/toZipForLabel.zip";
 	private final int maxLength;
 
 	public DocumentationExport(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils, ExportUtils exportUtils, SeriesUtils seriesUtils, OperationsUtils operationsUtils, IndicatorsUtils indicatorsUtils, ParentUtils parentUtils, CodeListService codeListServiceImpl, OrganizationsService organizationsServiceImpl, DocumentationsUtils documentationsUtils) {
@@ -150,7 +148,6 @@ public class DocumentationExport {
 					.body(resource);
 		}
 		catch (Exception exception) {
-			logger.error("Error when downloading the SIMS {} with its documents", simsId, exception);
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), exception.getClass().getSimpleName());
 		}
 	}
