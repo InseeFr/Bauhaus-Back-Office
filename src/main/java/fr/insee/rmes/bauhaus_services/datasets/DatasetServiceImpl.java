@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -35,19 +36,19 @@ import java.util.regex.Pattern;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
-
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
+    public static final String CONTRIBUTOR = "contributor";
     private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
+
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
     public static final String CONTRIBUTOR = "contributor";
-
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -120,7 +121,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String publishDataset(String id) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI iri = getDatasetIri(id);
+        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
         publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
@@ -215,7 +216,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String create(String body) throws RmesException {
         Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
-        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId(getDatasetsGraph())), "jd"));
+        dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){
@@ -311,7 +312,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
-        IRI datasetIri = getDatasetIri(dataset.getId());
+        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
 
         Model model = new LinkedHashModel();
 
@@ -426,7 +427,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
-        IRI datasetIri = getDatasetIri(dataset.getId());
+        IRI datasetIri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + dataset.getId());
 
         Model model = new LinkedHashModel();
 
@@ -488,4 +489,5 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException("The series does not exist");
         }
     }
+
 }
