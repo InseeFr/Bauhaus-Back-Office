@@ -54,7 +54,7 @@ public class DistributionResources {
     }
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getDistribution", summary = "List of distributions",
+    @Operation(operationId = "getDistribution", summary = "Get a distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
@@ -81,7 +81,7 @@ public class DistributionResources {
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
-    @PostMapping(value = "", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDistribution", summary = "Create a distribution")
     @ResponseStatus(HttpStatus.CREATED)
     public String createDistribution(
@@ -90,7 +90,7 @@ public class DistributionResources {
     }
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDistribution", summary = "Update a distribution")
     public String updateDistribution(
             @PathVariable("id") String distributionId,
@@ -105,13 +105,15 @@ public class DistributionResources {
             summary = "Delete a distribution"
     )
     @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "The distribution has been  deleted"),
             @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
-            @ApiResponse(responseCode = "501", description = "This endpoint is not implemented")
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "This distribution does not exist")
     })
-    public ResponseEntity deleteDistribution(
-            @PathVariable(Constants.ID) String distributionId
-    ) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Void> deleteDistribution(
+            @PathVariable(Constants.ID) String distributionId) throws RmesException{
+        distributionService.deleteDistributionId(distributionId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PreAuthorize("isAdmin() || isDistributionContributorWithStamp(#distributionId)")
