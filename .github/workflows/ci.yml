@@ -13,5 +13,7 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Build with Maven
-        run: mvn test
+      - name: Testing
+        run: mvn test -Ptest-containers
+      - name: Building
+        run: mvn package
