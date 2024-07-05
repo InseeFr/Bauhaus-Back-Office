@@ -71,6 +71,6 @@ WHERE {
 	BIND(EXISTS{?series dc:creator ?creator} AS ?hasCreator) 
 	BIND(EXISTS{?series dcterms:contributor ?contrib} AS ?hasContributor) 
 	BIND(EXISTS{?series insee:dataCollector ?datacoll} AS ?hasDataCollector) 
-	BIND(EXISTS{?series dcterms:publisher ?publisher} AS ?hasPublisher) 
-	          		
-} 
+	BIND(EXISTS{?series dcterms:publisher ?publisher} AS ?hasPublisher)
+}
+ORDER BY ?prefLabelLg1

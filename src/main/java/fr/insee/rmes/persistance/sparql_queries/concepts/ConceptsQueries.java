@@ -34,39 +34,10 @@ public class ConceptsQueries extends GenericQueries{
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 	
-	public static String conceptsSearchQuery() {
-		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
-			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
-			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-			+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-			+ "?concept skos:notation ?notation . \n"
-			+ "BIND (STR(?notation) AS ?id) \n"
-			+ "?concept skos:prefLabel ?label . \n"
-			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
-			+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "')} \n"
-			+ "?concept dcterms:created ?created . \n"
-			// Not topConceptOf if has broader
-			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
-			+ "BIND (IF(?broader, 'false', 'true') AS ?isTopConceptOf) . \n"
-			+ "OPTIONAL{?concept dcterms:modified ?modified} . \n"
-			+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
-			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
-			+ "?concept insee:isValidated ?validationStatus . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') . \n"
-			+ "?concept dc:creator ?creator . \n"
-			+ "OPTIONAL{?concept skos:definition ?noteUri . \n"
-			+ "?noteUri pav:version ?version . \n"
-			+ "?noteUri evoc:noteLiteral ?definition . \n"
-			+ "?noteUri dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "OPTIONAL {?concept skos:definition ?latest . \n"
-				+ "?latest pav:version ?latestVersion . \n"
-				+ "?latest dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "FILTER (?version < ?latestVersion)} . \n"
-			+ "FILTER (!bound (?latest))}"
-			+ "}} \n"
-			+ "GROUP BY ?id ?label ?created ?modified ?disseminationStatus \n"
-			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
-			+ "ORDER BY ?label";	
+	public static String conceptsSearchQuery() throws RmesException {
+		if (params==null) {initParams();}
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
 		
 	public static String conceptsToValidateQuery() {
