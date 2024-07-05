@@ -1,0 +1,10 @@
+<http://rdf.insee.fr/graphes/qualite/territoires> {
+    <http://bauhaus/qualite/territoire/franceHorsMayotte>
+            a       <http://rdf.insee.fr/def/geo#TerritoireStatistique> ;
+            <http://www.opengis.net/ont/geosparql#difference>
+                    "Mayotte" ;
+            <http://www.opengis.net/ont/geosparql#union>
+                    <http://bauhaus/geo/territoireFrancais/territoireDeLaRepubliqueFrancaise> ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "France hors Mayotte"@fr .
+}

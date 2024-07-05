@@ -1,0 +1,1182 @@
+<http://rdf.insee.fr/graphes/codes> {
+    <http://bauhaus/codes/concept/Langue>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Language"@en , "Langue"@fr ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/langues> .
+    
+    <http://bauhaus/codes/uniteEnquetee/G>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "G" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Groupe"@fr , "Group (of enterprises)"@en .
+    
+    <http://bauhaus/codes/statutEnquete/C>
+            a       <http://bauhaus/codes/concept/StatutEnquete> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/statutsEnquete> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "C" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enquête d'intérêt général et obligatoire"@fr , "Survey of general interest with compulsory nature"@en .
+    
+    <http://bauhaus/codes/frequence/P>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "P" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Ponctuelle ou apériodique"@fr , "Punctual or aperiodic"@en .
+    
+    <http://bauhaus/codes/statutEnquete/T>
+            a       <http://bauhaus/codes/concept/StatutEnquete> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/statutsEnquete> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "T" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enquête d'intérêt général et de qualité statistique à caractère obligatoire"@fr , "Survey of general interest and statistical quality, with compulsory nature"@en .
+    
+    <http://bauhaus/codes/uniteEnquetee/A>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "A" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Association"@fr , "Association"@en .
+    
+    <http://bauhaus/codes/modeCollecte/M>
+            a       <http://bauhaus/codes/concept/ModeCollecte> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/modesCollecte> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "M" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Par voie postale"@fr , "By post mail"@en .
+    
+    <http://bauhaus/codes/uniteEnquetee/L>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "L" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Établissement"@fr , "Local unit (of an enterprise)"@en .
+    
+    <http://bauhaus/codes/frequence/D>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "D" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Quotidienne"@fr , "Daily"@en .
+    
+    <http://bauhaus/codes/frequence/U>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "U" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Pluriannuelle"@fr , "Multiannual"@en .
+    
+    <http://bauhaus/codes/concept/UniteEnquetee>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Unité enquêtée"@fr , "Survey unit"@en ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/unitesEnquetees> .
+    
+    <http://bauhaus/codes/frequence/I>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "I" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Bisannuelle"@fr , "Biennial"@en .
+    
+    <http://bauhaus/codes/categorieSource/P>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "P" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Panel"@fr , "Panel"@en .
+    
+    <http://bauhaus/codes/langue/tr>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#tur> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "tr" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Turkish"@en , "Turc"@fr .
+    
+    <http://bauhaus/codes/concept/ModeCollecte>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Mode de collecte"@fr , "Collection mode"@en ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/modesCollecte> .
+    
+    <http://bauhaus/codes/frequence/C>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "C" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Continue"@fr , "Continuous"@en .
+    
+    <http://bauhaus/codes/statutEnquete/G>
+            a       <http://bauhaus/codes/concept/StatutEnquete> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/statutsEnquete> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "G" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enquête d'intérêt général"@fr , "Survey of general interest"@en .
+    
+    <http://bauhaus/codes/modeCollecte/F>
+            a       <http://bauhaus/codes/concept/ModeCollecte> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/modesCollecte> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "F" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Face à face par enquêteur"@fr , "Face to face by interviewer"@en .
+    
+    <http://bauhaus/codes/frequence/T>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "T" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Bimestrielle"@fr , "Bimonthly"@en .
+    
+    <http://bauhaus/codes/langue/zh>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#zho> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "zh" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Chinese"@en , "Chinois"@fr .
+    
+    <http://bauhaus/codes/uniteEnquetee/E>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "E" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Unité légale"@fr , "Legal unit"@en .
+    
+    <http://bauhaus/codes/frequence/N>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "N" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Toutes les minutes"@fr , "Minutely"@en .
+    
+    <http://bauhaus/codes/modesCollecte>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/modeCollecte/I> , <http://bauhaus/codes/modeCollecte/P> , <http://bauhaus/codes/modeCollecte/M> , <http://bauhaus/codes/modeCollecte/F> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "CL_COLLECTION_MODE" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Mode de collecte"@fr , "Collection mode"@en .
+    
+    <http://bauhaus/codes/uniteEnquetee/P>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "P" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Entreprise"@fr , "Enterprise"@en .
+    
+    <http://bauhaus/codes/frequence/H>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "H" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Toutes les heures"@fr , "Hourly"@en .
+    
+    <http://bauhaus/codes/concept/StatutEnquete>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Statut de l'enquête"@fr , "Survey status"@en ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/statutsEnquete> .
+    
+    <http://bauhaus/codes/frequence/B>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "B" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Quotidienne – jours ouvrés"@fr , "Daily – business week"@en .
+    
+    <http://bauhaus/codes/frequence/S>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "S" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Semestrielle"@fr , "Half-yearly, semester"@en .
+    
+    <http://bauhaus/codes/categorieSource/I>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "I" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Indicateurs"@fr , "Indicators"@en .
+    
+    <http://bauhaus/codes/uniteEnquetee/D>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "D" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Logement"@fr , "Dwelling"@en .
+    
+    <http://bauhaus/codes/frequence/M>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "M" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Mensuelle"@fr , "Monthly"@en .
+    
+    <http://bauhaus/codes/modeCollecte/P>
+            a       <http://bauhaus/codes/concept/ModeCollecte> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/modesCollecte> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "P" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Par téléphone"@fr , "By phone"@en .
+    
+    <http://bauhaus/codes/statutEnquete/Q>
+            a       <http://bauhaus/codes/concept/StatutEnquete> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/statutsEnquete> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "Q" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enquête d'intérêt général et de qualité statistique"@fr , "Survey of general interest and statistical quality"@en .
+    
+    <http://bauhaus/codes/categorieSource/C>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "C" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Synthèse"@fr , "Synthesis"@en .
+    
+    <http://bauhaus/codes/langue/fr>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#fra> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "fr" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "French"@en , "Français"@fr .
+    
+    <http://bauhaus/codes/uniteEnquetee/I>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "I" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Individu"@fr , "Individual"@en .
+    
+    <http://bauhaus/codes/statutsEnquete>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/statutEnquete/G> , <http://bauhaus/codes/statutEnquete/C> , <http://bauhaus/codes/statutEnquete/Q> , <http://bauhaus/codes/statutEnquete/T> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "CL_SURVEY_STATUS" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Statut de l'enquête"@fr , "Survey status"@en .
+    
+    <http://bauhaus/codes/frequence/A>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "A" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Annuelle"@fr , "Annual"@en .
+    
+    <http://bauhaus/codes/langues>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/langue/es> , <http://bauhaus/codes/langue/fr> , <http://bauhaus/codes/langue/ro> , <http://bauhaus/codes/langue/pt> , <http://bauhaus/codes/langue/tr> , <http://bauhaus/codes/langue/zh> , <http://bauhaus/codes/langue/en> , <http://bauhaus/codes/langue/de> , <http://bauhaus/codes/langue/ar> , <http://bauhaus/codes/langue/ja> , <http://bauhaus/codes/langue/it> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ISO-639" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Language"@en , "Langue"@fr .
+    
+    <http://bauhaus/codes/unitesEnquetees>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/uniteEnquetee/H> , <http://bauhaus/codes/uniteEnquetee/P> , <http://bauhaus/codes/uniteEnquetee/D> , <http://bauhaus/codes/uniteEnquetee/L> , <http://bauhaus/codes/uniteEnquetee/A> , <http://bauhaus/codes/uniteEnquetee/T> , <http://bauhaus/codes/uniteEnquetee/I> , <http://bauhaus/codes/uniteEnquetee/E> , <http://bauhaus/codes/uniteEnquetee/G> , <http://bauhaus/codes/uniteEnquetee/C> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "CL_SURVEY_UNIT" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Survey unit"@en , "Unité enquêtée"@fr .
+    
+    <http://bauhaus/codes/uniteEnquetee/C>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "C" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Commune"@fr , "Township"@en .
+    
+    <http://bauhaus/codes/langue/ro>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#ron> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ro" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Romanian"@en , "Roumain"@fr .
+    
+    <http://bauhaus/codes/uniteEnquetee/T>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "T" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Collectivité locale"@fr , "Local community"@en .
+    
+    <http://bauhaus/codes/frequence/L>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "L" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Infra-annuelle"@fr , "Sub-annual"@en .
+    
+    <http://bauhaus/codes/langue/pt>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#por> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "pt" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Portuguese"@en , "Portugais"@fr .
+    
+    <http://bauhaus/codes/categorieSource/S>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "S" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enquête"@fr , "Survey"@en .
+    
+    <http://bauhaus/codes/frequences>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/frequence/D> , <http://bauhaus/codes/frequence/N> , <http://bauhaus/codes/frequence/C> , <http://bauhaus/codes/frequence/M> , <http://bauhaus/codes/frequence/S> , <http://bauhaus/codes/frequence/P> , <http://bauhaus/codes/frequence/U> , <http://bauhaus/codes/frequence/H> , <http://bauhaus/codes/frequence/Q> , <http://bauhaus/codes/frequence/W> , <http://bauhaus/codes/frequence/T> , <http://bauhaus/codes/frequence/I> , <http://bauhaus/codes/frequence/L> , <http://bauhaus/codes/frequence/B> , <http://bauhaus/codes/frequence/A> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "CL_FREQ" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Frequency"@en , "Fréquence"@fr .
+    
+    <http://bauhaus/codes/langue/en>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#eng> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "en" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "English"@en , "Anglais"@fr .
+    
+    <http://bauhaus/codes/modeCollecte/I>
+            a       <http://bauhaus/codes/concept/ModeCollecte> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/modesCollecte> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "I" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Par Internet"@fr , "By Internet"@en .
+    
+    <http://bauhaus/codes/frequence/W>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "W" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Hebdomadaire"@fr , "Weekly"@en .
+    
+    <http://bauhaus/codes/categorieSource/M>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "M" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Modélisation"@fr , "Modelization"@en .
+    
+    <http://bauhaus/codes/langue/ja>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#jpn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ja" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Japanese"@en , "Japonais"@fr .
+    
+    <http://bauhaus/codes/langue/de>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#deu> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "de" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "German"@en , "Allemand"@fr .
+    
+    <http://bauhaus/codes/uniteEnquetee/H>
+            a       <http://bauhaus/codes/concept/UniteEnquetee> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/unitesEnquetees> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "H" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Ménage"@fr , "Household"@en .
+    
+    <http://bauhaus/codes/frequence/Q>
+            a       <http://bauhaus/codes/concept/Frequence> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/frequences> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "Q" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Trimestrielle"@fr , "Quarterly"@en .
+    
+    <http://bauhaus/codes/categoriesSource>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/codes/categorieSource/C> , <http://bauhaus/codes/categorieSource/M> , <http://bauhaus/codes/categorieSource/R> , <http://bauhaus/codes/categorieSource/A> , <http://bauhaus/codes/categorieSource/P> , <http://bauhaus/codes/categorieSource/I> , <http://bauhaus/codes/categorieSource/S> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "CL_SOURCE_CATEGORY" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Catégorie de source"@fr , "Source category"@en .
+    
+    <http://bauhaus/codes/langue/ar>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#ara> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ar" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Arabic"@en , "Arabe"@fr .
+    
+    <http://bauhaus/codes/langue/es>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#spa> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "es" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Spanish"@en , "Espagnol"@fr .
+    
+    <http://bauhaus/codes/categorieSource/A>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "A" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Données administratives"@fr , "Administrative data"@en .
+    
+    <http://bauhaus/codes/langue/it>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/codes/concept/Langue> ;
+            <http://www.w3.org/2002/07/owl#sameAs>
+                    <http://psi.oasis-open.org/iso/639/#ita> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/langues> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "it" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Italian"@en , "Italien"@fr .
+    
+    <http://bauhaus/codes/categorieSource/R>
+            a       <http://bauhaus/codes/concept/CategorieSource> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/codes/categoriesSource> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "R" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Répertoire"@fr , "Register"@en .
+    
+    <http://bauhaus/codes/concept/CategorieSource>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Catégorie de source"@fr , "Source category"@en ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/categoriesSource> .
+    
+    <http://bauhaus/codes/concept/Frequence>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Fréquence"@fr , "Frequency"@en ;
+            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
+                    <http://bauhaus/codes/frequences> .
+}
+
+<http://rdf.insee.fr/graphes/concepts> {
+    <http://bauhaus/concepts/theme/inc3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/inc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Poverty – precarity"@en , "Pauvreté – Précarité"@fr .
+    
+    <http://bauhaus/concepts/theme/eco5>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Public finance"@en , "Finances publiques"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn6>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN6" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Transportation"@en , "Transports"@fr .
+    
+    <http://bauhaus/concepts/theme/ent1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ent> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ENT1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Business demography"@en , "Démographie et créations des entreprises"@fr .
+    
+    <http://bauhaus/concepts/theme/soc3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Housing"@en , "Logement"@fr .
+    
+    <http://bauhaus/concepts/themes>
+            a       <http://www.w3.org/2004/02/skos/core#ConceptScheme> ;
+            <http://www.w3.org/2004/02/skos/core#hasTopConcept>
+                    <http://bauhaus/concepts/theme/soc> , <http://bauhaus/concepts/theme/lab> , <http://bauhaus/concepts/theme/dev> , <http://bauhaus/concepts/theme/eco> , <http://bauhaus/concepts/theme/ent> , <http://bauhaus/concepts/theme/inc> , <http://bauhaus/concepts/theme/pop> , <http://bauhaus/concepts/theme/bsn> , <http://bauhaus/concepts/theme/ter> ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Statistical themes"@en , "Thèmes statistiques"@fr .
+    
+    <http://bauhaus/concepts/theme/inc2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/inc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Social protection – Pensions"@en , "Protection sociale – Retraites"@fr .
+    
+    <http://bauhaus/concepts/theme/pop5>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/pop> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Foreigners – Immigrants"@en , "Étrangers – Immigrés"@fr .
+    
+    <http://bauhaus/concepts/theme/eco4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Annual national accounts"@en , "Comptes nationaux annuels"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn5>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Services"@en , "Services"@fr .
+    
+    <http://bauhaus/concepts/theme/dev>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/dev2> , <http://bauhaus/concepts/theme/dev1> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "DEV" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Sustainable development – Environment"@en , "Développement durable – Environnement"@fr ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/soc2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Education – Training – Skills"@en , "Éducation – Formation – Compétences"@fr .
+    
+    <http://bauhaus/concepts/theme/lab>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/concepts/themes/Theme> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/lab2> , <http://bauhaus/concepts/theme/lab3> , <http://bauhaus/concepts/theme/lab1> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "LAB" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Marché du travail – Salaires"@fr , "Labour market – Wages"@en ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/inc1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/inc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Income – Living standards – Purchasing power"@en , "Revenus – Niveaux de vie – Pouvoir d'achat"@fr .
+    
+    <http://bauhaus/concepts/theme/inc>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/inc5> , <http://bauhaus/concepts/theme/inc3> , <http://bauhaus/concepts/theme/inc1> , <http://bauhaus/concepts/theme/inc4> , <http://bauhaus/concepts/theme/inc2> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Income – Purchasing power – Consumption"@en , "Revenus – Pouvoir d'achat – Consommation"@fr ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/pop4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/pop> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Couples – Families – Households"@en , "Couples – Familles – Ménages"@fr .
+    
+    <http://bauhaus/concepts/theme/pop>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/concepts/themes/Theme> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/pop5> , <http://bauhaus/concepts/theme/pop4> , <http://bauhaus/concepts/theme/pop3> , <http://bauhaus/concepts/theme/pop2> , <http://bauhaus/concepts/theme/pop1> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Demography"@en , "Démographie"@fr ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/eco>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/eco2> , <http://bauhaus/concepts/theme/eco5> , <http://bauhaus/concepts/theme/eco6> , <http://bauhaus/concepts/theme/eco4> , <http://bauhaus/concepts/theme/eco1> , <http://bauhaus/concepts/theme/eco3> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Économie – Conjoncture – Comptes nationaux"@fr , "Economy – Economic outlook – National accounts"@en ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/ter4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ter> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "TER4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Mobility – trip"@en , "Mobilités – Déplacements"@fr .
+    
+    <http://bauhaus/concepts/theme/eco3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Quaterly national accounts"@en , "Comptes nationaux trimestriels"@fr .
+    
+    <http://bauhaus/concepts/theme/soc7>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC7" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Leisure – Culture"@en , "Loisirs – Culture"@fr .
+    
+    <http://bauhaus/concepts/theme/ter>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/ter1> , <http://bauhaus/concepts/theme/ter4> , <http://bauhaus/concepts/theme/ter3> , <http://bauhaus/concepts/theme/ter2> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "TER" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Territoires, villes et quartiers"@fr , "Town and country planning"@en ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/bsn>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/bsn4> , <http://bauhaus/concepts/theme/bsn5> , <http://bauhaus/concepts/theme/bsn7> , <http://bauhaus/concepts/theme/bsn8> , <http://bauhaus/concepts/theme/bsn2> , <http://bauhaus/concepts/theme/bsn3> , <http://bauhaus/concepts/theme/bsn1> , <http://bauhaus/concepts/theme/bsn6> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Business sector"@en , "Secteurs d'activité"@fr ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/bsn4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Construction"@en , "Construction"@fr .
+    
+    <http://bauhaus/concepts/theme/dev2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/dev> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "DEV2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Sustainable development"@en , "Développement durable"@fr .
+    
+    <http://bauhaus/concepts/theme/soc1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Society – Social life – Elections"@en , "Société – Vie sociale – Élections"@fr .
+    
+    <http://bauhaus/concepts/theme/ent>
+            a       <http://www.w3.org/2004/02/skos/core#Concept> , <http://bauhaus/concepts/themes/Theme> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/ent3> , <http://bauhaus/concepts/theme/ent2> , <http://bauhaus/concepts/theme/ent1> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ENT" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Enterprises"@en , "Entreprises"@fr ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/pop3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/pop> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Deaths – Mortality – Life expectancy"@en , "Décès – Mortalité – Espérance de vie"@fr .
+    
+    <http://bauhaus/concepts/theme/soc>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#narrower>
+                    <http://bauhaus/concepts/theme/soc6> , <http://bauhaus/concepts/theme/soc7> , <http://bauhaus/concepts/theme/soc4> , <http://bauhaus/concepts/theme/soc5> , <http://bauhaus/concepts/theme/soc2> , <http://bauhaus/concepts/theme/soc3> , <http://bauhaus/concepts/theme/soc1> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Conditions de vie – Société"@fr , "Living standards – Society"@en ;
+            <http://www.w3.org/2004/02/skos/core#topConceptOf>
+                    <http://bauhaus/concepts/themes> .
+    
+    <http://bauhaus/concepts/theme/ter3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ter> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "TER3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Territory dynamics"@en , "Dynamique des territoires"@fr .
+    
+    <http://bauhaus/concepts/theme/eco2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Economic outlook"@en , "Conjoncture"@fr .
+    
+    <http://bauhaus/concepts/theme/lab3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/lab> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "LAB3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Wages and salaries"@en , "Salaires et revenus d'activité"@fr .
+    
+    <http://bauhaus/concepts/theme/soc6>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC6" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Safety – Justice"@en , "Sécurité – Justice"@fr .
+    
+    <http://bauhaus/concepts/themes/Theme>
+            a       <http://www.w3.org/2000/01/rdf-schema#Class> ;
+            <http://www.w3.org/2000/01/rdf-schema#label>
+                    "Statistical theme"@en , "Thème statistique"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Industries (including food industries)"@en , "Industrie (dont IAA)"@fr .
+    
+    <http://bauhaus/concepts/theme/dev1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/dev> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "DEV1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Environment"@en , "Environnement"@fr .
+    
+    <http://bauhaus/concepts/theme/inc5>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/inc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Household consumption and ownership rates"@en , "Consommation et équipement des ménages"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn8>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN8" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Social and solidarity economy"@en , "Économie sociale et solidaire"@fr .
+    
+    <http://bauhaus/concepts/theme/pop2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/pop> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Births – Fertility"@en , "Naissances – Fécondité"@fr .
+    
+    <http://bauhaus/concepts/theme/ter2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ter> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "TER2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Municipalities and districts"@en , "Villes et quartiers"@fr .
+    
+    <http://bauhaus/concepts/theme/ent3>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ent> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ENT3" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Globalization, competitivity and innovation"@en , "Mondialisation, compétitivité et innovation"@fr .
+    
+    <http://bauhaus/concepts/theme/eco1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "General economy (inflation, GDP, debt…)"@en , "Économie générale (inflation, PIB, dette…)"@fr .
+    
+    <http://bauhaus/concepts/theme/lab2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/lab> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "LAB2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Unemployment"@en , "Chômage"@fr .
+    
+    <http://bauhaus/concepts/theme/soc5>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC5" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Health – Handicap – dependency"@en , "Santé – Handicap – Dépendance"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Wholesale and retail trade"@en , "Commerce"@fr .
+    
+    <http://bauhaus/concepts/theme/inc4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/inc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "INC4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Estate"@en , "Patrimoine"@fr .
+    
+    <http://bauhaus/concepts/theme/eco6>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/eco> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ECO6" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Foreign trade"@en , "Commerce extérieur"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn7>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN7" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Tourism"@en , "Tourisme"@fr .
+    
+    <http://bauhaus/concepts/theme/pop1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/pop> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "POP1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Population change and structure"@en , "Évolution et structure de la population"@fr .
+    
+    <http://bauhaus/concepts/theme/ter1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ter> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "TER1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Population facilities and services"@en , "Équipements et services à la population"@fr .
+    
+    <http://bauhaus/concepts/theme/ent2>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/ent> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "ENT2" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Characteristics of enterprises"@en , "Caractéristiques des entreprises"@fr .
+    
+    <http://bauhaus/concepts/theme/lab1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/lab> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "LAB1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Employment – Labour force"@en , "Emploi – Population active"@fr .
+    
+    <http://bauhaus/concepts/theme/soc4>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/soc> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "SOC4" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Gender equality"@en , "Égalité femmes-hommes"@fr .
+    
+    <http://bauhaus/concepts/theme/bsn1>
+            a       <http://bauhaus/concepts/themes/Theme> , <http://www.w3.org/2004/02/skos/core#Concept> ;
+            <http://www.w3.org/2004/02/skos/core#broader>
+                    <http://bauhaus/concepts/theme/bsn> ;
+            <http://www.w3.org/2004/02/skos/core#inScheme>
+                    <http://bauhaus/concepts/themes> ;
+            <http://www.w3.org/2004/02/skos/core#notation>
+                    "BSN1" ;
+            <http://www.w3.org/2004/02/skos/core#prefLabel>
+                    "Agriculture"@en , "Agriculture"@fr .
+}
