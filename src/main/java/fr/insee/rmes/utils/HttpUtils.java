@@ -7,9 +7,12 @@ import org.springframework.http.MediaType;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HttpUtils {
+public final class HttpUtils {
     public static final String ATTACHMENT = "attachment";
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
+
+    private HttpUtils() {
+    }
 
     public static HttpHeaders generateHttpHeaders(String fileName, String extension, int maxLength){
         MediaType contentType = FilesUtils.getMediaTypeFromExtension(extension);
