@@ -2,8 +2,6 @@ package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
-import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -138,7 +136,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     public void deleteDistributionId(String distributionId) throws RmesException{
         String distributionString = getDistributionByID(distributionId);
         Distribution distribution = Deserializer.deserializeBody(distributionString, Distribution.class);
-        if (!isUnpublished(distribution)){
+        if (isPublished(distribution)){
             throw new RmesBadRequestException(ErrorCodes.DISTRIBUTION_DELETE_ONLY_UNPUBLISHED, "Only unpublished distributions can be deleted");
         }
         IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
@@ -147,8 +145,8 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         repoGestion.deleteObject(RdfUtils.createIRI(distributionURI));
         repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph);
     }
-    private boolean isUnpublished(Distribution distribution) {
-        return "Unpublished".equalsIgnoreCase(distribution.getValidationState());
+    private boolean isPublished(Distribution distribution) {
+        return "Validated".equalsIgnoreCase(distribution.getValidationState());
     }
 
     private String persist(Distribution distribution, boolean creation) throws RmesException {

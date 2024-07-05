@@ -44,12 +44,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
-    public static final String CATALOG_RECORD_CONTRIBUTOR = "catalogRecordContributor";
+
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
-    @Autowired
-    UserProviderFromSecurityContext userProviderFromSecurityContext;
 
     @Autowired
     SeriesUtils seriesUtils;

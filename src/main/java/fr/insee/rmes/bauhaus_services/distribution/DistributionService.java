@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.PatchDistribution;
-import org.springframework.http.ResponseEntity;
 
 public interface DistributionService {
 
