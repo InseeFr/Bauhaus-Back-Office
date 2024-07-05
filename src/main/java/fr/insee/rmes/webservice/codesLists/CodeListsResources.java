@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesException;
@@ -91,16 +93,7 @@ public class CodeListsResources extends GenericResources {
         }
     }
 
-//    @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-//    @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-//    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) {
-//        try {
-//            String body = codeListService.getDetailedCodesList(notation, false);
-//            return ResponseEntity.status(HttpStatus.OK).body(body);
-//        } catch (RmesException e) {
-//            return returnRmesException(e);
-//        }
-//    }
+
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
@@ -109,61 +102,51 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
+
     @GetMapping(value = "/detailed/{notation}/codes")
     @Operation(
             operationId = "getPaginatedCodesForCodeList",
             summary = "List of codes",
             responses = {
-                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))
+                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))
             })
-    public ResponseEntity<Object> getPaginatedCodesForCodeList(
+    public ResponseEntity<CodeList> getPaginatedCodesForCodeList(
             @PathVariable("notation") String notation,
             @RequestParam(value = "search", required = false) List<String> search,
             @RequestParam("page") int page,
             @RequestParam(value = "per_page", required = false) Integer perPage,
-            @RequestParam(value = "sort", required = false) String sort) {
-        try {
-            String body = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+            @RequestParam(value = "sort", required = false) String sort) throws RmesException {
+        String codeListJson = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
+        CodeList codeList=Deserializer.deserializeBody(codeListJson, CodeList.class);
+        return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
     @PreAuthorize("isAdmin()")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) {
-        try {
-            String body = codeListService.deleteCodeFromCodeList(notation, code);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<Void> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
+        String body = codeListService.deleteCodeFromCodeList(notation, code);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
+
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
     @PutMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) {
-        try {
-            String response = codeListService.updateCodeFromCodeList(notation, code, body);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    @Operation(operationId = "updateCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListItem.class)))})
+    public ResponseEntity<CodeListItem> updateCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
+        String id = codeListService.updateCodeFromCodeList(notation, code, body);
+        CodeListItem idCodeListItem = new CodeListItem(id);
+        return ResponseEntity.status(HttpStatus.OK).body(idCodeListItem);
+
     }
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "addCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) {
-        try {
-            String response = codeListService.addCodeFromCodeList(notation, body);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
+        String id = codeListService.addCodeFromCodeList(notation, body);
+        CodeListItem idCodeListItem = new CodeListItem(id);
+        return ResponseEntity.status(HttpStatus.OK).body(idCodeListItem);
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -175,38 +158,41 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) {
-        try {
-            String body = codeListService.getCodesJson(notation, page, perPage);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
-    }
+    @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<CodeList> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
+        String codeListCodesJson = codeListService.getCodesJson(notation, page, perPage);
+        CodeList codeListCodes=Deserializer.deserializeBody(codeListCodesJson, CodeList.class);
+        return ResponseEntity.status(HttpStatus.OK).body(codeListCodes);
 
+    }
 
     @GetMapping(value = "/{notation}/code/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
-    public ResponseEntity<Object> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) {
-        try {
-            String body = codeListService.getCode(notation, code);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<CodeLabelList> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
+        String codeLabelListJson = codeListService.getCode(notation, code);
+        CodeLabelList codeLabelList=Deserializer.deserializeBody(codeLabelListJson, CodeLabelList.class);
+        return ResponseEntity.status(HttpStatus.OK).body(codeLabelList);
     }
 
+
+//    @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
+//    @PutMapping("/validate/{id}")
+//    @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
+//    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) {
+//        try {
+//            codeListService.publishCodeList(id, false);
+//            return ResponseEntity.status(HttpStatus.OK).body(id);
+//        } catch (RmesException e) {
+//            return returnRmesException(e);
+//        }
+//    }
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
     @PutMapping("/validate/{id}")
-    @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
-    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) {
-        try {
-            codeListService.publishCodeList(id, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
+    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
+        codeListService.publishCodeList(id, false);
+        CodeListResponse codeListResponseId = new CodeListResponse(id);
+        return ResponseEntity.status(HttpStatus.OK).body(codeListResponseId);
     }
 
 }

@@ -41,14 +41,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     public static final String CONTRIBUTOR = "contributor";
     private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
-
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
-
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
-    public static final String CONTRIBUTOR = "contributor";
 
     @Autowired
     SeriesUtils seriesUtils;

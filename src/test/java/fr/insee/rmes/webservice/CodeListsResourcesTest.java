@@ -2,6 +2,8 @@ package fr.insee.rmes.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
@@ -42,70 +44,70 @@ class CodeListsResourcesTest {
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
         when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
+        ResponseEntity<CodeList> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithGetPaginatedCodesForCodeList() throws RmesException {
         when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
+        ResponseEntity<CodeList> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn200WithGetCodesForCodeList() throws RmesException {
         when(codeListService.getCodesJson("notation", 1, null)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getCodesForCodeList("notation", 1, null);
+        ResponseEntity<CodeList> response = codeListsResources.getCodesForCodeList("notation", 1, null);
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithGetCodesForCodeList() throws RmesException {
         when(codeListService.getCodesJson("notation", 1, null)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getCodesForCodeList("notation", 1, null);
+        ResponseEntity<CodeList> response = codeListsResources.getCodesForCodeList("notation", 1, null);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn200WithDeleteCodeForCodeList() throws RmesException {
         when(codeListService.deleteCodeFromCodeList("notation", "1")).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.deleteCodeForCodeList("notation", "1");
+        ResponseEntity<Void> response = codeListsResources.deleteCodeForCodeList("notation", "1");
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithDeleteCodeForCodeList() throws RmesException {
         when(codeListService.deleteCodeFromCodeList("notation", "1")).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.deleteCodeForCodeList("notation", "1");
+        ResponseEntity<Void> response = codeListsResources.deleteCodeForCodeList("notation", "1");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn200WithUpdateCodeForCodeList() throws RmesException {
         when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithUpdateCodeForCodeList() throws RmesException {
         when(codeListService.updateCodeFromCodeList("notation", "1", "body")).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
+        ResponseEntity<CodeListItem> response = codeListsResources.updateCodeForCodeList("notation", "1", "body");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn201WithAddCodeForCodeList() throws RmesException {
         when(codeListService.addCodeFromCodeList("notation", "body")).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.addCodeForCodeList("notation", "body");
+        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", "body");
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
     @Test
     void shouldThrowErrorWithAddCodeForCodeList() throws RmesException {
         when(codeListService.addCodeFromCodeList("notation", "body")).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.addCodeForCodeList("notation", "body");
+        ResponseEntity<CodeListItem> response = codeListsResources.addCodeForCodeList("notation", "body");
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 }

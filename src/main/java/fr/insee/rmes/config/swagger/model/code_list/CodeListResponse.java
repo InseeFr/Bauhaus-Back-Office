@@ -1,6 +1,5 @@
 package fr.insee.rmes.config.swagger.model.code_list;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -31,7 +30,7 @@ public class CodeListResponse {
 
 	public String creator;
 
-	public String contributor;
+	public List<String> contributor;
 
 	public String created;
 
@@ -44,6 +43,12 @@ public class CodeListResponse {
 	public String disseminationStatus;
 
 	public String validationState;
+
+	public String descriptionLg1;
+	public String descriptionLg2;
+
+	public String lastCodeUriSegment;
+
 
 	public CodeListResponse(String notation) {
 		this.notation = notation;

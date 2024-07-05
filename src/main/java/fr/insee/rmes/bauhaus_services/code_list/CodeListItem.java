@@ -1,7 +1,9 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeListItem {
 
 	private static String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
@@ -18,6 +20,10 @@ public class CodeListItem {
 	@Schema(description = "Label lg2")
 	private String labelLg2;
 
+	private String descriptionLg1;
+	private String descriptionLg2;
+	private String lastCodeUriSegment;
+	private String codeUri;
 
 
 	public CodeListItem(String code, String labelLg1, String labelLg2, String iri) {
@@ -26,6 +32,10 @@ public class CodeListItem {
 		this.labelLg1 = labelLg1;
 		this.labelLg2 = labelLg2;
 		this.iri = iri;
+	}
+
+	public CodeListItem(String code) {
+		this.code = code;
 	}
 
 	public CodeListItem() {
@@ -63,6 +73,22 @@ public class CodeListItem {
 
 	public void setIri(String iri) {
 		this.iri = iri;
+	}
+
+	public String getDescriptionLg1() {
+		return descriptionLg1;
+	}
+
+	public String getDescriptionLg2() {
+		return descriptionLg2;
+	}
+
+	public String getLastCodeUriSegment() {
+		return lastCodeUriSegment;
+	}
+
+	public String getCodeUri() {
+		return codeUri;
 	}
 
 	public static String getClassOperationsLink() {

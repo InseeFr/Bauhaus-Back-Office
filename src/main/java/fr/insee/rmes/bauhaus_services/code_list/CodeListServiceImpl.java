@@ -74,7 +74,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
         result.put("total", counter.get("count"));
         result.put("page", page);
-        result.put("items", getItemsWithPagination(notation, page, perPage));
+        result.put("codes", getItemsWithPagination(notation, page, perPage));
         return result;
     }
 
@@ -187,7 +187,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
-		result.put("items", items);
+		result.put("codes", items);
 
 		return result.toString();
 	}
