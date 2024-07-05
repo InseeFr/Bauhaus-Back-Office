@@ -3,7 +3,7 @@ package fr.insee.rmes.webservice.codesLists;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
-import fr.insee.rmes.config.swagger.model.code_list.CodeList;
+import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +41,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeListResponse.class)))})
     public ResponseEntity<Object> getAllPartialCodesLists() {
         try {
             String body = codeListService.getAllCodesLists(true);
@@ -53,7 +53,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
         try {
             String body = codeListService.getDetailedCodesList(notation, true);
@@ -90,7 +90,7 @@ public class PartialCodeListsResources extends GenericResources {
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
-            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+            responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() {
         try {
             String body = codeListService.getDetailedCodesListForSearch(true);

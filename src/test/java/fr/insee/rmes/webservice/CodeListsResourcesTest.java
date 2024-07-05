@@ -1,6 +1,8 @@
 package fr.insee.rmes.webservice;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
+import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Test;
@@ -25,16 +27,16 @@ class CodeListsResourcesTest {
     CodeListsResources codeListsResources;
 
     @Test
-    void shouldReturn200WithGetAllCodesLists() throws RmesException {
+    void shouldReturn200WithGetAllCodesLists() throws RmesException, JsonProcessingException {
         when(codeListService.getAllCodesLists(false)).thenReturn("body");
-        ResponseEntity<Object> response = codeListsResources.getAllCodesLists();
+        ResponseEntity<List<CodeListResponse>> response = codeListsResources.getAllCodesLists();
         assertEquals("body", response.getBody());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
-    void shouldThrowErrorWithGetAllCodesLists() throws RmesException {
+    void shouldThrowErrorWithGetAllCodesLists() throws RmesException, JsonProcessingException {
         when(codeListService.getAllCodesLists(false)).thenThrow(new RmesException(500, "", ""));
-        ResponseEntity<Object> response = codeListsResources.getAllCodesLists();
+        ResponseEntity<List<CodeListResponse>> response = codeListsResources.getAllCodesLists();
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
     @Test

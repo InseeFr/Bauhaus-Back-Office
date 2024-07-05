@@ -114,14 +114,14 @@ public class CodeListQueries extends GenericQueries {
 	}
 
 	public static String getCodeListLabelByNotation(String notation) {
-		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
+		return "SELECT ?labelLg1 ?labelLg2 \n"
 				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
 				+ "?codeList rdf:type skos:ConceptScheme . \n"
 				+ "?codeList skos:notation '" + notation + "' . \n"
-				+ "?codeList skos:prefLabel ?codeListLabelLg1 . \n"
-				+ "FILTER (lang(?codeListLabelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?codeList skos:prefLabel ?codeListLabelLg2 . \n"
-				+ "FILTER (lang(?codeListLabelLg2) = '" + config.getLg2() + "') . \n"
+				+ "?codeList skos:prefLabel ?labelLg1 . \n"
+				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
+				+ "?codeList skos:prefLabel ?labelLg2 . \n"
+				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
 				+ " }}";
 	}
 
