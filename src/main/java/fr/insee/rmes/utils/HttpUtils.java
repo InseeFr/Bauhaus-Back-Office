@@ -4,7 +4,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class HttpUtils {
@@ -14,15 +13,14 @@ public final class HttpUtils {
     private HttpUtils() {
     }
 
-    public static HttpHeaders generateHttpHeaders(String fileName, String extension, int maxLength){
+    public static HttpHeaders generateHttpHeaders(String fileName, String extension, int maxLength) {
         MediaType contentType = FilesUtils.getMediaTypeFromExtension(extension);
 
         ContentDisposition content = ContentDisposition.builder(HttpUtils.ATTACHMENT).filename(FilesUtils.reduceFileNameSize(fileName, maxLength) + extension).build();
 
-        List<String> allowHeaders = new ArrayList<>();
-        allowHeaders.add(CONTENT_DISPOSITION);
-        allowHeaders.add("Access-Control-Allow-Origin");
-        allowHeaders.add("Access-Control-Allow-Credentials");
+        List<String> allowHeaders = List.of(CONTENT_DISPOSITION,
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials");
 
 
         HttpHeaders responseHeaders = new HttpHeaders();
