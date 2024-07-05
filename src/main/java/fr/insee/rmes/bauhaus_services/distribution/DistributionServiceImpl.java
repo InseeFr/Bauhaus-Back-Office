@@ -7,7 +7,6 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
-import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -22,13 +21,11 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
+
 import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
 
 
@@ -64,8 +61,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     protected IRI getDatasetIri(String datasetId){
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        return iri;
+        return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
     @Override
     public String getDistributions() throws RmesException {
@@ -146,7 +142,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph);
     }
     private boolean isPublished(Distribution distribution) {
-        return "Validated".equalsIgnoreCase(distribution.getValidationState());
+        return ! "Unpublished".equalsIgnoreCase(distribution.getValidationState());
     }
 
     private String persist(Distribution distribution, boolean creation) throws RmesException {
