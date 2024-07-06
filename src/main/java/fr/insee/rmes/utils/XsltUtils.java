@@ -53,7 +53,7 @@ public class XsltUtils {
 		// Pass parameters in a file
 		CopyOption[] options = { StandardCopyOption.REPLACE_EXISTING };
 		try {
-			Path tempFile = Files.createTempFile(tempDir, paramName, Constants.DOT_XML);
+			Path tempFile = Files.createTempFile(tempDir, paramName, FilesUtils.XML_EXTENSION);
 			String absolutePath = tempFile.toFile().getAbsolutePath();
 			InputStream is = IOUtils.toInputStream(paramData, StandardCharsets.UTF_8);
 			Files.copy(is, tempFile, options);
