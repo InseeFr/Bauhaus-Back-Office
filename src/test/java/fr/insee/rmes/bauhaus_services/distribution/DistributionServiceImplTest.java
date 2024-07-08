@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
@@ -81,8 +82,8 @@ class DistributionServiceImplTest {
         when(repositoryGestion.getResponseAsObject("query")).thenReturn(object);
         try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDistribution(eq("1"), any())).thenReturn("query");
-            String query = distributionService.getDistributionByID("1");
-            Assertions.assertEquals("{\"id\":\"1\"}", query);
+            Distribution distribution = distributionService.getDistributionByID("1");
+            Assertions.assertEquals("1", distribution.getId());
         }
     }
 
