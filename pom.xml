@@ -256,6 +256,12 @@
             <artifactId>testcontainers</artifactId>
             <version>1.17.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>1.19.8</version>
+        </dependency>
     </dependencies>
 
     <build>

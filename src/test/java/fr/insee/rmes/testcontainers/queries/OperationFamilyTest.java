@@ -16,7 +16,7 @@ public class OperationFamilyTest extends WithGraphDBContainer{
 
     @Test
     void getAllFamilies() throws Exception {
-        importTrigFile("all-operations-and-indicators.trig");
+        container.withTrigFiles("all-operations-and-indicators.trig");
         String result = operationService.getFamilies();
         assertEquals(new JSONArray(result).length(), 56);
     }
