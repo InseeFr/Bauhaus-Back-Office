@@ -22,13 +22,11 @@ import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -43,8 +41,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.lang.reflect.Field;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -57,10 +57,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	private static final String ATTACHMENT = "attachment";
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
-
-
-	@Value("classpath:bauhaus-sims.json")
-	org.springframework.core.io.Resource simsDefaultValue;
 
 	@Autowired
 	XDocReport xdr;
