@@ -82,15 +82,16 @@ public class CodeListsResources extends GenericResources {
         return ResponseEntity.status(HttpStatus.OK).body(listCodeListResponse);
     }
 
+
+
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getDetailedCodesLisForSearch() {
-        try {
-            String body = codeListService.getDetailedCodesListForSearch(false);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<List<CodeListResponse>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
+            String listCodeListJson = codeListService.getDetailedCodesListForSearch(false);
+            ObjectMapper objectMapper = new ObjectMapper();
+            List<CodeListResponse> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeListResponse>>() {});
+            return ResponseEntity.status(HttpStatus.OK).body(listCodeListResponse);
+
     }
 
 
@@ -175,17 +176,6 @@ public class CodeListsResources extends GenericResources {
     }
 
 
-//    @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
-//    @PutMapping("/validate/{id}")
-//    @io.swagger.v3.oas.annotations.Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
-//    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) {
-//        try {
-//            codeListService.publishCodeList(id, false);
-//            return ResponseEntity.status(HttpStatus.OK).body(id);
-//        } catch (RmesException e) {
-//            return returnRmesException(e);
-//        }
-//    }
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
     @PutMapping("/validate/{id}")
     @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
