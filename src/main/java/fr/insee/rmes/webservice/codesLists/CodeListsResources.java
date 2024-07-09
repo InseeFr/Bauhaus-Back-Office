@@ -126,7 +126,7 @@ public class CodeListsResources extends GenericResources {
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<Void> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
-        String body = codeListService.deleteCodeFromCodeList(notation, code);
+        codeListService.deleteCodeFromCodeList(notation, code);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -147,7 +147,7 @@ public class CodeListsResources extends GenericResources {
     public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.addCodeFromCodeList(notation, body);
         CodeListItem idCodeListItem = new CodeListItem(id);
-        return ResponseEntity.status(HttpStatus.OK).body(idCodeListItem);
+        return ResponseEntity.status(HttpStatus.CREATED).body(idCodeListItem);
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)

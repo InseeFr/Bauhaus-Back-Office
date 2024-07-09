@@ -46,7 +46,7 @@ class CodeListServiceImplTest {
             items.put(item);
             when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
+            assertEquals("{\"codes\":[{\"id\":\"id\"}],\"total\":5,\"page\":1}", codeListService.getCodesJson("notation", 1, null));
         }
     }
 
@@ -75,7 +75,7 @@ class CodeListServiceImplTest {
             relatedList.put(related);
             when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
+            assertEquals("{\"codes\":[{\"code\":\"A\",\"broader\":[\"A1\"]}],\"total\":5,\"page\":1}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
         }
     }
 
