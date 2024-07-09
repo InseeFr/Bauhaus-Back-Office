@@ -24,7 +24,7 @@ public record XDocReport(VarBookExportBuilder varBookExport) {
 	static final Logger logger = LoggerFactory.getLogger(XDocReport.class);
 
 
-	public InputStream exportVariableBookInOdt(String xml, File odtTemplate) throws RmesException {
+	public byte[] exportVariableBookInOdt(String xml, File odtTemplate) throws RmesException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		IXDocReport report;
 
@@ -40,7 +40,7 @@ public record XDocReport(VarBookExportBuilder varBookExport) {
 		}catch (IOException | XDocReportException e) {
 			logger.error(e.getMessage());
 		}
-		return new ByteArrayInputStream(baos.toByteArray());
+		return baos.toByteArray();
 	}
 
 

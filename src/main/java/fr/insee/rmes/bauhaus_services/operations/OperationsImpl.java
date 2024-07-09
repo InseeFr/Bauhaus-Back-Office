@@ -190,24 +190,17 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {
 		//Prepare file
-		InputStream is = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
-		if (is == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
-		ByteArrayResource resource = null;
-		try {
-			resource = new ByteArrayResource(IOUtils.toByteArray(is));
-			is.close();
-		} catch (IOException e) {
-			logger.error("Failed to getBytes of resource");
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
+		byte[] odt = xdr.exportVariableBookInOdt(ddiFile, dicoVar);
+
+		ByteArrayResource resource = new ByteArrayResource(odt);
 
 		//Prepare response headers
 		String fileName = "Codebook"+ FilesUtils.getExtension(accept);
 		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setAccept(List.of(MediaType.ALL));
 		responseHeaders.setContentDisposition(content);
-		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
+		responseHeaders.setContentType(new MediaType("application","vnd.oasis.opendocument.text"));
 
 		return ResponseEntity.ok()
 		         .headers(responseHeaders)
@@ -215,22 +208,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 		         .body(resource);
 
-	}
-
-	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
-		Field pathField;
-		String path = null;
-		FileInputStream fis =null;
-		try {
-			pathField = FileOutputStream.class.getDeclaredField("path");
-			pathField.setAccessible(true);
-			path = (String) pathField.get(os);
-			fis= new FileInputStream(path);
-
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
-			logger.error(e.getMessage(),e);
-		}
-		return(fis);
 	}
 
 	@Override
