@@ -140,7 +140,6 @@ public class DocumentationExport {
 
 			logger.debug("Zip created for the SIMS {}", simsId);
 			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(sims.getString("labelLg1"), FilesUtils.ZIP_EXTENSION, this.maxLength);
-			responseHeaders.setAccessControlExposeHeaders(List.of("X-Missing-Documents", HttpUtils.CONTENT_DISPOSITION));
 			responseHeaders.set("X-Missing-Documents", String.join(",", missingDocuments));
 			Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
 			return ResponseEntity.ok()

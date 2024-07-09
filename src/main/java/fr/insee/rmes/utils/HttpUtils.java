@@ -19,6 +19,7 @@ public final class HttpUtils {
         ContentDisposition content = ContentDisposition.builder(HttpUtils.ATTACHMENT).filename(FilesUtils.reduceFileNameSize(fileName, maxLength) + extension).build();
 
         List<String> allowHeaders = List.of(CONTENT_DISPOSITION,
+                "X-Missing-Documents",
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials");
 
