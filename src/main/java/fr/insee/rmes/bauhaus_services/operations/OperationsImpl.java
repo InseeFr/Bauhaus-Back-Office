@@ -10,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.external.services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -28,7 +28,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -57,10 +56,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	private static final String ATTACHMENT = "attachment";
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
-
-
-	@Value("classpath:bauhaus-sims.json")
-	org.springframework.core.io.Resource simsDefaultValue;
 
 	@Autowired
 	XDocReport xdr;

@@ -1,22 +1,22 @@
 package fr.insee.rmes.testcontainers.queries;
 
 import fr.insee.rmes.bauhaus_services.OperationsService;
+import fr.insee.rmes.bauhaus_services.operations.OperationsImplStubContainer;
+import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest
-public class OperationFamilyTest extends WithGraphDBContainer{
+class OperationFamilyTest extends WithGraphDBContainer{
 
-    @Autowired
-    OperationsService operationService;
+    OperationsService operationService=new OperationsImplStubContainer(getRdfGestionConnectionDetails());
 
     @Test
     void getAllFamilies() throws Exception {
         container.withTrigFiles("all-operations-and-indicators.trig");
+        OpSeriesQueries.setConfig(new ConfigStub());
         String result = operationService.getFamilies();
         assertEquals(new JSONArray(result).length(), 56);
     }

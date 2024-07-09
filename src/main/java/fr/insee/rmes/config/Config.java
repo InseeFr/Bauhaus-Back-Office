@@ -32,10 +32,6 @@ public class Config {
     /******************************************************/
     /** DATABASES		***********************************/
     /******************************************************/
-    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.sesameServer}")
-    private String rdfServerGestion;
-    @Value("${fr.insee.rmes.bauhaus.sesame.gestion.repository}")
-    private String idRepositoryGestion;
     @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseURI}")
     private String baseUriGestion;
 
@@ -149,14 +145,6 @@ public class Config {
 
     public String getBaseGraph() {
         return baseGraph;
-    }
-
-    public String getRdfServerGestion() {
-        return rdfServerGestion;
-    }
-
-    public String getRepositoryIdGestion() {
-        return idRepositoryGestion;
     }
 
     public String getBaseUriGestion() {

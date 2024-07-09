@@ -1,9 +1,7 @@
 package fr.insee.rmes.testcontainers.queries;
 
-import org.junit.jupiter.api.AfterAll;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfConnectionDetails;
 import org.junit.jupiter.api.BeforeAll;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -20,10 +18,18 @@ public class WithGraphDBContainer {
         container.withInitFolder("/testcontainers").withRepository("config.ttl");
     }
 
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        String sesameServer = "http://" + container.getHost() + ":" + container.getMappedPort(7200);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.sesameServer", () -> sesameServer);
-        registry.add("fr.insee.rmes.bauhaus.sesame.gestion.repository", () -> "bauhaus-test");
+    protected static RdfConnectionDetails getRdfGestionConnectionDetails() {
+        return new RdfConnectionDetails() {
+            @Override
+            public String getUrlServer() {
+                return "http://" + container.getHost() + ":" + container.getMappedPort(7200);
+            }
+
+            @Override
+            public String repositoryId() {
+                return "bauhaus-test";
+            }
+        };
     }
+
 }
