@@ -18,6 +18,6 @@ class OperationFamilyTest extends WithGraphDBContainer{
         container.withTrigFiles("all-operations-and-indicators.trig");
         OpSeriesQueries.setConfig(new ConfigStub());
         String result = operationService.getFamilies();
-        assertEquals(new JSONArray(result).length(), 56);
+        assertEquals(56, new JSONArray(result).length());
     }
 }

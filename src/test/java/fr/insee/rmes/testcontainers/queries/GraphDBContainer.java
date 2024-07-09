@@ -17,20 +17,35 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
         withExposedPorts(7200);
     }
 
+    @Override
+    public void start() {
+        super.start();
+        withInitFolder("/testcontainers").withExposedPorts(7200);
+        withRepository("config.ttl");
+    }
+
     public GraphDBContainer withInitFolder(String folder){
         this.folder = folder;
         return this;
     }
 
-    public GraphDBContainer withRepository(String ttlFile) throws IOException, InterruptedException {
-        String path = copyFile(ttlFile);
-        execInContainer("curl", "-X", "POST", "-H", "Content-Type:multipart/form-data", "-F", "config=@" + path, "http://localhost:7200/rest/repositories");
+    public GraphDBContainer withRepository(String ttlFile) {
+        try {
+            String path = copyFile(ttlFile);
+            execInContainer("curl", "-X", "POST", "-H", "Content-Type:multipart/form-data", "-F", "config=@" + path, "http://localhost:7200/rest/repositories");
+        } catch (IOException | InterruptedException e) {
+            throw new AssertionError("The TTL file was not loaded");
+        }
         return this;
     }
 
-    public GraphDBContainer withTrigFiles(String file) throws IOException, InterruptedException {
-        String path = copyFile(file);
-        execInContainer("curl", "-X", "POST", "-H", "Content-Type: application/x-trig", "--data-binary", "@" + path, "http://localhost:7200/repositories/bauhaus-test/statements");
+    public GraphDBContainer withTrigFiles(String file) {
+        try {
+            String path = copyFile(file);
+            execInContainer("curl", "-X", "POST", "-H", "Content-Type: application/x-trig", "--data-binary", "@" + path, "http://localhost:7200/repositories/bauhaus-test/statements");
+        } catch (IOException | InterruptedException e) {
+            throw new AssertionError("The Trig file was not loaded");
+        }
         return this;
     }
 
@@ -44,8 +59,6 @@ public class GraphDBContainer extends GenericContainer<GraphDBContainer> {
     private void assertThatFileExists(String file) throws IOException, InterruptedException {
         Container.ExecResult lsResult = execInContainer("ls", "-al", DOCKER_ENTRYPOINT_INITDB);
         String stdout = lsResult.getStdout();
-        int exitCode = lsResult.getExitCode();
-        assertThat(stdout).contains(file);
-        assertThat(exitCode).isZero();
+        assertThat(stdout).contains(file).withFailMessage("Expecting file %1$s to be in folder %2$s of container", file, DOCKER_ENTRYPOINT_INITDB);
     }
 }
