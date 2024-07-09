@@ -22,7 +22,6 @@ import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -42,8 +41,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.lang.reflect.Field;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -185,25 +186,17 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {
 		//Prepare file
-		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
-		InputStream is = transformFileOutputStreamInInputStream(os);
-		if (is == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
-		ByteArrayResource resource = null;
-		try {
-			resource = new ByteArrayResource(IOUtils.toByteArray(is));
-			is.close();
-		} catch (IOException e) {
-			logger.error("Failed to getBytes of resource");
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
+		byte[] odt = xdr.exportVariableBookInOdt(ddiFile, dicoVar);
+
+		ByteArrayResource resource = new ByteArrayResource(odt);
 
 		//Prepare response headers
 		String fileName = "Codebook"+ FilesUtils.getExtension(accept);
 		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setAccept(List.of(MediaType.ALL));
 		responseHeaders.setContentDisposition(content);
-		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
+		responseHeaders.setContentType(new MediaType("application","vnd.oasis.opendocument.text"));
 
 		return ResponseEntity.ok()
 		         .headers(responseHeaders)
@@ -211,22 +204,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 		         .body(resource);
 
-	}
-
-	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
-		Field pathField;
-		String path = null;
-		FileInputStream fis =null;
-		try {
-			pathField = FileOutputStream.class.getDeclaredField("path");
-			pathField.setAccessible(true);
-			path = (String) pathField.get(os);
-			fis= new FileInputStream(path);
-
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
-			logger.error(e.getMessage(),e);
-		}
-		return(fis);
 	}
 
 	@Override
