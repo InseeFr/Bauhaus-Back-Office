@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
@@ -346,7 +347,7 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetContributors(any(), any())).thenReturn("query-contributor");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq(datasetId), any())).thenReturn("query-statisticalUnits");
 
-            PatchDataset dataset = new PatchDataset(null, null, 5, null, null, null);
+            PatchDataset dataset = new PatchDataset(null, null, 5, null, null);
             datasetService.patchDataset(datasetId, dataset);
 
 
@@ -567,7 +568,6 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldPatchDatasetReturn400IfNoOneOfRequiredAttributesPatchEmpty() throws RmesException {
-        PatchDataset patch = new PatchDataset();
         JSONArray datasetWithTheme = new JSONArray(DATASET_WITH_THEME);
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
 
@@ -587,8 +587,8 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetStatisticalUnits(any(), any())).thenReturn("query4 ");
             when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
 
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
-            Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
+            RmesRuntimeBadRequestException exception = assertThrows(RmesRuntimeBadRequestException.class, () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
+            Assertions.assertEquals("One of these attributes is required : updated, issued, numObservations, numSeries, temporal", exception.getMessage());
         }
     }
 

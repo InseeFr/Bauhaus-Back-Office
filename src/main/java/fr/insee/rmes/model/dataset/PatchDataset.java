@@ -6,15 +6,15 @@ public record PatchDataset(String updated, String issued, Integer numObservation
                            Temporal temporal) {
 
     public PatchDataset {
-        if (observationNumber != null && observationNumber <= 0) {
+        if (numObservations != null && numObservations <= 0) {
             throw new RmesRuntimeBadRequestException("observationNumber must be greater than zero");
         }
         if (updated == null &&
                 issued == null &&
-                observationNumber == null &&
-                timeSeriesNumber == null &&
+                numObservations == null &&
+                numSeries == null &&
                 temporal == null) {
-            throw new RmesRuntimeBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
+            throw new RmesRuntimeBadRequestException("One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
     }
 }

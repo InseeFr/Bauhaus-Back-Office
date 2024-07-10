@@ -335,7 +335,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"observationNumber\": 1}"))
+                        .content("{\"numObservations\": 1}"))
                 .andExpect(status().isOk());
     }
 
@@ -346,7 +346,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"observationNumber\": 1}"))
+                        .content("{\"numObservations\": 1}"))
                 .andExpect(status().isOk());
     }
 
@@ -357,7 +357,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"observationNumber\": 1}"))
+                        .content("{\"numObservations\": 1}"))
                 .andExpect(status().isForbidden());
     }
 
@@ -367,7 +367,7 @@ class TestDatasetsResourcesEnvProd {
         mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"observationNumber\": 1}"))
+                        .content("{\"numObservations\": 1}"))
                 .andExpect(status().isForbidden());
     }
 

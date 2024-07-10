@@ -4,17 +4,18 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
+import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -89,8 +91,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     protected IRI getDatasetIri(String datasetId){
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        return iri;
+        return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
 
     private String getDatasetsAdmsBaseUri(){
@@ -100,8 +101,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private String getCatalogRecordBaseUri(){
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
-
-    static ValueFactory factory =  SimpleValueFactory.getInstance();
 
     @Override
     public String getDatasets() throws RmesException {
@@ -254,22 +253,18 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
 
         if ( patchDataset.temporal() != null){
-            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
-            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+            String temporalCoverageStartDate = patchDataset.temporal().startPeriod();
+            String temporalCoverageEndDate = patchDataset.temporal().endPeriod();
             dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
             dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.temporalCoverageEndDate() != null){
-            dataset.setTemporalCoverageEndDate(patchDataset.temporalCoverageEndDate());
+        if ( patchDataset.numObservations() != null && patchDataset.numObservations() > 0){
+            dataset.setObservationNumber(patchDataset.numObservations());
         }
 
-        if ( patchDataset.observationNumber() != null && patchDataset.observationNumber() > 0){
-            dataset.setObservationNumber(patchDataset.observationNumber());
-        }
-
-        if ( patchDataset.timeSeriesNumber() != null){
-            dataset.setTimeSeriesNumber(patchDataset.timeSeriesNumber());
+        if ( patchDataset.numSeries() != null){
+            dataset.setTimeSeriesNumber(patchDataset.numSeries());
         }
 
         update(datasetId, dataset);
