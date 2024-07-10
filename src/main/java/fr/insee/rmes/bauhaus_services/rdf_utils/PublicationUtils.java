@@ -67,6 +67,10 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
                                     statement.getPredicate(),
                                     tranformBaseURIToPublish((Resource) statement.getObject()),
                                     statement.getContext());
+
+                            if(statement.getObject().isBNode()){
+                                publishResource((Resource) statement.getObject(), Set.of());
+                            }
                         } catch(ClassCastException ignored){
                             model.add(tranformBaseURIToPublish(statement.getSubject()),
                                     statement.getPredicate(),
@@ -75,6 +79,7 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
                         }
                     }
                 }
+
             } catch (RepositoryException e) {
                 throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
             }

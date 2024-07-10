@@ -11,7 +11,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.external.services.export.XDocReport;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -149,11 +150,11 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * EXPORT
 	 */
 	@Override
-	public ResponseEntity<?> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException  {
+	public ResponseEntity<Resource> exportMetadataReport(String id, boolean includeEmptyMas, boolean lg1, boolean lg2, boolean document) throws RmesException  {
 		if(!(lg1) && !(lg2)) throw new RmesNotAcceptableException(
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
-				"in export of sims: "+id); 
+				"in export of sims: " + id);
 		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES);
 
 	}

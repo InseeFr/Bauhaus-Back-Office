@@ -2,8 +2,8 @@ package fr.insee.rmes.model.dataset;
 
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 
-public record PatchDataset(String updated, String issued, Integer observationNumber, Integer timeSeriesNumber,
-                           String temporalCoverageStartDate, String temporalCoverageEndDate) {
+public record PatchDataset(String updated, String issued, Integer numObservations, Integer numSeries,
+                           Temporal temporal) {
 
     public PatchDataset {
         if (observationNumber != null && observationNumber <= 0) {
@@ -13,9 +13,8 @@ public record PatchDataset(String updated, String issued, Integer observationNum
                 issued == null &&
                 observationNumber == null &&
                 timeSeriesNumber == null &&
-                temporalCoverageStartDate == null &&
-                temporalCoverageEndDate == null) {
-            throw new RmesRuntimeBadRequestException("At least one field of a patch dataset must be non null");
+                temporal == null) {
+            throw new RmesRuntimeBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
     }
 }

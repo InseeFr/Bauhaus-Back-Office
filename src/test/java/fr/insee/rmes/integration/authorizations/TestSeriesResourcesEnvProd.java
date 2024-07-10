@@ -10,6 +10,7 @@ import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -45,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
-public class TestSeriesResourcesEnvProd {
+class TestSeriesResourcesEnvProd {
 
     @Autowired
     private MockMvc mvc;
@@ -80,27 +81,27 @@ public class TestSeriesResourcesEnvProd {
     @Test
     void putSeriesAsSeriesContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),timbre)).thenReturn(true);
+        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),new Stamp(timbre))).thenReturn(true);
 
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isOk());
-        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),new Stamp(timbre));
     }
 
     @Test
     void putSeriesAsSeriesContributor_badSerieTimbre() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.SERIES_CONTRIBUTOR));
-        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),timbre)).thenReturn(false);
+        when(stampAuthorizationChecker.isSeriesManagerWithStamp(String.valueOf(seriesId),new Stamp(timbre))).thenReturn(false);
 
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
                 .andExpect(status().isForbidden());
-        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),timbre);
+        Mockito.verify(stampAuthorizationChecker).isSeriesManagerWithStamp(String.valueOf(seriesId),new Stamp(timbre));
     }
 
     @Test

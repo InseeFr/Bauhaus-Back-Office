@@ -12,11 +12,15 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -30,6 +34,7 @@ public class DatasetResources {
     final DatasetService datasetService;
 
     public DatasetResources(DatasetService datasetService) {
+
         this.datasetService = datasetService;
     }
 
@@ -41,7 +46,7 @@ public class DatasetResources {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    @Operation(operationId = "getDataset", summary = "List of datasets",
+    @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
@@ -54,27 +59,31 @@ public class DatasetResources {
         return this.datasetService.getDistributions(id);
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributor()")
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "createDataset", summary = "Create a Dataset")
+    @Operation(operationId = "createDataset", summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
     public String setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
         return this.datasetService.create(body);
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateDataset", summary = "Update a Dataset")
+    @Operation(operationId = "updateDataset", summary = "Update a dataset")
     public String setDataset(
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
+
         return this.datasetService.update(datasetId, body);
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PutMapping("/{id}/validate")
-    @Operation(operationId = "publishDataset", summary = "Publish a Dataset",
-            responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation= Distribution.class))))})
-    public String publishDataset(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.datasetService.publishDataset(id);
+    @Operation(operationId = "publishDataset", summary = "Publish a dataset",
+            responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
+    public String publishDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
+        return this.datasetService.publishDataset(datasetId);
     }
 
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)
@@ -83,12 +92,30 @@ public class DatasetResources {
         return this.datasetService.getArchivageUnits();
     }
 
+    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
-    @Operation(operationId = "updateObservationNumber", summary = "Update Observation number of a dataset")
+    @Operation(operationId = "patchDataset", summary = "Update a dataset")
     public void patchDataset(
             @PathVariable("id") String datasetId,
             @RequestBody PatchDataset dataset
-    ) throws RmesException{
+    ) throws RmesException {
         this.datasetService.patchDataset(datasetId, dataset);
+    }
+
+    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
+    @DeleteMapping("/{id}")
+    @Operation(
+            operationId = "deleteDataset",
+            summary = "Delete a dataset"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "The dataset has been  deleted"),
+            @ApiResponse(responseCode = "403", description = "You are not authorized to call this endpoint"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "404", description = "This dataset does not exist")
+    })
+    public ResponseEntity<Void> deleteDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
+        datasetService.deleteDatasetId(datasetId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

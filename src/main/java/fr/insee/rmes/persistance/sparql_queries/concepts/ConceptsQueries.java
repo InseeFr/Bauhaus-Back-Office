@@ -8,8 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConceptsQueries extends GenericQueries{
-	
+
 	private static final String URI_CONCEPT = "uriConcept";
+	public static final String CONCEPTS_GRAPH = "CONCEPTS_GRAPH";
 	static Map<String,Object> params ;
 	
 	private ConceptsQueries() {
@@ -29,43 +30,14 @@ public class ConceptsQueries extends GenericQueries{
 	
 	public static String conceptsQuery() throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 	
-	public static String conceptsSearchQuery() {
-		return "SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus "
-			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
-			+ "(group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-			+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-			+ "?concept skos:notation ?notation . \n"
-			+ "BIND (STR(?notation) AS ?id) \n"
-			+ "?concept skos:prefLabel ?label . \n"
-			+ "OPTIONAL{?concept skos:altLabel ?altLabelLg1 . \n"
-			+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "')} \n"
-			+ "?concept dcterms:created ?created . \n"
-			// Not topConceptOf if has broader
-			+ "BIND (exists{?concept skos:broader ?broa} AS ?broader) . \n"
-			+ "BIND (IF(?broader, 'false', 'true') AS ?isTopConceptOf) . \n"
-			+ "OPTIONAL{?concept dcterms:modified ?modified} . \n"
-			+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
-			+ "?concept insee:disseminationStatus ?disseminationStatus . \n"
-			+ "?concept insee:isValidated ?validationStatus . \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') . \n"
-			+ "?concept dc:creator ?creator . \n"
-			+ "OPTIONAL{?concept skos:definition ?noteUri . \n"
-			+ "?noteUri pav:version ?version . \n"
-			+ "?noteUri evoc:noteLiteral ?definition . \n"
-			+ "?noteUri dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "OPTIONAL {?concept skos:definition ?latest . \n"
-				+ "?latest pav:version ?latestVersion . \n"
-				+ "?latest dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "FILTER (?version < ?latestVersion)} . \n"
-			+ "FILTER (!bound (?latest))}"
-			+ "}} \n"
-			+ "GROUP BY ?id ?label ?created ?modified ?disseminationStatus \n"
-			+ "?validationStatus ?definition ?creator ?isTopConceptOf ?valid \n"
-			+ "ORDER BY ?label";	
+	public static String conceptsSearchQuery() throws RmesException {
+		if (params==null) {initParams();}
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
 		
 	public static String conceptsToValidateQuery() {
@@ -111,7 +83,7 @@ public class ConceptsQueries extends GenericQueries{
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("ID", id);
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
 	}
 	
@@ -184,7 +156,7 @@ public class ConceptsQueries extends GenericQueries{
 	public static String conceptLinks(String idConcept) throws RmesException {
 		if (params==null) {initParams();}
 		params.put("ID_CONCEPT", idConcept);
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
 		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
@@ -268,7 +240,7 @@ public class ConceptsQueries extends GenericQueries{
 
 	public static String isConceptValidated(String conceptId) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("CONCEPTS_GRAPH", config.getConceptsGraph());
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		params.put("ID", conceptId);
 		return buildConceptRequest("isConceptValidated.ftlh", params);
 	}

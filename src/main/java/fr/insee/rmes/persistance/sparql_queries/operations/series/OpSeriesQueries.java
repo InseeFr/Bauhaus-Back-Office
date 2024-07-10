@@ -15,8 +15,6 @@ public class OpSeriesQueries extends GenericQueries{
 		throw new IllegalStateException("Utility class");
 	}
 
-	private static StringBuilder variables;
-	private static StringBuilder whereClause;
 	static Map<String, Object> params;
 	
 	private static final String ID_SERIES = "ID_SERIES";
@@ -195,7 +193,7 @@ public class OpSeriesQueries extends GenericQueries{
 
 	public static String checkIfSeriesExists(String iri) throws RmesException {
 		if (params==null) {initParams();}
-		params.put("URI_SERIES", iri);
+		params.put(URI_SERIES, iri);
 		return buildSeriesRequest("checkIfSeriesExists.ftlh", params);
 	}
 

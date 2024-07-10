@@ -3,16 +3,18 @@ package fr.insee.rmes.config.auth.security;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 
 import java.util.Optional;
+import java.util.function.BiPredicate;
 
 import static java.util.Objects.requireNonNull;
 
@@ -131,54 +133,100 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return hasRole(Roles.ADMIN);
     }
 
+    public boolean isDatasetContributor() {
+        logger.trace("Check if {} is dataset contributor", methodSecurityExpressionRoot.getPrincipal());
+        return hasRole(Roles.DATASET_CONTRIBUTOR);
+    }
+
+    public boolean isDatasetContributorWithStamp(String datasetId){
+        logger.trace("Check if {} is contributor for dataset {}", methodSecurityExpressionRoot.getPrincipal(), datasetId);
+        return isDatasetContributor() && isManagerForDatasetId(datasetId);
+    }
+
+    public boolean isDistributionContributorWithStamp(String distributionId){
+        logger.trace("Check if {} is contributor for distribution {}", methodSecurityExpressionRoot.getPrincipal(), distributionId);
+        return isDatasetContributor() && isManagerForDistributionId(distributionId);
+    }
+
     public boolean isContributorOfSerie(String seriesId) {
         logger.trace("Check if {} is contributor for serie {}", methodSecurityExpressionRoot.getPrincipal(), seriesId);
         return hasRole(Roles.SERIES_CONTRIBUTOR) && isManagerForSerieId(seriesId);
     }
 
-//    for PUT
+//    for PUT and DELETE CodesList
     public boolean isContributorOfCodesList(String codesListId){
         logger.trace("Check if {} is contributor for codes list {}", methodSecurityExpressionRoot.getPrincipal(), codesListId);
         return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerForCodesListId(codesListId);
     }
 
-//    for POST
-    public boolean isCodesListContributor(String contributorString) {
-
+//    for POST CodesList
+    public boolean isCodesListContributor(String body) {
         logger.trace("Check if {} can create the codes list", methodSecurityExpressionRoot.getPrincipal());
-        JSONObject contrib = new JSONObject(contributorString);
-        if(!contrib.has("contributor")){
-            return false;
-        }
-        String codesListContributor = contrib.getString("contributor");
-        Optional<String> timbreUtilisateur=getStamp();
-        boolean timbreOK = false;
-        if (timbreUtilisateur.isPresent()) {
-            timbreOK = codesListContributor.equals(timbreUtilisateur.get());
-        }
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && timbreOK;
+        return hasRole(Roles.CODESLIST_CONTRIBUTOR)&& checkStampIsContributor(body);
     }
 
-//for DELETE
-    public boolean isContributorOfUnpublishedCodesList(String codesListId) {
-        logger.trace("Check if {} is contributor for codes list {} and give validation status", methodSecurityExpressionRoot.getPrincipal(), codesListId);
-        return hasRole(Roles.CODESLIST_CONTRIBUTOR) && isManagerDeleteForUnpublishedCodesListId(codesListId);
+    private boolean checkStampIsContributor(String body) {
+        Optional<Stamp> stamp = getStamp();
+        return stamp.isPresent() && stamp.get().stamp().equalsIgnoreCase(extractContributorStampFromBody(body));
     }
+
+    private static @Nullable String extractContributorStampFromBody(String body) {
+        return (new JSONObject(body)).optString("contributor");
+    }
+
+    //for PUT and DELETE structure
+    public boolean isStructureContributor(String structureId){
+        logger.trace("Check if {} is contributor for structure {}", methodSecurityExpressionRoot.getPrincipal(), structureId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForStructureId(structureId);
+    }
+
+//  for POST structure or component
+    public boolean isStructureAndComponentContributor(String body) {
+        logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR)&& checkStampIsContributor(body);
+    }
+
+
+    //for PUT and DELETE component
+    public boolean isComponentContributor(String componentId){
+        logger.trace("Check if {} is contributor for component {}", methodSecurityExpressionRoot.getPrincipal(), componentId);
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && isManagerForComponentId(componentId);
+    }
+
+    private boolean userHasStampWichManageResource(String resourceId, BiPredicate<String, Stamp> stampIsManager){
+        if (resourceId==null){
+            throw new RmesRuntimeBadRequestException("id must be not null");
+        }
+        var stamp = getStamp();
+        return stamp.isPresent() && stampIsManager.test(resourceId, stamp.get());
+    }
+
+
     private boolean isManagerForSerieId(String seriesId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isSeriesManagerWithStamp(requireNonNull(seriesId), stamp)).orElse(false);
+        return userHasStampWichManageResource(seriesId, this.stampAuthorizationChecker::isSeriesManagerWithStamp);
     }
 
     private boolean isManagerForCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
-    }
-    public boolean isManagerDeleteForUnpublishedCodesListId(String codesListId) {
-        return getStamp().map(stamp -> this.stampAuthorizationChecker.isUnpublishedCodesListManagerWithStamp(requireNonNull(codesListId), stamp)).orElse(false);
+        return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
     }
 
-
-    private Optional<String> getStamp() {
-        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal()).map(Stamp::stamp);
+    private boolean isManagerForDatasetId(String datasetId) {
+        return userHasStampWichManageResource(datasetId, this.stampAuthorizationChecker::isDatasetManagerWithStamp);
+    }
+    private boolean isManagerForDistributionId(String distributionId) {
+        return userHasStampWichManageResource(distributionId, this.stampAuthorizationChecker::isDistributionManagerWithStamp);
     }
 
+    private boolean isManagerForStructureId(String structureId) {
+        return userHasStampWichManageResource(structureId, this.stampAuthorizationChecker::isStructureManagerWithStamp);
+    }
+
+    private boolean isManagerForComponentId(String componentId) {
+        return userHasStampWichManageResource(componentId, this.stampAuthorizationChecker::isComponentManagerWithStamp);
+    }
+  
+    private Optional<Stamp> getStamp() {
+        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
+    }
 
 }

@@ -14,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -31,18 +33,18 @@ class CodeListServiceImplTest {
     @Test
     void getCodesJson() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
+            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", null)).thenReturn("query");
             mockedFactory.when(() -> CodeListQueries.getCodeListItemsByNotation("notation", 1, null)).thenReturn("query2");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject(eq("query"))).thenReturn(count);
+            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
             JSONObject item = new JSONObject();
             item.put("id", "id");
             JSONArray items = new JSONArray();
             items.put(item);
-            when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
+            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
             assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
         }
@@ -51,20 +53,29 @@ class CodeListServiceImplTest {
     @Test
     void getCodesForCodeList() throws RmesException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
-            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation")).thenReturn("query");
-            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, 1, null)).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
+            mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
+            mockedFactory.when(() -> CodeListQueries.getBroaderNarrowerCloseMatch("notation")).thenReturn("query3");
 
             JSONObject count = new JSONObject();
             count.put("count", 5);
-            when(repositoryGestion.getResponseAsObject(eq("query"))).thenReturn(count);
+            when(repositoryGestion.getResponseAsObject("query")).thenReturn(count);
 
             JSONObject item = new JSONObject();
-            item.put("id", "id");
+            item.put("code", "A");
             JSONArray items = new JSONArray();
             items.put(item);
-            when(repositoryGestion.getResponseAsArray(eq("query2"))).thenReturn(items);
+            when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesForCodeList("notation", 1, null));
+            JSONObject related = new JSONObject();
+            related.put("code", "A");
+            related.put("linkCode", "A1");
+            related.put("linkType", "broader");
+            JSONArray relatedList = new JSONArray();
+            relatedList.put(related);
+            when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
+
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
         }
     }
 
@@ -73,7 +84,7 @@ class CodeListServiceImplTest {
         doReturn(null).when(codeListService).deleteCodeFromCodeList("notation", "code");
         doReturn("code").when(codeListService).addCodeFromCodeList("notation", "body");
         String code = codeListService.updateCodeFromCodeList("notation", "code", "body");
-        assertEquals(code, "code");
+        assertEquals("code", code);
     }
 
     @Test
@@ -125,7 +136,7 @@ class CodeListServiceImplTest {
 
             doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
             codeListService.deleteCodeFromCodeList("notation", "code");
-            verify(repositoryGestion, times(1)).deleteObject(eq(codeIRI), eq(null));
+            verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
         }
     }
 }

@@ -10,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.external_services.export.XDocReport;
+import fr.insee.rmes.external.services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
@@ -20,13 +20,13 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.EncodingType;
 import fr.insee.rmes.utils.ExportUtils;
-import org.apache.commons.io.IOUtils;
+import fr.insee.rmes.utils.FilesUtils;
+import fr.insee.rmes.utils.XMLUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -39,11 +39,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
-import java.lang.reflect.Field;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -56,10 +57,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	private static final String ATTACHMENT = "attachment";
 
 	static final Logger logger = LoggerFactory.getLogger(OperationsImpl.class);
-
-	
-	@Value("classpath:bauhaus-sims.json")
-	org.springframework.core.io.Resource simsDefaultValue;
 
 	@Autowired
 	XDocReport xdr;
@@ -81,7 +78,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	/***************************************************************************************************
 	 * SERIES
-	 * 
+	 *
 	 *****************************************************************************************************/
 
 
@@ -175,7 +172,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	/***************************************************************************************************
 	 * OPERATIONS
-	 * 
+	 *
 	 *****************************************************************************************************/
 
 
@@ -187,50 +184,26 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {		
+	public ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar,  String accept) throws RmesException {
 		//Prepare file
-		OutputStream os = xdr.exportVariableBookInOdt(ddiFile,dicoVar);
-		InputStream is = transformFileOutputStreamInInputStream(os);
-		if (is == null) throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't generate codebook","Stream is null");
-		ByteArrayResource resource = null;
-		try {
-			resource = new ByteArrayResource(IOUtils.toByteArray(is));
-			is.close();
-		} catch (IOException e) {
-			logger.error("Failed to getBytes of resource");
-			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), "IOException");
-		}
+		byte[] odt = xdr.exportVariableBookInOdt(ddiFile, dicoVar);
+
+		ByteArrayResource resource = new ByteArrayResource(odt);
 
 		//Prepare response headers
-		String fileName = "Codebook"+ ExportUtils.getExtension(accept);
+		String fileName = "Codebook"+ FilesUtils.getExtension(accept);
 		ContentDisposition content = ContentDisposition.builder(ATTACHMENT).filename(fileName).build();
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set(HttpHeaders.ACCEPT,  "*/*");
+		responseHeaders.setAccept(List.of(MediaType.ALL));
 		responseHeaders.setContentDisposition(content);
-		responseHeaders.add("Content-Type","application/vnd.oasis.opendocument.text" );
+		responseHeaders.setContentType(new MediaType("application","vnd.oasis.opendocument.text"));
 
 		return ResponseEntity.ok()
 		         .headers(responseHeaders)
 		         .contentLength(resource.contentLength())
 		         .contentType(MediaType.APPLICATION_OCTET_STREAM)
 		         .body(resource);
-		
-	}
 
-	private InputStream transformFileOutputStreamInInputStream(OutputStream os) {
-		Field pathField;
-		String path = null;
-		FileInputStream fis =null;
-		try {
-			pathField = FileOutputStream.class.getDeclaredField("path");
-			pathField.setAccessible(true);
-			path = (String) pathField.get(os);
-			fis= new FileInputStream(path);
-
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException | FileNotFoundException  e) {
-			logger.error(e.getMessage(),e);
-		}
-		return(fis);
 	}
 
 	@Override
@@ -271,22 +244,21 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		HashMap<String,String> contentXML= new HashMap<>();
 		contentXML.put("ddi-file", Files.readString(ddiRemoveNameSpaces.toPath()));
 
-		return exportUtils.exportAsResponse("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
+		return exportUtils.exportAsODT("export.odt", contentXML,dicoCode, xslPatternFile,zipRmes, "dicoVariable");
 
 	}
 
 	public static void transformerStringWithXsl(String ddi,InputStream xslRemoveNameSpaces, File output) throws Exception{
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslRemoveNameSpaces);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(new StringReader(ddi));
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
 	}
+
 	public static void transformerFileWithXsl(File input,InputStream xslCheckReference, File output) throws Exception {
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslCheckReference);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);
@@ -327,9 +299,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	public static void transformerInputStreamWithXsl(InputStream input,InputStream xslCheckReference, File output) throws Exception {
-		TransformerFactory factory = TransformerFactory.newInstance();
 		Source stylesheetSource = new StreamSource(xslCheckReference);
-		Transformer transformer = factory.newTransformer(stylesheetSource);
+		Transformer transformer = XMLUtils.getTransformerFactory().newTransformer(stylesheetSource);
 		Source inputSource = new StreamSource(input);
 		Result outputResult = new StreamResult(output);
 		transformer.transform(inputSource, outputResult);

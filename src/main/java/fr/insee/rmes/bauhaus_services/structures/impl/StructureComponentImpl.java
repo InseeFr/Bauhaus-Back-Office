@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class StructureComponentImpl extends RdfService implements StructureComponent {
     static final Logger logger = LoggerFactory.getLogger(StructureComponentImpl.class);
+    public static final String ATTRIBUTE_IRI = "attributeIRI";
+    public static final String VALUE_IRI = "valueIri";
 
     @Autowired
     StructureComponentUtils structureComponentUtils;
@@ -55,19 +57,23 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
 
         // We first format linked attributes if they exists
         JSONObject component = new JSONObject(response.getJSONObject(0).toMap());
-        if(component.has("attributeIRI")){
-            component.remove("attributeIRI");
+
+        getMultipleTripletsForObject(component, "contributor", StructureQueries.getComponentContributors(component.getString("component")), "contributor");
+        component.remove("component");
+
+        if(component.has(ATTRIBUTE_IRI)){
+            component.remove(ATTRIBUTE_IRI);
         }
-        if(component.has("valueIri")){
-            component.remove("valueIri");
+        if(component.has(VALUE_IRI)){
+            component.remove(VALUE_IRI);
         }
 
         int index = 0;
         for (int i = 0; i < response.length(); i++) {
             JSONObject current = response.getJSONObject(i);
-            if(current.has("attributeIRI") && current.has("valueIri") && !current.getString("attributeIRI").isEmpty() && !current.getString("valueIri").isEmpty()){
-                component.put("attribute_" + index, current.getString("attributeIRI"));
-                component.put("attributeValue_" + index, current.getString("valueIri"));
+            if(current.has(ATTRIBUTE_IRI) && current.has(VALUE_IRI) && !current.getString(ATTRIBUTE_IRI).isEmpty() && !current.getString(VALUE_IRI).isEmpty()){
+                component.put("attribute_" + index, current.getString(ATTRIBUTE_IRI));
+                component.put("attributeValue_" + index, current.getString(VALUE_IRI));
                 index++;
             }
         }

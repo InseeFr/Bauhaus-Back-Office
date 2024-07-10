@@ -18,6 +18,8 @@ public class Constants {
 	public static final String CREATORS = "creators";
 
 	/*D*/
+	public static final String DATASET = "dataset";
+	public static final String DISTRIBUTION = "distribution";
 	public static final String DATA_COLLECTOR = "dataCollector";
 	public static final String DATA_COLLECTORS = "dataCollectors";
 	public static final String DEF_COURTE_LG1 = "defCourteLg1";
@@ -29,8 +31,7 @@ public class Constants {
 	public static final String DOCUMENT = "document";
 	public static final String DOCUMENTS_LG1 = "documentsLg1";
 	public static final String DOCUMENTS_LG2 = "documentsLg2";
-	public static final String DOT_XML = ".xml";
-	public static final String DOT_ZIP = ".zip";
+
 
 	/*E*/
 	public static final String EDITORIAL_NOTE_LG1 = "editorialNoteLg1";
@@ -101,9 +102,7 @@ public class Constants {
 	public static final String SEEALSO = "seeAlso";
 	public static final String SERIES_UP = "SERIES";
 	public static final String STAMP = "stamp";
-	public static final String STATUT_VALIDATION = "statutValidation";
 
-	
 	/*T*/
 	public static final String TEXT = "text";
 	public static final String TEXT_LG1 = "texte";

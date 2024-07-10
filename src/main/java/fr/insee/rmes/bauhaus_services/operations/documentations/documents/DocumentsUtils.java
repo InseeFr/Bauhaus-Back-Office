@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
@@ -15,7 +16,6 @@ import fr.insee.rmes.persistance.ontologies.SCHEMA;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.UriUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -29,22 +29,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,9 +52,16 @@ public class DocumentsUtils extends RdfService {
 
     private static final String SCHEME_FILE = "file://";
     static final Logger logger = LoggerFactory.getLogger(DocumentsUtils.class);
+    public static final Pattern VALID_FILENAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+\\.[A-Za-z]+$");
 
-    @Autowired
-    ParentUtils ownersUtils;
+    private final ParentUtils ownersUtils;
+
+    private final FilesOperations filesOperations;
+
+    public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations) {
+        this.ownersUtils = ownersUtils;
+        this.filesOperations = filesOperations;
+    }
 
     /*
      * METHODS LINKS TO THE SIMS - RUBRICS
@@ -87,7 +92,7 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public JSONArray getListDocumentLink(String idSims, String idRubric, String lang) throws RmesException {
-        JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/fr"));
+        JSONArray allDocs = repoGestion.getResponseAsArray(DocumentsQueries.getDocumentsForSimsRubricQuery(idSims, idRubric, "http://bauhaus/codes/langue/" + lang));
         formatDateInJsonArray(allDocs);
         return allDocs;
     }
@@ -226,7 +231,6 @@ public class DocumentsUtils extends RdfService {
             logger.info("URL CREATED : {}", url);
             document.setUrl(url);
 
-            // upload file in storage folder
             uploadFile(documentFile, documentName, url, false);
         }
 
@@ -382,7 +386,7 @@ public class DocumentsUtils extends RdfService {
     private void checkDocumentReference(String docId, String uri) throws RmesException {
         JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
         if (jsonResultat.length() > 0) {
-            throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_DELETION_LINKED,
+            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_DELETION_LINKED,
                     "The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
                             + " sims, including: " + ((JSONObject) jsonResultat.get(0)).get(Constants.TEXT).toString(),
                     jsonResultat);
@@ -473,7 +477,6 @@ public class DocumentsUtils extends RdfService {
             newUrl = createFileUrl(documentName);
             logger.info("Try to replace file {}, new URL is {}", documentName, newUrl);
             uploadFile(documentFile, documentName, newUrl, false);
-
             // Update document's url
             changeDocumentsURL(docId, addSchemeFile(docUrl), addSchemeFile(newUrl));
         }
@@ -486,31 +489,27 @@ public class DocumentsUtils extends RdfService {
         return SCHEME_FILE + url;
     }
 
-    private void uploadFile(InputStream documentFile, String documentName, String url, Boolean sameName)
-            throws RmesUnauthorizedException {
+    private void uploadFile(InputStream documentFile, String documentName, String url, boolean sameName)
+            throws RmesBadRequestException {
         // upload file in storage folder
         logger.debug("URL : {}", url);
         Path path = Paths.get(url.replace(SCHEME_FILE, ""));
         logger.debug("PATH : {}", path);
-        if (!Boolean.TRUE.equals(sameName) && path.toFile().exists()) {
-            throw new RmesUnauthorizedException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
+        if (!sameName && path.toFile().exists()) {
+            throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
-        try {
-            Files.copy(documentFile, path, StandardCopyOption.REPLACE_EXISTING);
-            // don't throw an error if a file already exists under this name
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        filesOperations.write(documentFile, path);
+        // don't throw an error if a file already exists under this name
     }
 
 
     private void validate(Document document) throws RmesException {
         if (repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg1(), config.getLg1()))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG1, "This labelLg1 is already used by another document or link.");
         }
         if (repoGestion.getResponseAsBoolean(DocumentsQueries.checkLabelUnicity(document.getId(), document.getLabelLg2(), config.getLg2()))) {
-            throw new RmesUnauthorizedException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
+            throw new RmesBadRequestException(ErrorCodes.OPERATION_DOCUMENT_LINK_EXISTING_LABEL_LG2, "This labelLg2 is already used by another document or link.");
         }
     }
 
@@ -574,7 +573,12 @@ public class DocumentsUtils extends RdfService {
     }
 
     private String createFileUrl(String name) throws RmesException {
-        String url = getGestionStorageFolderPath().resolve(name).toString();
+        Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
+        if (! filesOperations.dirExists(gestionStorageFolder)){
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
+                    "config.DOCUMENTS_STORAGE");
+        }
+        String url= gestionStorageFolder.resolve(name).toString();
         Pattern p = Pattern.compile("^(?:[a-zA-Z]+:/)");
         Matcher m = p.matcher(url);
         if (m.find()) {// absolute URL
@@ -611,14 +615,14 @@ public class DocumentsUtils extends RdfService {
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_EMPTY_NAME, "Empty fileName", fileName);
         }
 
-        Pattern p = Pattern.compile("[^A-Za-z0-9._-]");
-        Matcher m = p.matcher(fileName);
-        if (m.find()) {
+        Matcher m = VALID_FILENAME_PATTERN.matcher(fileName);
+        if (!m.matches()) {
             logger.info("There is a forbidden character in the FileName ");
             throw new RmesNotAcceptableException(ErrorCodes.DOCUMENT_FORBIDDEN_CHARACTER_NAME,
                     "FileName contains forbidden characters, please use only Letters, Numbers, Underscores and Hyphens",
                     fileName);
         }
+
         logger.debug("The file name {} is valid", fileName);
     }
 
@@ -652,11 +656,10 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    public List<String> getDocumentPath(String id) throws RmesException {
+    private String getDocumentFilename(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
-        String fileName = getDocumentNameFromUrl(url);
-        return Arrays.asList(url, fileName);
+        return getDocumentNameFromUrl(url);
     }
 
     /**
@@ -666,46 +669,31 @@ public class DocumentsUtils extends RdfService {
      * @return Response containing the file (inputStream)
      * @throws RmesException
      */
-    public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException, IOException {
-        List<String> pathAndFileName = this.getDocumentPath(id);
-        Path path = Path.of(pathAndFileName.get(0));
-        String fileName = pathAndFileName.get(1);
+    public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
+        String filePath = getDocumentFilename(id);
 
-        ContentDisposition content = ContentDisposition.builder("attachement").filename(fileName).build();
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentDisposition(content);
+        try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
+            byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
-        //Get document as resource
-        ByteArrayResource resource = null;
-        InputStream input = Files.newInputStream(path);
-        resource = new ByteArrayResource(IOUtils.toByteArray(input));
-        input.close();
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
+            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
-
-        //return the response with document
-        try {
+            // return the response with document
             return ResponseEntity.ok()
-                    .headers(responseHeaders)
+                    .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), "Error downloading file");
+                    .body(data);
+        } catch (IOException e) {
+            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }
 
 
-    private Path getGestionStorageFolderPath() throws RmesException {
-        Path path = null;
-        File dir = new File(config.getDocumentsStorageGestion());
-        if (dir.exists()) {
-            path = Paths.get(config.getDocumentsStorageGestion());
-        } else {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
-                    "config.DOCUMENTS_STORAGE");
-        }
-        return path;
+
+    private String getFileName(String path) {
+        // Extraire juste le nom de fichier du chemin
+        return Paths.get(path).getFileName().toString();
     }
-
-
 }
+

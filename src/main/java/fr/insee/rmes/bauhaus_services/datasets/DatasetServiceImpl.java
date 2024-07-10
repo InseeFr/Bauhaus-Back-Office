@@ -35,8 +35,15 @@ import java.util.Set;
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
 
-    @Autowired
-    UserProviderFromSecurityContext userProviderFromSecurityContext;
+    public static final String CONTRIBUTOR = "contributor";
+    private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
+
+    public static final String THEME = "theme";
+    public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
+
+    public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
+    public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
+    public static final String CREATOR = "creator";
 
     @Autowired
     SeriesUtils seriesUtils;
@@ -59,21 +66,42 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Value("${fr.insee.rmes.bauhaus.distribution.baseURI}")
     private String distributionsBaseUriSuffix;
 
+    @Value("${fr.insee.rmes.bauhaus.adms.graph}")
+    private String admsGraphSuffix;
+
+    @Value("${fr.insee.rmes.bauhaus.adms.identifiantsAlternatifs.baseURI}")
+    private String identifiantsAlternatifsBaseUri;
+
     private String getDatasetsGraph(){
         return baseGraph + datasetsGraphSuffix;
+    }
+
+    private String getAdmsGraph(){
+        return baseGraph + admsGraphSuffix;
     }
 
     private String getDistributionBaseUri(){
         return baseUriGestion + distributionsBaseUriSuffix;
     }
 
-    private String getDatasetsBaseUri(){
+    protected String getDatasetsBaseUri(){
         return baseUriGestion + datasetsBaseUriSuffix;
+    }
+
+    protected IRI getDatasetIri(String datasetId){
+        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
+        return iri;
+    }
+
+    private String getDatasetsAdmsBaseUri(){
+        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
     }
 
     private String getCatalogRecordBaseUri(){
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
+
+    static ValueFactory factory =  SimpleValueFactory.getInstance();
 
     @Override
     public String getDatasets() throws RmesException {
@@ -91,9 +119,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + id);
         IRI catalogRecordIri = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
 
-        publicationUtils.publishResource(iri, Set.of());
-        publicationUtils.publishResource(catalogRecordIri, Set.of("creator", "contributor"));
+        publicationUtils.publishResource(iri, Set.of("processStep", "archiveUnit", "validationState"));
+        publicationUtils.publishResource(catalogRecordIri, Set.of(CREATOR, CONTRIBUTOR));
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), RdfUtils.createIRI(getDatasetsGraph()));
+        model.remove(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), RdfUtils.createIRI(getDatasetsGraph()));
+
         repoGestion.objectValidation(iri, model);
 
         return id;
@@ -105,54 +136,46 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public String getDatasetByID(String id) throws RmesException {
-        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph()));
+        JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
-            throw new RmesBadRequestException("This dataset does not exist");
+            throw new RmesNotFoundException("This dataset does not exist");
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);
         List<String> themes = new ArrayList<>();
         for(int i = 0; i < datasetWithThemes.length(); i++){
             JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
-            if(tempDataset.has("theme")){
-                themes.add(tempDataset.getString("theme"));
+            if(tempDataset.has(THEME)){
+                themes.add(tempDataset.getString(THEME));
             }
         }
         dataset.put("themes", themes);
-        dataset.remove("theme");
+        dataset.remove(THEME);
 
-        JSONArray creatorsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetCreators(id, getDatasetsGraph()));
-        List<String> creators = new ArrayList<>();
-        creatorsArray.iterator().forEachRemaining((creator) -> creators.add(((JSONObject) creator).getString("creator")));
-        dataset.put("creators", creators);
+        getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
 
-        JSONArray spacialResolutionsArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()));
-        List<String> spacialResolutions = new ArrayList<>();
-        spacialResolutionsArray.iterator().forEachRemaining((spacialResolution) -> spacialResolutions.add(((JSONObject) spacialResolution).getString("spacialResolution")));
-        dataset.put("spacialResolutions", spacialResolutions);
+        IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
+        getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
+        getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
 
-        JSONArray statisticalUnitArray = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()));
-        List<String> statisticalUnit = new ArrayList<>();
-        statisticalUnitArray.iterator().forEachRemaining((unit) -> statisticalUnit.add(((JSONObject) unit).getString("statisticalUnit")));
-        dataset.put("statisticalUnit", statisticalUnit);
+
 
         JSONObject catalogRecord = new JSONObject();
-        if(dataset.has("catalogRecordCreator")){
-            catalogRecord.put("creator", dataset.getString("catalogRecordCreator"));
-            dataset.remove("catalogRecordCreator");
+        getMultipleTripletsForObject(catalogRecord, CONTRIBUTOR, DatasetQueries.getDatasetContributors(catalogRecordIRI, getDatasetsGraph()), CONTRIBUTOR);
+
+        if(dataset.has(CATALOG_RECORD_CREATOR)){
+            catalogRecord.put(CREATOR, dataset.getString(CATALOG_RECORD_CREATOR));
+            dataset.remove(CATALOG_RECORD_CREATOR);
         }
-        if(dataset.has("catalogRecordContributor")){
-            catalogRecord.put("contributor", dataset.getString("catalogRecordContributor"));
-            dataset.remove("catalogRecordContributor");
+
+        if(dataset.has(CATALOG_RECORD_CREATED)){
+            catalogRecord.put("created", dataset.getString(CATALOG_RECORD_CREATED));
+            dataset.remove(CATALOG_RECORD_CREATED);
         }
-        if(dataset.has("catalogRecordCreated")){
-            catalogRecord.put("created", dataset.getString("catalogRecordCreated"));
-            dataset.remove("catalogRecordCreated");
-        }
-        if(dataset.has("catalogRecordUpdated")){
-            catalogRecord.put("updated", dataset.getString("catalogRecordUpdated"));
-            dataset.remove("catalogRecordUpdated");
+        if(dataset.has(CATALOG_RECORD_UPDATED)){
+            catalogRecord.put("updated", dataset.getString(CATALOG_RECORD_UPDATED));
+            dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
         return dataset.toString();
@@ -188,7 +211,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public String create(String body) throws RmesException {
         Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
-        dataset.setId(IdGenerator.generateNextId(repoGestion.getResponseAsObject(DatasetQueries.lastDatasetId(getDatasetsGraph())), "jd"));
+        dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
         if(dataset.getIdSerie() != null){
@@ -230,8 +253,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.setUpdated(patchDataset.updated());
         }
 
-        if ( patchDataset.temporalCoverageStartDate() != null){
-            dataset.setTemporalCoverageStartDate(patchDataset.temporalCoverageStartDate());
+        if ( patchDataset.temporal() != null){
+            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
+            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+            dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
+            dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
         if ( patchDataset.temporalCoverageEndDate() != null){
@@ -249,6 +275,35 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         update(datasetId, dataset);
     }
 
+    @Override
+    public void deleteDatasetId(String datasetId) throws RmesException{
+        String datasetString = getDatasetByID(datasetId);
+        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+        if (!isUnpublished(dataset)){
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+        }
+
+        if (hasDistribution(dataset)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
+        }
+
+        IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
+        IRI graph = getDatasetIri(datasetId);
+        String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+
+        repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+    }
+
+    private boolean isUnpublished(Dataset dataset) {
+        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
+    }
+
+    private boolean hasDistribution(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        return !getDistributions(datasetId).equals("[]");
+    }
+
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + dataset.getId());
@@ -262,7 +317,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
         model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
-        model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(record.getContributor()), graph);
+
+        record.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
         RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, record.getUpdated(), model, graph);
 
@@ -298,6 +354,15 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleUri(datasetIri, INSEE.DISSEMINATIONSTATUS, dataset.getDisseminationStatus(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.PROCESS_STEP, dataset.getProcessStep(), model, graph);
         RdfUtils.addTripleUri(datasetIri, INSEE.ARCHIVE_UNIT, dataset.getArchiveUnit(), model, graph);
+
+        if(dataset.getAltIdentifier() != null){
+            Resource admsGraph = RdfUtils.createIRI(getAdmsGraph());
+            IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + dataset.getId());
+            RdfUtils.addTripleUri(datasetIri, ADMS.HAS_IDENTIFIER, datasetAdmsIri, model, graph);
+            RdfUtils.addTripleUri(datasetAdmsIri, RDF.TYPE, ADMS.IDENTIFIER, model, admsGraph);
+            RdfUtils.addTripleString(datasetAdmsIri, SKOS.NOTATION, dataset.getAltIdentifier(), model, admsGraph);
+        }
+
     }
 
     private void persistNotes(IRI datasetIri, Dataset dataset, Model model, Resource graph){
@@ -383,7 +448,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             if (distribution.has("id")) {
                 String id = distribution.getString("id");
                 IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
-                RdfUtils.addTripleUri(datasetIri, DCAT.DISTRIBUTION, distributionIRI, model, graph);
+                RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
             }
         }
 
@@ -406,11 +471,14 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getCatalogRecord().getCreator() == null) {
             throw new RmesBadRequestException("The property creator is required");
         }
-        if (dataset.getCatalogRecord().getContributor() == null) {
+        if (dataset.getCatalogRecord().getContributor() == null || dataset.getCatalogRecord().getContributor().isEmpty()) {
             throw new RmesBadRequestException("The property contributor is required");
         }
         if (dataset.getDisseminationStatus() == null) {
             throw new RmesBadRequestException("The property disseminationStatus is required");
+        }
+        if (dataset.getAltIdentifier() != null && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
+            throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
         }
         if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
             throw new RmesBadRequestException("The series does not exist");

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.4</version>
+        <version>3.2.7</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>3.15.0</version>
+    <version>3.22.0</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -35,9 +35,46 @@
     </developers>
 
 
+    <profiles>
+        <profile>
+            <id>test-containers</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/testcontainers/**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/testcontainers/**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <properties>
         <java.version>21</java.version>
-
         <springdoc.version>2.3.0</springdoc.version>
         <rdf4j.version>4.3.9</rdf4j.version>
         <xdocreport.version>2.0.4</xdocreport.version>
@@ -49,6 +86,7 @@
         <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
         <saxon.version>12.4</saxon.version>
+        <minio.version>8.5.10</minio.version>
 
 
         <!-- SONAR -->
@@ -71,7 +109,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>${minio.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
@@ -126,6 +168,11 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -203,6 +250,16 @@
             <artifactId>flexmark-html2md-converter</artifactId>
             <version>${flexmark.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -212,7 +269,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-
             <!-- Plugin tests -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -242,6 +298,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>

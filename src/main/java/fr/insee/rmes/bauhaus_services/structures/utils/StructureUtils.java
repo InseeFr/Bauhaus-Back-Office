@@ -87,6 +87,7 @@ public class StructureUtils extends RdfService {
 
             JSONObject componentDefinition= new JSONObject();
 
+
             componentDefinition.put(ATTACHMENT, attachments);
 
 
@@ -125,7 +126,11 @@ public class StructureUtils extends RdfService {
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_CREATED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_MODIFIED);
             componentDefinitionFlat.remove(COMPONENT_DEFINITION_ID);
+
+            getMultipleTripletsForObject(componentDefinitionFlat, "contributor", StructureQueries.getComponentContributors(componentDefinitionFlat.getString("component")), "contributor");
+            componentDefinitionFlat.remove("component");
             componentDefinition.put("component", componentDefinitionFlat);
+
 
             componentDefinitions.put(componentDefinition);
         }
@@ -225,7 +230,7 @@ public class StructureUtils extends RdfService {
             		.map(Object::toString).collect(Collectors.toList()).toArray(new String[0]);
             boolean structureWithSameComponents = ids.length > 0 && repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityStructure(structure.getId(), ids));
             if(structureWithSameComponents){
-                throw new RmesUnauthorizedException(ErrorCodes.STRUCTURE_UNICITY,
+                throw new RmesBadRequestException(ErrorCodes.STRUCTURE_UNICITY,
                         "A structure with the same components already exists", "");
             }
         }
@@ -253,7 +258,8 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, DCTERMS.IS_REQUIRED_BY, structure.getIsRequiredBy(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
-        RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, structure.getContributor(), model, graph);
+        structure.getContributor().forEach(contributor -> RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
+
         RdfUtils.addTripleUri(structureIri, INSEE.DISSEMINATIONSTATUS, structure.getDisseminationStatus(), model, graph);
 
         repoGestion.loadSimpleObject(structureIri, model, null);
@@ -374,18 +380,24 @@ public class StructureUtils extends RdfService {
     }
 
     public void deleteStructure(String structureId) throws RmesException {
-        IRI structureIri = RdfUtils.structureIRI(structureId);
-        repoGestion.clearStructureNodeAndComponents(structureIri);
-        repoGestion.deleteObject(structureIri, null);
+        String structureState = getValidationStatus(structureId);
+        if(!structureState.equalsIgnoreCase("Unpublished")){
+            throw new RmesBadRequestException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+        }
+        else {
+            IRI structureIri = RdfUtils.structureIRI(structureId);
+            repoGestion.clearStructureNodeAndComponents(structureIri);
+            repoGestion.deleteObject(structureIri, null);
+        }
     }
 
     public String publishStructure(JSONObject structure) throws RmesException {
         if(structure.isNull(Constants.CREATOR) || "".equals(structure.getString(Constants.CREATOR))){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
         if(structure.isNull("disseminationStatus") || "".equals(structure.getString("disseminationStatus"))){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
         String id = structure.getString(Constants.ID);

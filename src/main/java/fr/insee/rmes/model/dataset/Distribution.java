@@ -10,8 +10,10 @@ public class Distribution {
     String created;
     String updated;
     String format;
-    String taille;
+    String byteSize;
     String url;
+    String validationState;
+
 
     public String getId() {
         return id;
@@ -85,12 +87,12 @@ public class Distribution {
         this.format = format;
     }
 
-    public String getTaille() {
-        return taille;
+    public String getByteSize() {
+        return byteSize;
     }
 
-    public void setTaille(String taille) {
-        this.taille = taille;
+    public void setByteSize(String byteSize) {
+        this.byteSize = byteSize;
     }
 
     public String getUrl() {
@@ -99,5 +101,13 @@ public class Distribution {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getValidationState() {
+        return validationState;
+    }
+
+    public void setValidationState(String validationState) {
+        this.validationState = validationState;
     }
 }

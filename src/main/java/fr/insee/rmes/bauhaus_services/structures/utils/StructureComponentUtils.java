@@ -8,7 +8,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.MutualizedComponent;
 import fr.insee.rmes.persistance.ontologies.INSEE;
@@ -149,8 +148,8 @@ public class StructureComponentUtils extends RdfService {
             boolean componentsWithSameCodelistAndConcept = repoGestion.getResponseAsBoolean(StructureQueries.checkUnicityMutualizedComponent(component.getId(), component.getConcept(), component.getCodeList(), component.getType()));
 
             if(componentsWithSameCodelistAndConcept){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_UNICITY,
-                        "A component with the same code list and concept already exists", "");
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_UNICITY,
+                        "A component with the same codes list and concept already exists", "");
             }
         }
 
@@ -184,7 +183,9 @@ public class StructureComponentUtils extends RdfService {
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(componentURI, SKOS.ALT_LABEL, component.getAltLabelLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(componentURI, DC.CREATOR, component.getCreator(), model, graph);
-        RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, component.getContributor(), model, graph);
+
+        component.getContributor().forEach(contributor ->  RdfUtils.addTripleString(componentURI, DC.CONTRIBUTOR, contributor, model, graph));
+
         RdfUtils.addTripleUri(componentURI, INSEE.DISSEMINATIONSTATUS, component.getDisseminationStatus(), model, graph);
 
         jsonComponent.keySet().stream().forEach(key -> {
@@ -337,19 +338,19 @@ public class StructureComponentUtils extends RdfService {
     public String publishComponent(JSONObject component) throws RmesException {
 
         if(jsonObjecthasPropertyNullOrEmpty(component, Constants.CREATOR)){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_CREATOR, "The creator should not be empty", new JSONArray());
         }
 
         if(jsonObjecthasPropertyNullOrEmpty(component, "disseminationStatus")){
-            throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
+            throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_EMPTY_STATUS, "The dissemination status should not be empty", new JSONArray());
         }
 
         if(!jsonObjecthasPropertyNullOrEmpty(component,"concept")  && !repoGestion.getResponseAsBoolean(ConceptsQueries.isConceptValidated(component.getString(Constants.CONCEPT)))){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());  
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CONCEPT, "The concept should be validated", new JSONArray());
         }
 
         if(!jsonObjecthasPropertyNullOrEmpty(component, Constants.CODELIST) && !repoGestion.getResponseAsBoolean(CodeListQueries.isCodesListValidated(component.getString(Constants.CODELIST)))){
-                throw new RmesUnauthorizedException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
+                throw new RmesBadRequestException(ErrorCodes.COMPONENT_PUBLICATION_VALIDATED_CODESLIST, "The codes list should be validated", new JSONArray());
         }
 
 

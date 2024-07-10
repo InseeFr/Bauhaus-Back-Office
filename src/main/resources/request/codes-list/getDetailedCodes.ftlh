@@ -26,8 +26,14 @@ WHERE {
     OPTIONAL {?codeUri skos:definition ?descriptionLg2 .
     FILTER (lang(?descriptionLg2) = '${LG2}') } .
 
+    <#if SEARCH_CODE??>
+        FILTER (contains(lcase(str(?code)),lcase("${SEARCH_CODE}")))
+    </#if>
+    <#if SEARCH_LABEL_LG1??>
+        FILTER (contains(lcase(str(?labelLg1)),lcase("${SEARCH_LABEL_LG1}")))
+    </#if>
 }
-ORDER BY ?labelLg1
+ORDER BY ?${SORT}
 <#if PER_PAGE??>
 LIMIT ${PER_PAGE} OFFSET ${OFFSET}
 </#if>
