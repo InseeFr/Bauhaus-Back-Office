@@ -6,7 +6,7 @@ import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.external_services.authentication.stamps.StampsService;
+import fr.insee.rmes.external.services.authentication.stamps.StampsService;
 import fr.insee.rmes.webservice.PublicResources;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

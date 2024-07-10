@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.authentication.stamps;
+package fr.insee.rmes.external.services.authentication.stamps;
 
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.Stamp;

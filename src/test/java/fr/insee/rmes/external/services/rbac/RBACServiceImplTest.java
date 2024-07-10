@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.rbac;
+package fr.insee.rmes.external.services.rbac;
 
 import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.model.rbac.RBAC;
@@ -10,7 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest

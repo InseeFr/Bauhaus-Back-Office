@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.export;
+package fr.insee.rmes.external.services.export;
 
 import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.exceptions.RmesException;
