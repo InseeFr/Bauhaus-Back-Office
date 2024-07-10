@@ -23,12 +23,9 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -225,31 +222,29 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         String datasetByID = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
 
-        /*copyPropertiesNotNull
-
-        if ( patchDataset.getIssued() != null){
-            dataset.setIssued(patchDataset.getIssued());
+        if ( patchDataset.issued() != null){
+            dataset.setIssued(patchDataset.issued());
         }
 
-        if ( patchDataset.getUpdated() != null){
-            dataset.setUpdated(patchDataset.getUpdated());
+        if ( patchDataset.updated() != null){
+            dataset.setUpdated(patchDataset.updated());
         }
 
-        if ( patchDataset.getTemporalCoverageStartDate() != null){
-            dataset.setTemporalCoverageStartDate(patchDataset.getTemporalCoverageStartDate());
+        if ( patchDataset.temporalCoverageStartDate() != null){
+            dataset.setTemporalCoverageStartDate(patchDataset.temporalCoverageStartDate());
         }
 
-        if ( patchDataset.getTemporalCoverageEndDate() != null){
-            dataset.setTemporalCoverageEndDate(patchDataset.getTemporalCoverageEndDate());
+        if ( patchDataset.temporalCoverageEndDate() != null){
+            dataset.setTemporalCoverageEndDate(patchDataset.temporalCoverageEndDate());
         }
 
-        if ( patchDataset.getObservationNumber() != null && patchDataset.getObservationNumber() > 0){
-            dataset.setObservationNumber(patchDataset.getObservationNumber());
+        if ( patchDataset.observationNumber() != null && patchDataset.observationNumber() > 0){
+            dataset.setObservationNumber(patchDataset.observationNumber());
         }
 
-        if ( patchDataset.getTimeSeriesNumber() != null){
-            dataset.setTimeSeriesNumber(patchDataset.getTimeSeriesNumber());
-        }*/
+        if ( patchDataset.timeSeriesNumber() != null){
+            dataset.setTimeSeriesNumber(patchDataset.timeSeriesNumber());
+        }
 
         update(datasetId, dataset);
     }
