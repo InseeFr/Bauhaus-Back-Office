@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services.distribution;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 
 public interface DistributionService {
 
     String getDistributions() throws RmesException;
 
-    String getDistributionByID(String id) throws RmesException;
+    Distribution getDistributionByID(String id) throws RmesException;
 
     String create(String body) throws RmesException;
 

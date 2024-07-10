@@ -56,7 +56,7 @@ public class DistributionResources {
     @GetMapping("/{id}")
     @Operation(operationId = "getDistribution", summary = "Get a distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public String getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
+    public Distribution getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
     }
 
