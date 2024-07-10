@@ -6,7 +6,7 @@ import fr.insee.rmes.config.auth.AuthType;
 import fr.insee.rmes.config.swagger.model.LabelUrl;
 import fr.insee.rmes.config.swagger.model.application.Init;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.external_services.authentication.stamps.StampsService;
+import fr.insee.rmes.external.services.authentication.stamps.StampsService;
 import fr.insee.rmes.model.dissemination_status.DisseminationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

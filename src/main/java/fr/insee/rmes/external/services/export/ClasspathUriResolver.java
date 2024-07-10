@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.export;
+package fr.insee.rmes.external.services.export;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

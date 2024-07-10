@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.rbac;
+package fr.insee.rmes.external.services.rbac;
 
 import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.model.rbac.RBAC;
