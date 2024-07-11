@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -17,7 +16,6 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -98,7 +96,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private String getDatasetsAdmsBaseUri(){
-        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
+        return baseUriGestion + identifiantsAlternatifsBaseUri ;
     }
 
     private String getCatalogRecordBaseUri(){
@@ -283,7 +281,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public void deleteDatasetId(String datasetId) throws RmesException{
         String datasetString = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
-        if (!isUnpublished(dataset)){
+        if (isPublished(dataset)){
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
 
@@ -291,21 +289,34 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
         }
 
+        if (hasDerivedDataset(datasetId)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET, "Only dataset without any derived dataset can be deleted");
+        }
+
         IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
         IRI graph = getDatasetIri(datasetId);
         String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+        IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + datasetId);
+        IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + datasetId);
 
         repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteObject(catalogRecordIRI);
+        repoGestion.deleteObject(datasetAdmsIri);
         repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
     }
 
-    private boolean isUnpublished(Dataset dataset) {
-        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
+    private boolean isPublished(Dataset dataset) {
+        return !"Unpublished".equalsIgnoreCase(dataset.getValidationState());
     }
 
     private boolean hasDistribution(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
         return !getDistributions(datasetId).equals("[]");
+    }
+
+    private boolean hasDerivedDataset(String datasetId) throws RmesException {
+        JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(DatasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
+        return (datasetDerivation.has("id"));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
