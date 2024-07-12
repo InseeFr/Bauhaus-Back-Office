@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
@@ -381,7 +382,7 @@ public class StructureUtils extends RdfService {
     public void deleteStructure(String structureId) throws RmesException {
         String structureState = getValidationStatus(structureId);
         if(!structureState.equalsIgnoreCase("Unpublished")){
-            throw new RmesBadRequestException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+            throw new RmesBadRequestException(CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
         }
         else {
             IRI structureIri = RdfUtils.structureIRI(structureId);

@@ -42,13 +42,9 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a code list")
-    public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) {
-        try {
-            String id = codeListService.setCodesList(body, false);
-            return ResponseEntity.status(HttpStatus.OK).body(id);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<Object> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
+        String id = codeListService.setCodesList(body, false);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
