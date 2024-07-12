@@ -255,7 +255,6 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(structureIri, DCTERMS.IS_REQUIRED_BY, structure.getIsRequiredBy(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         structure.getContributor().forEach(contributor -> RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
