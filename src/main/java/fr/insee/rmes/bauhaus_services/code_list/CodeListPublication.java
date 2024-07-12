@@ -3,9 +3,9 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -25,7 +25,7 @@ public class CodeListPublication extends RdfService {
 
 	private void checkIfResourceExists(RepositoryResult<Statement> statements, Resource codeList) throws RmesNotFoundException {
 		if(!statements.hasNext()){
-			throw new RmesNotFoundException(ErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
+			throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
 		}
 	}
 
