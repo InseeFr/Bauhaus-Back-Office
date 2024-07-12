@@ -14,4 +14,7 @@ RUN chown -R 10000:10000 /opt/app/
 
 USER 10000
 COPY --from=builder /opt/app/target/*.jar /opt/app/bauhaus.jar
+
+EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar",  "/opt/app/bauhaus.jar"]
