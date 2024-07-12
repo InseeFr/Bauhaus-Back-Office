@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -17,10 +16,11 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -93,19 +93,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     protected IRI getDatasetIri(String datasetId){
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        return iri;
+        return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
 
     private String getDatasetsAdmsBaseUri(){
-        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
+        return baseUriGestion + identifiantsAlternatifsBaseUri;
     }
 
     private String getCatalogRecordBaseUri(){
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
-
-    static ValueFactory factory =  SimpleValueFactory.getInstance();
 
     @Override
     public String getDatasets() throws RmesException {
