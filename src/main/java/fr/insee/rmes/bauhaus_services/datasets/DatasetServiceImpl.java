@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
@@ -14,6 +15,7 @@ import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import org.eclipse.rdf4j.model.*;
@@ -24,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -281,6 +284,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     public void deleteDatasetId(String datasetId) throws RmesException{
         String datasetString = getDatasetByID(datasetId);
         Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+
         if (isPublished(dataset)){
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
@@ -289,7 +293,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
         }
 
-        if (hasDerivedDataset(datasetId)) {
+        if (hasDerivedDataset(dataset)) {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET, "Only dataset without any derived dataset can be deleted");
         }
 
@@ -299,11 +303,20 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + datasetId);
         IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + datasetId);
 
+        if (hasTemporalCoverage(dataset)){
+            deleteTemporalWhiteNode(datasetId);
+        }
+
+        if (isDerivedFromADataset(dataset)){
+            deleteQualifiedDerivationWhiteNode(datasetId);
+        }
         repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
         repoGestion.deleteObject(catalogRecordIRI);
         repoGestion.deleteObject(datasetAdmsIri);
         repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+
     }
+
 
     private boolean isPublished(Dataset dataset) {
         return !"Unpublished".equalsIgnoreCase(dataset.getValidationState());
@@ -314,9 +327,30 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return !getDistributions(datasetId).equals("[]");
     }
 
-    private boolean hasDerivedDataset(String datasetId) throws RmesException {
+    private boolean hasDerivedDataset(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
         JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(DatasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
         return (datasetDerivation.has("id"));
+    }
+
+    private boolean hasTemporalCoverage(Dataset dataset) {
+        return !(dataset.getTemporalCoverageDataType() == null);
+    }
+
+    private HttpStatus deleteTemporalWhiteNode(String id) throws RmesException {
+        HttpStatus result =  repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
+        return result;
+    }
+
+    private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        JSONObject datasetDerivedFrom =  this.repoGestion.getResponseAsObject(DatasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
+        return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
+    }
+
+    private HttpStatus deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
+        HttpStatus result =  repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
+        return result;
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

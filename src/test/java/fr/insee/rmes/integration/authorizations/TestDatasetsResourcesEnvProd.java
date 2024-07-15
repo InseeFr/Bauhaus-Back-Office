@@ -75,6 +75,7 @@ class TestDatasetsResourcesEnvProd {
     @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
+
     private static Dataset dataset;
 
     private final String idep = "xxxxxx";
@@ -377,8 +378,6 @@ class TestDatasetsResourcesEnvProd {
 
         public DatasetServiceImplStub(){
             super.repoGestion= Mockito.mock(RepositoryGestion.class);
-            //                repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
-            //        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
         }
 
         @Override

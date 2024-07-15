@@ -80,4 +80,30 @@ public class DatasetQueries extends GenericQueries {
         params.put("ID", id);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDerivedDataset.ftlh", params);
     }
+
+    public static String deleteTempWhiteNode(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetTemporalCoverageWhiteNode.ftlh", params);
+    }
+
+    public static String getDatasetDerivedFrom(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetDerivedFrom.ftlh", params);
+    }
+
+
+
+        public static String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetQualifiedDerivationWhiteNode.ftlh", params);
+    }
+
+
+
 }
