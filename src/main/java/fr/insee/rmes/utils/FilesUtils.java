@@ -100,8 +100,13 @@ public class FilesUtils {
 		
 	}
 	public static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").replaceAll("\\p{Punct}", "");
+		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
+				.replaceAll("œ", "oe")
+				.replaceAll("Œ", "OE")
+				.replaceAll("\\p{M}+", "")
+				.replaceAll("\\p{Punct}", "");
 	}
+
 	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
 		if (fileToZip.isHidden() || fileName.endsWith(".zip")) {
 			return;
