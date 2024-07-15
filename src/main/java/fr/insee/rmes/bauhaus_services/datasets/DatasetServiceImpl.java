@@ -27,11 +27,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
 
@@ -97,7 +101,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private String getDatasetsAdmsBaseUri(){
-        return baseUriGestion + identifiantsAlternatifsBaseUri ;
+        return baseUriGestion + identifiantsAlternatifsBaseUri;
     }
 
     private String getCatalogRecordBaseUri(){
