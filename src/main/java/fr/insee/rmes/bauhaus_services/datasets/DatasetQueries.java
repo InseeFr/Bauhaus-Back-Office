@@ -47,6 +47,10 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, path, params);
     }
 
+    public static String getDatasetWasGeneratedIris(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArrays("getDatasetWasGeneratedIris.ftlh", datasetsGraph, id);
+    }
+
     public static String getDatasetCreators(String id, String datasetsGraph) throws RmesException {
         return getDatasetArrays("getDatasetCreators.ftlh", datasetsGraph, id);
     }
@@ -73,4 +77,6 @@ public class DatasetQueries extends GenericQueries {
         Map<String, Object> params = Map.of("GRAPH", datasetsGraph, "IRI", iri, "PREDICATE", "dc:contributor");
         return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
     }
+
+
 }

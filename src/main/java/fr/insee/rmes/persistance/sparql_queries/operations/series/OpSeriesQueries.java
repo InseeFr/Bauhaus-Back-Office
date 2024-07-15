@@ -7,7 +7,9 @@ import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import org.eclipse.rdf4j.model.IRI;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 
 public class OpSeriesQueries extends GenericQueries{
 
@@ -191,11 +193,9 @@ public class OpSeriesQueries extends GenericQueries{
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
 
-	public static String checkIfSeriesExists(String iri) throws RmesException {
+	public static String checkIfSeriesExists(List<String> iris) throws RmesException {
 		if (params==null) {initParams();}
-		params.put(URI_SERIES, iri);
+		params.put(URI_SERIES, iris);
 		return buildSeriesRequest("checkIfSeriesExists.ftlh", params);
 	}
-
-
 }

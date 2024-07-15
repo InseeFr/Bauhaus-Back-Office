@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -17,7 +16,6 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -158,7 +156,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         dataset.remove(THEME);
 
         getMultipleTripletsForObject(dataset, "creators", DatasetQueries.getDatasetCreators(id, getDatasetsGraph()), CREATOR);
-
+        getMultipleTripletsForObject(dataset, "wasGeneratedIRIs", DatasetQueries.getDatasetWasGeneratedIris(id, getDatasetsGraph()), "iri");
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
         getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
         getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
@@ -191,9 +189,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if(ValidationStatus.VALIDATED.toString().equalsIgnoreCase(dataset.getValidationState())){
             dataset.setValidationState(ValidationStatus.MODIFIED.toString());
         }
-        if(dataset.getIdSerie() != null){
-            dataset.setIdSerie(RdfUtils.seriesIRI(dataset.getIdSerie()).toString());
-        }
 
         if(dataset.getCatalogRecord() == null){
             dataset.setCatalogRecord(new CatalogRecord());
@@ -217,10 +212,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
-
-        if(dataset.getIdSerie() != null){
-            dataset.setIdSerie(RdfUtils.seriesIRI(dataset.getIdSerie()).toString());
-        }
 
         if(dataset.getCatalogRecord() == null){
             dataset.setCatalogRecord(new CatalogRecord());
@@ -439,7 +430,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         this.persistStatisticsInformations(datasetIri, dataset, model, graph);
 
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
-        RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, dataset.getIdSerie(), model, graph);
+
+        if(dataset.getWasGeneratedIRIs() != null) {
+            dataset.getWasGeneratedIRIs().forEach(iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph));
+        }
 
         if(dataset.getThemes() != null){
             dataset.getThemes().forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph));
@@ -484,8 +478,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         if (dataset.getAltIdentifier() != null && !ALT_IDENTIFIER_PATTERN.matcher(dataset.getAltIdentifier()).matches()) {
             throw new RmesBadRequestException("The property altIdentifier contains forbidden characters");
         }
-        if(!this.seriesUtils.isSeriesExist(dataset.getIdSerie())){
-            throw new RmesBadRequestException("The series does not exist");
+
+        if(!this.seriesUtils.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
+            throw new RmesBadRequestException("Some series or operations does not exist");
         }
     }
 
