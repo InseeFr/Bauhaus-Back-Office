@@ -6,12 +6,14 @@ WHERE {
     
     ?uri dcterms:identifier '${ID}' .
     ?uri dcterms:identifier ?id .
-    
-    ?uriDataset rdf:type dcat:Dataset .
-	?uriDataset dcat:distribution ?uri .
-    
-    ?uriDataset dcterms:identifier ?idDataset .
-    
+
+	OPTIONAL {
+		?uriDataset rdf:type dcat:Dataset .
+		?uriDataset dcat:distribution ?uri .
+
+		?uriDataset dcterms:identifier ?idDataset .
+	}
+
 	OPTIONAL {
 		?uri dcterms:title ?labelLg1
 		FILTER (lang(?labelLg1) = '${LG1}') .
