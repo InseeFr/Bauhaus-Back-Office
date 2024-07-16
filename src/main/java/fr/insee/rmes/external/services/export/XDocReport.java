@@ -1,4 +1,4 @@
-package fr.insee.rmes.external_services.export;
+package fr.insee.rmes.external.services.export;
 
 import fr.insee.rmes.bauhaus_services.operations.operations.VarBookExportBuilder;
 import fr.insee.rmes.exceptions.RmesException;
@@ -23,24 +23,12 @@ public record XDocReport(VarBookExportBuilder varBookExport) {
 
 	static final Logger logger = LoggerFactory.getLogger(XDocReport.class);
 
-	@Deprecated
-	public OutputStream exportVariableBookInOdt(String xml, String odtTemplate) throws IOException, XDocReportException, RmesException {
-		// 1) Load DOCX into XWPFDocument
-		IXDocReport report = getReportTemplate(odtTemplate);
 
-		// 2) Create Java model context 
-		IContext context = getXmlData(report, xml);
-
-		// 3) Generate report by merging Java model with the ODT
-		OutputStream oFile = createOutputFile(false); 
-		report.process(context, oFile);
-		return oFile;
-	}
-
-	public OutputStream exportVariableBookInOdt(String xml, File odtTemplate) throws RmesException {
+	public byte[] exportVariableBookInOdt(String xml, File odtTemplate) throws RmesException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		IXDocReport report;
-		OutputStream oFile = null;
-		
+
+
 		// 1) Load DOCX into XWPFDocument
 		try {
 			report = getReportTemplate(odtTemplate);
@@ -48,13 +36,11 @@ public record XDocReport(VarBookExportBuilder varBookExport) {
 			// 2) Create Java model context 
 			IContext context = getXmlData(report, xml);
 	
-			// 3) Generate report by merging Java model with the ODT
-			oFile = createOutputFile(false); 
-			report.process(context, oFile);
+			report.process(context, baos);
 		}catch (IOException | XDocReportException e) {
 			logger.error(e.getMessage());
 		}
-		return oFile;
+		return baos.toByteArray();
 	}
 
 
@@ -75,22 +61,6 @@ public record XDocReport(VarBookExportBuilder varBookExport) {
 		}
 		context.put("racine", xml);
 		return context;
-	}
-
-
-	private OutputStream createOutputFile(boolean isPdf) throws IOException {
-		//TODO pass acceptHeader to manage more than pdf/odt
-		File outFile = File.createTempFile("Codebook", (isPdf?".pdf":".odt"));
-		return new FileOutputStream(outFile);
-	}
-
-
-	@Deprecated
-	//TODO use this for default value when template is ok
-	private IXDocReport getReportTemplate(String odtTemplate) throws IOException, XDocReportException {
-		try(InputStream is = getClass().getClassLoader().getResourceAsStream("xdocreport/"+odtTemplate)){
-				return  XDocReportRegistry.getRegistry().loadReport(is,TemplateEngineKind.Freemarker);
-		}
 	}
 
 	private IXDocReport getReportTemplate(File odtTemplate) throws IOException, XDocReportException {

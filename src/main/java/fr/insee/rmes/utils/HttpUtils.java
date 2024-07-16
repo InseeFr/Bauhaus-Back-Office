@@ -16,9 +16,13 @@ public final class HttpUtils {
     public static HttpHeaders generateHttpHeaders(String fileName, String extension, int maxLength) {
         MediaType contentType = FilesUtils.getMediaTypeFromExtension(extension);
 
-        ContentDisposition content = ContentDisposition.builder(HttpUtils.ATTACHMENT).filename(FilesUtils.reduceFileNameSize(fileName, maxLength) + extension).build();
+        ContentDisposition content = ContentDisposition.builder(HttpUtils.ATTACHMENT).filename(
+                FilesUtils.reduceFileNameSize(
+                        FilesUtils.removeAsciiCharacters(fileName), maxLength) + extension
+                ).build();
 
         List<String> allowHeaders = List.of(CONTENT_DISPOSITION,
+                "X-Missing-Documents",
                 "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Credentials");
 
