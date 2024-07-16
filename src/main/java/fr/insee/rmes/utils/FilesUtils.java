@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
@@ -23,6 +24,15 @@ public class FilesUtils {
 	public static final String XML_EXTENSION = ".xml";
 	public static final String FODT_EXTENSION = ".fodt";
 
+	public static MediaType getMediaTypeFromExtension(String extension) {
+		MediaType contentType = switch (extension){
+			case FilesUtils.ODT_EXTENSION -> new MediaType("application", "vnd.oasis.opendocument.text");
+			case FilesUtils.ODS_EXTENSION -> new MediaType("application", "vnd.oasis.opendocument.spreadsheet");
+			case FilesUtils.ZIP_EXTENSION -> new MediaType("application", "zip");
+			default -> throw new IllegalStateException("Unexpected value: " + extension);
+		};
+		return contentType;
+	}
 
 	public static String getExtension(String acceptHeader) {
 		if (acceptHeader == null) {
@@ -90,8 +100,13 @@ public class FilesUtils {
 		
 	}
 	public static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").replaceAll("\\p{Punct}", "");
+		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
+				.replaceAll("œ", "oe")
+				.replaceAll("Œ", "OE")
+				.replaceAll("\\p{M}+", "")
+				.replaceAll("\\p{Punct}", "");
 	}
+
 	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
 		if (fileToZip.isHidden() || fileName.endsWith(".zip")) {
 			return;

@@ -52,6 +52,7 @@ public class CodeListsResources extends GenericResources {
         String id = codeListService.setCodesList(body, false);
         CodeListResponse codeListResponse = new CodeListResponse(id);
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
+
     }
 
 

@@ -64,20 +64,26 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     protected IRI getDatasetIri(String datasetId){
         return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
+
+    protected IRI getDistributionIri(String distributionId){
+        return RdfUtils.createIRI(getDistributionBaseUri() + "/" + distributionId);
+    }
+
     @Override
     public String getDistributions() throws RmesException {
         return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph())).toString();
     }
 
     @Override
-    public String getDistributionByID(String id) throws RmesException {
-        JSONObject distribution = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
+    public Distribution getDistributionByID(String id) throws RmesException {
+        JSONObject distribution_raw = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
 
-        if (distribution.isEmpty()){
+        if (distribution_raw.isEmpty()){
             throw new RmesNotFoundException("This distribution does not exist");
         }
 
-        return distribution.toString();
+        Distribution distribution = Deserializer.deserializeBody(distribution_raw.toString(), Distribution.class);
+        return distribution;
     }
 
     @Override
@@ -115,7 +121,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     @Override
     public String publishDistribution(String id) throws RmesException {
         Model model = new LinkedHashModel();
-        IRI iri = getDatasetIri(id);
+        IRI iri = getDistributionIri(id);
 
         publicationUtils.publishResource(iri, Set.of());
         model.add(iri, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), RdfUtils.createIRI(getDistributionGraph()));
@@ -129,15 +135,14 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public void deleteDistributionId(String distributionId) throws RmesException{
-        String distributionString = getDistributionByID(distributionId);
-        Distribution distribution = Deserializer.deserializeBody(distributionString, Distribution.class);
+        Distribution distribution = getDistributionByID(distributionId);
         if (isPublished(distribution)){
             throw new RmesBadRequestException(ErrorCodes.DISTRIBUTION_DELETE_ONLY_UNPUBLISHED, "Only unpublished distributions can be deleted");
         }
         IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri());
         Resource graph = getDatasetIri(distributionId);
-        String distributionURI = getDistributionBaseUri() + "/" + distributionId;
-        repoGestion.deleteObject(RdfUtils.createIRI(distributionURI));
+        IRI distributionURI = getDistributionIri(distributionId);
+        repoGestion.deleteObject(distributionURI);
         repoGestion.deleteTripletByPredicate(distributionIRI,DCAT.DISTRIBUTION,graph);
     }
     private boolean isPublished(Distribution distribution) {
@@ -147,7 +152,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     private String persist(Distribution distribution, boolean creation) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDistributionGraph());
 
-        IRI distributionIRI = getDatasetIri(distribution.getId());
+        IRI distributionIRI = getDistributionIri(distribution.getId());
 
         Model model = new LinkedHashModel();
 
@@ -161,6 +166,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
         RdfUtils.addTripleUri(getDatasetIri(distribution.getIdDataset()), DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
 
+        model.add(distributionIRI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(distribution.getValidationState()), graph);
         model.add(distributionIRI, DCTERMS.IDENTIFIER, RdfUtils.setLiteralString(distribution.getId()), graph);
         model.add(distributionIRI, RDF.TYPE, DCAT.DISTRIBUTION, graph);
         model.add(distributionIRI, DCTERMS.TITLE, RdfUtils.setLiteralString(distribution.getLabelLg1(), config.getLg1()), graph);
@@ -194,8 +200,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public void patchDistribution(String distributionId, PatchDistribution patchDistribution) throws RmesException {
-        String distributionByID = getDistributionByID(distributionId);
-        Distribution distribution = Deserializer.deserializeBody(distributionByID, Distribution.class);
+        Distribution distribution = getDistributionByID(distributionId);
         if  (patchDistribution.getUpdated() == null && patchDistribution.getByteSize() == null && patchDistribution.getUrl() == null){
             throw new RmesBadRequestException(DISTRIUBTION_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, byteSize or url");
         }

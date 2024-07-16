@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>3.21.0</version>
+    <version>3.24.0</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -35,9 +35,46 @@
     </developers>
 
 
+    <profiles>
+        <profile>
+            <id>test-containers</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/testcontainers/**/*Test.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/testcontainers/**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <properties>
         <java.version>21</java.version>
-
         <springdoc.version>2.3.0</springdoc.version>
         <rdf4j.version>4.3.9</rdf4j.version>
         <xdocreport.version>2.0.4</xdocreport.version>
@@ -213,6 +250,16 @@
             <artifactId>flexmark-html2md-converter</artifactId>
             <version>${flexmark.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -251,6 +298,7 @@
                     </execution>
                 </executions>
             </plugin>
+
 
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
