@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,9 +46,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getAllPartialCodesLists() {
+    public ResponseEntity<Object> getAllPartialCodesLists() throws JsonProcessingException {
         try {
-            String body = codeListService.getAllCodesLists(true);
+            List<CodeListResponse> body = codeListService.getAllCodesLists(true);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -57,13 +58,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
-        try {
-            String body = codeListService.getDetailedCodesList(notation, true);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
+        String body = codeListService.getDetailedPartialCodesList(notation, true);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)

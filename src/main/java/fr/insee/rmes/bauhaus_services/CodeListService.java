@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -15,11 +16,11 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    String getAllCodesLists(boolean partial) throws RmesException;
+    List<CodeListResponse> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String geCodesListByIRI(String iri) throws RmesException;
 
-    String getDetailedCodesList(String notation, boolean partial) throws RmesException;
+    CodeListResponse getDetailedCodesList(String notation, boolean partial) throws RmesException;
 
     List<CodeListResponse> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
 
@@ -44,4 +45,6 @@ public interface CodeListService {
     String addCodeFromCodeList(String notation, String body) throws RmesException;
 
     String deleteCodeFromCodeList(String notation, String code) throws RmesException;
+
+    String getDetailedPartialCodesList(String notation, boolean b) throws RmesException;
 }

@@ -77,10 +77,8 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeListResponse.class)))})
     public ResponseEntity<List<CodeListResponse>> getAllCodesLists() throws RmesException, JsonProcessingException {
-        String listCodeListJson = codeListService.getAllCodesLists(false);
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<CodeListResponse> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeListResponse>>() {});
-        return ResponseEntity.status(HttpStatus.OK).body(listCodeListResponse);
+        List<CodeListResponse> listCodeList = codeListService.getAllCodesLists(false);
+        return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
     }
 
 
@@ -96,10 +94,10 @@ public class CodeListsResources extends GenericResources {
 
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
-        String codeListJson = codeListService.getDetailedCodesList(notation, false);
-        CodeListResponse codeList=Deserializer.deserializeBody(codeListJson, CodeListResponse.class);
-        return ResponseEntity.status(HttpStatus.OK).body(codeList);
+    public ResponseEntity<CodeListResponse> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
+        CodeListResponse codeListResponse = codeListService.getDetailedCodesList(notation, false);
+
+        return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
     }
 
 

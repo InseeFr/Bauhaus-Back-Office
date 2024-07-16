@@ -111,24 +111,25 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getDetailedCodesList(String notation, boolean partial) throws RmesException {
-		return getDetailedCodesListJson(notation, partial).toString();
+	public CodeListResponse getDetailedCodesList(String notation, boolean partial) throws RmesException {
+		String detailedCodesList = getDetailedCodesListJson(notation, partial).toString();
+		CodeListResponse codeListResponse = Deserializer.deserializeBody(detailedCodesList, CodeListResponse.class);
+		return codeListResponse;
 	}
 
 	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
 		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
-
-		if(!partial){
-			return codeList;
-		}
-		else {
-			JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, null, 0, 0, null));
-			formatCodesForPartialList(codeList, codes);
-			return codeList;
-		}
-
+		return codeList;
 	}
+
+	public String getDetailedPartialCodesList(String notation, boolean partial) throws RmesException {
+		JSONObject detailedCodesList = getDetailedCodesListJson(notation, partial);
+		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, null, 0, 0, null));
+		formatCodesForPartialList(detailedCodesList, codes);
+		return detailedCodesList.toString();
+	}
+
 
 	/**
 	 * In order to avoid multiple loops, we group by the data by the code only once.
@@ -466,8 +467,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getAllCodesLists(boolean partial) throws RmesException {
-		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
+	public List<CodeListResponse> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+		String listCodeListJson = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<CodeListResponse> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeListResponse>>() {});
+		return listCodeListResponse;
+//		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
 	}
 
 	@Override
