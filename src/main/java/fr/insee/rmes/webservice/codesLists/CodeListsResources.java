@@ -88,10 +88,8 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<List<CodeListResponse>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
-            String listCodeListJson = codeListService.getDetailedCodesListForSearch(false);
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<CodeListResponse> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeListResponse>>() {});
-            return ResponseEntity.status(HttpStatus.OK).body(listCodeListResponse);
+        List<CodeListResponse> listCodeList = codeListService.getDetailedCodesListForSearch(false);
+        return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
 
     }
 
@@ -118,8 +116,7 @@ public class CodeListsResources extends GenericResources {
             @RequestParam("page") int page,
             @RequestParam(value = "per_page", required = false) Integer perPage,
             @RequestParam(value = "sort", required = false) String sort) throws RmesException {
-        String codeListJson = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
-        CodeList codeList=Deserializer.deserializeBody(codeListJson, CodeList.class);
+        CodeList codeList = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
         return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 

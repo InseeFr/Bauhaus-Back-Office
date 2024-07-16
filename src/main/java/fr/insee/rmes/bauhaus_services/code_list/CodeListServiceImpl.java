@@ -1,6 +1,7 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
@@ -8,6 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
@@ -15,6 +17,7 @@ import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.Deserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -169,7 +172,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 	}
 	@Override
-	public String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+	public CodeList getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, search));
@@ -185,8 +188,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		result.put("total", counter.get("count"));
 		result.put("page", page);
 		result.put(CODES, items);
-
-		return result.toString();
+		CodeList codeList= Deserializer.deserializeBody(String.valueOf(result), CodeList.class);
+		return codeList;
 	}
 
 
@@ -208,7 +211,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String getDetailedCodesListForSearch(boolean partial) throws RmesException {
+	public List<CodeListResponse> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException {
 		JSONArray lists =  repoGestion.getResponseAsArray(CodeListQueries.getCodesListsForSearch(partial));
 		JSONArray codes =  repoGestion.getResponseAsArray(CodeListQueries.getCodesForSearch(partial));
 
@@ -217,7 +220,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 			list.put(CODES, this.getCodesForList(codes, list));
 		}
 
-		return lists.toString();
+		ObjectMapper objectMapper = new ObjectMapper();
+		List<CodeListResponse> listCodeListResponse = objectMapper.readValue(lists.toString(), new TypeReference<List<CodeListResponse>>() {});
+		return listCodeListResponse;
 	}
 
 

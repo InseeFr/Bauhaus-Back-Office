@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice.codesLists;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
@@ -20,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/codeList/partial")
@@ -91,9 +94,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() {
+    public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
-            String body = codeListService.getDetailedCodesListForSearch(true);
+            List<CodeListResponse> body = codeListService.getDetailedCodesListForSearch(true);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
