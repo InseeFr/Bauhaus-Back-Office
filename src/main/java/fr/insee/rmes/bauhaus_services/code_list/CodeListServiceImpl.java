@@ -30,8 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Spliterators;
-import java.util.stream.Stream;
+
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -74,7 +73,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
         result.put("total", counter.get("count"));
         result.put("page", page);
-        result.put("codes", getItemsWithPagination(notation, page, perPage));
+        result.put(CODES, getItemsWithPagination(notation, page, perPage));
         return result;
     }
 
@@ -106,7 +105,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public CodeList getCodeListAndCodesForExport(String notation) throws RmesException {
 		JSONObject codeList = getCodeListAsJSONObject(notation);
-		codeList.put("codes", getItemsWithPagination(notation,1, 0));
+		codeList.put(CODES, getItemsWithPagination(notation,1, 0));
 		return buildCodeListFromJson(codeList);
 	}
 
@@ -187,7 +186,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
-		result.put("codes", items);
+		result.put(CODES, items);
 
 		return result.toString();
 	}
