@@ -77,6 +77,4 @@ public class DatasetQueries extends GenericQueries {
         Map<String, Object> params = Map.of("GRAPH", datasetsGraph, "IRI", iri, "PREDICATE", "dc:contributor");
         return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
     }
-
-
 }
