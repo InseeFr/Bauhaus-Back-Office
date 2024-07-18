@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CodeListResponse {
+public class CodeList {
 
 	@Schema(description="Code list notation")
 	public String notation;
@@ -50,11 +50,11 @@ public class CodeListResponse {
 	public String lastCodeUriSegment;
 
 
-	public CodeListResponse(String notation) {
+	public CodeList(String notation) {
 		this.notation = notation;
 	}
 
-	public CodeListResponse() {
+	public CodeList() {
 	}
 
 	public String getNotation() {

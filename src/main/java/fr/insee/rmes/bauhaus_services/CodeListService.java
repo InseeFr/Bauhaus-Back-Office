@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
-import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 
@@ -16,13 +16,13 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    List<CodeListResponse> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
+    List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String geCodesListByIRI(String iri) throws RmesException;
 
-    CodeListResponse getDetailedCodesList(String notation) throws RmesException;
+    CodeList getDetailedCodesList(String notation) throws RmesException;
 
-    List<CodeListResponse> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
+    List<CodeList> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
 
     String setCodesList(String body, boolean partial) throws RmesException;
 

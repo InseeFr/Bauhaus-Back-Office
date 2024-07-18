@@ -7,7 +7,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
-import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.Deserializer;
@@ -47,9 +47,9 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a code list")
-    public ResponseEntity<CodeListResponse> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
+    public ResponseEntity<CodeList> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.setCodesList(body, false);
-        CodeListResponse codeListResponse = new CodeListResponse(id);
+        CodeList codeListResponse = new CodeList(id);
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
 
     }
@@ -58,10 +58,10 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a code list")
-    public ResponseEntity<CodeListResponse> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
+    public ResponseEntity<CodeList> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
         id = codeListService.setCodesList(id, body, false);
-        CodeListResponse codeListResponse = new CodeListResponse(id);
-        return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
+        CodeList codeList = new CodeList(id);
+        return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
 
@@ -74,27 +74,27 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getAllCodesLists", summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeListResponse.class)))})
-    public ResponseEntity<List<CodeListResponse>> getAllCodesLists() throws RmesException, JsonProcessingException {
-        List<CodeListResponse> listCodeList = codeListService.getAllCodesLists(false);
+    @Operation(operationId = "getAllCodesLists", summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
+    public ResponseEntity<List<CodeList>> getAllCodesLists() throws RmesException, JsonProcessingException {
+        List<CodeList> listCodeList = codeListService.getAllCodesLists(false);
         return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
     }
 
 
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<List<CodeListResponse>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
-        List<CodeListResponse> listCodeList = codeListService.getDetailedCodesListForSearch(false);
+    @Operation(operationId = "getDetailedCodesListForSearch", summary = "Return all lists for Advanced Search", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<List<CodeList>> getDetailedCodesLisForSearch() throws RmesException, JsonProcessingException {
+        List<CodeList> listCodeList = codeListService.getDetailedCodesListForSearch(false);
         return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
 
     }
 
 
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<CodeListResponse> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
-        CodeListResponse codeListResponse = codeListService.getDetailedCodesList(notation);
+    @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<CodeList> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
+        CodeList codeListResponse = codeListService.getDetailedCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
     }
 
@@ -118,7 +118,7 @@ public class CodeListsResources extends GenericResources {
 
     @PreAuthorize("isAdmin()")
     @DeleteMapping(value = "/detailed/{notation}/codes/{code}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
+    @Operation(operationId = "getPaginatedCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<Void> deleteCodeForCodeList(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
         codeListService.deleteCodeFromCodeList(notation, code);
         return ResponseEntity.status(HttpStatus.OK).build();
@@ -137,7 +137,7 @@ public class CodeListsResources extends GenericResources {
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#notation)")
     @PostMapping(value = "/detailed/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "addCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
+    @Operation(operationId = "addCodeForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<CodeListItem> addCodeForCodeList(@PathVariable("notation") String notation, @Parameter(description = "Code", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.addCodeFromCodeList(notation, body);
         CodeListItem idCodeListItem = new CodeListItem(id);
@@ -145,10 +145,10 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodeListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
-    public ResponseEntity<CodeListResponse> getCodeListByNotation(@PathVariable("notation") String notation) throws RmesException {
+    @Operation(operationId = "getCodeListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
+    public ResponseEntity<CodeList> getCodeListByNotation(@PathVariable("notation") String notation) throws RmesException {
             String codeListJson = codeListService.getCodeListJson(notation);
-            CodeListResponse codeList=Deserializer.deserializeBody(codeListJson, CodeListResponse.class);
+            CodeList codeList=Deserializer.deserializeBody(codeListJson, CodeList.class);
             return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 

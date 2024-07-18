@@ -9,7 +9,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -113,10 +113,10 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public CodeListResponse getDetailedCodesList(String notation) throws RmesException {
+	public CodeList getDetailedCodesList(String notation) throws RmesException {
 		String detailedCodesList = getDetailedCodesListJson(notation).toString();
-		CodeListResponse codeListResponse = Deserializer.deserializeBody(detailedCodesList, CodeListResponse.class);
-		return codeListResponse;
+		CodeList codeList = Deserializer.deserializeBody(detailedCodesList, CodeList.class);
+		return codeList;
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<CodeListResponse> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException {
+	public List<CodeList> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException {
 		JSONArray lists =  repoGestion.getResponseAsArray(CodeListQueries.getCodesListsForSearch(partial));
 		JSONArray codes =  repoGestion.getResponseAsArray(CodeListQueries.getCodesForSearch(partial));
 
@@ -229,8 +229,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeListResponse> listCodeListResponse = objectMapper.readValue(lists.toString(), new TypeReference<List<CodeListResponse>>() {});
-		return listCodeListResponse;
+		List<CodeList> listCodeList = objectMapper.readValue(lists.toString(), new TypeReference<List<CodeList>>() {});
+		return listCodeList;
 	}
 
 
@@ -474,12 +474,11 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<CodeListResponse> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+	public List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
 		String listCodeListJson = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeListResponse> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeListResponse>>() {});
+		List<CodeList> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeList>>() {});
 		return listCodeListResponse;
-//		return repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
 	}
 
 	@Override
