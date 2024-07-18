@@ -1,16 +1,17 @@
-SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel)
+SELECT DISTINCT ?iri ?seriesIri ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel)
 WHERE {
     GRAPH <${OPERATIONS_GRAPH}> {
-        ?operation a insee:StatisticalOperation .
-        ?operation skos:prefLabel ?label .
+        ?iri a insee:StatisticalOperation .
+        ?iri skos:prefLabel ?label .
         FILTER (lang(?label) = '${LG1}')
-        BIND(STRAFTER(STR(?operation),'/operations/operation/') AS ?id) .
+        BIND(STRAFTER(STR(?iri),'/operations/operation/') AS ?id) .
 
+        ?seriesIri dcterms:hasPart ?iri .
         OPTIONAL{
-            ?operation skos:altLabel ?altLabelLg1 .
+            ?iri skos:altLabel ?altLabelLg1 .
             FILTER (lang(?altLabelLg1) = '${LG2}')
         }
     }
 }
-GROUP BY ?id ?label
+GROUP BY ?iri ?seriesIri ?id ?label
 ORDER BY ?label

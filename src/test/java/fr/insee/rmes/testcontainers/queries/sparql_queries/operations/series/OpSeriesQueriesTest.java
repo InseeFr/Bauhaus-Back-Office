@@ -7,12 +7,14 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class OpSeriesQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
@@ -27,6 +29,10 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
         OpSeriesQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
         assertEquals(174, result.length());
+
+        for (var i = 0; i < result.length(); i++){
+            assertNotNull(result.getJSONObject(i).getString("iri"));
+        }
     }
 
     @Test

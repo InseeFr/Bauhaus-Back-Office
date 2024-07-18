@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class OperationsQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
@@ -26,5 +27,9 @@ public class OperationsQueriesTest extends WithGraphDBContainer {
         OpSeriesQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery());
         assertEquals(390, result.length());
+
+        for (var i = 0; i < result.length(); i++){
+            assertNotNull(result.getJSONObject(i).getString("iri"));
+        }
     }
 }
