@@ -172,10 +172,9 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
     @PutMapping("/validate/{id}")
     @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
-    public ResponseEntity<Object> publishFullCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
+    public ResponseEntity<String> publishFullCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
         codeListService.publishCodeList(id, false);
-        CodeListResponse codeListResponseId = new CodeListResponse(id);
-        return ResponseEntity.status(HttpStatus.OK).body(codeListResponseId);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 }
