@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
@@ -28,7 +28,7 @@ public interface CodeListService {
 
     String setCodesList(String id, String body, boolean partial) throws RmesException;
 
-    CodeList getCodeListAndCodesForExport(String code) throws RmesException;
+    DetailedCodeList getCodeListAndCodesForExport(String code) throws RmesException;
 
     String getPartialCodeListByParent(String parentIRI) throws RmesException;
 

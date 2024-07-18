@@ -94,19 +94,19 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
         return codeList.put(Constants.NOTATION, notation);
     }
 
-    private CodeList buildCodeListFromJson(JSONObject codeListJson) {
-		CodeList codeList;
+    private DetailedCodeList buildCodeListFromJson(JSONObject codeListJson) {
+		DetailedCodeList codeList;
 		try {
-            codeList = mapper.readValue(codeListJson.toString(), CodeList.class);
+            codeList = mapper.readValue(codeListJson.toString(), DetailedCodeList.class);
 		} catch (JsonProcessingException e) {
 			logger.error("Json cannot be parsed: ".concat(e.getMessage()));
-            codeList=new CodeList();
+            codeList=new DetailedCodeList();
 		}
 		return codeList;
 	}
 
 	@Override
-	public CodeList getCodeListAndCodesForExport(String notation) throws RmesException {
+	public DetailedCodeList getCodeListAndCodesForExport(String notation) throws RmesException {
 		JSONObject codeList = getCodeListAsJSONObject(notation);
 		codeList.put(CODES, getItemsWithPagination(notation,1, 0));
 		return buildCodeListFromJson(codeList);

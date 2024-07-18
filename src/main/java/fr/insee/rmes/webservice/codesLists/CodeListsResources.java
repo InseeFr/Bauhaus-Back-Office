@@ -4,7 +4,7 @@ package fr.insee.rmes.webservice.codesLists;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
@@ -104,7 +104,7 @@ public class CodeListsResources extends GenericResources {
             operationId = "getPaginatedCodesForCodeList",
             summary = "List of codes",
             responses = {
-                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))
+                    @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))
             })
     public ResponseEntity<Page> getPaginatedCodesForCodeList(
             @PathVariable("notation") String notation,
@@ -153,10 +153,10 @@ public class CodeListsResources extends GenericResources {
     }
 
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<CodeList> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
+    @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))})
+    public ResponseEntity<DetailedCodeList> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
         String codeListCodesJson = codeListService.getCodesJson(notation, page, perPage);
-        CodeList codeListCodes=Deserializer.deserializeBody(codeListCodesJson, CodeList.class);
+        DetailedCodeList codeListCodes=Deserializer.deserializeBody(codeListCodesJson, DetailedCodeList.class);
         return ResponseEntity.status(HttpStatus.OK).body(codeListCodes);
 
     }

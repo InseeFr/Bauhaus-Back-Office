@@ -2,11 +2,10 @@ package fr.insee.rmes.webservice;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
-import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Assertions;
@@ -24,7 +23,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @ExtendWith(MockitoExtension.class)
 class CodeListsResourcesTest {
@@ -78,7 +76,7 @@ class CodeListsResourcesTest {
     @Test
     void shouldReturn200WithGetCodesForCodeList() throws RmesException {
         when(codeListService.getCodesJson("notation", 1, null)).thenReturn("{\"notation\":\"id1\"}");
-        ResponseEntity<CodeList> response = codeListsResources.getCodesForCodeList("notation", 1, null);
+        ResponseEntity<DetailedCodeList> response = codeListsResources.getCodesForCodeList("notation", 1, null);
         assertEquals("id1", response.getBody().getNotation());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }

@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CodeList {
+public class DetailedCodeList {
 
 
 	@Schema(description = "Notation", required = true)
