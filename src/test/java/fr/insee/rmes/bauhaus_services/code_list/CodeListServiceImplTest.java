@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesException;
@@ -13,9 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -29,6 +29,8 @@ class CodeListServiceImplTest {
     @Spy
     @InjectMocks
     CodeListServiceImpl codeListService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void getCodesJson() throws RmesException {
@@ -50,8 +52,9 @@ class CodeListServiceImplTest {
         }
     }
 
+
     @Test
-    void getCodesForCodeList() throws RmesException {
+    void getCodesForCodeList() throws RmesException, JsonProcessingException {
         try (MockedStatic<CodeListQueries> mockedFactory = Mockito.mockStatic(CodeListQueries.class)) {
             mockedFactory.when(() -> CodeListQueries.countCodesForCodeList("notation", List.of("search"))).thenReturn("query");
             mockedFactory.when(() -> CodeListQueries.getDetailedCodes("notation", false, List.of("search"), 1, null, "code")).thenReturn("query2");
@@ -74,8 +77,10 @@ class CodeListServiceImplTest {
             JSONArray relatedList = new JSONArray();
             relatedList.put(related);
             when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
-
-            assertEquals("{\"codes\":[{\"code\":\"A\",\"broader\":[\"A1\"]}],\"total\":5,\"page\":1}", codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code"));
+            CodeList response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
+            String responseJson = objectMapper.writeValueAsString(response);
+            String expectedJson = "{\"total\":\"5\",\"page\":\"1\",\"codes\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
+            assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(responseJson));
         }
     }
 

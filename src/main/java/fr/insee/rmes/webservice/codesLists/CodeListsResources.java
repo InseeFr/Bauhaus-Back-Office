@@ -2,8 +2,6 @@ package fr.insee.rmes.webservice.codesLists;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.code_list.CodeList;
@@ -96,7 +94,6 @@ public class CodeListsResources extends GenericResources {
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<CodeListResponse> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
         CodeListResponse codeListResponse = codeListService.getDetailedCodesList(notation, false);
-
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
     }
 

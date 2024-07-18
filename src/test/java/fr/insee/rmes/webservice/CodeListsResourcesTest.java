@@ -35,7 +35,16 @@ class CodeListsResourcesTest {
 
     @Test
     void shouldReturn200WithGetAllCodesLists() throws RmesException, JsonProcessingException {
-        when(codeListService.getAllCodesLists(false)).thenReturn("[{\"notation\":\"id1\"},{\"notation\":\"id2\"}]");
+
+        CodeListResponse codeList1 = new CodeListResponse();
+        codeList1.notation="id1";
+        CodeListResponse codeList2 = new CodeListResponse();
+        codeList2.notation="id2";
+        List<CodeListResponse> liste = new ArrayList<>();
+        liste.add(codeList1);
+        liste.add(codeList2);
+
+        when(codeListService.getAllCodesLists(false)).thenReturn(liste);
         ResponseEntity<List<CodeListResponse>> response = codeListsResources.getAllCodesLists();
         assertEquals("id1", response.getBody().get(0).getNotation());
         assertEquals("id2", response.getBody().get(1).getNotation());
@@ -51,7 +60,9 @@ class CodeListsResourcesTest {
 
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn("{\"notation\":\"id1\"}");
+        CodeList codeList = new CodeList();
+        codeList.notation="id1";
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn(codeList);
         ResponseEntity<CodeList> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
         assertEquals("id1", response.getBody().getNotation());
         assertEquals(HttpStatus.OK, response.getStatusCode());

@@ -61,6 +61,9 @@ public class CodeListResponse {
 		return notation;
 	}
 
+	public String getIri() {
+		return iri;
+	}
 
 
 }

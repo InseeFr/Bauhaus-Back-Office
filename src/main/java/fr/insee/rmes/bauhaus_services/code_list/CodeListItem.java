@@ -3,6 +3,8 @@ package fr.insee.rmes.bauhaus_services.code_list;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeListItem {
 
@@ -24,7 +26,7 @@ public class CodeListItem {
 	private String descriptionLg2;
 	private String lastCodeUriSegment;
 	private String codeUri;
-
+	public List<String> broader;
 
 	public CodeListItem(String code, String labelLg1, String labelLg2, String iri) {
 		super();
@@ -46,7 +48,10 @@ public class CodeListItem {
 		return this.code;
 	}
 
-	
+	public List<String> getBroader() {
+		return this.broader;
+	}
+
 	public String getLabelLg1() {
 		return labelLg1;
 	}
