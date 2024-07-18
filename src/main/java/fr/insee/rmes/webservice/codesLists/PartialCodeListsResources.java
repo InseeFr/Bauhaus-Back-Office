@@ -59,7 +59,7 @@ public class PartialCodeListsResources extends GenericResources {
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
-        String body = codeListService.getDetailedPartialCodesList(notation, true);
+        String body = codeListService.getDetailedPartialCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 

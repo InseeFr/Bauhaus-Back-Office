@@ -104,7 +104,7 @@ class CodeListServiceImplTest {
         codesList.put("lastListUriSegment", "lastListUriSegment");
         codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
 
-        doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
+        doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
 
         JSONObject code = new JSONObject();
         code.put("code", "code");
@@ -139,7 +139,7 @@ class CodeListServiceImplTest {
             JSONObject codesList = new JSONObject();
             codesList.put("lastCodeUriSegment", "lastCodeUriSegment");
 
-            doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation", false);
+            doReturn(codesList).when(codeListService).getDetailedCodesListJson("notation");
             codeListService.deleteCodeFromCodeList("notation", "code");
             verify(repositoryGestion, times(1)).deleteObject(codeIRI, null);
         }

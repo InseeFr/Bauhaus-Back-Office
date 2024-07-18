@@ -93,7 +93,7 @@ public class CodeListsResources extends GenericResources {
     @GetMapping(value = "/detailed/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedCodesListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeListResponse.class)))})
     public ResponseEntity<CodeListResponse> getDetailedCodesListByNotation(@PathVariable("notation") String notation) throws RmesException {
-        CodeListResponse codeListResponse = codeListService.getDetailedCodesList(notation, false);
+        CodeListResponse codeListResponse = codeListService.getDetailedCodesList(notation);
         return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
     }
 

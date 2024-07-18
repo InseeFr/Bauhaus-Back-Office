@@ -111,25 +111,30 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public CodeListResponse getDetailedCodesList(String notation, boolean partial) throws RmesException {
-		String detailedCodesList = getDetailedCodesListJson(notation, partial).toString();
+	public CodeListResponse getDetailedCodesList(String notation) throws RmesException {
+		String detailedCodesList = getDetailedCodesListJson(notation).toString();
 		CodeListResponse codeListResponse = Deserializer.deserializeBody(detailedCodesList, CodeListResponse.class);
 		return codeListResponse;
 	}
 
-	public JSONObject getDetailedCodesListJson(String notation, boolean partial) throws RmesException {
+	@Override
+	public String getDetailedPartialCodesList(String notation) throws RmesException {
+		JSONObject detailedCodesList = getDetailedPartialCodesListJson(notation);
+		return detailedCodesList.toString();
+	}
+
+	public JSONObject getDetailedCodesListJson(String notation) throws RmesException {
 		JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getDetailedCodeListByNotation(notation, baseInternalURI));
 		getMultipleTripletsForObject(codeList, "contributor", CodeListQueries.getCodesListContributors(codeList.getString("iri")), "contributor");
 		return codeList;
 	}
 
-	public String getDetailedPartialCodesList(String notation, boolean partial) throws RmesException {
-		JSONObject detailedCodesList = getDetailedCodesListJson(notation, partial);
+	public JSONObject getDetailedPartialCodesListJson(String notation) throws RmesException {
+		JSONObject detailedCodesList = getDetailedCodesListJson(notation);
 		JSONArray codes = repoGestion.getResponseAsArray(CodeListQueries.getDetailedCodes(notation, true, null, 0, 0, null));
 		formatCodesForPartialList(detailedCodesList, codes);
-		return detailedCodesList.toString();
+		return detailedCodesList;
 	}
-
 
 	/**
 	 * In order to avoid multiple loops, we group by the data by the code only once.
@@ -305,7 +310,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String getPartialCodeListByParent(String parentCode) throws RmesException {
-		JSONObject parent = this.getDetailedCodesListJson(parentCode, false);
+		JSONObject parent = this.getDetailedCodesListJson(parentCode);
 		String parentIRI = parent.getString("iri");
 		JSONArray partials = repoGestion.getResponseAsArray(CodeListQueries.getPartialCodeListByParentUri(parentIRI));
 		return partials.toString();
@@ -313,7 +318,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public void deleteCodeList(String notation, boolean partial) throws RmesException {
-		JSONObject codesList = getDetailedCodesListJson(notation, partial);
+		JSONObject codesList = getDetailedPartialCodesListJson(notation);
 		String iri = codesList.getString("iri");
 
 		if(!codesList.getString(VALIDATION_STATE).equalsIgnoreCase("Unpublished")){
@@ -340,7 +345,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String publishCodeList(String id, boolean partial) throws RmesException {
 
-		JSONObject codesList = getDetailedCodesListJson(id, partial);
+		JSONObject codesList = getDetailedPartialCodesListJson(id);
 		String iri = codesList.getString("iri");
 		IRI codelist = RdfUtils.createIRI(iri);
 
@@ -489,7 +494,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public String addCodeFromCodeList(String notation, String body) throws RmesException {
 		JSONObject code = new JSONObject(body);
-		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
+		JSONObject codesList = this.getDetailedCodesListJson(notation);
 
 		IRI owlClassUri = RdfUtils.codeListIRI(CONCEPT + codesList.getString(LAST_CLASS_URI_SEGMENT));
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
@@ -506,7 +511,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 	@Override
 	public String deleteCodeFromCodeList(String notation, String code) throws RmesException {
-		JSONObject codesList = this.getDetailedCodesListJson(notation, false);
+		JSONObject codesList = this.getDetailedCodesListJson(notation);
 		String lastCodeUriSegment = codesList.getString(LAST_CODE_URI_SEGMENT);
 		IRI codeIri = RdfUtils.codeListIRI(  lastCodeUriSegment + "/" + code);
 		repoGestion.deleteObject(codeIri, null);

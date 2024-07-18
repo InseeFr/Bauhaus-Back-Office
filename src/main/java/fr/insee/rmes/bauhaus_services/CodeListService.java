@@ -20,7 +20,7 @@ public interface CodeListService {
 
     String geCodesListByIRI(String iri) throws RmesException;
 
-    CodeListResponse getDetailedCodesList(String notation, boolean partial) throws RmesException;
+    CodeListResponse getDetailedCodesList(String notation) throws RmesException;
 
     List<CodeListResponse> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
 
@@ -46,5 +46,5 @@ public interface CodeListService {
 
     String deleteCodeFromCodeList(String notation, String code) throws RmesException;
 
-    String getDetailedPartialCodesList(String notation, boolean b) throws RmesException;
+    String getDetailedPartialCodesList(String notation) throws RmesException;
 }
