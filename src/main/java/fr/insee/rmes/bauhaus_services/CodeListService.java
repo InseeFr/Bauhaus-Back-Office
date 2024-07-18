@@ -3,8 +3,8 @@ package fr.insee.rmes.bauhaus_services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
-import org.json.JSONObject;
 
 import java.util.List;
 
@@ -36,7 +36,7 @@ public interface CodeListService {
 
     String publishCodeList(String id, boolean b) throws RmesException;
 
-    CodeList getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
+    Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
 
     String getCodesJson(String notation, int page, Integer perPage) throws RmesException;
 

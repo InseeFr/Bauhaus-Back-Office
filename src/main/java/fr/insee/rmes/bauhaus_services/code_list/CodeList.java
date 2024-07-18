@@ -8,8 +8,6 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeList {
 
-	public String total;
-	public String page;
 
 	@Schema(description = "Notation", required = true)
 	public String notation;

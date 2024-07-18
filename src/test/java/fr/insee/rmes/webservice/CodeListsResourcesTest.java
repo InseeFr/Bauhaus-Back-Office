@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
@@ -60,11 +61,11 @@ class CodeListsResourcesTest {
 
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
-        CodeList codeList = new CodeList();
-        codeList.notation="id1";
-        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn(codeList);
-        ResponseEntity<CodeList> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
-        assertEquals("id1", response.getBody().getNotation());
+        Page page = new Page();
+        page.page="id1";
+        when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn(page);
+        ResponseEntity<Page> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
+        assertEquals("id1", response.getBody().getPage());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test

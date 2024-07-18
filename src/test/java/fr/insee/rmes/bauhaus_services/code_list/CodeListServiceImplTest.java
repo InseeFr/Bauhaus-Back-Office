@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import org.eclipse.rdf4j.model.IRI;
@@ -77,9 +78,9 @@ class CodeListServiceImplTest {
             JSONArray relatedList = new JSONArray();
             relatedList.put(related);
             when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
-            CodeList response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
+            Page response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
             String responseJson = objectMapper.writeValueAsString(response);
-            String expectedJson = "{\"total\":\"5\",\"page\":\"1\",\"codes\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
+            String expectedJson = "{\"total\":\"5\",\"page\":\"1\",\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
             assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(responseJson));
         }
     }

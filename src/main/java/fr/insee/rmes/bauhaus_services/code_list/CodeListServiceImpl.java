@@ -10,6 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
@@ -41,6 +42,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	private static final String CODE = "code";
 
 	private static final String CODES = "codes";
+	private static final String ITEMS = "items";
 
 	private static final String LAST_LIST_URI_SEGMENT = "lastListUriSegment";
 
@@ -178,7 +180,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 	}
 	@Override
-	public CodeList getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException {
+	public Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException {
 		JSONObject result = new JSONObject();
 
 		JSONObject counter = repoGestion.getResponseAsObject(CodeListQueries.countCodesForCodeList(notation, search));
@@ -193,9 +195,9 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		result.put("total", counter.get("count"));
 		result.put("page", page);
-		result.put(CODES, items);
-		CodeList codeList= Deserializer.deserializeBody(String.valueOf(result), CodeList.class);
-		return codeList;
+		result.put(ITEMS, items);
+		Page numPage= Deserializer.deserializeBody(String.valueOf(result), Page.class);
+		return numPage;
 	}
 
 

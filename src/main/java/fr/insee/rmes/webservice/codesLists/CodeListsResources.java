@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.code_list.CodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeListResponse;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.webservice.GenericResources;
@@ -105,13 +106,13 @@ public class CodeListsResources extends GenericResources {
             responses = {
                     @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))
             })
-    public ResponseEntity<CodeList> getPaginatedCodesForCodeList(
+    public ResponseEntity<Page> getPaginatedCodesForCodeList(
             @PathVariable("notation") String notation,
             @RequestParam(value = "search", required = false) List<String> search,
             @RequestParam("page") int page,
             @RequestParam(value = "per_page", required = false) Integer perPage,
             @RequestParam(value = "sort", required = false) String sort) throws RmesException {
-        CodeList codeList = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
+        Page codeList = codeListService.getCodesForCodeList(notation, search, page, perPage, sort);
         return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
