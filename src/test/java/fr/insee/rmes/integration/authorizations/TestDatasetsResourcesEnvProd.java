@@ -17,10 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -349,96 +347,5 @@ class TestDatasetsResourcesEnvProd {
                 .andExpect(status().isForbidden());
     }
 
-
-//    static class DatasetServiceImplStub extends DatasetServiceImpl{
-//
-//
-//        public DatasetServiceImplStub(){
-//            super.repoGestion= Mockito.mock(RepositoryGestion.class);
-//        }
-//
-//        @Override
-//        public String getDatasetByID(String id) {
-//            final ObjectMapper mapper=new ObjectMapper();
-//            try {
-//                return mapper.writeValueAsString(dataset);
-//            } catch (JsonProcessingException e) {
-//                logger.error(e.getMessage(),e);
-//                return null;
-//            }
-//        }
-//
-//        @Override
-//        public String getDistributions(String id) {
-//            return "[]";
-//        }
-//
-//        @Override
-//        protected String getDatasetsBaseUri(){
-//            return "http://bauhaus/datasets";
-//        }
-//
-//    }
-//
-//    @TestConfiguration
-//    static class ConfigureDatasetServiceForTest{
-//
-//        @Bean
-//        DatasetService datasetService(){
-//            final DatasetServiceImplStub realInstance = new DatasetServiceImplStub();
-//            return new DatasetService() {
-//                @Override
-//                public String getDatasets() throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String getDatasetByID(String id) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String update(String datasetId, String body) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String create(String body) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String getDistributions(String id) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String getArchivageUnits() throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
-//
-//                }
-//
-//                @Override
-//                public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String publishDataset(String id) throws RmesException {
-//                    return "";
-//                }
-//
-//                @Override
-//                public void deleteDatasetId(String datasetId) throws RmesException {
-//                    realInstance.deleteDatasetId(datasetId);
-//                }
-//            };
-//        }
-//
-//    }
-
+    
 }
