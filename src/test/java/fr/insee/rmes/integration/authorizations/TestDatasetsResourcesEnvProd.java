@@ -382,14 +382,9 @@ class TestDatasetsResourcesEnvProd {
         }
 
         @Override
-        public String getDatasetByID(String id) {
+        public Dataset getDatasetByID(String id) {
             final ObjectMapper mapper=new ObjectMapper();
-            try {
-                return mapper.writeValueAsString(dataset);
-            } catch (JsonProcessingException e) {
-                logger.error(e.getMessage(),e);
-                return null;
-            }
+            return dataset;
         }
 
         @Override
@@ -417,8 +412,8 @@ class TestDatasetsResourcesEnvProd {
                 }
 
                 @Override
-                public String getDatasetByID(String id) throws RmesException {
-                    return "";
+                public Dataset getDatasetByID(String id) throws RmesException {
+                    return null;
                 }
 
                 @Override
