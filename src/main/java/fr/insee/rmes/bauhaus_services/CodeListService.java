@@ -1,6 +1,9 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
+import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 
 import java.util.List;
@@ -13,19 +16,19 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    String getAllCodesLists(boolean partial) throws RmesException;
+    List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String geCodesListByIRI(String iri) throws RmesException;
 
-    String getDetailedCodesList(String notation, boolean partial) throws RmesException;
+    CodeList getDetailedCodesList(String notation) throws RmesException;
 
-    String getDetailedCodesListForSearch(boolean partial) throws RmesException;
+    List<CodeList> getDetailedCodesListForSearch(boolean partial) throws RmesException, JsonProcessingException;
 
     String setCodesList(String body, boolean partial) throws RmesException;
 
     String setCodesList(String id, String body, boolean partial) throws RmesException;
 
-    CodeList getCodeListAndCodesForExport(String code) throws RmesException;
+    DetailedCodeList getCodeListAndCodesForExport(String code) throws RmesException;
 
     String getPartialCodeListByParent(String parentIRI) throws RmesException;
 
@@ -33,7 +36,7 @@ public interface CodeListService {
 
     String publishCodeList(String id, boolean b) throws RmesException;
 
-    String getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
+    Page getCodesForCodeList(String notation, List<String> search, int page, Integer perPage, String sort) throws RmesException;
 
     String getCodesJson(String notation, int page, Integer perPage) throws RmesException;
 
@@ -42,4 +45,6 @@ public interface CodeListService {
     String addCodeFromCodeList(String notation, String body) throws RmesException;
 
     String deleteCodeFromCodeList(String notation, String code) throws RmesException;
+
+    String getDetailedPartialCodesList(String notation) throws RmesException;
 }
