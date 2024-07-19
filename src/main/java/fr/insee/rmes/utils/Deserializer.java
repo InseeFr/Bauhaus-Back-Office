@@ -11,7 +11,7 @@ public class Deserializer {
     private static final String IO_EXCEPTION = "IOException";
     private static ObjectMapper mapper = new ObjectMapper();
 
-    public static <T> T deserializeBody(String body, Class target) throws RmesException {
+    public static <T> T deserializeBody(String body, Class<?> target) throws RmesException {
         mapper.configure(
                 DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
