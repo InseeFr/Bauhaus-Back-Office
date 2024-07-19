@@ -12,7 +12,6 @@ import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -76,14 +75,14 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public Distribution getDistributionByID(String id) throws RmesException {
-        JSONObject distribution_raw = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
+        JSONObject distributionRaw = repoGestion.getResponseAsObject(DistributionQueries.getDistribution(id, getDistributionGraph()));
 
-        if (distribution_raw.isEmpty()){
+        if (distributionRaw.isEmpty()){
             throw new RmesNotFoundException("This distribution does not exist");
         }
 
-        Distribution distribution = Deserializer.deserializeBody(distribution_raw.toString(), Distribution.class);
-        return distribution;
+        return Deserializer.deserializeBody(distributionRaw.toString(), Distribution.class);
+
     }
 
     @Override
