@@ -15,7 +15,7 @@ public interface CodeListService {
 
     String getAllCodesLists(boolean partial) throws RmesException;
 
-    String geCodesListByIRI(String iri) throws RmesException;
+    String getCodesListByIRI(String iri) throws RmesException;
 
     String getDetailedCodesList(String notation, boolean partial) throws RmesException;
 
