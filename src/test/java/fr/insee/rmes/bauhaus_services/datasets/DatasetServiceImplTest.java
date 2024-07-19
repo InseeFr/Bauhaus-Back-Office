@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
@@ -19,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
@@ -127,7 +129,8 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
-            String query = datasetService.getDatasetByID("1");
+            Dataset query = datasetService.getDatasetByID("1");
+            //sérialiser query pour comparer
             Assertions.assertEquals("{\"themes\":[],\"catalogRecord\":{},\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"id\":\"1\",\"spacialResolutions\":[\"spacialResolutions-1\"]}", query);
         }
     }

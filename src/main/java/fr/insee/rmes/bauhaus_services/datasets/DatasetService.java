@@ -1,13 +1,14 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 
 public interface DatasetService {
 
     String getDatasets() throws RmesException;
 
-    String getDatasetByID(String id) throws RmesException ;
+    Dataset getDatasetByID(String id) throws RmesException ;
 
     String update(String datasetId, String body) throws RmesException;
 

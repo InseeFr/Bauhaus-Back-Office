@@ -136,7 +136,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String getDatasetByID(String id) throws RmesException {
+    public Dataset getDatasetByID(String id) throws RmesException {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
@@ -179,7 +179,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
-        return dataset.toString();
+        return Deserializer.deserializeBody(dataset.toString(), Dataset.class);
     }
 
     private String update(String datasetId, Dataset dataset) throws RmesException {
@@ -243,8 +243,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
-        String datasetByID = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
+        Dataset dataset = getDatasetByID(datasetId);
+
         if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
                 && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
             throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
@@ -278,8 +278,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void deleteDatasetId(String datasetId) throws RmesException{
-        String datasetString = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
+        Dataset dataset = getDatasetByID(datasetId);
         if (!isUnpublished(dataset)){
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
