@@ -12,4 +12,5 @@ public class CodeLabelList {
 	@Schema(description = "Label lg2")
 	public String labelLg2;
 
+	public String notationCodeList;
 }

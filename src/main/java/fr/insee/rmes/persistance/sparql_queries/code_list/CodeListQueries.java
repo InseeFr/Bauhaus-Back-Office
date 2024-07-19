@@ -15,6 +15,7 @@ public class CodeListQueries extends GenericQueries {
 	private static final String CODES_LIST = "codes-list/";
 	private static final String PARTIAL = "PARTIAL";
 	private static final String NOTATION = "NOTATION";
+	private static final String CODE = "CODE";
 	private static final String URI_CODESLIST = "URI_CODESLIST";
 	public static final String CODE_LIST_BASE_URI = "CODE_LIST_BASE_URI";
 
@@ -113,31 +114,21 @@ public class CodeListQueries extends GenericQueries {
 		return buildCodesListRequest("getCodesListContributorsByUriQuery.ftlh", params);
 	}
 
-	public static String getCodeListLabelByNotation(String notation) {
-		return "SELECT ?codeListLabelLg1 ?codeListLabelLg2 \n"
-				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
-				+ "?codeList rdf:type skos:ConceptScheme . \n"
-				+ "?codeList skos:notation '" + notation + "' . \n"
-				+ "?codeList skos:prefLabel ?codeListLabelLg1 . \n"
-				+ "FILTER (lang(?codeListLabelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?codeList skos:prefLabel ?codeListLabelLg2 . \n"
-				+ "FILTER (lang(?codeListLabelLg2) = '" + config.getLg2() + "') . \n"
-				+ " }}";
+		public static String getCodeListLabelByNotation(String notation) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put(NOTATION, notation);
+		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
 	}
 
-	public static String getCodeByNotation(String notationCodeList, String notationCode) {
-		return "SELECT  ?labelLg1 ?labelLg2  \n"
-				+ "WHERE { GRAPH <"+config.getCodeListGraph()+"> { \n"
-				+ "?codeList rdf:type skos:ConceptScheme . \n"
-				+ "?codeList skos:notation '" + notationCodeList + "' . \n"
-				+ "?item skos:inScheme ?codeList . \n"
-				+ "?item skos:notation '"+notationCode +"' . \n"
-				+ "?item skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?item skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
-				+ " }}";
+	public static String getCodeByNotation(String notationCodeList, String notationCode) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		initParams(params);
+		params.put(NOTATION, notationCodeList);
+		params.put(CODE, notationCode);
+		return buildCodesListRequest("getCodeListLabelByNotation.ftlh", params);
 	}
+
 
 	public static String getCodeUriByNotation(String notationCodeList, String notationCode) {
 		return "SELECT  ?uri  \n"

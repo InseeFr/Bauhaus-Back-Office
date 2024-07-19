@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice.codesLists;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
@@ -20,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/codeList/partial")
@@ -42,9 +45,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<Object> getAllPartialCodesLists() {
+    public ResponseEntity<Object> getAllPartialCodesLists() throws JsonProcessingException {
         try {
-            String body = codeListService.getAllCodesLists(true);
+            List<CodeList> body = codeListService.getAllCodesLists(true);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);
@@ -54,13 +57,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesListByNotation", summary = "Get a partial list of code",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesListByNotation(@PathVariable("notation") String notation) {
-        try {
-            String body = codeListService.getDetailedCodesList(notation, true);
-            return ResponseEntity.status(HttpStatus.OK).body(body);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<Object> getDetailedPartialCodesListByNotation (@PathVariable("notation") String notation) throws RmesException {
+        String body = codeListService.getDetailedPartialCodesList(notation);
+        return ResponseEntity.status(HttpStatus.OK).body(body);
     }
 
     @GetMapping(value = "/parent/{parentCode}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -91,9 +90,9 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getDetailedPartialCodesLisForSearch", summary = "Return all lists for Advanced Search",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
-    public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() {
+    public ResponseEntity<Object> getDetailedPartialCodesLisForSearch() throws JsonProcessingException {
         try {
-            String body = codeListService.getDetailedCodesListForSearch(true);
+            List<CodeList> body = codeListService.getDetailedCodesListForSearch(true);
             return ResponseEntity.status(HttpStatus.OK).body(body);
         } catch (RmesException e) {
             return returnRmesException(e);

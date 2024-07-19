@@ -1,10 +1,13 @@
 package fr.insee.rmes.bauhaus_services.code_list;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
-public class CodeList {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class DetailedCodeList {
+
 
 	@Schema(description = "Notation", required = true)
 	public String notation;

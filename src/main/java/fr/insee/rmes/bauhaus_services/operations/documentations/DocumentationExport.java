@@ -3,7 +3,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
-import fr.insee.rmes.bauhaus_services.code_list.CodeList;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
@@ -282,7 +282,7 @@ public class DocumentationExport {
 		codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
 
 		for(String code : neededCodeLists) {
-			CodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
+			DetailedCodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
 			codeListsXML = codeListsXML.concat(XMLUtils.produceXMLResponse(codeList));
 		}
 		codeListsXML=codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
