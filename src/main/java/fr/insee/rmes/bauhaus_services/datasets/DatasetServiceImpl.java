@@ -46,10 +46,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     public static final String CONTRIBUTOR = "contributor";
     private static final Pattern ALT_IDENTIFIER_PATTERN = Pattern.compile("^[a-zA-Z0-9-_]+$");
-
     public static final String THEME = "theme";
     public static final String CATALOG_RECORD_CREATOR = "catalogRecordCreator";
-
     public static final String CATALOG_RECORD_CREATED = "catalogRecordCreated";
     public static final String CATALOG_RECORD_UPDATED = "catalogRecordUpdated";
     public static final String CREATOR = "creator";
@@ -141,7 +139,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String getDatasetByID(String id) throws RmesException {
+    public Dataset getDatasetByID(String id) throws RmesException {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
@@ -184,7 +182,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
-        return dataset.toString();
+        return Deserializer.deserializeBody(dataset.toString(), Dataset.class);
     }
 
     private String update(String datasetId, Dataset dataset) throws RmesException {
@@ -248,8 +246,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
-        String datasetByID = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
+        Dataset dataset = getDatasetByID(datasetId);
+
         if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
                 && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
             throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
@@ -283,11 +281,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void deleteDatasetId(String datasetId) throws RmesException{
-        String datasetString = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
-
+        Dataset dataset = getDatasetByID(datasetId);
         if (isPublished(dataset)){
-            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
 
         if (hasDistribution(dataset)) {
@@ -361,16 +357,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         Model model = new LinkedHashModel();
 
-        CatalogRecord record = dataset.getCatalogRecord();
+        CatalogRecord catalogRecord = dataset.getCatalogRecord();
 
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
-        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
+        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(catalogRecord.getCreator()), graph);
 
-        record.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, record.getUpdated(), model, graph);
+        catalogRecord.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
         repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
 
