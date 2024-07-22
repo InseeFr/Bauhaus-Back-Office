@@ -37,19 +37,13 @@ public class ConceptsQueries extends GenericQueries{
 		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
 		
-	public static String conceptsToValidateQuery() {
-		return "SELECT DISTINCT ?id ?label ?creator ?valid \n"
-			+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-			+ "?concept rdf:type skos:Concept . \n"
-			+ "BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) . \n"
-			+ "?concept skos:prefLabel ?label . \n"
-			+ "?concept dc:creator ?creator . \n"
-			+ "?concept insee:isValidated 'false'^^xsd:boolean . \n"
-			+ "OPTIONAL {?concept dcterms:valid ?valid .} \n"
-			+ "FILTER (lang(?label) = '" + config.getLg1() + "') }} \n"
-			+ "ORDER BY ?label";	
+
+	public static String conceptsToValidateQuery() throws RmesException {
+		if (params==null) {initParams();}
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("getConceptsToValidateQuery.ftlh", params);
 	}
-		
+
 	public static String conceptQuery(String id) { 
 		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
 				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
