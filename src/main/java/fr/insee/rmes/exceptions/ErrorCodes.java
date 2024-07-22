@@ -125,6 +125,7 @@ public class ErrorCodes {
 	public static final int DISTRIBUTION_DELETE_ONLY_UNPUBLISHED = 1203;
 	public static final int DATASET_DELETE_ONLY_UNPUBLISHED = 1203 ;
 	public static final int DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION = 1204 ;
+	public static final int DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET = 1205 ;
 
 
 	/*
