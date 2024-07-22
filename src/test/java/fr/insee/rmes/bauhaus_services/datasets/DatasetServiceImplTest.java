@@ -89,6 +89,7 @@ class DatasetServiceImplTest {
                }
             ]""";
     public static final String EMPTY_ARRAY = "[]";
+    public static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
     @Test
     void shouldReturnDatasets() throws RmesException {
@@ -669,6 +670,7 @@ class DatasetServiceImplTest {
                 "}\n" +
                 "]");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
+        JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
         String stringDatasetURI="http://bauhaus/catalogues/entreeCatalogue/idtest";
         IRI datasetUri= RdfUtils.toURI(stringDatasetURI);
@@ -689,6 +691,12 @@ class DatasetServiceImplTest {
             distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
 
+            datasetQueriesMock.when(() -> DatasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");
+            when(repositoryGestion.getResponseAsObject("query4 ")).thenReturn(quasi_empty_object);
+
+            datasetQueriesMock.when(() -> DatasetQueries.getDatasetDerivedFrom(any(), any())).thenReturn("query5 ");
+            when(repositoryGestion.getResponseAsObject("query5 ")).thenReturn(quasi_empty_object);
+
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(datasetUri);
             rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(datasetUri);
 
@@ -697,10 +705,10 @@ class DatasetServiceImplTest {
 
             datasetService.deleteDatasetId("idTest");
 
-            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
+            verify(repositoryGestion, times(3)).deleteObject(uriCaptor.capture());
             Assertions.assertEquals(datasetUri, uriCaptor.getValue());
 
-            verify(repositoryGestion, times(1)).deleteObject(datasetUri);
+            verify(repositoryGestion, times(3)).deleteObject(datasetUri);
             verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
     }
