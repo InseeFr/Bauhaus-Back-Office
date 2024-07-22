@@ -18,14 +18,11 @@ public class ConceptsQueries extends GenericQueries{
 	}
 
 	
-	public static String lastConceptID() {
-		return "SELECT ?notation \n"
-				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-				+ "?concept skos:notation ?notation  .\n"
-				+ "BIND(SUBSTR( STR(?notation) , 2 ) AS ?id) . }} \n"
-				+ "ORDER BY DESC(xsd:integer(?id)) \n"
-				+ "LIMIT 1";
-	}	
+	public static String lastConceptID() throws RmesException {
+		params = new HashMap<>();
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("getLastConceptId.ftlh", params);
+	}
 	
 	
 	public static String conceptsQuery() throws RmesException {
