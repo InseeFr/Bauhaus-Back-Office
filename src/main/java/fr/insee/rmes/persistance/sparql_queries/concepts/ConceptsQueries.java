@@ -78,60 +78,15 @@ public class ConceptsQueries extends GenericQueries {
 		return buildConceptRequest("altLabel.ftlh", params);
 }
 	
-	public static String conceptNotesQuery(String id, int conceptVersion) { 
-		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
-				+ "?editorialNoteLg1 ?editorialNoteLg2 ?changeNoteLg1 ?changeNoteLg2 \n"
-				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n" 
-				// Def Lg1
-				+ "OPTIONAL {?concept skos:definition ?defLg1 . \n"
-				+ "?defLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "?defLg1 evoc:noteLiteral ?definitionLg1 . \n"
-				+ "?defLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} .  \n"
-				// Def Lg2
-				+ "OPTIONAL {?concept skos:definition ?defLg2 . \n"
-				+ "?defLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
-				+ "?defLg2 evoc:noteLiteral ?definitionLg2 . \n"
-				+ "?defLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} .  \n"
-				// Def courte Lg1
-				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg1 . \n"
-				+ "?scopeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "?scopeLg1 evoc:noteLiteral ?scopeNoteLg1 . \n"
-				+ "?scopeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} .  \n"
-				// Def courte Lg2
-				+ "OPTIONAL {?concept skos:scopeNote ?scopeLg2 . \n"
-				+ "?scopeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
-				+ "?scopeLg2 evoc:noteLiteral ?scopeNoteLg2 . \n"
-				+ "?scopeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} . \n"
-				// Note edit Lg1
-				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg1 . \n"
-				+ "?editorialLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "?editorialLg1 evoc:noteLiteral ?editorialNoteLg1 . \n"
-				+ "?editorialLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} . \n"
-				// Note edit Lg2
-				+ "OPTIONAL {?concept skos:editorialNote ?editorialLg2 . \n"
-				+ "?editorialLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
-				+ "?editorialLg2 evoc:noteLiteral ?editorialNoteLg2 . \n"
-				+ "?editorialLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int . \n"
-				+ "} . \n"
-				// Note changement Lg1
-				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg1 . \n"
-				+ "?noteChangeLg1 dcterms:language '" + config.getLg1() + "'^^xsd:language . \n"
-				+ "?noteChangeLg1 evoc:noteLiteral ?changeNoteLg1 . \n"
-				+ "?noteChangeLg1 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
-				// Note changement Lg2
-				+ "OPTIONAL {?concept skos:changeNote ?noteChangeLg2 . \n"
-				+ "?noteChangeLg2 dcterms:language '" + config.getLg2() + "'^^xsd:language . \n"
-				+ "?noteChangeLg2 evoc:noteLiteral ?changeNoteLg2 . \n"
-				+ "?noteChangeLg2 insee:conceptVersion '" + conceptVersion + "'^^xsd:int} . \n"
-				+ "}} \n";
+
+	public static String conceptNotesQuery(String id, int conceptVersion) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		params.put("CONCEPT_VERSION", conceptVersion);
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("conceptNotesQuery.ftlh", params);
 	}
 	
 	public static String conceptLinks(String idConcept) throws RmesException {

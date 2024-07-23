@@ -1,6 +1,7 @@
 SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus
 		?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated
-			WHERE { GRAPH <${CONCEPTS_GRAPH}> {
+			WHERE { GRAPH <${CONCEPTS_GRAPH}>
+			    {
 				?concept skos:prefLabel ?prefLabelLg1 .
 
 				FILTER(REGEX(STR(?concept),'/concepts/definition/${ID}')) .
