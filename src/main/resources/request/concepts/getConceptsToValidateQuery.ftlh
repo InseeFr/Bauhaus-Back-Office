@@ -1,4 +1,4 @@
-ELECT DISTINCT ?id ?label ?creator ?valid
+SELECT DISTINCT ?id ?label ?creator ?valid
 	WHERE {
 	    GRAPH <${CONCEPTS_GRAPH> {
 		    ?concept rdf:type skos:Concept .

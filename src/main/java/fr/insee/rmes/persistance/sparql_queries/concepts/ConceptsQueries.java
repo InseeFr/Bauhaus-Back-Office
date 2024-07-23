@@ -97,22 +97,17 @@ public class ConceptsQueries extends GenericQueries {
 		//TODO Note for later : why "?concept skos:notation '" + id + "' . \n" doesn't work anymore => RDF4J add a type and our triplestore doesn't manage it. 		
 	}
 	
-	public static String getNarrowers(String id) {
-		return "SELECT ?narrowerId { \n"
-				//+ "?concept skos:notation '" + id + "' . \n" 
-				+ "?concept skos:narrower ?narrower . \n"
-				+ "?narrower skos:notation ?narrowerIdStr \n"
-				+ "BIND (STR(?narrowerIdStr) AS ?narrowerId) \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
 
-				+ "}";
+	public static String getNarrowers(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		return buildConceptRequest("getNarrowers.ftlh", params);
 	}
 	
-	public static String hasBroader(String id) {
-		return "ASK { \n"
-				+ "?concept skos:broader ?broader \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "}";			
+	public static String hasBroader(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ID", id);
+		return buildConceptRequest("hasBroader.ftlh", params);
 	}
 	
 	public static String getOwner(String uri) {
@@ -130,7 +125,7 @@ public class ConceptsQueries extends GenericQueries {
 	}
 
 	/**
-	 * @param idConcept
+	 * @param uriConcept
 	 * @return ?idGraph
 	 * @throws RmesException
 	 */
