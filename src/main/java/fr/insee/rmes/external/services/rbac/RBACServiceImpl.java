@@ -4,9 +4,7 @@ import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class RBACServiceImpl implements RBACService {
@@ -18,24 +16,23 @@ public class RBACServiceImpl implements RBACService {
     }
 
     @Override
-    public Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> computeRbac(List<String> roles) {
-        /*if(roles.isEmpty()){
-            return Map.of();
+    public AccessPrivileges computeRbac(List<String> roles) {
+        if (roles.isEmpty()) {
+            return new AccessPrivileges(Collections.emptyMap());
         }
 
-        Map<String, Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>>> rbac = configuration.getRbac();
+        Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> rbac = configuration.getRbac();
 
-        Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> results = new HashMap<>();
+        Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> results = new HashMap<>();
 
         for (String role : roles) {
-            Map<RBAC.APPLICATION, Map<RBAC.PRIVILEGE, RBAC.STRATEGY>> rolePrivileges = rbac.get(role);
+            Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> rolePrivileges = rbac.get(role);
             if (rolePrivileges != null) {
                 mergePrivileges(results, rolePrivileges);
             }
         }
 
-        return results;*/
-        return Map.of();
+        return new AccessPrivileges(results);
     }
 
     private void mergePrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> target,
@@ -60,4 +57,6 @@ public class RBACServiceImpl implements RBACService {
             });
         }
     }
+
+
 }
