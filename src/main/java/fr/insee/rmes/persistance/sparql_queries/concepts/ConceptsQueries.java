@@ -44,29 +44,14 @@ public class ConceptsQueries extends GenericQueries{
 		return buildConceptRequest("getConceptsToValidateQuery.ftlh", params);
 	}
 
-	public static String conceptQuery(String id) { 
-		return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?creator ?contributor ?disseminationStatus "
-				+ "?additionalMaterial ?created ?modified ?valid ?conceptVersion ?isValidated \n"
-				+ "WHERE { GRAPH <"+config.getConceptsGraph()+"> { \n"
-				+ "?concept skos:prefLabel ?prefLabelLg1 . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "BIND(STRAFTER(STR(?concept),'/definition/') AS ?id) . \n"
-				+ "?concept ?versionnedNote ?versionnedNoteURI . \n"
-				+ "?versionnedNoteURI insee:conceptVersion ?conceptVersion . \n"
- 				+ "?concept insee:isValidated ?isValidated . \n"
-				+ "FILTER (lang(?prefLabelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?concept skos:prefLabel ?prefLabelLg2 . \n"
-				+ "FILTER (lang(?prefLabelLg2) = '" + config.getLg2() + "') } . \n"
-				+ "OPTIONAL {?concept dc:creator ?creator} . \n"
-				+ "?concept dc:contributor ?contributor . \n"
-				+ "?concept insee:disseminationStatus ?disseminationStatus \n"
-				+ "OPTIONAL {?concept insee:additionalMaterial ?additionalMaterial} . \n"
-				+ "?concept dcterms:created ?created . \n"
-				+ "OPTIONAL {?concept dcterms:modified ?modified} . \n"
-				+ "OPTIONAL {?concept dcterms:valid ?valid} . \n"
-				+ "}} \n"
-				+ "ORDER BY DESC(xsd:integer(?conceptVersion)) \n"
-				+ "LIMIT 1";
+
+	public static String conceptQuery(String id) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("conceptQuery.ftlh", params);
 	}
 
 	public static String conceptQueryForDetailStructure(String id) throws RmesException {
