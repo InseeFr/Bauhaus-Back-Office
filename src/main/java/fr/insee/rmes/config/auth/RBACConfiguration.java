@@ -49,4 +49,20 @@ public record RBACConfiguration (Set<AllModuleAccessPrivileges> allModulesAccess
         return new ModuleAccessPrivileges.Privilege(entry.getKey(), entry.getValue());
     }
 
+    public Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> getRbac() {
+        return allModulesAccessPrivileges.stream()
+                .collect(Collectors.toMap(
+                        privilege -> privilege.roleName().role(),
+                        privilege -> privilege.privileges().stream()
+                                .collect(Collectors.toMap(
+                                        ModuleAccessPrivileges::application,
+                                        moduleAccess -> moduleAccess.privileges().stream()
+                                                .collect(Collectors.toMap(
+                                                        ModuleAccessPrivileges.Privilege::privilege,
+                                                        ModuleAccessPrivileges.Privilege::strategy
+                                                ))
+                                ))
+                ));
+    }
+
 }
