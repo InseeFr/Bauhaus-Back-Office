@@ -5,6 +5,7 @@ import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
+import fr.insee.rmes.external.services.rbac.AccessPrivileges;
 import fr.insee.rmes.external.services.rbac.RBACService;
 import fr.insee.rmes.model.rbac.RBAC;
 import io.swagger.v3.oas.annotations.Operation;
@@ -76,7 +77,7 @@ public class UserResources {
                     @ApiResponse(content = @Content(mediaType = "application/json"))
             }
     )
-    public Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
+    public AccessPrivileges getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
         User user = this.userDecoder.fromPrincipal(principal).get();
         return rbacService.computeRbac(user.roles());
     }
