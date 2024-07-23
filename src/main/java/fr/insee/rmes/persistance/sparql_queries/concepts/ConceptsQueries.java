@@ -7,39 +7,45 @@ import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConceptsQueries extends GenericQueries{
+public class ConceptsQueries extends GenericQueries {
 
 	private static final String URI_CONCEPT = "uriConcept";
 	public static final String CONCEPTS_GRAPH = "CONCEPTS_GRAPH";
-	static Map<String,Object> params ;
-	
+	static Map<String, Object> params;
+
 	private ConceptsQueries() {
 		throw new IllegalStateException("Utility class");
 	}
 
-	
+
 	public static String lastConceptID() throws RmesException {
 		params = new HashMap<>();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getLastConceptId.ftlh", params);
 	}
-	
-	
+
+
 	public static String conceptsQuery() throws RmesException {
-		if (params==null) {initParams();}
+		if (params == null) {
+			initParams();
+		}
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
-	
+
 	public static String conceptsSearchQuery() throws RmesException {
-		if (params==null) {initParams();}
+		if (params == null) {
+			initParams();
+		}
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
-		
+
 
 	public static String conceptsToValidateQuery() throws RmesException {
-		if (params==null) {initParams();}
+		if (params == null) {
+			initParams();
+		}
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptsToValidateQuery.ftlh", params);
 	}
@@ -62,16 +68,15 @@ public class ConceptsQueries extends GenericQueries{
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("conceptQueryForDetailStructure.ftlh", params);
 	}
-	
-	public static String altLabel(String id, String lang) {
-		return "SELECT ?altLabel \n"
-				+ "WHERE { \n"
-				+ "?concept skos:altLabel ?altLabel \n"
-				+ "FILTER (lang(?altLabel) = '" + lang + "') . \n"
-				+ "FILTER(REGEX(STR(?concept),'/concepts/definition/" + id + "')) . \n"
-				+ "}";
-		
-	}
+
+
+	public static String altLabel(String id, String lang) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		params.put("LG", lang);
+		params.put("ID", id);
+		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
+		return buildConceptRequest("altLabel.ftlh", params);
+}
 	
 	public static String conceptNotesQuery(String id, int conceptVersion) { 
 		return "SELECT ?definitionLg1 ?definitionLg2 ?scopeNoteLg1 ?scopeNoteLg2 "
