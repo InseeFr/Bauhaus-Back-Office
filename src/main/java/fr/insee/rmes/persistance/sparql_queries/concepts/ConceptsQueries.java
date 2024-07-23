@@ -110,11 +110,12 @@ public class ConceptsQueries extends GenericQueries {
 		return buildConceptRequest("hasBroader.ftlh", params);
 	}
 	
-	public static String getOwner(String uri) {
-		return "SELECT ?owner { \n"
-				+ "?concept dc:creator ?owner . \n" 
-				+ "VALUES ?concept { " + uri + " } \n"
-				+ "}";
+
+	public static String getOwner(String uri) throws RmesException {
+		Map<String, Object> params = new HashMap<>();
+		String cleanedUri = uri.replaceAll("[<>]", "");
+		params.put("URI", cleanedUri);
+		return buildConceptRequest("getOwner.ftlh", params);
 	}
 	
 	public static String getManager(String uri) {
