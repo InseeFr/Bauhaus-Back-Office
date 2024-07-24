@@ -10,6 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
@@ -25,7 +26,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -572,29 +572,9 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldPatchDatasetReturn400IfNoOneOfRequiredAttributesPatchEmpty() throws RmesException {
-        JSONArray datasetWithTheme = new JSONArray(DATASET_WITH_THEME);
-        JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
-
-        try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-        ) {
-
-            datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
-            when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(datasetWithTheme);
-
-            datasetQueriesMock.when(() -> DatasetQueries.getDatasetCreators(any(), any())).thenReturn("query2 ");
-            when(repositoryGestion.getResponseAsArray("query2 ")).thenReturn(empty_array);
-
-            datasetQueriesMock.when(() -> DatasetQueries.getDatasetSpacialResolutions(any(), any())).thenReturn("query3 ");
-            when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
-
-            datasetQueriesMock.when(() -> DatasetQueries.getDatasetStatisticalUnits(any(), any())).thenReturn("query4 ");
-            when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
-
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
-            Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
-        }
+    void shouldPatchDatasetReturn400IfNoOneOfRequiredAttributesPatchEmpty() {
+        RmesRuntimeBadRequestException exception = assertThrows(RmesRuntimeBadRequestException.class, () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
+        Assertions.assertEquals("One of these attributes is required : updated, issued, numObservations, numSeries, temporal", exception.getMessage());
     }
 
     @Test
@@ -643,8 +623,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
-        )
-        {
+        ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
             when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);
@@ -661,7 +640,7 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldDeleteDataSet() throws RmesException{
+    void shouldDeleteDataSet() throws RmesException {
         JSONArray mockJSON = new JSONArray("[{\n" +
                 "  \"id\": idTest,\n" +
                 "  \"validationState\": \"Unpublished\",\n" +
@@ -671,15 +650,14 @@ class DatasetServiceImplTest {
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
-        String stringDatasetURI="http://bauhaus/catalogues/entreeCatalogue/idtest";
-        IRI datasetUri= RdfUtils.toURI(stringDatasetURI);
+        String stringDatasetURI = "http://bauhaus/catalogues/entreeCatalogue/idtest";
+        IRI datasetUri = RdfUtils.toURI(stringDatasetURI);
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
 
-        )
-        {
+        ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
             when(repositoryGestion.getResponseAsArray("query1 ")).thenReturn(mockJSON);

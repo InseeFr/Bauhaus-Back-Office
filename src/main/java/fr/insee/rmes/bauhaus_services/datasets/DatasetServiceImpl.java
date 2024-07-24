@@ -4,7 +4,6 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -17,10 +16,8 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import fr.insee.rmes.utils.IdGenerator;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -180,7 +177,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
-        return dataset.toString();
+        return Deserializer.deserializeJSONObject(dataset, Dataset.class);
     }
 
     private String update(String datasetId, Dataset dataset) throws RmesException {
@@ -206,13 +203,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
     @Override
     public String update(String datasetId, String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
         return this.update(datasetId, dataset);
     }
 
     @Override
     public String create(String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
@@ -245,32 +242,32 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     @Override
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
         Dataset dataset = getDatasetByID(datasetId);
-        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
-                && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
+        if  (patchDataset.updated() == null && patchDataset.issued() == null && patchDataset.numObservations() == null
+                && patchDataset.numSeries() == null && patchDataset.temporal() == null){
             throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
 
-        if ( patchDataset.getIssued() != null){
-            dataset.setIssued(patchDataset.getIssued());
+        if ( patchDataset.issued() != null){
+            dataset.setIssued(patchDataset.issued());
         }
 
-        if ( patchDataset.getUpdated() != null){
-            dataset.setUpdated(patchDataset.getUpdated());
+        if ( patchDataset.updated() != null){
+            dataset.setUpdated(patchDataset.updated());
         }
 
-        if ( patchDataset.getTemporal() != null){
-            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
-            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+        if ( patchDataset.temporal() != null){
+            String temporalCoverageStartDate = patchDataset.temporal().startPeriod();
+            String temporalCoverageEndDate = patchDataset.temporal().endPeriod();
             dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
             dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.getNumObservations() != null && patchDataset.getNumObservations() > 0){
-            dataset.setObservationNumber(patchDataset.getNumObservations());
+        if ( patchDataset.numObservations() != null && patchDataset.numObservations() > 0){
+            dataset.setObservationNumber(patchDataset.numObservations());
         }
 
-        if ( patchDataset.getNumSeries() != null){
-            dataset.setTimeSeriesNumber(patchDataset.getNumSeries());
+        if ( patchDataset.numSeries() != null){
+            dataset.setTimeSeriesNumber(patchDataset.numSeries());
         }
 
         update(datasetId, dataset);
@@ -327,12 +324,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private boolean hasTemporalCoverage(Dataset dataset) {
-        return !(dataset.getTemporalCoverageDataType() == null);
+        return (dataset.getTemporalCoverageDataType() != null);
     }
 
     private HttpStatus deleteTemporalWhiteNode(String id) throws RmesException {
-        HttpStatus result =  repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
-        return result;
+        return repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
     }
 
     private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
@@ -342,8 +338,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     private HttpStatus deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
-        HttpStatus result =  repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
-        return result;
+        return repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
