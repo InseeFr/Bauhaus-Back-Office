@@ -81,13 +81,13 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
             throw new RmesNotFoundException("This distribution does not exist");
         }
 
-        return Deserializer.deserializeBody(distributionRaw.toString(), Distribution.class);
+        return Deserializer.deserializeJsonString(distributionRaw.toString(), Distribution.class);
 
     }
 
     @Override
     public String create(String body) throws RmesException {
-        Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
+        Distribution distribution = Deserializer.deserializeJsonString(body, Distribution.class);
         distribution.setId(idGenerator.generateNextId());
         distribution.setValidationState(ValidationStatus.UNPUBLISHED.toString());
         this.validate(distribution);
@@ -100,7 +100,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
 
     @Override
     public String update(String id, String body) throws RmesException {
-        Distribution distribution = Deserializer.deserializeBody(body, Distribution.class);
+        Distribution distribution = Deserializer.deserializeJsonString(body, Distribution.class);
         distribution.setId(id);
         distribution.setValidationState(ValidationStatus.MODIFIED.toString());
 
