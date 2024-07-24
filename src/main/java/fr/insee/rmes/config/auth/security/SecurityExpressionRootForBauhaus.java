@@ -244,6 +244,22 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return getAccessPrivileges().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.SERIE).withId(serieId);
     }
 
+    public boolean canDeleteDataset(String datasetId) throws RmesException{
+        return getAccessPrivileges().isGranted(RBAC.Privilege.DELETE).on(RBAC.Module.DATASET).withId(datasetId);
+    }
+
+    public boolean canUpdateDataset(String datasetId) throws RmesException{
+        return getAccessPrivileges().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.DATASET).withId(datasetId);
+    }
+
+    public boolean canCreateDataset(String datasetId) throws RmesException{
+        return getAccessPrivileges().isGranted(RBAC.Privilege.CREATE).on(RBAC.Module.DATASET).withId(datasetId);
+    }
+
+    public boolean canPublishDataset(String datasetId) throws RmesException{
+        return getAccessPrivileges().isGranted(RBAC.Privilege.PUBLISH).on(RBAC.Module.DATASET).withId(datasetId);
+    }
+
     private AccessPrivileges getAccessPrivileges() throws RmesException {
         return rbacService.computeRbac(userDecoder.fromPrincipal(methodSecurityExpressionRoot.getPrincipal()).get().roles());
     }

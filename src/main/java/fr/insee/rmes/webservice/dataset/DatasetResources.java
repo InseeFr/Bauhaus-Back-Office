@@ -59,7 +59,7 @@ public class DatasetResources {
         return this.datasetService.getDistributions(id);
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributor()")
+    @PreAuthorize("canCreateDataset(#datasetId)")
     @PostMapping(value = "", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "createDataset", summary = "Create a dataset")
     @ResponseStatus(HttpStatus.CREATED)
@@ -68,7 +68,7 @@ public class DatasetResources {
         return this.datasetService.create(body);
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
+    @PreAuthorize("canUpdateDataset(#datasetId)")
     @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "updateDataset", summary = "Update a dataset")
     public String setDataset(
@@ -78,7 +78,7 @@ public class DatasetResources {
         return this.datasetService.update(datasetId, body);
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
+    @PreAuthorize("canPublishDataset(#datasetId)")
     @PutMapping("/{id}/validate")
     @Operation(operationId = "publishDataset", summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
@@ -92,7 +92,7 @@ public class DatasetResources {
         return this.datasetService.getArchivageUnits();
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
+    @PreAuthorize("canUpdateDataset(#datasetId)")
     @PatchMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "patchDataset", summary = "Update a dataset")
     public void patchDataset(
@@ -102,7 +102,7 @@ public class DatasetResources {
         this.datasetService.patchDataset(datasetId, dataset);
     }
 
-    @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
+    @PreAuthorize("canDeleteDataset(#datasetId)")
     @DeleteMapping("/{id}")
     @Operation(
             operationId = "deleteDataset",

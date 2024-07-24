@@ -9,7 +9,8 @@ public class RBAC {
         OPERATION,
         INDICATOR,
         SIMS,
-        CLASSIFICATION
+        CLASSIFICATION,
+        DATASET
     }
 
     public enum Privilege {
