@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Distribution;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,8 +42,11 @@ class DistributionResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDistributionById() throws RmesException {
-        when(distributionService.getDistributionByID(anyString())).thenReturn("result");
-        Assertions.assertEquals("result", distributionResources.getDistribution(""));
+        Distribution distribution = new Distribution();
+        distribution.setId("1");
+
+        when(distributionService.getDistributionByID("1")).thenReturn(distribution);
+        Assertions.assertEquals(distribution, distributionResources.getDistribution("1"));
     }
 
     @Test

@@ -1,11 +1,7 @@
 package fr.insee.rmes.integration.authorizations;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
-import fr.insee.rmes.bauhaus_services.datasets.DatasetServiceImpl;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -14,22 +10,15 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,12 +26,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = DatasetResources.class,
@@ -74,6 +59,8 @@ class TestDatasetsResourcesEnvProd {
     private JwtDecoder jwtDecoder;
     @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
+    @MockBean
+    DatasetService datasetService;
 
     private static Dataset dataset;
 
@@ -81,7 +68,8 @@ class TestDatasetsResourcesEnvProd {
     private final String timbre = "XX59-YYY";
 
     int datasetId=10;
-    ValidationStatus status= UNPUBLISHED;
+
+
 
     @Test
     void shouldGetDatasetsWithAnyRole() throws Exception {
@@ -318,18 +306,6 @@ class TestDatasetsResourcesEnvProd {
     }
 
     @Test
-    void shouldNotDeleteNotUnpublishedDataset() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        dataset=new Dataset();
-        dataset.setValidationState("Published");
-        mvc.perform(delete("/datasets/" + datasetId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(result-> assertThat(result.getResponse().getStatus()).isIn(HttpStatus.BAD_REQUEST.value()))
-                .andExpect(content().string(containsString("Only unpublished datasets can be deleted")));
-    }
-
-    @Test
     void shouldPatchADatasetIfAdmin() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(patch("/datasets/" + datasetId).header("Authorization", "Bearer toto")
@@ -371,98 +347,5 @@ class TestDatasetsResourcesEnvProd {
                 .andExpect(status().isForbidden());
     }
 
-
-    static class DatasetServiceImplStub extends DatasetServiceImpl{
-
-
-        public DatasetServiceImplStub(){
-            super.repoGestion= Mockito.mock(RepositoryGestion.class);
-            //                repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
-            //        repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
-        }
-
-        @Override
-        public String getDatasetByID(String id) {
-            final ObjectMapper mapper=new ObjectMapper();
-            try {
-                return mapper.writeValueAsString(dataset);
-            } catch (JsonProcessingException e) {
-                logger.error(e.getMessage(),e);
-                return null;
-            }
-        }
-
-        @Override
-        public String getDistributions(String id) {
-            return "[]";
-        }
-
-        @Override
-        protected String getDatasetsBaseUri(){
-            return "http://bauhaus/datasets";
-        }
-
-    }
-
-    @TestConfiguration
-    static class ConfigureDatasetServiceForTest{
-
-        @Bean
-        DatasetService datasetService(){
-            final DatasetServiceImplStub realInstance = new DatasetServiceImplStub();
-            return new DatasetService() {
-                @Override
-                public String getDatasets() throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String getDatasetByID(String id) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String update(String datasetId, String body) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String create(String body) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String getDistributions(String id) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String getArchivageUnits() throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
-
-                }
-
-                @Override
-                public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public String publishDataset(String id) throws RmesException {
-                    return "";
-                }
-
-                @Override
-                public void deleteDatasetId(String datasetId) throws RmesException {
-                    realInstance.deleteDatasetId(datasetId);
-                }
-            };
-        }
-
-    }
 
 }

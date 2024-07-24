@@ -1,5 +1,7 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -8,7 +10,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
+import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.IdGenerator;
@@ -64,6 +66,7 @@ class DatasetServiceImplTest {
     @Autowired
     DatasetServiceImpl datasetService;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public static final String DATASET_WITH_THEME = """
             [
@@ -87,6 +90,7 @@ class DatasetServiceImplTest {
                }
             ]""";
     public static final String EMPTY_ARRAY = "[]";
+    public static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
     @Test
     void shouldReturnDatasets() throws RmesException {
@@ -94,7 +98,7 @@ class DatasetServiceImplTest {
         array.put("result");
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq(null))).thenReturn("query");
             String query = datasetService.getDatasets();
             Assertions.assertEquals("[\"result\"]", query);
@@ -107,7 +111,7 @@ class DatasetServiceImplTest {
         array.put("result");
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDatasets(anyString(), eq("fakeStampForDvAndQf"))).thenReturn("query");
             String query = datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf");
             Assertions.assertEquals("[\"result\"]", query);
@@ -115,7 +119,7 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldReturnDataset() throws RmesException, JSONException {
+    void shouldReturnDataset() throws RmesException, JSONException, JsonProcessingException {
         JSONObject object = new JSONObject();
         object.put("id", "1");
         JSONArray array = new JSONArray().put(object);
@@ -123,13 +127,14 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDataset(eq("1"), any(), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
-            String query = datasetService.getDatasetByID("1");
-            Assertions.assertEquals("{\"themes\":[],\"catalogRecord\":{},\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"id\":\"1\",\"spacialResolutions\":[\"spacialResolutions-1\"]}", query);
+            Dataset response = datasetService.getDatasetByID("1");
+            String responseJson = objectMapper.writeValueAsString(response);
+            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
         }
     }
 
@@ -139,7 +144,7 @@ class DatasetServiceImplTest {
         array.put("1");
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
-        try (MockedStatic<DistributionQueries> mockedFactory = Mockito.mockStatic(DistributionQueries.class)) {
+        try (MockedStatic<DistributionQueries> mockedFactory = mockStatic(DistributionQueries.class)) {
             mockedFactory.when(() -> DistributionQueries.getDatasetDistributions(eq("1"), any())).thenReturn("query");
             String query = datasetService.getDistributions("1");
             Assertions.assertEquals("[\"1\"]", query);
@@ -148,7 +153,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
 
@@ -165,7 +170,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -183,7 +188,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfCreatorNotDefinedWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -202,7 +207,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfContributorNotDefinedWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -225,7 +230,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfDisseminationStatusNotDefinedWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -245,7 +250,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -266,7 +271,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -289,7 +294,7 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException {
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
@@ -340,7 +345,7 @@ class DatasetServiceImplTest {
         when(repositoryGestion.getResponseAsArray("query-contributor")).thenReturn(new JSONArray().put(new JSONObject().put("contributor", "contributor")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "http://spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "http://statisticalUnit-1")));
-        try (MockedStatic<DatasetQueries> mockedFactory = Mockito.mockStatic(DatasetQueries.class)) {
+        try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.getDataset(eq(datasetId), any(), any())).thenReturn("query");
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq(datasetId), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq(datasetId), any())).thenReturn("query-spacialResolutions");
@@ -399,9 +404,9 @@ class DatasetServiceImplTest {
 
     private void createANewDataset(String nextId) throws RmesException {
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class);
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
@@ -470,9 +475,9 @@ class DatasetServiceImplTest {
         IRI catalogRecordIri = SimpleValueFactory.getInstance().createIRI("http://recordIRI/jd1001");
 
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
         ) {
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any())).thenCallRealMethod();
             rdfUtilsMock.when(() -> RdfUtils.toURI(any())).thenCallRealMethod();
@@ -534,7 +539,7 @@ class DatasetServiceImplTest {
             ArgumentCaptor<Model> model2 = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(catalogRecordIri), model2.capture(), any());
 
-            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/datasetIRI/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://identifiantsAlternatifs/jeuDeDonnees/datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier, http://adms) [http://adms], (http://identifiantsAlternatifs/jeuDeDonnees/datasetIRI/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\", http://adms) [http://adms], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://seriesIRI/2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://datasetIRI/jd1001, http://purl.org/dc/terms/identifier, \"jd1001\", http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#Dataset, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/title, \"labelLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#subtitle, \"subTitleLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accrualPeriodicity, https://accrualPeriodicity, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/accessRights, https://accessRights, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#confidentialityStatus, https://confidentialityStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c1, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/creator, http://c2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/publisher, http://c3, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#landingPage, \"landingPageLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/issued, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#disseminationStatus, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#processStep, https://disseminationStatus, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#archiveUnit, https://archiveUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/adms#identifier, http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/adms#Identifier, http://adms) [http://adms], (http://identifiantsAlternatifs/jeuDeDonnees/jd1001, http://www.w3.org/2004/02/skos/core#notation, \"1\", http://adms) [http://adms], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg1\"@fr, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/description, \"descriptionLg2\"@en, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/type, http://type, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#statisticalUnit, https://statisticalUnit, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#structure, https://dataStructure, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#numObservations, \"2\"^^<http://www.w3.org/2001/XMLSchema#int>, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://purl.org/dc/terms/spatial, https://spacialCoverage, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#temporalResolution, https://temporalResolution, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://rdf.insee.fr/def/base#spatialResolution, http://spacialResolutions, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/prov#wasGeneratedBy, http://seriesIRI/2, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#theme, http://theme, http://datasetGraph/) [http://datasetGraph/], (http://datasetIRI/jd1001, http://www.w3.org/ns/dcat#distribution, http://distributionIRI/d1000, http://datasetGraph/) [http://datasetGraph/]]", model.getValue().toString());
             Assertions.assertEquals("[(http://recordIRI/jd1001, http://xmlns.com/foaf/0.1/primaryTopic, http://datasetIRI/jd1001, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://www.w3.org/ns/dcat#CatalogRecord, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/creator, \"creator\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/elements/1.1/contributor, \"contributor\", http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/created, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/], (http://recordIRI/jd1001, http://purl.org/dc/terms/modified, \"2023-10-19T11:44:23.33559\"^^<http://www.w3.org/2001/XMLSchema#dateTime>, http://datasetGraph/) [http://datasetGraph/]]", model2.getValue().toString());
             Assertions.assertEquals("jd1001", id);
         }
@@ -558,12 +563,12 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringCreation() {
-        Assertions.assertThrows(RmesException.class, () -> datasetService.create(""));
+        assertThrows(RmesException.class, () -> datasetService.create(""));
     }
 
     @Test
     void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringUpdate() {
-        Assertions.assertThrows(RmesException.class, () -> datasetService.update("d1000", ""));
+        assertThrows(RmesException.class, () -> datasetService.update("d1000", ""));
     }
 
     @Test
@@ -572,7 +577,7 @@ class DatasetServiceImplTest {
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
 
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -587,15 +592,15 @@ class DatasetServiceImplTest {
             datasetQueriesMock.when(() -> DatasetQueries.getDatasetStatisticalUnits(any(), any())).thenReturn("query4 ");
             when(repositoryGestion.getResponseAsArray("query4 ")).thenReturn(empty_array);
 
-            RmesRuntimeBadRequestException exception = assertThrows(RmesRuntimeBadRequestException.class, () -> datasetService.patchDataset("jd0001", new PatchDataset(null, null, null, null, null)));
-            Assertions.assertEquals("One of these attributes is required : updated, issued, numObservations, numSeries, temporal", exception.getMessage());
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.patchDataset("jd0001", patch));
+            Assertions.assertEquals("{\"code\":1202,\"message\":\"One of these attributes is required : updated, issued, numObservations, numSeries, temporal\"}", exception.getDetails());
         }
     }
 
     @Test
     void shouldNotDeleteNotExistingDatasetReturn404() throws RmesException {
         JSONArray mockJSON = new JSONArray("[]");
-        when(repositoryGestion.getResponseAsArray(Mockito.anyString())).thenReturn(mockJSON);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(mockJSON);
         RmesNotFoundException exception = assertThrows(RmesNotFoundException.class, () -> datasetService.deleteDatasetId("idTest"));
         Assertions.assertEquals("{\"details\":\"Not found\",\"message\":\"This dataset does not exist\"}", exception.getDetails());
     }
@@ -611,7 +616,7 @@ class DatasetServiceImplTest {
 
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -636,8 +641,8 @@ class DatasetServiceImplTest {
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
         )
         {
 
@@ -664,13 +669,14 @@ class DatasetServiceImplTest {
                 "}\n" +
                 "]");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
+        JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 
         String stringDatasetURI="http://bauhaus/catalogues/entreeCatalogue/idtest";
         IRI datasetUri= RdfUtils.toURI(stringDatasetURI);
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = Mockito.mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
 
         )
         {
@@ -684,6 +690,12 @@ class DatasetServiceImplTest {
             distributionQueriesMock.when(() -> DistributionQueries.getDatasetDistributions(any(), any())).thenReturn("query3 ");
             when(repositoryGestion.getResponseAsArray("query3 ")).thenReturn(empty_array);
 
+            datasetQueriesMock.when(() -> DatasetQueries.getDerivedDataset(any(), any())).thenReturn("query4 ");
+            when(repositoryGestion.getResponseAsObject("query4 ")).thenReturn(quasi_empty_object);
+
+            datasetQueriesMock.when(() -> DatasetQueries.getDatasetDerivedFrom(any(), any())).thenReturn("query5 ");
+            when(repositoryGestion.getResponseAsObject("query5 ")).thenReturn(quasi_empty_object);
+
             rdfUtilsMock.when(() -> RdfUtils.createIRI(any(String.class))).thenReturn(datasetUri);
             rdfUtilsMock.when(() -> RdfUtils.toURI(any(String.class))).thenReturn(datasetUri);
 
@@ -692,10 +704,10 @@ class DatasetServiceImplTest {
 
             datasetService.deleteDatasetId("idTest");
 
-            verify(repositoryGestion, times(1)).deleteObject(uriCaptor.capture());
+            verify(repositoryGestion, times(3)).deleteObject(uriCaptor.capture());
             Assertions.assertEquals(datasetUri, uriCaptor.getValue());
 
-            verify(repositoryGestion, times(1)).deleteObject(datasetUri);
+            verify(repositoryGestion, times(3)).deleteObject(datasetUri);
             verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
     }

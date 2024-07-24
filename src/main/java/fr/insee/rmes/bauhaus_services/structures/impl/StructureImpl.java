@@ -92,7 +92,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 				JSONObject codeList = new JSONObject();
 				codeList.put(Constants.ID, component.getString(Constants.CODELIST));
 				try {
-					codeList.put("codes", new JSONArray(this.codeListService.geCodesListByIRI(component.getString(Constants.CODELIST))));
+					codeList.put("codes", new JSONArray(this.codeListService.getCodesListByIRI(component.getString(Constants.CODELIST))));
 				} catch (RmesException e) {
 					logger.error("Cannot fetch code list of the structure "+id, e);
 				}
