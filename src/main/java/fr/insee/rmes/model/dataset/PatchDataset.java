@@ -1,56 +1,22 @@
 package fr.insee.rmes.model.dataset;
 
+import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 
-public class PatchDataset {
-    private String updated;
+public record PatchDataset(String updated, String issued, Integer numObservations, Integer numSeries,
+                           Temporal temporal) {
 
-    private String issued;
-
-    private Integer numObservations;
-
-    private Integer numSeries;
-
-    private Temporal temporal;
-
-
-
-    public String getUpdated() {
-        return updated;
-    }
-
-    public void setUpdated(String updated) {
-        this.updated = updated;
-    }
-
-    public String getIssued() {
-        return issued;
-    }
-
-    public void setIssued(String issued) {
-        this.issued = issued;
-    }
-
-    public Integer getNumObservations() {
-        return numObservations;
-    }
-
-    public void setNumObservations(Integer numObservations) {
-        this.numObservations = numObservations;
-    }
-
-    public Integer getNumSeries() {
-        return numSeries;
-    }
-
-    public void setNumSeries(Integer numSeries) {
-        this.numSeries = numSeries;
-    }
-
-    public Temporal getTemporal() {
-        return temporal;
-    }
-
-    public void setTemporal(Temporal temporal) {
-        this.temporal = temporal;
+    public PatchDataset {
+        if (numObservations != null && numObservations <= 0) {
+            throw new RmesRuntimeBadRequestException("observationNumber must be greater than zero");
+        }
+        if (updated == null &&
+                issued == null &&
+                numObservations == null &&
+                numSeries == null &&
+                temporal == null) {
+            throw new RmesRuntimeBadRequestException("One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
+        }
     }
 }
+
+
