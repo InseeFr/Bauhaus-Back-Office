@@ -480,7 +480,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
 
         if(!this.seriesUtils.isSeriesAndOperationsExist(dataset.getWasGeneratedIRIs())){
-            throw new RmesBadRequestException("Some series or operations does not exist");
+            throw new RmesBadRequestException("Some series or operations do not exist");
         }
     }
 

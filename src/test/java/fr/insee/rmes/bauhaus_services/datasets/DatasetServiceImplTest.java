@@ -282,7 +282,7 @@ class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals("{\"message\":\"Some series or operations does not exist\"}", exception.getDetails());
+            Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
         }
     }
 
@@ -304,7 +304,7 @@ class DatasetServiceImplTest {
                 return lastId;
             });
             RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
-            Assertions.assertEquals("{\"message\":\"Some series or operations does not exist\"}", exception.getDetails());
+            Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
         }
     }
 
