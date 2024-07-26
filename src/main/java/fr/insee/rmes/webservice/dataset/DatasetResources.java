@@ -46,7 +46,7 @@ public class DatasetResources {
     @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+    public Dataset getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
     }
 

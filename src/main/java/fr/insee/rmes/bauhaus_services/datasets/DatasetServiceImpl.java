@@ -18,12 +18,12 @@ import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
 import org.eclipse.rdf4j.model.*;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -91,19 +91,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     protected IRI getDatasetIri(String datasetId){
-        IRI iri = RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
-        return iri;
+        return RdfUtils.createIRI(getDatasetsBaseUri() + "/" + datasetId);
     }
 
     private String getDatasetsAdmsBaseUri(){
-        return baseUriGestion + identifiantsAlternatifsBaseUri + "/" +datasetsBaseUriSuffix;
+        return baseUriGestion + identifiantsAlternatifsBaseUri;
     }
 
     private String getCatalogRecordBaseUri(){
         return baseUriGestion + datasetsRecordBaseUriSuffix;
     }
-
-    static ValueFactory factory =  SimpleValueFactory.getInstance();
 
     @Override
     public String getDatasets() throws RmesException {
@@ -137,7 +134,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String getDatasetByID(String id) throws RmesException {
+    public Dataset getDatasetByID(String id) throws RmesException {
         JSONArray datasetWithThemes =  this.repoGestion.getResponseAsArray(DatasetQueries.getDataset(id, getDatasetsGraph(), getAdmsGraph()));
 
         if(datasetWithThemes.isEmpty()){
@@ -180,7 +177,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             dataset.remove(CATALOG_RECORD_UPDATED);
         }
         dataset.put("catalogRecord", catalogRecord);
-        return dataset.toString();
+        return Deserializer.deserializeJSONObject(dataset, Dataset.class);
     }
 
     private String update(String datasetId, Dataset dataset) throws RmesException {
@@ -203,13 +200,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
     @Override
     public String update(String datasetId, String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
         return this.update(datasetId, dataset);
     }
 
     @Override
     public String create(String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeBody(body, Dataset.class);
+        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
@@ -237,34 +234,33 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException {
-        String datasetByID = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetByID, Dataset.class);
-        if  (patchDataset.getUpdated() == null && patchDataset.getIssued() == null && patchDataset.getNumObservations() == null
-                && patchDataset.getNumSeries() == null && patchDataset.getTemporal() == null){
+        Dataset dataset = getDatasetByID(datasetId);
+        if  (patchDataset.updated() == null && patchDataset.issued() == null && patchDataset.numObservations() == null
+                && patchDataset.numSeries() == null && patchDataset.temporal() == null){
             throw new RmesBadRequestException(DATASET_PATCH_INCORRECT_BODY,"One of these attributes is required : updated, issued, numObservations, numSeries, temporal");
         }
 
-        if ( patchDataset.getIssued() != null){
-            dataset.setIssued(patchDataset.getIssued());
+        if ( patchDataset.issued() != null){
+            dataset.setIssued(patchDataset.issued());
         }
 
-        if ( patchDataset.getUpdated() != null){
-            dataset.setUpdated(patchDataset.getUpdated());
+        if ( patchDataset.updated() != null){
+            dataset.setUpdated(patchDataset.updated());
         }
 
-        if ( patchDataset.getTemporal() != null){
-            String temporalCoverageStartDate = patchDataset.getTemporal().getStartPeriod();
-            String temporalCoverageEndDate = patchDataset.getTemporal().getEndPeriod();
+        if ( patchDataset.temporal() != null){
+            String temporalCoverageStartDate = patchDataset.temporal().startPeriod();
+            String temporalCoverageEndDate = patchDataset.temporal().endPeriod();
             dataset.setTemporalCoverageStartDate(temporalCoverageStartDate);
             dataset.setTemporalCoverageStartDate(temporalCoverageEndDate);
         }
 
-        if ( patchDataset.getNumObservations() != null && patchDataset.getNumObservations() > 0){
-            dataset.setObservationNumber(patchDataset.getNumObservations());
+        if ( patchDataset.numObservations() != null && patchDataset.numObservations() > 0){
+            dataset.setObservationNumber(patchDataset.numObservations());
         }
 
-        if ( patchDataset.getNumSeries() != null){
-            dataset.setTimeSeriesNumber(patchDataset.getNumSeries());
+        if ( patchDataset.numSeries() != null){
+            dataset.setTimeSeriesNumber(patchDataset.numSeries());
         }
 
         update(datasetId, dataset);
@@ -272,31 +268,70 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     @Override
     public void deleteDatasetId(String datasetId) throws RmesException{
-        String datasetString = getDatasetByID(datasetId);
-        Dataset dataset = Deserializer.deserializeBody(datasetString, Dataset.class);
-        if (!isUnpublished(dataset)){
-            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
+        Dataset dataset = getDatasetByID(datasetId);
+        if (isPublished(dataset)){
+             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_UNPUBLISHED, "Only unpublished datasets can be deleted");
         }
 
         if (hasDistribution(dataset)) {
             throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION, "Only dataset without any distribution can be deleted");
         }
 
+        if (hasDerivedDataset(dataset)) {
+            throw new RmesBadRequestException(ErrorCodes.DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET, "Only dataset without any derived dataset can be deleted");
+        }
+
         IRI datasetIRI = RdfUtils.createIRI(getDatasetsBaseUri());
         IRI graph = getDatasetIri(datasetId);
         String datasetURI = getDatasetsBaseUri() + "/" + datasetId;
+        IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + datasetId);
+        IRI datasetAdmsIri = RdfUtils.createIRI(getDatasetsAdmsBaseUri() + "/" + datasetId);
 
+        if (hasTemporalCoverage(dataset)){
+            deleteTemporalWhiteNode(datasetId);
+        }
+
+        if (isDerivedFromADataset(dataset)){
+            deleteQualifiedDerivationWhiteNode(datasetId);
+        }
         repoGestion.deleteObject(RdfUtils.toURI(datasetURI));
+        repoGestion.deleteObject(catalogRecordIRI);
+        repoGestion.deleteObject(datasetAdmsIri);
         repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
     }
 
-    private boolean isUnpublished(Dataset dataset) {
-        return "Unpublished".equalsIgnoreCase(dataset.getValidationState());
+
+    private boolean isPublished(Dataset dataset) {
+        return !"Unpublished".equalsIgnoreCase(dataset.getValidationState());
     }
 
     private boolean hasDistribution(Dataset dataset) throws RmesException {
         String datasetId = dataset.getId();
         return !getDistributions(datasetId).equals("[]");
+    }
+
+    private boolean hasDerivedDataset(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        JSONObject datasetDerivation =  this.repoGestion.getResponseAsObject(DatasetQueries.getDerivedDataset(datasetId, getDatasetsGraph()));
+        return (datasetDerivation.has("id"));
+    }
+
+    private boolean hasTemporalCoverage(Dataset dataset) {
+        return (dataset.getTemporalCoverageDataType() != null);
+    }
+
+    private HttpStatus deleteTemporalWhiteNode(String id) throws RmesException {
+        return repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
+    }
+
+    private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
+        String datasetId = dataset.getId();
+        JSONObject datasetDerivedFrom =  this.repoGestion.getResponseAsObject(DatasetQueries.getDatasetDerivedFrom(datasetId, getDatasetsGraph()));
+        return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
+    }
+
+    private HttpStatus deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
+        return repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {
@@ -306,16 +341,16 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         Model model = new LinkedHashModel();
 
-        CatalogRecord record = dataset.getCatalogRecord();
+        CatalogRecord catalogRecord = dataset.getCatalogRecord();
 
         RdfUtils.addTripleUri(catalogRecordIRI, FOAF.PRIMARY_TOPIC, datasetIri, model, graph);
 
         model.add(catalogRecordIRI, RDF.TYPE, DCAT.CATALOG_RECORD, graph);
-        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(record.getCreator()), graph);
+        model.add(catalogRecordIRI, DC.CREATOR, RdfUtils.setLiteralString(catalogRecord.getCreator()), graph);
 
-        record.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, record.getCreated(), model, graph);
-        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, record.getUpdated(), model, graph);
+        catalogRecord.getContributor().forEach(contributor -> model.add(catalogRecordIRI, DC.CONTRIBUTOR, RdfUtils.setLiteralString(contributor), graph));
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.CREATED, catalogRecord.getCreated(), model, graph);
+        RdfUtils.addTripleDateTime(catalogRecordIRI, DCTERMS.MODIFIED, catalogRecord.getUpdated(), model, graph);
 
         repoGestion.loadSimpleObject(catalogRecordIRI, model, null);
 
@@ -483,5 +518,4 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             throw new RmesBadRequestException("Some series or operations do not exist");
         }
     }
-
 }
