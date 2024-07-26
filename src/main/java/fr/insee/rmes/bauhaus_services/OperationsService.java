@@ -62,13 +62,6 @@ public interface OperationsService {
 	 * OPERATIONS
 	 * *******************************************************************************************/
 
-
-	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
-
-	ResponseEntity<Resource> getCodeBookExportV2(String ddiFile, String xslPatternFile) throws RmesException, Exception;
-
-	ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws RmesException, Exception;
-
 	String getOperations() throws RmesException ;
 
 	String getOperationJsonByID(String id) throws RmesException;
