@@ -8,7 +8,6 @@ import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external.services.export.XDocReport;
 import fr.insee.rmes.model.operations.Indicator;
@@ -127,10 +126,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return seriesUtils.getSeriesById(id,EncodingType.MARKDOWN);
 	}
 
-	@Override
-	public IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException {
-		return seriesUtils.getSeriesLabelById(id);
-	}
 
 	/**
 	 * Return the series in a JSONObject encoding in markdown

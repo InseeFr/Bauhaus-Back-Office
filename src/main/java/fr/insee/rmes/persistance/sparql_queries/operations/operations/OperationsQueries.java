@@ -33,18 +33,12 @@ public class OperationsQueries extends GenericQueries {
 		return FreeMarkerUtils.buildRequest("operations/", "checkFamilyPrefLabelUnicity.ftlh", params);
 	}
 
-	public static String operationsQuery() {
-		return "SELECT DISTINCT ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel) \n"
-				+ "WHERE { GRAPH <"+config.getOperationsGraph()+"> { \n"
-				+ "?operation a insee:StatisticalOperation . \n" 
-				+ "?operation skos:prefLabel ?label . \n"
-				+ "FILTER (lang(?label) = '" + config.getLg1() + "') \n"
-				+ "BIND(STRAFTER(STR(?operation),'/operations/operation/') AS ?id) . \n"
-				+ "OPTIONAL{?operation skos:altLabel ?altLabelLg1 . "
-				+ "FILTER (lang(?altLabelLg1) = '" + config.getLg1() + "')}\n" 
-				+ "}} \n" 
-				+ "GROUP BY ?id ?label \n"
-				+ "ORDER BY ?label ";
+	public static String operationsQuery() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("OPERATIONS_GRAPH", config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return FreeMarkerUtils.buildRequest("operations/", "getOperations.ftlh", params);
 	}
 
 	public static String operationQuery(String id){

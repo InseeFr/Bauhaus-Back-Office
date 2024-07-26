@@ -280,7 +280,7 @@ public class Dataset {
     private String cautionLg1;
     private String cautionLg2;
     private String disseminationStatus;
-    private String idSerie;
+    private List<String> wasGeneratedIRIs;
     private List<String> themes;
     private String validationState;
 
@@ -351,12 +351,12 @@ public class Dataset {
         this.disseminationStatus = disseminationStatus;
     }
 
-    public String getIdSerie() {
-        return idSerie;
+    public List<String> getWasGeneratedIRIs() {
+        return wasGeneratedIRIs;
     }
 
-    public void setIdSerie(String idSerie) {
-        this.idSerie = idSerie;
+    public void setWasGeneratedIRIs(List<String> wasGeneratedIds) {
+        this.wasGeneratedIRIs = wasGeneratedIds;
     }
 
     public List<String> getThemes() {

@@ -145,7 +145,7 @@ public class SeriesUtils {
         if (EncodingType.MARKDOWN.equals(encode)) {
             XhtmlToMarkdownUtils.convertJSONObject(series);
         }
-        series.put(Constants.ID, id);
+
         addSeriesOperations(id, series);
         addSeriesFamily(id, series);
         addSeriesLinks(id, series);
@@ -508,8 +508,9 @@ public class SeriesUtils {
         return id;
     }
 
-    public boolean isSeriesExist(String iri) throws RmesException {
-        return repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesExists(iri));
+    public boolean isSeriesAndOperationsExist(List<String> iris) throws RmesException {
+        var length = repositoryGestion.getResponseAsArray(OpSeriesQueries.checkIfSeriesExists(iris)).length();
+        return length == iris.size();
     }
 
 }

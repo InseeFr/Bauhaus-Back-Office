@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -34,7 +33,6 @@ public class DatasetResources {
     final DatasetService datasetService;
 
     public DatasetResources(DatasetService datasetService) {
-
         this.datasetService = datasetService;
     }
 

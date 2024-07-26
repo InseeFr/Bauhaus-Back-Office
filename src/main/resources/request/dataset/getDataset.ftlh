@@ -3,7 +3,7 @@ SELECT ?id ?altIdentifier ?labelLg1 ?labelLg2 ?subTitleLg1 ?subTitleLg2 ?accrual
 ?disseminationStatus ?processStep ?archiveUnit
 ?type ?dataStructure ?timeSeriesNumber ?observationNumber ?spacialCoverage ?spacialTemporal ?temporalResolution
 ?temporalCoverageStartDate ?temporalCoverageEndDate (datatype(?temporalCoverageEndDate) AS ?temporalCoverageDataType)
-?descriptionLg1 ?descriptionLg2  ?idSerie ?theme
+?descriptionLg1 ?descriptionLg2 ?theme
 ?validationState ?abstractLg1 ?abstractLg2 ?cautionLg1 ?cautionLg2
 ?catalogRecordCreated ?catalogRecordUpdated ?catalogRecordCreator ?catalogRecordContributor
 
@@ -80,11 +80,6 @@ WHERE {
 
 <#include "getDatasetIncludes/generalManagment.ftlh">
 <#include "getDatasetIncludes/statisticsInformations.ftlh">
-
-    OPTIONAL {
-        ?uri prov:wasGeneratedBy ?wasGeneratedBy .
-        BIND(STRAFTER(STR(?wasGeneratedBy),'/operations/serie/') AS ?idSerie) .
-    }
 
     OPTIONAL {
         ?uri dcat:theme ?theme .

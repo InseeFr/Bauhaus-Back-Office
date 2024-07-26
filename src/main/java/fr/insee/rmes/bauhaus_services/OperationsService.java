@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
@@ -42,8 +41,6 @@ public interface OperationsService {
 	Series getSeriesByID(String id) throws RmesException;
 
 	String getSeriesJsonByID(String id) throws RmesException;
-
-	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
 
 	String getSeriesWithSims() throws RmesException;
 

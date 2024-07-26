@@ -1,9 +1,8 @@
-SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState ?created ?modified
+SELECT ('${ID}' AS ?id) ?prefLabelLg1 ?prefLabelLg2 ?abstractLg1 ?abstractLg2 ?validationState ?created ?modified
 WHERE {
     GRAPH <${OPERATIONS_GRAPH}> {
         ?family skos:prefLabel ?prefLabelLg1 .
         FILTER(STRENDS(STR(?family),'/operations/famille/${ID}')) .
-        BIND(STRAFTER(STR(?family),'/famille/') AS ?id) .
 
         FILTER (lang(?prefLabelLg1) = '${LG1}') .
 
