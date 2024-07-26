@@ -1,4 +1,4 @@
-SELECT ?id ?prefLabelLg1 ?prefLabelLg2 ?created ?modified ?altLabelLg1 ?altLabelLg2  ?abstractLg1 ?abstractLg2
+SELECT ('${ID}' AS ?id) ?prefLabelLg1 ?prefLabelLg2 ?created ?modified ?altLabelLg1 ?altLabelLg2  ?abstractLg1 ?abstractLg2
 ?historyNoteLg1 ?historyNoteLg2  ?idSims  ?typeCode ?typeList  ?accrualPeriodicityCode ?accrualPeriodicityList  ?validationState
 WHERE {
     FILTER(STRENDS(STR(?series),'/operations/serie/${ID}')) .

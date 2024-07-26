@@ -145,7 +145,7 @@ public class SeriesUtils {
         if (EncodingType.MARKDOWN.equals(encode)) {
             XhtmlToMarkdownUtils.convertJSONObject(series);
         }
-        series.put(Constants.ID, id);
+
         addSeriesOperations(id, series);
         addSeriesFamily(id, series);
         addSeriesLinks(id, series);
