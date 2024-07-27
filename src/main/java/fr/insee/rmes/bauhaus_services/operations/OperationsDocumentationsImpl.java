@@ -5,13 +5,11 @@ import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationExport;
 import fr.insee.rmes.bauhaus_services.operations.documentations.DocumentationsUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.MetadataStructureDefUtils;
-import fr.insee.rmes.bauhaus_services.operations.operations.OperationsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
-import fr.insee.rmes.external.services.export.XDocReport;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentationsQueries;
@@ -37,12 +35,6 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
-
-	@Autowired
-	XDocReport xdr;
-
-	@Autowired
-	OperationsUtils operationsUtils;
 
 	@Autowired
 	DocumentationsUtils documentationsUtils;

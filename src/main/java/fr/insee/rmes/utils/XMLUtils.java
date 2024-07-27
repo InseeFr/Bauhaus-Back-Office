@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import javax.xml.XMLConstants;
@@ -50,15 +49,6 @@ public class XMLUtils {
 		Writer out = new StringWriter();
 		transformer.transform(new DOMSource(xml), new StreamResult(out));
 		return out.toString();
-	}
-
-	public static Node getChild(Node parent, String childName) {
-		for (Node child = parent.getFirstChild(); child != null; child = child.getNextSibling()) {
-			if (childName.equals(child.getNodeName())) {
-				return child;
-			}
-		}
-		return null;
 	}
 
 	public static String produceResponse(Object obj, String header) {
