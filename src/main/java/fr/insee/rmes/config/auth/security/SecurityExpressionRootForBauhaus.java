@@ -7,6 +7,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.external.services.rbac.AccessPrivileges;
 import fr.insee.rmes.external.services.rbac.RBACService;
+import fr.insee.rmes.external.services.rbac.RBACServiceImpl;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -17,19 +18,19 @@ import org.springframework.security.access.expression.SecurityExpressionOperatio
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 import static java.util.Objects.requireNonNull;
 
 public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressionOperations, SecurityExpressionOperations {
 
-    @Autowired
-    RBACService rbacService;
 
-    @Autowired
-    UserDecoder userDecoder;
+    private final RBACService rbacService;
+
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityExpressionRootForBauhaus.class);
 
@@ -38,15 +39,15 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
 
-    private SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
-        this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
-        this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
+    public SecurityExpressionRootForBauhaus(RBACService rbacService, StampAuthorizationChecker stampAuthorizationChecker, SecurityExpressionRoot methodSecurityExpressionRoot, StampFromPrincipal stampFromPrincipal, MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
         this.stampAuthorizationChecker = stampAuthorizationChecker;
+        this.methodSecurityExpressionRoot = methodSecurityExpressionRoot;
         this.stampFromPrincipal = stampFromPrincipal;
+        this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
     }
 
     public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
+        return new SecurityExpressionRootForBauhaus( requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
     }
 
     @Override
@@ -240,6 +241,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
     }
 
+
     public boolean canUpdateSerie(String serieId) throws RmesException{
         return getAccessPrivileges().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.SERIE).withId(serieId);
     }
@@ -261,7 +263,13 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     }
 
     private AccessPrivileges getAccessPrivileges() throws RmesException {
-        return rbacService.computeRbac(userDecoder.fromPrincipal(methodSecurityExpressionRoot.getPrincipal()).get().roles());
+        Optional<Stamp>  stamp = this.getStamp();
+        Collection<? extends GrantedAuthority> collectionRole = this.getAuthentication().getAuthorities();
+        List<? extends GrantedAuthority> listerole = new ArrayList<>(collectionRole);
+        List<String> strings = listerole.stream()
+                .map(object -> Objects.toString(object, null))
+                .toList();
+        return rbacService.computeRbac(strings);
     }
 
 }
