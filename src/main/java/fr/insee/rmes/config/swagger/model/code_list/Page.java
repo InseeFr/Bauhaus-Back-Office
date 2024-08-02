@@ -9,20 +9,20 @@ import java.util.List;
 
 public class Page {
     @JsonProperty
-    public String total;
+    public int total;
 
     @JsonProperty
-    public String page;
+    public int page;
 
     @JsonProperty
     public List<CodeListItem> items;
 
 
-    public String getPage() {
+    public int getPage() {
         return page;
     }
 
-    public String getTotal() {
+    public int getTotal() {
         return total;
     }
 
