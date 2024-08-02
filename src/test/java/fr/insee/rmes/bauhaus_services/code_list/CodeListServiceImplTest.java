@@ -49,7 +49,7 @@ class CodeListServiceImplTest {
             items.put(item);
             when(repositoryGestion.getResponseAsArray("query2")).thenReturn(items);
 
-            assertEquals("{\"codes\":[{\"id\":\"id\"}],\"total\":5,\"page\":1}", codeListService.getCodesJson("notation", 1, null));
+            assertEquals("{\"total\":5,\"page\":1,\"items\":[{\"id\":\"id\"}]}", codeListService.getCodesJson("notation", 1, null));
         }
     }
 
@@ -80,7 +80,7 @@ class CodeListServiceImplTest {
             when(repositoryGestion.getResponseAsArray("query3")).thenReturn(relatedList);
             Page response = codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code");
             String responseJson = objectMapper.writeValueAsString(response);
-            String expectedJson = "{\"total\":\"5\",\"page\":\"1\",\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
+            String expectedJson = "{\"total\":5,\"page\":1,\"items\":[{\"code\":\"A\",\"broader\":[\"A1\"]}]}";
             assertEquals(objectMapper.readTree(expectedJson), objectMapper.readTree(responseJson));
         }
     }

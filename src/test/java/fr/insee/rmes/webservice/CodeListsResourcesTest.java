@@ -60,10 +60,10 @@ class CodeListsResourcesTest {
     @Test
     void shouldReturn200WithGetPaginatedCodesForCodeList() throws RmesException {
         Page page = new Page();
-        page.page="id1";
+        page.page= 1;
         when(codeListService.getCodesForCodeList("notation", List.of("search"), 1, null, "code")).thenReturn(page);
         ResponseEntity<Page> response = codeListsResources.getPaginatedCodesForCodeList("notation", List.of("search"), 1, null, "code");
-        assertEquals("id1", response.getBody().getPage());
+        assertEquals(1, response.getBody().getPage());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
     @Test
@@ -75,9 +75,9 @@ class CodeListsResourcesTest {
 
     @Test
     void shouldReturn200WithGetCodesForCodeList() throws RmesException {
-        when(codeListService.getCodesJson("notation", 1, null)).thenReturn("{\"notation\":\"id1\"}");
-        ResponseEntity<DetailedCodeList> response = codeListsResources.getCodesForCodeList("notation", 1, null);
-        assertEquals("id1", response.getBody().getNotation());
+        when(codeListService.getCodesJson("notation", 1, null)).thenReturn("{\"total\": 1}");
+        ResponseEntity<Page> response = codeListsResources.getCodesForCodeList("notation", 1, null);
+        assertEquals(1, response.getBody().getTotal());
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
