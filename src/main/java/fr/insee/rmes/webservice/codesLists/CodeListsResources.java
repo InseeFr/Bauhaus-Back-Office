@@ -154,9 +154,9 @@ public class CodeListsResources extends GenericResources {
 
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))})
-    public ResponseEntity<DetailedCodeList> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
+    public ResponseEntity<Page> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
         String codeListCodesJson = codeListService.getCodesJson(notation, page, perPage);
-        DetailedCodeList codeListCodes=Deserializer.deserializeJsonString(codeListCodesJson, DetailedCodeList.class);
+        Page codeListCodes=Deserializer.deserializeJsonString(codeListCodesJson, Page.class);
         return ResponseEntity.status(HttpStatus.OK).body(codeListCodes);
 
     }
