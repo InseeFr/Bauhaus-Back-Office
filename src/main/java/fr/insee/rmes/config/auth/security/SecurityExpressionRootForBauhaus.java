@@ -7,7 +7,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.external.services.rbac.AccessPrivileges;
 import fr.insee.rmes.external.services.rbac.RBACService;
-import fr.insee.rmes.external.services.rbac.RBACServiceImpl;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionOperations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -28,25 +26,30 @@ import static java.util.Objects.requireNonNull;
 
 public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressionOperations, SecurityExpressionOperations {
 
-
-    private final RBACService rbacService;
-
-
     private static final Logger logger = LoggerFactory.getLogger(SecurityExpressionRootForBauhaus.class);
 
     private final MethodSecurityExpressionOperations methodSecurityExpressionOperations;
     private final StampAuthorizationChecker stampAuthorizationChecker;
     private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
+    private final RBACService rbacService;
 
     public SecurityExpressionRootForBauhaus(RBACService rbacService, StampAuthorizationChecker stampAuthorizationChecker, SecurityExpressionRoot methodSecurityExpressionRoot, StampFromPrincipal stampFromPrincipal, MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
         this.stampAuthorizationChecker = stampAuthorizationChecker;
-        this.methodSecurityExpressionRoot = methodSecurityExpressionRoot;
+        this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.stampFromPrincipal = stampFromPrincipal;
+        this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
+        this.rbacService = rbacService;
+    }
+
+    public SecurityExpressionRootForBauhaus( MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker,StampFromPrincipal stampFromPrincipal) {
+        this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
+        this.stampFromPrincipal = stampFromPrincipal;
+        this.stampAuthorizationChecker = stampAuthorizationChecker;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal) {
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, RBACService rbacService) {
         return new SecurityExpressionRootForBauhaus( requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
     }
 
