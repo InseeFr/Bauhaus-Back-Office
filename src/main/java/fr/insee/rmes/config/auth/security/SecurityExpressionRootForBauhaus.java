@@ -11,7 +11,6 @@ import fr.insee.rmes.model.rbac.RBAC;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.expression.SecurityExpressionOperations;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
@@ -34,23 +33,17 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
     private final RBACService rbacService;
 
-    public SecurityExpressionRootForBauhaus(RBACService rbacService, StampAuthorizationChecker stampAuthorizationChecker, SecurityExpressionRoot methodSecurityExpressionRoot, StampFromPrincipal stampFromPrincipal, MethodSecurityExpressionOperations methodSecurityExpressionOperations) {
-        this.stampAuthorizationChecker = stampAuthorizationChecker;
+
+    public SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, RBACService rbacService) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.stampFromPrincipal = stampFromPrincipal;
+        this.stampAuthorizationChecker = stampAuthorizationChecker;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
         this.rbacService = rbacService;
     }
 
-    public SecurityExpressionRootForBauhaus( MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker,StampFromPrincipal stampFromPrincipal) {
-        this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
-        this.stampFromPrincipal = stampFromPrincipal;
-        this.stampAuthorizationChecker = stampAuthorizationChecker;
-        this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
-    }
-
     public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, RBACService rbacService) {
-        return new SecurityExpressionRootForBauhaus( requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal));
+        return new SecurityExpressionRootForBauhaus( requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal),requireNonNull(rbacService));
     }
 
     @Override
@@ -263,6 +256,10 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
     public boolean canPublishDataset(String datasetId) throws RmesException{
         return getAccessPrivileges().isGranted(RBAC.Privilege.PUBLISH).on(RBAC.Module.DATASET).withId(datasetId);
+    }
+
+    public boolean canReadDataset(String datasetId) throws RmesException{
+        return getAccessPrivileges().isGranted(RBAC.Privilege.READ).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
     private AccessPrivileges getAccessPrivileges() throws RmesException {
