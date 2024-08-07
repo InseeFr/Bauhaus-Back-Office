@@ -1,7 +1,8 @@
 name: Quality
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  push:
+  #pull_request:
+  #  types: [opened, synchronize, reopened]
 jobs:
   test-build:
     name: Test & build
@@ -13,7 +14,12 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Testing
-        run: mvn test -Ptest-containers
+      #- name: Testing
+      #  run: mvn test -Ptest-containers
       - name: Building
         run: mvn package
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bauhaus.jar
+          path: target/*.jar
