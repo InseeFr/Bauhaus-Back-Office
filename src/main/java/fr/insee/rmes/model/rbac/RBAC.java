@@ -1,5 +1,7 @@
 package fr.insee.rmes.model.rbac;
 
+import java.util.Optional;
+
 public class RBAC {
     public enum Module {
         CONCEPT,
@@ -23,6 +25,9 @@ public class RBAC {
     }
 
     public enum Strategy {
-        ALL, STAMP
+        ALL, STAMP;
+
+        public static Optional<Strategy> merge(Strategy strategy, Strategy strategy1) {
+        }
     }
 }

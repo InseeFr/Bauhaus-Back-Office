@@ -5,7 +5,7 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import fr.insee.rmes.external.services.rbac.AccessPrivileges;
+import fr.insee.rmes.external.services.rbac.ApplicationAccessPrivileges;
 import fr.insee.rmes.external.services.rbac.RBACService;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.json.JSONObject;
@@ -262,7 +262,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return getAccessPrivileges().isGranted(RBAC.Privilege.READ).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    private AccessPrivileges getAccessPrivileges() throws RmesException {
+    private ApplicationAccessPrivileges getAccessPrivileges() throws RmesException {
         Optional<Stamp>  stamp = this.getStamp();
         Collection<? extends GrantedAuthority> collectionRole = this.getAuthentication().getAuthorities();
         List<? extends GrantedAuthority> listerole = new ArrayList<>(collectionRole);

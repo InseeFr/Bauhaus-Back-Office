@@ -1,6 +1,6 @@
 package fr.insee.rmes.config.auth;
 
-import fr.insee.rmes.model.rbac.AllModuleAccessPrivileges;
+import fr.insee.rmes.external.services.rbac.ApplicationAccessPrivileges;
 import fr.insee.rmes.model.rbac.ModuleAccessPrivileges;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 
 @ConfigurationProperties("rbac")
-public record RBACConfiguration (Set<AllModuleAccessPrivileges> allModulesAccessPrivileges){
+public record RBACConfiguration (Map<RoleName, ApplicationAccessPrivileges> applicationAccessPrivilegesByRoles){
 
     @ConstructorBinding
     public RBACConfiguration(Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> config){
@@ -65,4 +65,8 @@ public record RBACConfiguration (Set<AllModuleAccessPrivileges> allModulesAccess
                 ));
     }
 
+    public ApplicationAccessPrivileges accessPrivilegesForRole(RoleName roleName) {
+    }
+
+    public record RoleName(String role) {}
 }

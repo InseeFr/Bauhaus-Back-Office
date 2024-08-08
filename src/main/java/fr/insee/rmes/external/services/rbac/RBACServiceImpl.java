@@ -16,9 +16,15 @@ public class RBACServiceImpl implements RBACService {
     }
 
     @Override
-    public AccessPrivileges computeRbac(List<String> roles) {
+    public ApplicationAccessPrivileges computeRbac(List<RBACConfiguration.RoleName> roles) {
+
+        return roles.stream()
+                .map(configuration::accessPrivilegesForRole)
+                .reduce(ApplicationAccessPrivileges::merge)
+                .orElse(ApplicationAccessPrivileges.NO_PRIVILEGE);
+
         if (roles.isEmpty()) {
-            return new AccessPrivileges(Collections.emptyMap());
+            return new ApplicationAccessPrivileges(Collections.emptyMap());
         }
 
         Map<String, Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>> rbac = configuration.getRbac();
@@ -32,7 +38,7 @@ public class RBACServiceImpl implements RBACService {
             }
         }
 
-        return new AccessPrivileges(results);
+        return new ApplicationAccessPrivileges(results);
     }
 
     private void mergePrivileges(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> target,
