@@ -10,6 +10,7 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.structures.ComponentDefinition;
 import fr.insee.rmes.model.structures.MutualizedComponent;
@@ -255,7 +256,6 @@ public class StructureUtils extends RdfService {
         RdfUtils.addTripleString(structureIri, RDFS.LABEL, structure.getLabelLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(structureIri, RDFS.COMMENT, structure.getDescriptionLg2(), config.getLg2(), model, graph);
-        RdfUtils.addTripleString(structureIri, DCTERMS.IS_REQUIRED_BY, structure.getIsRequiredBy(), model, graph);
 
         RdfUtils.addTripleString(structureIri, DC.CREATOR, structure.getCreator(), model, graph);
         structure.getContributor().forEach(contributor -> RdfUtils.addTripleString(structureIri, DC.CONTRIBUTOR, contributor, model, graph));
@@ -382,7 +382,7 @@ public class StructureUtils extends RdfService {
     public void deleteStructure(String structureId) throws RmesException {
         String structureState = getValidationStatus(structureId);
         if(!structureState.equalsIgnoreCase("Unpublished")){
-            throw new RmesBadRequestException(ErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
+            throw new RmesBadRequestException(CodesListErrorCodes.STRUCTURE_DELETE_ONLY_UNPUBLISHED, "Only unpublished codelist can be deleted");
         }
         else {
             IRI structureIri = RdfUtils.structureIRI(structureId);

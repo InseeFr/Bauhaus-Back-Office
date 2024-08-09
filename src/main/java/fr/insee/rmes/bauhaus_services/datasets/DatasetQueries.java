@@ -47,6 +47,10 @@ public class DatasetQueries extends GenericQueries {
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, path, params);
     }
 
+    public static String getDatasetWasGeneratedIris(String id, String datasetsGraph) throws RmesException {
+        return getDatasetArrays("getDatasetWasGeneratedIris.ftlh", datasetsGraph, id);
+    }
+
     public static String getDatasetCreators(String id, String datasetsGraph) throws RmesException {
         return getDatasetArrays("getDatasetCreators.ftlh", datasetsGraph, id);
     }
@@ -73,4 +77,37 @@ public class DatasetQueries extends GenericQueries {
         Map<String, Object> params = Map.of("GRAPH", datasetsGraph, "IRI", iri, "PREDICATE", "dc:contributor");
         return FreeMarkerUtils.buildRequest("common/", "getContributors.ftlh", params);
     }
+
+    public static String getDerivedDataset(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDerivedDataset.ftlh", params);
+    }
+
+    public static String deleteTempWhiteNode(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetTemporalCoverageWhiteNode.ftlh", params);
+    }
+
+    public static String getDatasetDerivedFrom(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDatasetDerivedFrom.ftlh", params);
+    }
+
+
+
+        public static String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "deleteDatasetQualifiedDerivationWhiteNode.ftlh", params);
+    }
+
+
+
 }

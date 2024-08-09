@@ -1,5 +1,12 @@
-ASK
+SELECT ?uri
 FROM <${OPERATIONS_GRAPH}>
 WHERE {
-<${URI_SERIES}> rdf:type ?type .
+
+<#list URI_SERIES as URI_SERIE>
+    {
+    <${URI_SERIE}> rdf:type ?type .
+    BIND('${URI_SERIE}' AS ?uri) .
+    }
+    <#sep> UNION </#sep>
+</#list>
 }

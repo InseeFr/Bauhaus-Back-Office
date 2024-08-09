@@ -10,6 +10,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class FileUtilsTest {
 
 	@Test
+	public void testReplaceSpecialCharacters() {
+		// Cas de test avec des caractères spéciaux
+		String input = "Œil et cœur sont liés. Ça coûte très cher !";
+		String expectedOutput = "OEil et coeur sont lies Ca coute tres cher ";
+		String actualOutput = FilesUtils.removeAsciiCharacters(input);
+		assertEquals(expectedOutput, actualOutput);
+
+		// Cas de test avec une chaîne vide
+		input = "";
+		expectedOutput = "";
+		actualOutput = FilesUtils.removeAsciiCharacters(input);
+		assertEquals(expectedOutput, actualOutput);
+
+		// Cas de test avec des caractères sans accents ni caractères spéciaux
+		input = "Simple text without accents.";
+		expectedOutput = "Simple text without accents";
+		actualOutput = FilesUtils.removeAsciiCharacters(input);
+		assertEquals(expectedOutput, actualOutput);
+	}
+
+	@Test
 	public void testGetExtension() {
 		// Test with null input
 		assertEquals(".odt", FilesUtils.getExtension(null));

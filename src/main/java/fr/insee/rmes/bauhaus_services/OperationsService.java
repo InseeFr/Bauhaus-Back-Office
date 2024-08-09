@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.config.swagger.model.IdLabelTwoLangs;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
@@ -43,8 +42,6 @@ public interface OperationsService {
 
 	String getSeriesJsonByID(String id) throws RmesException;
 
-	IdLabelTwoLangs getSeriesLabelByID(String id) throws RmesException;
-
 	String getSeriesWithSims() throws RmesException;
 
 	String getSeriesWithStamp(String stamp) throws RmesException;
@@ -61,13 +58,6 @@ public interface OperationsService {
 	/******************************************************************************************
 	 * OPERATIONS
 	 * *******************************************************************************************/
-
-
-	ResponseEntity<Resource> getCodeBookExport(String ddiFile, File dicoVar, String acceptHeader) throws RmesException;
-
-	ResponseEntity<Resource> getCodeBookExportV2(String ddiFile, String xslPatternFile) throws RmesException, Exception;
-
-	ResponseEntity<?> getCodeBookCheck(MultipartFile isCodeBook) throws RmesException, Exception;
 
 	String getOperations() throws RmesException ;
 

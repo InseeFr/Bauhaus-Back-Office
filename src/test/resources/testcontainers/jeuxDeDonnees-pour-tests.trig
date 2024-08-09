@@ -1,0 +1,493 @@
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix insee: <http://rdf.insee.fr/def/base#> .
+@prefix org: <http://www.w3.org/ns/org#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix stat-dcat-ap: <http://data.europa.eu/m8g/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://rdf.insee.fr/graphes/catalogue> {
+	<http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesChampsObligatoires> a dcat:CatalogRecord;
+		dc:creator "DG75-L001";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesChampsObligatoires>;
+	.
+	
+	<http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesChampsObligatoires> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesChampsObligatoires";
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		dct:title "Jeu de données avec seulement les champs obligatoires à l'IHM renseignés"@fr, "Dataset with only mandatory properties"@en;
+		prov:wasGeneratedBy <http://bauhaus/operations/serie/s1034>;
+	.
+
+	<http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesTousChamps> a dcat:CatalogRecord;
+		dc:creator "DG75-L001";
+		dc:contributor "DG75-L201";
+		dct:created "2020-02-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-02-01T00:00:00.000"^^xsd:dateTime;
+		foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesTousChamps>;
+	.
+	
+	<http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesTousChamps> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesTousChamps";
+		adms:identifier <http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesTousChamps>;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		dct:title "Jeu de données l'ensemble des champs IHM renseignés"@fr, "Dataset with all properties"@en;
+		insee:subtitle "une seule valeur par propriétés"@fr, "only one value par property"@en;
+		dct:creator <http://bauhaus/organisations/ined>;
+		dct:publisher <http://bauhaus/organisations/insee/DG75-A001>;
+		prov:wasGeneratedBy <http://bauhaus/operations/serie/s1034>;
+		dct:issued "2023-02-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2024-02-01T00:00:00.000"^^xsd:dateTime;
+		dct:abstract "résumé fr"@fr, "abstract en"@en;
+		dct:description "description fr"@fr, "description en"@en;
+		skos:scopeNote "avertissement fr"@fr, "caution en"@en;
+		dcat:theme <http://bauhaus/concepts/theme/pop>;
+		dcat:keyword "Statistiques"@fr;
+		dcat:landingPage "https://www.insee.fr/fr/accueil"@fr, "https://www.insee.fr/en/accueil"@en;
+		dct:relation <https://www.insee.fr/fr/statistiques>;
+		dct:accessRights <http://bauhaus/codes/droitAcces/L>;
+		insee:confidentialityStatus <http://bauhaus/codes/statutConfidentialite/L>;
+		insee:processStep <http://bauhaus/codes/etapeProcessus/IA>;
+		insee:archiveUnit <http://bauhaus/identifierSchemes/uniteArchivageNamingScheme/identifier/UA1>;
+		dct:accrualPeriodicity <http://bauhaus/codes/frequence/A>;
+		dct:type <http://bauhaus/codes/typeDonnees/A>;
+		insee:structure <http://bauhaus/structuresDeDonnees/structure/dsd1000>;
+		insee:statisticalUnit <http://bauhaus/codes/uniteStatistique/P>;
+		dct:temporal [a dcterms:PeriodOfTime; dcat:startDate "2000-01-01"^^xsd:date; dcat:endDate "2023-01-01"^^xsd:date;];
+		dcat:temporalResolution <http://bauhaus/codes/frequence/A>;
+		dct:spatial <http://bauhaus/codes/territoireGeographique/F>;
+		insee:spatialResolution <http://bauhaus/codes/typeTerritoireGeographique/COM>;
+		insee:spatialTemporal "2023-01-01"^^xsd:date;
+		stat-dcat-ap:numSeries "10"^^xsd:int;
+		insee:numObservations "2400"^^xsd:int;
+	.	
+
+	<http://bauhaus/catalogues/entreeCatalogue/jeuDeDonneesTousChampsEtMultiValeurs> a dcat:CatalogRecord;
+		dc:creator "DG75-L001";
+		dc:contributor "DG75-L201", "DG75-L001";
+		dct:created "2020-01-01T10:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T10:00:00.000"^^xsd:dateTime;
+		foaf:primaryTopic <http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesTousChampsEtMultiValeurs>;
+	.
+
+	<http://bauhaus/catalogues/jeuDeDonnees/jeuDeDonneesTousChampsEtMultiValeurs> rdf:type dcat:Dataset;
+		dct:identifier "jeuDeDonneesTousChampsEtMultiValeurs";
+		adms:identifier <http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesTousChampsEtMultiValeurs>;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		dct:title "Jeu de données l'ensemble des champs IHM renseignés"@fr, "Dataset with all properties"@en;
+		insee:subtitle "une seule valeur par propriétés"@fr, "only one value par property"@en;
+		dct:creator <http://bauhaus/organisations/ined>, <http://bauhaus/organisations/insee>;
+		dct:publisher <http://bauhaus/organisations/insee/DG75-A001>;
+		prov:wasGeneratedBy <http://bauhaus/operations/operation/s2159>, <http://bauhaus/operations/operation/s2160>;
+		dct:issued "2023-01-01T10:00:00.000"^^xsd:dateTime;
+		dct:modified "2024-01-01T10:00:00.000"^^xsd:dateTime;
+		dct:abstract "résumé fr"@fr, "abstract en"@en;
+		dct:description "description fr"@fr, "description en"@en;
+		skos:scopeNote "avertissement fr"@fr, "caution en"@en;
+		dcat:theme <http://bauhaus/concepts/theme/pop>, <http://bauhaus/concepts/theme/eco>, <http://bauhaus/concepts/statisticalDomain/sd1>;
+		dcat:keyword "Statistiques"@fr, "Statistics"@en, "Jeux de données HVD"@fr, "High value dataset"@en, "HVD"@en;
+		dcat:landingPage "https://www.insee.fr/fr/accueil"@fr, "https://www.insee.fr/en/accueil"@en;
+		dct:relation <https://www.insee.fr/fr/statistiques>, <https://www.insee.fr/fr/metadonnees/sources>, <https://www.insee.fr/fr/metadonnees/indicateurs>;
+		dct:accessRights <http://bauhaus/codes/droitAcces/L>;
+		insee:confidentialityStatus <http://bauhaus/codes/statutConfidentialite/L>;
+		insee:processStep <http://bauhaus/codes/etapeProcessus/IA>;
+		insee:archiveUnit <http://bauhaus/identifierSchemes/uniteArchivageNamingScheme/identifier/UA1>;
+		dct:accrualPeriodicity <http://bauhaus/codes/frequence/A>;
+		dct:type <http://bauhaus/codes/typeDonnees/A>;
+		insee:structure <http://bauhaus/structuresDeDonnees/structure/dsd1000>;
+		insee:statisticalUnit <http://bauhaus/codes/uniteStatistique/P>, <http://bauhaus/codes/uniteStatistique/E>, <http://bauhaus/codes/uniteStatistique/L>;
+		dct:temporal [a dcterms:PeriodOfTime; dcat:startDate "2000-01-01"^^xsd:date; dcat:endDate "2020-01-01"^^xsd:date;];
+		dcat:temporalResolution <http://bauhaus/codes/frequence/A>;
+		dct:spatial <http://bauhaus/codes/territoireGeographique/F>;
+		insee:spatialResolution <http://bauhaus/codes/typeTerritoireGeographique/COM>, <http://bauhaus/codes/typeTerritoireGeographique/DEP>, <http://bauhaus/codes/typeTerritoireGeographique/REG>;
+		insee:spatialTemporal "2020-01-01"^^xsd:date;
+		stat-dcat-ap:numSeries "10"^^xsd:int;
+		insee:numObservations "1320"^^xsd:int;
+	.	
+}
+
+<http://rdf.insee.fr/graphes/adms> {  
+	<http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesTousChamps> a adms:Identifier;
+		skos:notation "DATASET_ALL_PROPERTIES";
+	.
+	
+	<http://bauhaus/identifiantsAlternatifs/jeuDeDonnees/jeuDeDonneesTousChampsEtMultiValeurs> a adms:Identifier;
+		skos:notation "DATASET_ALL_PROPERTIES_WITH_MULTIPLE_VALUES";
+	.
+		
+	<http://bauhaus/identifierSchemes/uniteArchivageNamingScheme/identifier/UA1> a adms:Identifier;
+		skos:notation "UA1";
+		skos:prefLabel "diffusion Insee.fr"@fr, "Insee.fr dissemination"@en;
+		skos:inScheme <http://bauhaus/identifierSchemes/uniteArchivageNamingScheme>;
+  .
+}
+
+<http://rdf.insee.fr/graphes/operations> {
+	<http://bauhaus/operations/famille/s88> rdf:type insee:StatisticalOperationFamily;
+		skos:prefLabel "Voir également"@fr, "See also"@en;
+		dct:hasPart <http://bauhaus/operations/serie/s1034>;
+	.
+	
+	<http://bauhaus/operations/serie/s1034> rdf:type insee:StatisticalOperationSeries;
+		skos:prefLabel "Autres indicateurs"@fr, "Ohter indexes"@en;
+		dct:isPartOf <http://bauhaus/operations/famille/s88>;
+	.
+	
+	<http://bauhaus/operations/famille/s1> rdf:type insee:StatisticalOperationFamily;
+		skos:prefLabel "Recensement des équipements"@fr, "Facilities census"@en;
+		dct:hasPart <http://bauhaus/operations/serie/s1161>, <http://bauhaus/operations/serie/s1248>;
+	.
+	
+	<http://bauhaus/operations/serie/s1161> rdf:type insee:StatisticalOperationSeries;
+		skos:prefLabel "Base permanente des équipements"@fr, "Permanent database of facilities"@en;
+		dct:isPartOf <http://bauhaus/operations/famille/s1>;
+		dct:hasPart <http://bauhaus/operations/operation/s2159>, <http://bauhaus/operations/operation/s2160>;
+	.
+	
+	<http://bauhaus/operations/operation/s2159> rdf:type insee:StatisticalOperation;
+		skos:prefLabel "BPE 2023"@fr, "BPE 2023"@en;
+		dct:isPartOf <http://bauhaus/operations/serie/s1161>;
+	.
+	
+	<http://bauhaus/operations/operation/s2160> rdf:type insee:StatisticalOperation;
+		skos:prefLabel "BPE 2024"@fr, "BPE 2024"@en;
+		dct:isPartOf <http://bauhaus/operations/serie/s1161>;
+	.
+	
+	<http://bauhaus/operations/serie/s1248> rdf:type insee:StatisticalOperationSeries;
+		skos:prefLabel "Inventaire communal"@fr, "Municipality Inventory"@en;
+		dct:isPartOf <http://bauhaus/operations/famille/s1>;
+	.
+}
+
+<http://rdf.insee.fr/graphes/organisations> {
+	<http://bauhaus/organisations/ined> rdf:type org:Organization, org:OrganizationalUnit;
+		dct:identifier "Ined";
+		skos:prefLabel "Institut national d’études démographiques"@fr, "National institute of demographic studies"@en;
+	.
+	
+	<http://bauhaus/organisations/insee> rdf:type org:Organization, org:OrganizationalUnit, insee:NationalStatisticalInstitute;
+		dct:identifier "Insee";
+		skos:prefLabel "Institut national de la statistique et des études économiques"@fr, "National Institute of Statistics and Economic Studies"@en;
+	.
+}
+
+<http://rdf.insee.fr/graphes/organisations/insee> {
+	<http://bauhaus/organisations/insee> rdf:type org:Organization;
+		dct:identifier "Insee";
+		skos:prefLabel "Institut national de la statistique et des études économiques"@fr, "National Institute of Statistics and Economic Studies"@en;
+		org:hasUnit <http://bauhaus/organisations/insee/DG75-A001>;
+	.
+	
+	<http://bauhaus/organisations/insee/DG75-A001> rdf:type org:Organization, org:OrganizationalUnit;
+		dct:identifier "DG75-A001";
+		skos:prefLabel "Direction générale (DG)"@fr;
+		org:unitOf <http://bauhaus/organisations/insee>;
+	.
+}
+
+<http://rdf.insee.fr/graphes/concepts> {
+	<http://bauhaus/concepts/themes> rdf:type skos:ConceptScheme;
+		skos:notation "inseeTheme";
+		skos:prefLabel "Thèmes statistiques"@fr, "Statistical themes"@en;
+		skos:hasTopConcept <http://bauhaus/concepts/theme/pop>, <http://bauhaus/concepts/theme/eco>;
+	.
+	
+	<http://bauhaus/concepts/themes/Theme> rdf:type rdfs:Class ;
+		rdfs:label "Thème statistique"@fr, "Statistical theme"@en;
+	.
+	
+	<http://bauhaus/concepts/theme/pop> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme>;
+		skos:notation "POP";
+		skos:prefLabel "Démographie"@fr, "Demography"@en;
+		skos:inScheme <http://bauhaus/concepts/themes>;
+		skos:topConceptOf <http://bauhaus/concepts/themes>;
+	.
+	
+	<http://bauhaus/concepts/theme/eco> rdf:type skos:Concept, <http://bauhaus/concepts/themes/Theme>;
+		skos:notation "ECO";
+		skos:prefLabel "Économie – Conjoncture – Comptes nationaux"@fr, "Economy – Economic outlook – National accounts"@en;
+		skos:inScheme <http://bauhaus/concepts/themes>;
+		skos:topConceptOf <http://bauhaus/concepts/themes>;
+	.
+	
+	<http://bauhaus/concepts/http://bauhaus/concepts/statisticalDomains> rdf:type skos:ConceptScheme;
+		skos:notation "classificationOfStatisticalDomain";
+		skos:prefLabel "Domaines statistiques"@fr, "Statistical Domains"@en;
+		skos:hasTopConcept <http://bauhaus/concepts/statisticalDomain/sd1>, <http://bauhaus/concepts/statisticalDomain/sd2>;
+	.
+	
+	<http://bauhaus/concepts/statisticalDomains/StatisticalDomain> rdf:type rdfs:Class ;
+		rdfs:label "Domaines statistiques"@fr, "Statistical Domains"@en;
+	.
+	
+	<http://bauhaus/concepts/statisticalDomain/sd1> rdf:type skos:Concept, <http://bauhaus/concepts/statisticalDomains/StatisticalDomain>;
+		skos:notation "1";
+		skos:prefLabel "1 Statistiques démographiques et sociales"@fr, "1 Demographic and social statistics"@en;
+		skos:inScheme <http://bauhaus/concepts/statisticalDomains>;
+		skos:topConceptOf <http://bauhaus/concepts/statisticalDomains>;
+	.
+	
+	<http://bauhaus/concepts/statisticalDomain/sd2> rdf:type skos:Concept, <http://bauhaus/concepts/statisticalDomains/StatisticalDomain>;
+		skos:notation "ECO";
+		skos:prefLabel "Économie – Conjoncture – Comptes nationaux"@fr, "Economy – Economic outlook – National accounts"@en;
+		skos:inScheme <http://bauhaus/concepts/statisticalDomains>;
+		skos:topConceptOf <http://bauhaus/concepts/statisticalDomains>;
+	.
+}
+
+<http://rdf.insee.fr/graphes/codes> {
+	<http://bauhaus/codes/droitsAcces> rdf:type skos:ConceptScheme;
+		skos:notation "CL_ACCESS_RIGHTS";
+		skos:prefLabel "Droits d'accès"@fr, "Access rights"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/DroitAcces>;
+		skos:hasTopConcept <http://bauhaus/codes/droitAcces/L>;
+	.
+	
+	<http://bauhaus/codes/concept/DroitAcces> rdf:type owl:Class;
+		rdfs:label "Droit d'accès"@fr, "Access right"@en;
+		rdfs:seeAlso <http://bauhaus/codes/droitsAcces>;
+	.
+	
+	<http://bauhaus/codes/droitAcces/L> rdf:type skos:Concept, <http://bauhaus/codes/concept/DroitAcces>;
+		skos:notation "L";
+		skos:prefLabel "Libre"@fr, "Free"@en;
+		skos:inScheme <http://bauhaus/codes/droitsAcces>;
+		skos:topConceptOf <http://bauhaus/codes/droitsAcces>;
+	.
+	
+	<http://bauhaus/codes/statutsConfidentialite> rdf:type skos:ConceptScheme;
+		skos:notation "CL_CONF_STATUS";
+		skos:prefLabel "Statuts de confidentialité"@fr, "Confidentiality statuses"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/StatutConfidentialite>;
+		skos:hasTopConcept <http://bauhaus/codes/statutConfidentialite/L>;
+	.
+	
+	<http://bauhaus/codes/concept/StatutConfidentialite> rdf:type owl:Class;
+		rdfs:label "Statut de confidentialité"@fr, "Confidentiality status"@en;
+		rdfs:seeAlso <http://bauhaus/codes/statutsConfidentialite>;
+	.
+	
+	<http://bauhaus/codes/statutConfidentialite/L> rdf:type skos:Concept, <http://bauhaus/codes/concept/StatutConfidentialite>;
+		skos:notation "L";
+		skos:prefLabel "Libre"@fr, "Free"@en;
+		skos:inScheme <http://bauhaus/codes/statutsConfidentialite>;
+		skos:topConceptOf <http://bauhaus/codes/statutsConfidentialite>;
+	.
+	
+	<http://bauhaus/codes/etapesProcessus> rdf:type skos:ConceptScheme;
+		skos:notation "CL_PROCESS_STEP";
+		skos:prefLabel "Etapes du processus utilisant les données"@fr, "Process steps using the data"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/EtapeProcessus>;
+		skos:hasTopConcept <http://bauhaus/codes/etapeProcessus/IA>;
+	.
+	
+	<http://bauhaus/codes/concept/EtapeProcessus> rdf:type owl:Class;
+		rdfs:label "Etape du processus utilisant les données"@fr, "Process step using the data"@en;
+		rdfs:seeAlso <http://bauhaus/codes/etapesProcessus>;
+	.
+	
+	<http://bauhaus/codes/etapeProcessus/IA> rdf:type skos:Concept, <http://bauhaus/codes/concept/EtapeProcessus>;
+		skos:notation "IA";
+		skos:prefLabel "inseeApi"@fr, "inseeApi"@en;
+		skos:inScheme <http://bauhaus/codes/etapesProcessus>;
+		skos:topConceptOf <http://bauhaus/codes/etapesProcessus>;
+	.
+	
+	<http://bauhaus/codes/frequences> rdf:type skos:ConceptScheme;
+		skos:notation "CL_FREQ";
+		skos:prefLabel "Fréquences"@fr, "Frequencies"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/Frequence>;
+		skos:hasTopConcept <http://bauhaus/codes/frequence/A>;
+	.
+	
+	<http://bauhaus/codes/concept/Frequence> rdf:type owl:Class;
+		rdfs:label "Fréquence"@fr, "Frequency"@en;
+		rdfs:seeAlso <http://bauhaus/codes/frequences>;
+	.
+	
+	<http://bauhaus/codes/frequence/A> rdf:type skos:Concept, <http://bauhaus/codes/concept/Frequence>;
+		skos:notation "A";
+		skos:prefLabel "Annuelle"@fr, "Annual"@en;
+		skos:inScheme <http://bauhaus/codes/frequences>;
+		skos:topConceptOf <http://bauhaus/codes/frequences>;
+	.
+	
+	<http://bauhaus/codes/typesDonnees> rdf:type skos:ConceptScheme;
+		skos:notation "CL_DATA_TYPES";
+		skos:prefLabel "Types de données"@fr, "Data types"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/TypeDonnees>;
+		skos:hasTopConcept <http://bauhaus/codes/typeDonnees/A>;
+	.
+	
+	<http://bauhaus/codes/concept/TypeDonnees> rdf:type owl:Class;
+		rdfs:label "Type de données"@fr, "Data type"@en;
+		rdfs:seeAlso <http://bauhaus/codes/typesDonnees>;
+	.
+	
+	<http://bauhaus/codes/typeDonnees/A> rdf:type skos:Concept, <http://bauhaus/codes/concept/TypeDonnees>;
+		skos:notation "A";
+		skos:prefLabel "Données agrégées"@fr, "Agregated data"@en;
+		skos:inScheme <http://bauhaus/codes/typesDonnees>;
+		skos:topConceptOf <http://bauhaus/codes/typesDonnees>;
+	.
+	
+	<http://bauhaus/codes/unitesStatistiques> rdf:type skos:ConceptScheme;
+		skos:notation "CL_STAT_UNIT";
+		skos:prefLabel "Unités statistiques"@fr, "Statistical units"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/UniteStatistique>;
+		skos:hasTopConcept <http://bauhaus/codes/uniteStatistique/P>, <http://bauhaus/codes/uniteStatistique/E>, <http://bauhaus/codes/uniteStatistique/L>;
+	.
+	
+	<http://bauhaus/codes/concept/UniteStatistique> rdf:type owl:Class;
+		rdfs:label "Unité statistique"@fr, "Statistical unit"@en;
+		rdfs:seeAlso <http://bauhaus/codes/unitesStatistiques>;
+	.
+	
+	<http://bauhaus/codes/uniteStatistique/P> rdf:type skos:Concept, <http://bauhaus/codes/concept/UniteStatistique>;
+		skos:notation "P";
+		skos:prefLabel "Entreprise"@fr, "Enterprise"@en;
+		skos:inScheme <http://bauhaus/codes/unitesStatistiques>;
+		skos:topConceptOf <http://bauhaus/codes/unitesStatistiques>;
+	.
+	
+	<http://bauhaus/codes/uniteStatistique/L> rdf:type skos:Concept, <http://bauhaus/codes/concept/UniteStatistique>;
+		skos:notation "L";
+		skos:prefLabel "Etablissement"@fr, "Locat unit (of an entreprise)"@en;
+		skos:inScheme <http://bauhaus/codes/unitesStatistiques>;
+		skos:topConceptOf <http://bauhaus/codes/unitesStatistiques>;
+	.
+	
+	<http://bauhaus/codes/uniteStatistique/E> rdf:type skos:Concept, <http://bauhaus/codes/concept/UniteStatistique>;
+		skos:notation "E";
+		skos:prefLabel "Unité légale"@fr, "Legal unit"@en;
+		skos:inScheme <http://bauhaus/codes/unitesStatistiques>;
+		skos:topConceptOf <http://bauhaus/codes/unitesStatistiques>;
+	.
+	
+	<http://bauhaus/codes/territoiresGeographiques> rdf:type skos:ConceptScheme;
+		skos:notation "CL_GEO";
+		skos:prefLabel "Zones géographiques"@fr, "Geographic Areas"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/TerritoireGeographique>;
+		skos:hasTopConcept <http://bauhaus/codes/territoireGeographique/F>;
+	.
+	
+	<http://bauhaus/codes/concept/TerritoireGeographique> rdf:type owl:Class;
+		rdfs:label "Zone géographique"@fr, "Geographic Area"@en;
+		rdfs:seeAlso <http://bauhaus/codes/territoiresGeographiques>;
+	.
+	
+	<http://bauhaus/codes/territoireGeographique/F> rdf:type skos:Concept, <http://bauhaus/codes/concept/TerritoireGeographique>;
+		skos:notation "F";
+		skos:prefLabel "France"@fr, "France"@en;
+		skos:inScheme <http://bauhaus/codes/territoiresGeographiques>;
+		skos:topConceptOf <http://bauhaus/codes/territoiresGeographiques>;
+	.
+	
+	<http://bauhaus/codes/typesTerritoiresGeographiques> rdf:type skos:ConceptScheme;
+		skos:notation "CL_TYPE_GEO";
+		skos:prefLabel "Types de territoire géographique"@fr, "Types of geographic area"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/PublicGenerique>;
+		insee:validationState "Unpublished" ;
+		rdfs:seeAlso <http://bauhaus/codes/concept/TypeTerritoireGeographique>;
+		skos:hasTopConcept <http://bauhaus/codes/typeTerritoireGeographique/COM>, <http://bauhaus/codes/typeTerritoireGeographique/DEP>, <http://bauhaus/codes/typeTerritoireGeographique/REG>;
+	.
+	
+	<http://bauhaus/codes/concept/TypeTerritoireGeographique> rdf:type owl:Class;
+		rdfs:label "Type de territoire géographique"@fr, "Type of geographic area"@en;
+		rdfs:seeAlso <http://bauhaus/codes/typesTerritoiresGeographiques>;
+	.
+	
+	<http://bauhaus/codes/typeTerritoireGeographique/COM> rdf:type skos:Concept, <http://bauhaus/codes/concept/TypeTerritoireGeographique>;
+		skos:notation "COM";
+		skos:prefLabel "Commune"@fr, "Township"@en;
+		skos:inScheme <http://bauhaus/codes/typesTerritoiresGeographiques>;
+		skos:topConceptOf <http://bauhaus/codes/typesTerritoiresGeographiques>;
+	.
+	
+	<http://bauhaus/codes/typeTerritoireGeographique/DEP> rdf:type skos:Concept, <http://bauhaus/codes/concept/TypeTerritoireGeographique>;
+		skos:notation "DEP";
+		skos:prefLabel "Département"@fr, "Commune"@en;
+		skos:inScheme <http://bauhaus/codes/typesTerritoiresGeographiques>;
+		skos:topConceptOf <http://bauhaus/codes/typesTerritoiresGeographiques>;
+	.
+	
+	<http://bauhaus/codes/typeTerritoireGeographique/REG> rdf:type skos:Concept, <http://bauhaus/codes/concept/TypeTerritoireGeographique>;
+		skos:notation "REG";
+		skos:prefLabel "Région"@fr, "Region"@en;
+		skos:inScheme <http://bauhaus/codes/typesTerritoiresGeographiques>;
+		skos:topConceptOf <http://bauhaus/codes/typesTerritoiresGeographiques>;
+	.
+}
+
+<http://rdf.insee.fr/graphes/structures> {
+	<http://bauhaus/structuresDeDonnees/structure/dsd1000> a qb:DataStructureDefinition;
+		dcterms:identifier "dsd1000";
+		rdfs:label "Structure pour jeuDeDonneesChampsObligatoires"@fr, "DSD for jeuDeDonneesChampsObligatoires"@en;
+		dc:creator "DG75-L201";
+		dc:contributor "DG75-L201";
+		dct:created "2020-01-01T00:00:00.000"^^xsd:dateTime;
+		dct:modified "2021-01-01T00:00:00.000"^^xsd:dateTime;
+		insee:disseminationStatus <http://id.insee.fr/codes/base/statutDiffusion/Prive>;
+		insee:validationState "Unpublished" . 
+}

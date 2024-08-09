@@ -78,15 +78,6 @@ public class ErrorCodes {
 	// CLASSIFICATIONS
 	public static final int CLASSIFICATION_VALIDATION_RIGHTS_DENIED = 1103 ;
 
-	// CODES LISTES
-	public static final int CODE_LIST_UNICITY = 1101;
-	public static final int CODE_LIST_AT_LEAST_ONE_CODE = 1102;
-	public static final int CODE_LIST_DELETE_ONLY_UNPUBLISHED = 1103;
-	public static final int CODE_LIST_DELETE_CODELIST_WITHOUT_PARTIAL = 1104;
-	public static final int CODE_LIST_UNKNOWN_ID = 1105;
-	public static final int STRUCTURE_DELETE_ONLY_UNPUBLISHED = 1103;
-
-
 	/*
 	 *  404 NOTFOUNDEXCEPTIONS
 	 */
@@ -134,6 +125,7 @@ public class ErrorCodes {
 	public static final int DISTRIBUTION_DELETE_ONLY_UNPUBLISHED = 1203;
 	public static final int DATASET_DELETE_ONLY_UNPUBLISHED = 1203 ;
 	public static final int DATASET_DELETE_ONLY_WITHOUT_DISTRIBUTION = 1204 ;
+	public static final int DATASET_DELETE_ONLY_WITHOUT_DERIVED_DATASET = 1205 ;
 
 
 	/*

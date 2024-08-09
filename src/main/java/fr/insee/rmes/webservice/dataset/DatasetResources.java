@@ -22,7 +22,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -35,7 +34,6 @@ public class DatasetResources {
     final DatasetService datasetService;
 
     public DatasetResources(DatasetService datasetService) {
-
         this.datasetService = datasetService;
     }
 
@@ -51,7 +49,7 @@ public class DatasetResources {
     @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public String getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
+    public Dataset getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.datasetService.getDatasetByID(id);
     }
 

@@ -23,9 +23,6 @@ WHERE {
     ?iri insee:disseminationStatus ?disseminationStatus .
     }
     OPTIONAL {
-    ?iri dc:contributor ?contributor .
-    }
-    OPTIONAL {
         ?iri dcterms:modified ?modified .
     }
 
@@ -43,8 +40,6 @@ WHERE {
     FILTER(lang(?labelLg1) = '${LG1}') .
     OPTIONAL {?iri skos:prefLabel ?labelLg2 .
     FILTER (lang(?labelLg2) = '${LG2}') } .
-
-    OPTIONAL { ?iri dc:contributor ?contributor } .
     OPTIONAL {?iri skos:definition ?descriptionLg1 .
     FILTER(lang(?descriptionLg1) = '${LG1}') } .
     OPTIONAL {?iri skos:definition ?descriptionLg2 .
