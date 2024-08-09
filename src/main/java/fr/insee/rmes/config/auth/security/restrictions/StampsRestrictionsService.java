@@ -19,6 +19,7 @@ public interface StampsRestrictionsService {
 
 	boolean isConceptsOrCollectionsOwner(List<IRI> uris) throws RmesException;
 
+
 	boolean canCreateConcept() throws RmesException;
 
 	boolean canModifyConcept(IRI uri) throws RmesException;

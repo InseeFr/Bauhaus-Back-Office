@@ -57,6 +57,13 @@ rbac:
           delete: ALL
           publish: ALL
           validate: ALL
+        dataset:
+          create: ALL
+          read: ALL
+          update: ALL
+          delete: ALL
+          publish: ALL
+          validate: ALL
     Utilisateur_RMESGNCS:
       concept:
         read: ALL
@@ -73,6 +80,8 @@ rbac:
       sims:
         read: ALL
       classification:
+        read: ALL
+      dataset:
         read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept:

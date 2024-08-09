@@ -19,7 +19,7 @@ public record User(String id, List<String> roles, Stamp stamp) {
         return roles.contains(role);
     }
 
-    public String getStamp(){
+    public String getStampAsString(){
         return stamp.stamp();
     }
 }

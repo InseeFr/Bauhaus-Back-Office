@@ -10,6 +10,8 @@ import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.external.services.rbac.StampChecker;
+import fr.insee.rmes.model.rbac.RBAC;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Objects.requireNonNull;
 
 @Component
-public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
+public class StampAuthorizationChecker extends StampsRestrictionServiceImpl implements StampChecker {
     private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
     public static final String CHECKING_AUTHORIZATION_ERROR_MESSAGE = "Error while checking authorization for user with stamp {} to modify or delete {}";
     public static final String ERROR_AUTHORIZATION = "Error while checking authorization for user with stamp {} to modify {}";
@@ -143,6 +145,22 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
         } else {
             return RdfUtils.structureComponentMeasureIRI(componentId);
         }
+    }
+
+    @Override
+    public boolean userStampIsAuthorizedForResource(RBAC.Module module, String id) {
+        return switch (module){
+            case CONCEPT -> false;
+            case COLLECTION -> false;
+            case FAMILY -> false;
+            case SERIE -> false;
+            case OPERATION -> false;
+            case INDICATOR -> false;
+            case SIMS -> false;
+            case CLASSIFICATION -> false;
+            case DATASET -> isDatasetManagerWithStamp(id, getStamp());
+            case null -> false;
+        };
     }
 
 }

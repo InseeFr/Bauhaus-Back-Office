@@ -53,7 +53,7 @@ class UserResourcesEnvProdTest {
     private JwtDecoder jwtDecoder;
 
     @Test
-    void getStamp() throws Exception {
+    void getStampAsString() throws Exception {
         String idep = "xxxxux";
         String timbre = "XX59-YYY";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));

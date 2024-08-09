@@ -21,6 +21,7 @@ import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ public class ClassificationUtils extends RdfService {
         Model model = new LinkedHashModel();
 
         this.validate(classification);
-        
         Resource graph = RdfUtils.codesListGraph(classification.getId());
         IRI classificationIri = RdfUtils.createIRI(uri);
 
