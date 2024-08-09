@@ -193,7 +193,7 @@ class OpenIDConnectSecurityContextTest {
 
         User user = oidcContext.buildUserFromToken(jwtDecoded);
         assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo(timbre);
+        assertThat(user.getStampAsString()).isEqualTo(timbre);
         assertThat(user.roles()).isEqualTo(roles);
     }
 
@@ -205,7 +205,7 @@ class OpenIDConnectSecurityContextTest {
 
         User user = oidcContext.buildUserFromToken(jwtDecoded);
         assertThat(user.id()).isEqualTo(idep);
-        assertThat(user.getStamp()).isEqualTo(TIMBRE_ANONYME);
+        assertThat(user.getStampAsString()).isEqualTo(TIMBRE_ANONYME);
         assertThat(user.roles()).isEqualTo(roles);
         assertThat(logOutputStream.toString().trim()).hasToString(String.format(LOG_INFO_DEFAULT_STAMP.replace("{}", "%s"), idep));
         logOutputStream.reset();

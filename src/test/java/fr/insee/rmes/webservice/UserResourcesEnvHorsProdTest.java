@@ -57,7 +57,7 @@ class UserResourcesEnvHorsProdTest {
     private static final String FAKE_STAMP_ANSWER = "{\"stamp\": \"fakeStampForDvAndQf\"}";
 
     @Test
-    void getStamp_authent() throws Exception {
+    void getStamp_AsString_authent() throws Exception {
         String idep = "xxxxux";
         String timbre = "XX59-YYY";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
@@ -69,7 +69,7 @@ class UserResourcesEnvHorsProdTest {
     }
 
     @Test
-    void getStamp_anonymous() throws Exception {
+    void getStamp_AsString_anonymous() throws Exception {
         mvc.perform(get("/users/stamp")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

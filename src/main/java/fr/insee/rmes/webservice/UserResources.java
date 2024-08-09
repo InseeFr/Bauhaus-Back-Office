@@ -1,8 +1,8 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
 import fr.insee.rmes.external.services.rbac.ApplicationAccessPrivileges;
@@ -23,6 +23,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
 
 /**
  * WebService class for resources of Concepts
@@ -75,8 +77,9 @@ public class UserResources {
             }
     )
     public ApplicationAccessPrivileges getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
-        User user = this.userDecoder.fromPrincipal(principal).get();
-        return rbacService.computeRbac(user.roles());
+        return this.userDecoder.fromPrincipal(principal)
+                .map(user-> rbacService.computeRbac(user.roles().stream().filter(Objects::nonNull).map(RBACConfiguration.RoleName::new).toList()).applicationAccessPrivileges())
+                .orElse(ApplicationAccessPrivileges.NO_PRIVILEGE);
     }
 
     /**
