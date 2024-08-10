@@ -2,6 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifier;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.Config;
@@ -44,12 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=structures"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
+@Import( ConfigurationForTestWithAuth.class)
 class TestStructuresResourcesEnvProd {
     @Autowired
     private MockMvc mvc;
@@ -63,6 +59,8 @@ class TestStructuresResourcesEnvProd {
     protected OperationsDocumentationsService documentationsService;
     @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
+    @MockBean
+    StampsRestrictionsVerifier stampsRestrictionsVerifier;
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 

@@ -1,33 +1,25 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifier;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.AuthorizeMethodDecider;
-import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.eclipse.rdf4j.model.IRI;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static fr.insee.rmes.utils.StringUtils.urisAsString;
 
 
 @Service
@@ -41,16 +33,18 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	
 	protected final RepositoryGestion repoGestion;
 	private final AuthorizeMethodDecider authorizeMethodDecider;
-	private final UserProvider userProvider;
+    private final UserProvider userProvider;
+    private final StampsRestrictionsVerifier stampsRestrictionsVerifier;
 
 	private static final Logger logger = LoggerFactory.getLogger(StampsRestrictionServiceImpl.class);
 
 	@Autowired
-	public StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) {
+	public StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider, StampsRestrictionsVerifier stampsRestrictionsVerifier) {
 		this.repoGestion = repoGestion;
 		this.authorizeMethodDecider = authorizeMethodDecider;
-		this.userProvider = userProvider;
-	}
+        this.userProvider = userProvider;
+        this.stampsRestrictionsVerifier = stampsRestrictionsVerifier;
+    }
 
 	@Override
 	public boolean isConceptOrCollectionOwner(IRI uri) throws RmesException {
@@ -70,7 +64,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+		return stampsRestrictionsVerifier.isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
@@ -81,45 +75,19 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return isOwnerForModule(getStampAsString(), List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
 	private boolean isConceptManager(IRI uri) throws RmesException {
-		return isManagerForModule(getStampAsString(), uri, ConceptsQueries::getManager, Constants.MANAGER);
+		return stampsRestrictionsVerifier.isManagerForModule(getStampAsString(), uri, ConceptsQueries::getManager, Constants.MANAGER);
 	}
-	protected boolean isManagerForModule(String stamp, IRI uri, QueryGenerator queryGenerator, String stampKey) throws RmesException {
-		logger.trace("Check management access for {} with stamp {}",uri, stampKey);
-		return checkResponsabilityForModule(stamp, List.of(uri), queryGenerator, stampKey, Stream::anyMatch);
-	}
+
 
 
     private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
-		return checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
+		return stampsRestrictionsVerifier.checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
 	}
 
-	private boolean checkResponsabilityForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey, BiPredicate<Stream<Object>, Predicate<Object>> predicateMatcher) throws RmesException {
-		JSONArray owners = repoGestion.getResponseAsArray(queryGenerator.generate(urisAsString(uris)));
-		return StringUtils.hasLength(stamp) &&
-				predicateMatcher.test(
-						owners.toList().stream()
-								.map(o -> findStamp(o, stampKey)),
-						stamp::equals // apply predicate `stamp::equals` to the stream of stamps returned at the previous line
-				);
-	}
 
-	protected String getStampAsString() {
+	private String getStampAsString() {
 		return getUser().getStampAsString();
-	}
-
-    protected Stamp getStamp(){
-        return getUser().stamp();
-    }
-
-	private Object findStamp(Object o, String stampKey) {
-		if (o instanceof JSONObject jsonObject) {
-			return jsonObject.get(stampKey);
-		}
-		if (o instanceof Map<?, ?> map) {
-			return map.get(stampKey);
-		}
-		return null;
 	}
 
 
@@ -223,8 +191,4 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return authorizeMethodDecider.isAdmin();
 	}
 
-
-	protected interface QueryGenerator {
-		String generate(String query) throws RmesException;
-	}
 }

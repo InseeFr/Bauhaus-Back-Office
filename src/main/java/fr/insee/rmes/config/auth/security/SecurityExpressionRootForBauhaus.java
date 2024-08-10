@@ -1,13 +1,14 @@
 package fr.insee.rmes.config.auth.security;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
-import fr.insee.rmes.external.services.rbac.CheckAccessPrivilege;
+import fr.insee.rmes.external.services.rbac.CheckAccessPrivilegeForUser;
 import fr.insee.rmes.external.services.rbac.RBACService;
+import fr.insee.rmes.external.services.rbac.StampChecker;
 import fr.insee.rmes.model.rbac.RBAC;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -19,7 +20,8 @@ import org.springframework.security.access.expression.method.MethodSecurityExpre
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 
 import static java.util.Objects.requireNonNull;
@@ -29,22 +31,22 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private static final Logger logger = LoggerFactory.getLogger(SecurityExpressionRootForBauhaus.class);
 
     private final MethodSecurityExpressionOperations methodSecurityExpressionOperations;
-    private final StampAuthorizationChecker stampAuthorizationChecker;
-    private final StampFromPrincipal stampFromPrincipal;
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
     private final RBACService rbacService;
+    private final UserDecoder userDecoder;
+    private final StampChecker stampChecker;
 
 
-    public SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, RBACService rbacService) {
+    public SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, StampChecker stampChecker) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
-        this.stampFromPrincipal = stampFromPrincipal;
-        this.stampAuthorizationChecker = stampAuthorizationChecker;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
         this.rbacService = rbacService;
+        this.userDecoder = userDecoder;
+        this.stampChecker = stampChecker;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, StampAuthorizationChecker stampAuthorizationChecker, StampFromPrincipal stampFromPrincipal, RBACService rbacService) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(stampAuthorizationChecker), requireNonNull(stampFromPrincipal), requireNonNull(rbacService));
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, StampChecker stampChecker) {
+        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(rbacService), requireNonNull(userDecoder),  requireNonNull(stampChecker));
     }
 
     @Override
@@ -212,63 +214,76 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
 
     private boolean isManagerForSerieId(String seriesId) {
-        return userHasStampWichManageResource(seriesId, this.stampAuthorizationChecker::isSeriesManagerWithStamp);
+        return userHasStampWichManageResource(seriesId, this.stampChecker::isSeriesManagerWithStamp);
     }
 
     private boolean isManagerForCodesListId(String codesListId) {
-        return userHasStampWichManageResource(codesListId, this.stampAuthorizationChecker::isCodesListManagerWithStamp);
+        return userHasStampWichManageResource(codesListId, this.stampChecker::isCodesListManagerWithStamp);
     }
 
     private boolean isManagerForDatasetId(String datasetId) {
-        return userHasStampWichManageResource(datasetId, this.stampAuthorizationChecker::isDatasetManagerWithStamp);
+        return userHasStampWichManageResource(datasetId, this.stampChecker::isDatasetManagerWithStamp);
     }
 
     private boolean isManagerForDistributionId(String distributionId) {
-        return userHasStampWichManageResource(distributionId, this.stampAuthorizationChecker::isDistributionManagerWithStamp);
+        return userHasStampWichManageResource(distributionId, this.stampChecker::isDistributionManagerWithStamp);
     }
 
     private boolean isManagerForStructureId(String structureId) {
-        return userHasStampWichManageResource(structureId, this.stampAuthorizationChecker::isStructureManagerWithStamp);
+        return userHasStampWichManageResource(structureId, this.stampChecker::isStructureManagerWithStamp);
     }
 
     private boolean isManagerForComponentId(String componentId) {
-        return userHasStampWichManageResource(componentId, this.stampAuthorizationChecker::isComponentManagerWithStamp);
+        return userHasStampWichManageResource(componentId, this.stampChecker::isComponentManagerWithStamp);
     }
 
     private Optional<Stamp> getStamp() {
-        return this.stampFromPrincipal.findStamp(methodSecurityExpressionRoot.getPrincipal());
+        return getUser().map(User::stamp);
+    }
+
+    private Optional<User> getUser() {
+        Object principal = methodSecurityExpressionRoot.getPrincipal();
+        try {
+            return userDecoder.fromPrincipal(principal);
+        } catch (RmesException e) {
+            logger.error("Unable to convert principal " + principal + " to User", e);
+            return Optional.empty();
+        }
     }
 
 
-    public boolean canUpdateSerie(String serieId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.SERIE).withId(serieId);
+    public boolean canUpdateSerie(String serieId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.SERIE).withId(serieId);
     }
 
-    public boolean canDeleteDataset(String datasetId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.DELETE).on(RBAC.Module.DATASET).withId(datasetId);
+    public boolean canDeleteDataset(String datasetId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.DELETE).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    public boolean canUpdateDataset(String datasetId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.DATASET).withId(datasetId);
+    public boolean canUpdateDataset(String datasetId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    public boolean canCreateDataset(String datasetId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.CREATE).on(RBAC.Module.DATASET).withId(datasetId);
+    public boolean canCreateDataset(String datasetId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.CREATE).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    public boolean canPublishDataset(String datasetId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.PUBLISH).on(RBAC.Module.DATASET).withId(datasetId);
+    public boolean canPublishDataset(String datasetId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.PUBLISH).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    public boolean canReadDataset(String datasetId) throws RmesException {
-        return getAccessPrivileges().isGranted(RBAC.Privilege.READ).on(RBAC.Module.DATASET).withId(datasetId);
+    public boolean canReadDataset(String datasetId) {
+        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.READ).on(RBAC.Module.DATASET).withId(datasetId);
     }
 
-    private CheckAccessPrivilege getAccessPrivileges() {
-        return rbacService.computeRbac(this.getAuthentication().getAuthorities().stream()
+    private CheckAccessPrivilegeForUser getAccessPrivilegesForUser() {
+        return new CheckAccessPrivilegeForUser(rbacService.computeRbac(this.getAuthentication().getAuthorities().stream()
                 .filter(Objects::nonNull)
                 .map(SecurityExpressionRootForBauhaus::toRoleName)
                 .toList()
+        ),
+                getUser().orElse(User.EMPTY_USER),
+                this.stampChecker
         );
     }
 

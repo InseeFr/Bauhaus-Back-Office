@@ -11,13 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "spring.config.additional-location=classpath:rbac.yml")
 @EnableConfigurationProperties(RBACConfiguration.class)
-public class RBACConfigurationTest {
+class RBACConfigurationTest {
 
     @Autowired
     private RBACConfiguration rbacConfiguration;
 
     @Test
     void testReadRbacConfig() {
-        assertThat(rbacConfiguration.allModulesAccessPrivileges()).isNotNull();
+        assertThat(rbacConfiguration.toMapOfApplicationAccessPrivilegesByRoles()).isNotNull();
     }
 }

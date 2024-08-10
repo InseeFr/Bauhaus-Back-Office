@@ -3,8 +3,9 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -27,14 +28,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 @Component
-public class StructureComponentUtils extends RdfService {
+public record StructureComponentUtils(Config config, RepositoryGestion repoGestion, ComponentPublication componentPublication, @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}") String baseInternalUri) {
     static final Logger logger = LoggerFactory.getLogger(StructureComponentUtils.class);
 
     private static final String MAX_LENGTH = "maxLength";
@@ -44,8 +45,6 @@ public class StructureComponentUtils extends RdfService {
     public static final String VALIDATED = "Validated";
     public static final String MODIFIED = "Modified";
 
-    @Autowired
-    ComponentPublication componentPublication;
 
     public JSONObject formatComponent(String id, JSONObject response) throws RmesException {
         response.put(Constants.ID, id);
@@ -128,7 +127,7 @@ public class StructureComponentUtils extends RdfService {
         return createComponent(component, id, jsonComponent);
     }
 
-    public String createComponent(MutualizedComponent component, String id, JSONObject jsonComponent) throws RmesException {
+    private String createComponent(MutualizedComponent component, String id, JSONObject jsonComponent) throws RmesException {
         validateComponent(component);
 
         component.setId(id);
@@ -383,4 +382,24 @@ public class StructureComponentUtils extends RdfService {
 	private boolean jsonObjecthasPropertyNullOrEmpty(JSONObject component, String property) {
 		return component.isNull(property) || "".equals(component.getString(property));
 	}
+
+    public IRI findComponentIRI(String componentId) throws RmesException {
+        JSONObject type = repoGestion.getResponseAsObject(StructureQueries.getComponentType(componentId));
+        String componentType = type.getString("type");
+        if (componentType.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+            return RdfUtils.structureComponentAttributeIRI(componentId);
+        } else if (componentType.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+            return RdfUtils.structureComponentDimensionIRI(componentId);
+        } else {
+            return RdfUtils.structureComponentMeasureIRI(componentId);
+        }
+    }
+
+
+    public IRI findCodesListIRI(String codesListId) throws RmesException {
+        JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListIRIByNotation(codesListId, baseInternalUri));
+        String uriString = codeList.getString("iri");
+        return RdfUtils.createIRI(uriString);
+    }
+
 }

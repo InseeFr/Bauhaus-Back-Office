@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
+import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifierImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.config.auth.UserProvider;
@@ -10,6 +11,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -32,6 +34,7 @@ class StampsRestrictionServiceImplTest {
 
     @Mock
     private RepositoryGestion repoGestion;
+    private StampsRestrictionsVerifierImpl stampsRestrictionsVerifier;
     @Mock
     private UserProvider userProvider;
     private final IRI iriToCheck = SimpleValueFactory.getInstance().createIRI("http://bauhaus/operations/serie/s2132");
@@ -52,6 +55,11 @@ class StampsRestrictionServiceImplTest {
         OpSeriesQueries.setConfig(new ConfigStub());
     }
 
+    @BeforeEach
+    void injectRepositoryGestion() {
+        stampsRestrictionsVerifier = new StampsRestrictionsVerifierImpl(null, repoGestion, null);
+    }
+
     @Test
     void isSeriesManager_OK_whenStampIsManagerWithMultipleCreators() throws RmesException {
         var owners=new JSONArray("[" +
@@ -60,7 +68,7 @@ class StampsRestrictionServiceImplTest {
                 "]");
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
         when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
-        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider, stampsRestrictionsVerifier);
         assertTrue(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
     }
 
@@ -71,7 +79,7 @@ class StampsRestrictionServiceImplTest {
                 "]");
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
         when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
-        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider, stampsRestrictionsVerifier);
         assertTrue(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
     }
 
@@ -82,7 +90,7 @@ class StampsRestrictionServiceImplTest {
                 "]");
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
         when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
-        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider, stampsRestrictionsVerifier);
         assertFalse(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
     }
 
@@ -94,7 +102,7 @@ class StampsRestrictionServiceImplTest {
                 "]");
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(owners);
         when(userProvider.findUserDefaultToEmpty()).thenReturn(new User("", List.of(), timbre));
-        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider);
+        var stampsRestrictionServiceImpl = new StampsRestrictionServiceImpl(repoGestion, null, userProvider, stampsRestrictionsVerifier);
         assertFalse(stampsRestrictionServiceImpl.isSeriesManager(this.iriToCheck));
     }
 }

@@ -1,23 +1,22 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.model.rbac.RBAC;
-import fr.insee.rmes.stubs.StampAuthorizationCheckerStub;
-import org.junit.jupiter.api.Test;
+import fr.insee.rmes.stubs.StampRestritionVerifierStub;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import static fr.insee.rmes.stubs.StampAuthorizationCheckerStub.DATASET_STUB_ID;
+import static fr.insee.rmes.stubs.StampRestritionVerifierStub.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StampAuthorizationCheckerTest {
 
-    private final StampAuthorizationChecker stampAuthorizationChecker=new StampAuthorizationCheckerStub();
-
-    @Test
-    void userStampIsAuthorizedForResource() {
-
+    private final StampAuthorizationChecker stampAuthorizationChecker=new StampAuthorizationChecker(new StampRestritionVerifierStub());
+    @ParameterizedTest
+    @ValueSource(strings = {SERIES_STUB_ID, DATASET_STUB_ID, DISTRIBUTION_STUB_ID, COMPONENT_STUB_ID, STRUCTURE_STUB_ID, CODES_LISTES_STUB_ID})
+    void userStampIsAuthorizedForResource(String id) {
         //Given
         RBAC.Module module = RBAC.Module.DATASET;
-        String id = DATASET_STUB_ID;
         //When then
-        assertThat(this.stampAuthorizationChecker.userStampIsAuthorizedForResource(module, id)).isTrue();
+        assertThat(this.stampAuthorizationChecker.userStampIsAuthorizedForResource(module, id, null)).isTrue();
     }
 }

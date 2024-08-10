@@ -18,7 +18,7 @@ public record ApplicationAccessPrivileges(EnumMap<RBAC.Module , ModuleAccessPriv
     public static ApplicationAccessPrivileges of(Map<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>> privilegesByModules) {
         return new ApplicationAccessPrivileges(new EnumMap<>(privilegesByModules.entrySet().stream()
                 .collect(
-                        Collectors.toMap(Map.Entry::getKey,
+                        Collectors.toMap(Map.Entry<RBAC.Module, Map<RBAC.Privilege, RBAC.Strategy>>::getKey,
                                 entry -> new ModuleAccessPrivileges(entry.getValue()),
                                 ModuleAccessPrivileges::merge
                         )

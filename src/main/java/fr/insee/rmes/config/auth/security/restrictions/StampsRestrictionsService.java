@@ -81,4 +81,9 @@ public interface StampsRestrictionsService {
 	boolean canValidateClassification(IRI uri) throws RmesException;
 
 
+    boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException;
+
+    interface QueryGenerator {
+        String generate(String query) throws RmesException;
+    }
 }

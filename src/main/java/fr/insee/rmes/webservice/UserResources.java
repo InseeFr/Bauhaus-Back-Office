@@ -78,13 +78,11 @@ public class UserResources {
     )
     public ApplicationAccessPrivileges getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
         return this.userDecoder.fromPrincipal(principal)
-                .map(user-> rbacService.computeRbac(user.roles().stream().filter(Objects::nonNull).map(RBACConfiguration.RoleName::new).toList()).applicationAccessPrivileges())
+                .map(user-> rbacService.computeRbac(user.roles().stream().filter(Objects::nonNull).map(RBACConfiguration.RoleName::new).toList()))
                 .orElse(ApplicationAccessPrivileges.NO_PRIVILEGE);
     }
 
-    /**
-     * @deprecated
-     */
+
     @GetMapping(value = "/stamp",
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStamp", summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})

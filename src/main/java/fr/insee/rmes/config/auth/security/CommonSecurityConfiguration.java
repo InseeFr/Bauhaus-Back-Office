@@ -1,7 +1,5 @@
 package fr.insee.rmes.config.auth.security;
 
-import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.exceptions.RmesException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,14 +44,4 @@ public class CommonSecurityConfiguration {
         return source;
     }
 
-    @Bean
-    public StampFromPrincipal stampFromPrincipal(UserDecoder userDecoder){
-        return principal -> {
-            try {
-                return userDecoder.fromPrincipal(principal).map(User::stamp);
-            } catch (RmesException e) {
-                return Optional.empty();
-            }
-        };
-    }
 }

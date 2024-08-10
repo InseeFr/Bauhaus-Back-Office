@@ -133,3 +133,11 @@ rbac:
         update: STAMP
         publish: STAMP
         validate: STAMP
+    Gestionnaire_jeu_donnees_RMESGNCS:
+      dataset:
+        delete: STAMP
+        update: STAMP
+        validate: STAMP
+        publish: STAMP
+        create: ALL
+        read: STAMP

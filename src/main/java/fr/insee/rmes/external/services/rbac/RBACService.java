@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface RBACService {
 
-    CheckAccessPrivilege computeRbac(List<RBACConfiguration.RoleName> roles);
+    ApplicationAccessPrivileges computeRbac(List<RBACConfiguration.RoleName> roles);
 }
