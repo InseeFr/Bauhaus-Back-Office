@@ -1,7 +1,7 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifier;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifier;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.auth.UserProvider;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -34,16 +34,16 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	protected final RepositoryGestion repoGestion;
 	private final AuthorizeMethodDecider authorizeMethodDecider;
     private final UserProvider userProvider;
-    private final StampsRestrictionsVerifier stampsRestrictionsVerifier;
+    private final ResourceOwnershipByStampVerifier resourceOwnershipByStampVerifier;
 
 	private static final Logger logger = LoggerFactory.getLogger(StampsRestrictionServiceImpl.class);
 
 	@Autowired
-	public StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider, StampsRestrictionsVerifier stampsRestrictionsVerifier) {
+	public StampsRestrictionServiceImpl(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider, ResourceOwnershipByStampVerifier resourceOwnershipByStampVerifier) {
 		this.repoGestion = repoGestion;
 		this.authorizeMethodDecider = authorizeMethodDecider;
         this.userProvider = userProvider;
-        this.stampsRestrictionsVerifier = stampsRestrictionsVerifier;
+        this.resourceOwnershipByStampVerifier = resourceOwnershipByStampVerifier;
     }
 
 	@Override
@@ -64,7 +64,7 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 	}
 
 	public boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException {
-		return stampsRestrictionsVerifier.isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
+		return resourceOwnershipByStampVerifier.isManagerForModule(stamp, iri, OpSeriesQueries::getCreatorsBySeriesUri, Constants.CREATORS);
 	}
 
 	protected boolean isSeriesManager(IRI iri) throws RmesException {
@@ -75,14 +75,14 @@ public class StampsRestrictionServiceImpl implements StampsRestrictionsService {
 		return isOwnerForModule(getStampAsString(), List.of(iri), IndicatorsQueries::getCreatorsByIndicatorUri, Constants.CREATORS);
 	}
 	private boolean isConceptManager(IRI uri) throws RmesException {
-		return stampsRestrictionsVerifier.isManagerForModule(getStampAsString(), uri, ConceptsQueries::getManager, Constants.MANAGER);
+		return resourceOwnershipByStampVerifier.isManagerForModule(getStampAsString(), uri, ConceptsQueries::getManager, Constants.MANAGER);
 	}
 
 
 
     private boolean isOwnerForModule(String stamp, List<IRI> uris, QueryGenerator queryGenerator, String stampKey) throws RmesException {
 		logger.trace("Check ownership for {} with stamp {}",uris, stampKey);
-		return stampsRestrictionsVerifier.checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
+		return resourceOwnershipByStampVerifier.checkResponsabilityForModule(stamp, uris, queryGenerator, stampKey, Stream::allMatch);
 	}
 
 

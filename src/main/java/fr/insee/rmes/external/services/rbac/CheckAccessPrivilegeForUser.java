@@ -1,36 +1,38 @@
 package fr.insee.rmes.external.services.rbac;
 
 import fr.insee.rmes.config.auth.user.User;
-import fr.insee.rmes.model.rbac.RBAC;
+import fr.insee.rmes.model.rbac.ApplicationAccessPrivileges;
+import fr.insee.rmes.model.rbac.Module;
+import fr.insee.rmes.model.rbac.Privilege;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicationAccessPrivileges, User user, StampChecker stampChecker, AtomicReference<RBAC.Privilege> privilege, AtomicReference<RBAC.Module> module) {
+public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicationAccessPrivileges, User user, AuthorizationChecker authorizationChecker, AtomicReference<Privilege> privilege, AtomicReference<Module> module) {
 
     private static final Logger log = LoggerFactory.getLogger(CheckAccessPrivilegeForUser.class);
 
-    public CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicationAccessPrivileges, User user, StampChecker stampChecker) {
-        this(applicationAccessPrivileges, user, stampChecker, new AtomicReference<>(), new AtomicReference<>());
+    public CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicationAccessPrivileges, User user, AuthorizationChecker authorizationChecker) {
+        this(applicationAccessPrivileges, user, authorizationChecker, new AtomicReference<>(), new AtomicReference<>());
     }
 
-    public CheckAccessPrivilegeForUser isGranted(RBAC.Privilege privilege) {
+    public CheckAccessPrivilegeForUser isGranted(Privilege privilege) {
         withPrivilege(privilege);
         return this;
     }
 
-    private void withPrivilege(RBAC.Privilege privilege) {
+    private void withPrivilege(Privilege privilege) {
         this.privilege.set(privilege);
     }
 
-    public CheckAccessPrivilegeForUser on(RBAC.Module module) {
+    public CheckAccessPrivilegeForUser on(Module module) {
         withModule(module);
         return this;
     }
 
-    private void withModule(RBAC.Module module) {
+    private void withModule(Module module) {
         this.module.set(module);
     }
 
@@ -54,6 +56,6 @@ public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicatio
     }
 
     private boolean checkStampFor(String id) {
-        return id != null && stampChecker.userStampIsAuthorizedForResource(module.get(), id, user.stamp());
+        return id != null && authorizationChecker.userStampIsAuthorizedForResource(module.get(), id, user.stamp());
     }
 }

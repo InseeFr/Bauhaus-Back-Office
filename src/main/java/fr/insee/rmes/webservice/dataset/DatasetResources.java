@@ -86,6 +86,7 @@ public class DatasetResources {
         return this.datasetService.publishDataset(datasetId);
     }
 
+    @PreAuthorize("canReadAllDataset()")
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "getArchivageUnits", summary = "Get all archivage units")
     public String getArchivageUnits() throws RmesException {

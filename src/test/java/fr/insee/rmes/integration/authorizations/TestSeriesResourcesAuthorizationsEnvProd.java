@@ -2,7 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -55,7 +55,7 @@ class TestSeriesResourcesAuthorizationsEnvProd {
     @MockBean
     private JwtDecoder jwtDecoder;
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
     private final String idep = "xxxxux";
     private final String timbre = "XX59-YYY";
 

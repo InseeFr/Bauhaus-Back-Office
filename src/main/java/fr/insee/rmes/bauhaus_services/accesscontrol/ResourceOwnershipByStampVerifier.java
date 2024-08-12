@@ -10,7 +10,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public interface StampsRestrictionsVerifier {
+public interface ResourceOwnershipByStampVerifier {
     boolean isSeriesManagerWithStamp(String seriesId, Stamp stamp);
 
     boolean isDatasetManagerWithStamp(String datasetId, Stamp stamp);

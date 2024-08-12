@@ -1,6 +1,6 @@
 package fr.insee.rmes.webservice;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
 import fr.insee.rmes.webservice.operations.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 class UnactiveModulesTest {
 
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
 
     @Autowired(required = false)
     ClassificationsResources classificationsResources;

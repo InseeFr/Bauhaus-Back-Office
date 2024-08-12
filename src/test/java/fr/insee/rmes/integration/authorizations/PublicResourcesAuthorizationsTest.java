@@ -1,6 +1,6 @@
 package fr.insee.rmes.integration.authorizations;
 
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -46,7 +46,7 @@ class PublicResourcesAuthorizationsTest {
     @Autowired
     private MockMvc mvc;
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
     @MockBean
     private StampsService stampsService;
 

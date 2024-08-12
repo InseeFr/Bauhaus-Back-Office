@@ -30,9 +30,9 @@ import static fr.insee.rmes.utils.StringUtils.urisAsString;
 import static java.util.Objects.requireNonNull;
 
 @Component
-public record StampsRestrictionsVerifierImpl(IRIUtils iriUtils, RepositoryGestion repoGestion, StructureComponentUtils structureComponentUtils) implements StampsRestrictionsVerifier {
+public record ResourceOwnershipByStampVerifierImpl(IRIUtils iriUtils, RepositoryGestion repoGestion, StructureComponentUtils structureComponentUtils) implements ResourceOwnershipByStampVerifier {
 
-    private static final Logger logger = LoggerFactory.getLogger(StampsRestrictionsVerifierImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceOwnershipByStampVerifierImpl.class);
 
     @Override
     public boolean isSeriesManagerWithStamp(String seriesId, Stamp stamp) {

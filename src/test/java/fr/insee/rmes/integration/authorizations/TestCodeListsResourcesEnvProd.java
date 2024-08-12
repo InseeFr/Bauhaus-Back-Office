@@ -2,8 +2,8 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifier;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifier;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.ValidationStatus;
@@ -51,9 +51,9 @@ class TestCodeListsResourcesEnvProd {
     @MockBean
     protected OperationsDocumentationsService documentationsService;
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
     @MockBean
-    StampsRestrictionsVerifier stampsRestrictionsVerifier;
+    ResourceOwnershipByStampVerifier resourceOwnershipByStampVerifier;
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";

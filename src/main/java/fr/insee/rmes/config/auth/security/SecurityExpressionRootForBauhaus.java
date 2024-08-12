@@ -7,9 +7,10 @@ import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
 import fr.insee.rmes.external.services.rbac.CheckAccessPrivilegeForUser;
+import fr.insee.rmes.external.services.rbac.AuthorizationChecker;
 import fr.insee.rmes.external.services.rbac.RBACService;
-import fr.insee.rmes.external.services.rbac.StampChecker;
-import fr.insee.rmes.model.rbac.RBAC;
+import fr.insee.rmes.model.rbac.Module;
+import fr.insee.rmes.model.rbac.Privilege;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,19 +35,19 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private final SecurityExpressionRoot methodSecurityExpressionRoot;
     private final RBACService rbacService;
     private final UserDecoder userDecoder;
-    private final StampChecker stampChecker;
+    private final AuthorizationChecker authorizationChecker;
 
 
-    public SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, StampChecker stampChecker) {
+    public SecurityExpressionRootForBauhaus(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, AuthorizationChecker authorizationChecker) {
         this.methodSecurityExpressionRoot = (SecurityExpressionRoot) methodSecurityExpressionOperations;
         this.methodSecurityExpressionOperations = methodSecurityExpressionOperations;
         this.rbacService = rbacService;
         this.userDecoder = userDecoder;
-        this.stampChecker = stampChecker;
+        this.authorizationChecker = authorizationChecker;
     }
 
-    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, StampChecker stampChecker) {
-        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(rbacService), requireNonNull(userDecoder),  requireNonNull(stampChecker));
+    public static MethodSecurityExpressionOperations enrich(MethodSecurityExpressionOperations methodSecurityExpressionOperations, RBACService rbacService, UserDecoder userDecoder, AuthorizationChecker authorizationChecker) {
+        return new SecurityExpressionRootForBauhaus(requireNonNull(methodSecurityExpressionOperations), requireNonNull(rbacService), requireNonNull(userDecoder),  requireNonNull(authorizationChecker));
     }
 
     @Override
@@ -214,27 +215,27 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
 
     private boolean isManagerForSerieId(String seriesId) {
-        return userHasStampWichManageResource(seriesId, this.stampChecker::isSeriesManagerWithStamp);
+        return userHasStampWichManageResource(seriesId, this.authorizationChecker::isSeriesManagerWithStamp);
     }
 
     private boolean isManagerForCodesListId(String codesListId) {
-        return userHasStampWichManageResource(codesListId, this.stampChecker::isCodesListManagerWithStamp);
+        return userHasStampWichManageResource(codesListId, this.authorizationChecker::isCodesListManagerWithStamp);
     }
 
     private boolean isManagerForDatasetId(String datasetId) {
-        return userHasStampWichManageResource(datasetId, this.stampChecker::isDatasetManagerWithStamp);
+        return userHasStampWichManageResource(datasetId, this.authorizationChecker::isDatasetManagerWithStamp);
     }
 
     private boolean isManagerForDistributionId(String distributionId) {
-        return userHasStampWichManageResource(distributionId, this.stampChecker::isDistributionManagerWithStamp);
+        return userHasStampWichManageResource(distributionId, this.authorizationChecker::isDistributionManagerWithStamp);
     }
 
     private boolean isManagerForStructureId(String structureId) {
-        return userHasStampWichManageResource(structureId, this.stampChecker::isStructureManagerWithStamp);
+        return userHasStampWichManageResource(structureId, this.authorizationChecker::isStructureManagerWithStamp);
     }
 
     private boolean isManagerForComponentId(String componentId) {
-        return userHasStampWichManageResource(componentId, this.stampChecker::isComponentManagerWithStamp);
+        return userHasStampWichManageResource(componentId, this.authorizationChecker::isComponentManagerWithStamp);
     }
 
     private Optional<Stamp> getStamp() {
@@ -253,27 +254,31 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 
 
     public boolean canUpdateSerie(String serieId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.SERIE).withId(serieId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.UPDATE).on(Module.SERIE).withId(serieId);
     }
 
     public boolean canDeleteDataset(String datasetId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.DELETE).on(RBAC.Module.DATASET).withId(datasetId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.DELETE).on(Module.DATASET).withId(datasetId);
     }
 
     public boolean canUpdateDataset(String datasetId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.UPDATE).on(RBAC.Module.DATASET).withId(datasetId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.UPDATE).on(Module.DATASET).withId(datasetId);
     }
 
     public boolean canCreateDataset(String datasetId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.CREATE).on(RBAC.Module.DATASET).withId(datasetId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.CREATE).on(Module.DATASET).withId(datasetId);
     }
 
     public boolean canPublishDataset(String datasetId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.PUBLISH).on(RBAC.Module.DATASET).withId(datasetId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.PUBLISH).on(Module.DATASET).withId(datasetId);
     }
 
     public boolean canReadDataset(String datasetId) {
-        return getAccessPrivilegesForUser().isGranted(RBAC.Privilege.READ).on(RBAC.Module.DATASET).withId(datasetId);
+        return getAccessPrivilegesForUser().isGranted(Privilege.READ).on(Module.DATASET).withId(datasetId);
+    }
+
+    public boolean canReadAllDataset(){
+        return getAccessPrivilegesForUser().isGranted(Privilege.READ).on(Module.DATASET).withId(null);
     }
 
     private CheckAccessPrivilegeForUser getAccessPrivilegesForUser() {
@@ -283,7 +288,7 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
                 .toList()
         ),
                 getUser().orElse(User.EMPTY_USER),
-                this.stampChecker
+                this.authorizationChecker
         );
     }
 

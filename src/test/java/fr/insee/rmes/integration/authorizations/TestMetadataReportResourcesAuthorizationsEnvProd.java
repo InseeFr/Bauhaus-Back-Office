@@ -2,9 +2,7 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.bauhaus_services.datasets.DatasetQueries;
-import fr.insee.rmes.bauhaus_services.rdf_utils.FreeMarkerUtils;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
@@ -13,8 +11,8 @@ import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MSD;
+import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.operations.MetadataReportResources;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -30,19 +28,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import fr.insee.rmes.utils.XMLUtils;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = MetadataReportResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
@@ -72,7 +66,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private OperationsService operationsService;
 
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
 
     @MockBean
     private JwtDecoder jwtDecoder;
@@ -81,7 +75,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private final String timbre = "XX59-YYY";
 
     @Test
-    public void testGetMSDJson() throws Exception {
+    void testGetMSDJson() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -97,7 +91,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXml() throws Exception {
+    void testGetMSDXml() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         MSD msd = new MSD();
@@ -117,7 +111,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDJsonRmesException() throws Exception {
+    void testGetMSDJsonRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         when(documentationsService.getMSDJson()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -129,7 +123,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXmlRmesException() throws Exception {
+    void testGetMSDXmlRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         when(documentationsService.getMSD()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -142,7 +136,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
 
 
     @Test
-    public void testGetMetadataAttribute() throws Exception {
+    void testGetMetadataAttribute() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String id = "testId";
@@ -159,7 +153,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributeRmesException() throws Exception {
+    void testGetMetadataAttributeRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String id = "testId";
@@ -173,7 +167,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributes() throws Exception {
+    void testGetMetadataAttributes() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -189,7 +183,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributesRmesException() throws Exception {
+    void testGetMetadataAttributesRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         when(documentationsService.getMetadataAttributes()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -201,7 +195,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReport() throws Exception {
+    void testGetMetadataReport() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -218,7 +212,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReportRmesException() throws Exception {
+    void testGetMetadataReportRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -230,7 +224,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
                 .andExpect(status().isInternalServerError());
     }
     @Test
-    public void testGetMetadataReportDefaultValue() throws Exception {
+    void testGetMetadataReportDefaultValue() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -246,7 +240,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJson() throws Exception {
+    void testGetFullSimsJson() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -263,7 +257,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXml() throws Exception {
+    void testGetFullSimsXml() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -284,7 +278,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJsonRmesException() throws Exception {
+    void testGetFullSimsJsonRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -297,7 +291,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXmlRmesException() throws Exception {
+    void testGetFullSimsXmlRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
@@ -310,7 +304,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport() throws Exception {
+    void testGetSimsExport() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String id = "1234";
@@ -336,7 +330,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport_DefaultValues() throws Exception {
+    void testGetSimsExport_DefaultValues() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
 
         String id = "1234";

@@ -2,13 +2,18 @@ package fr.insee.rmes.model.rbac;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
-public record ModuleAccessPrivileges(EnumMap<RBAC.Privilege, RBAC.Strategy> strategysByPrivileges) {
+public record ModuleAccessPrivileges(EnumMap<Privilege, Strategy> strategysByPrivileges) {
 
-    public static final ModuleAccessPrivileges NO_PRIVILEGE = new ModuleAccessPrivileges(new EnumMap<>(RBAC.Privilege.class));
+    public ModuleAccessPrivileges{
+        Objects.requireNonNull(strategysByPrivileges);
+    }
 
-    public ModuleAccessPrivileges(Map<RBAC.Privilege, RBAC.Strategy> strategysByPrivileges){
+    public static final ModuleAccessPrivileges NO_PRIVILEGE = new ModuleAccessPrivileges(new EnumMap<>(Privilege.class));
+
+    public ModuleAccessPrivileges(Map<Privilege, Strategy> strategysByPrivileges){
         this(new EnumMap<>(strategysByPrivileges));
     }
 
@@ -23,14 +28,14 @@ public record ModuleAccessPrivileges(EnumMap<RBAC.Privilege, RBAC.Strategy> stra
         if (other == null){
             return this;
         }
-        EnumMap<RBAC.Privilege, RBAC.Strategy> mergedPrivileges = new EnumMap<>(RBAC.Privilege.class);
-        for (RBAC.Privilege privilege : RBAC.Privilege.values()) {
-            mergedPrivileges.put(privilege, RBAC.Strategy.merge(strategysByPrivileges.get(privilege), other.strategysByPrivileges.get(privilege)));
+        EnumMap<Privilege, Strategy> mergedPrivileges = new EnumMap<>(Privilege.class);
+        for (Privilege privilege : Privilege.values()) {
+            mergedPrivileges.put(privilege, Strategy.merge(strategysByPrivileges.get(privilege), other.strategysByPrivileges.get(privilege)));
         }
         return new ModuleAccessPrivileges(mergedPrivileges);
     }
 
-    public Optional<RBAC.Strategy> strategyFor(RBAC.Privilege privilege) {
+    public Optional<Strategy> strategyFor(Privilege privilege) {
         return Optional.ofNullable(strategysByPrivileges.get(privilege));
     }
 }

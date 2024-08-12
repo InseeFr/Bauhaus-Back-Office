@@ -1,7 +1,7 @@
 package fr.insee.rmes.config.auth.security;
 
+import fr.insee.rmes.external.services.rbac.AuthorizationChecker;
 import fr.insee.rmes.external.services.rbac.RBACService;
-import fr.insee.rmes.external.services.rbac.StampChecker;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +20,18 @@ import static fr.insee.rmes.config.auth.security.CommonSecurityConfiguration.DEF
 @Component
 public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 
-    private static final Logger logger= LoggerFactory.getLogger(BauhausMethodSecurityExpressionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(BauhausMethodSecurityExpressionHandler.class);
 
     private final RBACService rbacService;
     private final UserDecoder userDecoder;
-    private final StampChecker stampChecker;
+    private final AuthorizationChecker authorizationChecker;
 
     @Autowired
-    public BauhausMethodSecurityExpressionHandler(RBACService rbacService, UserDecoder userDecoder, StampChecker stampChecker) {
+    public BauhausMethodSecurityExpressionHandler(RBACService rbacService, UserDecoder userDecoder, AuthorizationChecker authorizationChecker) {
         this.rbacService = rbacService;
         this.userDecoder = userDecoder;
-        this.stampChecker = stampChecker;
-        logger.trace("Initializing GlobalMethodSecurityConfiguration with BauhausMethodSecurityExpressionHandler and DefaultRolePrefix = {}", DEFAULT_ROLE_PREFIX);
+        this.authorizationChecker = authorizationChecker;
+        log.trace("Initializing GlobalMethodSecurityConfiguration with BauhausMethodSecurityExpressionHandler and DefaultRolePrefix = {}", DEFAULT_ROLE_PREFIX);
         setDefaultRolePrefix(DEFAULT_ROLE_PREFIX);
     }
 
@@ -39,7 +39,7 @@ public class BauhausMethodSecurityExpressionHandler extends DefaultMethodSecurit
     public EvaluationContext createEvaluationContext(Supplier<Authentication> authentication, MethodInvocation mi) {
         StandardEvaluationContext context = (StandardEvaluationContext) super.createEvaluationContext(authentication, mi);
         MethodSecurityExpressionOperations delegate = (MethodSecurityExpressionOperations) context.getRootObject().getValue();
-        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate, this.rbacService, this.userDecoder, this.stampChecker));
+        context.setRootObject(SecurityExpressionRootForBauhaus.enrich(delegate, this.rbacService, this.userDecoder, this.authorizationChecker));
         return context;
     }
 }

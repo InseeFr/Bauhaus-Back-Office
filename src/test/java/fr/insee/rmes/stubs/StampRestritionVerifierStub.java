@@ -1,6 +1,6 @@
 package fr.insee.rmes.stubs;
 
-import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifier;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifier;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesException;
@@ -11,7 +11,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class StampRestritionVerifierStub implements StampsRestrictionsVerifier {
+public class StampRestritionVerifierStub implements ResourceOwnershipByStampVerifier {
 
     public static final String DATASET_STUB_ID = "datasetID";
     public static final String SERIES_STUB_ID = "seriesID";

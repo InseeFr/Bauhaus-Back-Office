@@ -1,6 +1,6 @@
 package fr.insee.rmes.bauhaus_services.stamps;
 
-import fr.insee.rmes.bauhaus_services.accesscontrol.StampsRestrictionsVerifierImpl;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifierImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.config.auth.UserProvider;
@@ -34,7 +34,7 @@ class StampsRestrictionServiceImplTest {
 
     @Mock
     private RepositoryGestion repoGestion;
-    private StampsRestrictionsVerifierImpl stampsRestrictionsVerifier;
+    private ResourceOwnershipByStampVerifierImpl stampsRestrictionsVerifier;
     @Mock
     private UserProvider userProvider;
     private final IRI iriToCheck = SimpleValueFactory.getInstance().createIRI("http://bauhaus/operations/serie/s2132");
@@ -57,7 +57,7 @@ class StampsRestrictionServiceImplTest {
 
     @BeforeEach
     void injectRepositoryGestion() {
-        stampsRestrictionsVerifier = new StampsRestrictionsVerifierImpl(null, repoGestion, null);
+        stampsRestrictionsVerifier = new ResourceOwnershipByStampVerifierImpl(null, repoGestion, null);
     }
 
     @Test
