@@ -92,11 +92,11 @@ rbac:
         validate: STAMP
     Gestionnaire_ensemble_concepts_RMESGNCS:
       concept:
-        create: STAMP
-        read: STAMP
-        update: STAMP
-        publish: STAMP
-        validate: STAMP
+        create: ALL
+        read: ALL
+        update: ALL
+        publish: ALL
+        validate: ALL
     Gestionnaire_serie_RMESGNCS:
       serie:
         read: STAMP
