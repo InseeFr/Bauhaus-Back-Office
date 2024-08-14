@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice;
 import fr.insee.rmes.config.auth.RBACConfiguration;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.Stamp;
+import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external.services.authentication.stamps.StampsService;
 import fr.insee.rmes.external.services.rbac.RBACService;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -24,7 +26,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Objects;
+
+import static fr.insee.rmes.config.auth.RBACConfiguration.toRolesNames;
 
 /**
  * WebService class for resources of Concepts
@@ -78,7 +83,7 @@ public class UserResources {
     )
     public ApplicationAccessPrivileges getUserInformation(@AuthenticationPrincipal Object principal) throws RmesException {
         return this.userDecoder.fromPrincipal(principal)
-                .map(user-> rbacService.computeRbac(user.roles().stream().filter(Objects::nonNull).map(RBACConfiguration.RoleName::new).toList()))
+                .map(user-> rbacService.computeRbac(toRolesNames(user.roles())))
                 .orElse(ApplicationAccessPrivileges.NO_PRIVILEGE);
     }
 

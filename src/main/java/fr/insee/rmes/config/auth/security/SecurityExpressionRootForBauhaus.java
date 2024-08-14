@@ -269,6 +269,10 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
         return getAccessPrivilegesForUser().isGranted(Privilege.CREATE).on(Module.DATASET).withId(datasetId);
     }
 
+    public boolean canCreateDataset() {
+        return getAccessPrivilegesForUser().isGranted(Privilege.CREATE).on(Module.DATASET).whateverIdIs();
+    }
+
     public boolean canPublishDataset(String datasetId) {
         return getAccessPrivilegesForUser().isGranted(Privilege.PUBLISH).on(Module.DATASET).withId(datasetId);
     }

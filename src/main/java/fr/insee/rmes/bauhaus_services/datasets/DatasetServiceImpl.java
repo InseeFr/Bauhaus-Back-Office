@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionQueries;
 import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -210,8 +211,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String create(String body) throws RmesException {
-        Dataset dataset = Deserializer.deserializeJsonString(body, Dataset.class);
+    public String create(Dataset dataset) throws RmesException {
         dataset.setId(idGenerator.generateNextId());
         dataset.setValidationState(ValidationStatus.UNPUBLISHED.toString());
 
@@ -303,6 +303,11 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         repoGestion.deleteObject(catalogRecordIRI);
         repoGestion.deleteObject(datasetAdmsIri);
         repoGestion.deleteTripletByPredicate(datasetIRI, DCAT.DATASET, graph);
+    }
+
+    @Override
+    public String createWithStamp(Dataset dataset, Stamp stamp) throws RmesException {
+        throw new RmesException(500, "Not implemented", "this method is still under development");
     }
 
 

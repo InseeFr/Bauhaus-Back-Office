@@ -4,11 +4,12 @@ import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.model.rbac.ApplicationAccessPrivileges;
 import fr.insee.rmes.model.rbac.Module;
 import fr.insee.rmes.model.rbac.Privilege;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
 public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicationAccessPrivileges, User user, AuthorizationChecker authorizationChecker, AtomicReference<Privilege> privilege, AtomicReference<Module> module) {
 
@@ -37,6 +38,10 @@ public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicatio
     }
 
     public boolean withId(String id) {
+        return check(Optional.ofNullable(id), this::checkStampFor);
+    }
+
+    private boolean check(Optional<String> id, Predicate<String> idChecker) {
         var strategy = applicationAccessPrivileges.privilegesForModule(module.get()).strategyFor(privilege.get());
         if (strategy.isEmpty()){
             log.atDebug().log(()->debugAccess()+" : no privilege found for "+ user.roles());
@@ -46,16 +51,22 @@ public record CheckAccessPrivilegeForUser(ApplicationAccessPrivileges applicatio
             log.atDebug().log(()->debugAccess()+" : ALL privilege found");
             return true;
         }
-        boolean authorized = checkStampFor(id);
-        log.atDebug().log(()->debugAccess()+" : STAMP privilege found : "+user.stamp()+" "+(authorized?"":"un")+"authorized for id"+id);
+        boolean authorized = id.isPresent() && idChecker.test(id.get());
+        log.atDebug().log(()->debugAccess()+" : STAMP privilege found : "+user.stamp()+" "+(authorized?"":"un")+"authorized for id"+ id);
         return authorized;
     }
 
-    private @NotNull String debugAccess() {
+    public boolean whateverIdIs() {
+        Predicate<String> noIdCheck = ignored -> false;
+        return check(Optional.empty(), noIdCheck);
+    }
+
+    private String debugAccess() {
         return "Check access for " + user + " for " + privilege + " in " + module;
     }
 
     private boolean checkStampFor(String id) {
         return id != null && authorizationChecker.userStampIsAuthorizedForResource(module.get(), id, user.stamp());
     }
+
 }

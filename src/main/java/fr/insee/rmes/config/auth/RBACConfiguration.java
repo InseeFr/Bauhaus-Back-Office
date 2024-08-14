@@ -4,7 +4,9 @@ import fr.insee.rmes.model.rbac.*;
 import fr.insee.rmes.model.rbac.Module;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -19,5 +21,10 @@ public record RBACConfiguration (Map<String, Map<Module, Map<Privilege, Strategy
                         )));
     }
 
-    public record RoleName(String role) {}
+    public static List<RoleName> toRolesNames(List<String> roles) {
+        return roles == null ? List.of() : roles.stream().filter(Objects::nonNull).map(RoleName::new).toList();
+    }
+
+    public record RoleName(String role) {
+    }
 }
