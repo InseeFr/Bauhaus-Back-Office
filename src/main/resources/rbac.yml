@@ -64,6 +64,13 @@ rbac:
           delete: ALL
           publish: ALL
           validate: ALL
+        code_list:
+            create: ALL
+            read: ALL
+            update: ALL
+            delete: ALL
+            publish: ALL
+            validate: ALL
     Utilisateur_RMESGNCS:
       concept:
         read: ALL
@@ -83,6 +90,8 @@ rbac:
         read: ALL
       dataset:
         read: ALL
+      code_list:
+          read: ALL
     Gestionnaire_concept_RMESGNCS:
       concept:
         create: STAMP

@@ -3,7 +3,6 @@ package fr.insee.rmes.webservice.dataset;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.config.auth.security.UserDecoder;
-import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.external.services.rbac.RBACService;
@@ -32,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import static fr.insee.rmes.config.auth.RBACConfiguration.toRolesNames;
-import static fr.insee.rmes.model.rbac.Strategy.STAMP;
+import static fr.insee.rmes.model.rbac.Strategy.ALL;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -92,7 +91,7 @@ public class DatasetResources {
     }
 
     private boolean hasStrategyAllForCreation(User user) {
-        return creationStrategy(user).map(STAMP::equals).orElse(false);
+        return creationStrategy(user).map(ALL::equals).orElse(false);
     }
 
     private Optional<Strategy> creationStrategy(User user) {

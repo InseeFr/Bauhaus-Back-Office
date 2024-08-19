@@ -36,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import static fr.insee.rmes.utils.JSONUtils.deserialize;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -152,28 +153,29 @@ class DatasetServiceImplTest {
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException {
+    void shouldReturnAnErrorIfLabelLg1NotDefinedWhenCreating() throws RmesException, JSONException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
-            JSONObject body = new JSONObject();
-
+            JSONObject jsonObject = new JSONObject();
+            Dataset body = deserialize(jsonObject, Dataset.class);
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
                 JSONObject lastId = new JSONObject();
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body));
             Assertions.assertEquals("{\"message\":\"The property labelLg1 is required\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException {
+    void shouldReturnAnErrorIfLabelLg2NotDefinedWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
+            Dataset bodyDataset = deserialize(body, Dataset.class);
 
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -181,18 +183,19 @@ class DatasetServiceImplTest {
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"The property labelLg2 is required\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfCreatorNotDefinedWhenCreating() throws RmesException {
+    void shouldReturnAnErrorIfCreatorNotDefinedWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
             body.put("labelLg1", "labelLg1");
             body.put("labelLg2", "labelLg2R");
+            Dataset bodyDataset = deserialize(body, Dataset.class);
 
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -200,13 +203,13 @@ class DatasetServiceImplTest {
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"The property creator is required\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfContributorNotDefinedWhenCreating() throws RmesException {
+    void shouldReturnAnErrorIfContributorNotDefinedWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -216,6 +219,7 @@ class DatasetServiceImplTest {
             JSONObject record = new JSONObject();
             record.put("creator", "creator");
             body.put("catalogRecord", record);
+            Dataset bodyDataset = deserialize(body, Dataset.class);
 
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -223,13 +227,13 @@ class DatasetServiceImplTest {
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"The property contributor is required\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfDisseminationStatusNotDefinedWhenCreating() throws RmesException {
+    void shouldReturnAnErrorIfDisseminationStatusNotDefinedWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -238,18 +242,20 @@ class DatasetServiceImplTest {
 
             body.put("catalogRecord", this.generateCatalogRecord());
 
+            Dataset bodyDataset = deserialize(body, Dataset.class);
+
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
                 JSONObject lastId = new JSONObject();
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"The property disseminationStatus is required\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException {
+    void shouldReturnAnErrorBadFormattedAltIdentifierWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -259,18 +265,20 @@ class DatasetServiceImplTest {
             body.put("altIdentifier", "%abc");
             body.put("catalogRecord", this.generateCatalogRecord());
 
+            Dataset bodyDataset = deserialize(body, Dataset.class);
+
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
                 JSONObject lastId = new JSONObject();
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"The property altIdentifier contains forbidden characters\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException {
+    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreating() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -280,6 +288,8 @@ class DatasetServiceImplTest {
             body.put("altIdentifier", "abc");
             body.put("catalogRecord", this.generateCatalogRecord());
 
+            Dataset bodyDataset = deserialize(body, Dataset.class);
+
             when(seriesUtils.isSeriesAndOperationsExist(any())).thenReturn(false);
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -287,13 +297,13 @@ class DatasetServiceImplTest {
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException {
+    void shouldReturnAnErrorIfUnknownSeriesNotDefinedWhenCreatingEvenIfAltIdentifierMissing() throws RmesException, JsonProcessingException {
         try (MockedStatic<DatasetQueries> mockedFactory = mockStatic(DatasetQueries.class)) {
             mockedFactory.when(() -> DatasetQueries.lastDatasetId(any())).thenReturn("query");
             JSONObject body = new JSONObject();
@@ -302,6 +312,8 @@ class DatasetServiceImplTest {
             body.put("disseminationStatus", "disseminationStatus");
             body.put("catalogRecord", this.generateCatalogRecord());
 
+            Dataset bodyDataset = deserialize(body, Dataset.class);
+
             when(seriesUtils.isSeriesAndOperationsExist(anyList())).thenReturn(false);
 
             when(repositoryGestion.getResponseAsObject(anyString())).then(invocationOnMock -> {
@@ -309,13 +321,13 @@ class DatasetServiceImplTest {
                 lastId.put("id", "1000");
                 return lastId;
             });
-            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(body.toString()));
+            RmesException exception = assertThrows(RmesBadRequestException.class, () -> datasetService.create(bodyDataset));
             Assertions.assertEquals("{\"message\":\"Some series or operations do not exist\"}", exception.getDetails());
         }
     }
 
     @Test
-    void shouldPersistNewDatasetWithAndIncrementedId() throws RmesException {
+    void shouldPersistNewDatasetWithAndIncrementedId() throws RmesException, JsonProcessingException {
         createANewDataset("jd1001");
     }
 
@@ -402,7 +414,7 @@ class DatasetServiceImplTest {
         return record;
     }
 
-    private void createANewDataset(String nextId) throws RmesException {
+    private void createANewDataset(String nextId) throws RmesException, JsonProcessingException {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
@@ -454,7 +466,9 @@ class DatasetServiceImplTest {
             when(seriesUtils.isSeriesAndOperationsExist(anyList())).thenReturn(true);
 
 
-            String id = datasetService.create(body.toString());
+            Dataset bodyDataset = deserialize(body, Dataset.class);
+
+            String id = datasetService.create(bodyDataset);
 
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(iri), model.capture(), any());
@@ -560,11 +574,6 @@ class DatasetServiceImplTest {
         verify(repositoryGestion, times(1)).objectValidation(eq(iri), modelIri.capture());
         Assertions.assertEquals("[(http://datasetIRI/1, http://rdf.insee.fr/def/base#validationState, \"Validated\", http://datasetGraph/) [http://datasetGraph/]]", modelIri.getValue().toString());
         Assertions.assertEquals("1", id);
-    }
-
-    @Test
-    void shouldThrowAnExceptionIfTheBodyIsNotAJSONDuringCreation() {
-        assertThrows(RmesException.class, () -> datasetService.create(""));
     }
 
     @Test

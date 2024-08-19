@@ -46,12 +46,13 @@ public class AuthorizationCheckerWithResourceOwnershipByStamp implements Authori
             case CONCEPT -> false;
             case COLLECTION -> false;
             case FAMILY -> false;
-            case SERIE -> false;
+            case SERIE -> isSeriesManagerWithStamp(id, stamp);
             case OPERATION -> false;
             case INDICATOR -> false;
             case SIMS -> false;
             case CLASSIFICATION -> false;
             case DATASET -> isDatasetManagerWithStamp(id, stamp);
+            case CODE_LIST -> isCodesListManagerWithStamp(id, stamp);
             case null -> false;
         };
     }

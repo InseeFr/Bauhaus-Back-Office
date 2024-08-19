@@ -9,5 +9,6 @@ public enum Module {
     INDICATOR,
     SIMS,
     CLASSIFICATION,
-    DATASET
+    DATASET,
+    CODE_LIST
 }

@@ -98,14 +98,14 @@ class RBACServiceTest {
         List<Privilege> writePrivilege=List.of(PUBLISH, UPDATE, VALIDATE);
         ModuleAccessPrivileges moduleAccessPrivilegesReversed = mergedPrivilegeReversed.privilegesForModule(CONCEPT);
         assertThat(writePrivilege.stream().map(moduleAccessPrivilegesReversed::strategyFor)).isNotEmpty().allMatch(Optional.of(STAMP)::equals);
-        //TODO : fix fail when comment at https://github.com/InseeFr/Bauhaus-Back-Office/issues/634#issuecomment-2284329692 will be answered
-        assertThat(moduleAccessPrivilegesReversed.strategyFor(CREATE)).isPresent().isEqualTo(ALL);
+        //according to https://github.com/InseeFr/Bauhaus-Back-Office/issues/634#issuecomment-2286303989
+        assertThat(moduleAccessPrivilegesReversed.strategyFor(CREATE)).isPresent().isEqualTo(Optional.of(STAMP));
         assertThat(moduleAccessPrivilegesReversed.strategyFor(READ)).isEqualTo(Optional.of(ALL));
 
         ModuleAccessPrivileges moduleAccessPrivileges = mergedPrivilege.privilegesForModule(CONCEPT);
         assertThat(writePrivilege.stream().map(moduleAccessPrivileges::strategyFor)).isNotEmpty().allMatch(Optional.of(STAMP)::equals);
-        //TODO : fix fail when comment at https://github.com/InseeFr/Bauhaus-Back-Office/issues/634#issuecomment-2284329692 will be answered
-        assertThat(moduleAccessPrivileges.strategyFor(CREATE)).isPresent().isEqualTo(ALL);
+        //according to https://github.com/InseeFr/Bauhaus-Back-Office/issues/634#issuecomment-2286303989
+        assertThat(moduleAccessPrivileges.strategyFor(CREATE)).isPresent().isEqualTo(Optional.of(STAMP));
         assertThat(moduleAccessPrivileges.strategyFor(READ)).isPresent().isEqualTo(Optional.of(ALL));
     }
 
