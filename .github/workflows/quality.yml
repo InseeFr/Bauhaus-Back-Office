@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 12 * * *'
 jobs:
   test-build:
     name: build & test & analyze
