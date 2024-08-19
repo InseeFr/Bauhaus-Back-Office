@@ -44,11 +44,8 @@ public class OpenIDConnectSecurityContext {
     public static final String[] PUBLIC_RESOURCES_ANT_PATTERNS = {"/init", "/stamps", "/disseminationStatus"};
 
     private final String stampClaim;
-
     private final String roleClaimKey;
-
     private final String idClaim;
-
     private final boolean requiresSsl;
     private final String keyForRolesInRoleClaim;
 
