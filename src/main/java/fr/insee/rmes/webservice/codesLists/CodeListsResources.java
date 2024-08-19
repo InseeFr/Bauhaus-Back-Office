@@ -148,15 +148,15 @@ public class CodeListsResources extends GenericResources {
     @Operation(operationId = "getCodeListByNotation", summary = "Get a code list", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeList.class)))})
     public ResponseEntity<CodeList> getCodeListByNotation(@PathVariable("notation") String notation) throws RmesException {
             String codeListJson = codeListService.getCodeListJson(notation);
-            CodeList codeList=Deserializer.deserializeBody(codeListJson, CodeList.class);
+            CodeList codeList=Deserializer.deserializeJsonString(codeListJson, CodeList.class);
             return ResponseEntity.status(HttpStatus.OK).body(codeList);
     }
 
     @GetMapping(value = "/{notation}/codes", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCodesForCodeList", summary = "List of codes", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = DetailedCodeList.class)))})
-    public ResponseEntity<DetailedCodeList> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
+    public ResponseEntity<Page> getCodesForCodeList(@PathVariable("notation") String notation, @RequestParam("page") int page, @RequestParam(value = "per_page", required = false) Integer perPage) throws RmesException {
         String codeListCodesJson = codeListService.getCodesJson(notation, page, perPage);
-        DetailedCodeList codeListCodes=Deserializer.deserializeBody(codeListCodesJson, DetailedCodeList.class);
+        Page codeListCodes=Deserializer.deserializeJsonString(codeListCodesJson, Page.class);
         return ResponseEntity.status(HttpStatus.OK).body(codeListCodes);
 
     }
@@ -165,7 +165,7 @@ public class CodeListsResources extends GenericResources {
     @Operation(operationId = "getCodeByNotation", summary = "Code, labels and code list's notation", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = CodeLabelList.class)))})
     public ResponseEntity<CodeLabelList> getCodeByNotation(@PathVariable("notation") String notation, @PathVariable("code") String code) throws RmesException {
         String codeLabelListJson = codeListService.getCode(notation, code);
-        CodeLabelList codeLabelList=Deserializer.deserializeBody(codeLabelListJson, CodeLabelList.class);
+        CodeLabelList codeLabelList=Deserializer.deserializeJsonString(codeLabelListJson, CodeLabelList.class);
         return ResponseEntity.status(HttpStatus.OK).body(codeLabelList);
     }
 

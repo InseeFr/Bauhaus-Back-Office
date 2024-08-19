@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>3.25.0</version>
+    <version>3.26.5</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -90,18 +90,10 @@
 
 
         <!-- SONAR -->
-        <sonar.exclusions>src/main/java/fr/insee/rmes/queries/**/*,
-            src/main/java/fr/insee/rmes/modeles/**/*
-        </sonar.exclusions>
-        <sonar.projectKey>${project.groupId}:${project.artifactId}</sonar.projectKey>
-        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.language>java</sonar.language>
-        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.organization>inseefr</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
         <version.maven-jacoco>0.8.5</version.maven-jacoco>
-        <version.maven-sonar>3.7.0.1746</version.maven-sonar>
-        <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
     </properties>
 
     <dependencies>

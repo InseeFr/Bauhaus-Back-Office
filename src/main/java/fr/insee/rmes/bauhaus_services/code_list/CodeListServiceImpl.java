@@ -76,7 +76,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
         result.put("total", counter.get("count"));
         result.put("page", page);
-        result.put(CODES, getItemsWithPagination(notation, page, perPage));
+        result.put(ITEMS, getItemsWithPagination(notation, page, perPage));
         return result;
     }
 
@@ -115,7 +115,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	@Override
 	public CodeList getDetailedCodesList(String notation) throws RmesException {
 		String detailedCodesList = getDetailedCodesListJson(notation).toString();
-		CodeList codeList = Deserializer.deserializeBody(detailedCodesList, CodeList.class);
+		CodeList codeList = Deserializer.deserializeJsonString(detailedCodesList, CodeList.class);
 		return codeList;
 	}
 
@@ -196,7 +196,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		result.put("total", counter.get("count"));
 		result.put("page", page);
 		result.put(ITEMS, items);
-		Page numPage= Deserializer.deserializeBody(String.valueOf(result), Page.class);
+		Page numPage= Deserializer.deserializeJsonString(String.valueOf(result), Page.class);
 		return numPage;
 	}
 
