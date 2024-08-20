@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +31,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('datasets')")
 public class DatasetResources {
 
-    final DatasetService datasetService;
+    private final DatasetService datasetService;
 
+    @Autowired
     public DatasetResources(DatasetService datasetService) {
         this.datasetService = datasetService;
     }
@@ -40,21 +42,21 @@ public class DatasetResources {
     @Operation(operationId = "getDatasets", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDatasets() throws RmesException {
-        return this.datasetService.getDatasets();
+        return datasetService.getDatasets();
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public Dataset getDataset(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.datasetService.getDatasetByID(id);
+        return datasetService.getDatasetByID(id);
     }
 
     @GetMapping("/{id}/distributions")
     @Operation(operationId = "getDistributionsByDataset", summary = "List of distributions for a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
     public String getDistributionsByDataset(@PathVariable(Constants.ID) String id) throws RmesException {
-        return this.datasetService.getDistributions(id);
+        return datasetService.getDistributions(id);
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
@@ -63,7 +65,7 @@ public class DatasetResources {
     @ResponseStatus(HttpStatus.CREATED)
     public String setDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
-        return this.datasetService.create(body);
+        return datasetService.create(body);
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
@@ -73,7 +75,7 @@ public class DatasetResources {
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
 
-        return this.datasetService.update(datasetId, body);
+        return datasetService.update(datasetId, body);
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
@@ -81,13 +83,13 @@ public class DatasetResources {
     @Operation(operationId = "publishDataset", summary = "Publish a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public String publishDataset(@PathVariable(Constants.ID) String datasetId) throws RmesException {
-        return this.datasetService.publishDataset(datasetId);
+        return datasetService.publishDataset(datasetId);
     }
 
     @GetMapping(value = "/archivageUnits", consumes = APPLICATION_JSON_VALUE)
     @Operation(operationId = "getArchivageUnits", summary = "Get all archivage units")
     public String getArchivageUnits() throws RmesException {
-        return this.datasetService.getArchivageUnits();
+        return datasetService.getArchivageUnits();
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
@@ -97,7 +99,7 @@ public class DatasetResources {
             @PathVariable("id") String datasetId,
             @RequestBody PatchDataset dataset
     ) throws RmesException {
-        this.datasetService.patchDataset(datasetId, dataset);
+        datasetService.patchDataset(datasetId, dataset);
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributorWithStamp(#datasetId)")
