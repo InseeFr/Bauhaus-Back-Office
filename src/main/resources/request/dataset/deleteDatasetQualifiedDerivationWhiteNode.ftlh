@@ -1,5 +1,5 @@
 DELETE WHERE {
-GRAPH <http://rdf.insee.fr/graphes/catalogue>
+GRAPH <${DATASET_GRAPH}>
     {
 ?uri rdf:type dcat:Dataset .
     ?uri prov:qualifiedDerivation ?node .
