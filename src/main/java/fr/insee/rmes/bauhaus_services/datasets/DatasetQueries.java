@@ -101,7 +101,7 @@ public class DatasetQueries extends GenericQueries {
 
 
 
-        public static String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {
+    public static String deleteDatasetQualifiedDerivationWhiteNode(String id, String datasetsGraph) throws RmesException {
         HashMap<String, Object> params = new HashMap<>();
         params.put(DATASET_GRAPH, datasetsGraph);
         params.put("ID", id);
@@ -109,5 +109,17 @@ public class DatasetQueries extends GenericQueries {
     }
 
 
+    public static String getLinkedDocuments(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getLinkedDocuments.ftlh", params);
+    }
 
+    public static String getKeywords(String id, String datasetsGraph) throws RmesException {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put(DATASET_GRAPH, datasetsGraph);
+        params.put("ID", id);
+        return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getKeywords.ftlh", params);
+    }
 }
