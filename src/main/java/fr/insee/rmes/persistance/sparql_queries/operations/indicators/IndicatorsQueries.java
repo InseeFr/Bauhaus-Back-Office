@@ -96,20 +96,15 @@ public class IndicatorsQueries extends GenericQueries{
 		return buildIndicatorRequest("getIndicatorLinks.ftlh", params);
 	}
 
-	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) {
-		return "SELECT ?id ?labelLg1 ?labelLg2\n"
-				+ "WHERE { \n" 
-				+"?indicator <"+linkPredicate+"> ?uri . \n"
-				+ "?uri dcterms:identifier  ?id . \n"
-				+ "?uri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} . \n"
-				
-				+ "FILTER(STRENDS(STR(?indicator),'/"+config.getProductsBaseUri()+"/" + idIndicator + "')) . \n"
 
-				+ "} \n"
-				+ "ORDER BY ?id";
+	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", idIndicator);
+		params.put("LINKPREDICATE", linkPredicate);
+		return buildIndicatorRequest("getMultipleOrganizations.ftlh", params);
 	}
 
 
