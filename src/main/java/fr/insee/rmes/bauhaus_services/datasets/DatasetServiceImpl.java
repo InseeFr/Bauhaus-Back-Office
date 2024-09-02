@@ -16,7 +16,10 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.*;
 import org.json.JSONArray;
@@ -29,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -157,7 +161,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         IRI catalogRecordIRI = RdfUtils.createIRI(getCatalogRecordBaseUri() + "/" + id);
         getMultipleTripletsForObject(dataset, "spacialResolutions", DatasetQueries.getDatasetSpacialResolutions(id, getDatasetsGraph()), "spacialResolution");
         getMultipleTripletsForObject(dataset, "statisticalUnit", DatasetQueries.getDatasetStatisticalUnits(id, getDatasetsGraph()), "statisticalUnit");
-
+        getMultipleTripletsForObject(dataset, "linkedDocuments", DatasetQueries.getLinkedDocuments(id, getDatasetsGraph()), "linkedDocument");
+        addKeywordsToDataset(id, dataset);
 
 
         JSONObject catalogRecord = new JSONObject();
@@ -178,6 +183,27 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
         dataset.put("catalogRecord", catalogRecord);
         return Deserializer.deserializeJSONObject(dataset, Dataset.class);
+    }
+
+    private void addKeywordsToDataset(String id, JSONObject dataset) throws RmesException {
+        JSONArray keywords = this.repoGestion.getResponseAsArray(DatasetQueries.getKeywords(id, getDatasetsGraph()));
+
+        List<String> lg1 = new ArrayList<>();
+        List<String> lg2 = new ArrayList<>();
+
+        keywords.forEach((k) -> {
+            JSONObject keyword = (JSONObject) k;
+            if(keyword.getString("lang").equalsIgnoreCase(config.getLg1())){
+                lg1.add(keyword.getString("keyword"));
+            }
+            if(keyword.getString("lang").equalsIgnoreCase(config.getLg2())){
+                lg2.add(keyword.getString("keyword"));
+            }
+        });
+        JSONObject formattedKeywords = new JSONObject();
+        formattedKeywords.put("lg1", lg1);
+        formattedKeywords.put("lg2", lg2);
+        dataset.put("keywords", formattedKeywords);
     }
 
     private String update(String datasetId, Dataset dataset) throws RmesException {
@@ -449,6 +475,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
     }
 
+    private void addKeywords(IRI datasetIri, Optional<List<String>> keywords, String language, Model model, Resource graph) {
+        keywords.ifPresent(list -> list.forEach(keyword ->
+                RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, language, model, graph)
+        ));
+    }
+
+
     private void persistDataset(Dataset dataset) throws RmesException {
         Resource graph = RdfUtils.createIRI(getDatasetsGraph());
 
@@ -466,12 +499,18 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         RdfUtils.addTripleString(datasetIri, INSEE.VALIDATION_STATE, dataset.getValidationState(), model, graph);
 
-        if(dataset.getWasGeneratedIRIs() != null) {
-            dataset.getWasGeneratedIRIs().forEach(iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph));
-        }
 
-        if(dataset.getThemes() != null){
-            dataset.getThemes().forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph));
+        Optional.ofNullable(dataset.getWasGeneratedIRIs()).ifPresent(list -> list.forEach(iri -> RdfUtils.addTripleUri(datasetIri, PROV.WAS_GENERATED_BY, iri, model, graph)));
+        Optional.ofNullable(dataset.getThemes()).ifPresent(list -> list.forEach(theme -> RdfUtils.addTripleUri(datasetIri, DCAT.THEME, theme, model, graph)));
+        Optional.ofNullable(dataset.getLinkedDocuments()).ifPresent(list -> list.forEach(linkDocument -> RdfUtils.addTripleString(datasetIri, DCTERMS.RELATION, linkDocument, model, graph)));
+        Optional.ofNullable(dataset.getKeywords()).ifPresent(keywords -> {
+            addKeywords(datasetIri, Optional.ofNullable(keywords.lg1()), config.getLg1(), model, graph);
+            addKeywords(datasetIri, Optional.ofNullable(keywords.lg2()), config.getLg2(), model, graph);
+        });
+
+        if(dataset.getKeywords() != null){
+            Optional.ofNullable(dataset.getKeywords().lg1()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, config.getLg1(), model, graph)));
+            Optional.ofNullable(dataset.getKeywords().lg2()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, config.getLg2(), model, graph)));
         }
 
         JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));

@@ -21,6 +21,9 @@ public class Dataset {
     private String landingPageLg1;
     private String landingPageLg2;
 
+    private List<String> linkedDocuments;
+
+    private Keywords keywords;
     private String updated;
 
     private String issued;
@@ -389,5 +392,21 @@ public class Dataset {
 
     public void setAltIdentifier(String altIdentifier) {
         this.altIdentifier = altIdentifier;
+    }
+
+    public List<String> getLinkedDocuments() {
+        return linkedDocuments;
+    }
+
+    public void setLinkedDocuments(List<String> linkedDocuments) {
+        this.linkedDocuments = linkedDocuments;
+    }
+
+    public Keywords getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(Keywords keywords) {
+        this.keywords = keywords;
     }
 }

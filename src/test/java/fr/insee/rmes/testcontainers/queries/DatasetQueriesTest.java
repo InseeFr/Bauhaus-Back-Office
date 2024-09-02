@@ -65,4 +65,19 @@ public class DatasetQueriesTest extends WithGraphDBContainer {
         assertEquals("http://bauhaus/codes/typeTerritoireGeographique/REG", result.getJSONObject(2).getString("spacialResolution"));
         assertEquals(3, result.length());
     }
+
+    @Test
+    void should_return_keywords() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getKeywords("jeuDeDonneesTousChamps", "http://rdf.insee.fr/graphes/catalogue"));
+        assertEquals("Statistiques", result.getJSONObject(0).getString("keyword"));
+        assertEquals("fr", result.getJSONObject(0).getString("lang"));
+        assertEquals(1, result.length());
+    }
+
+    @Test
+    void should_return_linked_documents() throws Exception {
+        JSONArray result = repositoryGestion.getResponseAsArray(DatasetQueries.getLinkedDocuments("jeuDeDonneesTousChamps", "http://rdf.insee.fr/graphes/catalogue"));
+        assertEquals("https://www.insee.fr/fr/statistiques", result.getJSONObject(0).getString("linkedDocument"));
+        assertEquals(1, result.length());
+    }
 }
