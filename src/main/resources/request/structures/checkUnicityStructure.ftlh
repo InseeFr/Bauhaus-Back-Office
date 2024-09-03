@@ -16,9 +16,11 @@ FROM<${STRUCTURES_GRAPH}>
 </#list>
  )
             }
+<#if STRUCTURE_ID??>
             FILTER NOT EXISTS {
                 ?dsd dcterms:identifier '${STRUCTURE_ID}' .
             }
+</#if>
         }
         GROUP BY ?dsd
     }
