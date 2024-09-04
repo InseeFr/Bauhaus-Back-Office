@@ -188,18 +188,24 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     private void addKeywordsToDataset(String id, JSONObject dataset) throws RmesException {
         JSONArray keywords = this.repoGestion.getResponseAsArray(DatasetQueries.getKeywords(id, getDatasetsGraph()));
 
+
+
         List<String> lg1 = new ArrayList<>();
         List<String> lg2 = new ArrayList<>();
 
-        keywords.forEach((k) -> {
-            JSONObject keyword = (JSONObject) k;
-            if(keyword.getString("lang").equalsIgnoreCase(config.getLg1())){
-                lg1.add(keyword.getString("keyword"));
-            }
-            if(keyword.getString("lang").equalsIgnoreCase(config.getLg2())){
-                lg2.add(keyword.getString("keyword"));
-            }
-        });
+        if(keywords != null){
+            keywords.forEach((k) -> {
+                JSONObject keyword = (JSONObject) k;
+                if(keyword.getString("lang").equalsIgnoreCase(config.getLg1())){
+                    lg1.add(keyword.getString("keyword"));
+                }
+                if(keyword.getString("lang").equalsIgnoreCase(config.getLg2())){
+                    lg2.add(keyword.getString("keyword"));
+                }
+            });
+        }
+
+
         JSONObject formattedKeywords = new JSONObject();
         formattedKeywords.put("lg1", lg1);
         formattedKeywords.put("lg2", lg2);
