@@ -5,7 +5,6 @@ import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
-import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Operation;
@@ -246,13 +245,10 @@ public class MetadataReportResources extends OperationsCommonResources {
 	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public ResponseEntity<Object> setSimsValidation(
-			@PathVariable(Constants.ID) String id) {
-		try {
-			documentationsService.publishMetadataReport(id);
-			return ResponseEntity.status(HttpStatus.OK).body(id);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
+			@PathVariable(Constants.ID) String id) throws RmesException {
+		documentationsService.publishMetadataReport(id);
+		return ResponseEntity.status(HttpStatus.OK).body(id);
+
 	}
 
 
