@@ -485,15 +485,15 @@ public class SeriesUtils {
     }
 
     public String setSeriesValidation(String id) throws RmesException {
-        Model model = new LinkedHashModel();
-        JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
-        seriesPublication.publishSeries(id, serieJson);
-
         IRI seriesURI = RdfUtils.objectIRI(ObjectType.SERIES, id);
         if (!stampsRestrictionsService.canValidateSeries(seriesURI)) {
             throw new RmesUnauthorizedException(ErrorCodes.SERIES_VALIDATION_RIGHTS_DENIED,
                     "Only authorized users can publish series.");
         }
+
+        Model model = new LinkedHashModel();
+        JSONObject serieJson = getSeriesJsonById(id, EncodingType.XML);
+        seriesPublication.publishSeries(id, serieJson);
 
         model.add(seriesURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED),
                 RdfUtils.operationsGraph());
