@@ -31,13 +31,9 @@ jobs:
           distribution: 'temurin'
       - name: Run unit tests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B clean test
       - name: Run TestContainer
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B clean test -Ptest-containers
       - name: Run Sonar
         env:
