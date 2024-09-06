@@ -30,10 +30,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Run unit tests
-        env:
         run: mvn -B clean test
       - name: Run TestContainer
-        env:
         run: mvn -B clean test -Ptest-containers
       - name: Run Sonar
         env:
