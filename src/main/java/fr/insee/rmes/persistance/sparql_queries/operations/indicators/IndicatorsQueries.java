@@ -45,46 +45,13 @@ public class IndicatorsQueries extends GenericQueries{
 		return buildIndicatorRequest("getIndicators.ftlh", params);
 	}
 
-	public static String indicatorsQueryForSearch() {
-	return "SELECT ?id ?prefLabelLg1 ?prefLabelLg2 (group_concat(?altLabelLang1;separator=' || ') as ?altLabelLg1) ?altLabelLg2  ?abstractLg1 ?abstractLg2  "
-			+ "?historyNoteLg1 ?historyNoteLg2  ?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers  ?idSims  ?validationState  "
-			+ "WHERE {  \r\n" 
-			+ "?indic a insee:StatisticalIndicator ."
-			+ "BIND(STRAFTER(STR(?indic),'/"+config.getProductsBaseUri()+"/') AS ?id) . "
-					+ "?indic skos:prefLabel ?prefLabelLg1 \r\n" 
-			+ "FILTER (lang(?prefLabelLg1) = 'fr') \r\n" 
-			+ " OPTIONAL{?indic skos:prefLabel ?prefLabelLg2 \r\n" 
-			+ "FILTER (lang(?prefLabelLg2) = 'en') } \r\n" 
-			+ " OPTIONAL{?indic skos:altLabel ?altLabelLang1 \r\n" 
-			+ "FILTER (lang(?altLabelLang1) = 'fr') } \r\n" 
-			+ " OPTIONAL{?indic skos:altLabel ?altLabelLg2 \r\n" 
-			+ "FILTER (lang(?altLabelLg2) = 'en') } \r\n" 
-			+ " OPTIONAL{?indic dcterms:abstract ?abstractLg1 \r\n" 
-			+ "FILTER (lang(?abstractLg1) = 'fr') } \r\n" 
-			+ " OPTIONAL{?indic dcterms:abstract ?abstractLg2 \r\n" 
-			+ "FILTER (lang(?abstractLg2) = 'en') } \r\n" 
-			+ " OPTIONAL{?indic skos:historyNote ?historyNoteLg1 \r\n" 
-			+ "FILTER (lang(?historyNoteLg1) = 'fr') } \r\n" 
-			+ " OPTIONAL{?indic skos:historyNote ?historyNoteLg2 \r\n" 
-			+ "FILTER (lang(?historyNoteLg2) = 'en') } \r\n" 
-			+ " OPTIONAL {?indic dcterms:accrualPeriodicity ?accrualPeriodicity . \r\n" 
-			+ "?accrualPeriodicity skos:notation ?accrualPeriodicityCode . \r\n" 
-			+ "?accrualPeriodicity skos:inScheme ?accrualPeriodicityCodeList . \r\n" 
-			+ "?accrualPeriodicityCodeList skos:notation ?accrualPeriodicityList . \r\n" 
-			+ "}   \r\n" 
-			+ "OPTIONAL {?indic dcterms:publisher ?uriPublisher . \r\n" 
-			+ "?uriPublisher dcterms:identifier  ?publishers . \r\n" 
-			+ "}   \r\n" 
-			+ "OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport . ?report sdmx-mm:target ?indic  BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . \r\n" 
-			+ "} \r\n" 
-			+ "OPTIONAL {?indic insee:validationState ?validationState . \r\n" 
-			+ "}   \r\n" 
-			+ "} \r\n" 
-			+ "GROUP BY ?id ?prefLabelLg1 ?prefLabelLg2 ?altLabelLang1 ?altLabelLg2 ?abstractLg1 ?abstractLg2 ?historyNoteLg1 ?historyNoteLg2  "
-			+ "?accrualPeriodicityCode ?accrualPeriodicityList  ?publishers  ?idSims  ?validationState \n";	
-		
+	public static String indicatorsQueryForSearch() throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		return buildIndicatorRequest("getIndicatorsQueryForSearch.ftlh", params);
 	}
-
 
 	public static String indicatorQuery(String id, boolean indicatorsRichTextNexStructure) throws RmesException {
 		return indicatorFullObjectQuery(id, true, indicatorsRichTextNexStructure);
@@ -100,57 +67,44 @@ public class IndicatorsQueries extends GenericQueries{
 		return buildIndicatorRequest("getIndicator.ftlh", params);
 	}
 
-	public static String getCreatorsById(String id) {
-		return "SELECT ?creators\n"
-				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
-				+ "?indic a insee:StatisticalIndicator . \n"  
-				+" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" 
-				+"?indic dc:creator ?creators . \n"
-				+ "} }"
-				;
+
+	public static String getCreatorsById(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("OPERATIONS_GRAPH", config.getProductsGraph());
+		params.put("ID", id);
+		return buildIndicatorRequest("getCreatorsById.ftlh", params);
 	}
 	
-	public static String getPublishersById(String id) {
-		return "SELECT ?publishers\n"
-				+ "WHERE { GRAPH <"+config.getProductsGraph()+"> { \n"
-				+ "?indic a insee:StatisticalIndicator . \n"  
-				+" FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id+ "')) . \n" 
-				+"?indic dcterms:publisher ?publishers . \n"
-				+ "} }"
-				;
-	}	
 
-	public static String indicatorLinks(String id, IRI linkPredicate) {
-		return "SELECT ?id ?typeOfObject ?labelLg1 ?labelLg2 \n"
-				+ "WHERE { \n" 
-				+ "?indic <"+linkPredicate+"> ?uriLinked . \n"
-				+ "?uriLinked skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?uriLinked skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} . \n"
-				+ "?uriLinked rdf:type ?typeOfObject . \n"
-				+ "BIND(REPLACE( STR(?uriLinked) , '(.*/)(\\\\w+$)', '$2' ) AS ?id) . \n"
-				
-				+ "FILTER(STRENDS(STR(?indic),'/"+config.getProductsBaseUri()+"/" + id + "')) . \n"
-
-				+ "} \n"
-				+ "ORDER BY ?labelLg1";
+	public static String getPublishersById(String id) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("OPERATIONS_GRAPH", config.getProductsGraph());
+		params.put("ID", id);
+		return buildIndicatorRequest("getPublishersById.ftlh", params);
 	}
-	
-	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) {
-		return "SELECT ?id ?labelLg1 ?labelLg2\n"
-				+ "WHERE { \n" 
-				+"?indicator <"+linkPredicate+"> ?uri . \n"
-				+ "?uri dcterms:identifier  ?id . \n"
-				+ "?uri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "OPTIONAL {?uri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} . \n"
-				
-				+ "FILTER(STRENDS(STR(?indicator),'/"+config.getProductsBaseUri()+"/" + idIndicator + "')) . \n"
 
-				+ "} \n"
-				+ "ORDER BY ?id";
+
+	public static String indicatorLinks(String id, IRI linkPredicate) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", id);
+		params.put("LINKPREDICATE", linkPredicate);
+		return buildIndicatorRequest("getIndicatorLinks.ftlh", params);
+	}
+
+
+	public static String getMultipleOrganizations(String idIndicator, IRI linkPredicate) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put("PRODUCT_BASE_URI",config.getProductsBaseUri());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", idIndicator);
+		params.put("LINKPREDICATE", linkPredicate);
+		return buildIndicatorRequest("getMultipleOrganizations.ftlh", params);
 	}
 
 
