@@ -68,7 +68,7 @@ class DatasetServiceImplTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final String DATASET_WITH_THEME = """
+    private static final String DATASET_WITH_THEME = """
             [
                {
                   "observationNumber":"1000",
@@ -89,8 +89,8 @@ class DatasetServiceImplTest {
                   "updated":"2024-04-01T00:00:00",
                }
             ]""";
-    public static final String EMPTY_ARRAY = "[]";
-    public static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
+    private static final String EMPTY_ARRAY = "[]";
+    private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
     @Test
     void shouldReturnDatasets() throws RmesException {

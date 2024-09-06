@@ -5,7 +5,6 @@ import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
 import fr.insee.rmes.model.operations.documentations.MAS;
-import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Operation;
