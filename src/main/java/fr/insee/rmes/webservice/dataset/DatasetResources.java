@@ -25,7 +25,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -51,7 +50,7 @@ public class DatasetResources {
         this.userDecoder = userDecoder;
     }
 
-    //    @PreAuthorize("canReadDataset(#datasetId)")
+    @PreAuthorize("canReadDataset(#datasetId)")
     @GetMapping(produces = "application/json")
     @Operation(operationId = "getDatasets", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
@@ -59,7 +58,7 @@ public class DatasetResources {
         return this.datasetService.getDatasets();
     }
 
-    //    @PreAuthorize("canReadDataset(#datasetId)")
+    @PreAuthorize("canReadDataset(#datasetId)")
     @GetMapping(value = "/{id}", produces = "application/json")
     @Operation(operationId = "getDataset", summary = "Get a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
@@ -67,7 +66,7 @@ public class DatasetResources {
         return this.datasetService.getDatasetByID(id);
     }
 
-    //    @PreAuthorize("canReadDataset(#datasetId)")
+    @PreAuthorize("canReadDataset(#datasetId)")
     @GetMapping("/{id}/distributions")
     @Operation(operationId = "getDistributionsByDataset", summary = "List of distributions for a dataset",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
@@ -81,7 +80,7 @@ public class DatasetResources {
     @ResponseStatus(HttpStatus.CREATED)
     public String createDataset(
             @Parameter(description = "Dataset", required = true) @RequestBody Dataset body,
-            @AuthenticationPrincipal Object principal
+            Object principal
     ) throws RmesException {
         User user = this.userDecoder.fromPrincipal(principal).orElseThrow(()->new RmesException(500, "User informations mandatories for this endpoint", "Unable to retrieve user from "+principal));
         if (hasStrategyAllForCreation(user)) {
