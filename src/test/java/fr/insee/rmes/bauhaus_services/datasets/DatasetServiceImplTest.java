@@ -68,7 +68,7 @@ class DatasetServiceImplTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final String DATASET_WITH_THEME = """
+    private static final String DATASET_WITH_THEME = """
             [
                {
                   "observationNumber":"1000",
@@ -89,8 +89,8 @@ class DatasetServiceImplTest {
                   "updated":"2024-04-01T00:00:00",
                }
             ]""";
-    public static final String EMPTY_ARRAY = "[]";
-    public static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
+    private static final String EMPTY_ARRAY = "[]";
+    private static final String QUASI_EMPTY_OBJECT = "{\"uri\":\"\"}";
 
     @Test
     void shouldReturnDatasets() throws RmesException {
@@ -134,7 +134,7 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
             Dataset response = datasetService.getDatasetByID("1");
             String responseJson = objectMapper.writeValueAsString(response);
-            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[],\"lg2\":[]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
         }
     }
 
