@@ -10,5 +10,8 @@ public enum Module {
     SIMS,
     CLASSIFICATION,
     DATASET,
-    CODE_LIST
+    CODE_LIST,
+    COMPONENT,
+    STRUCTURE,
+    DISTRIBUTION
 }
