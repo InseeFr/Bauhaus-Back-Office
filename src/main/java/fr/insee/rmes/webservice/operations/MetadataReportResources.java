@@ -244,7 +244,7 @@ public class MetadataReportResources extends OperationsCommonResources {
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
-	public ResponseEntity<Object> setSimsValidation(
+	public ResponseEntity<String> setSimsValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		documentationsService.publishMetadataReport(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
