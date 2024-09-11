@@ -8,6 +8,7 @@ import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
+import fr.insee.rmes.config.swagger.model.code_list.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.utils.Deserializer;
@@ -173,8 +174,8 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
     @PutMapping("/validate/{id}")
     @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
-    public ResponseEntity<String> publishFullCodeList(@PathVariable(Constants.ID) String id) throws RmesException {
-        codeListService.publishCodeList(id, false);
+    public ResponseEntity<Id> publishFullCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {
+        codeListService.publishCodeList(id.getIdentifier(), false);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
