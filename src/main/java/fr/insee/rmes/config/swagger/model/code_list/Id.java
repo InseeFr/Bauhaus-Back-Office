@@ -6,4 +6,8 @@ public class Id {
     public Id(String identifier) {
         this.identifier = identifier;
     }
+
+    public String getIdentifier() {
+        return identifier;
+    }
 }
