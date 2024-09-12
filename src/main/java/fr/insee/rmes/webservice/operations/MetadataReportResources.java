@@ -1,6 +1,7 @@
 package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.config.swagger.Accept;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -51,14 +52,14 @@ public class MetadataReportResources extends OperationsCommonResources {
 			}
 	)
 	public ResponseEntity<Object> getMSD(
-			@Parameter(hidden = true) @RequestHeader(required=false) String accept
+			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
 			) {
 
 		try {
-			return switch (accept) {
+			return switch (accept.getAcceptance()) {
 				case MediaType.APPLICATION_XML_VALUE -> {
 					var msd = documentationsService.getMSD();
-					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, accept));
+					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, accept.getAcceptance()));
 				}
 				case MediaType.APPLICATION_JSON_VALUE -> {
 					var jsonResultat = documentationsService.getMSDJson();
@@ -127,15 +128,16 @@ public class MetadataReportResources extends OperationsCommonResources {
 					description = "Identifiant de la documentation (format : [0-9]{4})",
 					required = true,
 					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) String accept
+			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
 			) {
 
 
+
 		try {
-			return switch (accept) {
+			return switch (accept.getAcceptance()) {
 				case MediaType.APPLICATION_XML_VALUE -> {
 					var documentation = documentationsService.getFullSimsForXml(id);
-					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept));
+					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept.getAcceptance()));
 				}
 				case MediaType.APPLICATION_JSON_VALUE -> {
 					var jsonResultat = documentationsService.getFullSimsForJson(id);
