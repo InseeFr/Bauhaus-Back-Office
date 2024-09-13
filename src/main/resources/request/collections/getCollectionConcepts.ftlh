@@ -10,18 +10,18 @@ from <${CONCEPT_GRAPH}>
 				?collection skos:member ?member .
          	    ?member skos:notation ?id .
     			?member skos:prefLabel ?prefLabelLg1 . 
-				 		FILTER (lang(?prefLabelLg1) = 'fr') . 
+				 		FILTER (lang(?prefLabelLg1) = '${LG1}') .
 				 OPTIONAL {
         				?member skos:prefLabel ?prefLabelLg2 . 
-				 		FILTER (lang(?prefLabelLg2) = 'en')
+				 		FILTER (lang(?prefLabelLg2) = '${LG2}')
     					  }     		   
         	OPTIONAL {
             	 ?member skos:altLabel ?altLabelLg1V  
-				 FILTER (lang(?altLabelLg1V) = 'fr')  
+				 FILTER (lang(?altLabelLg1V) = '${LG1}')
     				}
                 OPTIONAL { 
         		?member skos:altLabel ?altLabelLg2V  
-				 FILTER (lang(?altLabelLg2V) = 'en')
+				 FILTER (lang(?altLabelLg2V) = '${LG2}')
     				}
     			OPTIONAL {?member insee:isValidated ?isValidated . }
         	    OPTIONAL {?member dc:creator ?creator .}
