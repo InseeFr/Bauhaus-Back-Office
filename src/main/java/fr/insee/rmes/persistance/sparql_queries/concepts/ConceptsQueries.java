@@ -19,33 +19,27 @@ public class ConceptsQueries extends GenericQueries {
 
 
 	public static String lastConceptID() throws RmesException {
-		params = new HashMap<>();
+		Map<String, Object> params = new HashMap<>();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getLastConceptId.ftlh", params);
 	}
 
 
 	public static String conceptsQuery() throws RmesException {
-		if (params == null) {
-			initParams();
-		}
+		Map<String, Object> params = initParams();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConcepts.ftlh", params);
 	}
 
 	public static String conceptsSearchQuery() throws RmesException {
-		if (params == null) {
-			initParams();
-		}
+		Map<String, Object> params = initParams();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptsForAdvancedSearch.ftlh", params);
 	}
 
 
 	public static String conceptsToValidateQuery() throws RmesException {
-		if (params == null) {
-			initParams();
-		}
+		Map<String, Object> params = initParams();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptsToValidateQuery.ftlh", params);
 	}
@@ -90,7 +84,7 @@ public class ConceptsQueries extends GenericQueries {
 	}
 	
 	public static String conceptLinks(String idConcept) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("ID_CONCEPT", idConcept);
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		return buildConceptRequest("getConceptLinksById.ftlh", params);		
@@ -131,7 +125,7 @@ public class ConceptsQueries extends GenericQueries {
 	 * @throws RmesException
 	 */
 	public static String getGraphWithConceptQuery(String uriConcept) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getGraphWithConceptQuery.ftlh", params);	
 	}
@@ -142,7 +136,7 @@ public class ConceptsQueries extends GenericQueries {
 	 * @throws RmesException
 	 */
 	public static String getRelatedConceptsQuery(String uriConcept) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_CONCEPT, uriConcept);
 		return buildConceptRequest("getLinkedConceptsQuery.ftlh", params);	
 	}
@@ -153,7 +147,7 @@ public class ConceptsQueries extends GenericQueries {
 	 * @throws RmesException
 	 */
 	public static String getConceptUriByIDQuery(String idConcept)  throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("idConcept", idConcept);
 		return buildConceptRequest("getUriFromIdQuery.ftlh", params);	
 	}
@@ -164,14 +158,14 @@ public class ConceptsQueries extends GenericQueries {
 	 * @throws RmesException
 	 */	
 	public static String deleteConcept(String uriConcept, String uriGraph) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_CONCEPT, uriConcept);
 		params.put("uriGraph", uriGraph);
 		return buildConceptRequest("deleteConceptAndNotesQuery.ftlh", params);	
 	}
 
 	public static String isConceptValidated(String conceptId) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
 		params.put("ID", conceptId);
 		return buildConceptRequest("isConceptValidated.ftlh", params);
@@ -183,15 +177,16 @@ public class ConceptsQueries extends GenericQueries {
 	 * @throws RmesException
 	 */	
 	public static String getConceptVersions(String uriConcept) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_CONCEPT, uriConcept);
-		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);	
+		return buildConceptRequest("getConceptVersionsQuery.ftlh", params);
 	}
 	
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
+		return params;
 	}
 	
 	private static String buildConceptRequest(String fileName, Map<String, Object> params) throws RmesException  {
