@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DocumentsQueries extends GenericQueries{
-	
-	static Map<String,Object> params ;
 
 	public static String checkLabelUnicity(String id, String label, String lang) throws RmesException {
 		HashMap<String, Object> params = new HashMap<>();
@@ -32,7 +30,7 @@ public class DocumentsQueries extends GenericQueries{
 	 * @throws RmesException
 	 */
 	public static String deleteDocumentQuery(IRI uri) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.URI, uri);
 		return  buildRequest("deleteDocumentQuery.ftlh", params);
 	}
@@ -44,7 +42,7 @@ public class DocumentsQueries extends GenericQueries{
 	 * @throws RmesException
 	 */
 	public static String getDocumentUriQuery(String url) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.URL, StringUtils.lowerCase(url));
 		return  buildRequest("getDocumentUriFromUrlQuery.ftlh", params);
 	}
@@ -66,7 +64,7 @@ public class DocumentsQueries extends GenericQueries{
 	}
 
 	public static String getSimsByDocument(String id, boolean isLink) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("ID", getDocType(isLink) + "/" + id);
 		return buildRequest("getSimsByDocument.ftlh", params);
 	}
@@ -76,7 +74,7 @@ public class DocumentsQueries extends GenericQueries{
 	}
 	
 	private static String getDocuments(String id, String idSims, String idRubric, Boolean isLink, String uriLang) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.ID, id);
 		params.put(Constants.ID_SIMS, idSims);
 		params.put("idRubric", idRubric);
@@ -95,14 +93,14 @@ public class DocumentsQueries extends GenericQueries{
 	
 	
 	public static String getLinksToDocumentQuery(String id) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.ID, id);
 		return  buildRequest("getLinksToDocumentQuery.ftlh", params);
 	}
 
 
 	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.ID, docId);
 		params.put("oldUrl", oldUrl);
 		params.put("newUrl", newUrl);
@@ -118,12 +116,12 @@ public class DocumentsQueries extends GenericQueries{
 	}
 
 
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("DOCUMENTS_GRAPH", config.getDocumentsGraph());
-
+		return params;
 	}
 	
 	
@@ -138,7 +136,7 @@ public class DocumentsQueries extends GenericQueries{
 
 
     public static String getDocumentsUriAndUrlForSims(String id) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.ID, id);
 		params.put("DOCUMENTATIONS_GRAPH", config.getDocumentationsGraph());
 		return  buildRequest("getDocumentsUriAndUrlForSims.ftlh", params);
