@@ -10,12 +10,11 @@ import java.util.Map;
 
 public class ParentQueries extends GenericQueries{
 
-	static Map<String,Object> params ;
-
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
+		return params;
 	}
 	
 	/**
@@ -25,7 +24,7 @@ public class ParentQueries extends GenericQueries{
 	 * @throws RmesException
 	 */
 	public static String checkIfExists(String uri) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.URI, uri);
 		return buildRequest("checkIfExistsQuery.ftlh", params);	
 	}

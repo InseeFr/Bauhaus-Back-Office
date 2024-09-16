@@ -10,13 +10,13 @@ import java.util.Map;
 
 public class OperationsQueries extends GenericQueries {
 	public static final String OPERATIONS_GRAPH = "OPERATIONS_GRAPH";
-	static Map<String,Object> params ;
 
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
+		return params;
 	}
 
 	private static String buildIndicatorRequest(String fileName, Map<String, Object> params) throws RmesException {
@@ -35,33 +35,33 @@ public class OperationsQueries extends GenericQueries {
 	}
 
 	public static String operationsQuery() throws RmesException {
-		initParams();
+		Map<String, Object> params = initParams();
 		return FreeMarkerUtils.buildRequest("operations/", "getOperations.ftlh", params);
 	}
 
 
 	public static String operationQuery(String id) throws RmesException {
-		initParams();
+		Map<String, Object> params = initParams();
 		params.put("ID", id);
 		return FreeMarkerUtils.buildRequest("operations/", "getOperation.ftlh", params);
 	}
 
 	public static String seriesQuery(String idOperation) throws RmesException {
-		initParams();
+		Map<String, Object> params = initParams();
 		params.put("ID", idOperation);
 		return FreeMarkerUtils.buildRequest("operations/series/", "getSeries.ftlh", params);
 	}
 
 
 	public static String operationsWithoutSimsQuery(String idSeries) throws RmesException {
-		initParams();
+		Map<String, Object> params = initParams();
 		params.put("ID", idSeries);
 		return FreeMarkerUtils.buildRequest("operations/series/", "getOperationsWithoutSimsQuery.ftlh", params);
 	}
 
 
 	public static String operationsWithSimsQuery(String idSeries) throws RmesException {
-		initParams();
+		Map<String, Object> params = initParams();
 		params.put("ID", idSeries);
 		return FreeMarkerUtils.buildRequest("operations/series/", "getOperationsWithSimsQuery.ftlh", params);
 }
@@ -71,7 +71,7 @@ public class OperationsQueries extends GenericQueries {
 	}
 
 	public static String seriesWithSimsQuery(String idFamily) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("ID_FAMILY", idFamily);
 		return buildIndicatorRequest("getSeriesWithSimsQuery.ftlh", params);
 	}
