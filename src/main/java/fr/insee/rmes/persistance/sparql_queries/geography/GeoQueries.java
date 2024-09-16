@@ -10,10 +10,7 @@ import java.util.Map;
 
 
 public class GeoQueries extends GenericQueries{
-	
-	static Map<String,Object> params ;
-	
-	
+
 	/**
 	 * 
 	 * @param id
@@ -21,14 +18,14 @@ public class GeoQueries extends GenericQueries{
 	 * @throws RmesException
 	 */
 	public static String getGeoUriIfExists(String id) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.ID, id);
 		return  buildRequest("getGeoUriIfExists.ftlh", params);
 	}
 	
 	
 	public static String getFeaturesQuery() throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("uriFeature", "");
 		return  buildRequest("getGeoFeatures.ftlh", params);
 	}
@@ -48,24 +45,25 @@ public class GeoQueries extends GenericQueries{
 	 * @throws RmesException
 	 */
 	public static String getFeatureQuery(String uri) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("uriFeature", uri);
 		return  buildRequest("getGeoFeatures.ftlh", params);
 	}
 
 	private static String getUnionOrDifferenceForFeature(String uriFeature, boolean getUnion) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(Constants.URI, uriFeature);
 		params.put("union", getUnion);
 		return  buildRequest("getUnionOrDifferenceForUri.ftlh", params);
 	}
 	
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put("COG_GRAPH", config.getGeographyGraph());
 		params.put("GEO_SIMS_GRAPH", config.getDocumentationsGeoGraph());
+		return params;
 	}
 	
 	
@@ -80,7 +78,7 @@ public class GeoQueries extends GenericQueries{
 
 
     public static String checkUnicityTerritory(String labelLg1) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("LABEL", labelLg1);
 
 		return  buildRequest("checkUnicityTerritory.ftlh", params);
