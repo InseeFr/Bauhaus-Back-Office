@@ -64,6 +64,7 @@ public class OpSeriesQueries extends GenericQueries{
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
 		params.put(ORG_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
 		return params;
 	}
 	
@@ -128,7 +129,7 @@ public class OpSeriesQueries extends GenericQueries{
 	public static String getGeneratedWith(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
-		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);	
+		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);
 	}
 	
 	/**
@@ -139,7 +140,6 @@ public class OpSeriesQueries extends GenericQueries{
 	public static String getOperations(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);	
 	}
 	
@@ -155,8 +155,7 @@ public class OpSeriesQueries extends GenericQueries{
 		if(Constants.ORGANIZATIONS.equals(resultType)) {
 			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
 		}
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());		
-		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);	
+		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);
 	}
 	
 	/**
