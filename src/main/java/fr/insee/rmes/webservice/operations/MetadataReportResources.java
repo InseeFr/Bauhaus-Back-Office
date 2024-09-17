@@ -52,11 +52,11 @@ public class MetadataReportResources extends OperationsCommonResources {
 			}
 	)
 	public ResponseEntity<Object> getMSD(
-			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-
+		Accept acceptHeader = Accept.fromMediaType(accept);
 		try {
-			return switch (accept) {
+			return switch (acceptHeader) {
 				case XML -> {
 					var msd = documentationsService.getMSD();
 					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, String.valueOf(accept)));
@@ -128,16 +128,14 @@ public class MetadataReportResources extends OperationsCommonResources {
 					description = "Identifiant de la documentation (format : [0-9]{4})",
 					required = true,
 					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-
-
-
+		Accept acceptHeader = Accept.fromMediaType(accept);
 		try {
-			return switch (accept) {
+			return switch (acceptHeader) {
 				case XML -> {
 					var documentation = documentationsService.getFullSimsForXml(id);
-					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, String.valueOf(accept)));
+					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept));
 				}
 				case JSON -> {
 					var jsonResultat = documentationsService.getFullSimsForJson(id);
