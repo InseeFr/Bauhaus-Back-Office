@@ -1,7 +1,7 @@
 package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.config.swagger.Accept;
+import fr.insee.rmes.config.swagger.model.Accept;
 import fr.insee.rmes.config.swagger.model.operations.documentation.Attribute;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Documentation;
@@ -52,16 +52,16 @@ public class MetadataReportResources extends OperationsCommonResources {
 			}
 	)
 	public ResponseEntity<Object> getMSD(
-			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-
+		Accept acceptHeader = Accept.fromMediaType(accept);
 		try {
-			return switch (accept.getAcceptance()) {
-				case MediaType.APPLICATION_XML_VALUE -> {
+			return switch (acceptHeader) {
+				case XML -> {
 					var msd = documentationsService.getMSD();
-					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, accept.getAcceptance()));
+					yield ResponseEntity.ok(XMLUtils.produceResponse(msd, String.valueOf(accept)));
 				}
-				case MediaType.APPLICATION_JSON_VALUE -> {
+				case JSON -> {
 					var jsonResultat = documentationsService.getMSDJson();
 					yield ResponseEntity.ok(jsonResultat);
 				}
@@ -128,18 +128,16 @@ public class MetadataReportResources extends OperationsCommonResources {
 					description = "Identifiant de la documentation (format : [0-9]{4})",
 					required = true,
 					schema = @Schema(pattern = "[0-9]{4}", type = "string")) @PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) Accept accept
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept
 			) {
-
-
-
+		Accept acceptHeader = Accept.fromMediaType(accept);
 		try {
-			return switch (accept.getAcceptance()) {
-				case MediaType.APPLICATION_XML_VALUE -> {
+			return switch (acceptHeader) {
+				case XML -> {
 					var documentation = documentationsService.getFullSimsForXml(id);
-					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept.getAcceptance()));
+					yield ResponseEntity.ok(XMLUtils.produceResponse(documentation, accept));
 				}
-				case MediaType.APPLICATION_JSON_VALUE -> {
+				case JSON -> {
 					var jsonResultat = documentationsService.getFullSimsForJson(id);
 					yield ResponseEntity.ok(jsonResultat);
 				}
