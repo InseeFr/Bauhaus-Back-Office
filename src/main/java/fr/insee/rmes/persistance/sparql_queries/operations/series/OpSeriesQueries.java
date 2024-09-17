@@ -128,6 +128,7 @@ public class OpSeriesQueries extends GenericQueries{
 	public static String getGeneratedWith(String idSeries) throws RmesException {
 		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
+		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
 		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);	
 	}
 	
