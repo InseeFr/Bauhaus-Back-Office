@@ -4,6 +4,7 @@ import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
 import fr.insee.rmes.webservice.operations.MetadataReportResources;
+import fr.insee.rmes.webservice.operations.OperationsResources;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +14,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
         DatasetResources.class,
         DistributionResources.class,
         CodeListsResources.class,
-        MetadataReportResources.class
+        MetadataReportResources.class,
+        OperationsResources.class
 })
 public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
 

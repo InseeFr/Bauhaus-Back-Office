@@ -37,7 +37,6 @@ public class OperationsResources extends OperationsCommonResources {
 	public ResponseEntity<Object> getOperations() throws RmesException {
 		String jsonResultat = operationsService.getOperations();
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
-
 	}
 
 	@GetMapping(value = "/operation/{id}", produces = { MediaType.APPLICATION_JSON_VALUE,
@@ -45,22 +44,13 @@ public class OperationsResources extends OperationsCommonResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Get an operation", responses = {
 			@ApiResponse(content = @Content(/* mediaType = "application/json", */ schema = @Schema(implementation = Operation.class))) })
 	public ResponseEntity<Object> getOperationByID(@PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) String accept) {
+			@Parameter(hidden = true) @RequestHeader(required=false) String accept) throws RmesException {
 		String resultat;
 		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-			try {
-				resultat = XMLUtils.produceXMLResponse(operationsService.getOperationById(id));
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
+			return ResponseEntity.status(HttpStatus.OK).body(XMLUtils.produceXMLResponse(operationsService.getOperationById(id)));
 		} else {
-			try {
-				resultat = operationsService.getOperationJsonByID(id);
-			} catch (RmesException e) {
-				return returnRmesException(e);
-			}
+			return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationJsonByID(id));
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(resultat);
 	}
 
 	/**
@@ -75,12 +65,9 @@ public class OperationsResources extends OperationsCommonResources {
 	@PutMapping(value = "/operation/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationById", summary = "Update an operation")
 	public ResponseEntity<Object> setOperationById(@PathVariable(Constants.ID) String id,
-			@Parameter(description = "Operation to update", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) {
-		try {
-			operationsService.setOperation(id, body);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
+			@Parameter(description = "Operation to update", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
+
+		operationsService.setOperation(id, body);
 		return ResponseEntity.noContent().build();
 	}
 
@@ -94,13 +81,8 @@ public class OperationsResources extends OperationsCommonResources {
 	@PostMapping(value = "/operation", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createOperation", summary = "Create operation")
 	public ResponseEntity<Object> createOperation(
-			@Parameter(description = "Operation to create", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) {
-		String id = null;
-		try {
-			id = operationsService.createOperation(body);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
+			@Parameter(description = "Operation to create", required = true, content = @Content(schema = @Schema(implementation = Operation.class))) @RequestBody String body) throws RmesException {
+		String id = operationsService.createOperation(body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
@@ -114,11 +96,7 @@ public class OperationsResources extends OperationsCommonResources {
 	@PutMapping(value = "/operation/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setOperationValidation", summary = "Operation validation")
 	public ResponseEntity<Object> setOperationValidation(@PathVariable(Constants.ID) String id) throws RmesException {
-		try {
-			operationsService.setOperationValidation(id);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
+		operationsService.setOperationValidation(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
