@@ -54,14 +54,6 @@ public class DocumentsResources  extends GenericResources {
 	@Autowired
 	DocumentsService documentsService;
 
-	/*
-	 * DOCUMENTS AND LINKS
-	 */
-	
-	/**
-	 * Get the list of all documents and links
-	 * @return
-	 */
 	@GetMapping
 	@Operation(operationId = "getDocuments", summary = "List of documents and links",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=Document.class))))})																 
@@ -76,15 +68,6 @@ public class DocumentsResources  extends GenericResources {
 	}
 
 
-	
-	/*
-	 * DOCUMENTS
-	 */
-	/**
-	 * Get One Document
-	 * @param id
-	 * @return
-	 */
 	@GetMapping("/document/{id}")
 	@Operation(operationId = "getDocument", summary = "Get a Document",
 		responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
@@ -115,11 +98,7 @@ public class DocumentsResources  extends GenericResources {
 		}
 	}
 	
-	
-	
-	/**
-	 * Create a new document
-	 */
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
@@ -129,49 +108,36 @@ public class DocumentsResources  extends GenericResources {
 			MediaType.APPLICATION_OCTET_STREAM_VALUE,
 			"application/vnd.oasis.opendocument.text",
 			MediaType.APPLICATION_JSON_VALUE })
-	public ResponseEntity<Object> setDocument(
+	public ResponseEntity<String> setDocument(
 			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))
 			@RequestParam(value="body") String body,
 			@Parameter(description = "Fichier", required = true, schema = @Schema(type = "string", format = "binary", description = "file" ))
 			@RequestParam(value = "file") MultipartFile  documentFile
-			) {
+			) throws RmesException {
 		String id = null;
 		String documentName = documentFile.getOriginalFilename();
 		try {
 			id = documentsService.createDocument(body, documentFile.getInputStream(), documentName);
-		} catch (RmesException e) {
-			return returnRmesException(e);
 		} catch (IOException e) {
 			return ResponseEntity.internalServerError().body("IOException"+e.getMessage());
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
-	
-	/**
-	 * Update informations about a document
-	 */
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
 	@PutMapping("/document/{id}")
 	@Operation(operationId = "setDocumentById", summary = "Update document ")
-	public ResponseEntity<Object> setDocument(
+	public ResponseEntity<String> setDocument(
 			@Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))@RequestBody String body) {
-		try {
-			documentsService.setDocument(id, body);
-		} catch (RmesException e) {
-			return returnRmesException(e);
-		}
+			@Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation=Document.class))@RequestBody String body) throws RmesException {
+		documentsService.setDocument(id, body);
 		logger.info("Update document : {}", id);
 		return ResponseEntity.ok(id);
 	}
 	
 
-
-	/**
-	 * Change the file of a document
-	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@Operation(operationId = "changeDocument", summary = "Change document file" )
@@ -196,10 +162,8 @@ public class DocumentsResources  extends GenericResources {
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(url);
 	}
-	
-	/**
-	 * Delete a document
-	 */
+
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@DeleteMapping("/document/{id}")
@@ -214,16 +178,7 @@ public class DocumentsResources  extends GenericResources {
 		return ResponseEntity.status(status).body(id);
 	}
 
-	/*
-	 * LINKS
-	 */
-	
 
-	/**
-	 * Get One Link
-	 * @param id
-	 * @return
-	 */
 	@GetMapping("/link/{id}")
 	@Operation(operationId = "getLink", summary = "Get a Link",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(implementation=Document.class)))})																 
@@ -235,10 +190,7 @@ public class DocumentsResources  extends GenericResources {
 			return returnRmesException(e);
 		}
 	}
-	
-	/**
-	 * Create a new link
-	 */
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
@@ -260,10 +212,7 @@ public class DocumentsResources  extends GenericResources {
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
-	
-	/**
-	 * Update informations about a link
-	 */
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
@@ -280,10 +229,7 @@ public class DocumentsResources  extends GenericResources {
 		logger.info("Update link : {}", id);
 		return ResponseEntity.ok(id);
 	}
-	
-	/**
-	 * Delete a link
-	 */
+
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")	@DeleteMapping("/link/{id}")
@@ -297,6 +243,4 @@ public class DocumentsResources  extends GenericResources {
 		}
 		return ResponseEntity.status(status).body(id);
 	}
-	
-	
 }
