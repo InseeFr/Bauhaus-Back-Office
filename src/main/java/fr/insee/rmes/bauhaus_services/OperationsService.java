@@ -61,8 +61,6 @@ public interface OperationsService {
 
 	String getOperations() throws RmesException ;
 
-	String getOperationJsonByID(String id) throws RmesException;
-	
 	Operation getOperationById(String id) throws RmesException ;
 
 	String getOperationsWithoutReport(String id) throws RmesException;
