@@ -5,6 +5,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,7 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 	}
 	
 	@Override
-	public Object getLink(String id) throws RmesException {
-		logger.debug("Starting to get link {} ", id);
+	public JSONObject getLink(String id) throws RmesException {
 		return documentsUtils.getDocument(id, true);
 	}
 
@@ -77,9 +77,8 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 	}
 
 	@Override
-	public String setDocument(String id, String body) throws RmesException {
+	public void setDocument(String id, String body) throws RmesException {
 		documentsUtils.setDocument(id, body, false);
-		return id;
 	}
 
 	@Override
@@ -89,12 +88,12 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 
 
 	@Override
-	public ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException {
+	public ResponseEntity<Resource> downloadDocument(String id) throws RmesException {
 		return documentsUtils.downloadDocumentFile(id);
 	}
 	
 	@Override
-	public String setLink(String body) throws RmesException, IOException {
+	public String setLink(String body) throws RmesException {
 		String id = documentsUtils.createDocumentID();
 		logger.debug("Create document : {}", id);
 		documentsUtils.createDocument(id,body,true, null, null);
