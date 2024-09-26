@@ -17,8 +17,6 @@ public class OpSeriesQueries extends GenericQueries{
 		throw new IllegalStateException("Utility class");
 	}
 
-	static Map<String, Object> params;
-	
 	private static final String ID_SERIES = "ID_SERIES";
 	private static final String PRODUCTS_GRAPH = "PRODUCTS_GRAPH";
 	private static final String STAMP = "STAMP";
@@ -50,7 +48,7 @@ public class OpSeriesQueries extends GenericQueries{
 	}
 
 	public static String getSeriesForSearch(String stamp) throws RmesException {
-			if (params==null) {initParams();}
+			Map<String, Object> params = initParams();
 			params.put("stamp", stamp ==null ? "" : stamp);
 			return buildSeriesRequest("getSeriesForAdvancedSearchQuery.ftlh", params);	
 	}
@@ -59,13 +57,15 @@ public class OpSeriesQueries extends GenericQueries{
  //   Using .flth files  //
 //////////////////////////
 	
-	private static void initParams() {
-		params = new HashMap<>();
+	private static Map<String, Object> initParams() {
+		Map<String, Object> params = new HashMap<>();
 		params.put("LG1", config.getLg1());
 		params.put("LG2", config.getLg2());
 		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
 		params.put(ORGANIZATIONS_GRAPH, config.getOrganizationsGraph());
 		params.put(ORG_INSEE_GRAPH, config.getOrgInseeGraph());
+		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
+		return params;
 	}
 	
 	private static String buildSeriesRequest(String fileName, Map<String, Object> params) throws RmesException  {
@@ -78,7 +78,7 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getFamily(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
 		return buildSeriesRequest("getSeriesFamilyQuery.ftlh", params);	
 	}
@@ -90,20 +90,20 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getCreatorsBySeriesUri(String uriSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("getSeriesCreatorsByUriQuery.ftlh", params);	
 	}
 	
 	public static String checkIfSeriesHasSims(String uriSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("checkIfSeriesHasSimsQuery.ftlh", params);	
 	}
 	
 	
 	public static String checkIfSeriesHasOperation(String uriSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_SERIES, uriSeries);
 		return buildSeriesRequest("checkIfSeriesHasOperationQuery.ftlh", params);	
 	}
@@ -115,7 +115,7 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getCreatorsById(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
 		return buildSeriesRequest("getSeriesCreatorsByIdQuery.ftlh", params);	
 	}
@@ -127,9 +127,9 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getGeneratedWith(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
-		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);	
+		return buildSeriesRequest("getSeriesGeneratedWithQuery.ftlh", params);
 	}
 	
 	/**
@@ -138,9 +138,8 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String getOperations(String idSeries) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());
 		return buildSeriesRequest("getSeriesOperationsQuery.ftlh", params);	
 	}
 	
@@ -150,14 +149,13 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String seriesLinks(String idSeries, IRI linkPredicate, String resultType) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(ID_SERIES, idSeries);
 		params.put(LINK_PREDICATE, linkPredicate);
 		if(Constants.ORGANIZATIONS.equals(resultType)) {
 			return buildSeriesRequest("getSeriesOrganizationsLinksQuery.ftlh", params);	
 		}
-		params.put(PRODUCTS_GRAPH, config.getProductsGraph());		
-		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);	
+		return buildSeriesRequest("getSeriesLinksQuery.ftlh", params);
 	}
 	
 	/**
@@ -165,7 +163,7 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String seriesWithSimsQuery() throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("withSims", "true");
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
@@ -176,7 +174,7 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String seriesWithStampQuery(String stamp, boolean isAdmin) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(STAMP, stamp);
 		params.put("ADMIN", isAdmin);
 		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);
@@ -188,13 +186,13 @@ public class OpSeriesQueries extends GenericQueries{
 	 * @throws RmesException
 	 */	
 	public static String seriesQuery() throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put("withSims", "false");
 		return buildSeriesRequest("getSeriesQuery.ftlh", params);	
 	}
 
 	public static String checkIfSeriesExists(List<String> iris) throws RmesException {
-		if (params==null) {initParams();}
+		Map<String, Object> params = initParams();
 		params.put(URI_SERIES, iris);
 		return buildSeriesRequest("checkIfSeriesExists.ftlh", params);
 	}
