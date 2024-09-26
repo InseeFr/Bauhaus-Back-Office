@@ -34,17 +34,17 @@ public class OperationsResources extends OperationsCommonResources {
 		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperations());
 	}
 
-	@GetMapping(value = "/operation/{id}", produces = { MediaType.APPLICATION_JSON_VALUE,
-			MediaType.APPLICATION_XML_VALUE })
+	@GetMapping(
+			value = "/operation/{id}",
+			produces = {
+				MediaType.APPLICATION_JSON_VALUE,
+				MediaType.APPLICATION_XML_VALUE
+			}
+	)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationByID", summary = "Get an operation", responses = {
-			@ApiResponse(content = @Content(/* mediaType = "application/json", */ schema = @Schema(implementation = Operation.class))) })
-	public ResponseEntity<String> getOperationByID(@PathVariable(Constants.ID) String id,
-			@Parameter(hidden = true) @RequestHeader(required=false) String accept) throws RmesException {
-		if (accept != null && accept.equals(MediaType.APPLICATION_XML_VALUE)) {
-			return ResponseEntity.status(HttpStatus.OK).body(XMLUtils.produceXMLResponse(operationsService.getOperationById(id)));
-		} else {
-			return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationJsonByID(id));
-		}
+			@ApiResponse(content = @Content(schema = @Schema(implementation = Operation.class))) })
+	public ResponseEntity<Operation> getOperationByID(@PathVariable(Constants.ID) String id) throws RmesException {
+		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperationById(id));
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN " + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR "
