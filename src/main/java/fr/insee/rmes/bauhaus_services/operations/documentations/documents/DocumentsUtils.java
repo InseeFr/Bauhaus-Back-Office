@@ -29,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,6 +42,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -551,8 +553,8 @@ public class DocumentsUtils extends RdfService {
         repoGestion.loadSimpleObject(docUri, model);
     }
 
-    private HttpStatus changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
-        return repoGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId, docUrl, newUrl));
+    private void changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
+        repoGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId, docUrl, newUrl));
     }
 
     private void deleteFile(String docUrl) {
@@ -669,7 +671,7 @@ public class DocumentsUtils extends RdfService {
      * @return Response containing the file (inputStream)
      * @throws RmesException
      */
-    public ResponseEntity<Object> downloadDocumentFile(String id) throws RmesException {
+    public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
         try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
@@ -683,8 +685,10 @@ public class DocumentsUtils extends RdfService {
             return ResponseEntity.ok()
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(data);
-        } catch (IOException e) {
+                    .body(new ByteArrayResource(data));
+        }catch (NoSuchFileException e){
+            throw new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), filePath+" not found", filePath+" not found");
+        }catch (IOException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }

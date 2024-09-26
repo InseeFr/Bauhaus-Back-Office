@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
 import org.json.JSONObject;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -30,7 +31,7 @@ public interface DocumentsService {
 	/**
 	 * Update
 	 */
-	String setDocument(String id, String body) throws RmesException ;
+	void setDocument(String id, String body) throws RmesException ;
 	
 	/**
 	 * Delete
@@ -45,7 +46,7 @@ public interface DocumentsService {
 	 */
 	String changeDocument(String documentUri, InputStream documentFile, String documentName) throws RmesException ;
 	
-	ResponseEntity<Object> downloadDocument(String id) throws RmesException, IOException;
+	ResponseEntity<Resource> downloadDocument(String id) throws RmesException;
 
 
 	/*
@@ -54,7 +55,7 @@ public interface DocumentsService {
 	
 	String setLink(String body) throws RmesException, IOException;
 
-	Object getLink(String id) throws RmesException;
+	JSONObject getLink(String id) throws RmesException;
 
 	HttpStatus deleteLink(String id) throws RmesException;
 
