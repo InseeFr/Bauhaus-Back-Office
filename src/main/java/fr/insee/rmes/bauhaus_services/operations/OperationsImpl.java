@@ -154,12 +154,6 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		return operationsUtils.getOperationById(id);
 	}
 
-	@Override
-	public String getOperationJsonByID(String id) throws RmesException {
-		JSONObject operation = operationsUtils.getOperationJsonById(id);
-		return operation.toString();
-	}
-
 	/**
 	 * UPDATE
 	 */
