@@ -296,12 +296,6 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public void setDocument(String id, String body, boolean isLink) throws RmesException {
-        /* Check rights */
-        if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-            throw new RmesUnauthorizedException(ErrorCodes.LINK_MODIFICATION_RIGHTS_DENIED,
-                    "Only an admin or a manager can modify a " + (isLink ? "link." : "document."), id);
-        }
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         Document document = new Document(id, isLink);
