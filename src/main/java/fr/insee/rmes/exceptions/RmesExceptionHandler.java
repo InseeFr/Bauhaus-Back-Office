@@ -19,7 +19,7 @@ import java.nio.file.NoSuchFileException;
         DistributionResources.class,
         CodeListsResources.class,
         MetadataReportResources.class,
-        OperationsResources.class
+        OperationsResources.class,
         DocumentsResources.class
 })
 public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
