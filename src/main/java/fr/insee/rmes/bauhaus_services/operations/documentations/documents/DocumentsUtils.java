@@ -306,9 +306,11 @@ public class DocumentsUtils extends RdfService {
             logger.error(e.getMessage());
         }
 
-        IRI docUri = RdfUtils.toURI(document.getUri());
-        logger.info("Update document : {} - {} / {}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
+
+        logger.info("Update document : {} - {} / {}", document.getId(), document.getLabelLg1(), document.getLabelLg2());
         validate(document);
+
+        IRI docUri = isLink ? RdfUtils.linkIRI(id) : RdfUtils.documentIRI(id);
         writeRdfDocument(document, docUri);
     }
 
