@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.datasets;
 
+import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
@@ -12,7 +13,7 @@ public interface DatasetService {
 
     String update(String datasetId, String body) throws RmesException;
 
-    String create(String body) throws RmesException;
+    String create(Dataset dataset) throws RmesException;
 
     String getDistributions(String id) throws RmesException;
 
@@ -25,4 +26,6 @@ public interface DatasetService {
     String publishDataset(String id) throws RmesException;
 
     void deleteDatasetId(String datasetId) throws RmesException;
+
+    String createWithStamp(Dataset dataset, Stamp stamp) throws RmesException;
 }

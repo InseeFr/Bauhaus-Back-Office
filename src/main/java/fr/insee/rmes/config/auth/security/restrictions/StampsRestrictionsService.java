@@ -19,6 +19,7 @@ public interface StampsRestrictionsService {
 
 	boolean isConceptsOrCollectionsOwner(List<IRI> uris) throws RmesException;
 
+
 	boolean canCreateConcept() throws RmesException;
 
 	boolean canModifyConcept(IRI uri) throws RmesException;
@@ -80,4 +81,9 @@ public interface StampsRestrictionsService {
 	boolean canValidateClassification(IRI uri) throws RmesException;
 
 
+    boolean isSeriesManagerWithStamp(IRI iri, String stamp) throws RmesException;
+
+    interface QueryGenerator {
+        String generate(String query) throws RmesException;
+    }
 }

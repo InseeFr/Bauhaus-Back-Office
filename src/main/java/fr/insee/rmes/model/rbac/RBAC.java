@@ -1,27 +1,14 @@
 package fr.insee.rmes.model.rbac;
 
-public class RBAC {
-    public enum Module {
-        CONCEPT,
-        COLLECTION,
-        FAMILY,
-        SERIE,
-        OPERATION,
-        INDICATOR,
-        SIMS,
-        CLASSIFICATION
+import fr.insee.rmes.config.auth.RBACConfiguration;
+
+import java.util.Map;
+import java.util.Objects;
+
+public record RBAC(Map<RBACConfiguration.RoleName, ApplicationAccessPrivileges> applicationAccessPrivilegesByRoles) {
+
+    public RBAC{
+        Objects.requireNonNull(applicationAccessPrivilegesByRoles);
     }
 
-    public enum Privilege {
-        CREATE,
-        READ,
-        UPDATE,
-        DELETE,
-        PUBLISH,
-        VALIDATE
-    }
-
-    public enum Strategy {
-        ALL, STAMP
-    }
 }

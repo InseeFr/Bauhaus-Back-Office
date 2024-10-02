@@ -2,14 +2,9 @@ package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.OperationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifier;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.webservice.operations.SeriesResources;
 import org.junit.jupiter.api.Test;
@@ -40,12 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=operations"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
+@Import( ConfigurationForTestWithAuth.class)
 class TestSeriesResourcesEnvProd {
 
     @Autowired
@@ -58,7 +48,10 @@ class TestSeriesResourcesEnvProd {
     protected OperationsDocumentationsService documentationsService;
 
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
+
+    @MockBean
+    ResourceOwnershipByStampVerifier resourceOwnershipByStampVerifier;
 
     @MockBean
     private JwtDecoder jwtDecoder;

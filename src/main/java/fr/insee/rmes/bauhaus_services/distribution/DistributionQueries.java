@@ -50,4 +50,6 @@ public class DistributionQueries extends GenericQueries {
         params.put("DISTRIBUTION_GRAPH_URI", uri);
         return FreeMarkerUtils.buildRequest(ROOT_DIRECTORY, "getDistributionContributorsByUriQuery.ftlh", params);
     }
+
+
 }

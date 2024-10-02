@@ -1,16 +1,11 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
-import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.bauhaus_services.accesscontrol.AuthorizationCheckerWithResourceOwnershipByStamp;
+import fr.insee.rmes.bauhaus_services.accesscontrol.ResourceOwnershipByStampVerifier;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
-import fr.insee.rmes.config.Config;
-import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
-import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
-import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
-import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.StructureResources;
@@ -44,12 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
                 "fr.insee.rmes.bauhaus.activeModules=structures"}
 )
-@Import({Config.class,
-        OpenIDConnectSecurityContext.class,
-        DefaultSecurityContext.class,
-        CommonSecurityConfiguration.class,
-        UserProviderFromSecurityContext.class,
-        BauhausMethodSecurityExpressionHandler.class})
+@Import( ConfigurationForTestWithAuth.class)
 class TestStructuresResourcesEnvProd {
     @Autowired
     private MockMvc mvc;
@@ -62,7 +52,9 @@ class TestStructuresResourcesEnvProd {
     @MockBean
     protected OperationsDocumentationsService documentationsService;
     @MockBean
-    StampAuthorizationChecker stampAuthorizationChecker;
+    AuthorizationCheckerWithResourceOwnershipByStamp stampAuthorizationChecker;
+    @MockBean
+    ResourceOwnershipByStampVerifier resourceOwnershipByStampVerifier;
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 

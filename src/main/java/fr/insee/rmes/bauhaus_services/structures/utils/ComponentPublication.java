@@ -1,8 +1,7 @@
 package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -16,7 +15,7 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ComponentPublication extends RdfService {
+public record ComponentPublication(RepositoryGestion repoGestion, PublicationUtils publicationUtils) {
 
 	public void publishComponent(Resource component, IRI type) throws RmesException {
 		
@@ -57,7 +56,7 @@ public class ComponentPublication extends RdfService {
 			con.close();
 		}
 		Resource componentToPublishRessource = publicationUtils.tranformBaseURIToPublish(component);
-		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
+        publicationUtils.repositoryPublication().publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
 		
 	}
 

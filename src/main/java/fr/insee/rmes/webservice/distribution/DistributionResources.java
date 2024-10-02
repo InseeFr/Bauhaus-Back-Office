@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -77,7 +76,7 @@ public class DistributionResources {
         if (user.hasRole(Roles.ADMIN)) {
             return this.datasetService.getDatasets();
         }
-        return this.datasetService.getDatasetsForDistributionCreation(user.getStamp());
+        return this.datasetService.getDatasetsForDistributionCreation(user.getStampAsString());
     }
 
     @PreAuthorize("isAdmin() || isDatasetContributor()")
