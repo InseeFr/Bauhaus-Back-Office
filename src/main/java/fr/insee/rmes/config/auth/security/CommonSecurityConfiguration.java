@@ -9,16 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
 import java.util.Optional;
 
 import static fr.insee.rmes.config.PropertiesKeys.CORS_ALLOWED_ORIGIN;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 public class CommonSecurityConfiguration {
@@ -27,24 +25,31 @@ public class CommonSecurityConfiguration {
 
     public static final String DEFAULT_ROLE_PREFIX = "" ;
     private final Optional<String> allowedOrigin ;
+    private final String appHost;
 
-    public CommonSecurityConfiguration(@Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin){
+    public CommonSecurityConfiguration(@Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin, @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost) {
         this.allowedOrigin=allowedOrigin;
+        this.appHost = appHost;
     }
 
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        logger.info("Allowed origins : {}", allowedOrigin);
-        configuration.setAllowedOrigins(List.of(allowedOrigin.orElse("*")));
-        configuration.setAllowedMethods(List.of("*"));
-        configuration.setAllowedHeaders(List.of("*"));
-        UrlBasedCorsConfigurationSource source = new
-                UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                logger.info("Allowed origins : {}", allowedOrigin);
+                registry.addMapping("/**")
+                        .allowedOrigins(allowedOrigin.orElse(appHost))
+                        .allowedMethods("*")
+                        .allowedHeaders("*")
+                        .maxAge(3600);
+            }
+
+        };
     }
+
 
     @Bean
     public StampFromPrincipal stampFromPrincipal(UserDecoder userDecoder){
