@@ -73,7 +73,7 @@ public record DocumentsImpl(DocumentsUtils documentsUtils) implements DocumentsS
 
 		logger.debug("Updating document {} with the identifier {}", documentName, docId);
 		documentsUtils.checkFileNameValidity(documentName);
-		return documentsUtils.changeFile(docId,documentFile,documentName);
+		return documentsUtils.changeFile(docId, documentFile, documentName);
 	}
 
 	@Override
