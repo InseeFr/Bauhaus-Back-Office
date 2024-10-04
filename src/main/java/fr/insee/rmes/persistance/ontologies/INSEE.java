@@ -23,7 +23,7 @@ public class INSEE {
 	private static IRI createIRI(String suffix) {
 		return factory.createIRI(NAMESPACE, suffix);
 	}
-
+	public static final IRI LAST_CODE_URI_SEGMENT = INSEE.createIRI("lastCodeUriSegment");
 	public static final IRI DISSEMINATIONSTATUS = INSEE.createIRI("disseminationStatus");
 	public static final IRI ADDITIONALMATERIAL = INSEE.createIRI("additionalMaterial");
 	public static final IRI LEGALMATERIAL = INSEE.createIRI("legalMaterial");

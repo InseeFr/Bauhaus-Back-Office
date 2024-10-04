@@ -5,7 +5,7 @@ WHERE {
     ?iri skos:notation '${NOTATION}' ;
     skos:notation ?id .
     OPTIONAL {
-        ?iri <${BASE_INTERNAL_URI}lastCodeUriSegment> ?lastCodeUriSegment .
+        ?iri insee:lastCodeUriSegment ?lastCodeUriSegment .
     }
     OPTIONAL {
     ?iri dcterms:created ?created .

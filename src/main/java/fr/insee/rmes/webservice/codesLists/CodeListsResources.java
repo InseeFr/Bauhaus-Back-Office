@@ -4,8 +4,8 @@ package fr.insee.rmes.webservice.codesLists;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
+import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Id;
@@ -48,10 +48,9 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isCodesListContributor(#body)")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Create a code list")
-    public ResponseEntity<CodeList> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
+    public ResponseEntity<String> setCodesList(@Parameter(description = "Code List", required = true) @RequestBody String body) throws RmesException {
         String id = codeListService.setCodesList(body, false);
-        CodeList codeListResponse = new CodeList(id);
-        return ResponseEntity.status(HttpStatus.OK).body(codeListResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
 
     }
 
@@ -59,10 +58,9 @@ public class CodeListsResources extends GenericResources {
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#codesListId)")
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "setCodesList", summary = "Update a code list")
-    public ResponseEntity<CodeList> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
-        id = codeListService.setCodesList(id, body, false);
-        CodeList codeList = new CodeList(id);
-        return ResponseEntity.status(HttpStatus.OK).body(codeList);
+    public ResponseEntity<String> updateCodesList(@PathVariable(Constants.ID) @P("codesListId") String id, @Parameter(description = "Code list", required = true) @RequestBody String body) throws RmesException {
+        codeListService.setCodesList(id, body, false);
+        return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
 
