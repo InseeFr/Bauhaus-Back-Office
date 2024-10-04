@@ -116,7 +116,7 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
     }
 
     private IRI findCodesListIRI(String codesListId) throws RmesException {
-        JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListIRIByNotation(codesListId, baseInternalUri));
+        JSONObject codeList = repoGestion.getResponseAsObject(CodeListQueries.getCodeListIRIByNotation(codesListId));
         String uriString = codeList.getString("iri");
         return RdfUtils.createIRI(uriString);
     }

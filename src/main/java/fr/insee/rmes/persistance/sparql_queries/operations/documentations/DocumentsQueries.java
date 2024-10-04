@@ -99,9 +99,9 @@ public class DocumentsQueries extends GenericQueries{
 	}
 
 
-	public static String changeDocumentUrlQuery(String docId, String oldUrl, String newUrl) throws RmesException {
+	public static String changeDocumentUrlQuery(String iri, String oldUrl, String newUrl) throws RmesException {
 		Map<String, Object> params = initParams();
-		params.put(Constants.ID, docId);
+		params.put("iri", iri);
 		params.put("oldUrl", oldUrl);
 		params.put("newUrl", newUrl);
 		return  buildRequest("changeDocumentUrlQuery.ftlh", params);

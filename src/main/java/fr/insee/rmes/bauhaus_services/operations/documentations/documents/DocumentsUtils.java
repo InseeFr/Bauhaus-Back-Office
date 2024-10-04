@@ -476,7 +476,7 @@ public class DocumentsUtils extends RdfService {
             logger.info("Try to replace file {}, new URL is {}", documentName, newUrl);
             uploadFile(documentFile, documentName, newUrl, false);
             // Update document's url
-            changeDocumentsURL(docId, addSchemeFile(docUrl), addSchemeFile(newUrl));
+            changeDocumentsURL(jsonDoc.getString(Constants.URI), addSchemeFile(docUrl), addSchemeFile(newUrl));
         }
 
         return newUrl;
@@ -549,8 +549,8 @@ public class DocumentsUtils extends RdfService {
         repoGestion.loadSimpleObject(docUri, model);
     }
 
-    private void changeDocumentsURL(String docId, String docUrl, String newUrl) throws RmesException {
-        repoGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(docId, docUrl, newUrl));
+    private void changeDocumentsURL(String iri, String docUrl, String newUrl) throws RmesException {
+        repoGestion.executeUpdate(DocumentsQueries.changeDocumentUrlQuery(iri, docUrl, newUrl));
     }
 
     private void deleteFile(String docUrl) {
