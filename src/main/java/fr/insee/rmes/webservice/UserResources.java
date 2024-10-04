@@ -14,11 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,17 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/**
- * WebService class for resources of Concepts
- *
- * @author N. Laval
- * <p>
- * schemes: - http
- * <p>
- * consumes: - application/json
- * <p>
- * produces: - application/json
- */
+
 @RestController
 @RequestMapping("/users")
 @SecurityRequirement(name = "bearerAuth")
@@ -51,8 +37,6 @@ import java.util.Map;
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
 public class UserResources {
-
-    static final Logger logger = LoggerFactory.getLogger(UserResources.class);
 
     private final StampsService stampsService;
     private final RBACService rbacService;
@@ -81,22 +65,9 @@ public class UserResources {
         return rbacService.computeRbac(user.roles());
     }
 
-    /**
-     * @deprecated
-     */
-    @GetMapping(value = "/stamp",
-            produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/stamp", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStamp", summary = "User's stamp", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = String.class)))})
-    public ResponseEntity<Object> getStamp(@AuthenticationPrincipal Object principal) {
-        Stamp stamp;
-        try {
-            stamp = stampsService.findStampFrom(principal);
-        } catch (Exception e) {
-            logger.error("exception while retrieving stamp", e);
-            return ResponseEntity.status(HttpStatus.SC_INTERNAL_SERVER_ERROR).body("exception while retrieving stamp");
-        }
-        return ResponseEntity.status(HttpStatus.SC_OK).body(stamp);
+    public Stamp getStamp(@AuthenticationPrincipal Object principal) throws RmesException {
+        return stampsService.findStampFrom(principal);
     }
-
-
 }
