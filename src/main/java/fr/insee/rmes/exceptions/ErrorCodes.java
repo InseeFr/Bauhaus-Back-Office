@@ -11,7 +11,6 @@ public class ErrorCodes {
 	public static final int CONCEPT_CREATION_RIGHTS_DENIED = 101;
 	public static final int CONCEPT_MODIFICATION_RIGHTS_DENIED = 102;
 	public static final int CONCEPT_VALIDATION_RIGHTS_DENIED = 103;
-	public static final int CONCEPT_MAILING_RIGHTS_DENIED = 104;
 
 	// deletion
 	public static final int CONCEPT_DELETION_SEVERAL_GRAPHS = 111;
@@ -20,7 +19,6 @@ public class ErrorCodes {
 	//"The concept "+id+" cannot be deleted because it is linked to other concepts."
 
 	// INDICATORS
-	public static final int INDICATOR_CREATION_RIGHTS_DENIED = 201;
 	public static final int INDICATOR_MODIFICATION_RIGHTS_DENIED = 202;
 	public static final int INDICATOR_VALIDATION_RIGHTS_DENIED = 203;
 
@@ -31,15 +29,11 @@ public class ErrorCodes {
 
 	// LINKS
 	public static final int LINK_CREATION_RIGHTS_DENIED = 401;
-	public static final int LINK_MODIFICATION_RIGHTS_DENIED = 403;
 
 	// FAMILIES
 	public static final int FAMILY_CREATION_RIGHTS_DENIED = 501;
-	public static final int FAMILY_MODIFICATION_RIGHTS_DENIED = 502;
-	public static final int FAMILY_VALIDATION_RIGHTS_DENIED = 503;
 
 	// SERIES
-	public static final int SERIES_CREATION_RIGHTS_DENIED = 601;
 	public static final int SERIES_MODIFICATION_RIGHTS_DENIED = 602;
 	public static final int SERIES_VALIDATION_RIGHTS_DENIED = 603;
 	public static final int SERIES_VALIDATION_UNPUBLISHED_FAMILY = 604;
@@ -47,22 +41,17 @@ public class ErrorCodes {
 	// OPERATIONS
 	public static final int OPERATION_CREATION_RIGHTS_DENIED = 701;
 	public static final int OPERATION_MODIFICATION_RIGHTS_DENIED = 702;
-	public static final int OPERATION_VALIDATION_RIGHTS_DENIED = 703;
 	public static final int OPERATION_VALIDATION_UNPUBLISHED_SERIES = 704;
 
 	// SIMS
 	public static final int SIMS_CREATION_RIGHTS_DENIED = 801;
 	public static final int SIMS_MODIFICATION_RIGHTS_DENIED = 802;
-	public static final int SIMS_VALIDATION_RIGHTS_DENIED = 803;
 	public static final int SIMS_VALIDATION_UNPUBLISHED_TARGET = 804;
 	public static final int SIMS_DELETION_RIGHTS_DENIED = 805;
 
 	// COLLECTIONS
 
-	public static final int COLLECTION_CREATION_RIGHTS_DENIED = 901;
 	public static final int COLLECTION_MODIFICATION_RIGHTS_DENIED = 902;
-	public static final int COLLECTION_VALIDATION_RIGHTS_DENIED = 903;
-	public static final int COLLECTION_MAILING_RIGHTS_DENIED = 904;
 
 	// STRUCTURES
 

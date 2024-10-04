@@ -1,5 +1,6 @@
 package fr.insee.rmes.exceptions;
 
+import fr.insee.rmes.webservice.UserResources;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import fr.insee.rmes.webservice.dataset.DatasetResources;
 import fr.insee.rmes.webservice.distribution.DistributionResources;
@@ -20,7 +21,9 @@ import java.nio.file.NoSuchFileException;
         CodeListsResources.class,
         MetadataReportResources.class,
         OperationsResources.class,
-        DocumentsResources.class
+        DocumentsResources.class,
+        UserResources.class,
+
 })
 public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
 

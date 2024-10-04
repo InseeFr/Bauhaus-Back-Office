@@ -296,12 +296,6 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public void setDocument(String id, String body, boolean isLink) throws RmesException {
-        /* Check rights */
-        if (!stampsRestrictionsService.canManageDocumentsAndLinks()) {
-            throw new RmesUnauthorizedException(ErrorCodes.LINK_MODIFICATION_RIGHTS_DENIED,
-                    "Only an admin or a manager can modify a " + (isLink ? "link." : "document."), id);
-        }
-
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         Document document = new Document(id, isLink);
@@ -312,9 +306,11 @@ public class DocumentsUtils extends RdfService {
             logger.error(e.getMessage());
         }
 
-        IRI docUri = RdfUtils.toURI(document.getUri());
-        logger.info("Update document : {} - {} / {}", document.getUri(), document.getLabelLg1(), document.getLabelLg2());
+
+        logger.info("Update document : {} - {} / {}", document.getId(), document.getLabelLg1(), document.getLabelLg2());
         validate(document);
+
+        IRI docUri = isLink ? RdfUtils.linkIRI(id) : RdfUtils.documentIRI(id);
         writeRdfDocument(document, docUri);
     }
 
