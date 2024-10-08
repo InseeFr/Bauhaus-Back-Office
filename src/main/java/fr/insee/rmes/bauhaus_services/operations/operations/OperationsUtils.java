@@ -17,6 +17,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.utils.DateUtils;
+import fr.insee.rmes.utils.Deserializer;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -77,32 +78,10 @@ public class OperationsUtils extends RdfService{
 	}
 	
 
-	private Operation buildOperationFromJson(JSONObject operationJson) {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);		
-
-		Operation operation = new Operation();
-
+	private Operation buildOperationFromJson(JSONObject operationJson) throws RmesException {
+		Operation operation = Deserializer.deserializeJsonString(operationJson.toString(), Operation.class);
 		IdLabelTwoLangs series = famOpeSerIndUtils.buildIdLabelTwoLangsFromJson(operationJson.getJSONObject("series"));
-
-		operation.setId(operationJson.getString(Constants.ID));
-		if(operationJson.has(Constants.PREF_LABEL_LG1)) {
-			operation.setPrefLabelLg1(operationJson.getString(Constants.PREF_LABEL_LG1));
-		}
-		if(operationJson.has(Constants.PREF_LABEL_LG2)) {
-			operation.setPrefLabelLg2(operationJson.getString(Constants.PREF_LABEL_LG2)); 
-		}
-		if(operationJson.has(Constants.ALT_LABEL_LG1)) {
-			operation.setAltLabelLg1(operationJson.getString(Constants.ALT_LABEL_LG1));
-		}
-		if(operationJson.has(Constants.ALT_LABEL_LG2)) {
-			operation.setAltLabelLg2(operationJson.getString(Constants.ALT_LABEL_LG2));
-		}
 		operation.setSeries(series);
-		if(operationJson.has(Constants.ID_SIMS)) {
-			operation.setIdSims(operationJson.getString(Constants.ID_SIMS));
-		}
 		return operation;
 	}
 
