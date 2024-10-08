@@ -33,8 +33,11 @@ public class Operation {
 	@Schema(description =  "Update date")
 	private String updated;
 
+	@Schema(description =  "Validation State")
+	private String validationState;
+
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
-			IdLabelTwoLangs series, String idSims) {
+			IdLabelTwoLangs series, String idSims, String validationState) {
 		super();
 		this.id = id;
 		this.prefLabelLg1 = prefLabelLg1;
@@ -43,6 +46,7 @@ public class Operation {
 		this.altLabelLg2 = altLabelLg2;
 		this.series = series;
 		this.idSims = idSims;
+		this.validationState = validationState;
 	}
 
 	public Operation() {
@@ -132,5 +136,13 @@ public class Operation {
 
 	public void setUpdated(String updated) {
 		this.updated = updated;
+	}
+
+	public String getValidationState() {
+		return validationState;
+	}
+
+	public void setValidationState(String validationState) {
+		this.validationState = validationState;
 	}
 }
