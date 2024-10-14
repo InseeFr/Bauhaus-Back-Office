@@ -2,6 +2,8 @@ package fr.insee.rmes.config.swagger.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.util.List;
+
 public class IdLabelTwoLangs {
 	
 	private static String classLink = "fr.insee.rmes.config.swagger.model.IdLabelTwoLangs";
@@ -14,6 +16,9 @@ public class IdLabelTwoLangs {
 	
 	@Schema(description = "Label lg2")
 	public String labelLg2;
+
+	@Schema(description = "Creators")
+	private List<String> creators;
 
 	public IdLabelTwoLangs(String id, String labelLg1, String labelLg2) {
 		super();
@@ -54,4 +59,11 @@ public class IdLabelTwoLangs {
 		this.id = id;
 	}
 
+    public void setCreators(List<String> creators) {
+		this.creators = creators;
+    }
+
+	public List<String> getCreators() {
+		return creators;
+	}
 }
