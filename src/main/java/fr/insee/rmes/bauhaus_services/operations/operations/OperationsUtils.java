@@ -118,7 +118,7 @@ public class OperationsUtils extends RdfService{
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
 		}
 		operation.setCreated(DateUtils.getCurrentDate());
-		operation.setUpdated(DateUtils.getCurrentDate());
+		operation.setModified(DateUtils.getCurrentDate());
 
 		createRdfOperation(operation, seriesURI, ValidationStatus.UNPUBLISHED);
 		logger.info("Create operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
@@ -149,7 +149,7 @@ public class OperationsUtils extends RdfService{
 			logger.error(e.getMessage());
 		}
 
-		operation.setUpdated(DateUtils.getCurrentDate());
+		operation.setModified(DateUtils.getCurrentDate());
 
 		String status= parentUtils.getValidationStatus(id);
 		documentationsUtils.updateDocumentationTitle(operation.getIdSims(), operation.getPrefLabelLg1(), operation.getPrefLabelLg2());
@@ -177,7 +177,7 @@ public class OperationsUtils extends RdfService{
 		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg1(), config.getLg1(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
-		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getUpdated(), model, RdfUtils.operationsGraph());
+		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
 
 		if (serieUri != null) {
 			//case CREATION : link operation to series
