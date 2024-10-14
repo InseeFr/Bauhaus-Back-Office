@@ -31,7 +31,7 @@ public class Operation {
 	private String created;
 
 	@Schema(description =  "Update date")
-	private String updated;
+	private String modified;
 
 	@Schema(description =  "Validation State")
 	private String validationState;
@@ -130,12 +130,12 @@ public class Operation {
 		this.created = created;
 	}
 
-	public String getUpdated() {
-		return updated;
+	public String getModified() {
+		return modified;
 	}
 
-	public void setUpdated(String updated) {
-		this.updated = updated;
+	public void setModified(String modified) {
+		this.modified = modified;
 	}
 
 	public String getValidationState() {
