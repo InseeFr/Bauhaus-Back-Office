@@ -47,6 +47,16 @@ public class FamOpeSerIndUtils  extends RdfService {
 		if(jsonFamOpeSer.has(Constants.LABEL_LG2)) {
 			idLabelTwoLangs.setLabelLg2(jsonFamOpeSer.getString(Constants.LABEL_LG2));
 		}
+		if(jsonFamOpeSer.has(Constants.CREATORS)) {
+			List<String> stringList = new ArrayList<>();
+			for (int i = 0; i < jsonFamOpeSer.getJSONArray(Constants.CREATORS).length(); i++) {
+				Object element = jsonFamOpeSer.getJSONArray(Constants.CREATORS).get(i);
+				if (element instanceof String) {
+					stringList.add((String) element);
+				}
+			}
+			idLabelTwoLangs.setCreators(stringList);
+		}
 		return idLabelTwoLangs;
 	}
 	
