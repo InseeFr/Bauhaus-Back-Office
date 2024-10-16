@@ -33,7 +33,8 @@ public class CodeListPublication extends RdfService {
 		String pred = RdfUtils.toString(statement.getPredicate());
 		return pred.endsWith("validationState")
 				|| pred.endsWith(Constants.CREATOR)
-				|| pred.endsWith(Constants.CONTRIBUTOR);
+				|| pred.endsWith(Constants.CONTRIBUTOR)
+				|| pred.endsWith("lastCodeUriSegment");
 	}
 
 
