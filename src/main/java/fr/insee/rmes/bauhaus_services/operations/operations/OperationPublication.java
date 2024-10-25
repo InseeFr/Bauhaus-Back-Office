@@ -5,7 +5,10 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -76,7 +79,7 @@ public class OperationPublication extends RdfService{
 		String status = ownersUtils.getValidationStatus(seriesId);
 
 		if (PublicationUtils.isPublished(status)) {
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
 					"This operation cannot be published before its series is published",
 					"Operation: " + operationId + " ; Series: " + seriesId);
 		}

@@ -41,12 +41,11 @@ public class ErrorCodes {
 	// OPERATIONS
 	public static final int OPERATION_CREATION_RIGHTS_DENIED = 701;
 	public static final int OPERATION_MODIFICATION_RIGHTS_DENIED = 702;
-	public static final int OPERATION_VALIDATION_UNPUBLISHED_SERIES = 704;
 
 	// SIMS
 	public static final int SIMS_CREATION_RIGHTS_DENIED = 801;
 	public static final int SIMS_MODIFICATION_RIGHTS_DENIED = 802;
-	public static final int SIMS_VALIDATION_UNPUBLISHED_TARGET = 804;
+	public static final int OPERATION_VALIDATION_UNPUBLISHED_PARENT = 804;
 	public static final int SIMS_DELETION_RIGHTS_DENIED = 805;
 
 	// COLLECTIONS
