@@ -111,6 +111,7 @@ class DocumentationExportTest {
 
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
+        when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
         when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
         when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
