@@ -101,7 +101,7 @@ public class DocumentationExport {
 		if (documents) {
 			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation );
 		} else{
-			String fileName = sims.getString("labelLg1");
+			String fileName = sims.getString(Constants.LABEL_LG1);
 			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsODT(fileName, xml, xsl, xmlPattern, zip, documentation );
 		}
 		return export(exporter, xmlContent, patternAndZip);
@@ -110,7 +110,7 @@ public class DocumentationExport {
 	public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
 		String simsId = sims.getString("id");
 		logger.debug("Begin to download the SIMS {} with its documents", simsId);
-		String fileName = sims.getString("labelLg1");
+		String fileName = sims.getString(Constants.LABEL_LG1);
 
 		try {
 
@@ -141,7 +141,7 @@ public class DocumentationExport {
 			FilesUtils.zipDirectory(simsDirectory.toFile());
 
 			logger.debug("Zip created for the SIMS {}", simsId);
-			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(sims.getString("labelLg1"), FilesUtils.ZIP_EXTENSION, this.maxLength);
+			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(sims.getString(Constants.LABEL_LG1), FilesUtils.ZIP_EXTENSION, this.maxLength);
 			responseHeaders.set("X-Missing-Documents", String.join(",", missingDocuments));
 			Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
 			return ResponseEntity.ok()
