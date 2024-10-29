@@ -96,11 +96,13 @@ public class DocumentationExport {
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 
 		Exporter exporter;
+		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
+
 		if (documents) {
-			JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
 			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation );
 		} else{
-			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsODT(id, xml, xsl, xmlPattern, zip, documentation );
+			String fileName = sims.getString("labelLg1");
+			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsODT(fileName, xml, xsl, xmlPattern, zip, documentation );
 		}
 		return export(exporter, xmlContent, patternAndZip);
 	}
