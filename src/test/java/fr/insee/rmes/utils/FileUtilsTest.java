@@ -12,7 +12,7 @@ class FileUtilsTest {
 	@Test
 	public void testReplaceSpecialCharacters() {
 		// Cas de test avec des caractères spéciaux
-		String input = "Œil et cœur sont liés. Ça coûte très cher !";
+		String input = "Œil: et cœur sont liés. Ça coûte très cher !";
 		String expectedOutput = "OEil et coeur sont lies Ca coute tres cher ";
 		String actualOutput = FilesUtils.removeAsciiCharacters(input);
 		assertEquals(expectedOutput, actualOutput);
@@ -50,20 +50,4 @@ class FileUtilsTest {
 		// Test with unknown input
 		assertEquals(".odt", FilesUtils.getExtension("unknown/type"));
 	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "Carrières complètes ", "carrières-complètes", "  Carrières    complètes  " })
-	void givenCleanFileName_whenString_thenResponseIsClean(String name) throws RmesException {
-
-		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension(name, "odt");
-		assertEquals("carrières-complètes.odt", cleanFileName);
-	}
-
-	@Test
-	void givenCleanFileName_whenStringWithPointExtension_thenResponseIsClean() throws RmesException {
-
-		String cleanFileName = FilesUtils.cleanFileNameAndAddExtension("test de nommage bidon ", ".odt");
-		assertEquals("test-de-nommage-bidon.odt", cleanFileName);
-	}
-
 }

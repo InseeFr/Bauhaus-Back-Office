@@ -110,7 +110,7 @@ public class DocumentationExport {
 	public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
 		String simsId = sims.getString("id");
 		logger.debug("Begin to download the SIMS {} with its documents", simsId);
-		String fileName = sims.getString(Constants.LABEL_LG1);
+		String fileName = FilesUtils.removeAsciiCharacters(sims.getString(Constants.LABEL_LG1));
 
 		try {
 
@@ -171,7 +171,7 @@ public class DocumentationExport {
 				if(!Files.exists(documentPath)){
 					missingDocuments.add(document.getString("id"));
 				} else {
-					String documentFileName = FilesUtils.reduceFileNameSize(UriUtils.getLastPartFromUri(url), maxLength);
+					String documentFileName = FilesUtils.reduceFileNameSize(FilesUtils.removeAsciiCharacters(UriUtils.getLastPartFromUri(url)), maxLength);
 					try (InputStream inputStream = Files.newInputStream(documentPath)){
 						Path documentDirectory = Path.of(directory.toString(), "documents");
 						if (!Files.exists(documentDirectory)) {

@@ -54,26 +54,13 @@ public class FilesUtils {
 		return fileName.substring(0, Math.min(fileName.length(), maxLength));
 	}
 
-	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
-		final File tempFile = File.createTempFile(fileName, fileExtension);
-		tempFile.deleteOnExit();
-		try (FileOutputStream out = new FileOutputStream(tempFile)) {
-			IOUtils.copy(in, out);
-		}
-		return tempFile;
-	}
-
-	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
-		fileName = fileName.toLowerCase().trim();
-		fileName = StringUtils.normalizeSpace(fileName);
-		fileName = fileName.replace(" ", "-");
-		fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "");
-		if (extension.startsWith(".")) {
-			fileName += extension;
-		} else {
-			fileName += "." + extension;
-		}
-		return fileName;
+	public static String removeAsciiCharacters(String fileName) {
+		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
+				.replaceAll("œ", "oe")
+				.replaceAll("Œ", "OE")
+				.replaceAll("\\p{M}+", "")
+				.replaceAll("\\p{Punct}", "")
+				.replaceAll(":", "");
 	}
 
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
@@ -98,13 +85,6 @@ public class FilesUtils {
 			log.warn("outputStream already closed");
 		}
 		
-	}
-	public static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
-				.replaceAll("œ", "oe")
-				.replaceAll("Œ", "OE")
-				.replaceAll("\\p{M}+", "")
-				.replaceAll("\\p{Punct}", "");
 	}
 
 	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
