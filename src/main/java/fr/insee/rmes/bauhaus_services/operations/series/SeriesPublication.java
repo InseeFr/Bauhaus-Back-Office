@@ -5,7 +5,12 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.persistance.ontologies.DCTERMS;
+import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -14,40 +19,45 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class SeriesPublication extends RdfService {
 	
-	@Autowired
+	final
 	ParentUtils ownersUtils;
-	
-	public void publishSeries(String seriesId, JSONObject serieJson) throws RmesException {
-		Model model = new LinkedHashModel();
-		Resource series = RdfUtils.seriesIRI(seriesId);
-		String familyId = serieJson.getJSONObject(Constants.FAMILY).getString(Constants.ID);
+
+	public SeriesPublication(ParentUtils ownersUtils) {
+		this.ownersUtils = ownersUtils;
+	}
+
+	public void publishSeries(String id, JSONObject series) throws RmesException {
+		String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
 		String status= ownersUtils.getValidationStatus(familyId);
 		
 		if(PublicationUtils.isPublished(status)) {
 			throw new RmesBadRequestException(
 					ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY,
 					"This Series cannot be published before its family is published", 
-					"Series: "+seriesId+" ; Family: "+familyId);
+					"Series: "+id+" ; Family: "+familyId);
 		}
-		
+
+		Model model = new LinkedHashModel();
+		Resource resource = RdfUtils.seriesIRI(id);
+
 		RepositoryConnection con = repoGestion.getConnection();
-		RepositoryResult<Statement> statements = repoGestion.getStatements(con, series);
+		RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource);
 		
-		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, series);
-		RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, series);
-		RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, series);
-		
+		RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, resource);
+		RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
+		RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, resource);
+
 		try {	
 			try {
 				if (!statements.hasNext()) {
-					throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID,"Series not found", seriesId);
+					throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found", id);
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
@@ -75,13 +85,28 @@ public class SeriesPublication extends RdfService {
 								st.getPredicate(), 
 								st.getObject(),
 								st.getContext()
-								);
+						);
 					}
 					addStatementsToModel(model, hasPartStatements);
 					addStatementsToModel(model, replacesStatements);
 					addStatementsToModel(model, isReplacedByStatements);
-					
 				}
+
+				/**
+				 * We have to query all published operations linked to this series and publish all of them
+				 */
+				JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
+				for(var i = 0; i < operations.length(); i++){
+					JSONObject operation = operations.getJSONObject(i);
+					String iri = operation.getString("operation");
+					model.add(
+							publicationUtils.tranformBaseURIToPublish(resource),
+							DCTERMS.HAS_PART,
+							publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
+							RdfUtils.operationsGraph()
+					);
+				}
+
 			} catch (RepositoryException e) {
 				throw new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, e.getMessage(), Constants.REPOSITORY_EXCEPTION);
 			}
@@ -91,7 +116,7 @@ public class SeriesPublication extends RdfService {
 			repoGestion.closeStatements(hasPartStatements);
 			con.close();
 		}
-		Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(series);
+		Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(resource);
 		repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 		
 	}
