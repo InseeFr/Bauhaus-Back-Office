@@ -7,7 +7,6 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +45,13 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
     void should_return_filter_missing_objects() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.checkIfSeriesExists(List.of("http://bauhaus/operations/serie/unknown", "http://bauhaus/operations/operation/s1489")));
+        assertEquals(1, result.length());
+    }
+
+    @Test
+    void should_return_published_operations_for_series() throws Exception {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries("http://bauhaus/operations/serie/s1227"));
         assertEquals(1, result.length());
     }
 }
