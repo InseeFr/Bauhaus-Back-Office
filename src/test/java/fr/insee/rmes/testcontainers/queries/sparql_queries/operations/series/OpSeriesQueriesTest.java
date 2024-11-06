@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpSeriesQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
@@ -21,6 +20,20 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
     @BeforeAll
     static void initData(){
         container.withTrigFiles("all-operations-and-indicators.trig");
+    }
+
+    @Test
+    void should_return_true_if_series_if_label_exist() throws Exception {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean result = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity("1", "Enquête Loyers et charges", "fr"));
+        assertTrue(result);
+    }
+
+    @Test
+    void should_return_false_series_if_label_does_not_exist() throws Exception {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean result = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkPrefLabelUnicity("1", "label", "fr"));
+        assertFalse(result);
     }
 
     @Test
