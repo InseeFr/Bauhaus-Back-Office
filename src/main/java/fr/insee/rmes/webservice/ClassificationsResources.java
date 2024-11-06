@@ -31,14 +31,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * WebService class for resources of Classifications
- * 
- * 
- * @author N. Laval
- *
- */
-
 @RestController
 @RequestMapping("/classifications")
 @Tag(name ="Classifications",description = "Classification API")

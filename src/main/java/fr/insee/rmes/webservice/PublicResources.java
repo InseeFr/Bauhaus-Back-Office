@@ -30,14 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.TreeSet;
 
-/**
- * WebService class for resources
- * schemes: - http
- * <p>
- * consumes: - application/json
- * <p>
- * produces: - application/json
- */
 @RestController
 @RequestMapping("/")
 @Tag(name = "Application", description = "Application API")
