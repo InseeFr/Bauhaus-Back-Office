@@ -7,7 +7,7 @@ services:
     links:
       - graphdb:localhost
   graphdb:
-    image: ontotext/graphdb:latest
+    image: ontotext/graphdb:10.6.4
     restart: always
     ports:
       - "7200:7200"
