@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>4.1.1</version>
+    <version>4.1.2</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -94,6 +94,9 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
         <version.maven-jacoco>0.8.5</version.maven-jacoco>
+
+        <!-- SECURITY -->
+        <spring-boot-starter-security.version>3.3.5</spring-boot-starter-security.version>
     </properties>
 
     <dependencies>
@@ -136,6 +139,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring-boot-starter-security.version}</version>
         </dependency>
 
         <dependency>
