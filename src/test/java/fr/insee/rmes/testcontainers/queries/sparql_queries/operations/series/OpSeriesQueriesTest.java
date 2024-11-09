@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
@@ -53,7 +54,26 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
         assertEquals(result.getString("historyNoteLg2"), "<p>A first sequence of EVA surveys had been carried out by Insee from 2005 to 2012 and collected from the young people of the Depp education panel who had entered the first year of secondary education in 1995.<br />This program was consisting of two parts&nbsp;:<br />- the schooling path of young people in secondary education and their higher education studies are observed by the Ministry for Education (Depp)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.<br /><br />This new sequence of EVA surveys relies on the following edition of the Depp panel, of young people who entered the first year of secondary education in 2007.<br />After two short surveys in 2013 and 2014 conducted by Insee, the situation of these young persons is observed each year by a survey named &laquo;&nbsp;de tronc commun&nbsp;&raquo;.<br />This program consists of three parts&nbsp;:<br />- the schooling path of young people in secondary education is observed by the Ministry for Education (Depp)&nbsp;;<br />- the&nbsp; higher education studies period is observed by the Ministry in charge of Higher Education (Sies)&nbsp;;<br />- and the data collection on young people who have left the education system is conducted by Insee, by the mean of the EVA survey.</p>");
     }
 
+    @Test
+    void should_return_no_series_for_search_if_unknown_stamp() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch("unknow_stamp"));
+        assertEquals(0, result.length());
+    }
 
+    @Test
+    void should_return_one_series_for_search() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch("stamp"));
+        assertEquals(1, result.length());
+    }
+
+    @Test
+    void should_return_all_series_for_search_if_not_defined_stamp() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch(""));
+        assertEquals(174, result.length());
+    }
     @Test
     void should_return_all_series() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
