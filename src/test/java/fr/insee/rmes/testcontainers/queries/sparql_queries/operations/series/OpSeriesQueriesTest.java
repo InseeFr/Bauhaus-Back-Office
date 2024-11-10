@@ -74,6 +74,15 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
         JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.getSeriesForSearch(""));
         assertEquals(174, result.length());
     }
+
+    @Test
+    void should_return_series_family() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONObject family = repositoryGestion.getResponseAsObject(OpSeriesQueries.getFamily("s1028"));
+        assertEquals("Housing", family.getString("labelLg2"));
+        assertEquals("Logement", family.getString("labelLg1"));
+        assertEquals("s60", family.getString("id"));
+    }
     @Test
     void should_return_all_series() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
