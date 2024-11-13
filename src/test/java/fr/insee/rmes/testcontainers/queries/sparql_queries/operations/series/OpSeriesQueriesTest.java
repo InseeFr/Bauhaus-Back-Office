@@ -22,6 +22,7 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
     @BeforeAll
     static void initData(){
         container.withTrigFiles("all-operations-and-indicators.trig");
+        container.withTrigFiles("sims-all.trig");
     }
 
     @Test
@@ -91,6 +92,35 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
         assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
         assertEquals(1, creators.length());
     }
+
+    @Test
+    void should_return_true_if_series_has_sims() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s1236"));
+        assertTrue(hasSims);
+    }
+
+    @Test
+    void should_return_false_if_series_does_not_have_sims() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasSims("http://bauhaus/operations/serie/s12361"));
+        assertFalse(hasSims);
+    }
+
+    @Test
+    void should_return_true_if_series_has_operation() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1228"));
+        assertTrue(hasSims);
+    }
+
+    @Test
+    void should_return_false_if_series_does_not_have_operation() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        boolean hasSims = repositoryGestion.getResponseAsBoolean(OpSeriesQueries.checkIfSeriesHasOperation("http://bauhaus/operations/serie/s1236"));
+        assertFalse(hasSims);
+    }
+
     @Test
     void should_return_all_series() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
