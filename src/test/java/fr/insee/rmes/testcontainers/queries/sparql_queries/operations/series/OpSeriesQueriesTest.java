@@ -122,6 +122,14 @@ public class OpSeriesQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
+    void should_creators() throws RmesException {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsById("s1236"));
+        assertEquals(1, creators.length());
+        assertEquals("stamp", creators.getJSONObject(0).getString("creators"));
+    }
+
+    @Test
     void should_return_all_series() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
