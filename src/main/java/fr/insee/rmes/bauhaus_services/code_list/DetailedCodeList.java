@@ -9,10 +9,10 @@ import java.util.List;
 public class DetailedCodeList {
 
 
-	@Schema(description = "Notation", required = true)
+	@Schema(description = "Notation", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String notation;
 	
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String codeListLabelLg1;
 	
 	@Schema(description = "Label lg2")

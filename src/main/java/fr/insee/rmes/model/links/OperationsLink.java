@@ -9,7 +9,7 @@ public class OperationsLink {
 
 	public static final String CLASS_NAME = "fr.insee.rmes.model.links.OperationsLink";
 
-	@Schema(description = "Id of the resource linked", required = true)
+	@Schema(description = "Id of the resource linked", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
 	@Schema(description = "Type of object")

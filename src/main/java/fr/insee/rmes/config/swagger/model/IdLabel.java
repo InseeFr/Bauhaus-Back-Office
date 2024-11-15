@@ -4,10 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class IdLabel {
 	
-	@Schema(description = "Id", required = true)
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
-	@Schema(description = "Label", required = true)
+	@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String label;
 
 }

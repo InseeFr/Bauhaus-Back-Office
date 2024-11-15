@@ -6,7 +6,7 @@ public class Classification {
     @Schema(description = "Id")
     public String id;
 
-    @Schema(description = "Label lg1", required = true)
+    @Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg1;
 
     @Schema(description = "Label lg2")
@@ -61,22 +61,22 @@ public class Classification {
     @Schema(description = "")
     public String idVariant;
 
-    @Schema(description = "Dissemination status", required = true)
+    @Schema(description = "Dissemination status", requiredMode = Schema.RequiredMode.REQUIRED)
     public String disseminationStatus;
 
-    @Schema(description = "Additional Material", required = true)
+    @Schema(description = "Additional Material", requiredMode = Schema.RequiredMode.REQUIRED)
     public String additionalMaterial;
 
-    @Schema(description = "Legal Material", required = true)
+    @Schema(description = "Legal Material", requiredMode = Schema.RequiredMode.REQUIRED)
     public String legalMaterial;
 
-    @Schema(description = "Homepage", required = true)
+    @Schema(description = "Homepage", requiredMode = Schema.RequiredMode.REQUIRED)
     public String homepage;
 
-    @Schema(description = "Creator", required = true)
+    @Schema(description = "Creator", requiredMode = Schema.RequiredMode.REQUIRED)
     public String creator;
 
-    @Schema(description = "Contributor", required = true)
+    @Schema(description = "Contributor", requiredMode = Schema.RequiredMode.REQUIRED)
     public String contributor;
 
     @Schema(description = "validationState")

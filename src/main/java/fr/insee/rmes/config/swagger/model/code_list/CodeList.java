@@ -11,7 +11,7 @@ public class CodeList {
 	@Schema(description="Code list notation")
 	public String notation;
 
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String labelLg1;
 
 	@Schema(description = "Label lg2")
