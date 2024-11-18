@@ -4,19 +4,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CollectionsDashboard {
 	
-	@Schema(description = "Id", required = true)
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
-	@Schema(description = "Label", required = true)
+	@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String label;
 	
-	@Schema(description = "Owner", required = true)
+	@Schema(description = "Owner", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String creator;
 	
-	@Schema(description = "Is collection validated", required = true)
+	@Schema(description = "Is collection validated", requiredMode = Schema.RequiredMode.REQUIRED)
 	public Boolean isValidated;
 	
-	@Schema(description = "Creation date", required = true)
+	@Schema(description = "Creation date", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String created;
 	
 	@Schema(description = "Modification date")

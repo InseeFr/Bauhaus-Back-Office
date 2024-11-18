@@ -14,10 +14,10 @@ public class Indicator {
 
 
 
-	@Schema(description = "Id", required = true)
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String prefLabelLg1;
 
 	@Schema(description = "Label lg2")

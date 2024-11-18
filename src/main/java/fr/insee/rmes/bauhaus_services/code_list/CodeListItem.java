@@ -10,13 +10,13 @@ public class CodeListItem {
 
 	private static String classLink = "fr.insee.rmes.bauhaus_services.code_list.CodeListItem";
 
-	@Schema(description = "Iri", required = true)
+	@Schema(description = "Iri", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String iri;
 
-	@Schema(description = "Code", required = true)
+	@Schema(description = "Code", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String code;
 	
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String labelLg1;
 	
 	@Schema(description = "Label lg2")

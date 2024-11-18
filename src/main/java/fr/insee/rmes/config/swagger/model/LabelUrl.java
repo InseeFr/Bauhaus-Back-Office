@@ -4,10 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class LabelUrl {
 	
-	@Schema(description = "Label", required = true)
+	@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String label;
 	
-	@Schema(description = "Url", required = true)
+	@Schema(description = "Url", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String url;
 
 }

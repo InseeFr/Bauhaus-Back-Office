@@ -6,10 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CodeLabelTwoLangs {
 
-	@Schema(description = "Code", required = true)
+	@Schema(description = "Code", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String code;
 
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String labelLg1;
 
 	@Schema(description = "Label lg2")

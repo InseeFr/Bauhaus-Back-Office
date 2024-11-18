@@ -4,10 +4,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CollectionById {
 	
-	@Schema(description = "Id", required = true)
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
-	@Schema(description = "Label lg1", required = true)
+	@Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String prefLabelLg1;
 	
 	@Schema(description = "Label lg2")
@@ -19,16 +19,16 @@ public class CollectionById {
 	@Schema(description = "Description lg2")
 	public String descriptionLg2;
 	
-	@Schema(description = "Owner", required = true)
+	@Schema(description = "Owner", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String creator;
 	
-	@Schema(description = "Contributor", required = true)
+	@Schema(description = "Contributor", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String contributor;
 	
-	@Schema(description = "Is concept validated", required = true)
+	@Schema(description = "Is concept validated", requiredMode = Schema.RequiredMode.REQUIRED)
 	public Boolean isValidated;
 	
-	@Schema(description = "Creation date", required = true)
+	@Schema(description = "Creation date", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String created;
 	
 	@Schema(description = "Modification date")
