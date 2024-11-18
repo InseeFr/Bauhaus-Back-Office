@@ -7,9 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class JSONUtils {
-	
+
+
 	public static JSONArray extractFieldToArray(JSONArray jsonA, String field) {
 		JSONArray res = new JSONArray();
 		for(Object o: jsonA){
@@ -45,14 +47,21 @@ public class JSONUtils {
 	    return true;
 	}
 
+
+	private static IntStream generateIntStreamBasedOnJsonArray(JSONArray array) {
+		return IntStream.range(0, array.length());
+	}
+
+	public static Stream<JSONObject> stream(JSONArray array) {
+		return generateIntStreamBasedOnJsonArray(array).mapToObj(array::getJSONObject);
+	}
+
 	/**
 	 * Transform an array to a list of strings
-	 * @param jsonArray
-	 * @return
 	 */
-	public static List<String> jsonArrayToList(JSONArray jsonArray) {
-		return IntStream.range(0, jsonArray.length())
-		        .mapToObj(jsonArray::get)
+	public static List<String> jsonArrayToList(JSONArray array) {
+		return generateIntStreamBasedOnJsonArray(array)
+		        .mapToObj(array::get)
 		        .map(Object::toString)
 		        .collect(Collectors.toList());
 	}

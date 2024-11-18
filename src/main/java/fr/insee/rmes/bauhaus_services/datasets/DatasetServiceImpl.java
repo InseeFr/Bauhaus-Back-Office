@@ -16,6 +16,7 @@ import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -515,16 +516,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
             Optional.ofNullable(dataset.getKeywords().lg2()).ifPresent(list -> list.forEach(keyword -> RdfUtils.addTripleString(datasetIri, DCAT.KEYWORD, keyword, config.getLg2(), model, graph)));
         }
 
-        JSONArray distributions = new JSONArray(this.getDistributions(dataset.getId()));
-
-        for(int i = 0; i < distributions.length(); i++) {
-            JSONObject distribution = distributions.getJSONObject(i);
-            if (distribution.has("id")) {
-                String id = distribution.getString("id");
-                IRI distributionIRI = RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
-                RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph);
-            }
-        }
+        JSONUtils.stream(new JSONArray(this.getDistributions(dataset.getId())))
+                .filter(distribution -> distribution.has("id"))
+                .map(distribution -> {
+                    String id = distribution.getString("id");
+                    return RdfUtils.createIRI(getDistributionBaseUri() + "/" + id);
+                })
+                .forEach(distributionIRI -> RdfUtils.addTripleUri(datasetIri, DCAT.HAS_DISTRIBUTION, distributionIRI, model, graph));
 
         repoGestion.loadSimpleObject(datasetIri, model, null);
     }
