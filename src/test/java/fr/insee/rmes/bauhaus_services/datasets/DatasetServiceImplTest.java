@@ -120,9 +120,11 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldReturnDataset() throws RmesException, JSONException, JsonProcessingException {
-        JSONObject object = new JSONObject();
-        object.put("id", "1");
-        JSONArray array = new JSONArray().put(object);
+        JSONObject object = new JSONObject().put("id", "1").put("theme", "theme1");
+        JSONObject object1 = new JSONObject().put("id", "1").put("theme", "theme1");
+        JSONObject object2 = new JSONObject().put("id", "1").put("theme", "theme2");
+        JSONArray array = new JSONArray().put(object).put(object1).put(object2);
+
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
@@ -134,7 +136,7 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
             Dataset response = datasetService.getDatasetByID("1");
             String responseJson = objectMapper.writeValueAsString(response);
-            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[],\"lg2\":[]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[],\"lg2\":[]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
         }
     }
 
