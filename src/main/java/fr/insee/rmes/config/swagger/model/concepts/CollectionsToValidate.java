@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CollectionsToValidate {
 	
-	@Schema(description = "Id", required = true)
+	@Schema(description = "Id", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String id;
 	
-	@Schema(description = "Label", required = true)
+	@Schema(description = "Label", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String label;
 	
-	@Schema(description = "Owner", required = true)
+	@Schema(description = "Owner", requiredMode = Schema.RequiredMode.REQUIRED)
 	public String creator;
 
 }
