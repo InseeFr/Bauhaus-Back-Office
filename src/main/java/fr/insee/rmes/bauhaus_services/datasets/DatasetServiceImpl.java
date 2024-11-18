@@ -30,10 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
@@ -146,10 +143,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         }
 
         JSONObject dataset = datasetWithThemes.getJSONObject(0);
-        List<String> themes = new ArrayList<>();
-        for(int i = 0; i < datasetWithThemes.length(); i++){
+        Set<String> themes = new HashSet<>();
+        for (int i = 0; i < datasetWithThemes.length(); i++) {
             JSONObject tempDataset = datasetWithThemes.getJSONObject(i);
-            if(tempDataset.has(THEME)){
+            if (tempDataset.has(THEME)) {
                 themes.add(tempDataset.getString(THEME));
             }
         }
@@ -434,7 +431,6 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         RdfUtils.addTripleString(datasetIri, DCTERMS.ABSTRACT, dataset.getAbstractLg2(), config.getLg2(), model, graph);
         RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg1(), config.getLg1(), model, graph);
         RdfUtils.addTripleString(datasetIri, SKOS.SCOPE_NOTE, dataset.getCautionLg2(), config.getLg2(), model, graph);
-
     }
 
     private void persistStatisticsInformations(IRI datasetIri, Dataset dataset, Model model, Resource graph){
