@@ -29,11 +29,12 @@ class StructureUtilsTest {
     StructureUtils structureUtils = new StructureUtils();
     @Mock
     StructureUtils mockStructureUtils;
+
     @MockBean
     RepositoryGestion repositoryGestion;
+
     @Autowired
     Config config;
-
 
     public static final String VALIDATION_STATUS = "{\"state\":\"Published\"}";
 
