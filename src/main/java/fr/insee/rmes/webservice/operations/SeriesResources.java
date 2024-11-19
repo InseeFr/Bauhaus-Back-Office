@@ -173,7 +173,7 @@ public class SeriesResources extends OperationsCommonResources {
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")
 	public ResponseEntity<Object> setSeriesValidation(
-			@PathVariable(Constants.ID) String id) throws RmesException {
+			@PathVariable(Constants.ID) String id) {
 		try {
 			operationsService.setSeriesValidation(id);
 		} catch (RmesException e) {

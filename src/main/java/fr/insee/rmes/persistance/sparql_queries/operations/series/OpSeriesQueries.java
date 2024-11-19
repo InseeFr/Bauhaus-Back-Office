@@ -196,4 +196,10 @@ public class OpSeriesQueries extends GenericQueries{
 		params.put(URI_SERIES, iris);
 		return buildSeriesRequest("checkIfSeriesExists.ftlh", params);
 	}
+
+	public static String getPublishedOperationsForSeries(String iri) throws RmesException {
+		Map<String, Object> params = initParams();
+		params.put("SERIES_IRI", iri);
+		return buildSeriesRequest("getPublishedOperationsForSeries.ftlh", params);
+	}
 }

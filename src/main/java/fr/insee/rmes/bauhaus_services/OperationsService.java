@@ -4,11 +4,6 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
 
 public interface OperationsService {
 

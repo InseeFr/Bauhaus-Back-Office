@@ -9,7 +9,6 @@ import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
-import fr.insee.rmes.config.auth.security.SecurityExpressionRootForBauhaus;
 import fr.insee.rmes.webservice.operations.IndicatorsResources;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
