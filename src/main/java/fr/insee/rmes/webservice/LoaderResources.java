@@ -30,16 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * WebService class to download/upload resources in databases
- * 
- *         schemes: - http
- * 
- *         consumes: - application/json
- * 
- *         produces: - application/json
- *
- */
+
 @RestController
 @RequestMapping("/loader")
 @SecurityRequirement(name = "bearerAuth")

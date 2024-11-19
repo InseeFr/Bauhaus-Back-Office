@@ -2807,6 +2807,8 @@
             a       <http://rdf.insee.fr/def/base#StatisticalOperationSeries> ;
             <http://www.w3.org/2000/01/rdf-schema#seeAlso>
                     <http://bauhaus/operations/serie/s1238> , <http://bauhaus/operations/serie/s1237> , <http://bauhaus/operations/serie/s1239> ;
+            <http://purl.org/dc/elements/1.1/creator>
+                    "stamp" ;
             <http://purl.org/dc/terms/abstract>
                     "<p>This survey allows to draw up a regular balance sheet on the visits of the tourists on the territory of the Guadeloupe Island and to have a quantitative and qualitative information about this tourists.</p><p>It is also a question of knowing better the main characteristics of the tourists (passagers and Guadeloupe residents), and quantifying their expenses to measure the economic effects.</p>"@en , "<p>Cette enquête permet de dresser un bilan annuel régulier sur les visites des touristes sur le territoire guadeloupéen et de disposer ainsi d'informations quantitatives et qualitatives sur ces derniers.</p><p>Il s'agit aussi de mieux connaître les principales caractéristiques des voyageurs (touristes et résidents de Guadeloupe) et de quantifier leurs dépenses pour en mesurer les retombées économiques.</p>"@fr ;
             <http://purl.org/dc/terms/isPartOf>
@@ -5035,7 +5037,7 @@
             <http://purl.org/dc/terms/valid>
                     "2011" ;
             <http://rdf.insee.fr/def/base#validationState>
-                    "Validated" ;
+                    "Unpublished" ;
             <http://www.w3.org/2004/02/skos/core#altLabel>
                     "EnDD 2011"@en , "EnDD 2011"@fr ;
             <http://www.w3.org/2004/02/skos/core#prefLabel>
