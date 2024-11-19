@@ -7,6 +7,7 @@ import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
+import fr.insee.rmes.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -135,10 +136,7 @@ class OpSeriesQueriesTest extends WithGraphDBContainer {
         OpSeriesQueries.setConfig(new ConfigStub());
         JSONArray result = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesWithSimsQuery());
         assertEquals(174, result.length());
-
-        for (var i = 0; i < result.length(); i++){
-            assertNotNull(result.getJSONObject(i).getString("iri"));
-        }
+        JSONUtils.stream(result).forEach(object -> assertNotNull(object.getString("iri")));
     }
 
     @Test

@@ -11,6 +11,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.persistance.ontologies.DCTERMS;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -31,6 +32,11 @@ public class SeriesPublication extends RdfService {
         this.ownersUtils = ownersUtils;
     }
 
+    private static void checkIfSeriesExist(String id, RepositoryResult<Statement> statements) throws RmesNotFoundException {
+        if (!statements.hasNext()) {
+            throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found", id);
+        }
+    }
     public void publishSeries(String id, JSONObject series) throws RmesException {
         String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
         String status = ownersUtils.getValidationStatus(familyId);
@@ -48,14 +54,13 @@ public class SeriesPublication extends RdfService {
         RepositoryConnection con = repoGestion.getConnection();
         RepositoryResult<Statement> statements = repoGestion.getStatements(con, resource);
 
+        checkIfSeriesExist(id, statements);
+
         RepositoryResult<Statement> hasPartStatements = repoGestion.getHasPartStatements(con, resource);
         RepositoryResult<Statement> replacesStatements = repoGestion.getReplacesStatements(con, resource);
         RepositoryResult<Statement> isReplacedByStatements = repoGestion.getIsReplacedByStatements(con, resource);
 
         try {
-            if (!statements.hasNext()) {
-                throw new RmesNotFoundException(ErrorCodes.SERIES_UNKNOWN_ID, "Series not found", id);
-            }
             while (statements.hasNext()) {
                 Statement st = statements.next();
                 String pred = RdfUtils.toString(st.getPredicate());
@@ -92,17 +97,7 @@ public class SeriesPublication extends RdfService {
             /**
              * We have to query all published operations linked to this series and publish all of them
              */
-            JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
-            for (var i = 0; i < operations.length(); i++) {
-                JSONObject operation = operations.getJSONObject(i);
-                String iri = operation.getString("operation");
-                model.add(
-                        publicationUtils.tranformBaseURIToPublish(resource),
-                        DCTERMS.HAS_PART,
-                        publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
-                        RdfUtils.operationsGraph()
-                );
-            }
+            addOperationsWhoHavePartWithToModel(resource, model);
 
 
         } finally {
@@ -113,6 +108,21 @@ public class SeriesPublication extends RdfService {
         Resource seriesToPublishRessource = publicationUtils.tranformBaseURIToPublish(resource);
         repositoryPublication.publishResource(seriesToPublishRessource, model, "serie");
 
+    }
+
+
+    private void addOperationsWhoHavePartWithToModel(Resource resource, Model model) throws RmesException {
+        JSONArray operations = repoGestion.getResponseAsArray(OpSeriesQueries.getPublishedOperationsForSeries(resource.toString()));
+        JSONUtils.stream(operations)
+                .map(operation -> operation.getString("operation"))
+                .forEach(iri -> {
+                    model.add(
+                            publicationUtils.tranformBaseURIToPublish(resource),
+                            DCTERMS.HAS_PART,
+                            publicationUtils.tranformBaseURIToPublish(RdfUtils.createIRI(iri)),
+                            RdfUtils.operationsGraph()
+                    );
+                });
     }
 
     public void addStatementsToModel(Model model, RepositoryResult<Statement> statements) {
