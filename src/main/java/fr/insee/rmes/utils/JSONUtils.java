@@ -14,9 +14,7 @@ public class JSONUtils {
 
 	public static JSONArray extractFieldToArray(JSONArray jsonA, String field) {
 		JSONArray res = new JSONArray();
-		for(Object o: jsonA){
-			res.put(((JSONObject) o).getString(field));
-		}
+		stream(jsonA).forEach(object -> res.put(object.getString(field)));
 		return res;
 	}
 	
@@ -63,7 +61,7 @@ public class JSONUtils {
 		return generateIntStreamBasedOnJsonArray(array)
 		        .mapToObj(array::get)
 		        .map(Object::toString)
-		        .collect(Collectors.toList());
+		        .toList();
 	}
 	
 	  private JSONUtils() {

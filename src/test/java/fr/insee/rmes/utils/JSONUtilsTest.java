@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JSONUtilsTest {
@@ -72,23 +73,14 @@ class JSONUtilsTest {
     @Test
     void testStreamConversion() {
         JSONArray jsonArray = new JSONArray();
-        jsonArray.put(new JSONObject().put("id", 1).put("name", "Alice"));
-        jsonArray.put(new JSONObject().put("id", 2).put("name", "Bob"));
-        jsonArray.put(new JSONObject().put("id", 3).put("name", "Charlie"));
+        JSONObject alice = new JSONObject().put("id", 1).put("name", "Alice");
+        jsonArray.put(alice);
+        JSONObject bob = new JSONObject().put("id", 2).put("name", "Bob");
+        jsonArray.put(bob);
+        JSONObject charlie = new JSONObject().put("id", 3).put("name", "Charlie");
+        jsonArray.put(charlie);
 
-        Stream<JSONObject> stream = JSONUtils.stream(jsonArray);
-
-        List<JSONObject> result = stream.collect(Collectors.toList());
-
-        assertEquals(3, result.size());
-        assertEquals("Alice", result.get(0).getString("name"));
-        assertEquals(1, result.get(0).getInt("id"));
-
-        assertEquals("Bob", result.get(1).getString("name"));
-        assertEquals(2, result.get(1).getInt("id"));
-
-        assertEquals("Charlie", result.get(2).getString("name"));
-        assertEquals(3, result.get(2).getInt("id"));
+        assertThat(JSONUtils.stream(jsonArray).toList()).isEqualTo(List.of(alice, bob, charlie));
     }
 
     @Test
@@ -98,16 +90,6 @@ class JSONUtilsTest {
         jsonArray.put("Bob");
         jsonArray.put("Charlie");
 
-        List<String> result = JSONUtils.jsonArrayToList(jsonArray);
-
-        // Vérifications
-        assertEquals(3, result.size());
-        assertTrue(result.contains("Alice"));
-        assertTrue(result.contains("Bob"));
-        assertTrue(result.contains("Charlie"));
-
-        assertEquals("Alice", result.get(0));
-        assertEquals("Bob", result.get(1));
-        assertEquals("Charlie", result.get(2));
+        assertThat(JSONUtils.jsonArrayToList(jsonArray)).isEqualTo(List.of("Alice", "Bob", "Charlie"));
     }
 }
