@@ -543,8 +543,9 @@ public class DocumentsUtils extends RdfService {
             RdfUtils.addTripleString(docUri, DC.LANGUAGE, document.getLangue(), model, graph);
         }
         if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
-            logger.debug("Add to {} PAV.LASTREFRESHEDON {}", docUri, document.getDateMiseAJour());
-            RdfUtils.addTripleDateTime(docUri, PAV.LASTREFRESHEDON, document.getDateMiseAJour(), model, graph);
+            var dateMiseAJour = document.getDateMiseAJour();
+            logger.debug("Add to {} PAV.LASTREFRESHEDON {}", docUri, dateMiseAJour);
+            RdfUtils.addTripleString(docUri, PAV.LASTREFRESHEDON, dateMiseAJour, model, graph);
         }
         repoGestion.loadSimpleObject(docUri, model);
     }
@@ -572,7 +573,7 @@ public class DocumentsUtils extends RdfService {
 
     private String createFileUrl(String name) throws RmesException {
         Path gestionStorageFolder=Path.of(config.getDocumentsStorageGestion());
-        if (! filesOperations.dirExists(gestionStorageFolder)){
+        if (!filesOperations.dirExists(gestionStorageFolder)){
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Storage folder not found",
                     "config.DOCUMENTS_STORAGE");
         }
