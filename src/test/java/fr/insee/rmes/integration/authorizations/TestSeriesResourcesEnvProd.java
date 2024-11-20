@@ -70,7 +70,7 @@ class TestSeriesResourcesEnvProd {
 
     @Test
     void putSeriesAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/operations/series/" + seriesId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)

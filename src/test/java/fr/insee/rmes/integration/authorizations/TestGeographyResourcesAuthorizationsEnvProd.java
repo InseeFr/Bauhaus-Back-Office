@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.GeographyService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Role;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -96,7 +98,7 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Test
     void postTerritoriesAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         mvc.perform(post("/geo/territory").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +126,7 @@ class TestGeographyResourcesAuthorizationsEnvProd {
 
     @Test
     void optionCreateTerritoriesAsAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(options("/geo/territory")
                         .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))

@@ -68,7 +68,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void putCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         mvc.perform(put("/codeList/" + codesListId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -123,7 +123,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void postCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/codeList/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -162,7 +162,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void deleteCodesListAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(delete("/codeList/" + codesListId)
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -202,7 +202,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void postCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/codeList/detailed/1/codes").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -243,7 +243,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void putCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/codeList/detailed/1/codes/2").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -284,7 +284,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void validateCodeAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/codeList/validate/1").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
