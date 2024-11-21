@@ -220,8 +220,6 @@ public class DocumentationsUtils extends RdfService{
 	 * @throws RmesException 
 	 */
 	public String publishMetadataReport(String id) throws RmesException {
-		Model model = new LinkedHashModel();
-		Resource graph = RdfUtils.simsGraph(id);
 
 		// Find target
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
@@ -231,6 +229,14 @@ public class DocumentationsUtils extends RdfService{
 
 		if (targetId.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_TARGET, "target not found for this Sims", id);
+		}
+
+		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
+		String status = parentUtils.getValidationStatus(targetId);
+		if (PublicationUtils.isUnublished(status)) {
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
+					"This metadataReport cannot be published before its target is published. ",
+					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
 		}
 
 		switch(targetType) {
@@ -250,16 +256,11 @@ public class DocumentationsUtils extends RdfService{
 					"Only an admin or a manager can create a new sims.");
 		}
 
-		/* Check if the target is already published - otherwise an unauthorizedException is thrown. */
-		String status = parentUtils.getValidationStatus(targetId);
-		if (PublicationUtils.isPublished(status)) {
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
-					"This metadataReport cannot be published before its target is published. ",
-					"MetadataReport: " + id + " ; Indicator/Series/Operation: " + targetId);
-		}
 
 		documentationPublication.publishSims(id);
 
+		Model model = new LinkedHashModel();
+		Resource graph = RdfUtils.simsGraph(id);
 		IRI simsURI = RdfUtils.objectIRI(ObjectType.DOCUMENTATION, id);
 		model.add(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graph);
 		model.remove(simsURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graph);

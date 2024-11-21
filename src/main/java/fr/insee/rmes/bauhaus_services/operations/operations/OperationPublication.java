@@ -32,12 +32,11 @@ public class OperationPublication extends RdfService{
 	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 
 	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+		checkSeriesIsPublished(operationId, operationJson);
+
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		
-		checkSeriesIsPublished(operationId, operationJson);
-
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation);
 
@@ -78,7 +77,7 @@ public class OperationPublication extends RdfService{
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
 		String status = ownersUtils.getValidationStatus(seriesId);
 
-		if (PublicationUtils.isPublished(status)) {
+		if (PublicationUtils.isUnublished(status)) {
 			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
 					"This operation cannot be published before its series is published",
 					"Operation: " + operationId + " ; Series: " + seriesId);
