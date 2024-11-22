@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class INSEE {
-	private static final ValueFactory factory = SimpleValueFactory.getInstance();
+    private static final ValueFactory factory = SimpleValueFactory.getInstance();
 
 	private INSEE() {
 		throw new IllegalStateException("Utility class");
@@ -23,6 +23,8 @@ public class INSEE {
 	private static IRI createIRI(String suffix) {
 		return factory.createIRI(NAMESPACE, suffix);
 	}
+	public static final IRI YEAR = INSEE.createIRI("year");
+
 	public static final IRI LAST_CODE_URI_SEGMENT = INSEE.createIRI("lastCodeUriSegment");
 	public static final IRI DISSEMINATIONSTATUS = INSEE.createIRI("disseminationStatus");
 	public static final IRI ADDITIONALMATERIAL = INSEE.createIRI("additionalMaterial");

@@ -117,6 +117,7 @@ public class OperationsUtils extends RdfService{
 		if(!stampsRestrictionsService.canCreateOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_CREATION_RIGHTS_DENIED, "Only an admin or a series manager can create a new operation.");
 		}
+
 		operation.setCreated(DateUtils.getCurrentDate());
 		operation.setModified(DateUtils.getCurrentDate());
 
@@ -140,12 +141,10 @@ public class OperationsUtils extends RdfService{
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
 		}
 
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		Operation operation = new Operation(id);
 		try {
-			operation = mapper.readerForUpdating(operation).readValue(body);
-		} catch (IOException e) {
+			operation = Deserializer.deserializeJsonString(body, Operation.class);
+		} catch (RmesException e) {
 			logger.error(e.getMessage());
 		}
 
@@ -178,6 +177,10 @@ public class OperationsUtils extends RdfService{
 		RdfUtils.addTripleString(operationURI, SKOS.ALT_LABEL, operation.getAltLabelLg2(), config.getLg2(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.CREATED, operation.getCreated(), model, RdfUtils.operationsGraph());
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
+
+		if(operation.getYear() != null){
+			RdfUtils.addTripleInt(operationURI, INSEE.YEAR, operation.getYear().toString(), model, RdfUtils.operationsGraph());
+		}
 
 		if (serieUri != null) {
 			//case CREATION : link operation to series

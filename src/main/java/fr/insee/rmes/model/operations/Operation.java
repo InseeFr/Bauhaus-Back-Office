@@ -36,8 +36,11 @@ public class Operation {
 	@Schema(description =  "Validation State")
 	private String validationState;
 
+	@Schema(description = "millesime")
+	private Integer year;
+
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
-			IdLabelTwoLangs series, String idSims, String validationState) {
+			IdLabelTwoLangs series, String idSims, String validationState, int year) {
 		super();
 		this.id = id;
 		this.prefLabelLg1 = prefLabelLg1;
@@ -144,5 +147,13 @@ public class Operation {
 
 	public void setValidationState(String validationState) {
 		this.validationState = validationState;
+	}
+
+	public Integer getYear() {
+		return year;
+	}
+
+	public void setYear(Integer year) {
+		this.year = year;
 	}
 }
