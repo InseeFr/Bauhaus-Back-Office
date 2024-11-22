@@ -42,7 +42,7 @@ class OperationsDocumentationsImplTest {
         boolean document = true;
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
-        when(documentationsExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES))
+        when(documentationsExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES, 0))
                 .thenReturn(ResponseEntity.ok().body(resource));
 
         ResponseEntity<Resource> response = metadataReportService.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document);

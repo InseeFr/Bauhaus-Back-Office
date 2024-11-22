@@ -89,7 +89,7 @@ public class DocumentationExport {
 	 *                  the export will be a .ODT file.
 	 */
 	public ResponseEntity<Resource> exportAsResponse(String id, Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
-			boolean lg2, boolean documents, String goal) throws RmesException {
+			boolean lg2, boolean documents, String goal, int maxLength) throws RmesException {
 
 		PatternAndZip patternAndZip = PatternAndZip.of(goal);
 		String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
@@ -99,18 +99,18 @@ public class DocumentationExport {
 		JSONObject sims = this.documentationsUtils.getDocumentationByIdSims(id);
 
 		if (documents) {
-			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation );
+			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportAsZip(sims, xml, xsl, xmlPattern, zip, documentation, maxLength);
 		} else{
-			String fileName = sims.getString(Constants.LABEL_LG1);
+			String fileName = FilesUtils.generateFinalFileNameWithoutExtension(sims.getString(Constants.LABEL_LG1), maxLength);
 			exporter = (xml, xsl, xmlPattern, zip, documentation) -> exportUtils.exportAsODT(fileName, xml, xsl, xmlPattern, zip, documentation );
 		}
 		return export(exporter, xmlContent, patternAndZip);
 	}
 
-	public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
+	public ResponseEntity<Resource> exportAsZip(JSONObject sims, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, int maxLength) throws RmesException {
 		String simsId = sims.getString("id");
 		logger.debug("Begin to download the SIMS {} with its documents", simsId);
-		String fileName = FilesUtils.removeAsciiCharacters(sims.getString(Constants.LABEL_LG1));
+		String fileName = FilesUtils.generateFinalFileNameWithoutExtension(sims.getString(Constants.LABEL_LG1), maxLength);
 
 		try {
 
@@ -141,7 +141,7 @@ public class DocumentationExport {
 			FilesUtils.zipDirectory(simsDirectory.toFile());
 
 			logger.debug("Zip created for the SIMS {}", simsId);
-			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(sims.getString(Constants.LABEL_LG1), FilesUtils.ZIP_EXTENSION, this.maxLength);
+			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(fileName, FilesUtils.ZIP_EXTENSION);
 			responseHeaders.set("X-Missing-Documents", String.join(",", missingDocuments));
 			Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
 			return ResponseEntity.ok()
@@ -171,7 +171,7 @@ public class DocumentationExport {
 				if(!Files.exists(documentPath)){
 					missingDocuments.add(document.getString("id"));
 				} else {
-					String documentFileName = FilesUtils.reduceFileNameSize(FilesUtils.removeAsciiCharacters(UriUtils.getLastPartFromUri(url)), maxLength);
+					String documentFileName = FilesUtils.generateFinalFileNameWithExtension(UriUtils.getLastPartFromUri(url), maxLength);
 					try (InputStream inputStream = Files.newInputStream(documentPath)){
 						Path documentDirectory = Path.of(directory.toString(), "documents");
 						if (!Files.exists(documentDirectory)) {
@@ -205,12 +205,12 @@ public class DocumentationExport {
 	}
 	
 
-	public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal) throws RmesException {
+	public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal, int maxLength) throws RmesException {
 		Map<String,String> xmlContent = new HashMap<>();
 		String targetType = getXmlContent(id, xmlContent);
 		String msdXML = buildShellSims();
 		xmlContent.put("msdFile", msdXML);
-		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal);
+		return exportAsResponse(id, xmlContent,targetType,includeEmptyMas,lg1,lg2, document, goal, maxLength);
 	}
 	
 

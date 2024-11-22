@@ -36,6 +36,8 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	@Value("classpath:bauhaus-sims.json")
 	org.springframework.core.io.Resource simsDefaultValue;
 
+	@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength;
+
 	@Autowired
 	DocumentationsUtils documentationsUtils;
 	
@@ -147,13 +149,13 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 				ErrorCodes.SIMS_EXPORT_WITHOUT_LANGUAGE, 
 				"at least one language must be selected for export",
 				"in export of sims: " + id);
-		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES);
+		return documentationsExport.exportMetadataReport(id,includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES, maxLength);
 
 	}
 
 	@Override
 	public ResponseEntity<?> exportMetadataReportForLabel(String id) throws RmesException  {
-			return documentationsExport.exportMetadataReport(id,true, true, false, false, Constants.GOAL_COMITE_LABEL);
+			return documentationsExport.exportMetadataReport(id,true, true, false, false, Constants.GOAL_COMITE_LABEL, maxLength);
 	}
 
 	@Override
