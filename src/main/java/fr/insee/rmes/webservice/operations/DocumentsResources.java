@@ -158,7 +158,7 @@ public class DocumentsResources {
             @PathVariable(Constants.ID) DocumentId id)
             throws RmesException {
         String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
-        return ResponseEntity.status(documentsService.deleteDocument(documentIdString)).body(id);
+        return ResponseEntity.status(documentsService.deleteDocument(documentIdString)).body(documentIdString);
     }
 
 
