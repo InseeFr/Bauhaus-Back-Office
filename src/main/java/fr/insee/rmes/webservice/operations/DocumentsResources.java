@@ -114,7 +114,6 @@ public class DocumentsResources {
                     schema = @Schema (type=Constants.TYPE_STRING)
             )
             @PathVariable(Constants.ID) DocumentId id,
-
             @Parameter(
                     description = Constants.DOCUMENT,
                     required = true,
@@ -127,14 +126,6 @@ public class DocumentsResources {
         return ResponseEntity.ok(documentIdString);
     }
 
-    // Méthode pour encoder et valider le DocumentID
-    private String sanitizeDocumentId(String documentIdString) {
-        if (documentIdString == null || documentIdString.isEmpty()) {
-            return null;
-        }
-        //on peut ajouter d'autres contrôles
-        return documentIdString.replaceAll("[<>\"]", "");
-    }
 
 
 
@@ -163,8 +154,11 @@ public class DocumentsResources {
             + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/document/{id}")
     @Operation(operationId = "deleteDocument", summary = "Delete a document")
-    public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) throws RmesException {
-        return ResponseEntity.status(documentsService.deleteDocument(id)).body(id);
+    public ResponseEntity<Object> deleteDocument(
+            @PathVariable(Constants.ID) DocumentId id)
+            throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.status(documentsService.deleteDocument(documentIdString)).body(id);
     }
 
 
@@ -212,4 +206,16 @@ public class DocumentsResources {
     public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) throws RmesException {
         return ResponseEntity.status(documentsService.deleteLink(id)).body(id);
     }
+
+
+    // Méthode pour encoder et valider le DocumentID
+    private String sanitizeDocumentId(String documentIdString) {
+        if (documentIdString == null || documentIdString.isEmpty()) {
+            return null;
+        }
+        //on peut ajouter d'autres contrôles
+        return documentIdString.replaceAll("[<>\"]", "");
+    }
+
+
 }
