@@ -210,7 +210,8 @@ public class DocumentsResources {
             @RequestBody String body
     )
             throws RmesException {
-        return ResponseEntity.ok(documentsService.setLink(id.getDocumentId(), body));
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.ok(documentsService.setLink(documentIdString, body));
     }
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
