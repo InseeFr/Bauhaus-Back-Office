@@ -4,9 +4,7 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesException;
-import org.assertj.core.util.Lists;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -23,14 +21,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CodeListPublicationTest {
@@ -47,6 +44,20 @@ class CodeListPublicationTest {
     @Mock
     PublicationUtils publicationUtils;
 
+    @Test
+    void shouldThrowExceptionIfNoStatements() throws RmesException {
+        List<Statement> fakeStatements = Collections.emptyList();
+
+        IRI resource = SimpleValueFactory.getInstance().createIRI("http://codes-list/1");
+        RepositoryResult<Statement> fakeRepositoryResult =
+                new RepositoryResult<>(new CloseableIteratorIteration<>(fakeStatements.iterator()));
+
+
+        when(repositoryGestion.getConnection()).thenReturn(null);
+        when(repositoryGestion.getStatements(any(), eq(resource))).thenReturn(new RepositoryResult<>(fakeRepositoryResult));
+
+        Assertions.assertThrows(RuntimeException.class, () -> codeListPublication.publishCodeListAndCodes(resource));
+    }
     @Test
     void shouldNotPublishExcludedTriplets() throws RmesException {
         SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
