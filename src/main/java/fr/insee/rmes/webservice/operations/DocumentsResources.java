@@ -197,9 +197,20 @@ public class DocumentsResources {
     @PutMapping("/link/{id}")
     @Operation(operationId = "setLinkById", summary = "Update link")
     public ResponseEntity<Object> setLink(
-            @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-            @Parameter(description = "Link", required = true, schema = @Schema(implementation = Document.class)) @RequestBody String body) throws RmesException {
-        return ResponseEntity.ok(documentsService.setLink(id, body));
+            @Parameter(
+                    description = "Id",
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id,
+            @Parameter(
+                    required = true,
+                    schema = @Schema(implementation = Document.class)
+            )
+            @RequestBody String body
+    )
+            throws RmesException {
+        return ResponseEntity.ok(documentsService.setLink(id.getDocumentId(), body));
     }
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
