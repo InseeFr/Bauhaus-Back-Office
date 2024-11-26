@@ -155,6 +155,10 @@ public class DocumentsResources {
     @DeleteMapping("/document/{id}")
     @Operation(operationId = "deleteDocument", summary = "Delete a document")
     public ResponseEntity<Object> deleteDocument(
+            @Parameter(
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
             @PathVariable(Constants.ID) DocumentId id)
             throws RmesException {
         String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
@@ -203,8 +207,15 @@ public class DocumentsResources {
             + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/link/{id}")
     @Operation(operationId = "deleteLink", summary = "Delete a link")
-    public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) throws RmesException {
-        return ResponseEntity.status(documentsService.deleteLink(id)).body(id);
+    public ResponseEntity<Object> deleteLink(
+            @Parameter(
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id
+    ) throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.status(documentsService.deleteLink(documentIdString)).body(documentIdString);
     }
 
 
@@ -214,7 +225,7 @@ public class DocumentsResources {
             return null;
         }
         //on peut ajouter d'autres contrôles
-        return documentIdString.replaceAll("[<>\"]", "");
+        return documentIdString.replaceAll("[/<>:\"]", "");
     }
 
 
