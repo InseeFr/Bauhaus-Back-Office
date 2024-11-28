@@ -179,7 +179,7 @@ public class OperationsUtils extends RdfService{
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
 
 		if(operation.getYear() != null){
-			RdfUtils.addTripleInt(operationURI, INSEE.YEAR, operation.getYear().toString(), model, RdfUtils.operationsGraph());
+			RdfUtils.addTripleInt(operationURI, DCTERMS.TEMPORAL, operation.getYear().toString(), model, RdfUtils.operationsGraph());
 		}
 
 		if (serieUri != null) {

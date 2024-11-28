@@ -801,7 +801,7 @@
                     "2008" ;
             <http://rdf.insee.fr/def/base#validationState>
                     "Validated" ;
-            <http://rdf.insee.fr/def/base#year>
+            <http://purl.org/dc/terms/temporal>
                                 "2024" ;
             <http://www.w3.org/2004/02/skos/core#altLabel>
                     "EPCV scheme 2008"@en , "EPCV 2008"@fr ;

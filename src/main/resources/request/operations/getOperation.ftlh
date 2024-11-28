@@ -20,6 +20,6 @@ WHERE { GRAPH <${OPERATIONS_GRAPH}> {
     OPTIONAL { ?operation dcterms:modified ?modified } .
     OPTIONAL{ ?report rdf:type sdmx-mm:MetadataReport . ?report sdmx-mm:target ?operation  BIND(STRAFTER(STR(?report),'/rapport/') AS ?idSims) . }
     OPTIONAL {?operation insee:validationState ?validationState .}
-    OPTIONAL {?operation insee:year ?year .}
+    OPTIONAL {?operation dcterms:temporal ?year .}
 }
 LIMIT 1
