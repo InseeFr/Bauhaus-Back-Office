@@ -20,7 +20,6 @@ import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
-import org.apache.commons.text.CaseUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -44,9 +43,7 @@ import java.util.List;
 public class ConceptsUtils extends RdfService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ConceptsUtils.class);
-
 	private final ConceptsPublication conceptsPublication;
-
 	private final NoteManager noteManager;
 	private final int maxLength;
 
@@ -62,7 +59,7 @@ public class ConceptsUtils extends RdfService {
 
 	private String getAbstractExportFileName(String id, String labelLg1, String labelLg2, ConceptsCollectionsResources.Language lg){
 		var initialFileName = getInitialFileName(labelLg1, labelLg2, lg);
-		return FilesUtils.reduceFileNameSize(id + "-" + FilesUtils.removeAsciiCharacters(CaseUtils.toCamelCase(initialFileName, false)), maxLength);
+		return FilesUtils.generateFinalFileNameWithoutExtension(id + "-" + initialFileName, maxLength);
 	}
 
 	private String getInitialFileName(String labelLg1, String labelLg2, ConceptsCollectionsResources.Language lg){

@@ -167,7 +167,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
     private String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
         String label = (lg == ConceptsCollectionsResources.Language.lg2 && collection.getPrefLabelLg2() != null) ? collection.getPrefLabelLg2() : collection.getPrefLabelLg1();
-        return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(label, false)  + "-" + collection.getId(), maxLength);
+        return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + label, maxLength);
     }
 
 }

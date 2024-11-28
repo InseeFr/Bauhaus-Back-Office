@@ -14,13 +14,12 @@ public class HttpUtilsTest {
 
     @Test
     public void testGenerateHttpHeaders() {
-        String fileName = "tresœTresTresLongTestFile";
+        String fileName = "tresoeTres";
         String extension = ".zip";
-        int maxLength = 10;
         String reducedFileName = "tresoeTres";
 
         // Call the method to test
-        HttpHeaders headers = HttpUtils.generateHttpHeaders(fileName, extension, maxLength);
+        HttpHeaders headers = HttpUtils.generateHttpHeaders(fileName, extension);
 
         // Verify the results
         assertNotNull(headers);
