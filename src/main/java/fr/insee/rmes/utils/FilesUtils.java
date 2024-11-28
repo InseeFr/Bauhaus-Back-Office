@@ -1,7 +1,7 @@
 package fr.insee.rmes.utils;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -9,7 +9,10 @@ import org.zeroturnaround.zip.FileSource;
 import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.Normalizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -50,30 +53,32 @@ public class FilesUtils {
 		}
 	}
 
-	public static String reduceFileNameSize(String fileName, int maxLength) {
+	public static String generateFinalFileNameWithExtension(String fileName, int maxLength){
+		var basename = FilenameUtils.getBaseName(fileName);
+		var extension = FilenameUtils.getExtension(fileName);
+		return generateFinalBaseName(basename, maxLength) + "." + extension;
+	}
+
+	public static String generateFinalFileNameWithoutExtension(String fileName, int maxLength){
+		return generateFinalBaseName(fileName, maxLength);
+	}
+
+	private static String generateFinalBaseName(String baseName, int maxLength){
+		return reduceFileNameSize(CaseUtils.toCamelCase(removeAsciiCharacters(baseName), false), maxLength);
+	}
+
+	private static String reduceFileNameSize(String fileName, int maxLength) {
 		return fileName.substring(0, Math.min(fileName.length(), maxLength));
 	}
 
-	public static File streamToFile(InputStream in, String fileName, String fileExtension) throws IOException {
-		final File tempFile = File.createTempFile(fileName, fileExtension);
-		tempFile.deleteOnExit();
-		try (FileOutputStream out = new FileOutputStream(tempFile)) {
-			IOUtils.copy(in, out);
-		}
-		return tempFile;
-	}
-
-	public static String cleanFileNameAndAddExtension(String fileName, String extension) {
-		fileName = fileName.toLowerCase().trim();
-		fileName = StringUtils.normalizeSpace(fileName);
-		fileName = fileName.replace(" ", "-");
-		fileName = Normalizer.normalize(fileName, Normalizer.Form.NFD).replace("[^\\p{ASCII}]", "");
-		if (extension.startsWith(".")) {
-			fileName += extension;
-		} else {
-			fileName += "." + extension;
-		}
-		return fileName;
+	private static String removeAsciiCharacters(String fileName) {
+		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
+				.replace("œ", "oe")
+				.replace("Œ", "OE")
+				.replaceAll("[-_]", " ")
+				.replaceAll("\\p{M}+", " ")
+				.replaceAll("\\p{Punct}", "")
+				.replace(":", "");
 	}
 
 	public static void addFileToZipFolder(File fileToAdd, File zipArchive) {
@@ -98,13 +103,6 @@ public class FilesUtils {
 			log.warn("outputStream already closed");
 		}
 		
-	}
-	public static String removeAsciiCharacters(String fileName) {
-		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
-				.replaceAll("œ", "oe")
-				.replaceAll("Œ", "OE")
-				.replaceAll("\\p{M}+", "")
-				.replaceAll("\\p{Punct}", "");
 	}
 
 	private static void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {

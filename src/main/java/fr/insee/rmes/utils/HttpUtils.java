@@ -13,13 +13,12 @@ public final class HttpUtils {
     private HttpUtils() {
     }
 
-    public static HttpHeaders generateHttpHeaders(String fileName, String extension, int maxLength) {
+    public static HttpHeaders generateHttpHeaders(String fileName, String extension) {
         MediaType contentType = FilesUtils.getMediaTypeFromExtension(extension);
 
         ContentDisposition content = ContentDisposition.builder(HttpUtils.ATTACHMENT).filename(
-                FilesUtils.reduceFileNameSize(
-                        FilesUtils.removeAsciiCharacters(fileName), maxLength) + extension
-                ).build();
+                fileName + extension)
+                .build();
 
         List<String> allowHeaders = List.of(CONTENT_DISPOSITION,
                 "X-Missing-Documents",

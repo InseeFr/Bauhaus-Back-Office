@@ -1,13 +1,17 @@
 package fr.insee.rmes.bauhaus_services.concepts;
 
 import fr.insee.rmes.Stubber;
+import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsExportBuilder;
 import fr.insee.rmes.bauhaus_services.concepts.concepts.ConceptsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,8 +37,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,9 +52,40 @@ class ConceptsImplTest {
     @Mock
     RepositoryGestion repoGestion;
 
+    @Mock
+    CollectionExportBuilder collectionExport;
+
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @Test
+    void shouldExportCollection() throws RmesException {
+        var collection = new CollectionForExportOld();
+        collection.setId("1");
+        collection.setPrefLabelLg1("Lg1Collection");
+        collection.setPrefLabelLg2("Lg2Collection");
+
+        when(collectionExport.getCollectionDataOld("1")).thenReturn(collection);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+
+        conceptsImpl.getCollectionExport("1", "application/json");
+
+        verify(collectionExport).exportAsResponse(eq("1Lg1collec"), any(), eq(true), eq(true), eq(true));
+
+    }
+    @Test
+    void shouldReturnFileName(){
+        CollectionForExport collection = new CollectionForExport();
+        collection.setId("1");
+        collection.setPrefLabelLg1("Lg1Collection");
+        collection.setPrefLabelLg2("Lg2Collection");
+
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, null, 10);
+
+        assertEquals("1Lg1collec", conceptsImpl.getFileNameForExport(collection, ConceptsCollectionsResources.Language.lg1));
+        assertEquals("1Lg2collec", conceptsImpl.getFileNameForExport(collection, ConceptsCollectionsResources.Language.lg2));
     }
     @Test
     void exportConceptTest() throws RmesException, IOException, URISyntaxException {
@@ -57,7 +94,7 @@ class ConceptsImplTest {
         ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, new ExportUtils(200, null));
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
-        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, 200);
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, 10);
         // concept = conceptsExport.getConceptData(id);
         //    conceptsUtils.getConceptById(id) => ConceptsQueries.conceptQuery, ConceptsQueries.altLabel
         JSONObject jsonConcept = new JSONObject("""
@@ -101,6 +138,7 @@ class ConceptsImplTest {
         ResponseEntity<ByteArrayResource> result = (ResponseEntity<ByteArrayResource>) conceptsImpl.exportConcept(idConcept, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         // THEN
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getHeaders().getContentDisposition().getFilename()).isEqualTo("c1116accid.odt");
 
         Diff inputsDiffs = DiffBuilder.compare(expectedXmlForOdtContent)
                 .withTest(getOdtContent(result.getBody().getByteArray()))

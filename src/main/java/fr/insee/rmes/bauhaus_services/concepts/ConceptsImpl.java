@@ -23,7 +23,6 @@ import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -41,7 +40,6 @@ import java.util.*;
 public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	private static final String THE_CONCEPT = "The concept ";
-
 
 	static final Logger logger = LoggerFactory.getLogger(ConceptsImpl.class);
 
@@ -264,13 +262,13 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 	public String getFileNameForExport(CollectionForExport collection, ConceptsCollectionsResources.Language lg){
 		if (lg == ConceptsCollectionsResources.Language.lg2){
-			return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg2(), false) + "-" + collection.getId(), this.maxLength);
+			return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg2(), this.maxLength);
 		}
-		return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId(), this.maxLength);
+		return FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), this.maxLength);
 	}
 
 	private String getFileNameForExport(ConceptForExport concept) {
-		return FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(concept.getPrefLabelLg1(), false) + "-" + concept.getId(), maxLength);
+		return FilesUtils.generateFinalFileNameWithoutExtension(concept.getId() + "-" + concept.getPrefLabelLg1(), maxLength);
 	}
 
 	private MembersLg convertConceptIntoMembers(ConceptForExport concept){
@@ -349,7 +347,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
 		}
 		Map<String, String> xmlContent = convertCollectionInXml(collection);	
-		String fileName = FilesUtils.reduceFileNameSize(CaseUtils.toCamelCase(collection.getPrefLabelLg1(), false) + "-" + collection.getId(), maxLength);
+		String fileName = FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), maxLength);
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);
 	}
 

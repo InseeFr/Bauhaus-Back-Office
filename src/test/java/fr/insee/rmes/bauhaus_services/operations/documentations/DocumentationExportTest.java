@@ -85,11 +85,11 @@ class DocumentationExportTest {
 
 
         InputStream inputStreamMock = mock(InputStream.class);
-        when(exportUtils.exportAsInputStream(eq("simsLabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
+        when(exportUtils.exportAsInputStream(eq("simslabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
                 .thenReturn(inputStreamMock);
         when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
-        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType);
+        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType, 50);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -111,11 +111,12 @@ class DocumentationExportTest {
 
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
+        when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
         when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
         when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
 
-        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
+        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
         assertEquals(ResponseEntity.ok().body(resource), response);
     }
 
@@ -134,7 +135,7 @@ class DocumentationExportTest {
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> {
-            documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
+            documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
         });
 
         assertEquals("{\"message\":\"The goal is unknown\"}", exception.getDetails());

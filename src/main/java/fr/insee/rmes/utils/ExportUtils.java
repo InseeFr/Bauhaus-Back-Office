@@ -51,7 +51,7 @@ public class ExportUtils {
 
     private ResponseEntity<Resource> exportAsFileByExtension(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType, String extension) throws RmesException {
         logger.debug("Begin To export {} as Response", objectType);
-        fileName = fileName.replace(extension, "");
+        fileName = FilesUtils.generateFinalFileNameWithoutExtension(fileName.replace(extension, ""), maxLength);
 
         InputStream input = exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, extension);
         if (input == null)
@@ -67,7 +67,7 @@ public class ExportUtils {
         }
         logger.debug("End To export {} as Response", objectType);
 
-        HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(fileName, extension, this.maxLength);
+        HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(fileName, extension);
 
         return ResponseEntity.ok()
                 .headers(responseHeaders)
@@ -151,7 +151,7 @@ public class ExportUtils {
 
             logger.debug("End To export temp files as Response");
 
-            HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders("xmlFiles", FilesUtils.ZIP_EXTENSION, this.maxLength);
+            HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders("xmlFiles", FilesUtils.ZIP_EXTENSION);
             Resource resource = new UrlResource(Paths.get(tempDir.toString(), tempDir.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
             return ResponseEntity.ok()
                     .headers(responseHeaders)
