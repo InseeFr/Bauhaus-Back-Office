@@ -8,9 +8,11 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -31,5 +33,18 @@ public class OperationsQueriesTest extends WithGraphDBContainer {
         for (var i = 0; i < result.length(); i++){
             assertNotNull(result.getJSONObject(i).getString("iri"));
         }
+    }
+
+    @Test
+    void should_return_operation() throws Exception {
+        OpSeriesQueries.setConfig(new ConfigStub());
+
+        JSONObject result = repositoryGestion.getResponseAsObject(OperationsQueries.operationQuery("s1447"));
+        assertThat(result.getString("id")).hasToString("s1447");
+        assertThat(result.getString("prefLabelLg1")).hasToString("Dispositif d'enquêtes permanentes des conditions de vie 2008");
+        assertThat(result.getString("prefLabelLg2")).hasToString("Permanent living conditions survey 2008");
+        assertThat(result.getString("altLabelLg2")).hasToString("EPCV scheme 2008");
+        assertThat(result.getString("altLabelLg1")).hasToString("EPCV 2008");
+        assertThat(result.getString("validationState")).hasToString("Validated");
     }
 }
