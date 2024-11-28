@@ -16,16 +16,18 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class SeriesPublication extends RdfService {
 
-    final
+    @Autowired
     ParentUtils ownersUtils;
 
     public SeriesPublication(ParentUtils ownersUtils) {
@@ -41,7 +43,7 @@ public class SeriesPublication extends RdfService {
         String familyId = series.getJSONObject(Constants.FAMILY).getString(Constants.ID);
         String status = ownersUtils.getValidationStatus(familyId);
 
-        if (PublicationUtils.isPublished(status)) {
+        if (PublicationUtils.isUnublished(status)) {
             throw new RmesBadRequestException(
                     ErrorCodes.SERIES_VALIDATION_UNPUBLISHED_FAMILY,
                     "This Series cannot be published before its family is published",
