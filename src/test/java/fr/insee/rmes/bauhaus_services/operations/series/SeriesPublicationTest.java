@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -32,9 +33,10 @@ class SeriesPublicationTest {
         series.put("family", family);
 
         when(ownerUtils.getValidationStatus("2")).thenReturn(ValidationStatus.UNPUBLISHED.toString());
-        assertThrows(
+        var exception = assertThrows(
                 RmesBadRequestException.class,
                 () -> seriesPublication.publishSeries("1", series)
         );
+        assertThat(exception.getDetails()).contains("This Series cannot be published before its family is published");
     }
 }
