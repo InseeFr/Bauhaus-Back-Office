@@ -136,6 +136,8 @@ class DocumentsUtilsTest {
         ) {
             rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
+            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralDate(any(String.class))).thenCallRealMethod();
+            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleDate(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
             rdfUtilsMockedStatic.when(() -> RdfUtils.documentsGraph()).thenReturn(graph);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toString(any())).thenReturn(documentIRIString);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
@@ -146,7 +148,7 @@ class DocumentsUtilsTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
             verify(repositoryGestion, times(1)).loadSimpleObject(any(), model.capture());
-            Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\", http://documents/graph) [http://documents/graph]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>, http://documents/graph) [http://documents/graph]]", model.getValue().toString());
         }
     }
 }

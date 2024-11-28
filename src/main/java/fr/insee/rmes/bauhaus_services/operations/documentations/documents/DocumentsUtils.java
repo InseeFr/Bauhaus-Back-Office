@@ -545,7 +545,7 @@ public class DocumentsUtils extends RdfService {
         if (StringUtils.isNotEmpty(document.getDateMiseAJour())) {
             var dateMiseAJour = document.getDateMiseAJour();
             logger.debug("Add to {} PAV.LASTREFRESHEDON {}", docUri, dateMiseAJour);
-            RdfUtils.addTripleString(docUri, PAV.LASTREFRESHEDON, dateMiseAJour, model, graph);
+            RdfUtils.addTripleDate(docUri, PAV.LASTREFRESHEDON, dateMiseAJour, model, graph);
         }
         repoGestion.loadSimpleObject(docUri, model);
     }
