@@ -167,7 +167,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/structure").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\"wrong\"]}"))
                 .andExpect(status().isForbidden());
     }
 
@@ -227,7 +227,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\""+timbre+"\"]}"))
                 .andExpect(status().isCreated());
     }
 
@@ -256,7 +256,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\"wrong\"]}"))
                 .andExpect(status().isForbidden());
     }
 
