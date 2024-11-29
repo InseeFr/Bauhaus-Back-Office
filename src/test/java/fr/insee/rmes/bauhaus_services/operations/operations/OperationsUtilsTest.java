@@ -61,6 +61,8 @@ class OperationsUtilsTest {
             IRI operationIRI = valueFactory.createIRI("http://operation/2");
             mockedFactory.when(() -> RdfUtils.setLiteralInt(anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.addTripleInt(any(), any(), any(), any(), any())).thenCallRealMethod();
+            mockedFactory.when(() -> RdfUtils.addTripleString(any(), any(), any(), any(), any(), any())).thenCallRealMethod();
+            mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.operationsGraph()).thenReturn(valueFactory.createIRI("http://operations-graph/"));
@@ -75,6 +77,8 @@ class OperationsUtilsTest {
             operation
                     .put("prefLabelLg1", "prefLabelLg1")
                     .put("prefLabelLg2", "prefLabelLg2")
+                    .put("altLabelLg1", "altLabelLg1")
+                    .put("altLabelLg2", "altLabelLg2")
                     .put("year", 2024)
                     .put("series", series);
 
@@ -84,7 +88,7 @@ class OperationsUtilsTest {
 
             verify(repositoryGestion, times(1)).loadSimpleObject(eq(operationIRI), model.capture());
 
-            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\", http://operations-graph/) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#int>, http://operations-graph/) [http://operations-graph/]]", model.getValue().toString());
+            Assertions.assertEquals("[(http://operation/2, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://rdf.insee.fr/def/base#StatisticalOperation, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg1\"@fr, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://rdf.insee.fr/def/base#validationState, \"Unpublished\", http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#prefLabel, \"prefLabelLg2\"@en, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg1\"@fr, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://www.w3.org/2004/02/skos/core#altLabel, \"altLabelLg2\"@en, http://operations-graph/) [http://operations-graph/], (http://operation/2, http://purl.org/dc/terms/temporal, \"2024\"^^<http://www.w3.org/2001/XMLSchema#int>, http://operations-graph/) [http://operations-graph/]]", model.getValue().toString());
 
         }
 
