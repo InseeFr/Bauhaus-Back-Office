@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
 import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
@@ -52,7 +53,7 @@ class DistributionResourcesTest {
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException {
         when(datasetService.getDatasets()).thenReturn("result");
-        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of("Administrateur_RMESGNCS"), "fakeStampForDvAndQf")));
+        when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), "fakeStampForDvAndQf")));
         Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
     }
 
