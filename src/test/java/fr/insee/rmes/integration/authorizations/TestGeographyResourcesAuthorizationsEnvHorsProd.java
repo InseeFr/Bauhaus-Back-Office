@@ -95,7 +95,7 @@ class TestGeographyResourcesAuthorizationsEnvHorsProd {
 
     @Test
     void postTerritoriesAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/geo/territory")
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)

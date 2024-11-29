@@ -72,7 +72,7 @@ class TestStructuresResourcesEnvProd {
 
     @Test
     void putStructureAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/structures/structure/" + structureId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -125,7 +125,7 @@ class TestStructuresResourcesEnvProd {
 
     @Test
     void postStructureAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/structures/structure/").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -163,8 +163,18 @@ class TestStructuresResourcesEnvProd {
     }
 
     @Test
+    void postStructureAsStructureContributorWrongStamp_ko() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        mvc.perform(post("/structures/structure").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void deleteStructureAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(delete("/structures/structure/" + structureId)
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -203,8 +213,57 @@ class TestStructuresResourcesEnvProd {
     }
 
     @Test
+    void postComponentAdmin_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
+        mvc.perform(post("/structures/components/").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void postComponentAsStructureContributor_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void postComponent_noAuth() throws Exception {
+        mvc.perform(put("/structures/components")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void postComponentAsNotStructureContributor() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
+        mvc.perform(post("/structures/components/").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void postComponentAsStructureContributorWrongStamp_ko() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.STRUCTURES_CONTRIBUTOR));
+        mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void putComponentAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(put("/structures/components/" + componentId).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -247,7 +306,7 @@ class TestStructuresResourcesEnvProd {
 
     @Test
     void deleteComponentAdmin_ok() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(delete("/structures/components/" + componentId)
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)

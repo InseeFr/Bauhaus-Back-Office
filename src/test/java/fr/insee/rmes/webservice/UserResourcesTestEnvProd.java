@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -56,7 +57,7 @@ class UserResourcesEnvProdTest {
     void getStamp() throws Exception {
         String idep = "xxxxux";
         String timbre = "XX59-YYY";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         mvc.perform(get("/users/stamp").header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))
