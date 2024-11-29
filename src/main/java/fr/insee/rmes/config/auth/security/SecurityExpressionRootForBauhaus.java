@@ -188,7 +188,12 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     public boolean isStructureAndComponentContributor(String body) {
         logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
         Optional<Stamp> stamp = getStamp();
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && extractContributorStampsFromBody(body).toList().stream().anyMatch(s -> ((String) s).equalsIgnoreCase(stamp.get().stamp()));
+        JSONArray contributors = extractContributorStampsFromBody(body);
+
+        if(contributors == null){
+            return false;
+        }
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && contributors.toList().stream().anyMatch(s -> ((String) s).equalsIgnoreCase(stamp.get().stamp()));
     }
 
 

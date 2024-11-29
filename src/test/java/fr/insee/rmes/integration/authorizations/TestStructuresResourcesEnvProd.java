@@ -12,7 +12,6 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.StructureResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,6 @@ import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
-import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
