@@ -9,7 +9,6 @@ import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.*;
-import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
@@ -222,13 +221,9 @@ public class RdfUtils {
 	}
 	
 	public static String toString(IRI iri) {
-		return ((SimpleIRI)iri).toString();
+		return iri.toString();
 	}
-	
-	/**
-	 * Utils to create triples if data exist
-	 */
-	
+
 	public static void addTripleString(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralString(value), graph);
