@@ -40,7 +40,7 @@ class OperationsResourcesTest {
 
     @CsvSource({
             "1, '"+MediaType.APPLICATION_JSON_VALUE+"', '{\"id\":\"1\"}'",
-            "1, '"+MediaType.APPLICATION_XML_VALUE+"', '<Operation><id>1</id><prefLabelLg1/><prefLabelLg2/><altLabelLg1/><altLabelLg2/><series/><idSims/><created/><modified/><validationState/></Operation>'",
+            "1, '"+MediaType.APPLICATION_XML_VALUE+"', '<Operation><id>1</id><prefLabelLg1/><prefLabelLg2/><altLabelLg1/><altLabelLg2/><series/><idSims/><created/><modified/><validationState/><year/></Operation>'",
     })
     @ParameterizedTest
     void getOperationByID_resultFormatFitAccessHeader(String id, String mediaType, String expected) throws Exception {

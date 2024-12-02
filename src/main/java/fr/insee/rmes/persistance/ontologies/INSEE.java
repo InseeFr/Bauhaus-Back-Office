@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class INSEE {
-	private static final ValueFactory factory = SimpleValueFactory.getInstance();
+    private static final ValueFactory factory = SimpleValueFactory.getInstance();
 
 	private INSEE() {
 		throw new IllegalStateException("Utility class");

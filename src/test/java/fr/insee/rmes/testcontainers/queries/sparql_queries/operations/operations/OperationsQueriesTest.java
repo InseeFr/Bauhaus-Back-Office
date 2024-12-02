@@ -8,6 +8,7 @@ import fr.insee.rmes.persistance.sparql_queries.operations.operations.Operations
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -31,5 +32,12 @@ public class OperationsQueriesTest extends WithGraphDBContainer {
         for (var i = 0; i < result.length(); i++){
             assertNotNull(result.getJSONObject(i).getString("iri"));
         }
+    }
+
+    @Test
+    void should_return_one_operation() throws Exception {
+        OpSeriesQueries.setConfig(new ConfigStub());
+        JSONObject result = repositoryGestion.getResponseAsObject(OperationsQueries.operationQuery("s1447"));
+        assertEquals("2024", result.getString("year"));
     }
 }
