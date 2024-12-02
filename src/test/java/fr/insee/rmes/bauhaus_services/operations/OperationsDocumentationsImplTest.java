@@ -29,7 +29,7 @@ class OperationsDocumentationsImplTest {
     private OperationsDocumentationsImpl metadataReportService;
 
     @Test
-    public void testExportMetadataReport_Success() throws RmesException {
+    void testExportMetadataReport_Success() throws RmesException {
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = true;
@@ -45,7 +45,7 @@ class OperationsDocumentationsImplTest {
     }
 
     @Test
-    public void testExportMetadataReport_Failure_NoLanguageSelected() {
+    void testExportMetadataReport_Failure_NoLanguageSelected() {
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = false;
