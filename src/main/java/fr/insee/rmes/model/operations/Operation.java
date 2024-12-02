@@ -40,7 +40,7 @@ public class Operation {
 	private Integer year;
 
 	public Operation(String id, String prefLabelLg1, String prefLabelLg2, String altLabelLg1, String altLabelLg2,
-			IdLabelTwoLangs series, String idSims, String validationState, int year) {
+			IdLabelTwoLangs series, String idSims, String validationState, Integer year) {
 		super();
 		this.id = id;
 		this.prefLabelLg1 = prefLabelLg1;
@@ -50,6 +50,7 @@ public class Operation {
 		this.series = series;
 		this.idSims = idSims;
 		this.validationState = validationState;
+		this.year = year;
 	}
 
 	public Operation() {
