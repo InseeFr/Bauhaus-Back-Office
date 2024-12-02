@@ -2,6 +2,9 @@ name: Test and Sonar Analysis
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
   schedule:
     - cron: '0 12 * * *'
 jobs:
