@@ -78,7 +78,7 @@
         <springdoc.version>2.3.0</springdoc.version>
         <rdf4j.version>4.3.13</rdf4j.version>
         <xdocreport.version>2.0.6</xdocreport.version>
-        <jacoco.version>0.8.5</jacoco.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java-jwt.version>4.4.0</java-jwt.version>
         <json.version>20240303</json.version>
@@ -93,7 +93,6 @@
         <sonar.organization>inseefr</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.projectKey>InseeFr_Bauhaus-Back-Office</sonar.projectKey>
-        <version.maven-jacoco>0.8.5</version.maven-jacoco>
     </properties>
 
     <dependencies>
@@ -274,12 +273,6 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
-                        <configuration>
-                            <!-- Set the name of the property containing the settings for JaCoCo
-                                 runtime agent. -->
-                            <propertyName>surefireArgLine</propertyName>
-                            <append>true</append>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>post-unit-test</id>
