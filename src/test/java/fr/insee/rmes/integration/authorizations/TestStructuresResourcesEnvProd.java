@@ -12,7 +12,6 @@ import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.StructureResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,6 @@ import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
-import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,7 +66,6 @@ class TestStructuresResourcesEnvProd {
 
     int structureId=10;
     int componentId=12;
-    ValidationStatus status= UNPUBLISHED;
 
     @Test
     void putStructureAdmin_ok() throws Exception {
@@ -139,7 +136,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/structure").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\""+timbre+"\"]}"))
                 .andExpect(status().isOk());
     }
 
@@ -168,7 +165,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/structure").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\"wrong\"]}"))
                 .andExpect(status().isForbidden());
     }
 
@@ -228,7 +225,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \""+timbre+"\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\""+timbre+"\"]}"))
                 .andExpect(status().isCreated());
     }
 
@@ -257,7 +254,7 @@ class TestStructuresResourcesEnvProd {
         mvc.perform(post("/structures/components").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\",\"contributor\": \"wrong\"}"))
+                        .content("{\"id\": \"1\",\"contributor\": [\"wrong\"]}"))
                 .andExpect(status().isForbidden());
     }
 
