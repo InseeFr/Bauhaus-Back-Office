@@ -46,5 +46,7 @@ public class OperationsQueriesTest extends WithGraphDBContainer {
         assertThat(result.getString("altLabelLg2")).hasToString("EPCV scheme 2008");
         assertThat(result.getString("altLabelLg1")).hasToString("EPCV 2008");
         assertThat(result.getString("validationState")).hasToString("Validated");
+        assertEquals("2024", result.getString("year"));
+
     }
 }

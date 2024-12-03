@@ -44,7 +44,7 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
         return Arrays.stream(items).parallel().anyMatch(requireNonNull(inputStr)::endsWith);
     }
 
-    public static boolean isPublished(String status) {
+    public static boolean isUnublished(String status) {
         return ValidationStatus.UNPUBLISHED.getValue().equals(status) || Constants.UNDEFINED.equals(status);
     }
 

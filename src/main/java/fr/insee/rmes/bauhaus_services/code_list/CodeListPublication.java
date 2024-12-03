@@ -33,7 +33,8 @@ public class CodeListPublication extends RdfService {
 		String pred = RdfUtils.toString(statement.getPredicate());
 		return pred.endsWith("validationState")
 				|| pred.endsWith(Constants.CREATOR)
-				|| pred.endsWith(Constants.CONTRIBUTOR);
+				|| pred.endsWith(Constants.CONTRIBUTOR)
+				|| pred.endsWith("lastCodeUriSegment");
 	}
 
 
@@ -41,7 +42,6 @@ public class CodeListPublication extends RdfService {
 		RepositoryResult<Statement> statements = repoGestion.getStatements(connection, codeListOrCode);
 
 		try {
-
 			checkIfResourceExists(statements, codeListOrCode);
 
 			Model model = new LinkedHashModel();
@@ -80,7 +80,6 @@ public class CodeListPublication extends RdfService {
 			throw new RuntimeException(e);
 		} finally {
 			repoGestion.closeStatements(statements);
-
 		}
 
 	}

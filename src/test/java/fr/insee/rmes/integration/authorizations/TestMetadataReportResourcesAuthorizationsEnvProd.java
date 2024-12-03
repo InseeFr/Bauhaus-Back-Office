@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
+import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
 import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
@@ -75,8 +76,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private final String timbre = "XX59-YYY";
 
     @Test
-    public void testGetMSDJson() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMSDJson() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -91,8 +92,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXml() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMSDXml() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         MSD msd = new MSD();
         String xmlResponse = "<MSD><key>value</key></MSD>";
@@ -111,8 +112,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDJsonRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMSDJsonRmesException() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMSDJson()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -123,8 +124,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXmlRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMSDXmlRmesException() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMSD()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -136,8 +137,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
 
 
     @Test
-    public void testGetMetadataAttribute() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMetadataAttribute() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "testId";
         String jsonResponse = "{\"key\":\"value\"}";
@@ -153,8 +154,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributeRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMetadataAttributeRmesException() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "testId";
 
@@ -167,8 +168,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributes() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMetadataAttributes() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -183,8 +184,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributesRmesException() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMetadataAttributesRmesException() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMetadataAttributes()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -195,9 +196,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReport() throws Exception {
+    void testGetMetadataReport() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -212,9 +213,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReportRmesException() throws Exception {
+    void testGetMetadataReportRmesException() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMetadataReport(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -224,8 +225,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
                 .andExpect(status().isInternalServerError());
     }
     @Test
-    public void testGetMetadataReportDefaultValue() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetMetadataReportDefaultValue() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -240,9 +241,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJson() throws Exception {
+    void testGetFullSimsJson() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
 
@@ -257,9 +258,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXml() throws Exception {
+    void testGetFullSimsXml() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         Documentation documentation = new Documentation();
         String xmlResponse = "<MSD><key>value</key></MSD>";
@@ -278,9 +279,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJsonRmesException() throws Exception {
+    void testGetFullSimsJsonRmesException() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getFullSimsForJson(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -291,9 +292,9 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXmlRmesException() throws Exception {
+    void testGetFullSimsXmlRmesException() throws Exception {
         String id = "1234";
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getFullSimsForXml(id)).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
 
@@ -304,8 +305,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetSimsExport() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "1234";
         boolean includeEmptyMas = true;
@@ -330,8 +331,8 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport_DefaultValues() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+    void testGetSimsExport_DefaultValues() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "1234";
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
@@ -350,7 +351,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Test
     void postMetadataReportAdmin_OK() throws Exception {
         when(documentationsService.createMetadataReport(anyString())).thenReturn("{}");
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Administrateur_RMESGNCS"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         mvc.perform(post("/operations/metadataReport")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer toto")

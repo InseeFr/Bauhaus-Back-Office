@@ -5,7 +5,10 @@ import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.ErrorCodes;
+import fr.insee.rmes.exceptions.RmesBadRequestException;
+import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -29,12 +32,11 @@ public class OperationPublication extends RdfService{
 	String[] ignoredAttrs = { "validationState", "hasPart", Constants.PUBLISHER, Constants.CONTRIBUTOR };
 
 	public void publishOperation(String operationId, JSONObject operationJson) throws RmesException {
+		checkSeriesIsPublished(operationId, operationJson);
+
 		Model model = new LinkedHashModel();
 
 		Resource operation = RdfUtils.operationIRI(operationId);
-		
-		checkSeriesIsPublished(operationId, operationJson);
-
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, operation);
 
@@ -75,8 +77,8 @@ public class OperationPublication extends RdfService{
 		String seriesId = operationJson.getJSONObject("series").getString(Constants.ID);
 		String status = ownersUtils.getValidationStatus(seriesId);
 
-		if (PublicationUtils.isPublished(status)) {
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_SERIES,
+		if (PublicationUtils.isUnublished(status)) {
+			throw new RmesBadRequestException(ErrorCodes.OPERATION_VALIDATION_UNPUBLISHED_PARENT,
 					"This operation cannot be published before its series is published",
 					"Operation: " + operationId + " ; Series: " + seriesId);
 		}

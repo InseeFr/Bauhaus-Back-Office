@@ -65,7 +65,7 @@ class DocumentationExportTest {
     private DocumentsUtils documentsUtils;
 
     @Test
-    public void testExportAsZip_success() throws Exception {
+    void testExportAsZip_success() throws Exception {
         JSONObject document = new JSONObject();
         document.put("url", "file://doc.doc");
         document.put("id", "1");
@@ -85,11 +85,11 @@ class DocumentationExportTest {
 
 
         InputStream inputStreamMock = mock(InputStream.class);
-        when(exportUtils.exportAsInputStream(eq("simsLabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
+        when(exportUtils.exportAsInputStream(eq("simslabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
                 .thenReturn(inputStreamMock);
         when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
-        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType);
+        ResponseEntity<Resource> response = documentationExport.exportAsZip(sims, xmlContent, xslFile, xmlPattern, zip, objectType, 50);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -98,7 +98,7 @@ class DocumentationExportTest {
     }
 
     @Test
-    public void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
+    void  testExportMetadataReport_Success_WithoutDocuments_Label() throws RmesException {
         DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
 
         String id = "1234";
@@ -111,16 +111,17 @@ class DocumentationExportTest {
 
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
+        when(documentationsUtils.getDocumentationByIdSims(id)).thenReturn(new JSONObject().put("labelLg1", "labelLg1"));
         when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{targetType, "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
         when(exportUtils.exportAsODT(any(), any(), any(), any(), any(), any())).thenReturn(ResponseEntity.ok().body(resource));
 
-        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
+        ResponseEntity<Resource> response = documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
         assertEquals(ResponseEntity.ok().body(resource), response);
     }
 
     @Test
-    public void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
+    void testExportMetadataReport_Failure_UnknownGoal() throws RmesException {
         DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
 
         String id = "1234";
@@ -134,14 +135,14 @@ class DocumentationExportTest {
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
         RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> {
-            documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal);
+            documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
         });
 
         assertEquals("{\"message\":\"The goal is unknown\"}", exception.getDetails());
     }
 
     @Test
-    public void testExportXmlFiles_Success() throws RmesException {
+    void testExportXmlFiles_Success() throws RmesException {
         DocumentationExport documentationExport = new DocumentationExport(50, documentsUtils, exportUtils, seriesUtils, operationsUtils, indicatorsUtils, parentUtils, codeListService, organizationsService, documentationsUtils );
 
         Map<String, String> xmlContent = new HashMap<>();

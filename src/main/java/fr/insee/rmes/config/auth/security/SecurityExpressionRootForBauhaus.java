@@ -4,6 +4,7 @@ import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.exceptions.RmesRuntimeBadRequestException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,6 +174,9 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
     private static @Nullable String extractContributorStampFromBody(String body) {
         return (new JSONObject(body)).optString("contributor");
     }
+    private static @Nullable JSONArray extractContributorStampsFromBody(String body) {
+        return (new JSONObject(body)).optJSONArray("contributor");
+    }
 
     //for PUT and DELETE structure
     public boolean isStructureContributor(String structureId){
@@ -183,7 +187,13 @@ public class SecurityExpressionRootForBauhaus implements MethodSecurityExpressio
 //  for POST structure or component
     public boolean isStructureAndComponentContributor(String body) {
         logger.trace("Check if {} can create the structure or component", methodSecurityExpressionRoot.getPrincipal());
-        return hasRole(Roles.STRUCTURES_CONTRIBUTOR)&& checkStampIsContributor(body);
+        Optional<Stamp> stamp = getStamp();
+        JSONArray contributors = extractContributorStampsFromBody(body);
+
+        if(contributors == null){
+            return false;
+        }
+        return hasRole(Roles.STRUCTURES_CONTRIBUTOR) && contributors.toList().stream().anyMatch(s -> ((String) s).equalsIgnoreCase(stamp.get().stamp()));
     }
 
 

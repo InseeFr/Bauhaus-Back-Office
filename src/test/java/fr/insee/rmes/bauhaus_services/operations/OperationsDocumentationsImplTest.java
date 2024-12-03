@@ -29,7 +29,7 @@ class OperationsDocumentationsImplTest {
     private OperationsDocumentationsImpl metadataReportService;
 
     @Test
-    public void testExportMetadataReport_Success() throws RmesException {
+    void testExportMetadataReport_Success() throws RmesException {
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = true;
@@ -37,7 +37,7 @@ class OperationsDocumentationsImplTest {
         boolean document = true;
         Resource resource = new ByteArrayResource("Mocked Document Content".getBytes());
 
-        when(documentationsExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES))
+        when(documentationsExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, Constants.GOAL_RMES, 0))
                 .thenReturn(ResponseEntity.ok().body(resource));
 
         ResponseEntity<Resource> response = metadataReportService.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document);
@@ -45,7 +45,7 @@ class OperationsDocumentationsImplTest {
     }
 
     @Test
-    public void testExportMetadataReport_Failure_NoLanguageSelected() {
+    void testExportMetadataReport_Failure_NoLanguageSelected() {
         String id = "1234";
         boolean includeEmptyMas = true;
         boolean lg1 = false;
