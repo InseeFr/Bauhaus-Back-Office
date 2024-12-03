@@ -65,7 +65,7 @@ class OperationsUtilsTest {
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            mockedFactory.when(() -> RdfUtils.operationsGraph()).thenReturn(valueFactory.createIRI("http://operations-graph/"));
+            mockedFactory.when(RdfUtils::operationsGraph).thenReturn(valueFactory.createIRI("http://operations-graph/"));
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2"))).thenReturn(valueFactory.createIRI("http://series/2"));
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.OPERATION), eq("1"))).thenReturn(operationIRI);
             operationsQueriesMockedStatic.when(() -> OperationsQueries.checkPrefLabelUnicity(eq("1"), eq("prefLabelLg1"), eq("fr"))).thenReturn("unicity-labelLg1");

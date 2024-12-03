@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-public class StructureQueriesTest extends WithGraphDBContainer {
+class StructureQueriesTest extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @BeforeAll

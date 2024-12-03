@@ -92,7 +92,7 @@ class FilesUtilsTest {
 	}
 
 	@Test
-	public void testGetExtension() {
+	void testGetExtension() {
 		// Test with null input
 		assertEquals(".odt", FilesUtils.getExtension(null));
 
