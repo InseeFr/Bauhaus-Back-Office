@@ -76,7 +76,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     private final String timbre = "XX59-YYY";
 
     @Test
-    public void testGetMSDJson() throws Exception {
+    void testGetMSDJson() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -92,7 +92,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXml() throws Exception {
+    void testGetMSDXml() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         MSD msd = new MSD();
@@ -112,7 +112,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDJsonRmesException() throws Exception {
+    void testGetMSDJsonRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMSDJson()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -124,7 +124,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMSDXmlRmesException() throws Exception {
+    void testGetMSDXmlRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMSD()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -137,7 +137,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
 
 
     @Test
-    public void testGetMetadataAttribute() throws Exception {
+    void testGetMetadataAttribute() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "testId";
@@ -154,7 +154,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributeRmesException() throws Exception {
+    void testGetMetadataAttributeRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "testId";
@@ -168,7 +168,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributes() throws Exception {
+    void testGetMetadataAttributes() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -184,7 +184,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataAttributesRmesException() throws Exception {
+    void testGetMetadataAttributesRmesException() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         when(documentationsService.getMetadataAttributes()).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR, "Error", "Detailed error message"));
@@ -196,7 +196,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReport() throws Exception {
+    void testGetMetadataReport() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -213,7 +213,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetMetadataReportRmesException() throws Exception {
+    void testGetMetadataReportRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -225,7 +225,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
                 .andExpect(status().isInternalServerError());
     }
     @Test
-    public void testGetMetadataReportDefaultValue() throws Exception {
+    void testGetMetadataReportDefaultValue() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String jsonResponse = "{\"key\":\"value\"}";
@@ -241,7 +241,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJson() throws Exception {
+    void testGetFullSimsJson() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -258,7 +258,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXml() throws Exception {
+    void testGetFullSimsXml() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -279,7 +279,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsJsonRmesException() throws Exception {
+    void testGetFullSimsJsonRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -292,7 +292,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetFullSimsXmlRmesException() throws Exception {
+    void testGetFullSimsXmlRmesException() throws Exception {
         String id = "1234";
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
@@ -305,7 +305,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport() throws Exception {
+    void testGetSimsExport() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "1234";
@@ -331,7 +331,7 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     }
 
     @Test
-    public void testGetSimsExport_DefaultValues() throws Exception {
+    void testGetSimsExport_DefaultValues() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
 
         String id = "1234";

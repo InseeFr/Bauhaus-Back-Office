@@ -16,7 +16,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest(properties = { "fr.insee.rmes.bauhaus.lg1=fr", "fr.insee.rmes.bauhaus.lg2=en"})
-public class DistributionQueriesTest {
+class DistributionQueriesTest {
     @Autowired
     Config config;
 
