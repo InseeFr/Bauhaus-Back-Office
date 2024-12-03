@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services;
 
 public class Constants {
 
-	public static final String TYPE_STRING = "String";
+
 	/*A*/
 	public static final String ACCRUAL_PERIODICITY_LIST ="accrualPeriodicityList";
 	public static final String ALT_LABEL_LG1 = "altLabelLg1";
@@ -110,6 +110,7 @@ public class Constants {
 	public static final String TEXT_LG2 = "text";
 	public static final String TYPE_OF_OBJECT = "typeOfObject";
 	public static final String TYPELIST = "typeList";
+	public static final String TYPE_STRING = "String";
 
 	/*U*/
 	public static final String UNDEFINED = "undefined";
