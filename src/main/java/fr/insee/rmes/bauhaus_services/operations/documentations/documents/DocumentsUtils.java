@@ -340,7 +340,7 @@ public class DocumentsUtils extends RdfService {
 
         if (jsonDocs.isNull(Constants.URI)) {
             logger.error("Error with the document {}. It looks like it does not have an uri", id);
-            throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find " + (isLink ? "Link" : "Document") + " with id: ", id);
+            throw new RmesNotFoundException(ErrorCodes.DOCUMENT_UNKNOWN_ID, "Cannot find " + (isLink ? "Link" : "Document") + " with id : " + id, id);
         }
         formatDateInJsonObject(jsonDocs);
         jsonDocs.put("sims", this.getSimsByDocument(id, isLink));

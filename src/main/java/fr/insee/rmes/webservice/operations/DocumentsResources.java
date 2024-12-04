@@ -2,6 +2,7 @@ package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.DocumentsService;
+import fr.insee.rmes.config.swagger.model.operations.documentation.DocumentId;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.documentations.Document;
 import io.swagger.v3.oas.annotations.Operation;
@@ -107,15 +108,28 @@ public class DocumentsResources {
     @PutMapping("/document/{id}")
     @Operation(operationId = "setDocumentById", summary = "Update document ")
     public ResponseEntity<String> setDocument(
-            @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-            @Parameter(description = Constants.DOCUMENT, required = true, schema = @Schema(implementation = Document.class)) @RequestBody String body) throws RmesException {
-        documentsService.setDocument(id, body);
+            @Parameter(
+                    description = "Id",
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id,
+            @Parameter(
+                    description = Constants.DOCUMENT,
+                    required = true,
+                    schema = @Schema(implementation = Document.class)
+            )
+            @RequestBody String body) throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        documentsService.setDocument(documentIdString, body);
         logger.info("Update document : {}", id);
-        return ResponseEntity.ok(id);
+        return ResponseEntity.ok(documentIdString);
     }
 
 
-    @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
+
+
+        @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
             + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
             + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @Operation(operationId = "changeDocument", summary = "Change document file")
@@ -140,8 +154,15 @@ public class DocumentsResources {
             + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/document/{id}")
     @Operation(operationId = "deleteDocument", summary = "Delete a document")
-    public ResponseEntity<Object> deleteDocument(@PathVariable(Constants.ID) String id) throws RmesException {
-        return ResponseEntity.status(documentsService.deleteDocument(id)).body(id);
+    public ResponseEntity<Object> deleteDocument(
+            @Parameter(
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id)
+            throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.status(documentsService.deleteDocument(documentIdString)).body(documentIdString);
     }
 
 
@@ -176,9 +197,21 @@ public class DocumentsResources {
     @PutMapping("/link/{id}")
     @Operation(operationId = "setLinkById", summary = "Update link")
     public ResponseEntity<Object> setLink(
-            @Parameter(description = "Id", required = true) @PathVariable(Constants.ID) String id,
-            @Parameter(description = "Link", required = true, schema = @Schema(implementation = Document.class)) @RequestBody String body) throws RmesException {
-        return ResponseEntity.ok(documentsService.setLink(id, body));
+            @Parameter(
+                    description = "Id",
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id,
+            @Parameter(
+                    required = true,
+                    schema = @Schema(implementation = Document.class)
+            )
+            @RequestBody String body
+    )
+            throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.ok(documentsService.setLink(documentIdString, body));
     }
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
@@ -186,7 +219,26 @@ public class DocumentsResources {
             + ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
     @DeleteMapping("/link/{id}")
     @Operation(operationId = "deleteLink", summary = "Delete a link")
-    public ResponseEntity<Object> deleteLink(@PathVariable(Constants.ID) String id) throws RmesException {
-        return ResponseEntity.status(documentsService.deleteLink(id)).body(id);
+    public ResponseEntity<Object> deleteLink(
+            @Parameter(
+                    required = true,
+                    schema = @Schema (type=Constants.TYPE_STRING)
+            )
+            @PathVariable(Constants.ID) DocumentId id
+    ) throws RmesException {
+        String documentIdString = (id.getDocumentId() != null) ? sanitizeDocumentId(id.getDocumentId()) : null;
+        return ResponseEntity.status(documentsService.deleteLink(documentIdString)).body(documentIdString);
     }
+
+
+    // Méthode pour encoder et valider le DocumentID
+    private String sanitizeDocumentId(String documentIdString) {
+        if (documentIdString == null || documentIdString.isEmpty()) {
+            return null;
+        }
+        //on peut ajouter d'autres contrôles
+        return documentIdString.replaceAll("[/<>:\"]", "");
+    }
+
+
 }

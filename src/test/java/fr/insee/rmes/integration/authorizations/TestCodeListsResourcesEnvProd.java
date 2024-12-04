@@ -1,14 +1,15 @@
 package fr.insee.rmes.integration.authorizations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
-import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
-import fr.insee.rmes.config.auth.security.*;
+import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;
+import fr.insee.rmes.config.auth.security.CommonSecurityConfiguration;
+import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
+import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
-import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.model.ValidationStatus.UNPUBLISHED;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -56,15 +56,12 @@ class TestCodeListsResourcesEnvProd {
     @MockBean
     private CodeListService codeListService;
     @MockBean
-    protected OperationsDocumentationsService documentationsService;
-    @MockBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
     int codesListId=10;
-    ValidationStatus status= UNPUBLISHED;
 
     @Test
     void putCodesListAdmin_ok() throws Exception {
@@ -143,7 +140,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void postCodesList_noAuth() throws Exception {
-        mvc.perform(put("/codeList/")
+        mvc.perform(post("/codeList/")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
@@ -233,7 +230,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void postCodeAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bad_role"));
         mvc.perform(post("/codeList/detailed/1/codes").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
@@ -274,7 +271,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void putCodeAsNotCodesListContributor() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bad_role"));
         mvc.perform(put("/codeList/detailed/1/codes/2").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)

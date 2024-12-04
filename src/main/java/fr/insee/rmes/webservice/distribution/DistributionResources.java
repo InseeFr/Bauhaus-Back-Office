@@ -53,7 +53,7 @@ public class DistributionResources {
     }
 
     @GetMapping("/{id}")
-    @Operation(operationId = "getDistribution", summary = "Get a distributions",
+    @Operation(operationId = "getDistribution", summary = "Get a distribution",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
     public Distribution getDistribution(@PathVariable(Constants.ID) String id) throws RmesException {
         return this.distributionService.getDistributionByID(id);
