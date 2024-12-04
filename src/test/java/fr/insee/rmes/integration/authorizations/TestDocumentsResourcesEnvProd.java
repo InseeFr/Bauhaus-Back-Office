@@ -88,6 +88,8 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .getDocument(Mockito.eq(id));
     }
 
     @Test
@@ -99,13 +101,14 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .getLink(Mockito.eq(id));
     }
 
     @Test
     void getDocumentFileWithAnyRole() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
         JSONObject jsonObject = new JSONObject("{\"id\": \"10\"}");
-        when(documentsService.getDocument(id)).thenReturn(jsonObject);
         mvc.perform(get("/documents/document/"+ id + "/file").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -204,6 +207,8 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .deleteDocument(Mockito.eq(id));
     }
 
     @Test
@@ -215,6 +220,8 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .deleteDocument(Mockito.eq(id));
     }
 
     @Test
@@ -226,17 +233,20 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .deleteDocument(Mockito.eq(id));
     }
 
     @Test
     void deleteDocument_badRole() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Bad_role"));
-        when(documentsService.deleteDocument(id)).thenReturn(HttpStatus.OK);
         mvc.perform(delete("/documents/document/" + id)
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+        Mockito.verify(documentsService, Mockito.times(0))
+                .deleteDocument(Mockito.eq(id));
     }
 
 
@@ -249,17 +259,20 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .deleteLink(Mockito.eq(id));
     }
 
     @Test
     void deleteLink_badRole() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("bad_role"));
-        when(documentsService.deleteDocument(id)).thenReturn(HttpStatus.OK);
         mvc.perform(delete("/documents/link/" + id)
                         .header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+        Mockito.verify(documentsService, Mockito.times(0))
+                .deleteLink(Mockito.eq(id));
     }
 
 
@@ -285,7 +298,7 @@ class TestDocumentsResourcesEnvProd {
                 MediaType.TEXT_PLAIN_VALUE, // Type MIME
                 "Contenu du fichier".getBytes() // Contenu
         );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/document/"))
+        mvc.perform(MockMvcRequestBuilders.multipart("/documents/document/")
                         .file(file)
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
@@ -308,12 +321,14 @@ class TestDocumentsResourcesEnvProd {
                 MediaType.TEXT_PLAIN_VALUE, // Type MIME
                 "Contenu du fichier".getBytes() // Contenu
         );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/document/"))
+        mvc.perform(MockMvcRequestBuilders.multipart("/documents/document/")
                         .file(file)
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
                         .contentType(MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isForbidden());
+        Mockito.verify(documentsService, Mockito.times(0))
+                .createDocument(Mockito.eq("Données Json"), Mockito.any(InputStream.class), Mockito.eq("document.txt"));
     }
 
     @Test
@@ -328,12 +343,14 @@ class TestDocumentsResourcesEnvProd {
                 MediaType.TEXT_PLAIN_VALUE, // Type MIME
                 "Contenu du fichier".getBytes() // Contenu
         );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/document/"))
+        mvc.perform(MockMvcRequestBuilders.multipart("/documents/document/")
                         .file(file)
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
                         .contentType(MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .createDocument(Mockito.eq("Données Json"), Mockito.any(InputStream.class), Mockito.eq("document.txt"));
     }
 
     @Test
@@ -348,12 +365,14 @@ class TestDocumentsResourcesEnvProd {
                 MediaType.TEXT_PLAIN_VALUE, // Type MIME
                 "Contenu du fichier".getBytes() // Contenu
         );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/document/"))
+        mvc.perform(MockMvcRequestBuilders.multipart("/documents/document/")
                         .file(file)
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
                         .contentType(MULTIPART_FORM_DATA_VALUE))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .createDocument(Mockito.eq("Données Json"), Mockito.any(InputStream.class), Mockito.eq("document.txt"));
     }
 
     @Test
@@ -368,81 +387,51 @@ class TestDocumentsResourcesEnvProd {
     @Test
     void shouldCreateALinkIfAdmin() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        Mockito.when(documentsService.createDocument(Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
+        Mockito.when(documentsService.setLink(Mockito.anyString()))
                 .thenReturn(id);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-        );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/link/"))
-                        .file(file)
+                mvc.perform(post("/documents/link/")
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
-                        .contentType(MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .setLink(Mockito.eq("Données Json"));
     }
 
     @Test
     void shouldNotCreateALinkBadRole() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Bad_role"));
-        Mockito.when(documentsService.createDocument(Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
-                .thenReturn(id);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-        );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/link/"))
-                        .file(file)
+        mvc.perform(post("/documents/link/")
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
-                        .contentType(MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void shouldCreateALinkAsIndicatorContributor() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_indicateur_RMESGNCS"));
-        Mockito.when(documentsService.createDocument(Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
+        Mockito.when(documentsService.setLink(Mockito.anyString()))
                 .thenReturn(id);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-        );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/link/"))
-                        .file(file)
+        mvc.perform(post("/documents/link/")
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
-                        .contentType(MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldCreateALinkAsSeriesContributorBasedOnStamp() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("Gestionnaire_serie_RMESGNCS"));
-        Mockito.when(documentsService.createDocument(Mockito.anyString(), Mockito.any(InputStream.class), Mockito.anyString()))
+        Mockito.when(documentsService.setLink(Mockito.anyString()))
                 .thenReturn(id);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-        );
-        mvc.perform((MockMvcRequestBuilders.multipart("/documents/link/"))
-                        .file(file)
+        mvc.perform(post("/documents/link/")
                         .param("body","Données Json")
                         .header("Authorization", "Bearer toto")
-                        .contentType(MULTIPART_FORM_DATA_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+        Mockito.verify(documentsService, Mockito.times(1))
+                .setLink(Mockito.eq("Données Json"));
     }
 
     @Test
