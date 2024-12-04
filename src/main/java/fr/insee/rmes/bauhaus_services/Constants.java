@@ -109,8 +109,9 @@ public class Constants {
 	public static final String TEXT_LG1 = "texte";
 	public static final String TEXT_LG2 = "text";
 	public static final String TYPE_OF_OBJECT = "typeOfObject";
-	public static final String TYPELIST = "typeList";
 	public static final String TYPE_STRING = "String";
+	public static final String TYPELIST = "typeList";
+
 
 	/*U*/
 	public static final String UNDEFINED = "undefined";
