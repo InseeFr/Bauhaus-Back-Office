@@ -527,9 +527,5 @@ class TestDocumentsResourcesEnvProd {
                 .andExpect(status().isForbidden());
     }
 
-
-    public String getId() {
-        return id;
-    }
 }
 
