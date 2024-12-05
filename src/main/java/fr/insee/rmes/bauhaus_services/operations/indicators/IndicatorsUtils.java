@@ -12,6 +12,7 @@ import fr.insee.rmes.bauhaus_services.operations.famopeserind_utils.FamOpeSerInd
 import fr.insee.rmes.bauhaus_services.rdf_utils.*;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.errors.IndicatorErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.links.OperationsLink;
 import fr.insee.rmes.model.operations.Indicator;
@@ -89,18 +90,17 @@ public class IndicatorsUtils {
 	}
 
 	private void validate(Indicator indicator) throws RmesException {
+		if(indicator.getWasGeneratedBy() == null || indicator.getWasGeneratedBy().isEmpty()){
+			throw new RmesBadRequestException(IndicatorErrorCodes.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
+		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
+			throw new RmesBadRequestException(IndicatorErrorCodes.EXISTING_PREF_LABEL_LG1, "This prefLabelLg1 is already used by another indicator.");
 		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg2(), lg2))){
-			throw new RmesBadRequestException(ErrorCodes.OPERATION_INDICATOR_EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
+			throw new RmesBadRequestException(IndicatorErrorCodes.EXISTING_PREF_LABEL_LG2, "This prefLabelLg2 is already used by another indicator.");
 		}
 	}
 
-	public Indicator getIndicatorById(String id) throws RmesException{
-		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
-	}
-	
 	public Indicator getIndicatorById(String id, boolean forXML) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), forXML);
 	}
@@ -434,7 +434,4 @@ public class IndicatorsUtils {
 	public boolean checkIfIndicatorExists(String id) throws RmesException {
 		return repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkIfExists(id));
 	}
-
-
-
 }
