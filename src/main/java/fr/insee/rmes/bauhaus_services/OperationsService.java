@@ -86,27 +86,16 @@ public interface OperationsService {
 
 	/**
 	 * UPDATE
-	 * @param id
-	 * @param body
-	 * @throws RmesException
 	 */
 	void setIndicator(String id, String body) throws RmesException;
-	
-	/**
-	 * PUBLISH
-	 * @param body
-	 * @throws RmesException
-	 */
-
-	String setIndicatorValidation(String body) throws RmesException;
 
 	/**
 	 * CREATE
-	 * @param body
-	 * @return
-	 * @throws RmesException
 	 */
 	String setIndicator(String body) throws RmesException;
 
-
+	/**
+	 * PUBLISH
+	 */
+	String setIndicatorValidation(String body) throws RmesException;
 }
