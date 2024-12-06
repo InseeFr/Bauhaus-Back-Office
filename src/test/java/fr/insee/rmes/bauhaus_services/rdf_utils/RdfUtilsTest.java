@@ -12,7 +12,7 @@ class RdfUtilsTest {
     @Test
     void shouldReturnNullWhenCallingAddTripeStringMdToXhtml2WithNullValue(){
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");;
+        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
         String value = null;
         String lang = "fr";
         String prefix = "prefix";
@@ -24,7 +24,7 @@ class RdfUtilsTest {
     @Test
     void shouldReturnNullWhenCallingAddTripeStringMdToXhtml2WithEmptyValue(){
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");;
+        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
         String value = "";
         String lang = "fr";
         String prefix = "prefix";
@@ -36,7 +36,7 @@ class RdfUtilsTest {
     @Test
     void shouldUpdateModelWhenCallingAddTripeStringMdToXhtml2WithValidValue(){
         IRI iri = SimpleValueFactory.getInstance().createIRI("http://iri");
-        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");;
+        IRI predicate = SimpleValueFactory.getInstance().createIRI("http://predicate");
         String value = "value";
         String lang = "fr";
         String prefix = "prefix";

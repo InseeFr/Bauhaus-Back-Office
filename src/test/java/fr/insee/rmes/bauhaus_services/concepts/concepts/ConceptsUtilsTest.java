@@ -2,8 +2,6 @@ package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
 import fr.insee.rmes.model.concepts.ConceptForExport;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

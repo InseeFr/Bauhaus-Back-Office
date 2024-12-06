@@ -27,7 +27,9 @@ public class CommonSecurityConfiguration {
     private final Optional<String> allowedOrigin ;
     private final String appHost;
 
-    public CommonSecurityConfiguration(@Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin, @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost) {
+    public CommonSecurityConfiguration(
+            @Value("${"+CORS_ALLOWED_ORIGIN+"}") Optional<String> allowedOrigin,
+            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost) {
         this.allowedOrigin=allowedOrigin;
         this.appHost = appHost;
     }

@@ -138,7 +138,7 @@ class DocumentsUtilsTest {
             rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
             rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralDate(any(String.class))).thenCallRealMethod();
             rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleDate(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.documentsGraph()).thenReturn(graph);
+            rdfUtilsMockedStatic.when(RdfUtils::documentsGraph).thenReturn(graph);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toString(any())).thenReturn(documentIRIString);
             rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
             documentQueriesMockedStatic.when(() -> DocumentsQueries.checkLabelUnicity(eq("1"), anyString(), any())).thenReturn(documentIRIString);
