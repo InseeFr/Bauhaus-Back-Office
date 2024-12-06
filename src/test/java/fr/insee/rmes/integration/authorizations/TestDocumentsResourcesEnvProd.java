@@ -178,7 +178,7 @@ class TestDocumentsResourcesEnvProd {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(expectedStatus);
         Mockito.verify(documentsService, Mockito.times(numberOfInvocations))
-                .deleteDocument(eq(id));
+                .deleteDocument(id);
     }
     static Collection<Arguments> TestRoleCaseForDeleteDocument(){
         return Arrays.asList(
@@ -279,7 +279,7 @@ class TestDocumentsResourcesEnvProd {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(expectedStatus);
         Mockito.verify(documentsService, Mockito.times(numberOfInvocations))
-                .setLink(eq("Données Json"));
+                .setLink("Données Json");
     }
     static Collection<Arguments> TestRoleCaseForCreateLink(){
         return Arrays.asList(
