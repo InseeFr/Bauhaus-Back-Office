@@ -72,10 +72,10 @@ public class FilesUtils {
 
 	private static String removeAsciiCharacters(String fileName) {
 		return Normalizer.normalize(fileName, Normalizer.Form.NFD)
+				.replaceAll("\\p{M}+", "")
 				.replace("œ", "oe")
 				.replace("Œ", "OE")
 				.replaceAll("[-_]", " ")
-				.replaceAll("\\p{M}+", " ")
 				.replaceAll("\\p{Punct}", "")
 				.replace(":", "");
 	}
