@@ -187,11 +187,15 @@ public class RdfUtils {
 	public static Literal setLiteralBoolean(Boolean bool) {
 		return factory.createLiteral(bool);
 	}
-	
+
+	public static Literal createLiteral(String value, IRI datatype){
+		return factory.createLiteral(value, datatype);
+	}
+
 	public static Literal setLiteralInt(String number) {
 		return factory.createLiteral(number, XSD.INT);
 	}
-	
+
 	public static Literal setLiteralDateTime(String date) {
         String parsedDate = DateTimeFormatter.ISO_DATE_TIME.format(DateUtils.parseDateTime(date));
 		return factory.createLiteral(parsedDate, XSD.DATETIME);

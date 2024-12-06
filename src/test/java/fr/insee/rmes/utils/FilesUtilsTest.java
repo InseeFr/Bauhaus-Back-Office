@@ -45,6 +45,7 @@ class FilesUtilsTest {
 
 		String result = FilesUtils.generateFinalFileNameWithoutExtension(fileName, maxLength);
 
+		assertEquals("rapportQualiteEnquet", FilesUtils.generateFinalFileNameWithoutExtension("Rapport qualité : Enquête annuelle de recensement 2022", maxLength), "Le nom de fichier généré sans extension pour un long nom est incorrect");
 		assertEquals("averylongfilenameexa", result, "Le nom de fichier généré sans extension pour un long nom est incorrect");
 	}
 
