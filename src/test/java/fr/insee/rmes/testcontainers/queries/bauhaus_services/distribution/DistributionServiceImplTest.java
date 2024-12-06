@@ -15,7 +15,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class DistributionServiceImplTest extends WithGraphDBContainer  {
+class DistributionServiceImplTest extends WithGraphDBContainer  {
     @Autowired
     DistributionService distributionService;
 

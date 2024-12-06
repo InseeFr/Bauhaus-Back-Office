@@ -19,7 +19,7 @@ class CollectionForExportTest {
     }
 
     @Test
-    public void testAddMembers() {
+    void testAddMembers() {
         JSONArray membersArray = new JSONArray();
 
         JSONObject member1 = new JSONObject();

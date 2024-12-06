@@ -28,13 +28,12 @@ public class FilesUtils {
 	public static final String FODT_EXTENSION = ".fodt";
 
 	public static MediaType getMediaTypeFromExtension(String extension) {
-		MediaType contentType = switch (extension){
+		return switch (extension){
 			case FilesUtils.ODT_EXTENSION -> new MediaType("application", "vnd.oasis.opendocument.text");
 			case FilesUtils.ODS_EXTENSION -> new MediaType("application", "vnd.oasis.opendocument.spreadsheet");
 			case FilesUtils.ZIP_EXTENSION -> new MediaType("application", "zip");
 			default -> throw new IllegalStateException("Unexpected value: " + extension);
 		};
-		return contentType;
 	}
 
 	public static String getExtension(String acceptHeader) {

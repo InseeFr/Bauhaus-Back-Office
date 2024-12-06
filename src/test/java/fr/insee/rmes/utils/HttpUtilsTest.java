@@ -10,10 +10,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class HttpUtilsTest {
+class HttpUtilsTest {
 
     @Test
-    public void testGenerateHttpHeaders() {
+    void testGenerateHttpHeaders() {
         String fileName = "tresoeTres";
         String extension = ".zip";
         String reducedFileName = "tresoeTres";

@@ -108,7 +108,7 @@ class CodeListPublicationTest {
                 new RepositoryResult<>(new CloseableIteratorIteration<>(fakeStatements.iterator()));
 
 
-        when(publicationUtils.tranformBaseURIToPublish(eq(subject))).thenReturn(subject);
+        when(publicationUtils.tranformBaseURIToPublish(subject)).thenReturn(subject);
         when(repositoryGestion.getConnection()).thenReturn(null);
         when(repositoryGestion.getStatementsPredicateObject(any(), eq(SKOS.IN_SCHEME), any())).thenReturn(new RepositoryResult<>(new CloseableIteratorIteration<>(codeStatement.iterator())));
         when(repositoryGestion.getStatements(any(), eq(resource))).thenReturn(new RepositoryResult<>(fakeRepositoryResult));

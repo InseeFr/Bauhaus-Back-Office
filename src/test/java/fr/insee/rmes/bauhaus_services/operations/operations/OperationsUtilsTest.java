@@ -66,6 +66,7 @@ class OperationsUtilsTest {
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString(), anyString())).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
+            mockedFactory.when(RdfUtils::operationsGraph).thenReturn(valueFactory.createIRI("http://operations-graph/"));
             mockedFactory.when(() -> RdfUtils.createLiteral(anyString(), eq(XSD.GYEAR))).thenCallRealMethod();
             mockedFactory.when(() -> RdfUtils.operationsGraph()).thenReturn(valueFactory.createIRI("http://operations-graph/"));
             mockedFactory.when(() -> RdfUtils.objectIRI(eq(ObjectType.SERIES), eq("2"))).thenReturn(valueFactory.createIRI("http://series/2"));
