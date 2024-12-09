@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -655,7 +654,7 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    private String getDocumentFilename(String id) throws RmesException {
+    protected String getDocumentFilename(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
         return getDocumentNameFromUrl(url);
@@ -683,8 +682,6 @@ public class DocumentsUtils extends RdfService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new ByteArrayResource(data));
-        }catch (NoSuchFileException e){
-            throw new RmesNotFoundException(HttpStatus.NOT_FOUND.value(), filePath+" not found", filePath+" not found");
         }catch (IOException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }

@@ -38,6 +38,12 @@ public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.internalServerError().body(exception.getMessage());
     }
 
+    @ExceptionHandler(RmesFileException.class)
+    public final ResponseEntity<String> handleRmesFileException(RmesFileException exception){
+        logger.error(exception.getMessage(), exception);
+        return ResponseEntity.internalServerError().body(exception.toString());
+    }
+
     @ExceptionHandler(NoSuchFileException.class)
     public final ResponseEntity<String> handleRmesException(NoSuchFileException exception){
         logger.error("NoSuchFileException "+ exception.getMessage(), exception);

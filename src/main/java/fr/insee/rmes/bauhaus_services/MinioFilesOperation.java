@@ -3,8 +3,6 @@ package fr.insee.rmes.bauhaus_services;
 import fr.insee.rmes.exceptions.RmesFileException;
 import io.minio.*;
 import io.minio.errors.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,19 +12,18 @@ import java.security.NoSuchAlgorithmException;
 
 public record MinioFilesOperation(MinioClient minioClient, String bucketName, String directoryGestion, String directoryPublication) implements FilesOperations {
 
-    private static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
-
     @Override
     public InputStream read(String pathFile){
-        String objectName= extractFileName(pathFile);
-
+        String fileName= extractFileName(pathFile);
+        String objectName = directoryGestion + "/" + fileName;
         try {
+
             return minioClient.getObject(GetObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(directoryGestion +"/"+ objectName)
+                    .object(objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            throw new RmesFileException("Error reading file: " + objectName, e);
+            throw new RmesFileException(fileName, "Error reading file: " + fileName+" as object `"+objectName+"` in bucket "+bucketName, e);
         }
     }
     private static String extractFileName(String filePath) {
@@ -38,36 +35,40 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
 
 
     @Override
-    public void write(InputStream content, Path objectName) {
+    public void write(InputStream content, Path filePath) {
+        String filename = filePath.getFileName().toString();
+        String objectName = directoryGestion + "/" + filename;
         try {
+
             minioClient.putObject(PutObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(directoryGestion +"/"+ objectName.getFileName().toString())
+                    .object(objectName)
                     .stream(content, content.available(), -1)
                     .build());
         } catch (IOException | ErrorResponseException | InsufficientDataException | InternalException |
                  InvalidKeyException | InvalidResponseException | NoSuchAlgorithmException | ServerException |
                  XmlParserException e) {
-            throw new RmesFileException("Error writing file: " + objectName, e);
+            throw new RmesFileException(filePath.toString(), "Error writing file: " + filename+ "as object `"+objectName+"` in bucket "+bucketName, e);
         }
     }
 
     @Override
     public void copy(String srcObjectName, String destObjectName)  {
 
+        String srcObject = directoryGestion + "/" + extractFileName(srcObjectName);
+        String destObject = directoryPublication + "/" + extractFileName(srcObjectName);
         try {
             CopySource source = CopySource.builder()
                     .bucket(bucketName)
-                    .object(directoryGestion +"/"+ extractFileName(srcObjectName))
+                    .object(srcObject)
                     .build();
-
             minioClient.copyObject(CopyObjectArgs.builder()
                     .bucket(bucketName)
-                    .object(directoryPublication +"/"+ extractFileName(srcObjectName))
+                    .object(destObject)
                     .source(source)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            throw new RmesFileException("Error copying file from " + srcObjectName + " to " + destObjectName, e);
+            throw new RmesFileException(srcObjectName,"Error copying file from `" + srcObject + "` to `" + destObject+"` in bucket "+bucketName, e);
         }
     }
 
@@ -85,7 +86,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .object(objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            throw new RmesFileException("Error deleting file: " + objectName, e);
+            throw new RmesFileException(objectName,"Error deleting file: " + objectName+" in bucket "+bucketName, e);
         }
     }
 
