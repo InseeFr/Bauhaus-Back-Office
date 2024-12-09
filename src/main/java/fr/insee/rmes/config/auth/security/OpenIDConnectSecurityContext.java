@@ -71,7 +71,9 @@ public class OpenIDConnectSecurityContext {
                                 .requestMatchers(PUBLIC_RESOURCES_ANT_PATTERNS).permitAll() //PublicResources
                                 .requestMatchers("/healthcheck").permitAll()
                                 .requestMatchers("/swagger-ui/*").permitAll()
-                                .requestMatchers("/v3/api-docs/swagger-config", "/v3/api-docs").permitAll()
+                                .requestMatchers("/v3/api-docs/swagger-config", "/v3/api-docs/**").permitAll()
+//                        http://localhost:8080/api/v3/api-docs
+//                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                                 .requestMatchers("/openapi.json").permitAll()
                                 .requestMatchers("/documents/document/*/file").permitAll()
                                 .requestMatchers("/operations/operation/codebook").permitAll()
