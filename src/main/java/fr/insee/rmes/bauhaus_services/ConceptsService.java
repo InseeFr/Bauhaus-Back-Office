@@ -39,7 +39,7 @@ public interface ConceptsService {
 	
 	void setConceptsValidation(String body) throws  RmesException ;
 
-	ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException;
+	ResponseEntity exportConcept(String id, String acceptHeader) throws RmesException;
 
 	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
 
@@ -49,7 +49,7 @@ public interface ConceptsService {
 	
 	void setCollectionsValidation(String body) throws  RmesException ;
 	
-	ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException ;
+	ResponseEntity getCollectionExport(String id, String acceptHeader) throws RmesException ;
 	
 	String getRelatedConcepts(String id) throws RmesException;
 

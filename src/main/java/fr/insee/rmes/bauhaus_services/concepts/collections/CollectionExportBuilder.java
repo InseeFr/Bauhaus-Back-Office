@@ -109,7 +109,7 @@ public class CollectionExportBuilder extends RdfService {
 	}
 
 
-	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields, ConceptsCollectionsResources.Language lg) throws RmesException {
+	public ResponseEntity<Resource> exportAsResponseODT(String fileName, Map<String, String> xmlContent, boolean includeEmptyFields, ConceptsCollectionsResources.Language lg) throws RmesException {
 		String parametersXML = XsltUtils.buildParams(true, true, includeEmptyFields, Constants.COLLECTION);
 		xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 		String xmlPattern = lg == ConceptsCollectionsResources.Language.lg1 ? xmlPatternFR : xmlPatternEN;
