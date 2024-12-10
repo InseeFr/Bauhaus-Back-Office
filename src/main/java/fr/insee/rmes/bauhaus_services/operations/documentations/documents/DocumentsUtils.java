@@ -25,6 +25,7 @@ import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -41,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -62,6 +62,10 @@ public class DocumentsUtils extends RdfService {
     public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations) {
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
+    }
+
+    public FilesOperations getFilesOperations() {
+        return filesOperations;
     }
 
     /*
@@ -555,11 +559,7 @@ public class DocumentsUtils extends RdfService {
 
     private void deleteFile(String docUrl) {
         Path path = Paths.get(docUrl);
-        try {
-            Files.delete(path);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        filesOperations.delete(path.getFileName().toString());
     }
 
     public String getDocumentNameFromUrl(String docUrl) {
@@ -670,8 +670,12 @@ public class DocumentsUtils extends RdfService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
-        try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
-            byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
+        return retrieveDocumentFromFilePath(filePath);
+    }
+
+    private ResponseEntity<org.springframework.core.io.Resource> retrieveDocumentFromFilePath(String filePath) throws RmesException {
+        // Lire via l'abstraction et utiliser try-with-resources
+            byte[] data = documentDatas(filePath); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
@@ -682,11 +686,15 @@ public class DocumentsUtils extends RdfService {
                     .headers(headers)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(new ByteArrayResource(data));
+    }
+
+    private byte[] documentDatas(String filePath) {
+        try (InputStream inputStream = filesOperations.read(filePath)) {
+            return StreamUtils.copyToByteArray(inputStream);
         }catch (IOException e) {
             throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
         }
     }
-
 
 
     private String getFileName(String path) {

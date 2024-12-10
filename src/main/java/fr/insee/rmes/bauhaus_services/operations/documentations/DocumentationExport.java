@@ -2,6 +2,7 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,6 +60,7 @@ public class DocumentationExport {
 	
 	final DocumentationsUtils documentationsUtils;
 	final DocumentsUtils documentsUtils;
+
 	static final String xslFile = "/xslTransformerFiles/sims2fodt.xsl";
 	static final String xmlPatternRmes = "/xslTransformerFiles/simsRmes/rmesPatternContent.xml";
 	static final String zipRmes = "/xslTransformerFiles/simsRmes/toZipForRmes.zip";
@@ -79,6 +80,7 @@ public class DocumentationExport {
 		this.documentationsUtils = documentationsUtils;
 		this.documentsUtils = documentsUtils;
 		this.maxLength = maxLength;
+        this.filesOperations=documentsUtils.getFilesOperations();
 	}
 
 	/**
@@ -143,7 +145,7 @@ public class DocumentationExport {
 			logger.debug("Zip created for the SIMS {}", simsId);
 			HttpHeaders responseHeaders = HttpUtils.generateHttpHeaders(fileName, FilesUtils.ZIP_EXTENSION);
 			responseHeaders.set("X-Missing-Documents", String.join(",", missingDocuments));
-			Resource resource = new UrlResource(Paths.get(simsDirectory.toString(), simsDirectory.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
+			Resource resource = new UrlResource(Path.of(simsDirectory.toString(), simsDirectory.getFileName() + FilesUtils.ZIP_EXTENSION).toUri());
 			return ResponseEntity.ok()
 					.headers(responseHeaders)
 					.body(resource);
@@ -154,44 +156,37 @@ public class DocumentationExport {
 	}
 
 	private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
-		Set<String> history = new HashSet<>();
 		JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
 		Set<String> missingDocuments = new HashSet<>();
-
-		for (int i = 0; i < documents.length(); i++) {
-			JSONObject document = documents.getJSONObject(i);
+        JSONUtils.stream(documents)
+                .distinct()
+                .forEach(document->extractDocumentIfExists(directory, url, missingDocuments, document));
 			String url = document.getString("url").replace("file://", "");
-			if(!history.contains(url)){
-				history.add(url);
-				logger.debug("Extracting document {}", url);
-
-
-				Path documentPath = Path.of(url);
-
-				if(!Files.exists(documentPath)){
-					missingDocuments.add(document.getString("id"));
-				} else {
-					String documentFileName = FilesUtils.generateFinalFileNameWithExtension(UriUtils.getLastPartFromUri(url), maxLength);
-					try (InputStream inputStream = Files.newInputStream(documentPath)){
-						Path documentDirectory = Path.of(directory.toString(), "documents");
-						if (!Files.exists(documentDirectory)) {
-							logger.debug("Creating the documents folder");
-							Files.createDirectory(documentDirectory);
-						}
-
-						logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory.toString());
-						Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
-						Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
-					}
-				}
-
-			}
-		}
-
 		return missingDocuments;
 	}
 
-	private ResponseEntity<Resource> export(Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
+    private void extractDocumentIfExists(Path directory, String url, Set<String> missingDocuments, JSONObject document) throws IOException {
+        logger.debug("Extracting document {}", url);
+        Path documentPath = Path.of(url);
+        if(!filesOperations.exists(documentPath)){
+            missingDocuments.add(document.getString("id"));
+        } else {
+            String documentFileName = FilesUtils.generateFinalFileNameWithExtension(UriUtils.getLastPartFromUri(url), maxLength);
+            try (InputStream inputStream = filesOperations.read(documentPath)){
+                Path documentDirectory = Path.of(directory.toString(), "documents");
+                if (!Files.exists(documentDirectory)) {
+                    logger.debug("Creating the documents folder");
+                    Files.createDirectory(documentDirectory);
+                }
+
+                logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory);
+                Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
+                Files.write(documentTempFile, inputStream.readAllBytes(), StandardOpenOption.APPEND);
+            }
+        }
+    }
+
+    private ResponseEntity<Resource> export(Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
 		return exporter.export(xmlContent, xslFile, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
 	}
 
