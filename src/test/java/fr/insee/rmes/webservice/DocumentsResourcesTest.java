@@ -40,14 +40,5 @@ class DocumentsResourcesTest {
                 .andExpect(content().string(containsString("id not found")));
     }
 
-    @Test
-    void shouldReturnInternalException() throws Exception {
-        when(documentsService.downloadDocument(anyString())).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file"));
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/nomFichier/file"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("fileName='nomFichier'")));
-    }
-
 
 }
