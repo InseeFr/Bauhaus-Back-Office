@@ -79,7 +79,7 @@ class TestDocumentsResourcesWithFilesOperation {
             return new DocumentsUtils(null, new FilesOperationStub()){
                 @Override
                 protected Document findDocumentById(String id){
-                    return new Document(null, null, null, null, null, null, nomFichier, "http://id.insee.fr/1");
+                    return new Document(null, null, null, null, null, null, nomFichier, "http://id.insee.fr/1", "1");
                 }
             };
         }

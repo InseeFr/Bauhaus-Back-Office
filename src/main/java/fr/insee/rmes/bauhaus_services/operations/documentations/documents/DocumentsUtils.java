@@ -615,7 +615,7 @@ public class DocumentsUtils extends RdfService {
         logger.debug("The file name {} is valid", fileName);
     }
 
-    public Document buildDocumentFromJson(JSONObject jsonDoc) {
+    public static Document buildDocumentFromJson(JSONObject jsonDoc) {
         try {
             return Deserializer.deserializeJSONObject(jsonDoc, Document.class);
         } catch (RmesException e) {
@@ -669,11 +669,11 @@ public class DocumentsUtils extends RdfService {
 
     private record DocumentBuilder(Document document) {
         public Document withId(String id, boolean isLink) {
-            return new Document(document.labelLg1(), document.labelLg2(), document.descriptionLg1(), document().descriptionLg2(), document.dateMiseAJour(), document.langue(), document.url(), uriFromId(id, isLink));
+            return new Document(document.labelLg1(), document.labelLg2(), document.descriptionLg1(), document().descriptionLg2(), document.dateMiseAJour(), document.langue(), document.url(), uriFromId(id, isLink), id);
         }
 
         public static Document emptyDocument() {
-            return new Document(null, null, null, null, null, null, null, null);
+            return new Document(null, null, null, null, null, null, null, null, null);
         }
 
         private String uriFromId(String id, boolean isLink) {

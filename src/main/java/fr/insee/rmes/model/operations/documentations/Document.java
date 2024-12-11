@@ -2,7 +2,6 @@ package fr.insee.rmes.model.operations.documentations;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
@@ -17,28 +16,21 @@ public record Document(String labelLg1,
                        @JsonProperty("lang")
                        String langue,
                        String url,
-                       String uri) {
+                       String uri,
+                       // TODO remove this attribute
+                       String id) {
 
-
-//    public Document(String id) {
-//        this(id, false);
-//    }
-//
-//    public Document(String id, boolean isLink) {
-//        this(null, null, null, null, null, null, null, uriFromId(id, isLink));
-//    }
-
-    private static String uriFromId(String id, boolean isLink) {
-        return (isLink ? RdfUtils.linkIRI(id) :
-RdfUtils.documentIRI(id)).toString();
-    }
 
     public String getId() {
-        return StringUtils.substringAfter(uri, "/");
+        String idFromUri = StringUtils.substringAfter(uri, "/");
+        if (idFromUri != null) {
+            return idFromUri;
+        }
+        return id;
     }
 
     public Document withUrl(String url) {
-        return new Document(this.labelLg1, this.labelLg2, this.descriptionLg1, this.descriptionLg2, this.dateMiseAJour, this.langue, url, this.uri);
+        return new Document(this.labelLg1, this.labelLg2, this.descriptionLg1, this.descriptionLg2, this.dateMiseAJour, this.langue, url, this.uri, null);
     }
 
     public String documentFileName() {

@@ -34,12 +34,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static fr.insee.rmes.bauhaus_services.Constants.GOAL_COMITE_LABEL;
 import static fr.insee.rmes.bauhaus_services.Constants.GOAL_RMES;
-import static fr.insee.rmes.utils.StreamUtils.*;
 
 @Component
 public class DocumentationExport {
@@ -154,22 +152,23 @@ public class DocumentationExport {
         }
     }
 
-    private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws RmesException, IOException {
+    private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws RmesException {
         JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
         Set<String> missingDocuments = new HashSet<>();
-        Consumer<Void> unsafeStream = v -> JSONUtils.stream(documents)
-                .distinct()
-                .forEach(safeConsumer(document ->  extractDocumentIfExists(directory, missingDocuments, document)));
-        executeAndThrow(unsafeStream);
+        Set<Document> documentsSet = JSONUtils.stream(documents)
+                .map(DocumentsUtils::buildDocumentFromJson)
+                .collect(Collectors.toSet());
+        for (Document document : documentsSet) {
+            extractDocumentIfExists(directory, missingDocuments, document);
+        }
         return missingDocuments;
     }
 
-    private void extractDocumentIfExists(Path directory, Set<String> missingDocuments, JSONObject documentJson) throws RmesException{
-        var document = documentsUtils.buildDocumentFromJson(documentJson);
+    private void extractDocumentIfExists(Path directory, Set<String> missingDocuments, Document document) throws RmesException{
         String url = document.url();
         logger.debug("Extracting document {}", url);
         if (!documentsUtils.existsInStorage(document)) {
-            missingDocuments.add(documentJson.getString("id"));
+            missingDocuments.add(document.getId());
         } else {
             extractExistingDocument(directory, document, url);
         }

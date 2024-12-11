@@ -20,7 +20,8 @@ public class Deserializer {
 
     public static <T> T deserializeJsonString(String json, Class<T> target) throws RmesException {
         try {
-            return mapper.readValue(json, target);
+            T t = mapper.readValue(json, target);
+            return t;
         } catch (IOException e) {
             throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while deserializing "+json , e.getMessage());
         }
