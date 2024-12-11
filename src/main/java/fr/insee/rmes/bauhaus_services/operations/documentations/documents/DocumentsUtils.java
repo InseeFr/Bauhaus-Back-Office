@@ -35,9 +35,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -62,10 +60,6 @@ public class DocumentsUtils extends RdfService {
     public DocumentsUtils(ParentUtils ownersUtils, FilesOperations filesOperations) {
         this.ownersUtils = ownersUtils;
         this.filesOperations = filesOperations;
-    }
-
-    public FilesOperations getFilesOperations() {
-        return filesOperations;
     }
 
     /*
@@ -242,15 +236,19 @@ public class DocumentsUtils extends RdfService {
         try {
             document = Deserializer.deserializeJsonString(body, Document.class);
             if (document.uri() == null) {
-                document = document.withId(id, isLink);
+                document = document(document).withId(id, isLink);
             }
         } catch (RmesException e) {
             logger.error(e.getMessage());
-            document = new Document(id, isLink);
+            document = document(DocumentBuilder.emptyDocument()).withId(id, isLink);
         }
 
         validate(document);
         return document;
+    }
+
+    private DocumentBuilder document(Document document) {
+        return new DocumentBuilder(document);
     }
 
 
@@ -622,11 +620,11 @@ public class DocumentsUtils extends RdfService {
             return Deserializer.deserializeJSONObject(jsonDoc, Document.class);
         } catch (RmesException e) {
             logger.error(e.getMessage());
-            return new Document(null);
+            return DocumentBuilder.emptyDocument();
         }
     }
 
-    private Document findDocumentById(String id) throws RmesException {
+    protected Document findDocumentById(String id) throws RmesException {
         return buildDocumentFromJson(getDocument(Objects.requireNonNull(id), false));
     }
 
@@ -638,9 +636,10 @@ public class DocumentsUtils extends RdfService {
      * @throws RmesException
      */
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
-        var data = retrieveDocumentFromStorage(findDocumentById(id));
+        Document document = findDocumentById(id);
+        var data = retrieveDocumentFromStorage(document);
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(filePath) + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + getFileName(document.documentFileName()) + "\"");
         headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
 
         // return the response with document
@@ -650,16 +649,12 @@ public class DocumentsUtils extends RdfService {
                 .body(new ByteArrayResource(data));
     }
 
-    public byte[] retrieveDocumentFromStorage(Document document) throws RmesException {
-       return documentDatas(document.documentFileName());
+    public byte[] retrieveDocumentFromStorage(Document document) {
+        return documentDatas(document.documentFileName());
     }
 
-    private byte[] documentDatas(String filePath) throws RmesException {
-        try (InputStream inputStream = filesOperations.read(filePath)) {
-            return StreamUtils.copyToByteArray(inputStream);
-        } catch (IOException e) {
-            throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file");
-        }
+    private byte[] documentDatas(String filePath) {
+        return filesOperations.read(filePath);
     }
 
 
@@ -667,5 +662,26 @@ public class DocumentsUtils extends RdfService {
         // Extraire juste le nom de fichier du chemin
         return Paths.get(path).getFileName().toString();
     }
+
+    public boolean existsInStorage(Document document) {
+        return filesOperations.exists(document.path());
+    }
+
+    private record DocumentBuilder(Document document) {
+        public Document withId(String id, boolean isLink) {
+            return new Document(document.labelLg1(), document.labelLg2(), document.descriptionLg1(), document().descriptionLg2(), document.dateMiseAJour(), document.langue(), document.url(), uriFromId(id, isLink));
+        }
+
+        public static Document emptyDocument() {
+            return new Document(null, null, null, null, null, null, null, null);
+        }
+
+        private String uriFromId(String id, boolean isLink) {
+            return (isLink ? RdfUtils.linkIRI(id) :
+                    RdfUtils.documentIRI(id)).toString();
+        }
+    }
+
+
 }
 

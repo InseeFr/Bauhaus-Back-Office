@@ -89,7 +89,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	
 	@Override
 	public String getRelatedConcepts(String id)  throws RmesException{
-		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
+        String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT, id).toString();
 		JSONArray resQuery = conceptsUtils.getRelatedConcepts(uriConcept);
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
@@ -102,7 +102,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 */	
 	@Override
 	public String deleteConcept(String id) throws RmesException {
-		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
+        String uriConcept = RdfUtils.objectIRI(ObjectType.CONCEPT, id).toString();
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
 		/* check concept isn't used in several graphs */

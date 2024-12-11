@@ -128,7 +128,6 @@ public class Config {
     @PostConstruct
     private void init() {
         GenericQueries.setConfig(this);
-        RdfUtils.setConfig(this);
     }
 
     /******************************************************/

@@ -2,8 +2,10 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Stubber;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfServicesForRdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -22,10 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
@@ -38,6 +37,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DocumentsUtilsTest {
 
+    public static final String DOCUMENTS_GRAPH = "http://documents/graph";
     @Mock
     RepositoryGestion repositoryGestion;
 
@@ -49,6 +49,8 @@ class DocumentsUtilsTest {
 
     @Mock
     FilesOperations filesOperations;
+
+    String documentIRIString = "http://document/1";
 
 
 
@@ -126,21 +128,23 @@ class DocumentsUtilsTest {
         var document = IOUtils.toInputStream("stream");
         var name = "documentName";
 
-        String documentIRIString = "http://document/1";
+
         SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI documentIRI = valueFactory.createIRI(documentIRIString);
-        IRI graph = valueFactory.createIRI("http://documents/graph");
+        IRI graph = valueFactory.createIRI(DOCUMENTS_GRAPH);
 
         try (MockedStatic<RdfUtils> rdfUtilsMockedStatic = Mockito.mockStatic(RdfUtils.class);
              MockedStatic<DocumentsQueries> documentQueriesMockedStatic = Mockito.mockStatic(DocumentsQueries.class)
         ) {
-            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralDate(any(String.class))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleDate(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(RdfUtils::documentsGraph).thenReturn(graph);
-            rdfUtilsMockedStatic.when(() -> RdfUtils.toString(any())).thenReturn(documentIRIString);
-            rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
+            
+            initRdfUtils();
+            
+//            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
+//            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
+//            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralDate(any(String.class))).thenCallRealMethod();
+//            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleDate(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
+//            rdfUtilsMockedStatic.when(RdfUtils::documentsGraph).thenReturn(graph);
+// ?            rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
             documentQueriesMockedStatic.when(() -> DocumentsQueries.checkLabelUnicity(eq("1"), anyString(), any())).thenReturn(documentIRIString);
 
 
@@ -150,5 +154,18 @@ class DocumentsUtilsTest {
             verify(repositoryGestion, times(1)).loadSimpleObject(any(), model.capture());
             Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>, http://documents/graph) [http://documents/graph]]", model.getValue().toString());
         }
+    }
+
+    private void initRdfUtils() {
+
+        // ?            rdfUtilsMockedStatic.when(() -> ArgumentMatchers.<IRI>any().toString()).thenReturn(documentIRIString);
+
+        RdfServicesForRdfUtils rdfServicesForRdfUtils = new RdfServicesForRdfUtils(new Config(){
+            @Override
+            public String getDocumentsGraph() {
+                return DOCUMENTS_GRAPH;
+            }
+        }, new UriUtils("","http://bauhaus/", null));
+        rdfServicesForRdfUtils.initRdfUtils();
     }
 }

@@ -20,19 +20,17 @@ public record Document(String labelLg1,
                        String uri) {
 
 
-    public Document(String id) {
-        this(id, false);
-    }
-
-    public Document(String id, boolean isLink) {
-        this(null, null, null, null, null, null, null, uriFromId(id, isLink));
-    }
+//    public Document(String id) {
+//        this(id, false);
+//    }
+//
+//    public Document(String id, boolean isLink) {
+//        this(null, null, null, null, null, null, null, uriFromId(id, isLink));
+//    }
 
     private static String uriFromId(String id, boolean isLink) {
-        return RdfUtils.toString(
-                isLink ? RdfUtils.linkIRI(id) :
-                        RdfUtils.documentIRI(id)
-        );
+        return (isLink ? RdfUtils.linkIRI(id) :
+RdfUtils.documentIRI(id)).toString();
     }
 
     public String getId() {
@@ -43,11 +41,14 @@ public record Document(String labelLg1,
         return new Document(this.labelLg1, this.labelLg2, this.descriptionLg1, this.descriptionLg2, this.dateMiseAJour, this.langue, url, this.uri);
     }
 
-    public Document withId(String id, boolean isLink) {
-        return new Document(this.labelLg1, this.labelLg2, this.descriptionLg1, this.descriptionLg2, this.dateMiseAJour, this.langue, this.url, uriFromId(id, isLink));
+    public String documentFileName() {
+        return path().getFileName().toString();
     }
 
-    public String documentFileName() {
-        return Path.of(URI.create(this.url)).getFileName().toString();
+    public Path path() {
+        URI uriFromUrl = URI.create(this.url);
+        return uriFromUrl.getScheme()==null?Path.of(this.url):Path.of(uriFromUrl);
     }
+
+
 }

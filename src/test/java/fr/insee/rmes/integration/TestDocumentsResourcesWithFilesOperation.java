@@ -10,6 +10,7 @@ import fr.insee.rmes.bauhaus_services.stamps.StampsRestrictionServiceImpl;
 import fr.insee.rmes.config.BaseConfigForMvcTests;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesFileException;
+import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.utils.IdGenerator;
 import fr.insee.rmes.webservice.operations.DocumentsResources;
 import io.minio.errors.MinioException;
@@ -77,8 +78,8 @@ class TestDocumentsResourcesWithFilesOperation {
         public DocumentsUtils myDocumentsUtils() {
             return new DocumentsUtils(null, new FilesOperationStub()){
                 @Override
-                protected String getDocumentFilename(String id){
-                    return nomFichier;
+                protected Document findDocumentById(String id){
+                    return new Document(null, null, null, null, null, null, nomFichier, "http://id.insee.fr/1");
                 }
             };
         }
@@ -92,7 +93,7 @@ class TestDocumentsResourcesWithFilesOperation {
         }
 
         @Override
-        public InputStream read(String path) {
+        public byte[] read(String path) {
             throw new RmesFileException(nomFichier, "Error reading file: " + nomFichier+
                     " as object `"+objectName+"` in bucket "+bucketName, new MinioException());
         }
@@ -109,6 +110,11 @@ class TestDocumentsResourcesWithFilesOperation {
 
         @Override
         public boolean dirExists(Path gestionStorageFolder) {
+            return false;
+        }
+
+        @Override
+        public boolean exists(Path path) {
             return false;
         }
     }

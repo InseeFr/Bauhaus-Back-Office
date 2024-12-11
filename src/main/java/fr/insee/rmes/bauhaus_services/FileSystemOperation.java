@@ -27,9 +27,9 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public InputStream read(String fileName) {
+    public byte[] read(String fileName) {
         try {
-            return Files.newInputStream(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
+            return Files.readAllBytes(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
         } catch (IOException e) {
             throw new RmesFileException(fileName, "Failed to read file: " + fileName, e);
         }
@@ -58,5 +58,10 @@ public class FileSystemOperation implements FilesOperations {
     @Override
     public boolean dirExists(Path gestionStorageFolder) {
         return Files.isDirectory(requireNonNull(gestionStorageFolder));
+    }
+
+    @Override
+    public boolean exists(Path path) {
+        return false;
     }
 }

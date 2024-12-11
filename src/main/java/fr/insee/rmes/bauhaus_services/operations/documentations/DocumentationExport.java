@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
 import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
@@ -14,6 +13,7 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
 import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.model.operations.documentations.Document;
 import fr.insee.rmes.model.operations.documentations.MSD;
 import fr.insee.rmes.utils.*;
 import org.json.JSONArray;
@@ -34,10 +34,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static fr.insee.rmes.bauhaus_services.Constants.GOAL_COMITE_LABEL;
 import static fr.insee.rmes.bauhaus_services.Constants.GOAL_RMES;
+import static fr.insee.rmes.utils.StreamUtils.*;
 
 @Component
 public class DocumentationExport {
@@ -152,167 +154,172 @@ public class DocumentationExport {
         }
     }
 
-    private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws IOException, RmesException {
+    private Set<String> exportRubricsDocuments(JSONObject sims, Path directory) throws RmesException, IOException {
         JSONArray documents = documentsUtils.getDocumentsUriAndUrlForSims(sims.getString("id"));
         Set<String> missingDocuments = new HashSet<>();
-        JSONUtils.stream(documents)
+        Consumer<Void> unsafeStream = v -> JSONUtils.stream(documents)
                 .distinct()
-                .forEach(document -> extractDocumentIfExists(directory, missingDocuments, document));
-
+                .forEach(safeConsumer(document ->  extractDocumentIfExists(directory, missingDocuments, document)));
+        executeAndThrow(unsafeStream);
         return missingDocuments;
     }
 
-    private void extractDocumentIfExists(Path directory, Set<String> missingDocuments, JSONObject documentJson) throws RmesException, IOException {
-        String url = documentJson.getString("url").replace("file://", "");
+    private void extractDocumentIfExists(Path directory, Set<String> missingDocuments, JSONObject documentJson) throws RmesException{
         var document = documentsUtils.buildDocumentFromJson(documentJson);
+        String url = document.url();
         logger.debug("Extracting document {}", url);
-        Path documentPath = Path.of(url);
-        if (!filesOperations.exists(documentPath)) {
+        if (!documentsUtils.existsInStorage(document)) {
             missingDocuments.add(documentJson.getString("id"));
         } else {
-            String documentFileName = FilesUtils.generateFinalFileNameWithExtension(UriUtils.getLastPartFromUri(url), maxLength);
-            Path documentDirectory = Path.of(directory.toString(), "documents");
+            extractExistingDocument(directory, document, url);
+        }
+    }
+
+    private void extractExistingDocument(Path directory, Document document, String url) throws RmesException {
+        String documentFileName = FilesUtils.generateFinalFileNameWithExtension(document.documentFileName(), maxLength);
+        Path documentDirectory = Path.of(directory.toString(), "documents");
+        try {
             if (!Files.exists(documentDirectory)) {
                 logger.debug("Creating the documents folder");
                 Files.createDirectory(documentDirectory);
             }
-
             logger.debug("Writing the document {} with the name {} into the folder {}", url, documentFileName, directory);
             Path documentTempFile = Files.createFile(Path.of(documentDirectory.toString(), documentFileName));
             Files.write(documentTempFile, documentsUtils.retrieveDocumentFromStorage(document), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            throw new RmesException(500, "Error while writing temporary files for extraction", e.getMessage(), e);
         }
     }
-}
 
-private ResponseEntity<Resource> export(Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
-    return exporter.export(xmlContent, xslFile, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
-}
+    private ResponseEntity<Resource> export(Exporter exporter, Map<String, String> xmlContent, PatternAndZip patternAndZip) throws RmesException {
+        return exporter.export(xmlContent, xslFile, patternAndZip.xmlPattern(), patternAndZip.zip(), DOCUMENTATION);
+    }
 
-public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
-                                             boolean lg2) throws RmesException {
-    //Add params to xmlContents
-    String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
-    xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
+    public ResponseEntity<Object> exportXmlFiles(Map<String, String> xmlContent, String targetType, boolean includeEmptyFields, boolean lg1,
+                                                 boolean lg2) throws RmesException {
+        //Add params to xmlContents
+        String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, targetType);
+        xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
 
-    return exportUtils.exportFilesAsResponse(xmlContent);
-}
-
-
-public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal, int maxLength) throws RmesException {
-    Map<String, String> xmlContent = new HashMap<>();
-    String targetType = getXmlContent(id, xmlContent);
-    String msdXML = buildShellSims();
-    xmlContent.put("msdFile", msdXML);
-    return exportAsResponse(id, xmlContent, targetType, includeEmptyMas, lg1, lg2, document, goal, maxLength);
-}
-
-
-public ResponseEntity<Object> exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
-    Map<String, String> xmlContent = new HashMap<>();
-    String targetType = getXmlContent(id, xmlContent);
-    String msdXML = buildShellSims();
-    xmlContent.put("msdFile", msdXML);
-    return exportXmlFiles(xmlContent, targetType, includeEmptyMas, lg1, lg2);
-}
-
-public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
-    String emptyXML = XMLUtils.produceEmptyXML();
-    Operation operation;
-    Series series;
-    String operationXML;
-    String seriesXML = emptyXML;
-    String indicatorXML;
-
-    String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
-    String targetType = target[0];
-    String idDatabase = target[1];
-
-    List<String> neededCodeLists = new ArrayList<>();
-
-    if (targetType.equals(Constants.OPERATION_UP)) {
-        operation = operationsUtils.getOperationById(idDatabase);
-        operationXML = XMLUtils.produceXMLResponse(operation);
-        neededCodeLists.addAll(XMLUtils.getTagValues(operationXML, Constants.TYPELIST));
-        neededCodeLists.addAll(XMLUtils.getTagValues(operationXML, Constants.ACCRUAL_PERIODICITY_LIST));
-        String idSeries = operation.getSeries().getId();
-        series = seriesUtils.getSeriesById(idSeries, EncodingType.XML);
-        seriesXML = XMLUtils.produceXMLResponse(series);
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
-    } else {
-        operationXML = emptyXML;
+        return exportUtils.exportFilesAsResponse(xmlContent);
     }
 
 
-    if (targetType.equals(Constants.INDICATOR_UP)) {
-        indicatorXML = XMLUtils.produceXMLResponse(
-                indicatorsUtils.getIndicatorById(idDatabase, true));
-        neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML, Constants.TYPELIST));
-        neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML, Constants.ACCRUAL_PERIODICITY_LIST));
-        String idSeries = XMLUtils.getTagValues(
-                XMLUtils.getTagValues(
-                        indicatorXML,
-                        Constants.WASGENERATEDBY).getFirst(),
-                Constants.ID).getFirst();
-        series = seriesUtils.getSeriesById(idSeries, EncodingType.XML);
-        seriesXML = XMLUtils.produceXMLResponse(series);
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
-    } else {
-        indicatorXML = emptyXML;
+    public ResponseEntity<Resource> exportMetadataReport(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2, Boolean document, String goal, int maxLength) throws RmesException {
+        Map<String, String> xmlContent = new HashMap<>();
+        String targetType = getXmlContent(id, xmlContent);
+        String msdXML = buildShellSims();
+        xmlContent.put("msdFile", msdXML);
+        return exportAsResponse(id, xmlContent, targetType, includeEmptyMas, lg1, lg2, document, goal, maxLength);
     }
 
 
-    if (targetType.equals(Constants.SERIES_UP)) {
-        seriesXML = XMLUtils.produceXMLResponse(
-                seriesUtils.getSeriesById(idDatabase, EncodingType.XML));
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
-        neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
+    public ResponseEntity<Object> exportMetadataReportFiles(String id, Boolean includeEmptyMas, Boolean lg1, Boolean lg2) throws RmesException {
+        Map<String, String> xmlContent = new HashMap<>();
+        String targetType = getXmlContent(id, xmlContent);
+        String msdXML = buildShellSims();
+        xmlContent.put("msdFile", msdXML);
+        return exportXmlFiles(xmlContent, targetType, includeEmptyMas, lg1, lg2);
     }
 
-    String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
+    public String getXmlContent(String id, Map<String, String> xmlContent) throws RmesException {
+        String emptyXML = XMLUtils.produceEmptyXML();
+        Operation operation;
+        Series series;
+        String operationXML;
+        String seriesXML = emptyXML;
+        String indicatorXML;
 
-    String simsXML = XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(id), "application/xml");
-    neededCodeLists.addAll(XMLUtils.getTagValues(simsXML, Constants.CODELIST));
+        String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
+        String targetType = target[0];
+        String idDatabase = target[1];
 
-    neededCodeLists = neededCodeLists.stream().distinct().collect(Collectors.toList());
+        List<String> neededCodeLists = new ArrayList<>();
 
-    String codeListsXML = "";
-    codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
+        if (targetType.equals(Constants.OPERATION_UP)) {
+            operation = operationsUtils.getOperationById(idDatabase);
+            operationXML = XMLUtils.produceXMLResponse(operation);
+            neededCodeLists.addAll(XMLUtils.getTagValues(operationXML, Constants.TYPELIST));
+            neededCodeLists.addAll(XMLUtils.getTagValues(operationXML, Constants.ACCRUAL_PERIODICITY_LIST));
+            String idSeries = operation.getSeries().getId();
+            series = seriesUtils.getSeriesById(idSeries, EncodingType.XML);
+            seriesXML = XMLUtils.produceXMLResponse(series);
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
+        } else {
+            operationXML = emptyXML;
+        }
 
-    for (String code : neededCodeLists) {
-        DetailedCodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
-        codeListsXML = codeListsXML.concat(XMLUtils.produceXMLResponse(codeList));
+
+        if (targetType.equals(Constants.INDICATOR_UP)) {
+            indicatorXML = XMLUtils.produceXMLResponse(
+                    indicatorsUtils.getIndicatorById(idDatabase, true));
+            neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML, Constants.TYPELIST));
+            neededCodeLists.addAll(XMLUtils.getTagValues(indicatorXML, Constants.ACCRUAL_PERIODICITY_LIST));
+            String idSeries = XMLUtils.getTagValues(
+                    XMLUtils.getTagValues(
+                            indicatorXML,
+                            Constants.WASGENERATEDBY).getFirst(),
+                    Constants.ID).getFirst();
+            series = seriesUtils.getSeriesById(idSeries, EncodingType.XML);
+            seriesXML = XMLUtils.produceXMLResponse(series);
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
+        } else {
+            indicatorXML = emptyXML;
+        }
+
+
+        if (targetType.equals(Constants.SERIES_UP)) {
+            seriesXML = XMLUtils.produceXMLResponse(
+                    seriesUtils.getSeriesById(idDatabase, EncodingType.XML));
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.TYPELIST));
+            neededCodeLists.addAll(XMLUtils.getTagValues(seriesXML, Constants.ACCRUAL_PERIODICITY_LIST));
+        }
+
+        String organizationsXML = XMLUtils.produceXMLResponse(organizationsServiceImpl.getOrganizations());
+
+        String simsXML = XMLUtils.produceResponse(documentationsUtils.getFullSimsForXml(id), "application/xml");
+        neededCodeLists.addAll(XMLUtils.getTagValues(simsXML, Constants.CODELIST));
+
+        neededCodeLists = neededCodeLists.stream().distinct().collect(Collectors.toList());
+
+        String codeListsXML = "";
+        codeListsXML = codeListsXML.concat(Constants.XML_OPEN_CODELIST_TAG);
+
+        for (String code : neededCodeLists) {
+            DetailedCodeList codeList = codeListServiceImpl.getCodeListAndCodesForExport(code);
+            codeListsXML = codeListsXML.concat(XMLUtils.produceXMLResponse(codeList));
+        }
+        codeListsXML = codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
+
+
+        xmlContent.put("simsFile", simsXML);
+        xmlContent.put("seriesFile", seriesXML);
+        xmlContent.put("operationFile", operationXML);
+        xmlContent.put("indicatorFile", indicatorXML);
+        xmlContent.put("codeListsFile", codeListsXML);
+        xmlContent.put("organizationsFile", organizationsXML);
+        return targetType;
     }
-    codeListsXML = codeListsXML.concat(Constants.XML_END_CODELIST_TAG);
 
 
-    xmlContent.put("simsFile", simsXML);
-    xmlContent.put("seriesFile", seriesXML);
-    xmlContent.put("operationFile", operationXML);
-    xmlContent.put("indicatorFile", indicatorXML);
-    xmlContent.put("codeListsFile", codeListsXML);
-    xmlContent.put("organizationsFile", organizationsXML);
-    return targetType;
-}
-
-
-private String buildShellSims() throws RmesException {
-    MSD msd = documentationsUtils.getMSD();
-    return XMLUtils.produceXMLResponse(msd);
-}
-
-private interface Exporter {
-    ResponseEntity<Resource> export(Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException;
-}
-
-private record PatternAndZip(String xmlPattern, String zip) {
-    public static PatternAndZip of(String goal) throws RmesBadRequestException {
-        return switch (goal) {
-            case GOAL_RMES -> new PatternAndZip(xmlPatternRmes, zipRmes);
-            case GOAL_COMITE_LABEL -> new PatternAndZip(xmlPatternLabel, zipLabel);
-            default -> throw new RmesBadRequestException("The goal is unknown");
-        };
+    private String buildShellSims() throws RmesException {
+        MSD msd = documentationsUtils.getMSD();
+        return XMLUtils.produceXMLResponse(msd);
     }
-}
+
+    private interface Exporter {
+        ResponseEntity<Resource> export(Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException;
+    }
+
+    private record PatternAndZip(String xmlPattern, String zip) {
+        public static PatternAndZip of(String goal) throws RmesBadRequestException {
+            return switch (goal) {
+                case GOAL_RMES -> new PatternAndZip(xmlPatternRmes, zipRmes);
+                case GOAL_COMITE_LABEL -> new PatternAndZip(xmlPatternLabel, zipLabel);
+                default -> throw new RmesBadRequestException("The goal is unknown");
+            };
+        }
+    }
 }

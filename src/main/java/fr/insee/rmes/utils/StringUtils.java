@@ -1,11 +1,9 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class StringUtils {
@@ -26,7 +24,7 @@ public class StringUtils {
 
 	@NotNull
 	private static String uriAsString(IRI uri) {
-		return "<" + RdfUtils.toString(uri) + ">";
+        return "<" + uri.toString() + ">";
 	}
 
 	public static String convertHtmlStringToRaw(String html) {
