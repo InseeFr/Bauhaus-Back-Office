@@ -1,7 +1,6 @@
 package fr.insee.rmes.integration;
 
 import fr.insee.rmes.bauhaus_services.FilesOperations;
-import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsImpl;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
@@ -24,6 +23,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.io.InputStream;
+import java.nio.file.Path;
+
+import static fr.insee.rmes.utils.ConsoleCapture.startCapturingConsole;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -31,54 +35,49 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(DocumentsResources.class)
-@Import({BaseConfigForMvcTests.class, DocumentsImpl.class})
-class TestDocumentsResourcesWithMinio {
+@Import({BaseConfigForMvcTests.class, DocumentsImpl.class, TestDocumentsResourcesWithFilesOperation.ConfigurationForTest.class})
+class TestDocumentsResourcesWithFilesOperation {
 
     @Autowired
     private MockMvc mockMvc;
 
-//    @MockBean
-//    private ParentUtils parentUtils;
-//    @MockBean
-//    private RepositoryPublication repositoryPublication;
-//    @MockBean
-//    private StampsRestrictionServiceImpl stampsRestrictionService;
-//    @MockBean
-//    private IdGenerator idGenerator;
-//    @MockBean
-//    private PublicationUtils publicationUtils;
-//    @MockBean
-//    private Config config;
-//    @MockBean
-//    private RepositoryGestion repositoryGestion;
-
     @MockBean
-    FilesOperations filesOperations;
+    private RepositoryPublication repositoryPublication;
+    @MockBean
+    private StampsRestrictionServiceImpl stampsRestrictionService;
+    @MockBean
+    private IdGenerator idGenerator;
+    @MockBean
+    private PublicationUtils publicationUtils;
+    @MockBean
+    private Config config;
+    @MockBean
+    private RepositoryGestion repositoryGestion;
 
     private final String fichierId="ID";
 
-    private static final String nomFichier = "nomFichier";
+    static final String nomFichier = "nomFichier";
+    static final String objectName = "directoryGestion/"+nomFichier;
+    static final String bucketName = "metadata_bucket";
 
     @Test
     void shouldLogAndReturnInternalException_WhenErrorOccursInMinio() throws Exception {
-
-        String objectName = "directoryGestion/"+nomFichier;
-        String bucketName = "metadata_bucket";
-        when(filesOperations.read(anyString())).thenThrow(new RmesFileException(nomFichier, "Error reading file: " + nomFichier+
-                " as object `"+objectName+"` in bucket "+bucketName, new MinioException()));
-
-
+        var capture=startCapturingConsole();
         mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/" + fichierId + "/file"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string(containsString("fileName='" + nomFichier + "'")));
+        assertThat(capture.standardOut()).asString().contains("Error reading file: "+nomFichier+" as object `"+objectName+"` in bucket "+bucketName);
+        assertThat(capture.standardOut()).asString().contains("at fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils.downloadDocumentFile");
+        assertThat(capture.standardOut()).asString().contains("at fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsImpl.downloadDocument");
+        capture.stop();
     }
 
     @TestConfiguration
     static class ConfigurationForTest{
 
         @Bean
-        public DocumentsUtils documentsUtils(FilesOperations filesOperations) {
-            return new DocumentsUtils(null, filesOperations){
+        public DocumentsUtils documentsUtils() {
+            return new DocumentsUtils(null,  new FilesOperationStub()){
                 @Override
                 protected String getDocumentFilename(String id){
                     return nomFichier;
@@ -86,6 +85,40 @@ class TestDocumentsResourcesWithMinio {
             };
         }
 
+    }
+
+    static class FilesOperationStub implements FilesOperations{
+
+        @Override
+        public void delete(Path absolutePath) {
+
+        }
+
+        @Override
+        public InputStream read(String path) {
+            throw new RmesFileException(nomFichier, "Error reading file: " + nomFichier+
+                    " as object `"+objectName+"` in bucket "+bucketName, new MinioException());
+        }
+
+        @Override
+        public void write(InputStream content, Path destPath) {
+
+        }
+
+        @Override
+        public void copy(String srcPath, String destPath) {
+
+        }
+
+        @Override
+        public boolean dirExists(Path gestionStorageFolder) {
+            return false;
+        }
+
+        @Override
+        public boolean existsInStorage(String filename) {
+            return false;
+        }
     }
 
 }

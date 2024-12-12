@@ -49,7 +49,7 @@ public class DocumentsPublication  extends RdfService{
 		for (Map.Entry<Integer, String> doc : mapIdUrls.entrySet()) {
 			String docId = doc.getKey().toString();
 			String originalPath = doc.getValue();
-			String filename = docUtils.getDocumentNameFromUrl(originalPath);
+			String filename = DocumentsUtils.getDocumentNameFromUrl(originalPath);
 			// Publish the physical files
 			copyFileInPublicationFolders(originalPath);
 			// Change url in document (getModelToPublish) and publish the RDF

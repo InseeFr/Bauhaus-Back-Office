@@ -18,11 +18,11 @@ public class FileSystemOperation implements FilesOperations {
     protected Config config;
 
     @Override
-    public void delete(String path) {
+    public void delete(Path absolutePath) {
         try {
-            Files.delete(Paths.get(path));
+            Files.delete(absolutePath);
         } catch (IOException e) {
-            throw new RmesFileException(path, "Failed to delete file: " + path, e);
+            throw new RmesFileException(absolutePath.getFileName().toString(), "Failed to delete file: " + absolutePath, e);
         }
     }
 
@@ -33,6 +33,11 @@ public class FileSystemOperation implements FilesOperations {
         } catch (IOException e) {
             throw new RmesFileException(fileName, "Failed to read file: " + fileName, e);
         }
+    }
+
+    @Override
+    public boolean existsInStorage(String filename) {
+        return Files.exists(Paths.get(config.getDocumentsStorageGestion()).resolve(filename));
     }
 
     @Override
@@ -59,4 +64,5 @@ public class FileSystemOperation implements FilesOperations {
     public boolean dirExists(Path gestionStorageFolder) {
         return Files.isDirectory(requireNonNull(gestionStorageFolder));
     }
+
 }

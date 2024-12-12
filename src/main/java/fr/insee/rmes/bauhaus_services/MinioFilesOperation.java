@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import static java.util.Objects.requireNonNull;
+
 public record MinioFilesOperation(MinioClient minioClient, String bucketName, String directoryGestion, String directoryPublication) implements FilesOperations {
 
     @Override
@@ -33,6 +35,18 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
         return Path.of(filePath).getFileName().toString();
     }
 
+    @Override
+    public boolean existsInStorage(String filename) {
+        var objectName = extractFileName(requireNonNull(filename));
+        try {
+            return minioClient.statObject(StatObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(objectName)
+                    .build()).size() > 0;
+        } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
+            return false;
+        }
+    }
 
     @Override
     public void write(InputStream content, Path filePath) {
@@ -80,7 +94,8 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     }
 
      @Override
-    public void delete(String objectName) {
+    public void delete(Path absolutePath) {
+        String objectName = absolutePath.getFileName().toString();
         try {
             minioClient.removeObject(RemoveObjectArgs.builder()
                     .bucket(bucketName)
