@@ -1,11 +1,15 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.persistance.ontologies.*;
+import fr.insee.rmes.persistance.ontologies.GEO;
+import fr.insee.rmes.persistance.ontologies.INSEE;
+import fr.insee.rmes.persistance.ontologies.QB;
+import fr.insee.rmes.persistance.ontologies.SDMX_MM;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 
 import java.util.Arrays;

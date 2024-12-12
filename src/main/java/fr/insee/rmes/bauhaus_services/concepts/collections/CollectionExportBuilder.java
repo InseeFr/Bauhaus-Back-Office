@@ -38,14 +38,14 @@ public class CollectionExportBuilder extends RdfService {
 	@Autowired
 	ExportUtils exportUtils;
 
-	private final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
-	private final String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
-	private final String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
-	private final String zipold = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
-	private final String xmlPatternFR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
-	private final String xmlPatternEN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
-	private final String xmlPatternODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
-	private final String zipODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
+	private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
+	private static final String xmlPattern = "/xslTransformerFiles/collection/collectionPatternContent.xml";
+	private static final String zip = "/xslTransformerFiles/collection/toZipForCollection.zip";
+	private static final String zipold = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
+	private static final String xmlPatternFR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
+	private static final String xmlPatternEN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
+	private static final String xmlPatternODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
+	private static final String zipODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
 
 	final Collator instance = Collator.getInstance();
 
