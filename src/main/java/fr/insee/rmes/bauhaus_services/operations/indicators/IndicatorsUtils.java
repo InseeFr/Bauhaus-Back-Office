@@ -90,7 +90,7 @@ public class IndicatorsUtils {
 	}
 
 	private void validate(Indicator indicator) throws RmesException {
-		if(indicator.getWasGeneratedBy() == null || indicator.getWasGeneratedBy().isEmpty()){
+		if(indicator.isWasGenerattedByEmpty()){
 			throw new RmesBadRequestException(IndicatorErrorCodes.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
 		}
 		if(repositoryGestion.getResponseAsBoolean(IndicatorsQueries.checkPrefLabelUnicity(indicator.getId(), indicator.getPrefLabelLg1(), lg1))){

@@ -176,6 +176,10 @@ public class Indicator {
 		return wasGeneratedBy;
 	}
 
+	public boolean isWasGenerattedByEmpty() {
+		return this.wasGeneratedBy == null || this.wasGeneratedBy.isEmpty();
+	}
+
 	public String getIdSims() {
 		return idSims;
 	}

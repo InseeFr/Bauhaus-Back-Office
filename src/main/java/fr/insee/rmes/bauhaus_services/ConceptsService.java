@@ -4,6 +4,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.MembersLg;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
@@ -39,7 +40,7 @@ public interface ConceptsService {
 	
 	void setConceptsValidation(String body) throws  RmesException ;
 
-	ResponseEntity exportConcept(String id, String acceptHeader) throws RmesException;
+	ResponseEntity<Resource> exportConcept(String id, String acceptHeader) throws RmesException;
 
 	void exportZipConcept(String id, String acceptHeader, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
 
@@ -49,11 +50,11 @@ public interface ConceptsService {
 	
 	void setCollectionsValidation(String body) throws  RmesException ;
 	
-	ResponseEntity getCollectionExport(String id, String acceptHeader) throws RmesException ;
+	ResponseEntity<Resource> getCollectionExport(String id, String acceptHeader) throws RmesException ;
 	
 	String getRelatedConcepts(String id) throws RmesException;
 
-	String deleteConcept(String id) throws RmesException;
+	void deleteConcept(String id) throws RmesException;
 
 	Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) throws RmesException;
 }

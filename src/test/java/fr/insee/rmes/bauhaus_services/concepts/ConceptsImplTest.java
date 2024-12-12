@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -135,13 +136,13 @@ class ConceptsImplTest {
                .reduce((a,b)->a+"\n"+b).get();
 
         // WHEN
-        ResponseEntity<ByteArrayResource> result = (ResponseEntity<ByteArrayResource>) conceptsImpl.exportConcept(idConcept, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        ResponseEntity<Resource> result = conceptsImpl.exportConcept(idConcept, MediaType.APPLICATION_OCTET_STREAM_VALUE);
         // THEN
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(result.getHeaders().getContentDisposition().getFilename()).isEqualTo("c1116accid.odt");
 
         Diff inputsDiffs = DiffBuilder.compare(expectedXmlForOdtContent)
-                .withTest(getOdtContent(result.getBody().getByteArray()))
+                .withTest(getOdtContent(((ByteArrayResource)result.getBody()).getByteArray()))
                 .ignoreWhitespace()
                 .ignoreComments()
                 .build();
