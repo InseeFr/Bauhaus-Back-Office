@@ -655,7 +655,7 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    private String getDocumentFilename(String id) throws RmesException {
+    protected String getDocumentFilename(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
         return getDocumentNameFromUrl(url);

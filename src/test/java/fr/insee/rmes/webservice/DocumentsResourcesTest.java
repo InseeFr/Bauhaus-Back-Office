@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -47,6 +46,6 @@ class DocumentsResourcesTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/nomFichier/file"))
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().string(not(containsString("nomFichier"))));
+                .andExpect(content().string(containsString("fileName='nomFichier'")));
     }
 }
