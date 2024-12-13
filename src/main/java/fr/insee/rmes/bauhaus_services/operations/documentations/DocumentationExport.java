@@ -160,19 +160,19 @@ public class DocumentationExport {
 
 		for (int i = 0; i < documents.length(); i++) {
 			JSONObject document = documents.getJSONObject(i);
-			String url = document.getString("url").replace("file://", "");
+			String url = DocumentsUtils.getDocumentUrlFromDocument(document);
 			if(!history.contains(url)){
 				history.add(url);
 				logger.debug("Extracting document {}", url);
 
 
-				Path documentPath = Path.of(url);
+				String documentFilename = DocumentsUtils.getDocumentNameFromUrl(url);
 
-				if(!Files.exists(documentPath)){
+				if(!documentsUtils.existsInStorage(documentFilename)){
 					missingDocuments.add(document.getString("id"));
 				} else {
 					String documentFileName = FilesUtils.generateFinalFileNameWithExtension(UriUtils.getLastPartFromUri(url), maxLength);
-					try (InputStream inputStream = Files.newInputStream(documentPath)){
+					try (InputStream inputStream = documentsUtils.retrieveDocumentFromStorage(documentFilename)){
 						Path documentDirectory = Path.of(directory.toString(), "documents");
 						if (!Files.exists(documentDirectory)) {
 							logger.debug("Creating the documents folder");

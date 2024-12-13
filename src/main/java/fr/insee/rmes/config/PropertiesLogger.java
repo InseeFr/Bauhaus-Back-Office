@@ -21,7 +21,7 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
     public static final String PROPERTY_KEY_FOR_SOURCES_IGNORED = "fr.insee.properties.log.sources.ignored";
     public static final String PROPERTY_KEY_FOR_SOURCES_SELECT = "fr.insee.properties.log.key.select";
     private static final Set<String> baseMotsCaches = Set.of("password", "pwd", "jeton", "token", "secret", "credential", "pw");
-    private static final Set<String> prefixesAffichesParDefaut= Set.of("fr.insee","logging","keycloak","spring","application","server","springdoc","management");
+    private static final Set<String> prefixesAffichesParDefaut= Set.of("fr.insee","logging","keycloak","spring","application","server","springdoc","management","minio");
     private static final Set<String> propertySourcesIgnoreesParDefaut = Set.of("systemProperties", "systemEnvironment");
     private static final PropertySelectorEnum PROPERTY_SELECTOR_PAR_DEFAUT = PropertySelectorEnum.PREFIX;
 

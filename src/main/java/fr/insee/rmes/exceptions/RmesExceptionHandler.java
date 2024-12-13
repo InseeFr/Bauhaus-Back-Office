@@ -32,6 +32,12 @@ public class RmesExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(exception.getStatus()).body(exception.getDetails());
     }
 
+    @ExceptionHandler(RmesFileException.class)
+    public final ResponseEntity<String> handleRmesFileException(RmesFileException exception){
+        logger.error(exception.getMessage(), exception);
+        return ResponseEntity.internalServerError().body(exception.toString());
+    }
+
     @ExceptionHandler(RmesException.class)
     public final ResponseEntity<String> handleRmesException(RmesException exception){
         logger.error(exception.getMessageAndDetails(), exception);
