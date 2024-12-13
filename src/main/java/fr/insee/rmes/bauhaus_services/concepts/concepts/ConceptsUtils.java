@@ -216,9 +216,9 @@ public class ConceptsUtils extends RdfService {
 	}
 
 	public HttpStatus deleteConcept(String id) throws RmesException{
-		HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+        HttpStatus result =  repoGestion.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.objectIRI(ObjectType.CONCEPT, id).toString(),RdfUtils.conceptGraph().toString()));
 		if (result.equals(HttpStatus.OK)) {
-			result = repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.toString(RdfUtils.objectIRIPublication(ObjectType.CONCEPT,id)),RdfUtils.conceptGraph().toString()));
+            result = repositoryPublication.executeUpdate(ConceptsQueries.deleteConcept(RdfUtils.objectIRIPublication(ObjectType.CONCEPT, id).toString(),RdfUtils.conceptGraph().toString()));
 		}
 		return result;
 	}

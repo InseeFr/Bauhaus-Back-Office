@@ -2,7 +2,6 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.IRI;
@@ -28,7 +27,7 @@ public class ComponentPublication extends RdfService {
 			try {
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = RdfUtils.toString(st.getPredicate());
+                    String pred = st.getPredicate().toString();
 					if (pred.endsWith("validationState") || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith(Constants.CREATOR)) {
 						// nothing, wouldn't copy this attr
 					}else if (pred.endsWith("attribute")
@@ -57,7 +56,7 @@ public class ComponentPublication extends RdfService {
 			con.close();
 		}
 		Resource componentToPublishRessource = publicationUtils.tranformBaseURIToPublish(component);
-		repositoryPublication.publishResource(componentToPublishRessource, model, RdfUtils.toString(type));
+        repositoryPublication.publishResource(componentToPublishRessource, model, type.toString());
 		
 	}
 

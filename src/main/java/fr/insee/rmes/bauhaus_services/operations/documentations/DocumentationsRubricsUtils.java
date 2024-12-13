@@ -356,7 +356,7 @@ DocumentationsRubricsUtils extends RdfService {
 
 		for (int i = 0; i < documents.length(); i++) {
 			JSONObject doc = documents.getJSONObject(i);
-			currentDoc = docUtils.buildDocumentFromJson(doc);
+			currentDoc = DocumentsUtils.buildDocumentFromJson(doc);
 			docs.add(currentDoc);
 		}	
 		if (documentsWithRubricLang.equals(Constants.DOCUMENTS_LG1)) {

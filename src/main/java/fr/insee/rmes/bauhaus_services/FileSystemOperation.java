@@ -22,16 +22,16 @@ public class FileSystemOperation implements FilesOperations {
         try {
             Files.delete(Paths.get(path));
         } catch (IOException e) {
-            throw new RmesFileException("Failed to delete file: " + path, e);
+            throw new RmesFileException(path, "Failed to delete file: " + path, e);
         }
     }
 
     @Override
-    public InputStream read(String fileName) {
+    public byte[] read(String fileName) {
         try {
-            return Files.newInputStream(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
+            return Files.readAllBytes(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
         } catch (IOException e) {
-            throw new RmesFileException("Failed to read file: " + fileName, e);
+            throw new RmesFileException(fileName, "Failed to read file: " + fileName, e);
         }
     }
 
@@ -40,7 +40,7 @@ public class FileSystemOperation implements FilesOperations {
         try {
             Files.copy(content, destPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RmesFileException("Failed to write file: " + destPath, e);
+            throw new RmesFileException(destPath.toString(),"Failed to write file: " + destPath, e);
         }
     }
 
@@ -51,12 +51,17 @@ public class FileSystemOperation implements FilesOperations {
         try {
             Files.copy(file, targetPath.resolve(file.getFileName()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new RmesFileException("Failed to copy file : " + srcPath + " to " + destPath, e);
+            throw new RmesFileException(srcPath, "Failed to copy file : " + srcPath + " to " + destPath, e);
         }
     }
 
     @Override
     public boolean dirExists(Path gestionStorageFolder) {
         return Files.isDirectory(requireNonNull(gestionStorageFolder));
+    }
+
+    @Override
+    public boolean exists(Path path) {
+        return false;
     }
 }
