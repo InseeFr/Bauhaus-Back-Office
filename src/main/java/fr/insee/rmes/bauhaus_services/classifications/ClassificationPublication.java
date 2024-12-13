@@ -3,6 +3,7 @@ package fr.insee.rmes.bauhaus_services.classifications;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -52,7 +53,7 @@ public class ClassificationPublication extends RdfService{
 		while (classifStatements.hasNext()) {
 			Statement st = classifStatements.next();
 			// Triplets that don't get published
-            String predicate = st.getPredicate().toString();
+			String predicate = RdfUtils.toString(st.getPredicate());
 			if (!isTripletForPublication(predicate)) {
 				// nothing, wouldn't copy this attr
 			} else {

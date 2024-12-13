@@ -18,6 +18,7 @@ public record UriUtils(  String baseUriPublication, String baseUriGestion, Prope
         this.baseUriPublication=baseUriPublication;
         this.baseUriGestion=baseUriGestion;
         this.propertiesFinder=propertiesFinder;
+        RdfUtils.setUriUtils(this);
     }
 
     public String getBaseUriPublication(ObjectType objectType){

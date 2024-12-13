@@ -65,7 +65,7 @@ public class SeriesPublication extends RdfService {
         try {
             while (statements.hasNext()) {
                 Statement st = statements.next();
-                String pred = st.getPredicate().toString();
+                String pred = RdfUtils.toString(st.getPredicate());
 
                 // Other URI to transform
                 if (pred.endsWith("isPartOf") ||

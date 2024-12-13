@@ -30,7 +30,7 @@ public class CodeListPublication extends RdfService {
 	}
 
 	private boolean shouldExcludeTriplet(Statement statement){
-        String pred = statement.getPredicate().toString();
+		String pred = RdfUtils.toString(statement.getPredicate());
 		return pred.endsWith("validationState")
 				|| pred.endsWith(Constants.CREATOR)
 				|| pred.endsWith(Constants.CONTRIBUTOR)
@@ -54,7 +54,7 @@ public class CodeListPublication extends RdfService {
 				}
 
 
-                String predicate = st.getPredicate().toString();
+				String predicate = RdfUtils.toString(st.getPredicate());
 				String object = st.getObject().stringValue();
 				if (RDFS.SEEALSO.toString().equalsIgnoreCase(predicate)) {
 					publishSeeAlsoTriplets(object, connection);
