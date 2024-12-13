@@ -19,11 +19,10 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);
 
     @Override
-    public InputStream read(String pathFile){
-        String fileName= extractFileName(pathFile);
-        String objectName = directoryGestion + "/" + fileName;
+    public InputStream readInDirectoryGestion(String filename){
+        String objectName = directoryGestion + "/" + filename;
 
-        logger.debug("Reading file with name {} from path {} as object {} in bucket {}", fileName, pathFile, objectName, bucketName);
+        logger.debug("Reading file with name {} from path {} as object {} in bucket {}", filename, filename, objectName, bucketName);
 
         try {
             return minioClient.getObject(GetObjectArgs.builder()
@@ -31,7 +30,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
                     .object(objectName)
                     .build());
         } catch (MinioException | InvalidKeyException | IOException | NoSuchAlgorithmException e) {
-            throw new RmesFileException(fileName, "Error reading file: " + fileName+" as object `"+objectName+"` in bucket "+bucketName, e);
+            throw new RmesFileException(filename, "Error reading file: " + filename+" as object `"+objectName+"` in bucket "+bucketName, e);
         }
     }
     private static String extractFileName(String filePath) {
@@ -42,8 +41,8 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     }
 
     @Override
-    public boolean existsInStorage(String filename) {
-        var objectName = extractFileName(requireNonNull(filename));
+    public boolean existsInStorageGestion(String filename) {
+        String objectName = directoryGestion + "/" + filename;
         logger.debug("Check existence of file with name {} as object {} in bucket {}", filename, objectName, bucketName);
         try {
             return minioClient.statObject(StatObjectArgs.builder()
@@ -56,7 +55,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     }
 
     @Override
-    public void write(InputStream content, Path filePath) {
+    public void writeToDirectoryGestion(InputStream content, Path filePath) {
         String filename = filePath.getFileName().toString();
         String objectName = directoryGestion + "/" + filename;
         logger.debug("Writing to file with name {} from path {} as object {} in bucket {}", filename, filePath, objectName, bucketName);
@@ -74,7 +73,7 @@ public record MinioFilesOperation(MinioClient minioClient, String bucketName, St
     }
 
     @Override
-    public void copy(String srcObjectName, String destObjectName)  {
+    public void copyFromGestionToPublication(String srcObjectName, String destObjectName)  {
 
         String srcObject = directoryGestion + "/" + extractFileName(srcObjectName);
         String destObject = directoryPublication + "/" + extractFileName(srcObjectName);

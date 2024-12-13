@@ -27,7 +27,7 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public InputStream read(String fileName) {
+    public InputStream readInDirectoryGestion(String fileName) {
         try {
             return Files.newInputStream(Paths.get(config.getDocumentsStorageGestion()).resolve(fileName));
         } catch (IOException e) {
@@ -36,12 +36,12 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public boolean existsInStorage(String filename) {
+    public boolean existsInStorageGestion(String filename) {
         return Files.exists(Paths.get(config.getDocumentsStorageGestion()).resolve(filename));
     }
 
     @Override
-    public void write(InputStream content, Path destPath) {
+    public void writeToDirectoryGestion(InputStream content, Path destPath) {
         try {
             Files.copy(content, destPath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
@@ -50,7 +50,7 @@ public class FileSystemOperation implements FilesOperations {
     }
 
     @Override
-    public void copy(String srcPath, String destPath)  {
+    public void copyFromGestionToPublication(String srcPath, String destPath)  {
         Path file = Paths.get(srcPath);
         Path targetPath = Paths.get(destPath);
         try {

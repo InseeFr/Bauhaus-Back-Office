@@ -95,18 +95,18 @@ class TestDocumentsResourcesWithFilesOperation {
         }
 
         @Override
-        public InputStream read(String path) {
+        public InputStream readInDirectoryGestion(String path) {
             throw new RmesFileException(nomFichier, "Error reading file: " + nomFichier+
                     " as object `"+objectName+"` in bucket "+bucketName, new MinioException());
         }
 
         @Override
-        public void write(InputStream content, Path destPath) {
+        public void writeToDirectoryGestion(InputStream content, Path destPath) {
 
         }
 
         @Override
-        public void copy(String srcPath, String destPath) {
+        public void copyFromGestionToPublication(String srcPath, String destPath) {
 
         }
 
@@ -116,7 +116,7 @@ class TestDocumentsResourcesWithFilesOperation {
         }
 
         @Override
-        public boolean existsInStorage(String filename) {
+        public boolean existsInStorageGestion(String filename) {
             return false;
         }
     }

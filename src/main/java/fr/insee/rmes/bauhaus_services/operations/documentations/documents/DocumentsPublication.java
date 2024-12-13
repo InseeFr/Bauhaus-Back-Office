@@ -44,7 +44,7 @@ public class DocumentsPublication  extends RdfService{
 		JSONArray listDoc = docUtils.getListDocumentSims(idSims);
 		
 		Map<Integer,String> mapIdUrls = new HashMap<>();
-		listDoc.forEach(doc -> mapIdUrls.put(docUtils.getIdFromJson((JSONObject) doc), docUtils.getDocumentUrlFromDocument((JSONObject) doc)));
+		listDoc.forEach(doc -> mapIdUrls.put(docUtils.getIdFromJson((JSONObject) doc), DocumentsUtils.getDocumentUrlFromDocument((JSONObject) doc)));
 
 		for (Map.Entry<Integer, String> doc : mapIdUrls.entrySet()) {
 			String docId = doc.getKey().toString();
@@ -68,10 +68,8 @@ public class DocumentsPublication  extends RdfService{
 	}
 
 	private void copyFileInPublicationFolders(String originalPath){
-        String documentsStoragePublicationInterne = config.getDocumentsStoragePublicationInterne();
         String documentsStoragePublicationExterne = config.getDocumentsStoragePublicationExterne();
-        filesOperations.copy(originalPath, documentsStoragePublicationInterne);
-        filesOperations.copy(originalPath, documentsStoragePublicationExterne);
+        filesOperations.copyFromGestionToPublication(originalPath, documentsStoragePublicationExterne);
 	}
 
 

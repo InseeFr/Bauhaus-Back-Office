@@ -496,7 +496,7 @@ public class DocumentsUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
-        filesOperations.write(documentFile, path);
+        filesOperations.writeToDirectoryGestion(documentFile, path);
         // don't throw an error if a file already exists under this name
     }
 
@@ -662,7 +662,7 @@ public class DocumentsUtils extends RdfService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
-        try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
+        try (InputStream inputStream = filesOperations.readInDirectoryGestion(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
             byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
@@ -689,11 +689,11 @@ public class DocumentsUtils extends RdfService {
     }
 
     public InputStream retrieveDocumentFromStorage(String filename) {
-        return filesOperations.read(filename);
+        return filesOperations.readInDirectoryGestion(filename);
     }
 
     public boolean existsInStorage(String filename) {
-        return filesOperations.existsInStorage(filename);
+        return filesOperations.existsInStorageGestion(filename);
     }
 }
 
