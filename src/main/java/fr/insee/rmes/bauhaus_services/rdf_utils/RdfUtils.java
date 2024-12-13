@@ -1,5 +1,6 @@
 package fr.insee.rmes.bauhaus_services.rdf_utils;
 
+import fr.insee.rmes.config.Config;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.notes.DatableNote;
 import fr.insee.rmes.model.notes.VersionableNote;
@@ -16,74 +17,75 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-// TODO Make this class a component to be injected by spring. extract in an other utility class static methods which do not depend over instance
 public class RdfUtils {
 
-    private RdfUtils(){}
+	private RdfUtils(){}
+	
+	private static Config config;
+
+	private static UriUtils uriUtils;
 
 	private static final String DATE_FORMAT = "yyyy-MM-dd";
-    public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat(DATE_FORMAT);
 
-    static ValueFactory factory =  SimpleValueFactory.getInstance();
-    static RdfServicesForRdfUtils instance;
+	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-	public static BNode createBlankNode(){ return factory.createBNode(); }
+	public static BNode createBlankNode(){ return factory.createBNode(); };
 	public static String getBaseGraph(){
-		return instance.getBaseGraph();
+		return config.getBaseGraph();
 	}
 	
 	public static Resource conceptGraph(){
-		return factory.createIRI(instance.conceptGraph());
+		return factory.createIRI(config.getConceptsGraph());
 	}
 
 	public static Resource documentsGraph() {
-		return factory.createIRI(instance.documentsGraph());
+		return factory.createIRI(config.getDocumentsGraph());
 	}
 	
 	public static Resource operationsGraph(){
-		return factory.createIRI(instance.operationsGraph());
+		return factory.createIRI(config.getOperationsGraph());
 	}
 
 	public static Resource productsGraph(){
-		return factory.createIRI(instance.productsGraph());
+		return factory.createIRI(config.getProductsGraph());
 	}
 	
 	public static Resource simsGraph(String id) {
-		return factory.createIRI(instance.documentationsGraph(id));
+		return factory.createIRI(config.getDocumentationsGraph() +"/"+ id);
 	}
 	
 
 	public static Resource simsGeographyGraph(){
-		return factory.createIRI(instance.documentationsGeoGraph());
+		return factory.createIRI(config.getDocumentationsGeoGraph());
 	}
 	
 	public static Resource structureGraph(){
-		return factory.createIRI(instance.structureGraph());
+		return factory.createIRI(config.getStructuresGraph());
 	}
 	public static Resource codesListGraph(){
-		return factory.createIRI(instance.codesListGraph());
+		return factory.createIRI(config.getCodeListGraph());
 	}
 	public static Resource codesListGraph(String id) {
-		return factory.createIRI(instance.codesListGraph(id));
+		return factory.createIRI(config.getCodeListGraph() + "/" + id);
 	}
 	public static Resource classificationSerieIRI(String id) {
-		return factory.createIRI(instance.classificationSerieIRI(id));
+		return factory.createIRI(config.getBaseUriGestion() + "codes/serieDeNomenclatures/" + id);
 	}
 
 	public static Resource structureComponentGraph(){
-		return factory.createIRI(instance.structureComponentGraph());
+		return factory.createIRI(config.getStructuresComponentsGraph());
 	}
 	
 	public static Resource conceptScheme(){
-		return factory.createIRI(instance.conceptScheme());
+		return factory.createIRI(config.getBaseUriGestion() + config.getConceptsScheme());
 	}
 	
-	public static IRI objectIRI(ObjectType objType, String... ids) {
-		return factory.createIRI(instance.getBaseUriGestion(objType, ids));
+	public static IRI objectIRI(ObjectType objType, String id) {
+		return factory.createIRI(uriUtils.getBaseUriGestion(objType) + "/" + id);
 	}
 	
 	public static IRI objectIRIPublication(ObjectType objType, String id) {
-		return factory.createIRI(instance.getBaseUriPublication(objType, id));
+		return factory.createIRI(uriUtils.getBaseUriPublication(objType) + "/" + id);
 	}
 
 	public static IRI structureComponentAttributeIRI(String id) {
@@ -105,7 +107,7 @@ public class RdfUtils {
 		return objectIRI(ObjectType.CONCEPT, id);
 	}
 	public static IRI conceptIRI() {
-		return objectIRI(ObjectType.CONCEPT);
+		return factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT));
 	}
 
 	public static IRI collectionIRI(String id) {
@@ -147,7 +149,7 @@ public class RdfUtils {
 
 	public static IRI versionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		return RdfUtils.factory.createIRI(
-				instance.getBaseUriGestion(ObjectType.CONCEPT)
+				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + versionableNote.getVersion()
@@ -157,7 +159,7 @@ public class RdfUtils {
 	public static IRI previousVersionableNoteIRI(String conceptId, VersionableNote versionableNote) {
 		String version = String.valueOf(Integer.parseInt(versionableNote.getVersion()) - 1);
 		return RdfUtils.factory.createIRI(
-				instance.getBaseUriGestion(ObjectType.CONCEPT)
+				uriUtils.getBaseUriGestion(ObjectType.CONCEPT)
 				+ "/" + conceptId 
 				+ "/" + versionableNote.getPath()
 				+ "/v" + version
@@ -166,7 +168,7 @@ public class RdfUtils {
 	
 	public static IRI datableNoteIRI(String conceptId, DatableNote datableNote) {
 		String parsedDate = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-		return factory.createIRI(instance.getBaseUriGestion(ObjectType.CONCEPT) + "/" + conceptId + "/" + datableNote.getPath()
+		return RdfUtils.factory.createIRI(uriUtils.getBaseUriGestion(ObjectType.CONCEPT) + "/" + conceptId + "/" + datableNote.getPath()
 				+ "/" + parsedDate + "/" + datableNote.getLang());
 	}
 	
@@ -200,11 +202,13 @@ public class RdfUtils {
 	}
 	
 	public static Literal setLiteralDate(String date) {
-        return factory.createLiteral(DATE_FORMATTER.format(DateUtils.parseDate(date)), XSD.DATE);
+		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
+		return factory.createLiteral(parsedDate, XSD.DATE);
 	}
 
 	public static Literal setLiteralYear(String date) {
-        return factory.createLiteral(DATE_FORMATTER.format(DateUtils.parseDate(date)), XSD.GYEAR);
+		String parsedDate = new SimpleDateFormat(DATE_FORMAT).format(DateUtils.parseDate(date));
+		return factory.createLiteral(parsedDate, XSD.GYEAR);
 	}
 
 
@@ -219,8 +223,12 @@ public class RdfUtils {
 	public static IRI toURI(String string) {
 		return factory.createIRI(string.trim());
 	}
+	
+	public static String toString(IRI iri) {
+		return iri.toString();
+	}
 
-    public static void addTripleString(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
+	public static void addTripleString(IRI objectURI, IRI predicat, String value, Model model, Resource graph) {
 		if (value != null && !value.isEmpty()) {
 			model.add(objectURI, predicat, RdfUtils.setLiteralString(value), graph);
 		}
@@ -297,6 +305,13 @@ public class RdfUtils {
 		return factory.createIRI("http://www.w3.org/2001/XMLSchema#", suffix);
 	}
 
+	public static void setConfig(Config config) {
+		RdfUtils.config = config;
+	}
+
+	public static void setUriUtils(UriUtils uriUtils){
+		RdfUtils.uriUtils=uriUtils;
+	}
 	
 
 

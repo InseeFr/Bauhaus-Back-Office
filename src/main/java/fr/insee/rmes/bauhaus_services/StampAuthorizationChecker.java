@@ -136,9 +136,9 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
     private IRI findComponentIRI(String componentId) throws RmesException {
         JSONObject type = repoGestion.getResponseAsObject(StructureQueries.getComponentType(componentId));
         String componentType = type.getString("type");
-        if (componentType.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
+        if (componentType.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
             return RdfUtils.structureComponentAttributeIRI(componentId);
-        } else if (componentType.equals(QB.DIMENSION_PROPERTY.toString())) {
+        } else if (componentType.equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
             return RdfUtils.structureComponentDimensionIRI(componentId);
         } else {
             return RdfUtils.structureComponentMeasureIRI(componentId);

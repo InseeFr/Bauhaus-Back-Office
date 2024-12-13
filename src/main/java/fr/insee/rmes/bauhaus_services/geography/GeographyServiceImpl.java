@@ -195,7 +195,7 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		});
 		repoGestion.loadSimpleObject(geoIRI, model);
 
-        return geoIRI.toString();
-    }
+		return RdfUtils.toString(geoIRI);
+	}
 
 }

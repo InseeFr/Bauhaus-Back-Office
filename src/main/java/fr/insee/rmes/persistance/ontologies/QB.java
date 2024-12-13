@@ -1,5 +1,6 @@
 package fr.insee.rmes.persistance.ontologies;
 
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -71,7 +72,7 @@ public class QB {
 	}
 
 	public static String[] getURIForComponent(){
-        return new String[]{MEASURE_PROPERTY.toString(), ATTRIBUTE_PROPERTY.toString(), DIMENSION_PROPERTY.toString()};
+		return new String[]{RdfUtils.toString(MEASURE_PROPERTY), RdfUtils.toString(ATTRIBUTE_PROPERTY), RdfUtils.toString(DIMENSION_PROPERTY)};
 
 	}
 

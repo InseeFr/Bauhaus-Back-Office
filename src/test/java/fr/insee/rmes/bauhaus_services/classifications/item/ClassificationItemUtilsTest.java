@@ -1,8 +1,7 @@
 package fr.insee.rmes.bauhaus_services.classifications.item;
 
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfServicesForRdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
-import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
@@ -12,7 +11,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,19 +35,13 @@ class ClassificationItemUtilsTest {
     @InjectMocks
     ClassificationItemUtils classificationItemUtils;
 
-    @BeforeEach
-    public void init() {
-        //UriUtils uriUtils = new UriUtils("", "http://bauhaus/", p -> Optional.of(SERIES_BASE_URI));
-        RdfServicesForRdfUtils rdfServicesForRdfUtils = new RdfServicesForRdfUtils(config, new UriUtils("","", null));
-        rdfServicesForRdfUtils.initRdfUtils();
-    }
-
     @Test
     void shouldThrowExceptionIfPrefLabelLg1Null() throws RmesException {
         when(config.getLg1()).thenReturn("fr");
         when(config.getLg2()).thenReturn("en");
 
 
+        RdfUtils.setConfig(config);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
@@ -70,6 +61,7 @@ class ClassificationItemUtilsTest {
         when(config.getLg2()).thenReturn("en");
         when(config.getCodeListGraph()).thenReturn("http://codeListGraph");
 
+        RdfUtils.setConfig(config);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");

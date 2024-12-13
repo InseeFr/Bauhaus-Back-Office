@@ -5,11 +5,9 @@ import java.nio.file.Path;
 
 public interface FilesOperations {
     void delete(String path);
-    byte[] read(String path);
+    InputStream read(String path);
     void write(InputStream content, Path destPath);
     void copy(String srcPath, String destPath);
 
     boolean dirExists(Path gestionStorageFolder);
-
-    boolean exists(Path path);
 }

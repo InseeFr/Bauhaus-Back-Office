@@ -57,7 +57,7 @@ public record PublicationUtils(String baseUriGestion, String baseUriPublication,
             try {
                 while (statements.hasNext()) {
                     Statement statement = statements.next();
-                    String predicate = statement.getPredicate().toString();
+                    String predicate = RdfUtils.toString(statement.getPredicate());
 
                     boolean isDeniedPredicate = !denyList.stream().filter(predicate::endsWith).toList().isEmpty();
 
