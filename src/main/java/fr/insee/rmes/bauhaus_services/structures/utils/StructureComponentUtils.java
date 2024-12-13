@@ -62,7 +62,7 @@ public class StructureComponentUtils extends RdfService {
 
     private void addCodeListRange(JSONObject response) {
         if (response.has(Constants.CODELIST)) {
-            response.put("range", RdfUtils.toString(INSEE.CODELIST));
+            response.put("range", INSEE.CODELIST.toString());
         }
     }
 
@@ -154,9 +154,9 @@ public class StructureComponentUtils extends RdfService {
         }
 
         String type = component.getType();
-        if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             createRDFForComponent(component, QB.ATTRIBUTE_PROPERTY, RdfUtils.structureComponentAttributeIRI(component.getId()), status, jsonComponent);
-        } else if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        } else if (type.equals(QB.MEASURE_PROPERTY.toString())) {
             createRDFForComponent(component, QB.MEASURE_PROPERTY, RdfUtils.structureComponentMeasureIRI(component.getId()), status, jsonComponent);
         } else {
             createRDFForComponent(component, QB.DIMENSION_PROPERTY, RdfUtils.structureComponentDimensionIRI(component.getId()), status, jsonComponent);
@@ -206,7 +206,7 @@ public class StructureComponentUtils extends RdfService {
             RdfUtils.addTripleUri(componentURI, QB.CONCEPT, RdfUtils.conceptIRI() + "/" + component.getConcept(), model, graph);
         }
 
-        if (component.getRange() != null && component.getRange().equals(RdfUtils.toString(INSEE.CODELIST))) {
+        if (component.getRange() != null && component.getRange().equals(INSEE.CODELIST.toString())) {
             RdfUtils.addTripleUri(componentURI, RDF.TYPE, QB.CODED_PROPERTY, model, graph);
 
             JSONObject object = repoGestion.getResponseAsObject(StructureQueries.getUriClasseOwl(component.getFullCodeListValue()));
@@ -250,10 +250,10 @@ public class StructureComponentUtils extends RdfService {
     }
 
     private String generateNextId(String type) throws RmesException {
-        if (type.equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (type.equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             return generateNextId("a", "attribut", QB.ATTRIBUTE_PROPERTY);
         }
-        if (type.equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        if (type.equals(QB.MEASURE_PROPERTY.toString())) {
             return generateNextId("m", "mesure", QB.MEASURE_PROPERTY);
         }
         return generateNextId("d", "dimension", QB.DIMENSION_PROPERTY);
@@ -263,7 +263,7 @@ public class StructureComponentUtils extends RdfService {
 
     private String generateNextId(String prefix, String namespaceSuffix, IRI type) throws RmesException {
         logger.info("Generate id for component");
-        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, RdfUtils.toString(type)));
+        JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastId(namespaceSuffix, type.toString()));
         logger.debug("JSON when generating the id of a component : {}", json);
         if (json.length() == 0) {
             return prefix + "1000";

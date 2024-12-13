@@ -1,6 +1,7 @@
 package fr.insee.rmes.persistance.sparql_queries.operations.series;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfServicesForRdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.ConfigStub;
@@ -52,7 +53,8 @@ class OpSeriesQueriesTest {
     }
 
     private void prepareRdfUtils() {
-        RdfUtils.setUriUtils(new UriUtils("","http://bauhaus/",p-> Optional.of(SERIES_BASE_URI)));
+        RdfServicesForRdfUtils rdfServicesForRdfUtils = new RdfServicesForRdfUtils(null, new UriUtils("","http://bauhaus/",p-> Optional.of(SERIES_BASE_URI)));
+        rdfServicesForRdfUtils.initRdfUtils();
     }
 
 }

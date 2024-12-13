@@ -34,7 +34,7 @@ public class FamilyPublication extends RdfService {
 				}
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = RdfUtils.toString(st.getPredicate());
+                    String pred = st.getPredicate().toString();
 					// Triplets that don't get published
 					if (pred.endsWith("isValidated")
 							|| pred.endsWith("validationState")
