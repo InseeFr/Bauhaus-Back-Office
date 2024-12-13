@@ -1,6 +1,5 @@
 package fr.insee.rmes.bauhaus_services;
 
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.exceptions.RmesFileException;
 import io.minio.*;
 import io.minio.errors.*;
