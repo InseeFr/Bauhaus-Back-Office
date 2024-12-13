@@ -299,7 +299,7 @@ public class StructureUtils extends RdfService {
 
         IRI componentSpecificationIRI;
 
-        componentSpecificationIRI = getComponentDefinitionIRI(RdfUtils.toString(structureIRI), componentDefinition.getId());
+        componentSpecificationIRI = getComponentDefinitionIRI(structureIRI.toString(), componentDefinition.getId());
 
 
         model.add(structureIRI, QB.COMPONENT, componentSpecificationIRI, graph);
@@ -326,10 +326,10 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, RDFS.LABEL, RdfUtils.setLiteralString(componentDefinition.getLabelLg2(), config.getLg2()), graph);
         }
         MutualizedComponent component = componentDefinition.getComponent();
-        if (component.getType().equals(RdfUtils.toString(QB.DIMENSION_PROPERTY))) {
+        if (component.getType().equals(QB.DIMENSION_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.DIMENSION, getDimensionIRI(component.getId()), graph);
         }
-        if (component.getType().equals(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))) {
+        if (component.getType().equals(QB.ATTRIBUTE_PROPERTY.toString())) {
             for(String attachment : componentDefinition.getAttachment()){
                 IRI attachmentIRI ;
                 try {
@@ -344,7 +344,7 @@ public class StructureUtils extends RdfService {
             model.add(componentSpecificationIRI, QB.ATTRIBUTE, getAttributeIRI(component.getId()), graph);
             model.add(componentSpecificationIRI, QB.COMPONENT_REQUIRED, RdfUtils.setLiteralBoolean(componentDefinition.getRequired()), graph);
         }
-        if (component.getType().equals(RdfUtils.toString(QB.MEASURE_PROPERTY))) {
+        if (component.getType().equals(QB.MEASURE_PROPERTY.toString())) {
             model.add(componentSpecificationIRI, QB.MEASURE, getMeasureIRI(component.getId()), graph);
         }
         repoGestion.loadSimpleObject(componentSpecificationIRI, model);

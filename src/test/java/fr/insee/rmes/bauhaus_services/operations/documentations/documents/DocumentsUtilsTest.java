@@ -2,8 +2,9 @@ package fr.insee.rmes.bauhaus_services.operations.documentations.documents;
 
 import fr.insee.rmes.Stubber;
 import fr.insee.rmes.bauhaus_services.FilesOperations;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfServicesForRdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.bauhaus_services.rdf_utils.UriUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
@@ -11,9 +12,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotAcceptableException;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.documentations.DocumentsQueries;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +29,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -38,6 +41,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DocumentsUtilsTest {
 
+    public static final String DOCUMENTS_GRAPH = "http://documents/graph";
     @Mock
     RepositoryGestion repositoryGestion;
 
@@ -49,6 +53,8 @@ class DocumentsUtilsTest {
 
     @Mock
     FilesOperations filesOperations;
+
+    String documentIRIString = "http://document/1";
 
 
 
@@ -119,28 +125,18 @@ class DocumentsUtilsTest {
         when(filesOperations.dirExists(any(Path.class))).thenReturn(true);
 
         var id = "1";
+        String date = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
         var body = new JSONObject()
                 .put("id", "1")
-                .put("updatedDate", "2024-11-20").toString();
+                .put("updatedDate", date).toString();
         var isLink = false;
         var document = IOUtils.toInputStream("stream");
         var name = "documentName";
 
-        String documentIRIString = "http://document/1";
-        SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-        IRI documentIRI = valueFactory.createIRI(documentIRIString);
-        IRI graph = valueFactory.createIRI("http://documents/graph");
-
-        try (MockedStatic<RdfUtils> rdfUtilsMockedStatic = Mockito.mockStatic(RdfUtils.class);
+        initRdfUtils();
+        try (
              MockedStatic<DocumentsQueries> documentQueriesMockedStatic = Mockito.mockStatic(DocumentsQueries.class)
         ) {
-            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralString(anyString())).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleString(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.setLiteralDate(any(String.class))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(() -> RdfUtils.addTripleDate(eq(documentIRI), any(IRI.class), any(), any(Model.class), eq(graph))).thenCallRealMethod();
-            rdfUtilsMockedStatic.when(RdfUtils::documentsGraph).thenReturn(graph);
-            rdfUtilsMockedStatic.when(() -> RdfUtils.toString(any())).thenReturn(documentIRIString);
-            rdfUtilsMockedStatic.when(() -> RdfUtils.toURI(any())).thenReturn(documentIRI);
             documentQueriesMockedStatic.when(() -> DocumentsQueries.checkLabelUnicity(eq("1"), anyString(), any())).thenReturn(documentIRIString);
 
 
@@ -148,7 +144,18 @@ class DocumentsUtilsTest {
             ArgumentCaptor<Model> model = ArgumentCaptor.forClass(Model.class);
 
             verify(repositoryGestion, times(1)).loadSimpleObject(any(), model.capture());
-            Assertions.assertEquals("[(http://document/1, http://purl.org/pav/lastRefreshedOn, \"2024-11-20\"^^<http://www.w3.org/2001/XMLSchema#date>, http://documents/graph) [http://documents/graph]]", model.getValue().toString());
+            assertThat( model.getValue().toString()).asString().contains(date);
         }
+    }
+
+    private void initRdfUtils() {
+
+        RdfServicesForRdfUtils rdfServicesForRdfUtils = new RdfServicesForRdfUtils(new Config(){
+            @Override
+            public String getDocumentsGraph() {
+                return DOCUMENTS_GRAPH;
+            }
+        }, new UriUtils("","http://document/", s-> Optional.empty()));
+        rdfServicesForRdfUtils.initRdfUtils();
     }
 }

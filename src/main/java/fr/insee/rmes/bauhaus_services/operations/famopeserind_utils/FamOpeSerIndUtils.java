@@ -35,7 +35,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 	}
 
 	public boolean checkIfObjectExists(ObjectType type, String id) throws RmesException {
-		return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(RdfUtils.toString(RdfUtils.objectIRI(type, id))));
+        return repoGestion.getResponseAsBoolean(FamOpeSerQueries.checkIfFamOpeSerExists(RdfUtils.objectIRI(type, id).toString()));
 	}
 	
 	public IdLabelTwoLangs buildIdLabelTwoLangsFromJson(JSONObject jsonFamOpeSer) {

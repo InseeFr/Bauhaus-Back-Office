@@ -152,7 +152,7 @@ public class RepositoryGestion {
 		try {
 			statements = con.getStatements(null, predicate, object, false);
 		} catch (RepositoryException e) {
-			throwsRmesException(e, "Failure get " +RdfUtils.toString(predicate) + " statements : " + object);
+            throwsRmesException(e, "Failure get " + predicate.toString() + " statements : " + object);
 		}
 		return statements;
 	}

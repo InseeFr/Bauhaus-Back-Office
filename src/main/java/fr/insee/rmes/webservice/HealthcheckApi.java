@@ -1,8 +1,10 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesFileException;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
 import java.util.StringJoiner;
 
 @ApiResponses(value = {
@@ -44,6 +45,8 @@ public class HealthcheckApi extends GenericResources {
 
     private final RepositoryPublication repositoryPublication;
 
+    private final FilesOperations filesOperations;
+
     private final String documentsStoragePublicationInterne;
     private final String documentsStoragePublicationExterne;
     private final  String documentsStorageGestion;
@@ -53,12 +56,13 @@ public class HealthcheckApi extends GenericResources {
 
 
     public HealthcheckApi(@Autowired RepositoryGestion repoGestion,
-                          @Autowired RepositoryPublication repositoryPublication,
+                          @Autowired RepositoryPublication repositoryPublication, FilesOperations filesOperations,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication.interne}") String documentsStoragePublicationInterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.publication}") String documentsStoragePublicationExterne,
                           @Value("${fr.insee.rmes.bauhaus.storage.document.gestion}") String documentsStorageGestion) {
         this.repoGestion = repoGestion;
         this.repositoryPublication = repositoryPublication;
+        this.filesOperations = filesOperations;
         this.documentsStoragePublicationInterne = documentsStoragePublicationInterne;
         this.documentsStoragePublicationExterne = documentsStoragePublicationExterne;
         this.documentsStorageGestion = documentsStorageGestion;
@@ -73,7 +77,7 @@ public class HealthcheckApi extends GenericResources {
         logger.info(" Begin healthCheck");
 
         checkDatabase(errorMessage, stateResult);
-        checkStrorage(errorMessage, stateResult);
+        checkStrorage(stateResult);
 
 
         //print result in log
@@ -89,11 +93,11 @@ public class HealthcheckApi extends GenericResources {
     }
 
 
-    private void checkStrorage(StringJoiner errorMessage, StringJoiner stateResult) {
+    private void checkStrorage(StringJoiner stateResult) {
         stateResult.add("Document storage \n");
-        checkDocumentStorage(this.documentsStorageGestion, "Gestion", stateResult, errorMessage);
-        checkDocumentStorage(this.documentsStoragePublicationExterne, "Publication Externe", stateResult, errorMessage);
-        checkDocumentStorage(this.documentsStoragePublicationInterne, "Publication Interne", stateResult, errorMessage);
+        checkDocumentStorage(this.documentsStorageGestion, "Gestion", stateResult);
+        checkDocumentStorage(this.documentsStoragePublicationExterne, "Publication Externe", stateResult);
+        checkDocumentStorage(this.documentsStoragePublicationInterne, "Publication Interne", stateResult);
     }
 
     protected void checkDatabase(StringJoiner errorMessage, StringJoiner stateResult) {
@@ -123,26 +127,23 @@ public class HealthcheckApi extends GenericResources {
         }
     }
 
-    private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult, StringJoiner errorMessage) {
-        String dirPath = pathToStorage + "testHealthcheck.txt";
-        File testFile = new File(dirPath);
-        try {
-            if (!testFile.createNewFile()) {
-                errorMessage.add("- File for healthcheck already exists in").add(storageType).add("\n");
-                stateResult.add(" - File creation").add(storageType).add(KO_STATE);
-            } else {
+    private void checkDocumentStorage(String pathToStorage, String storageType, StringJoiner stateResult) {
+        String testFilename = "testHealthcheck.txt";
+        Path testFile = Path.of(pathToStorage, testFilename);
+            try {
+                filesOperations.write(new ByteArrayInputStream("test".getBytes()), testFile);
                 stateResult.add(" - File creation").add(storageType).add(OK_STATE);
+            }catch (RmesFileException rfe){
+                logger.error("While trying to write "+testFilename+" in "+storageType, rfe);
+                stateResult.add(" - File creation").add(storageType).add(KO_STATE);
             }
-            if (!Files.deleteIfExists(testFile.toPath())) {
-                errorMessage.add("- Can't delete test file").add(storageType).add("\n");
-                stateResult.add(" - File deletion").add(storageType).add(KO_STATE);
-            } else {
+            try{
+                filesOperations.delete(testFile.toString());
                 stateResult.add(" - File deletion").add(storageType).add(OK_STATE);
+            }catch (RmesFileException rfe){
+                logger.error("While trying to delete "+testFilename+" in "+storageType, rfe);
+                stateResult.add(" - File deletion").add(storageType).add(KO_STATE);
             }
-        } catch (IOException e) {
-            errorMessage.add("- IOException to save file in").add(pathToStorage).add("-").add(e.getMessage()).add("\n");
-            stateResult.add(" - Document storage").add(storageType).add(KO_STATE);
-        }
     }
 
     private interface RequestExecutor {

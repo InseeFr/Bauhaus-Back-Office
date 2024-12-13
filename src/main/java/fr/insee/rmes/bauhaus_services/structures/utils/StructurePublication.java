@@ -3,7 +3,6 @@ package fr.insee.rmes.bauhaus_services.structures.utils;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
@@ -27,7 +26,7 @@ public class StructurePublication extends RdfService {
 
 				while (statements.hasNext()) {
 					Statement st = statements.next();
-					String pred = RdfUtils.toString(st.getPredicate());
+                    String pred = st.getPredicate().toString();
 					if (PublicationUtils.stringEndsWithItemFromList(pred,denyList)) {
 						// nothing, wouldn't copy this attr
 					} else if(pred.endsWith("component")){

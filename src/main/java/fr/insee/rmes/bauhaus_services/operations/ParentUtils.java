@@ -67,7 +67,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public void checkIfParentIsASeriesWithOperations(String idParent) throws RmesException {
-		String uriParent = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.SERIES, idParent));
+        String uriParent = RdfUtils.objectIRI(ObjectType.SERIES, idParent).toString();
 		if (checkIfParentExists(uriParent) && checkIfSeriesHasOperation(uriParent)) throw new RmesNotAcceptableException(ErrorCodes.SERIES_OPERATION_OR_SIMS,
 				"Cannot create Sims for a series which already has operations", idParent);
 	}
@@ -117,7 +117,7 @@ public class ParentUtils extends RdfService{
 	}
 	
 	public JSONArray getSeriesCreators(IRI iri) throws RmesException {
-		return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + RdfUtils.toString(iri) + ">"));
+        return repoGestion.getResponseAsJSONList(OpSeriesQueries.getCreatorsBySeriesUri("<" + iri.toString() + ">"));
 	}
 	
 	public String[] getDocumentationTargetTypeAndId(String idSims) throws RmesException {

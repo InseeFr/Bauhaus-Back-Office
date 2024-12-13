@@ -36,7 +36,7 @@ public class IndicatorPublication extends RdfService {
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				// Triplets that don't get published
-				String pred = RdfUtils.toString(st.getPredicate());
+                String pred = st.getPredicate().toString();
 				
 				if (pred.endsWith("isValidated")
 						|| pred.endsWith("validationState")) {

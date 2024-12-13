@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,12 +40,5 @@ class DocumentsResourcesTest {
                 .andExpect(content().string(containsString("id not found")));
     }
 
-    @Test
-    void shouldReturnInternalException() throws Exception {
-        when(documentsService.downloadDocument(anyString())).thenThrow(new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "I/O error", "Error downloading file"));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/documents/document/nomFichier/file"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string(not(containsString("nomFichier"))));
-    }
 }

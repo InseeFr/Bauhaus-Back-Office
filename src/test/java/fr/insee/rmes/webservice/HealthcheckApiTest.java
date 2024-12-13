@@ -1,5 +1,6 @@
 package fr.insee.rmes.webservice;
 
+import fr.insee.rmes.bauhaus_services.FilesOperations;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.stubs.RepositoryGestionStub;
@@ -24,7 +25,8 @@ class HealthcheckApiTest {
         //Given
         RepositoryGestion repoGestionStub=new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub=new RepositoryPublicationStub();
-        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
+        FilesOperations filesOperations = null;
+        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, filesOperations, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
         StringJoiner errorMessage = new StringJoiner(" ");
         StringJoiner stateResult = new StringJoiner(" ");
 
@@ -47,7 +49,8 @@ class HealthcheckApiTest {
         //Given
         RepositoryGestion repoGestionStub=new RepositoryGestionStub();
         RepositoryPublication repoPublicationStub=new RepositoryPublicationStubInternalError();
-        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
+        FilesOperations filesOperations = null;
+        var healthcheckApi=new HealthcheckApi(repoGestionStub, repoPublicationStub, filesOperations, documentsStoragePublicationInterne, documentsStoragePublicationExterne, documentsStorageGestion);
         StringJoiner errorMessage = new StringJoiner(" ");
         StringJoiner stateResult = new StringJoiner(" ");
 
