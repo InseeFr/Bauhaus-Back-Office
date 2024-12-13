@@ -51,7 +51,6 @@ class ClassificationItemUtilsTest {
         when(config.getLg2()).thenReturn("en");
 
 
-        RdfUtils.setConfig(config);
         ItemsQueries.setConfig(config);
         ClassificationItem item = new ClassificationItem();
         item.setId("1");
