@@ -1,6 +1,6 @@
 package fr.insee.rmes.utils;
 
-import java.nio.file.Path;
+import org.apache.commons.lang3.StringUtils;
 
 public class UriUtils {
 	
@@ -10,7 +10,8 @@ public class UriUtils {
 
 	
 	public static String getLastPartFromUri(String uri) {
-		return Path.of(uri).getFileName().toString();
+		if (uri.contains("\\")) return StringUtils.substringAfterLast(uri, "\\");
+		return StringUtils.substringAfterLast(uri, "/");
 	}
 
 }

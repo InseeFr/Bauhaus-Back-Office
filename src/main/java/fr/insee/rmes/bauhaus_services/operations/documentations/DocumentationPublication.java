@@ -42,7 +42,7 @@ public class DocumentationPublication extends RdfService {
 			while (metadataReportStatements.hasNext()) {
 				Statement st = metadataReportStatements.next();
 				// Triplets that don't get published
-                String predicate = st.getPredicate().toString();
+				String predicate = RdfUtils.toString(st.getPredicate());
 				if (!isTripletForPublication(predicate)) {
 					// nothing, wouldn't copy this attr
 				} else {

@@ -8,7 +8,10 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import org.apache.http.HttpStatus;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
@@ -77,7 +80,7 @@ public class ConceptsPublication extends RdfService{
 		
 		Resource subject =  publicationUtils.tranformBaseURIToPublish(st.getSubject());
 		Resource graph = st.getContext();
-        String predicat = st.getPredicate().toString();
+		String predicat = RdfUtils.toString(st.getPredicate());
 		
 		if (PublicationUtils.stringEndsWithItemFromList(predicat,notes)) {
 			model.add(subject, st.getPredicate(), publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()),
@@ -144,7 +147,7 @@ public class ConceptsPublication extends RdfService{
 			Resource graph = null;
 			while (statements.hasNext()) {
 				Statement st = statements.next();
-                String predicat = st.getPredicate().toString();
+				String predicat = RdfUtils.toString(st.getPredicate());
 				subject = publicationUtils.tranformBaseURIToPublish(st.getSubject());
 				graph = st.getContext();
 				if (predicat.endsWith("conceptVersion")) {
@@ -211,12 +214,12 @@ public class ConceptsPublication extends RdfService{
 					while (statements.hasNext()) {
 						Statement st = statements.next();
 						// Other URI to transform
-                        if (st.getPredicate().toString().endsWith("member")) {
+						if (RdfUtils.toString(st.getPredicate()).endsWith("member")) {
 							model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 									publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-						} else if (st.getPredicate().toString().endsWith("isValidated")
-								|| (st.getPredicate().toString().endsWith(Constants.CREATOR))
-								|| (st.getPredicate().toString().endsWith(Constants.CONTRIBUTOR))) {
+						} else if (RdfUtils.toString(st.getPredicate()).endsWith("isValidated")
+								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CREATOR))
+								|| (RdfUtils.toString(st.getPredicate()).endsWith(Constants.CONTRIBUTOR))) {
 							// nothing, wouldn't copy this attr
 						}
 						// Literals

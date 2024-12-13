@@ -3,6 +3,7 @@ package fr.insee.rmes.utils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.dataset.Dataset;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 
@@ -20,14 +21,14 @@ public class Deserializer {
 
     public static <T> T deserializeJsonString(String json, Class<T> target) throws RmesException {
         try {
-            T t = mapper.readValue(json, target);
-            return t;
+            return mapper.readValue(json, target);
         } catch (IOException e) {
-            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while deserializing "+json , e.getMessage());
+            throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while " , e.getMessage());
         }
     }
 
-    public static <T> T deserializeJSONObject(JSONObject json, Class<T> target) throws RmesException {
+    //TODO Use a mapper directly from JSONObject to java class
+    public static Dataset deserializeJSONObject(JSONObject json, Class<Dataset> target) throws RmesException {
         return deserializeJsonString(json.toString(), target);
     }
 }

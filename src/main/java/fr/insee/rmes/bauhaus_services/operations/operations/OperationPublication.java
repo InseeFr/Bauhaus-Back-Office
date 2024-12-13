@@ -47,10 +47,10 @@ public class OperationPublication extends RdfService{
 			while (statements.hasNext()) {
 				Statement st = statements.next();
 				// Other URI to transform
-                if (st.getPredicate().toString().endsWith("isPartOf")) {
+				if (RdfUtils.toString(st.getPredicate()).endsWith("isPartOf")) {
 					model.add(publicationUtils.tranformBaseURIToPublish(st.getSubject()), st.getPredicate(),
 							publicationUtils.tranformBaseURIToPublish((Resource) st.getObject()), st.getContext());
-				} else if (PublicationUtils.stringEndsWithItemFromList(st.getPredicate().toString(), ignoredAttrs)) {
+				} else if (PublicationUtils.stringEndsWithItemFromList(RdfUtils.toString(st.getPredicate()), ignoredAttrs)) {
 					// nothing, wouldn't copy this attr
 				}
 				// Literals

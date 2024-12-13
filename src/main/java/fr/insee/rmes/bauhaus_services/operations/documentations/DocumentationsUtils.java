@@ -176,7 +176,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Create or update rdf
 		IRI seriesOrIndicatorUri = targetUri;
-        if (targetUri.toString().contains(this.operationsBaseUri)) {
+		if (RdfUtils.toString(targetUri).contains(this.operationsBaseUri)) {
 			seriesOrIndicatorUri = parentUtils.getSeriesUriByOperationId(idTarget);
 		}
 		if (create) {
@@ -290,7 +290,7 @@ public class DocumentationsUtils extends RdfService{
 		if (StringUtils.isNotEmpty(sims.getIdIndicator())) {				 
 			target = RdfUtils.objectIRI(ObjectType.INDICATOR, sims.getIdTarget());
 		}
-        if (!parentUtils.checkIfParentExists(target.toString())) target = null;
+		if (!parentUtils.checkIfParentExists(RdfUtils.toString(target))) target = null; 
 		if (target == null) {
 			logger.error("Create or Update sims cancelled - no target");
 			throw new RmesException(HttpStatus.BAD_REQUEST, "Operation/Series/Indicator doesn't exist",

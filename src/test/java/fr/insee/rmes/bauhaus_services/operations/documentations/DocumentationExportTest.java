@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -72,7 +71,6 @@ class DocumentationExportTest {
         document.put("id", "1");
 
         when(documentsUtils.getDocumentsUriAndUrlForSims("sims123")).thenReturn(new JSONArray().put(document));
-        when(documentsUtils.existsInStorage(any())).thenReturn(false);
         var sims = new JSONObject();
         sims.put("id", "sims123");
         sims.put("labelLg1", "simsLabel");
@@ -95,8 +93,8 @@ class DocumentationExportTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders().get("X-Missing-Documents").getFirst()).isEqualTo("1");
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+        assertEquals(response.getHeaders().get("X-Missing-Documents").get(0), "1");
     }
 
     @Test

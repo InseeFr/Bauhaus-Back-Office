@@ -75,17 +75,15 @@ public class StructureImpl  extends RdfService implements StructureService {
 
 			// We first have to rename the type property
 			String type = (String) component.get("type");
-            if(type.equalsIgnoreCase(QB.ATTRIBUTE_PROPERTY.toString())){
+			if(type.equalsIgnoreCase(RdfUtils.toString(QB.ATTRIBUTE_PROPERTY))){
 				component.put("type", "attribute");
 			}
-			else if(type.equalsIgnoreCase(QB.MEASURE_PROPERTY.toString())){
+			else if(type.equalsIgnoreCase(RdfUtils.toString(QB.MEASURE_PROPERTY))){
 				component.put("type", "measure");
 			}
-			else {
-                if (type.equalsIgnoreCase(QB.DIMENSION_PROPERTY.toString())) {
-                    component.put("type", "dimension");
-                }
-            }
+			else if(type.equalsIgnoreCase(RdfUtils.toString(QB.DIMENSION_PROPERTY))){
+				component.put("type", "dimension");
+			}
 
 			// If the codelist is defined, we have to remove the range property and fetch the codes list
 			if(!component.isNull(Constants.CODELIST)){
