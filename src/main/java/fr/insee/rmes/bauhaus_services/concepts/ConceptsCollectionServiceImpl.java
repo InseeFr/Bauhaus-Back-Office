@@ -11,7 +11,6 @@ import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +88,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
             String fileName = getFileNameForExport(collection, lg);
             if(conceptsIds.isEmpty()){
-                return collectionExport.exportAsResponseODT(fileName, xmlContent,true,true,true, lg);
+                return collectionExport.exportAsResponseODT(fileName, xmlContent,true, lg);
             }
 
             Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);
