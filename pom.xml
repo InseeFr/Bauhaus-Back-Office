@@ -77,7 +77,7 @@
         <java.version>21</java.version>
         <springdoc.version>2.7.0</springdoc.version>
         <rdf4j.version>4.3.13</rdf4j.version>
-        <xdocreport.version>2.0.6</xdocreport.version>
+        <xdocreport.version>2.1.0</xdocreport.version>
         <jacoco.version>0.8.12</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java-jwt.version>4.4.0</java-jwt.version>
@@ -85,8 +85,8 @@
         <flexmark.version>0.64.8</flexmark.version>
         <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
-        <saxon.version>12.4</saxon.version>
-        <minio.version>8.5.11</minio.version>
+        <saxon.version>12.5</saxon.version>
+        <minio.version>8.5.14</minio.version>
 
 
         <!-- SONAR -->
