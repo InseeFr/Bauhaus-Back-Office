@@ -29,7 +29,7 @@ public class RdfUtils {
 
 	static ValueFactory factory =  SimpleValueFactory.getInstance();
 
-	public static BNode createBlankNode(){ return factory.createBNode(); };
+	public static BNode createBlankNode(){ return factory.createBNode(); }
 	public static String getBaseGraph(){
 		return config.getBaseGraph();
 	}

@@ -18,7 +18,7 @@ public class ServerZone {
                 .filter(z->zone.toUpperCase().equals(z.name()))
                 .findFirst()
                 .orElseGet(()->{
-                    logger.warn("No zone found for value "+zone+" : this is serverZone set to default zone");
+                    logger.warn(String.format("No zone found for value {0} : this is serverZone set to default zone"), zone);
                     return Zone.defaultZone();
                 });
     }
@@ -28,7 +28,7 @@ public class ServerZone {
                 .filter(z->zone.toUpperCase().equals(z.name()))
                 .findFirst()
                 .orElseGet(()->{
-                    logger.warn("No zone found for value "+zone+" : this is serverZone set to default zone");
+                    logger.warn(String.format("No zone found for value {0} : this is serverZone set to default zone", zone));
                     return Zone.defaultZone();
                 });
     }
