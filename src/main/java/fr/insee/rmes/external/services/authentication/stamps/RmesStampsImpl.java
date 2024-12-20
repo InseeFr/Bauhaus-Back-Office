@@ -279,7 +279,8 @@ public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
 			"SSM-DSED",
 			"SSM-DESSI",
 			"SSM-SIES",
-			"SSM-DEPS"
+			"SSM-DEPS",
+			OpenIDConnectSecurityContext.TIMBRE_ANONYME
 	);
 
 
