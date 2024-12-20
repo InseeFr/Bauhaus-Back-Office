@@ -5,6 +5,7 @@ import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import org.springframework.stereotype.Service;
+import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 
 import java.util.List;
 
@@ -279,7 +280,8 @@ public record RmesStampsImpl(UserDecoder userDecoder) implements StampsService {
 			"SSM-DSED",
 			"SSM-DESSI",
 			"SSM-SIES",
-			"SSM-DEPS"
+			"SSM-DEPS",
+			OpenIDConnectSecurityContext.TIMBRE_ANONYME
 	);
 
 
