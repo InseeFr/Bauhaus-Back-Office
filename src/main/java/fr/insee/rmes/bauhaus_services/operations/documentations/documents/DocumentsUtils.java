@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -282,7 +281,7 @@ public class DocumentsUtils extends RdfService {
         JSONObject existingUriJson = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url));
         if (existingUriJson.length() > 0) {
             String uri = existingUriJson.getString(Constants.DOCUMENT);
-            String existingId = getIdFromUri(uri);
+            String existingId = getDocumentNameFromUrl(uri);
             if (!existingId.equals(id)) {
                 throw new RmesNotAcceptableException(errorCode, errorMessage, uri);
             }
@@ -497,7 +496,7 @@ public class DocumentsUtils extends RdfService {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_CREATION_EXISTING_FILE,
                     "There is already a document with that name.", documentName);
         }
-        filesOperations.write(documentFile, path);
+        filesOperations.writeToDirectoryGestion(documentFile, path);
         // don't throw an error if a file already exists under this name
     }
 
@@ -556,19 +555,11 @@ public class DocumentsUtils extends RdfService {
 
     private void deleteFile(String docUrl) {
         Path path = Paths.get(docUrl);
-        try {
-            Files.delete(path);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        filesOperations.delete(path);
     }
 
-    public String getDocumentNameFromUrl(String docUrl) {
+    public static String getDocumentNameFromUrl(String docUrl) {
         return UriUtils.getLastPartFromUri(docUrl);
-    }
-
-    private String getIdFromUri(String uri) {
-        return UriUtils.getLastPartFromUri(uri);
     }
 
     private String createFileUrl(String name) throws RmesException {
@@ -603,7 +594,7 @@ public class DocumentsUtils extends RdfService {
         return RdfUtils.toURI(uri.getString(Constants.DOCUMENT));
     }
 
-    public String getDocumentUrlFromDocument(JSONObject jsonDoc) {
+    public static String getDocumentUrlFromDocument(JSONObject jsonDoc) {
         return jsonDoc.getString(Constants.URL).replace(SCHEME_FILE, "");
     }
 
@@ -655,7 +646,7 @@ public class DocumentsUtils extends RdfService {
         return doc;
     }
 
-    private String getDocumentFilename(String id) throws RmesException {
+    protected String getDocumentFilename(String id) throws RmesException {
         JSONObject jsonDoc = getDocument(id, false);
         String url = getDocumentUrlFromDocument(jsonDoc);
         return getDocumentNameFromUrl(url);
@@ -671,7 +662,7 @@ public class DocumentsUtils extends RdfService {
     public ResponseEntity<org.springframework.core.io.Resource> downloadDocumentFile(String id) throws RmesException {
         String filePath = getDocumentFilename(id);
 
-        try (InputStream inputStream = filesOperations.read(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
+        try (InputStream inputStream = filesOperations.readInDirectoryGestion(filePath)) { // Lire via l'abstraction et utiliser try-with-resources
             byte[] data = StreamUtils.copyToByteArray(inputStream); // Convertir InputStream en byte[]
 
             HttpHeaders headers = new HttpHeaders();
@@ -695,6 +686,14 @@ public class DocumentsUtils extends RdfService {
     private String getFileName(String path) {
         // Extraire juste le nom de fichier du chemin
         return Paths.get(path).getFileName().toString();
+    }
+
+    public InputStream retrieveDocumentFromStorage(String filename) {
+        return filesOperations.readInDirectoryGestion(filename);
+    }
+
+    public boolean existsInStorage(String filename) {
+        return filesOperations.existsInStorageGestion(filename);
     }
 }
 

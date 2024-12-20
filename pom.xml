@@ -13,7 +13,7 @@
     <groupId>fr.insee.rmes</groupId>
     <artifactId>Bauhaus-BO</artifactId>
     <packaging>jar</packaging>
-    <version>4.1.6</version>
+    <version>4.1.7-beta4</version>
     <name>Bauhaus-Back-Office</name>
     <description>Back-office services for Bauhaus</description>
     <url>https://github.com/InseeFr/Bauhaus-Back-Office</url>
@@ -87,6 +87,7 @@
         <zt.version>1.17</zt.version>
         <saxon.version>12.4</saxon.version>
         <minio.version>8.5.11</minio.version>
+        <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
 
 
         <!-- SONAR -->
@@ -100,6 +101,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
@@ -244,13 +246,28 @@
 
         <dependency>
             <groupId>org.testcontainers</groupId>
+            <artifactId>minio</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
