@@ -1,22 +1,17 @@
 package fr.insee.rmes.config.keycloak;
 
+import org.apache.catalina.Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ServerZoneTest {
-
-    private ServerZone serverZone;
-
-    @BeforeEach
-    void setUp() {
-        serverZone = new ServerZone();
-    }
-
     @Test
     void testSetZone_withValidZone() {
         String validZone = "INTERNE";
+
+        ServerZone serverZone = new ServerZone();
 
         serverZone.setZone(validZone);
 
@@ -26,6 +21,8 @@ class ServerZoneTest {
     @Test
     void testSetZone_withInvalidZone_logsWarningAndSetsDefaultZone() {
         String invalidZone = "INVALID_ZONE";
+
+        ServerZone serverZone = new ServerZone();
 
         serverZone.setZone(invalidZone);
 
