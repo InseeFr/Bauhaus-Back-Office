@@ -1,7 +1,6 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface ClassificationsService {
 	
@@ -38,7 +37,4 @@ public interface ClassificationsService {
 	public String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException;
 
 	public String setClassificationValidation(String id) throws RmesException;
-
-	public void uploadClassification(MultipartFile file, String database) throws RmesException;
-
 }

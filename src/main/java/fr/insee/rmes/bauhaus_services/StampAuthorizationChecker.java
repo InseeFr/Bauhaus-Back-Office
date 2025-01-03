@@ -18,7 +18,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import static java.util.Objects.requireNonNull;
@@ -28,12 +27,10 @@ public class StampAuthorizationChecker extends StampsRestrictionServiceImpl {
     private static final Logger logger = LoggerFactory.getLogger(StampAuthorizationChecker.class);
     public static final String CHECKING_AUTHORIZATION_ERROR_MESSAGE = "Error while checking authorization for user with stamp {} to modify or delete {}";
     public static final String ERROR_AUTHORIZATION = "Error while checking authorization for user with stamp {} to modify {}";
-    private final String baseInternalUri;
 
     @Autowired
-    public StampAuthorizationChecker(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider, @Value("${fr.insee.rmes.bauhaus.sesame.gestion.baseInternalURI}") String baseInternalUri) {
+    public StampAuthorizationChecker(RepositoryGestion repoGestion, AuthorizeMethodDecider authorizeMethodDecider, UserProvider userProvider) {
         super(repoGestion, authorizeMethodDecider, userProvider);
-        this.baseInternalUri = baseInternalUri;
     }
 
     public boolean isSeriesManagerWithStamp(String seriesId, Stamp stamp) {
