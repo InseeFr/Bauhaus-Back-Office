@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=classifications"} ////////////////////////////////////////
+                "fr.insee.rmes.bauhaus.activeModules=classifications"}
 )
 
 @Import({Config.class,
@@ -72,75 +72,44 @@ class TestClassificationsRessourcesEnvProd {
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
-    String familyId="10";
-    String levelId="12";
-    String itemId="14";
-    String conceptVersion="16";
-    String correspondenceId="18";
-    String associationId="20";
+    static String familyId="10";
+    static String levelId="12";
+    static String itemId="14";
+    static String conceptVersion="16";
+    static String correspondenceId="18";
+    static String associationId="20";
 
-    @Test
-    void getClassificationFamiliesWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/families").header("Authorization", "Bearer toto")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
-    @Test
-    void getFamilyWithAnyRole() throws Exception {
+    @ParameterizedTest
+    @MethodSource("TestGetEndpointsOkWhenAnyRole")
+    void getObjectWithAnyRole(String url) throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/family/" + familyId).header("Authorization", "Bearer toto")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getFamilyMembersWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/family/" + familyId + "/members").header("Authorization", "Bearer toto")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationSeriesWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/series").header("Authorization", "Bearer toto")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getOnseSeriesWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/series/" + familyId).header("Authorization", "Bearer toto")
+        mvc.perform(get(url).header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
-
-    @Test
-    void getSeriesMembersWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/series/" + familyId + "/members").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationsWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationWithAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+    static Collection<Arguments> TestGetEndpointsOkWhenAnyRole(){
+        return Arrays.asList(
+                Arguments.of("/classifications/families"),
+                Arguments.of("/classifications/family/" + familyId),
+                Arguments.of("/classifications/family/" + familyId + "/members"),
+                Arguments.of("/classifications/series"),
+                Arguments.of("/classifications/series/" + familyId),
+                Arguments.of("/classifications/series/" + familyId + "/members"),
+                Arguments.of("/classifications"),
+                Arguments.of("/classifications/classification/" + familyId),
+                Arguments.of("/classifications/classification/" + familyId + "/items"),
+                Arguments.of("/classifications/classification/" + familyId + "/level/" + levelId),
+                Arguments.of("/classifications/classification/"+ familyId + "/level/" + levelId + "/members"),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion),
+                Arguments.of("/classifications/classification/" + familyId + "/levels"),
+                Arguments.of("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers"),
+                Arguments.of("/classifications/correspondences/"),
+                Arguments.of("/classifications/correspondence/" + familyId),
+                Arguments.of("/classifications/correspondence/" + familyId + "associations"),
+                Arguments.of("/classifications/correspondence/" + correspondenceId + "/association/" + associationId)
+        );
     }
 
 
@@ -162,65 +131,25 @@ class TestClassificationsRessourcesEnvProd {
         );
     }
 
-    @Test
-    void shouldNotPublishClassificationWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
+
+    @ParameterizedTest
+    @MethodSource("TestRoleCaseForPublishClassification")
+    void publishClassification(List role, ResultMatcher expectedStatus) throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
         mvc.perform(put("/classifications/classification/" + familyId + "/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
-                .andExpect(status().isForbidden());
+                .andExpect(expectedStatus);
+    }
+    static Collection<Arguments> TestRoleCaseForPublishClassification() {
+        return Arrays.asList(
+                Arguments.of(List.of(Roles.ADMIN), status().isOk()),
+                Arguments.of(List.of("BadRole"), status().isForbidden()),
+                Arguments.of(List.of(), status().isForbidden())
+        );
     }
 
-    @Test
-    void shouldPublishClassificationWhenAdmin() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(put("/classifications/classification/" + familyId + "/validate").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"1\"}"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationItemsWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/items").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationLevelsWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/levels").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getOneClassificationLevelsWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/level/" + levelId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationLevelMembersWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/"+ familyId + "/level/" + levelId + "/members").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationItemWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/item/" + itemId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
     @Test
     void updateClassificationItemWhenAnyRole() throws Exception {
@@ -232,53 +161,6 @@ class TestClassificationsRessourcesEnvProd {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    void getClassificationItemNotesWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/item/" + itemId + "/notes/" + conceptVersion).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getClassificationItemNarrowersWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/classification/" + familyId + "/item/" + itemId + "/narrowers").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getCorrespondencesWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/correspondences/").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getCorrespondenceWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/correspondence/" + familyId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getCorrespondenceAssociationsWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/correspondence/" + familyId + "associations").header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getCorrespondenceItemWhenAnyRole() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
-        mvc.perform(get("/classifications/correspondence/" + correspondenceId + "/association/" + associationId).header("Authorization", "Bearer toto")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
 
     @ParameterizedTest
     @MethodSource("TestRoleCaseForUploadClassification")
