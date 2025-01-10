@@ -32,7 +32,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -87,7 +86,7 @@ class DocumentationExportTest {
 
 
         InputStream inputStreamMock = mock(InputStream.class);
-        when(exportUtils.exportAsInputStream(eq("simslabel"), eq(xmlContent), eq(xslFile), eq(xmlPattern), eq(zip), eq(objectType), eq(FilesUtils.ODT_EXTENSION)))
+        when(exportUtils.exportAsInputStream("simslabel", xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION))
                 .thenReturn(inputStreamMock);
         when(inputStreamMock.readAllBytes()).thenReturn(new byte[0]);
 
@@ -136,9 +135,9 @@ class DocumentationExportTest {
         when(parentUtils.getDocumentationTargetTypeAndId(id)).thenReturn(new String[]{"someTargetType", "someId"});
         when(documentationsUtils.getFullSimsForXml(id)).thenReturn(new Documentation());
 
-        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> {
-            documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100);
-        });
+        RmesBadRequestException exception = assertThrows(RmesBadRequestException.class,
+                () -> documentationExport.exportMetadataReport(id, includeEmptyMas, lg1, lg2, document, goal, 100)
+        );
 
         assertEquals("{\"message\":\"The goal is unknown\"}", exception.getDetails());
     }

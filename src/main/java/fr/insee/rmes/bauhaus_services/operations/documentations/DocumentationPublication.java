@@ -31,7 +31,6 @@ public class DocumentationPublication extends RdfService {
 		Model model = new LinkedHashModel();
 		Resource graph = RdfUtils.simsGraph(simsId);
 
-		// TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> metadataReportStatements = repoGestion.getCompleteGraph(con, graph);
 
