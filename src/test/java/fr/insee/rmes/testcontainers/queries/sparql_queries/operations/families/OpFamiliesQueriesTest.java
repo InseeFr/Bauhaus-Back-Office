@@ -1,9 +1,10 @@
-package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.operations;
+package fr.insee.rmes.testcontainers.queries.sparql_queries.operations.families;
 
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryInitiator;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryUtils;
 import fr.insee.rmes.config.ConfigStub;
+import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
@@ -16,7 +17,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class OperationsQueriesTest extends WithGraphDBContainer {
+public class OpFamiliesQueriesTest  extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
     @BeforeAll
@@ -25,28 +26,25 @@ class OperationsQueriesTest extends WithGraphDBContainer {
     }
 
     @Test
-    void should_return_all_operations() throws Exception {
+    void should_return_all_families() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
-        JSONArray result = repositoryGestion.getResponseAsArray(OperationsQueries.operationsQuery());
-        assertEquals(390, result.length());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
+        assertEquals(56, result.length());
 
         for (var i = 0; i < result.length(); i++){
-            assertNotNull(result.getJSONObject(i).getString("iri"));
+            assertNotNull(result.getJSONObject(i).getString("id"));
+            assertNotNull(result.getJSONObject(i).getString("label"));
         }
     }
 
     @Test
-    void should_return_operation() throws Exception {
+    void should_return_series() throws Exception {
         OpSeriesQueries.setConfig(new ConfigStub());
+        JSONArray result = repositoryGestion.getResponseAsArray(OpFamiliesQueries.getSeries("s79"));
+        assertEquals(3, result.length());
 
-        JSONObject result = repositoryGestion.getResponseAsObject(OperationsQueries.operationQuery("s1447"));
-        assertThat(result.getString("id")).hasToString("s1447");
-        assertThat(result.getString("prefLabelLg1")).hasToString("Dispositif d'enquêtes permanentes des conditions de vie 2008");
-        assertThat(result.getString("prefLabelLg2")).hasToString("Permanent living conditions survey 2008");
-        assertThat(result.getString("altLabelLg2")).hasToString("EPCV scheme 2008");
-        assertThat(result.getString("altLabelLg1")).hasToString("EPCV 2008");
-        assertThat(result.getString("validationState")).hasToString("Validated");
-        assertEquals("2024", result.getString("year"));
-
+        assertEquals("s1178", result.getJSONObject(0).getString("id"));
+        assertEquals("s1266", result.getJSONObject(1).getString("id"));
+        assertEquals("s1279", result.getJSONObject(2).getString("id"));
     }
 }

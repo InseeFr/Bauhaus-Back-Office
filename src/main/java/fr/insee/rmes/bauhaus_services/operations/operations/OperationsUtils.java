@@ -24,6 +24,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -179,7 +180,7 @@ public class OperationsUtils extends RdfService{
 		RdfUtils.addTripleDateTime(operationURI, DCTERMS.MODIFIED, operation.getModified(), model, RdfUtils.operationsGraph());
 
 		if(operation.getYear() != null){
-			RdfUtils.addTripleInt(operationURI, DCTERMS.TEMPORAL, operation.getYear().toString(), model, RdfUtils.operationsGraph());
+			model.add(operationURI, DCTERMS.TEMPORAL, RdfUtils.createLiteral(operation.getYear().toString(), XSD.GYEAR), RdfUtils.operationsGraph());
 		}
 
 		if (serieUri != null) {

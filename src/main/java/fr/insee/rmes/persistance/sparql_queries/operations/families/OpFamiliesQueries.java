@@ -52,23 +52,13 @@ public class OpFamiliesQueries extends GenericQueries{
 		return  buildRequest("getFamily.ftlh", params);
 	}
 
-	public static String getSeries(String idFamily) {
-		return "SELECT ?id ?labelLg1 ?labelLg2 \n"
-				+ " FROM <"+config.getOperationsGraph()+"> \n"
-				+ "WHERE { \n" 
-
-				+ "?family dcterms:hasPart ?uri . \n"
-				+ "?uri skos:prefLabel ?labelLg1 . \n"
-				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "') . \n"
-				+ "?uri skos:prefLabel ?labelLg2 . \n"
-				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') . \n"
-				+ "BIND(STRAFTER(STR(?uri),'/operations/serie/') AS ?id) . \n"
-
-
-				+ "FILTER(STRENDS(STR(?family),'/operations/famille/" + idFamily + "')) . \n"
-				+ "}"
-				+ " ORDER BY ?id"
-				;
+	public static String getSeries(String idFamily) throws RmesException {
+		HashMap<String, Object> params = new HashMap<>();
+		params.put(OPERATIONS_GRAPH, config.getOperationsGraph());
+		params.put("LG1", config.getLg1());
+		params.put("LG2", config.getLg2());
+		params.put("ID", idFamily);
+		return  buildRequest("getSeries.ftlh", params);
 	}
 
 	public static String getSubjects(String idFamily) {
