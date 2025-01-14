@@ -44,15 +44,15 @@ public class SeriesResources  {
 	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeries", summary = "List of series", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public ResponseEntity<Object> getSeries() throws RmesException {
-		String jsonResultat = operationsService.getSeries();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String series = operationsService.getSeries();
+		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 
 	@GetMapping(value = "/series/withSims", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesWithSims", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabelSims.class)))})
 	public ResponseEntity<Object> getSeriesWIthSims() throws RmesException {
-		String jsonResultat = operationsService.getSeriesWithSims();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String series = operationsService.getSeriesWithSims();
+		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 
 	@GetMapping(value = "/series/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
@@ -70,8 +70,8 @@ public class SeriesResources  {
 	@GetMapping(value = "/series/advanced-search", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearch", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})
 	public ResponseEntity<Object> getSeriesForSearch() throws RmesException {
-		String jsonResultat = operationsService.getSeriesForSearch();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String series = operationsService.getSeriesForSearch();
+		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 	
 	/**
@@ -88,8 +88,8 @@ public class SeriesResources  {
 			required = true,
 			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathVariable(Constants.STAMP) String stamp
 			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesForSearchWithStamp(stamp);	
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String series = operationsService.getSeriesForSearchWithStamp(stamp);
+		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 
 	@PreAuthorize("isAdmin() || isContributorOfSerie(#seriesId)")
@@ -107,16 +107,15 @@ public class SeriesResources  {
 	@GetMapping(value = "/series/{id}/operationsWithoutReport", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsWithoutReport", summary = "Operations without metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
 	public ResponseEntity<Object> getOperationsWithoutReport(@PathVariable(Constants.ID) String id) throws RmesException {
-		String jsonResultat;
-		jsonResultat = operationsService.getOperationsWithoutReport(id);
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String operations  = operationsService.getOperationsWithoutReport(id);
+		return ResponseEntity.status(HttpStatus.OK).body(operations);
 	}
 
 	@GetMapping(value = "/series/{id}/operationsWithReport", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperationsWithReport", summary = "Operations with metadataReport",  responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Operation.class)))})
 	public ResponseEntity<Object> getOperationsWithReport(@PathVariable(Constants.ID) String id) throws RmesException {
-		String jsonResultat  = operationsService.getOperationsWithReport(id);
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String operations  = operationsService.getOperationsWithReport(id);
+		return ResponseEntity.status(HttpStatus.OK).body(operations);
 	}
 
 
@@ -132,18 +131,8 @@ public class SeriesResources  {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "createSeries", summary = "Create series")
 	public ResponseEntity<Object> createSeries(
 			@Parameter(description = "Series to create", required = true, 
-<<<<<<< Updated upstream
-			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) {
-		String id = null;
-		try {
-			id = operationsService.createSeries(body);
-		} catch (RmesException e) {
-				return returnRmesException(e)	;	
-		}
-=======
 			content = @Content(schema = @Schema(implementation = Series.class))) @RequestBody String body) throws RmesException {
 		String id = operationsService.createSeries(body);
->>>>>>> Stashed changes
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
@@ -173,8 +162,8 @@ public class SeriesResources  {
 			required = true,
 			schema = @Schema(pattern = "([A-Za-z0-9_-]+)", type = "string")) @PathVariable(Constants.STAMP) String stamp
 			) throws RmesException {
-		String jsonResultat = operationsService.getSeriesWithStamp(stamp);	
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String series = operationsService.getSeriesWithStamp(stamp);
+		return ResponseEntity.status(HttpStatus.OK).body(series);
 	}
 	
 }
