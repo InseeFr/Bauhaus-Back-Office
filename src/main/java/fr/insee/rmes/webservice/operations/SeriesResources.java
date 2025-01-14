@@ -119,12 +119,6 @@ public class SeriesResources  {
 	}
 
 
-
-	/**
-	 * CREATE
-	 * @param body
-	 * @return response
-	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
 	@PostMapping(value = "/series",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
