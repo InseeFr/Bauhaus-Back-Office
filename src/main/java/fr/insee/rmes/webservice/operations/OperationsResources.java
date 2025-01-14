@@ -1,10 +1,11 @@
 package fr.insee.rmes.webservice.operations;
 
 import fr.insee.rmes.bauhaus_services.Constants;
+import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
+import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.webservice.OperationsCommonResources;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,7 +24,16 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 @RequestMapping("/operations")
 @ConditionalOnExpression("'${fr.insee.rmes.bauhaus.activeModules}'.contains('operations')")
-public class OperationsResources extends OperationsCommonResources {
+public class OperationsResources  {
+
+	protected final OperationsService operationsService;
+
+	protected final OperationsDocumentationsService documentationsService;
+
+	public OperationsResources(OperationsService operationsService, OperationsDocumentationsService documentationsService) {
+		this.operationsService = operationsService;
+		this.documentationsService = documentationsService;
+	}
 
 
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
