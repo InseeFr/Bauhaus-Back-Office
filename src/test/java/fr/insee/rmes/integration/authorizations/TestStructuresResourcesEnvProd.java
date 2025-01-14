@@ -17,16 +17,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,15 +50,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class TestStructuresResourcesEnvProd {
     @Autowired
     private MockMvc mvc;
-    @MockBean
+    @MockitoBean
     private JwtDecoder jwtDecoder;
-    @MockBean
+    @MockitoBean
     private StructureService structureService;
-    @MockBean
+    @MockitoBean
     StructureComponent structureComponentService;
-    @MockBean
+    @MockitoBean
     protected OperationsDocumentationsService documentationsService;
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";

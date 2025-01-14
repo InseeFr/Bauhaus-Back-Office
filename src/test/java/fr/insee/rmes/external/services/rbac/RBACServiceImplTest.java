@@ -5,7 +5,7 @@ import fr.insee.rmes.model.rbac.RBAC;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ class RBACServiceImplTest {
     @Autowired
     RBACServiceImpl rbacService;
 
-    @MockBean
+    @MockitoBean
     RBACConfiguration configuration;
 
     @Test
