@@ -11,7 +11,6 @@ import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.text.CaseUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

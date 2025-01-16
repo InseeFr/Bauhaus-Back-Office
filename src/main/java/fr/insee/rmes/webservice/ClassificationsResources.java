@@ -155,7 +155,7 @@ public class ClassificationsResources extends GenericResources {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
 	public ResponseEntity<Object> updateClassification(
@@ -168,8 +168,8 @@ public class ClassificationsResources extends GenericResources {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
 	}
-	
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+
+	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
 	public ResponseEntity<Object> publishClassification(
@@ -309,9 +309,9 @@ public class ClassificationsResources extends GenericResources {
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
-	
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")	
+
+	@PreAuthorize("isAdmin()")
 	@Operation(operationId = "uploadClassification", summary = "Upload a new classification in database"  )
 	@PostMapping(value = "/upload/classification", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
 	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
