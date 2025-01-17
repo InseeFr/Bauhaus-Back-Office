@@ -53,7 +53,6 @@ public class PublicResources extends GenericResources {
     private final  String maxLengthScopeNote;
     private  final String defaultMailSender;
     private final String defaultContributor;
-    private final String sugoiUi;
     private final String appHost;
     private final List<String> activeModules;
     private final List<String> modules;
@@ -67,7 +66,6 @@ public class PublicResources extends GenericResources {
                            @Value("${fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote}") String maxLengthScopeNote,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultMailSender}") String defaultMailSender,
                            @Value("${fr.insee.rmes.bauhaus.concepts.defaultContributor}") String defaultContributor,
-                           @Value("${fr.insee.rmes.bauhaus.sugoi.ui}") String sugoiUi,
                            @Value("${fr.insee.rmes.bauhaus.appHost}") String appHost,
                            @Value("${fr.insee.rmes.bauhaus.activeModules}") List<String> activeModules,
                            @Value("${fr.insee.rmes.bauhaus.modules}") List<String> modules,
@@ -79,7 +77,6 @@ public class PublicResources extends GenericResources {
         this.maxLengthScopeNote = maxLengthScopeNote;
         this.defaultMailSender = defaultMailSender;
         this.defaultContributor = defaultContributor;
-        this.sugoiUi = sugoiUi;
         this.appHost = appHost;
         this.activeModules=activeModules;
         this.modules = modules;
@@ -92,7 +89,6 @@ public class PublicResources extends GenericResources {
         JSONObject props = new JSONObject();
         try {
             props.put("appHost", this.appHost);
-            props.put("authorizationHost", this.sugoiUi);
             props.put("defaultContributor", this.defaultContributor);
             props.put("defaultMailSender", this.defaultMailSender);
             props.put("maxLengthScopeNote", this.maxLengthScopeNote);

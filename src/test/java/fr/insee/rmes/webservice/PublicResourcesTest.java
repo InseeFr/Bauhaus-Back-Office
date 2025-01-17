@@ -30,7 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "fr.insee.rmes.bauhaus.concepts.maxLengthScopeNote=35",
                 "fr.insee.rmes.bauhaus.concepts.defaultMailSender=email",
                 "fr.insee.rmes.bauhaus.concepts.defaultContributor=stamp",
-                "fr.insee.rmes.bauhaus.sugoi.ui=sugoUi",
                 "fr.insee.rmes.bauhaus.appHost=http://localhost",
                 "fr.insee.rmes.bauhaus.activeModules=operations,concepts",
                 "fr.insee.rmes.bauhaus.modules=operations,concepts"
@@ -60,7 +59,6 @@ class PublicResourcesTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                            "authorizationHost":"sugoUi",
                             "defaultMailSender":"email",
                             "lg2":"en",
                             "lg1":"fr",
