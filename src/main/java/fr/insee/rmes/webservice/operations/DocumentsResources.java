@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * WebService class for resources of Documents and Links
@@ -98,9 +103,45 @@ public class DocumentsResources {
     ) throws RmesException, IOException {
         String id;
         String documentName = documentFile.getOriginalFilename();
+        gestionExtensions(documentFile.getContentType());
         id = documentsService.createDocument(body, documentFile.getInputStream(), documentName);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
+
+    public static List<String> extensionsAutorisees() throws IOException {
+
+        InputStream input = DocumentsResources.class.getClassLoader().getResourceAsStream("bauhaus-core.properties");
+        AtomicReference<Properties> bauhausCore = new AtomicReference<>(new Properties());
+        bauhausCore.get().load(input);
+        String extensionsPossibles = bauhausCore.get().getProperty("extensions");
+
+        return List.of(extensionsPossibles.split(","));
+    }
+
+    public static void gestionExtensions(String str) throws RmesException, IOException {
+
+        // Gérer absence de nom du fichier
+        if (str==null) {
+            throw new RmesException(0, "Chargement du fichier impossible.", "Absence de nom de fichier.");
+        }
+
+        // Scinder nom du fichier en 2 parties
+        List<String> rechercheExtension = Arrays.asList(str.split("/"));
+
+        // Gérer absence d'une extension
+        if (rechercheExtension.size()<2) {
+            throw new RmesException(0, "Chargement du fichier impossible.", "Absence d'extension.");
+        }
+
+        // Gérer présence d'une extension non autorisée
+        String extensionFichier = rechercheExtension.getLast();
+
+        if (!extensionsAutorisees().contains(extensionFichier)) {
+            throw new RmesException(0, "Chargement du fichier impossible.", "Extension non prise en charge.");
+        }
+
+    }
+
 
     @PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
             + ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
