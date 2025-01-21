@@ -1,7 +1,11 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsResources;
 import fr.insee.rmes.webservice.operations.*;
+import fr.insee.rmes.webservice.structures.StructureResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

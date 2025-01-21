@@ -132,7 +132,7 @@ public class SeriesResources  {
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
-	@PutMapping(value = "/series/validate/{id}",
+	@PutMapping(value = "/series/{id}/validate",
 			consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setSeriesValidation", summary = "Series validation")
 	public ResponseEntity<Object> setSeriesValidation(

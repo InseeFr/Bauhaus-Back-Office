@@ -204,7 +204,7 @@ public class IndicatorsUtils {
 
 	private void addOneTypeOfLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray links = repositoryGestion.getResponseAsArray(IndicatorsQueries.indicatorLinks(id, predicate));
-		if (links.length() != 0) {
+		if (!links.isEmpty()) {
 			links = QueryUtils.transformRdfTypeInString(links);
 			object.put(predicate.getLocalName(), links);
 		}
@@ -212,7 +212,7 @@ public class IndicatorsUtils {
 
 	private void addOneOrganizationLink(String id, JSONObject object, IRI predicate) throws RmesException {
 		JSONArray organizations = repositoryGestion.getResponseAsArray(IndicatorsQueries.getMultipleOrganizations(id, predicate));
-		if (organizations.length() != 0) {
+		if (!organizations.isEmpty()) {
 			for (int i = 0; i < organizations.length(); i++) {
 				JSONObject orga = organizations.getJSONObject(i);
 				orga.put("type", ObjectType.ORGANIZATION.labelType());
@@ -423,7 +423,7 @@ public class IndicatorsUtils {
 		logger.info("Generate indicator id");
 		JSONObject json = repositoryGestion.getResponseAsObject(IndicatorsQueries.lastID());
 		logger.debug("JSON for indicator id : {}" , json);
-		if (json.length()==0) {return null;}
+		if (json.isEmpty()) {return null;}
 		String id = json.getString(Constants.ID);
 		if (id.equals(Constants.UNDEFINED)) {return null;}
 		int idInt = Integer.parseInt(id.substring(1))+1;

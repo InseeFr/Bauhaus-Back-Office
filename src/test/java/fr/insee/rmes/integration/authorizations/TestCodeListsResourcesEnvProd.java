@@ -282,7 +282,7 @@ class TestCodeListsResourcesEnvProd {
     @Test
     void validateCodeAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        mvc.perform(put("/codeList/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
@@ -294,7 +294,7 @@ class TestCodeListsResourcesEnvProd {
         when(stampAuthorizationChecker.isCodesListManagerWithStamp(anyString(), eq(new Stamp(timbre)))).thenReturn(true);
 
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.CODESLIST_CONTRIBUTOR));
-        mvc.perform(put("/codeList/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
@@ -303,7 +303,7 @@ class TestCodeListsResourcesEnvProd {
 
     @Test
     void validateCode_noAuth() throws Exception {
-        mvc.perform(put("/codeList/validate/1")
+        mvc.perform(put("/codeList/1/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))
@@ -313,7 +313,7 @@ class TestCodeListsResourcesEnvProd {
     @Test
     void validateCodeAsNotCodesListContributor() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("mauvais rôle"));
-        mvc.perform(put("/codeList/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/codeList/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content("{\"id\": \"1\"}"))

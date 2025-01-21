@@ -11,7 +11,7 @@ import fr.insee.rmes.config.auth.security.DefaultSecurityContext;
 import fr.insee.rmes.config.auth.security.OpenIDConnectSecurityContext;
 import fr.insee.rmes.config.auth.user.Stamp;
 import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.webservice.dataset.DatasetResources;
+import fr.insee.rmes.webservice.datasets.DatasetResources;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

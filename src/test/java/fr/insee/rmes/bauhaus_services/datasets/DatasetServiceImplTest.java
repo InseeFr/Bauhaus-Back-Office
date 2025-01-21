@@ -408,7 +408,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
@@ -599,7 +599,7 @@ class DatasetServiceImplTest {
 
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -625,7 +625,7 @@ class DatasetServiceImplTest {
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
+                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -658,7 +658,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)
 
         ) {
 

@@ -99,7 +99,7 @@ public class IndicatorsResources {
 	 * @return response
 	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
-	@PutMapping(value="/indicator/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value="/indicator/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
 	public ResponseEntity<Object> setIndicatorValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {

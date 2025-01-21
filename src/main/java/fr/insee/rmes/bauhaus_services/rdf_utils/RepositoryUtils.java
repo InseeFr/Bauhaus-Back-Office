@@ -415,7 +415,7 @@ public class RepositoryUtils {
 	 */
 	public static JSONObject getResponseAsObject(String query, Repository repository) throws RmesException {
 		JSONArray resArray = getResponseAsArray(query, repository);
-		if (resArray==null || resArray.length() == 0) {
+		if (resArray==null || resArray.isEmpty()) {
 			return new JSONObject();
 		}
 		return (JSONObject) resArray.get(0);

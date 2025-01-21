@@ -149,7 +149,7 @@ class DistributionServiceImplTest {
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
@@ -334,7 +334,7 @@ class DistributionServiceImplTest {
         IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
         try(
                 MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class)
                 )
         {
             distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");

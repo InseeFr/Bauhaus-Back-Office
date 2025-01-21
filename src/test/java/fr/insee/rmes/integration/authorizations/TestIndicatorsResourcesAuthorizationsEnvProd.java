@@ -164,7 +164,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd {
     void validateIndicatorWhenAdmin_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -174,7 +174,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd {
     void validateIndicatorWhenIndicatorContributor_ok() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.INDICATOR_CONTRIBUTOR));
         when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -184,7 +184,7 @@ class TestIndicatorsResourcesAuthorizationsEnvProd {
     void validateIndicatorWhenIndicatorFakeRole_ko() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of("fake"));
         when(operationsService.setIndicator(anyString())).thenReturn("1");
-        mvc.perform(put("/operations/indicator/validate/1").header("Authorization", "Bearer toto")
+        mvc.perform(put("/operations/indicator/1/validate").header("Authorization", "Bearer toto")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());

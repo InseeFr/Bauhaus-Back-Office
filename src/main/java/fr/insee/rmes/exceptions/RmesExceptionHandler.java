@@ -1,10 +1,14 @@
 package fr.insee.rmes.exceptions;
 
-import fr.insee.rmes.webservice.UserResources;
+import fr.insee.rmes.webservice.*;
+import fr.insee.rmes.webservice.classifications.ClassificationsResources;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
-import fr.insee.rmes.webservice.dataset.DatasetResources;
-import fr.insee.rmes.webservice.distribution.DistributionResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsResources;
+import fr.insee.rmes.webservice.datasets.DatasetResources;
+import fr.insee.rmes.webservice.datasets.DistributionResources;
 import fr.insee.rmes.webservice.operations.*;
+import fr.insee.rmes.webservice.structures.StructureResources;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,11 +18,19 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.nio.file.NoSuchFileException;
 
 @ControllerAdvice(assignableTypes = {
-        DatasetResources.class,
-        DistributionResources.class,
         CodeListsResources.class,
         MetadataReportResources.class,
         UserResources.class,
+        ConceptsResources.class,
+        ConceptsCollectionsResources.class,
+        
+        StructureResources.class,
+        ClassificationsResources.class,
+
+        // <DatasetModule>
+        DatasetResources.class,
+        DistributionResources.class,
+        // </DatasetModule>
 
         // <OperationModule>
         FamilyResources.class,

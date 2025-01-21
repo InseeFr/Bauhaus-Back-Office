@@ -19,7 +19,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.JSONUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -86,10 +86,10 @@ public class ConceptsUtils extends RdfService {
 		JSONObject concept = repoGestion.getResponseAsObject(ConceptsQueries.conceptQuery(id));
 		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg1()));
 		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg2()));
-		if(altLabelLg1.length() != 0) {
+		if(!altLabelLg1.isEmpty()) {
 			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
 		}
-		if(altLabelLg2.length() != 0) {
+		if(!altLabelLg2.isEmpty()) {
 			concept.put(Constants.ALT_LABEL_LG2, JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
 		}
 		return concept;

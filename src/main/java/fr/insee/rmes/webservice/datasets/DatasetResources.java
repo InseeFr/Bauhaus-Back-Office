@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.dataset;
+package fr.insee.rmes.webservice.datasets;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;
@@ -72,7 +72,6 @@ public class DatasetResources {
     public String setDataset(
             @PathVariable("id") String datasetId,
             @Parameter(description = "Dataset", required = true) @RequestBody String body) throws RmesException {
-
         return this.datasetService.update(datasetId, body);
     }
 

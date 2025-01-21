@@ -208,7 +208,7 @@ public class MetadataReportResources {
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR "
 			+ ", T(fr.insee.rmes.config.auth.roles.Roles).SERIES_CONTRIBUTOR)")
-	@PutMapping(value = "/metadataReport/validate/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/metadataReport/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "setMetadataReportValidation", summary = "Sims validation")
 	public ResponseEntity<String> setSimsValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {

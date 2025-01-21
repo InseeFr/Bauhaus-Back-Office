@@ -99,7 +99,7 @@ public class FamilyResources  {
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
-	@PutMapping("/family/validate/{id}")
+	@PutMapping("/family/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setFamilyValidation", summary = "Validate a family")
 	public ResponseEntity<Object> setFamilyValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
