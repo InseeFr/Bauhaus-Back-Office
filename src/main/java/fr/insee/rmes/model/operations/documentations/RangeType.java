@@ -29,7 +29,7 @@ public enum RangeType {
 	private String jsonType;
 	
 	
-	private RangeType(IRI rdfType, String jsonType) {
+	RangeType(IRI rdfType, String jsonType) {
 		this.rdfType = rdfType;
 		this.jsonType = jsonType;
 	}

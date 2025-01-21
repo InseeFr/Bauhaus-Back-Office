@@ -68,7 +68,7 @@ public class CodeListsResources extends GenericResources {
     @DeleteMapping(value = "/{id}")
     @Operation(operationId = "deleteCodeList", summary = "Delete a code list")
     public ResponseEntity<Void> deleteCodeList(@PathVariable(Constants.ID) @P("codesListId") String notation) throws RmesException {
-            codeListService.deleteCodeList(notation, false);
+        codeListService.deleteCodeList(notation, false);
             return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -170,7 +170,7 @@ public class CodeListsResources extends GenericResources {
 
 
     @PreAuthorize("isAdmin() || isContributorOfCodesList(#id)")
-    @PutMapping("/validate/{id}")
+    @PutMapping("/{id}/validate")
     @Operation(operationId = "publishFullCodeList", summary = "Publish a codelist")
     public ResponseEntity<Id> publishFullCodeList(@PathVariable(Constants.ID) Id id) throws RmesException {
         codeListService.publishCodeList(id.getIdentifier(), false);

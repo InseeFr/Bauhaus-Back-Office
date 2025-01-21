@@ -7,7 +7,7 @@ public enum ValidationStatus {
 	
 	private String value;
 	
-	private ValidationStatus(String value) {
+	ValidationStatus(String value) {
         this.setValue(value);
 	}
 

@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice.distribution;
+package fr.insee.rmes.webservice.datasets;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.datasets.DatasetService;

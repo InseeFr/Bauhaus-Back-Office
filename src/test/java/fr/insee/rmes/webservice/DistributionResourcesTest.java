@@ -7,7 +7,7 @@ import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
-import fr.insee.rmes.webservice.distribution.DistributionResources;
+import fr.insee.rmes.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

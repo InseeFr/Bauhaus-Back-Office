@@ -1,4 +1,4 @@
-package fr.insee.rmes.webservice;
+package fr.insee.rmes.webservice.concepts;
 
 import fr.insee.rmes.bauhaus_services.ConceptsCollectionService;
 import fr.insee.rmes.bauhaus_services.ConceptsService;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
-public class ConceptsCollectionsResources extends GenericResources {
+public class ConceptsCollectionsResources {
 
     @Autowired
     public ConceptsCollectionsResources(ConceptsService conceptsService, ConceptsCollectionService conceptsCollectionService) {
@@ -56,13 +56,9 @@ public class ConceptsCollectionsResources extends GenericResources {
     @GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCollections", summary = "List of collections",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
-    public ResponseEntity<Object> getCollections() {
-        try {
-            String collections = conceptsCollectionService.getCollections();
-            return ResponseEntity.status(HttpStatus.OK).body(collections);
-        } catch (RmesException e) {
-            return returnRmesException(e);
-        }
+    public ResponseEntity<Object> getCollections() throws RmesException {
+        String collections = conceptsCollectionService.getCollections();
+        return ResponseEntity.status(HttpStatus.OK).body(collections);
     }
 
     @GetMapping(value = "/export/{id}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})

@@ -294,7 +294,7 @@ public class RepositoryGestion {
 
 
 		try (RepositoryConnection conn=repositoryUtils.initRepository(rdfGestion.getUrlServer(),
-						rdfGestion.repositoryId()).getConnection();)
+						rdfGestion.repositoryId()).getConnection())
 		{
 			clearReplaceLinks(object);
 			loadSimpleObject(object, model, conn);

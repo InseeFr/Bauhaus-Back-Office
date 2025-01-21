@@ -28,7 +28,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -54,14 +54,14 @@ import static org.mockito.Mockito.*;
 })
 class DatasetServiceImplTest {
 
-    @MockBean
+    @MockitoBean
     SeriesUtils seriesUtils;
-    @MockBean
+    @MockitoBean
     IdGenerator idGenerator;
 
-    @MockBean
+    @MockitoBean
     PublicationUtils publicationUtils;
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
     @Autowired
     DatasetServiceImpl datasetService;
@@ -408,7 +408,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://datasetIRI/" + nextId);
@@ -599,7 +599,7 @@ class DatasetServiceImplTest {
 
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         try (
-                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
+                MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -625,7 +625,7 @@ class DatasetServiceImplTest {
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
-                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
+                MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class)
         ) {
 
             datasetQueriesMock.when(() -> DatasetQueries.getDataset(any(), any(), any())).thenReturn("query1 ");
@@ -658,7 +658,7 @@ class DatasetServiceImplTest {
         try (
                 MockedStatic<DatasetQueries> datasetQueriesMock = mockStatic(DatasetQueries.class);
                 MockedStatic<DistributionQueries> distributionQueriesMock = mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = mockStatic(RdfUtils.class)
 
         ) {
 

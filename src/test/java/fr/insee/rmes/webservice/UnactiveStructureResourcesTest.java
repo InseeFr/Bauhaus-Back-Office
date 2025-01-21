@@ -1,21 +1,25 @@
 package fr.insee.rmes.webservice;
 
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
+import fr.insee.rmes.webservice.classifications.ClassificationsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsResources;
 import fr.insee.rmes.webservice.operations.*;
+import fr.insee.rmes.webservice.structures.StructureResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 
 @SpringBootTest(properties = "fr.insee.rmes.bauhaus.activeModules=")
 @ExtendWith(MockitoExtension.class)
 class UnactiveModulesTest {
 
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
     @Autowired(required = false)

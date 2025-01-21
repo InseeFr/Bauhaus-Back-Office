@@ -11,7 +11,7 @@ public enum DisseminationStatus {
     private final String label;
     private final String url;
  
-    private DisseminationStatus(String label, String url) {
+    DisseminationStatus(String label, String url) {
         this.label = label;
         this.url = url;
     }

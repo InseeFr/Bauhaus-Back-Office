@@ -2,7 +2,7 @@ package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.MembersLg;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 

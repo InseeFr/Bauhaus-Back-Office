@@ -19,7 +19,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -27,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -60,16 +60,16 @@ class TestMetadataReportResourcesAuthorizationsEnvProd {
     @Autowired
     private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     private OperationsDocumentationsService documentationsService;
 
-    @MockBean
+    @MockitoBean
     private OperationsService operationsService;
 
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
 
-    @MockBean
+    @MockitoBean
     private JwtDecoder jwtDecoder;
 
     private final String idep = "xxxxux";

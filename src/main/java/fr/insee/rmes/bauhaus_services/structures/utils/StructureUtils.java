@@ -164,7 +164,7 @@ public class StructureUtils extends RdfService {
         logger.info("Generate id for structure");
         JSONObject json = repoGestion.getResponseAsObject(StructureQueries.lastStructureId());
         logger.debug("JSON when generating the id of a structure : {}", json);
-        if (json.length() == 0) {
+        if (json.isEmpty()) {
             return prefix + "1000";
         }
         String id = json.getString(Constants.ID);

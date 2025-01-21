@@ -28,7 +28,7 @@ public class FamOpeSerIndUtils  extends RdfService {
 		logger.info("Generate famOpeSer id");
 		JSONObject json = repoGestion.getResponseAsObject(FamOpeSerQueries.lastId());
 		logger.debug("JSON for famOpeSer id : {}", json);
-		if (json.length()==0) {return "1000";}
+		if (json.isEmpty()) {return "1000";}
 		String id = json.getString(Constants.ID);
 		if (id.equals(Constants.UNDEFINED)) {return "1000";}
 		return "s" + (Integer.parseInt(id)+1);

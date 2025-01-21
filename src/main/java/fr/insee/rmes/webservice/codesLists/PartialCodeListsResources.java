@@ -75,7 +75,7 @@ public class PartialCodeListsResources extends GenericResources {
     }
 
     @PreAuthorize("@AuthorizeMethodDecider.isAdmin()")
-    @PutMapping("/validate/{id}")
+    @PutMapping("/{id}/validate")
     @io.swagger.v3.oas.annotations.Operation(operationId = "publishPartialCodeList", summary = "Publish a partial codelist")
     public ResponseEntity<Object> publishPartialCodeList(
             @PathVariable(Constants.ID) String id) {

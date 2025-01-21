@@ -143,7 +143,7 @@ public class DocumentsUtils extends RdfService {
     }
 
     private void formatDateInJsonArray(JSONArray allDocs) {
-        if (allDocs.length() != 0) {
+        if (!allDocs.isEmpty()) {
             for (int i = 0; i < allDocs.length(); i++) {
                 JSONObject doc = allDocs.getJSONObject(i);
                 formatDateInJsonObject(doc);
@@ -177,7 +177,7 @@ public class DocumentsUtils extends RdfService {
     }
 
     public Integer getIdFromJson(JSONObject json) {
-        if (json.length() == 0) {
+        if (json.isEmpty()) {
             return null;
         } else {
             String id = json.getString(Constants.ID);
@@ -279,7 +279,7 @@ public class DocumentsUtils extends RdfService {
 
     private void checkUrlDoesNotExist(String id, String url, int errorCode, String errorMessage) throws RmesException {
         JSONObject existingUriJson = repoGestion.getResponseAsObject(DocumentsQueries.getDocumentUriQuery(url));
-        if (existingUriJson.length() > 0) {
+        if (!existingUriJson.isEmpty()) {
             String uri = existingUriJson.getString(Constants.DOCUMENT);
             String existingId = getDocumentNameFromUrl(uri);
             if (!existingId.equals(id)) {
@@ -382,7 +382,7 @@ public class DocumentsUtils extends RdfService {
     // Check that the document is not referred to by any sims
     private void checkDocumentReference(String docId, String uri) throws RmesException {
         JSONArray jsonResultat = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
-        if (jsonResultat.length() > 0) {
+        if (!jsonResultat.isEmpty()) {
             throw new RmesBadRequestException(ErrorCodes.DOCUMENT_DELETION_LINKED,
                     "The document " + uri + "cannot be deleted because it is referred to by " + jsonResultat.length()
                             + " sims, including: " + ((JSONObject) jsonResultat.get(0)).get(Constants.TEXT).toString(),
@@ -398,7 +398,7 @@ public class DocumentsUtils extends RdfService {
      */
     private void checkRightsToModifyFile(String docId) throws RmesException {
         JSONArray sims = repoGestion.getResponseAsArray(DocumentsQueries.getLinksToDocumentQuery(docId));
-        if (sims.length() == 0) return; //document's file isn't linked to a sims
+        if (sims.isEmpty()) return; //document's file isn't linked to a sims
         for (int i = 0; i < sims.length(); i++) {
             String simsUri = ((JSONObject) sims.get(i)).get(Constants.TEXT).toString();
 
@@ -587,7 +587,7 @@ public class DocumentsUtils extends RdfService {
     private IRI getDocumentUri(IRI url) throws RmesException {
         JSONObject uri = repoGestion
                 .getResponseAsObject(DocumentsQueries.getDocumentUriQuery(getDocumentNameFromUrl(url.stringValue())));
-        if (uri.length() == 0 || !uri.has(Constants.DOCUMENT)) {
+        if (uri.isEmpty() || !uri.has(Constants.DOCUMENT)) {
             String id = createDocumentID();
             return RdfUtils.objectIRI(ObjectType.DOCUMENT, id);
         }

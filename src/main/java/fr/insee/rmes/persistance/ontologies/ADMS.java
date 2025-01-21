@@ -13,8 +13,6 @@ public class ADMS {
 
     public static final String PREFIX = "adms";
 
-    public static final Namespace NS = new SimpleNamespace(PREFIX, NAMESPACE);
-
     private static IRI createIRI(String suffix) {
         return factory.createIRI(NAMESPACE, suffix);
     }
