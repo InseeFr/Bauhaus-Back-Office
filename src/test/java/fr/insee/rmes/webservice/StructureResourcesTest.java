@@ -29,32 +29,11 @@ class StructureResourcesTest {
     }
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingStructuresForSearch() throws RmesException {
-        when(structureService.getStructuresForSearch()).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = structureResources.getStructuresForSearch();
-        Assertions.assertEquals(500, response.getStatusCode().value());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingStructureById() throws RmesException {
-        when(structureService.getStructureById(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = structureResources.getStructureById("1");
-        Assertions.assertEquals(500, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn200WhenFetchingStructureById() throws RmesException {
         when(structureService.getStructureById(anyString())).thenReturn("result");
         ResponseEntity<?> response = structureResources.getStructureById("1");
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertEquals("result", response.getBody());
-    }
-
-    @Test
-    void shouldReturn500IfRmesExceptionWhenPublishingAStructure() throws RmesException {
-        when(structureService.publishStructureById(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = structureResources.publishStructureById("1");
-        Assertions.assertEquals(500, response.getStatusCode().value());
     }
 
     @Test

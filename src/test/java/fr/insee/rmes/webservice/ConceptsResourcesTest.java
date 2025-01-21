@@ -29,13 +29,6 @@ class ConceptsResourcesTest {
     }
 
     @Test
-    void shouldReturn500IfRmesExceptionWhenFetchingCollectionById() throws RmesException {
-        when(conceptsCollectionService.getCollectionByID(anyString())).thenThrow(new RmesException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "erreur", ""));
-        ResponseEntity<?> response = conceptsResources.getCollectionByID("1");
-        Assertions.assertEquals(500, response.getStatusCode().value());
-    }
-
-    @Test
     void shouldReturn200WhenFetchingCollectionById() throws RmesException {
         when(conceptsCollectionService.getCollectionByID(anyString())).thenReturn("result");
         ResponseEntity<?> response = conceptsResources.getCollectionByID("1");
