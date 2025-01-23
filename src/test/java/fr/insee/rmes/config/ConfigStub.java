@@ -27,7 +27,6 @@ public class ConfigStub extends Config {
         return "http://rdf.insee.fr/graphes/organisations/insee";
     }
 
-    //TODO
     @Override
     public String getStructuresComponentsGraph() {
         return "http://rdf.insee.fr/graphes/composants";

@@ -23,7 +23,6 @@ public class FamilyPublication extends RdfService {
 		
 		Model model = new LinkedHashModel();
 		Resource family = RdfUtils.familyIRI(familyId);
-		//TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, family);
 

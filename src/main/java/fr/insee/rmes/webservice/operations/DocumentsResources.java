@@ -58,10 +58,8 @@ public class DocumentsResources {
     @Operation(operationId = "getDocuments", summary = "List of documents and links",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Document.class))))})
     public ResponseEntity<String> getDocuments() throws RmesException {
-        String jsonResultat;
-        jsonResultat = documentsService.getDocuments();
-
-        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(jsonResultat);
+        String documents = documentsService.getDocuments();
+        return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(documents);
     }
 
 
