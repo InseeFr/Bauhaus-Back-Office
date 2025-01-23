@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 
-//TODO Test
 @Component
 public class LogRequestFilter extends AbstractRequestLoggingFilter {
 

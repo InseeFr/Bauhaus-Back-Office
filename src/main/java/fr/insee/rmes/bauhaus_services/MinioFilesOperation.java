@@ -12,8 +12,6 @@ import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import static java.util.Objects.requireNonNull;
-
 public record MinioFilesOperation(MinioClient minioClient, String bucketName, String directoryGestion, String directoryPublication) implements FilesOperations {
 
     static final Logger logger = LoggerFactory.getLogger(MinioFilesOperation.class);

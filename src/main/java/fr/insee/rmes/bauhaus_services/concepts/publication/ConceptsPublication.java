@@ -204,8 +204,6 @@ public class ConceptsPublication extends RdfService{
 			String collectionId = collectionsToValidate.getString(i);
 			Model model = new LinkedHashModel();
 			Resource collection = RdfUtils.collectionIRI(collectionId);
-			//TODO uncomment when we can notify...
-			//Boolean creation = !repositoryPublication.getResponseAsBoolean(CollectionsQueries.isCollectionExist(collectionId));
 			RepositoryConnection con = repoGestion.getConnection();
 			RepositoryResult<Statement> statements = repoGestion.getStatements(con, collection);
 

@@ -26,7 +26,6 @@ public class ClassificationPublication extends RdfService{
 	public void publishClassification(Resource graphIri) throws RmesException {
 		Model model = new LinkedHashModel();
 
-		// TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> classifStatements = repoGestion.getCompleteGraph(con, graphIri);
 
