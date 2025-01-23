@@ -152,7 +152,7 @@ public class ClassificationsResources extends GenericResources {
 		}
 	}
 
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
 	public ResponseEntity<Object> updateClassification(
@@ -165,8 +165,8 @@ public class ClassificationsResources extends GenericResources {
 			return ResponseEntity.status(e.getStatus()).body(e.getDetails());
 		}
 	}
-	
-	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN)")
+
+	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
 	public ResponseEntity<Object> publishClassification(
@@ -306,4 +306,27 @@ public class ClassificationsResources extends GenericResources {
 		}
 		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
 	}
+
+
+
+	@PreAuthorize("isAdmin()")
+	@Operation(operationId = "uploadClassification", summary = "Upload a new classification in database"  )
+	@PostMapping(value = "/upload/classification", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+	@RequestBody(content = @Content(encoding = @Encoding(name = "database", contentType = "text/plain")))
+	public ResponseEntity<Object> uploadClassification(
+			@Parameter(description = "Database", schema = @Schema(nullable = true, allowableValues = {"gestion","diffusion"},type = "string")) 
+				@RequestPart(value = "database") final String database,
+		//	@RequestPart(value = "graph", required = false)  final String graph,
+			@RequestPart(value = "file")  final MultipartFile file) {
+		try {
+			if (database == null)  throw new RmesException(HttpStatus.BAD_REQUEST,"Database is missing", "Database is null");
+			if (!database.equals("gestion")&&!database.equals("diffusion")) throw new RmesException(HttpStatus.BAD_REQUEST,"Database is unknown : "+ database, "Database is "+database);
+			classificationsService.uploadClassification(file, database);
+		} catch (RmesException e) {
+			return returnRmesException(e);
+		}
+		return ResponseEntity.status(HttpStatus.OK).body("");
+	}
+
+
 }
