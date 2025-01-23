@@ -124,8 +124,14 @@ class DatasetServiceImplTest {
         JSONObject object1 = new JSONObject().put("id", "1").put("theme", "theme1");
         JSONObject object2 = new JSONObject().put("id", "1").put("theme", "theme2");
         JSONArray array = new JSONArray().put(object).put(object1).put(object2);
+        JSONArray keywords = new JSONArray().put(
+                new JSONObject().put("lang","fr").put("keyword", "keyword 1")
+        ).put(
+                new JSONObject().put("lang","en").put("keyword", "keyword 2")
+        );
 
         when(repositoryGestion.getResponseAsArray("query")).thenReturn(array);
+        when(repositoryGestion.getResponseAsArray("query-keywords")).thenReturn(keywords);
         when(repositoryGestion.getResponseAsArray("query-creators")).thenReturn(new JSONArray().put(new JSONObject().put("creator", "creator-1")));
         when(repositoryGestion.getResponseAsArray("query-spacialResolutions")).thenReturn(new JSONArray().put(new JSONObject().put("spacialResolution", "spacialResolutions-1")));
         when(repositoryGestion.getResponseAsArray("query-statisticalUnits")).thenReturn(new JSONArray().put(new JSONObject().put("statisticalUnit", "statisticalUnit-1")));
@@ -134,9 +140,10 @@ class DatasetServiceImplTest {
             mockedFactory.when(() -> DatasetQueries.getDatasetCreators(eq("1"), any())).thenReturn("query-creators");
             mockedFactory.when(() -> DatasetQueries.getDatasetSpacialResolutions(eq("1"), any())).thenReturn("query-spacialResolutions");
             mockedFactory.when(() -> DatasetQueries.getDatasetStatisticalUnits(eq("1"), any())).thenReturn("query-statisticalUnits");
+            mockedFactory.when(() -> DatasetQueries.getKeywords(eq("1"), any())).thenReturn("query-keywords");
             Dataset response = datasetService.getDatasetByID("1");
             String responseJson = objectMapper.writeValueAsString(response);
-            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[],\"lg2\":[]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
+            Assertions.assertEquals("{\"creators\":[\"creator-1\"],\"keywords\":{\"lg1\":[\"keyword 1\"],\"lg2\":[\"keyword 2\"]},\"statisticalUnit\":[\"statisticalUnit-1\"],\"spacialResolutions\":[\"spacialResolutions-1\"],\"id\":\"1\",\"themes\":[\"theme2\",\"theme1\"],\"catalogRecord\":{\"creator\":null,\"contributor\":null,\"created\":null,\"updated\":null}}", responseJson);
         }
     }
 

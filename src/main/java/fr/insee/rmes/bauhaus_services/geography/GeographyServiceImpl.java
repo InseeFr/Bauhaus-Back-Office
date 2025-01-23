@@ -186,13 +186,8 @@ public class GeographyServiceImpl extends RdfService implements GeographyService
 		RdfUtils.addTripleStringMdToXhtml(geoIRI, DCTERMS.ABSTRACT, geoFeature.getDescriptionLg2(), config.getLg2(), model, RdfUtils.simsGeographyGraph());
 
 
-		geoFeature.getUnions().forEach(feature -> {
-			RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph());
-
-		});
-		geoFeature.getDifference().forEach(feature -> {
-			RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph());
-		});
+		geoFeature.getUnions().forEach(feature -> RdfUtils.addTripleUri(geoIRI, GEO.UNION, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
+		geoFeature.getDifference().forEach(feature -> RdfUtils.addTripleUri(geoIRI, GEO.DIFFERENCE, feature.getUri(), model, RdfUtils.simsGeographyGraph()));
 		repoGestion.loadSimpleObject(geoIRI, model);
 
 		return RdfUtils.toString(geoIRI);

@@ -54,6 +54,4 @@ public abstract class RdfService {
 		array.iterator().forEachRemaining(r -> results.add(((JSONObject) r).getString(queryKey)));
 		object.put(objectKey, results);
 	}
-	
-
 }

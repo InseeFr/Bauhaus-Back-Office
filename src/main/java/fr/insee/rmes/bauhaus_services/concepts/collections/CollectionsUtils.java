@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CollectionsUtils extends RdfService{
+public class CollectionsUtils extends RdfService {
 	
 	static final Logger logger = LoggerFactory.getLogger(CollectionsUtils.class);
 	

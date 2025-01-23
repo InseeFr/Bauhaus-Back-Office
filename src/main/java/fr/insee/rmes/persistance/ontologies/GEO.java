@@ -25,7 +25,6 @@ public class GEO {
 
 	static {
 		final ValueFactory f = SimpleValueFactory.getInstance();
-
 		FEATURE = f.createIRI(NAMESPACE, "Feature");
 		DIFFERENCE = f.createIRI(NAMESPACE, "difference");
 		UNION = f.createIRI(NAMESPACE, "union");

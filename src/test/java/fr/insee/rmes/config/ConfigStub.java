@@ -23,6 +23,12 @@ public class ConfigStub extends Config {
     }
 
     @Override
+    public String getProductsGraph() {
+        return "http://rdf.insee.fr/graphes/produits";
+    }
+
+
+    @Override
     public String getOrgInseeGraph() {
         return "http://rdf.insee.fr/graphes/organisations/insee";
     }
