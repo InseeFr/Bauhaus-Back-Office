@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -101,7 +102,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException
 	 */	
 	@Override
-	public String deleteConcept(String id) throws RmesException {
+	public void deleteConcept(String id) throws RmesException {
 		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
@@ -139,8 +140,6 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		String successMessage=THE_CONCEPT+id+" has been deleted from graph "+RdfUtils.conceptGraph();
 		if (result!= HttpStatus.OK) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
-		} else { 
-			return successMessage;
 		}
 	}
 
@@ -214,14 +213,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * Export concept(s)
 	 */
 	@Override
-	public ResponseEntity<?> exportConcept(String id, String acceptHeader) throws RmesException {
-		ConceptForExport concept;
-		try {
-			concept = conceptsExport.getConceptData(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
-
+	public ResponseEntity<Resource> exportConcept(String id, String acceptHeader) throws RmesException {
+		ConceptForExport concept = conceptsExport.getConceptData(id);
 		Map<String, String> xmlContent = convertConceptInXml(concept);
 		String fileName = getFileNameForExport(concept);
 		return conceptsExport.exportAsResponse(fileName,xmlContent,true,true,true);
@@ -339,13 +332,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public ResponseEntity<?> getCollectionExport(String id, String acceptHeader) throws RmesException{
-		CollectionForExportOld collection;
-		try {
-			collection = collectionExport.getCollectionDataOld(id);
-		} catch (RmesException e) {
-			return ResponseEntity.status(e.getStatus()).contentType(MediaType.TEXT_PLAIN).body(e.getDetails());
-		}
+	public ResponseEntity<Resource> getCollectionExport(String id, String acceptHeader) throws RmesException{
+		CollectionForExportOld collection= collectionExport.getCollectionDataOld(id);
 		Map<String, String> xmlContent = convertCollectionInXml(collection);	
 		String fileName = FilesUtils.generateFinalFileNameWithoutExtension(collection.getId() + "-" + collection.getPrefLabelLg1(), maxLength);
 		return collectionExport.exportAsResponse(fileName,xmlContent,true,true,true);

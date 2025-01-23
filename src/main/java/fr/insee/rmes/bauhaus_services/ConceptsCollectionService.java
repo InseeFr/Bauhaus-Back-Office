@@ -16,7 +16,7 @@ public interface ConceptsCollectionService {
 
     ResponseEntity<?> getCollectionExportODT(String id, String accept, ConceptsCollectionsResources.Language lg, boolean withConcepts, HttpServletResponse response) throws RmesException;
 
-    ResponseEntity<?>  getCollectionExportODS(String id, String accept, boolean withConcepts, HttpServletResponse response) throws RmesException;
+    ResponseEntity<?> getCollectionExportODS(String id, String accept, boolean withConcepts, HttpServletResponse response) throws RmesException;
 
     void exportZipCollection(String id, String accept, HttpServletResponse response, ConceptsCollectionsResources.Language lg, String type, boolean withConcepts) throws RmesException;
 }
