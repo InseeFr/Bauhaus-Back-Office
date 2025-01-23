@@ -9,7 +9,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 public class WithGraphDBContainer {
     @Container
-    public static GraphDBContainer container = new GraphDBContainer("ontotext/graphdb:10.6.4");
+    public static GraphDBContainer container = new GraphDBContainer("ontotext/graphdb:10.8.2");
 
 
     protected static RdfConnectionDetails getRdfGestionConnectionDetails() {
