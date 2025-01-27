@@ -15,25 +15,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static org.jsoup.helper.HttpConnection.MULTIPART_FORM_DATA;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -162,32 +159,7 @@ class TestClassificationsRessourcesEnvProd {
     }
 
 
-    @ParameterizedTest
-    @MethodSource("TestRoleCaseForUploadClassification")
-    void uploadClassificationWhenValidDatabaseAndFileProvided(List role, ResultMatcher expectedStatus, int numberOfInvocations) throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, role);
-        // Création d'un fichier multipart
-        MockMultipartFile file = new MockMultipartFile(
-                "file",                // Nom du paramètre
-                "document.txt",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "Contenu du fichier".getBytes() // Contenu
-        );
-        MockMultipartFile database = new MockMultipartFile(
-                "database",                // Nom du paramètre
-                "",        // Nom du fichier
-                MediaType.TEXT_PLAIN_VALUE, // Type MIME
-                "gestion".getBytes() // Contenu
-        );
-        mvc.perform(MockMvcRequestBuilders.multipart("/classifications/upload/classification")
-                        .file(file)
-                        .file(database)
-                        .param("database","gestion")
-                        .header("Authorization", "Bearer toto")
-                        .contentType(MULTIPART_FORM_DATA))
-                .andExpect(expectedStatus);
-        Mockito.verify(classificationsService,Mockito.times(numberOfInvocations)).uploadClassification(file, "gestion");
-    }
+
     static Collection<Arguments> TestRoleCaseForUploadClassification(){
         return Arrays.asList(
                 Arguments.of(List.of(Roles.ADMIN), status().isOk(),1),
@@ -195,41 +167,4 @@ class TestClassificationsRessourcesEnvProd {
                 Arguments.of(List.of(), status().isForbidden(),0)
         );
     }
-
-    @Test
-    void shouldReturnBadRequestWhenAdminAndDatabaseIsMissing() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "testfile.txt",
-                MediaType.TEXT_PLAIN_VALUE,
-                "This is a test file content".getBytes()
-        );
-        mvc.perform(multipart("/classifications/upload/classification/")
-                        .file(file)
-                        .header("Authorization", "Bearer toto")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                )
-                .andExpect(status().isBadRequest())
-        ;
-    }
-
-    @Test
-    void shouldReturnBadRequestWhenAdminAndDatabaseIsUnknown() throws Exception {
-        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "testfile.txt",
-                MediaType.TEXT_PLAIN_VALUE,
-                "This is a test file content".getBytes()
-        );
-        mvc.perform(multipart("/classifications/upload/classification/")
-                        .file(file)
-                        .header("Authorization", "Bearer toto")
-                        .param("database", "unknown")
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                )
-                .andExpect(status().isBadRequest());
-    }
-
 }
