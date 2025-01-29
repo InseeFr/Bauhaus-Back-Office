@@ -88,7 +88,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
             String fileName = getFileNameForExport(collection, lg);
             if(conceptsIds.isEmpty()){
-                return collectionExport.exportAsResponseODT(fileName, xmlContent,true,true,true, lg);
+                return collectionExport.exportAsResponseODT(fileName, xmlContent,true, lg);
             }
 
             Map<String, InputStream> concepts = conceptsService.getConceptsExportIS(conceptsIds, null);
