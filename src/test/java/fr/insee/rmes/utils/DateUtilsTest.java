@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DateUtilsTest {
 
+	@Test
 	void getCurrentDate_ShouldReturnNonNullValue() {
 		String currentDate = DateUtils.getCurrentDate();
 		assertNotNull(currentDate);
