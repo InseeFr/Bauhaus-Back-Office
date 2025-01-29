@@ -11,7 +11,7 @@ import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
-import fr.insee.rmes.webservice.ConceptsCollectionsResources;
+import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;

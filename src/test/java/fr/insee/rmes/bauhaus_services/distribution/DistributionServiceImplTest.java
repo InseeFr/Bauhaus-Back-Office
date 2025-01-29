@@ -24,7 +24,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -45,12 +45,12 @@ import static org.mockito.Mockito.*;
         "fr.insee.rmes.bauhaus.lg2=en"
 })
 class DistributionServiceImplTest {
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
 
-    @MockBean
+    @MockitoBean
     PublicationUtils publicationUtils;
-    @MockBean
+    @MockitoBean
     IdGenerator idGenerator;
     @Autowired
     DistributionServiceImpl distributionService;
@@ -149,7 +149,7 @@ class DistributionServiceImplTest {
         try (
                 MockedStatic<DistributionQueries> datasetQueriesMock = Mockito.mockStatic(DistributionQueries.class);
                 MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
-                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class);
+                MockedStatic<DateUtils> dateUtilsMock = Mockito.mockStatic(DateUtils.class)
         ) {
             when(idGenerator.generateNextId()).thenReturn(nextId);
             IRI iri = SimpleValueFactory.getInstance().createIRI("http://distributionIRI/" + nextId);
@@ -334,7 +334,7 @@ class DistributionServiceImplTest {
         IRI distributionUri = RdfUtils.toURI(stringDistributionIri);
         try(
                 MockedStatic<DistributionQueries> distributionQueriesMock = Mockito.mockStatic(DistributionQueries.class);
-                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class);
+                MockedStatic<RdfUtils> rdfUtilsMock = Mockito.mockStatic(RdfUtils.class)
                 )
         {
             distributionQueriesMock.when(() -> DistributionQueries.getDistribution(any(), any())).thenReturn("query1 ");

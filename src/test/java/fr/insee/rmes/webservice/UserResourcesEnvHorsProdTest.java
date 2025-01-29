@@ -13,10 +13,10 @@ import fr.insee.rmes.external.services.rbac.RBACService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -48,11 +48,11 @@ class UserResourcesEnvHorsProdTest {
     @Autowired
     private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
-    @MockBean
+    @MockitoBean
     private RBACService rbacService;
-    @MockBean
+    @MockitoBean
     private JwtDecoder jwtDecoder;
 
     private static final String FAKE_STAMP_ANSWER = "{\"stamp\": \"fakeStampForDvAndQf\"}";

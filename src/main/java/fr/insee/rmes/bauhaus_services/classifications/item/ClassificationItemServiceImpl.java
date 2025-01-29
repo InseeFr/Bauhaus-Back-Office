@@ -40,7 +40,7 @@ public class ClassificationItemServiceImpl extends RdfService implements Classif
         logger.info("Starting to get classification item {} from {}", itemId, classificationId);
         JSONObject item = repoGestion.getResponseAsObject(ItemsQueries.itemQuery(classificationId, itemId));
         JSONArray altLabels = repoGestion.getResponseAsArray(ItemsQueries.itemAltQuery(classificationId, itemId));
-        if(altLabels.length() != 0) {
+        if(!altLabels.isEmpty()) {
             item.put("altLabels", altLabels);
         }
         return item.toString();

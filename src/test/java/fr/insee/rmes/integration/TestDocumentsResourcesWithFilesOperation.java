@@ -17,9 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -29,8 +29,6 @@ import java.nio.file.Path;
 import static fr.insee.rmes.utils.ConsoleCapture.startCapturingConsole;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,17 +39,17 @@ class TestDocumentsResourcesWithFilesOperation {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private RepositoryPublication repositoryPublication;
-    @MockBean
+    @MockitoBean
     private StampsRestrictionServiceImpl stampsRestrictionService;
-    @MockBean
+    @MockitoBean
     private IdGenerator idGenerator;
-    @MockBean
+    @MockitoBean
     private PublicationUtils publicationUtils;
-    @MockBean
+    @MockitoBean
     private Config config;
-    @MockBean
+    @MockitoBean
     private RepositoryGestion repositoryGestion;
 
     private final String fichierId="ID";

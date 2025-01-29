@@ -188,6 +188,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     private void validate(Distribution distribution) throws RmesException {
         if (distribution.getIdDataset() == null) {
             throw new RmesBadRequestException("The property idDataset is required");
+
         }
         if (distribution.getLabelLg1() == null) {
             throw new RmesBadRequestException("The property labelLg1 is required");

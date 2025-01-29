@@ -166,7 +166,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	private void addLinkCodeToItem(JSONObject item, String key, JSONObject broaderNarrowerCloseMatchForCode){
-		if(broaderNarrowerCloseMatchForCode.getJSONArray(key).length() > 0){
+		if(!broaderNarrowerCloseMatchForCode.getJSONArray(key).isEmpty()){
 			item.put(key, broaderNarrowerCloseMatchForCode.getJSONArray(key));
 		}
 	}

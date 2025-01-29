@@ -26,7 +26,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 	public JSONObject getMetadataAttributeById(String id) throws RmesException{
 		JSONObject mas = repoGestion.getResponseAsObject(DocumentationsQueries.getAttributeSpecificationQuery(id));
-		if (mas.length()==0) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
+		if (mas.isEmpty()) {throw new RmesException(HttpStatus.SC_BAD_REQUEST, "Attribute not found", "id doesn't exist"+id);}
 		transformRangeType(mas);
 		mas.put(Constants.ID, id);
 		return mas;
@@ -48,7 +48,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 
 	public JSONArray getMetadataAttributes() throws RmesException {
 		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesQuery());
-		if (attributesList.length() != 0) {
+		if (!attributesList.isEmpty()) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);
 		         transformRangeType(attribute);
@@ -60,7 +60,7 @@ public class MetadataStructureDefUtils  extends RdfService {
 	public Map<String,String> getMetadataAttributesUri() throws RmesException {
 		Map<String,String> attributes = new HashMap<>();
 		JSONArray attributesList = repoGestion.getResponseAsArray(DocumentationsQueries.getAttributesUriQuery());
-		if (attributesList.length() != 0) {
+		if (!attributesList.isEmpty()) {
 			 for (int i = 0; i < attributesList.length(); i++) {
 		         JSONObject attribute = attributesList.getJSONObject(i);
 		         if (attribute.has(Constants.ID)&& attribute.has(Constants.URI)) {

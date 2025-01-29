@@ -94,7 +94,7 @@ public class NotesUtils  extends RdfService {
 	
 	public void deleteDatableNote(String conceptId, DatableNote datableNote, List<IRI> notesToDelete)  throws RmesException{
 		JSONObject noteToDelete = repoGestion.getResponseAsObject(NotesQueries.getChangeNoteToDelete(conceptId, datableNote));
-		if (noteToDelete.length() != 0) {
+		if (!noteToDelete.isEmpty()) {
 			notesToDelete.add(RdfUtils.toURI(noteToDelete.getString("changeNoteURI")));
 		}
 	}
@@ -117,7 +117,7 @@ public class NotesUtils  extends RdfService {
 		} else {
 			JSONObject jsonVersion = repoGestion.getResponseAsObject(
 					NotesQueries.getLastVersionnableNoteVersion(concept.getId(), note.getPredicat()));
-			if (jsonVersion.length() == 0) {
+			if (jsonVersion.isEmpty()) {
 				return defaultVersion;
 			}
 			return  jsonVersion.getString("version");
@@ -127,7 +127,7 @@ public class NotesUtils  extends RdfService {
 	public String getConceptVersion(Concept concept)  throws RmesException{
 		String conceptVersion = ONE;
 		JSONObject jsonConceptVersion = repoGestion.getResponseAsObject(NotesQueries.getConceptVersion(concept.getId()));
-		if (jsonConceptVersion.length() == 0) {
+		if (jsonConceptVersion.isEmpty()) {
 			return conceptVersion;
 		}
 		conceptVersion = jsonConceptVersion.getString("conceptVersion");

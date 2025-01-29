@@ -54,7 +54,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 	}
 
 	private void removeEmptyAttachment(JSONObject cd){
-		if(((JSONArray) cd.get("attachment")).length() == 0){
+		if(((JSONArray) cd.get("attachment")).isEmpty()){
 			cd.remove("attachment");
 		}
 	}

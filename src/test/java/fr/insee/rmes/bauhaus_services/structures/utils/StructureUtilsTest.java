@@ -17,7 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -30,7 +30,7 @@ class StructureUtilsTest {
     @Mock
     StructureUtils mockStructureUtils;
 
-    @MockBean
+    @MockitoBean
     RepositoryGestion repositoryGestion;
 
     @Autowired
