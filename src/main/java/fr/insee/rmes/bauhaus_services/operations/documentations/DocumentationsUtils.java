@@ -83,7 +83,7 @@ public class DocumentationsUtils extends RdfService{
 
 		// Get general informations
 		JSONObject doc = repoGestion.getResponseAsObject(DocumentationsQueries.getDocumentationTitleQuery(idSims));
-		if (doc.length() == 0) {
+		if (doc.isEmpty()) {
 			throw new RmesNotFoundException(ErrorCodes.SIMS_UNKNOWN_ID, "Documentation not found", idSims);
 		}
 		doc.put(Constants.ID, idSims);
@@ -404,7 +404,7 @@ public class DocumentationsUtils extends RdfService{
 		logger.info("Generate documentation id");
 		JSONObject json = repoGestion.getResponseAsObject(DocumentationsQueries.lastID());
 		logger.debug("JSON for documentation id : {}", json);
-		if (json.length() == 0) {
+		if (json.isEmpty()) {
 			return "1000";
 		}
 		String id = json.getString(Constants.ID_SIMS);

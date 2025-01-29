@@ -115,14 +115,14 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	@Override
 	public String getOperationsWithoutReport(String idSeries) throws RmesException {
 		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithoutSimsQuery(idSeries));
-		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
 	@Override
 	public String getOperationsWithReport(String idSeries) throws RmesException {
 		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsWithSimsQuery(idSeries));
-		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 
@@ -217,7 +217,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 	public String getSeriesWithReport(String idFamily) throws RmesException {
 		JSONArray resQuery = repoGestion.getResponseAsArray(OperationsQueries.seriesWithSimsQuery(idFamily));
-		if (resQuery.length()==1 &&resQuery.getJSONObject(0).length()==0) {resQuery.remove(0);}
+		if (resQuery.length()==1 && resQuery.getJSONObject(0).isEmpty()) {resQuery.remove(0);}
 		return QueryUtils.correctEmptyGroupConcat(resQuery.toString());
 	}
 

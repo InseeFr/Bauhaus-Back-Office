@@ -100,7 +100,7 @@ public class ExportUtils {
         }
 
         try (OutputStream osOutputFile = FileUtils.openOutputStream(output);
-             PrintStream printStream = new PrintStream(osOutputFile);) {
+             PrintStream printStream = new PrintStream(osOutputFile)) {
 
             Path tempDir = Files.createTempDirectory("forExport");
             Path finalPath = Paths.get(tempDir.toString(), fileName + extension);

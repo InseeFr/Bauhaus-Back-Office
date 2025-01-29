@@ -51,7 +51,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         JSONArray response = repoGestion.getResponseAsArray(StructureQueries.getComponent(id));
 
 
-        if(response.length() == 0){
+        if(response.isEmpty()){
             throw new RmesNotFoundException("This component does not exist", id);
         }
 

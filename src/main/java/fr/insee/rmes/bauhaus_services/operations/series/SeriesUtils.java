@@ -230,7 +230,7 @@ public class SeriesUtils {
     private void addOneTypeOfLink(String id, JSONObject series, IRI predicate, String resultType) throws RmesException {
 
         JSONArray links = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesLinks(id, predicate, resultType));
-        if (links.length() != 0) {
+        if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
         }
         series.put(predicate.getLocalName(), links);
@@ -240,7 +240,7 @@ public class SeriesUtils {
         JSONArray links = repositoryGestion.getResponseAsArray(OpSeriesQueries.seriesLinks("", predicate, resultType));
         Map<String, JSONArray> map = new HashMap<>();
 
-        if (links.length() != 0) {
+        if (!links.isEmpty()) {
             links = QueryUtils.transformRdfTypeInString(links);
             for (int i = 0; i < links.length(); i++) {
                 JSONObject l = links.getJSONObject(i);
@@ -269,7 +269,7 @@ public class SeriesUtils {
     private Map<String, List<String>> getAllSeriesCreators() throws RmesException {
         Map<String, List<String>> map = new HashMap<>();
         JSONArray creators = repositoryGestion.getResponseAsArray(OpSeriesQueries.getCreatorsById(""));
-        if (creators.length() != 0) {
+        if (!creators.isEmpty()) {
             for (int i = 0; i < creators.length(); i++) {
                 JSONObject crea = creators.getJSONObject(i);
                 if (crea.has(ID_SERIE)) {
