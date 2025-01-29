@@ -77,9 +77,6 @@ public class SeriesResources  {
 	/**
 	 * Get series where stamp is the creator
 	 * If only id, label, altlabel are needed, prefere /series/seriesWithStamp/{stamp}
-	 * @param stamp
-	 * @return 
-	 * @throws RmesException
 	 */
 	@GetMapping(value = "/series/advanced-search/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeriesForSearchWithStamps", summary = "Series", responses = { @ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(implementation = Series.class)))})

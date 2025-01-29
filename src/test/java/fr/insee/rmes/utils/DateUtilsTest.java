@@ -1,6 +1,5 @@
 package fr.insee.rmes.utils;
 
-import fr.insee.rmes.exceptions.RmesException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

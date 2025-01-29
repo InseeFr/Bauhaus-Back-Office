@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
 import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
@@ -23,24 +24,28 @@ import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
 @Service
-public class ClassificationsImpl  extends RdfService  implements ClassificationsService {
+public class ClassificationsImpl implements ClassificationsService {
 	private static final String CAN_T_READ_REQUEST_BODY = "Can't read request body";
 
-	@Autowired
-	ClassificationUtils classificationUtils;
-
-	@Autowired
-	private ClassificationPublication classificationPublication;
+	private final StampsRestrictionsService stampsRestrictionsService;
+	private final RepositoryGestion repoGestion;
+	private final ClassificationUtils classificationUtils;
+	private final ClassificationPublication classificationPublication;
 	
 	static final Logger logger = LoggerFactory.getLogger(ClassificationsImpl.class);
-	
+
+	public ClassificationsImpl(StampsRestrictionsService stampsRestrictionsService, RepositoryGestion repoGestion, ClassificationUtils classificationUtils, ClassificationPublication classificationPublication) {
+		this.stampsRestrictionsService = stampsRestrictionsService;
+		this.repoGestion = repoGestion;
+		this.classificationUtils = classificationUtils;
+		this.classificationPublication = classificationPublication;
+	}
+
 	@Override
 	public String getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
@@ -179,14 +184,5 @@ public class ClassificationsImpl  extends RdfService  implements Classifications
 		repoGestion.objectValidation(classifURI, model);
 
 		return classificationId;
-	}
-
-	@Override
-	public void uploadClassification(MultipartFile file, String database) throws RmesException {
-		// TODO 
-			// 1 . XSLT ods to XML 
-			// 2 . XSLT XML to trig.
-			// 3 . Call load trig service
-		
 	}
 }

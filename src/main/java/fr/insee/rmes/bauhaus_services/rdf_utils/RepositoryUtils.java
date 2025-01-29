@@ -113,11 +113,6 @@ public class RepositoryUtils {
 
 	/**
 	 * Method which aims to load a file in database
-	 * @param graph 
-	 * @param secondRepo TODO
-	 * @param updateQuery
-	 * @return String
-	 * @throws RmesException 
 	 */
 	public static HttpStatus persistFile(InputStream input,RDFFormat format, String graph, Repository repository, Repository secondRepo) throws RmesException {
 		if (repository == null) {return HttpStatus.EXPECTATION_FAILED;}

@@ -41,23 +41,23 @@ public class IndicatorsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public ResponseEntity<Object> getIndicators() throws RmesException {
-		String jsonResultat = operationsService.getIndicators();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String indicators = operationsService.getIndicators();
+		return ResponseEntity.status(HttpStatus.OK).body(indicators);
 	}
 
 	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
 	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
-		String jsonResultat = operationsService.getIndicatorsWithSims();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String indicators = operationsService.getIndicatorsWithSims();
+		return ResponseEntity.status(HttpStatus.OK).body(indicators);
 	}
 
 	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
-		String jsonResultat = operationsService.getIndicatorsForSearch();
-		return ResponseEntity.status(HttpStatus.OK).body(jsonResultat);
+		String indicators = operationsService.getIndicatorsForSearch();
+		return ResponseEntity.status(HttpStatus.OK).body(indicators);
 
 	}
 
@@ -74,12 +74,6 @@ public class IndicatorsResources {
 		}
 	}
 
-	/**
-	 * UPDATE
-	 * @param id
-	 * @param body
-	 * @return
-	 */
 	//TODO Test : admin then INDICATOR_CONTRIBUTOR with stamp fit then not
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -93,11 +87,6 @@ public class IndicatorsResources {
 		return ResponseEntity.noContent().build();
 	}
 
-	/**
-	 * PUBLISH
-	 * @param id
-	 * @return response
-	 */
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")

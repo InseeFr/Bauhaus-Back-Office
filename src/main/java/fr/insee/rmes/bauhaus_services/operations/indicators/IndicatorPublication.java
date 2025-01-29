@@ -25,7 +25,6 @@ public class IndicatorPublication extends RdfService {
 		Model model = new LinkedHashModel();
 		Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
 
-		// TODO notify...
 		RepositoryConnection con = repoGestion.getConnection();
 		RepositoryResult<Statement> statements = repoGestion.getStatements(con, indicator);
 
