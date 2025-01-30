@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 
-@ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.fakeuser",ignoreUnknownFields = true)
+@ConfigurationProperties(prefix = "fr.insee.rmes.bauhaus.fakeuser")
 public final class FakeUserConfiguration {
 
     private Optional<String> name= empty();

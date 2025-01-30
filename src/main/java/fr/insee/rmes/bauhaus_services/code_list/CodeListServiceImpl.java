@@ -229,7 +229,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeList> listCodeList = objectMapper.readValue(lists.toString(), new TypeReference<List<CodeList>>() {});
+		List<CodeList> listCodeList = objectMapper.readValue(lists.toString(), new TypeReference<>() {
+        });
 		return listCodeList;
 	}
 
@@ -345,7 +346,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public String publishCodeList(String id, boolean partial) throws RmesException {
+	public void publishCodeList(String id, boolean partial) throws RmesException {
 
 		JSONObject codesList = getDetailedPartialCodesListJson(id);
 		String iri = codesList.getString("iri");
@@ -360,7 +361,6 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 
 		repoGestion.objectValidation(codelist, model);
 
-		return id;
 	}
 
 
@@ -477,7 +477,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	public List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
 		String listCodeListJson = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeList> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<List<CodeList>>() {});
+		List<CodeList> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<>() {
+        });
 		return listCodeListResponse;
 	}
 

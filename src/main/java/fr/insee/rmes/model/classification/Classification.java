@@ -52,13 +52,13 @@ public class Classification {
     @Schema(description = "Series ID")
     public String idSeries;
 
-    @Schema(description = "")
+    @Schema()
     public String idBefore;
 
-    @Schema(description = "")
+    @Schema()
     public String idAfter;
 
-    @Schema(description = "")
+    @Schema()
     public String idVariant;
 
     @Schema(description = "Dissemination status", requiredMode = Schema.RequiredMode.REQUIRED)

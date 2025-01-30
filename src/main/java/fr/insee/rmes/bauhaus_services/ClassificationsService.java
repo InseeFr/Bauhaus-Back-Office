@@ -36,5 +36,5 @@ public interface ClassificationsService {
 	
 	String getCorrespondenceAssociation(String correspondenceId, String associationId) throws RmesException;
 
-	String setClassificationValidation(String id) throws RmesException;
+	void setClassificationValidation(String id) throws RmesException;
 }
