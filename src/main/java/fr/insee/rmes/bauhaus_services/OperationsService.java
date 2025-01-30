@@ -19,7 +19,7 @@ public interface OperationsService {
 	
 	void setFamily(String id, String body) throws RmesException;
 
-	String setFamilyValidation(String body) throws RmesException;
+	void setFamilyValidation(String body) throws RmesException;
 
 	String createFamily(String body) throws RmesException;
 
@@ -45,7 +45,7 @@ public interface OperationsService {
 
 	String createSeries(String body) throws RmesException;
 
-	String setSeriesValidation(String body) throws RmesException;
+	void setSeriesValidation(String body) throws RmesException;
 
 	String getSeriesForSearchWithStamp(String stamp) throws RmesException;
 	
@@ -66,7 +66,7 @@ public interface OperationsService {
 
 	String createOperation(String body) throws RmesException;
 
-	String setOperationValidation(String body) throws RmesException;
+	void setOperationValidation(String body) throws RmesException;
 	
 	
 	/******************************************************************************************
@@ -97,5 +97,5 @@ public interface OperationsService {
 	/**
 	 * PUBLISH
 	 */
-	String setIndicatorValidation(String body) throws RmesException;
+	void setIndicatorValidation(String body) throws RmesException;
 }

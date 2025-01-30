@@ -219,7 +219,7 @@ public class DocumentationsUtils extends RdfService{
 	 * @return
 	 * @throws RmesException 
 	 */
-	public String publishMetadataReport(String id) throws RmesException {
+	public void publishMetadataReport(String id) throws RmesException {
 
 		// Find target
 		String[] target = parentUtils.getDocumentationTargetTypeAndId(id);
@@ -268,8 +268,6 @@ public class DocumentationsUtils extends RdfService{
 		logger.info("Validate sims : {}", simsURI);
 
 		repoGestion.objectValidation(simsURI, model);
-
-		return id;
 	}
 
 	/**

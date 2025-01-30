@@ -132,8 +132,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public String setSeriesValidation(String id) throws RmesException{
-		return seriesUtils.setSeriesValidation(id);
+	public void setSeriesValidation(String id) throws RmesException{
+		seriesUtils.setSeriesValidation(id);
 	}
 
 	/***************************************************************************************************
@@ -171,8 +171,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public String setOperationValidation(String id) throws RmesException{
-		return operationsUtils.setOperationValidation(id);
+	public void setOperationValidation(String id) throws RmesException{
+		operationsUtils.setOperationValidation(id);
 	}
 
 	/***************************************************************************************************
@@ -211,8 +211,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	}
 
 	@Override
-	public String setFamilyValidation(String id) throws RmesException{
-		return familiesUtils.setFamilyValidation(id);
+	public void setFamilyValidation(String id) throws RmesException{
+		familiesUtils.setFamilyValidation(id);
 	}
 
 	public String getSeriesWithReport(String idFamily) throws RmesException {
@@ -268,8 +268,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 * @throws RmesException 
 	 */
 	@Override
-	public String setIndicatorValidation(String id) throws RmesException{
-		return indicatorsUtils.setIndicatorValidation(id);
+	public void setIndicatorValidation(String id) throws RmesException{
+		indicatorsUtils.setIndicatorValidation(id);
 	}
 
 	/**
