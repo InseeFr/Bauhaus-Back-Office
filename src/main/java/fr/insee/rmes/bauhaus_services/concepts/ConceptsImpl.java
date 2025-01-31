@@ -16,7 +16,6 @@ import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
-import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
@@ -33,9 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.text.Collator;
 import java.util.*;
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -91,7 +88,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	@Override
 	public String getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
+		return repoGestion.getResponseAsArray(ConceptsQueries.concep
+				tsSearchQuery()).toString();
 	}
 
 	@Override
