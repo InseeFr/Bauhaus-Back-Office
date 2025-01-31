@@ -17,6 +17,7 @@ import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
@@ -35,7 +36,10 @@ import java.io.InputStream;
 import java.text.Collator;
 import java.util.*;
 import java.util.Collection;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -64,26 +68,23 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
     @Override
-	public Collection<PartialConcept> getConcepts()  throws RmesException{
+	public List<PartialConcept> getConcepts()  throws RmesException {
 		logger.info("Starting to get concepts list");
-		var concepts = Arrays.stream(
-				Deserializer.deserializeJsonString(repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString(), PartialConcept[].class)
-		).collect(Collectors.toMap(
-				PartialConcept::getId,
-				item -> item,
-				(existing, newConcept) -> new PartialConcept(
-						existing.getId(),
-						existing.getLabel(),
-						existing.getAltLabel() + " || " + newConcept.getAltLabel()
-				)
-		)).values();
 
-		Collator collator = Collator.getInstance(Locale.FRENCH);
-		collator.setStrength(Collator.PRIMARY);
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery());
 
-		return concepts.stream()
-				.sorted(Comparator.comparing(PartialConcept::getLabel, collator))
-				.collect(Collectors.toList());
+		UnaryOperator<Stream<PartialConcept>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialConcept::id,
+				Function.identity(),
+				PartialConcept::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(concepts.toString(),
+				PartialConcept[].class,
+				PartialConcept::label,
+				Optional.of(businessProcessor)
+		);
 
 	}
 

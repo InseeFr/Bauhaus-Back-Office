@@ -20,8 +20,8 @@ import java.util.Map;
  */
 
 public interface ConceptsService {
-		
-	Collection<PartialConcept> getConcepts() throws RmesException ;
+
+	List<PartialConcept> getConcepts() throws RmesException ;
 	
 	String getConceptsSearch() throws RmesException;
 	

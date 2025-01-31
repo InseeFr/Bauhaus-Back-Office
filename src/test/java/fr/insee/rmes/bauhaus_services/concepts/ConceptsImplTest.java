@@ -78,21 +78,21 @@ class ConceptsImplTest {
 
         assertEquals(4, concepts.size());
 
-        assertEquals("3", concepts.get(0).getId());
-        assertEquals("alabel 1", concepts.get(0).getLabel());
-        assertEquals("alatLabel1", concepts.get(0).getAltLabel());
+        assertEquals("3", concepts.get(0).id());
+        assertEquals("alabel 1", concepts.get(0).label());
+        assertEquals("alatLabel1", concepts.get(0).altLabel());
 
-        assertEquals("2", concepts.get(1).getId());
-        assertEquals("elabel 1", concepts.get(1).getLabel());
-        assertEquals("elatLabel1", concepts.get(1).getAltLabel());
+        assertEquals("2", concepts.get(1).id());
+        assertEquals("elabel 1", concepts.get(1).label());
+        assertEquals("elatLabel1", concepts.get(1).altLabel());
 
-        assertEquals("4", concepts.get(2).getId());
-        assertEquals("élabel 1", concepts.get(2).getLabel());
-        assertEquals("élatLabel1", concepts.get(2).getAltLabel());
+        assertEquals("4", concepts.get(2).id());
+        assertEquals("élabel 1", concepts.get(2).label());
+        assertEquals("élatLabel1", concepts.get(2).altLabel());
 
-        assertEquals("1", concepts.get(3).getId());
-        assertEquals("label 1", concepts.get(3).getLabel());
-        assertEquals("latLabel1 || latLabel2", concepts.get(3).getAltLabel());
+        assertEquals("1", concepts.get(3).id());
+        assertEquals("label 1", concepts.get(3).label());
+        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
     }
 
     @Test

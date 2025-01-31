@@ -28,6 +28,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/concepts")
@@ -61,7 +62,7 @@ public class ConceptsResources  {
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
-	public Collection<PartialConcept> getConcepts() throws RmesException {
+	public List<PartialConcept> getConcepts() throws RmesException {
 		return conceptsService.getConcepts();
 	}
 
