@@ -7,6 +7,7 @@ import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.concepts.*;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.PartialConcept;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -25,6 +26,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/concepts")
@@ -58,9 +61,8 @@ public class ConceptsResources  {
 	@GetMapping(value="", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getConcepts", summary = "List of concepts",
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabelAltLabel.class))))})																 
-	public ResponseEntity<Object> getConcepts() throws RmesException {
-		String concepts = conceptsService.getConcepts();
-		return ResponseEntity.status(HttpStatus.OK).body(concepts);
+	public Collection<PartialConcept> getConcepts() throws RmesException {
+		return conceptsService.getConcepts();
 	}
 
 	@GetMapping(value = "/linkedConcepts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

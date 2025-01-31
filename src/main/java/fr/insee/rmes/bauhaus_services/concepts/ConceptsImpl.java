@@ -13,12 +13,10 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.concepts.MembersLg;
+import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
@@ -34,7 +32,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.text.Collator;
 import java.util.*;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -63,10 +64,27 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
     @Override
-	public String getConcepts()  throws RmesException{
+	public Collection<PartialConcept> getConcepts()  throws RmesException{
 		logger.info("Starting to get concepts list");
-		String resQuery = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		var concepts = Arrays.stream(
+				Deserializer.deserializeJsonString(repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString(), PartialConcept[].class)
+		).collect(Collectors.toMap(
+				PartialConcept::getId,
+				item -> item,
+				(existing, newConcept) -> new PartialConcept(
+						existing.getId(),
+						existing.getLabel(),
+						existing.getAltLabel() + " || " + newConcept.getAltLabel()
+				)
+		)).values();
+
+		Collator collator = Collator.getInstance(Locale.FRENCH);
+		collator.setStrength(Collator.PRIMARY);
+
+		return concepts.stream()
+				.sorted(Comparator.comparing(PartialConcept::getLabel, collator))
+				.collect(Collectors.toList());
+
 	}
 
 	@Override
