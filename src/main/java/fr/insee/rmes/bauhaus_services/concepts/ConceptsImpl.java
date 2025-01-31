@@ -88,8 +88,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	@Override
 	public String getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return repoGestion.getResponseAsArray(ConceptsQueries.concep
-				tsSearchQuery()).toString();
+		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
 	}
 
 	@Override
