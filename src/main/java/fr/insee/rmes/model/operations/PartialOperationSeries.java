@@ -1,7 +1,5 @@
 package fr.insee.rmes.model.operations;
 
-import fr.insee.rmes.model.concepts.PartialConcept;
-
 public record PartialOperationSeries(String id, String iri, String label, String altLabel) {
     public static PartialOperationSeries appendLabel(PartialOperationSeries p1, PartialOperationSeries p2){
         return new PartialOperationSeries(

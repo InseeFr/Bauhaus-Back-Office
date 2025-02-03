@@ -1,7 +1,5 @@
 package fr.insee.rmes.bauhaus_services.classifications;
 
-import fr.insee.rmes.Stubber;
-import fr.insee.rmes.bauhaus_services.concepts.ConceptsCollectionServiceImpl;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.config.ConfigStub;
 import fr.insee.rmes.exceptions.RmesException;
@@ -14,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 

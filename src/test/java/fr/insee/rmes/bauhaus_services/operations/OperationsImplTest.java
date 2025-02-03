@@ -40,7 +40,7 @@ class OperationsImplTest {
     void shouldGetSeriesList() throws RmesException {
 
         try (MockedStatic<OpSeriesQueries> mockedFactory = Mockito.mockStatic(OpSeriesQueries.class)) {
-            mockedFactory.when(() -> OpSeriesQueries.seriesQuery()).thenReturn("query");
+            mockedFactory.when(OpSeriesQueries::seriesQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -76,7 +76,7 @@ class OperationsImplTest {
     void shouldGetOperationsList() throws RmesException {
 
         try (MockedStatic<OperationsQueries> mockedFactory = Mockito.mockStatic(OperationsQueries.class)) {
-            mockedFactory.when(() -> OperationsQueries.operationsQuery()).thenReturn("query");
+            mockedFactory.when(OperationsQueries::operationsQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -112,7 +112,7 @@ class OperationsImplTest {
     void shouldGetFamiliesList() throws RmesException {
 
         try (MockedStatic<OpFamiliesQueries> mockedFactory = Mockito.mockStatic(OpFamiliesQueries.class)) {
-            mockedFactory.when(() -> OpFamiliesQueries.familiesQuery()).thenReturn("query");
+            mockedFactory.when(OpFamiliesQueries::familiesQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
@@ -143,7 +143,7 @@ class OperationsImplTest {
     void shouldGetIndicatorsList() throws RmesException {
 
         try (MockedStatic<IndicatorsQueries> mockedFactory = Mockito.mockStatic(IndicatorsQueries.class)) {
-            mockedFactory.when(() -> IndicatorsQueries.indicatorsQuery()).thenReturn("query");
+            mockedFactory.when(IndicatorsQueries::indicatorsQuery).thenReturn("query");
 
             JSONArray array = new JSONArray();
             array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));

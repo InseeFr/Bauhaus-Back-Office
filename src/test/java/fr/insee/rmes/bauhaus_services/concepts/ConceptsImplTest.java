@@ -220,11 +220,12 @@ class ConceptsImplTest {
         }
     }
 
-    private static void setoffStreamToEntryContentXML(ZipInputStream zipInputStream) throws IOException {
+    private static ZipEntry setoffStreamToEntryContentXML(ZipInputStream zipInputStream) throws IOException {
         ZipEntry zipEntry;
         while((zipEntry= zipInputStream.getNextEntry()) != null &&
                 ! "content.xml".equals(zipEntry.getName())) {
         }
+        return zipEntry;
     }
 
 }
