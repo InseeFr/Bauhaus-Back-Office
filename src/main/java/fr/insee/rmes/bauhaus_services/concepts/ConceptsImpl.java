@@ -86,9 +86,22 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	}
 
 	@Override
-	public String getConceptsSearch()  throws RmesException{
+	public List<ConceptForAdvancedSearch> getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery());
+
+		UnaryOperator<Stream<ConceptForAdvancedSearch>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				ConceptForAdvancedSearch::id,
+				Function.identity(),
+				ConceptForAdvancedSearch::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(concepts.toString(),
+				ConceptForAdvancedSearch[].class,
+				ConceptForAdvancedSearch::label,
+				Optional.of(businessProcessor)
+		);
 	}
 
 	@Override

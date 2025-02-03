@@ -17,7 +17,7 @@ class OperationFamilyTest extends WithGraphDBContainer{
     void getAllFamilies() throws Exception {
         container.withTrigFiles("all-operations-and-indicators.trig");
         OpSeriesQueries.setConfig(new ConfigStub());
-        String result = operationService.getFamilies();
-        assertEquals(56, new JSONArray(result).length());
+        var families = operationService.getFamilies();
+        assertEquals(56, families.size());
     }
 }

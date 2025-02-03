@@ -95,6 +95,39 @@ class ConceptsImplTest {
     }
 
     @Test
+    void shouldGetConceptsListForAdvancedSearch() throws RmesException {
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
+
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel2"));
+        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabel", "elatLabel1"));
+        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabel", "alatLabel1"));
+        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabel", "élatLabel1"));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
+        var concepts = conceptsImpl.getConceptsSearch().stream().toList();
+
+        assertEquals(4, concepts.size());
+
+        assertEquals("3", concepts.get(0).id());
+        assertEquals("alabel 1", concepts.get(0).label());
+        assertEquals("alatLabel1", concepts.get(0).altLabel());
+
+        assertEquals("2", concepts.get(1).id());
+        assertEquals("elabel 1", concepts.get(1).label());
+        assertEquals("elatLabel1", concepts.get(1).altLabel());
+
+        assertEquals("4", concepts.get(2).id());
+        assertEquals("élabel 1", concepts.get(2).label());
+        assertEquals("élatLabel1", concepts.get(2).altLabel());
+
+        assertEquals("1", concepts.get(3).id());
+        assertEquals("label 1", concepts.get(3).label());
+        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabel());
+    }
+
+    @Test
     void shouldExportCollection() throws RmesException {
         var collection = new CollectionForExportOld();
         collection.setId("1");

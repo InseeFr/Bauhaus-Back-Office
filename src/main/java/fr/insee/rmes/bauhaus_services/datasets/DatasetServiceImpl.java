@@ -11,11 +11,13 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.CatalogRecord;
 import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
 import fr.insee.rmes.persistance.ontologies.ADMS;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.JSONUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -105,12 +107,12 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
     }
 
     @Override
-    public String getDatasets() throws RmesException {
+    public List<PartialDataset> getDatasets() throws RmesException {
         return this.getDatasets(null);
     }
 
     @Override
-    public String getDatasetsForDistributionCreation(String stamp) throws RmesException {
+    public List<PartialDataset> getDatasetsForDistributionCreation(String stamp) throws RmesException {
         return this.getDatasets(stamp);
     }
 
@@ -131,8 +133,13 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return id;
     }
 
-    private String getDatasets(String stamp) throws RmesException {
-        return this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp)).toString();
+    private List<PartialDataset> getDatasets(String stamp) throws RmesException {
+        var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp));
+        return DiacriticSorter.sort(datasets.toString(),
+                PartialDataset[].class,
+                PartialDataset::label,
+                Optional.empty()
+        );
     }
 
     @Override

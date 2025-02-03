@@ -1,4 +1,4 @@
-SELECT DISTINCT ?iri ?seriesIri ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel)
+SELECT DISTINCT ?iri ?seriesIri ?id ?label ?altLabel
 WHERE {
     GRAPH <${OPERATIONS_GRAPH}> {
         ?iri a insee:StatisticalOperation .
@@ -8,10 +8,9 @@ WHERE {
 
         ?seriesIri dcterms:hasPart ?iri .
         OPTIONAL{
-            ?iri skos:altLabel ?altLabelLg1 .
-            FILTER (lang(?altLabelLg1) = '${LG2}')
+            ?iri skos:altLabel ?altLabel .
+            FILTER (lang(?altLabel) = '${LG2}')
         }
     }
 }
-GROUP BY ?iri ?seriesIri ?id ?label
 ORDER BY ?label

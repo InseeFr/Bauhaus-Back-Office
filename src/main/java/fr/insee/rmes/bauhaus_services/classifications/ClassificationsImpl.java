@@ -13,8 +13,12 @@ import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.classification.Classification;
+import fr.insee.rmes.model.classification.PartialClassification;
+import fr.insee.rmes.model.classification.PartialClassificationFamily;
+import fr.insee.rmes.model.classification.PartialClassificationSeries;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.classifications.*;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -27,6 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ClassificationsImpl implements ClassificationsService {
@@ -47,9 +57,15 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 
 	@Override
-	public String getFamilies() throws RmesException {
+	public List<PartialClassificationFamily> getFamilies() throws RmesException {
 		logger.info("Starting to get classification families");
-		return repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery()).toString();
+		var families = repoGestion.getResponseAsArray(ClassifFamiliesQueries.familiesQuery());
+
+		return DiacriticSorter.sort(families.toString(),
+				PartialClassificationFamily[].class,
+				PartialClassificationFamily::label,
+				Optional.empty()
+		);
 	}
 	
 	@Override
@@ -65,9 +81,22 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 	
 	@Override
-	public String getSeries() throws RmesException {
+	public List<PartialClassificationSeries> getSeries() throws RmesException {
 		logger.info("Starting to get classifications series");
-		return repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery()).toString();
+		var series = repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery());
+
+		UnaryOperator<Stream<PartialClassificationSeries>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialClassificationSeries::id,
+				Function.identity(),
+				PartialClassificationSeries::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(series.toString(),
+				PartialClassificationSeries[].class,
+				PartialClassificationSeries::label,
+				Optional.of(businessProcessor)
+		);
 	}
 	
 	@Override
@@ -83,9 +112,22 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 	
 	@Override
-	public String getClassifications() throws RmesException {
+	public List<PartialClassification> getClassifications() throws RmesException {
 		logger.info("Starting to get classifications");
-		return repoGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery()).toString();
+		var collections = repoGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery());
+
+		UnaryOperator<Stream<PartialClassification>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialClassification::id,
+				Function.identity(),
+				PartialClassification::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(collections.toString(),
+				PartialClassification[].class,
+				PartialClassification::label,
+				Optional.of(businessProcessor)
+		);
 	}
 	
 	@Override
