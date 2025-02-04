@@ -201,7 +201,7 @@ public class FamiliesUtils {
 	}
 
 
-	public String setFamilyValidation(String id) throws  RmesException  {
+	public void setFamilyValidation(String id) throws  RmesException  {
 		Model model = new LinkedHashModel();
 		
 		if(!stampsRestrictionsService.canCreateFamily()) {
@@ -218,7 +218,6 @@ public class FamiliesUtils {
 
 		repositoryGestion.objectValidation(familyURI, model);
 			
-		return id;
 	}
 	
 	

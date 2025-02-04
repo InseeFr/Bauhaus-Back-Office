@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.repository.Repository;
 public class RepositoryPublicationStub extends RepositoryPublication {
 
     public RepositoryPublicationStub(){
-        super(null, null, null,null,new RepositoryUtilsStub(){
+        super( null,null,new RepositoryUtilsStub(){
 
         });
     }
@@ -20,7 +20,7 @@ public class RepositoryPublicationStub extends RepositoryPublication {
     }
 
     @Override
-    public String getResponseInternalPublication(String query) throws RmesException {
+    public String getResponsePublication(String query) throws RmesException {
         return "NON_EMPTY";
     }
 

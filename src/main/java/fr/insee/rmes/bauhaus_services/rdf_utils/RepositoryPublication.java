@@ -12,18 +12,13 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 
-import java.io.File;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,8 +32,6 @@ import java.util.List;
 public class RepositoryPublication{
 	private final String rdfServerPublicationExt;
 	private final String idRepositoryPublicationExt;
-	private final String rdfServerPublicationInt;
-	private final String idRepositoryPublicationInt;
 	private final RepositoryUtils repositoryUtils;
 	
 	private static final String THREE_PARAMS_LOG = "{} {} {}";
@@ -49,16 +42,13 @@ public class RepositoryPublication{
 
 	static final Logger logger = LoggerFactory.getLogger(RepositoryPublication.class);
 	
-	public RepositoryPublication(@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String rdfServerPublicationExt, 	@Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String idRepositoryPublicationExt,
-								 @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.sesameServer}") String rdfServerPublicationInt, @Value("${fr.insee.rmes.bauhaus.sesame.publication.interne.repository}") String idRepositoryPublicationInt,
+	public RepositoryPublication(@Value("${fr.insee.rmes.bauhaus.sesame.publication.sesameServer}") String rdfServerPublicationExt,
+								 @Value("${fr.insee.rmes.bauhaus.sesame.publication.repository}") String idRepositoryPublicationExt,
 								 @Autowired RepositoryUtils repositoryUtils	) {
 		this.rdfServerPublicationExt=rdfServerPublicationExt;
 		this.idRepositoryPublicationExt=idRepositoryPublicationExt;
 		this.repositoryUtils=repositoryUtils;
-		this.rdfServerPublicationInt=rdfServerPublicationInt;
-		this.idRepositoryPublicationInt=idRepositoryPublicationInt;
 		 repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt);
-		 repositoryUtils.initRepository(rdfServerPublicationInt,idRepositoryPublicationInt);
 	}
 
 	
@@ -80,8 +70,8 @@ public class RepositoryPublication{
 	 * @return String
 	 * @throws RmesException 
 	 */
-	public String getResponseInternalPublication(String query) throws RmesException {
-		return RepositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
+	public String getResponsePublication(String query) throws RmesException {
+		return RepositoryUtils.getResponse(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
 	/**
@@ -95,29 +85,7 @@ public class RepositoryPublication{
 		return RepositoryUtils.getResponseAsArray(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
-	/**
-	 * Method which aims to produce response from a sparql query
-	 * 
-	 * @param query
-	 * @return JSONObject
-	 * @throws RmesException 
-	 */
-	public JSONObject getResponseAsObject(String query) throws RmesException {
-		return RepositoryUtils.getResponseAsObject(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
 
-	/**
-	 * Method which aims to produce response from a sparql ASK query
-	 * 
-	 * @param query
-	 * @return String
-	 * @throws RmesException 
-	 * @throws JSONException 
-	 */
-	public Boolean getResponseAsBoolean(String query) throws  RmesException {
-		return RepositoryUtils.getResponseForAskQuery(query, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
 	/**
 	 * Method which aims to execute sparql update
 	 * 
@@ -126,16 +94,12 @@ public class RepositoryPublication{
 	 * @throws RmesException 
 	 */
 	public HttpStatus executeUpdate(String updateQuery) throws RmesException {
-		HttpStatus status = RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
-		if (status.is2xxSuccessful() ) {
-			status = RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-		}
+		HttpStatus status = RepositoryUtils.executeUpdate(updateQuery, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 		return status;
 	}
 
 	public void publishConcept(Resource concept, Model model, List<Resource> noteToClear,
 			List<Resource> topConceptOfToDelete) throws RmesException {
-		publishConcept(concept, model, noteToClear,topConceptOfToDelete, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
 		publishConcept(concept, model, noteToClear,topConceptOfToDelete, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 	
@@ -170,7 +134,6 @@ public class RepositoryPublication{
 	}
 
 	public void publishResource(Resource resource, Model model, String type) throws RmesException {
-		publishResource(resource, model, type, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
 		publishResource(resource, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
 
@@ -191,24 +154,10 @@ public class RepositoryPublication{
 	}
 	
 	public void publishContext(Resource graph, Model model, String type) throws RmesException {
-		publishContext(graph, model, type, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
 		publishContext(graph, model, type, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
 	}
-	
-	public HttpStatus persistFile(InputStream input, RDFFormat format, String graph) throws RmesException {
-		return RepositoryUtils.persistFile(input, format, graph, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt), repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
 
-	public File getGraphAsFile(String context) throws RmesException {
-			if (context != null) return RepositoryUtils.getCompleteGraphInTrig(repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt), context);
-			return RepositoryUtils.getAllGraphsInZip(repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
-	public String[] getAllGraphs() throws RmesException {
-		return RepositoryUtils.getAllGraphs(repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-	}
-	
+
 	private static void publishContext(Resource context, Model model, String type, Repository repo) throws RmesException {
 		if (repo == null) {return ;}
 
@@ -227,7 +176,6 @@ public class RepositoryPublication{
 
 	public void clearStructureAndComponentForAllRepositories(Resource structure) throws RmesException {
 		RepositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationExt, idRepositoryPublicationExt));
-		RepositoryUtils.clearStructureAndComponents(structure, repositoryUtils.initRepository(rdfServerPublicationInt, idRepositoryPublicationInt));
 	}
 
 	private void clearConceptLinks(Resource concept, RepositoryConnection conn) throws RmesException {

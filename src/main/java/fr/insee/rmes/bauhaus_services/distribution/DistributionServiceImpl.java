@@ -111,10 +111,10 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         return this.persist(distribution, false);
     }
 
-    private String update(String distributionId, Distribution distribution) throws RmesException {
+    private void update(String distributionId, Distribution distribution) throws RmesException {
         distribution.setId(distributionId);
 
-        return this.persist(distribution, false);
+        this.persist(distribution, false);
     }
 
     @Override

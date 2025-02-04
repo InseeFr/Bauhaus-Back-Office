@@ -136,7 +136,7 @@ public class OperationsUtils extends RdfService{
 	 * @return
 	 * @throws RmesException
 	 */
-	public String setOperation(String id, String body) throws RmesException {
+	public void setOperation(String id, String body) throws RmesException {
 		IRI seriesURI= parentUtils.getSeriesUriByOperationId(id);
 		if(!stampsRestrictionsService.canModifyOperation(seriesURI)) {
 			throw new RmesUnauthorizedException(ErrorCodes.OPERATION_MODIFICATION_RIGHTS_DENIED, "Only authorized users can modify operations.");
@@ -159,7 +159,6 @@ public class OperationsUtils extends RdfService{
 			createRdfOperation(operation,null,ValidationStatus.MODIFIED);
 		}
 		logger.info("Update operation : {} - {}" , operation.getId() , operation.getPrefLabelLg1());
-		return operation.getId();
 	}
 
 	private void createRdfOperation(Operation operation, IRI serieUri, ValidationStatus newStatus) throws RmesException {
@@ -194,7 +193,7 @@ public class OperationsUtils extends RdfService{
 	}
 
 
-	public String setOperationValidation(String idOperation)  throws RmesException  {
+	public void setOperationValidation(String idOperation)  throws RmesException  {
 		Model model = new LinkedHashModel();
 
 		IRI seriesURI = parentUtils.getSeriesUriByOperationId(idOperation);
@@ -214,7 +213,6 @@ public class OperationsUtils extends RdfService{
 		logger.info("Validate operation : {}", operationURI);
 		repoGestion.objectValidation(operationURI, model);
 
-		return idOperation;
 	}
 
 }

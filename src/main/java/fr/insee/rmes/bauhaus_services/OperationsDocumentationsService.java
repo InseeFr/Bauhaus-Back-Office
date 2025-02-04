@@ -32,9 +32,9 @@ public interface OperationsDocumentationsService {
 	
 	String createMetadataReport(String body) throws RmesException;
 
-	String setMetadataReport(String id, String body) throws RmesException;
+	void setMetadataReport(String id, String body) throws RmesException;
 
-	String publishMetadataReport(String id) throws RmesException;
+	void publishMetadataReport(String id) throws RmesException;
 	
 	String getMetadataReportOwner(String id) throws RmesException;
 
