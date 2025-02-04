@@ -55,7 +55,7 @@ public interface ConceptsService {
 	
 	String getRelatedConcepts(String id) throws RmesException;
 
-	String deleteConcept(String id) throws RmesException;
+	void deleteConcept(String id) throws RmesException;
 
 	Map<String, InputStream> getConceptsExportIS(List<String> ids, List<MembersLg> members) throws RmesException;
 }

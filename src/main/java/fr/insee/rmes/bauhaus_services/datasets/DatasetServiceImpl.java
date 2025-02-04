@@ -29,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -357,8 +356,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return (dataset.getTemporalCoverageDataType() != null);
     }
 
-    private HttpStatus deleteTemporalWhiteNode(String id) throws RmesException {
-        return repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
+    private void deleteTemporalWhiteNode(String id) throws RmesException {
+        repoGestion.executeUpdate(DatasetQueries.deleteTempWhiteNode(id, getDatasetsGraph()));
     }
 
     private boolean isDerivedFromADataset(Dataset dataset) throws RmesException {
@@ -367,8 +366,8 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return (!datasetDerivedFrom.optString("wasDerivedFromS").isEmpty());
     }
 
-    private HttpStatus deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
-        return repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
+    private void deleteQualifiedDerivationWhiteNode(String id) throws RmesException {
+        repoGestion.executeUpdate(DatasetQueries.deleteDatasetQualifiedDerivationWhiteNode(id, getDatasetsGraph()));
     }
 
     private void persistCatalogRecord(Dataset dataset) throws RmesException {

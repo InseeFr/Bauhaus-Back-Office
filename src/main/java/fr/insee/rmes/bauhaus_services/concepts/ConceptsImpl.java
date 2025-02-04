@@ -130,7 +130,7 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 	 * @throws RmesException
 	 */	
 	@Override
-	public String deleteConcept(String id) throws RmesException {
+	public void deleteConcept(String id) throws RmesException {
 		String uriConcept = RdfUtils.toString(RdfUtils.objectIRI(ObjectType.CONCEPT,id));
 		JSONArray graphArray = conceptsUtils.getGraphsWithConcept(uriConcept);
 
@@ -165,11 +165,8 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		}
 		/* deletion */
 		HttpStatus result= conceptsUtils.deleteConcept(id);
-		String successMessage=THE_CONCEPT+id+" has been deleted from graph "+RdfUtils.conceptGraph();
 		if (result!= HttpStatus.OK) {
 			throw new RmesException(HttpStatus.INTERNAL_SERVER_ERROR.value(),"Unexpected return message: ",result.toString());
-		} else { 
-			return successMessage;
 		}
 	}
 
