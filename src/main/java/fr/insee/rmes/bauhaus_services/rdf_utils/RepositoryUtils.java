@@ -462,21 +462,7 @@ public class RepositoryUtils {
 		}
 		return arrayRes;
 	}
-	
-	
-	public JSONObject sparqlJSONToValues(JSONObject jsonSparql) {
-		if (jsonSparql.get(RESULTS) == null) {
-			return null;
-		}
 
-		final JSONObject json = (JSONObject) ((JSONArray) ((JSONObject) jsonSparql.get(RESULTS)).get(BINDINGS))
-				.get(0);
-		final JSONObject jsonResults = new JSONObject();
-
-		Set<String> set = json.keySet();
-		set.forEach(s -> jsonResults.put(s, ((JSONObject) json.get(s)).get(Constants.VALUE)));
-		return jsonResults;
-	}
 	
 	public static void clearStructureAndComponents(Resource structure, Repository repository) throws RmesException {
 		List<Resource> toRemove = new ArrayList<>();

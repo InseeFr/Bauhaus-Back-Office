@@ -72,7 +72,7 @@ public class PropertiesLogger implements ApplicationListener<ApplicationEnvironm
         Set<String> moreProps = environment.getProperty(PROPERTY_KEY_FOR_MORE_HIDDEN, Set.class);
         var retour = baseMotsCaches;
         if (moreProps != null){
-            retour=new HashSet<String>(moreProps);
+            retour= new HashSet<>(moreProps);
             retour.addAll(baseMotsCaches);
         }
         return retour;

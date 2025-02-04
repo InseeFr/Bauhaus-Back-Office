@@ -389,7 +389,7 @@ public class IndicatorsUtils {
 		repositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-	public String setIndicatorValidation(String id)  throws RmesException  {
+	public void setIndicatorValidation(String id)  throws RmesException  {
 		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
 			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
 		}
@@ -405,8 +405,6 @@ public class IndicatorsUtils {
 		logger.info("Validate indicator : {}" , indicatorURI);
 
 		repositoryGestion.objectValidation(indicatorURI, model);
-
-		return id;
 	}
 
 	private void addOneWayLink(Model model, IRI indicURI, List<OperationsLink> links, IRI linkPredicate) {

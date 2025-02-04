@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 
@@ -317,10 +316,11 @@ class DistributionServiceImplTest {
 
     @Test
     void shouldNotDeleteNotUnpublishedDistributionAndReturn400() throws RmesException {
-        JSONObject mockJSON = new JSONObject("{\n" +
-                "  \"id\": \"idTest\",\n" +
-                "  \"validationState\": \"Not Unpublished\"\n" +
-                "}");
+        JSONObject mockJSON = new JSONObject("""
+                {
+                  "id": "idTest",
+                  "validationState": "Not Unpublished"
+                }""");
         when(repositoryGestion.getResponseAsObject(Mockito.anyString())).thenReturn(mockJSON);
         RmesException exception = assertThrows(RmesBadRequestException.class, () -> distributionService.deleteDistributionId("idTest"));
         Assertions.assertEquals("{\"code\":1203,\"message\":\"Only unpublished distributions can be deleted\"}", exception.getDetails());

@@ -120,8 +120,8 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * UPDATE
 	 */
 	@Override
-	public String setMetadataReport(String id, String body) throws RmesException {
-		return documentationsUtils.setMetadataReport(id, body, false);
+	public void setMetadataReport(String id, String body) throws RmesException {
+		documentationsUtils.setMetadataReport(id, body, false);
 	}
 
 	/**
@@ -136,8 +136,8 @@ public class OperationsDocumentationsImpl  extends RdfService implements Operati
 	 * PUBLISH
 	 */
 	@Override
-	public String publishMetadataReport(String id) throws RmesException {
-		return documentationsUtils.publishMetadataReport(id);
+	public void publishMetadataReport(String id) throws RmesException {
+		documentationsUtils.publishMetadataReport(id);
 	}
 
 	/**

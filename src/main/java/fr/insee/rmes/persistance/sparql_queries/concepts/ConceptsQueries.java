@@ -11,7 +11,6 @@ public class ConceptsQueries extends GenericQueries {
 
 	private static final String URI_CONCEPT = "uriConcept";
 	public static final String CONCEPTS_GRAPH = "CONCEPTS_GRAPH";
-	static Map<String, Object> params;
 
 	private ConceptsQueries() {
 		throw new IllegalStateException("Utility class");

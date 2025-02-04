@@ -104,7 +104,7 @@ public class HealthcheckApi extends GenericResources {
 
     private void checkDatabaseConnexions(StringJoiner errorMessage, StringJoiner stateResult) {
         checkDatabaseConnexion(errorMessage, stateResult, repositoryPublication::getResponse, "Publication Z");
-        checkDatabaseConnexion(errorMessage, stateResult, repositoryPublication::getResponseInternalPublication, "Publication I");
+        checkDatabaseConnexion(errorMessage, stateResult, repositoryPublication::getResponsePublication, "Publication I");
         checkDatabaseConnexion(errorMessage, stateResult, repoGestion::getResponse, "Gestion");
     }
 

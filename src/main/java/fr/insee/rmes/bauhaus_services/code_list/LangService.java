@@ -36,14 +36,7 @@ public class LangService extends RdfService {
 		}
 		return language2;
 	}
-	
-	public String getLanguageByConfigLg(String lg) throws RmesException {
-	if (lg==null || lg.equals("")) {
-			return "";
-	}
-		return lg.equals(config.getLg1()) ? getLanguage1() : getLanguage2();
-	}
-	
+
 
 	private String getLanguage(String lang) throws RmesException {
 		return codeListService.getCodeUri("ISO-639", StringUtils.lowerCase(lang));

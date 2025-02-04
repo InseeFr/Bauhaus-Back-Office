@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {
@@ -597,12 +596,13 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteNotUnpublishedDatasetAndReturn406() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Not Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Not Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
 
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         try (
@@ -622,12 +622,13 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldNotDeleteDataSetWithDistributionAndReturn400() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONArray mockDistrib = new JSONArray("[{\"idDataset\":\"idTest\",\"id\":\"distrib1\"}]");
         try (
@@ -651,12 +652,13 @@ class DatasetServiceImplTest {
 
     @Test
     void shouldDeleteDataSet() throws RmesException {
-        JSONArray mockJSON = new JSONArray("[{\n" +
-                "  \"id\": idTest,\n" +
-                "  \"validationState\": \"Unpublished\",\n" +
-                "  \"catalogRecordCreator\": \"DG57-C003\"\n" +
-                "}\n" +
-                "]");
+        JSONArray mockJSON = new JSONArray("""
+                [{
+                  "id": idTest,
+                  "validationState": "Unpublished",
+                  "catalogRecordCreator": "DG57-C003"
+                }
+                ]""");
         JSONArray empty_array = new JSONArray(EMPTY_ARRAY);
         JSONObject quasi_empty_object = new JSONObject(QUASI_EMPTY_OBJECT);
 

@@ -88,7 +88,7 @@ DocumentationsRubricsUtils extends RdfService {
 	 * @return
 	 * @throws RmesException
 	 */
-	private JSONArray clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
+	private void clearRubrics(String idSims, JSONArray docRubrics) throws RmesException {
 		Map<String, JSONObject> tempMultipleCodeList = new HashMap<>();
 
 		for (int i = docRubrics.length() - 1; i >= 0; i--) {
@@ -119,7 +119,6 @@ DocumentationsRubricsUtils extends RdfService {
 		if (!tempMultipleCodeList.isEmpty()) {
 			tempMultipleCodeList.forEach((k, v) -> docRubrics.put(v));
 		}
-		return docRubrics;
 	}
 
 	private void clearGeographyRubric(JSONObject rubric) throws RmesException {

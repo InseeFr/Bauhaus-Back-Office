@@ -157,7 +157,7 @@ public class ClassificationsImpl implements ClassificationsService {
 	}
 
 	@Override
-	public String setClassificationValidation(String classificationId) throws RmesException {
+	public void setClassificationValidation(String classificationId) throws RmesException {
 		//GET graph
 		JSONObject listGraph = repoGestion.getResponseAsObject(ClassificationsQueries.getGraphUriById(classificationId));
 		logger.debug("JSON for listGraph id : {}", listGraph);
@@ -176,13 +176,12 @@ public class ClassificationsImpl implements ClassificationsService {
 
 		//UPDATE GESTION TO MARK AS PUBLISHED
 		Model model = new LinkedHashModel();
-		IRI classifURI = RdfUtils.toURI(classifUriString);
-		model.add(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
-		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
-		model.remove(classifURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
+		IRI classificationURI = RdfUtils.toURI(classifUriString);
+		model.add(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.VALIDATED), graphIri);
+		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.UNPUBLISHED), graphIri);
+		model.remove(classificationURI, INSEE.VALIDATION_STATE, RdfUtils.setLiteralString(ValidationStatus.MODIFIED), graphIri);
 		logger.info("Validate classification : {}", classifUriString);
-		repoGestion.objectValidation(classifURI, model);
+		repoGestion.objectValidation(classificationURI, model);
 
-		return classificationId;
 	}
 }
