@@ -12,9 +12,7 @@ public class DiacriticSorter {
     private DiacriticSorter(){}
     public static <S extends Comparable<S>, T> List<T> sort(String jsonArray, Class<T[]> targetArrayClass, Function<T, S> projectToComparableField, Optional<UnaryOperator<Stream<T>>> businessProcessor) throws RmesException {
         var stream= Arrays.stream(Deserializer.deserializeJsonString(jsonArray, targetArrayClass));
-        if (businessProcessor.isPresent()) {
-            stream = businessProcessor.get().apply(stream);
-        }
+    stream = businessProcessor.orElse(Function.identity()).apply(stream);
         return stream.sorted(getComparator(projectToComparableField)).toList();
 
     }
