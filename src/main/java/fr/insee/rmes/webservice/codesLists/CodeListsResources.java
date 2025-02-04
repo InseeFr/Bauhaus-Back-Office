@@ -11,6 +11,7 @@ import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Id;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.utils.Deserializer;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,9 +75,8 @@ public class CodeListsResources extends GenericResources {
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllCodesLists", summary = "Get all code lists", responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public ResponseEntity<List<CodeList>> getAllCodesLists() throws RmesException, JsonProcessingException {
-        List<CodeList> listCodeList = codeListService.getAllCodesLists(false);
-        return ResponseEntity.status(HttpStatus.OK).body(listCodeList);
+    public List<PartialCodesList> getAllCodesLists() throws RmesException, JsonProcessingException {
+        return codeListService.getAllCodesLists(false);
     }
 
 

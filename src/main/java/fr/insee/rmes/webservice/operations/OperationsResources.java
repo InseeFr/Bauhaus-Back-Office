@@ -6,6 +6,7 @@ import fr.insee.rmes.bauhaus_services.OperationsService;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.PartialOperation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Qualifier("Operation")
 @RestController
@@ -39,8 +42,8 @@ public class OperationsResources  {
 	@GetMapping(value = "/operations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getOperations", summary = "List of operations", responses = {
 			@ApiResponse(content = @Content(schema = @Schema(type = "array", implementation = IdLabelAltLabel.class))) })
-	public ResponseEntity<String> getOperations() throws RmesException {
-		return ResponseEntity.status(HttpStatus.OK).body(operationsService.getOperations());
+	public List<PartialOperation> getOperations() throws RmesException {
+		return operationsService.getOperations();
 	}
 
 	@GetMapping(

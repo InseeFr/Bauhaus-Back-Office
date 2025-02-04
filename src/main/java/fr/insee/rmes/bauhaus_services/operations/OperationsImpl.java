@@ -9,13 +9,12 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.operations.Indicator;
-import fr.insee.rmes.model.operations.Operation;
-import fr.insee.rmes.model.operations.Series;
+import fr.insee.rmes.model.operations.*;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +26,11 @@ import org.springframework.stereotype.Service;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -53,10 +57,21 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public String getSeries() throws RmesException  {
+	public List<PartialOperationSeries> getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		String resQuery = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		var series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery());
+		UnaryOperator<Stream<PartialOperationSeries>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialOperationSeries::id,
+				Function.identity(),
+				PartialOperationSeries::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(series.toString(),
+				PartialOperationSeries[].class,
+				PartialOperationSeries::label,
+				Optional.of(businessProcessor)
+		);
 	}
 
 	@Override
@@ -143,10 +158,23 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public String getOperations() throws RmesException  {
+	public List<PartialOperation> getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
-		String resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		var operations = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery());
+
+		UnaryOperator<Stream<PartialOperation>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialOperation::id,
+				Function.identity(),
+				PartialOperation::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(operations.toString(),
+				PartialOperation[].class,
+				PartialOperation::label,
+				Optional.of(businessProcessor)
+		);
+
 	}
 
 	@Override
@@ -181,10 +209,15 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 *****************************************************************************************************/
 
 	@Override
-	public String getFamilies() throws RmesException {
+	public List<PartialOperationFamily> getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
-		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		var families = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
+
+		return DiacriticSorter.sort(families.toString(),
+				PartialOperationFamily[].class,
+				PartialOperationFamily::label,
+				Optional.empty()
+		);
 	}
 
 	@Override
@@ -229,10 +262,21 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public String getIndicators() throws RmesException {
+	public List<PartialOperationIndicator> getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
-		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+		var indicators = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery());
+		UnaryOperator<Stream<PartialOperationIndicator>> businessProcessor = stream -> stream.collect(Collectors.toMap(
+				PartialOperationIndicator::id,
+				Function.identity(),
+				PartialOperationIndicator::appendLabel
+		)).values().stream();
+
+
+		return DiacriticSorter.sort(indicators.toString(),
+				PartialOperationIndicator[].class,
+				PartialOperationIndicator::label,
+				Optional.of(businessProcessor)
+		);
 	}
 
 	@Override

@@ -6,7 +6,9 @@ import fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuild
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.concepts.CollectionForExport;
+import fr.insee.rmes.model.concepts.PartialCollection;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
@@ -42,8 +44,14 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
 
     @Override
-    public String getCollections()  throws RmesException{
-        return repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery()).toString();
+    public List<PartialCollection> getCollections()  throws RmesException{
+        var collections =  repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery());
+
+        return DiacriticSorter.sort(collections.toString(),
+                PartialCollection[].class,
+                PartialCollection::label,
+                Optional.empty()
+        );
     }
 
     @Override

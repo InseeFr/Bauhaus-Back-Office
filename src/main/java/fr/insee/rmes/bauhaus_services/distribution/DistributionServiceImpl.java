@@ -8,10 +8,12 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
 import fr.insee.rmes.model.ValidationStatus;
 import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PartialDistribution;
 import fr.insee.rmes.model.dataset.PatchDistribution;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -23,6 +25,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
@@ -69,8 +73,13 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
     }
 
     @Override
-    public String getDistributions() throws RmesException {
-        return this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph())).toString();
+    public List<PartialDistribution> getDistributions() throws RmesException {
+        var distributions =  this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph()));
+        return DiacriticSorter.sort(distributions.toString(),
+                PartialDistribution[].class,
+                PartialDistribution::labelLg1,
+                Optional.empty()
+        );
     }
 
     @Override
