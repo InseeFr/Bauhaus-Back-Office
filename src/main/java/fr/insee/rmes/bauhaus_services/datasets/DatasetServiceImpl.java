@@ -136,8 +136,7 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp));
         return DiacriticSorter.sort(datasets.toString(),
                 PartialDataset[].class,
-                PartialDataset::label,
-                Optional.empty()
+                PartialDataset::label
         );
     }
 

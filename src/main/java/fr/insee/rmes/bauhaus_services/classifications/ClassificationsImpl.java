@@ -32,11 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ClassificationsImpl implements ClassificationsService {
@@ -63,8 +58,7 @@ public class ClassificationsImpl implements ClassificationsService {
 
 		return DiacriticSorter.sort(families.toString(),
 				PartialClassificationFamily[].class,
-				PartialClassificationFamily::label,
-				Optional.empty()
+				PartialClassificationFamily::label
 		);
 	}
 	
@@ -85,17 +79,10 @@ public class ClassificationsImpl implements ClassificationsService {
 		logger.info("Starting to get classifications series");
 		var series = repoGestion.getResponseAsArray(ClassifSeriesQueries.seriesQuery());
 
-		UnaryOperator<Stream<PartialClassificationSeries>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialClassificationSeries::id,
-				Function.identity(),
-				PartialClassificationSeries::appendLabel
-		)).values().stream();
 
-
-		return DiacriticSorter.sort(series.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series.toString(),
 				PartialClassificationSeries[].class,
-				PartialClassificationSeries::label,
-				Optional.of(businessProcessor)
+				PartialClassificationSeries::label
 		);
 	}
 	
@@ -116,17 +103,10 @@ public class ClassificationsImpl implements ClassificationsService {
 		logger.info("Starting to get classifications");
 		var collections = repoGestion.getResponseAsArray(ClassificationsQueries.classificationsQuery());
 
-		UnaryOperator<Stream<PartialClassification>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialClassification::id,
-				Function.identity(),
-				PartialClassification::appendLabel
-		)).values().stream();
 
-
-		return DiacriticSorter.sort(collections.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(collections.toString(),
 				PartialClassification[].class,
-				PartialClassification::label,
-				Optional.of(businessProcessor)
+				PartialClassification::label
 		);
 	}
 	

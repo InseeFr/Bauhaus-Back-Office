@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StructureImpl  extends RdfService implements StructureService {
@@ -40,8 +39,7 @@ public class StructureImpl  extends RdfService implements StructureService {
 		var structures = repoGestion.getResponseAsArray(StructureQueries.getStructures());
 		return DiacriticSorter.sort(structures.toString(),
 				PartialStructure[].class,
-				PartialStructure::labelLg1,
-				Optional.empty()
+				PartialStructure::labelLg1
 		);
 
 	}

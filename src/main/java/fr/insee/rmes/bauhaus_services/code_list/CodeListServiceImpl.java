@@ -36,7 +36,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
@@ -233,9 +232,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeList> listCodeList = objectMapper.readValue(lists.toString(), new TypeReference<>() {
-        });
-		return listCodeList;
+        return objectMapper.readValue(lists.toString(), new TypeReference<>() {
+});
 	}
 
 
@@ -482,8 +480,7 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		var codeslists = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial));
 		return DiacriticSorter.sort(codeslists.toString(),
 				PartialCodesList[].class,
-				PartialCodesList::labelLg1,
-				Optional.empty()
+				PartialCodesList::labelLg1
 		);
 	}
 

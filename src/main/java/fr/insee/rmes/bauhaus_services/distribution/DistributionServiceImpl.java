@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DISTRIUBTION_PATCH_INCORRECT_BODY;
@@ -77,8 +76,7 @@ public class DistributionServiceImpl extends RdfService implements DistributionS
         var distributions =  this.repoGestion.getResponseAsArray(DistributionQueries.getDistributions(getDistributionGraph()));
         return DiacriticSorter.sort(distributions.toString(),
                 PartialDistribution[].class,
-                PartialDistribution::labelLg1,
-                Optional.empty()
+                PartialDistribution::labelLg1
         );
     }
 

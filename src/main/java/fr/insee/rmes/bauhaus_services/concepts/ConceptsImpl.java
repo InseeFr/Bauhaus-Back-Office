@@ -33,10 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class ConceptsImpl  extends RdfService implements ConceptsService {
@@ -70,17 +66,9 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery());
 
-		UnaryOperator<Stream<PartialConcept>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialConcept::id,
-				Function.identity(),
-				PartialConcept::appendLabel
-		)).values().stream();
-
-
-		return DiacriticSorter.sort(concepts.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts.toString(),
 				PartialConcept[].class,
-				PartialConcept::label,
-				Optional.of(businessProcessor)
+				PartialConcept::label
 		);
 
 	}
@@ -90,17 +78,10 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 		logger.info("Starting to get concepts list for advanced search");
 		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery());
 
-		UnaryOperator<Stream<ConceptForAdvancedSearch>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				ConceptForAdvancedSearch::id,
-				Function.identity(),
-				ConceptForAdvancedSearch::appendLabel
-		)).values().stream();
 
-
-		return DiacriticSorter.sort(concepts.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts.toString(),
 				ConceptForAdvancedSearch[].class,
-				ConceptForAdvancedSearch::label,
-				Optional.of(businessProcessor)
+				ConceptForAdvancedSearch::label
 		);
 	}
 

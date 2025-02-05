@@ -49,8 +49,7 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
 
         return DiacriticSorter.sort(collections.toString(),
                 PartialCollection[].class,
-                PartialCollection::label,
-                Optional.empty()
+                PartialCollection::label
         );
     }
 

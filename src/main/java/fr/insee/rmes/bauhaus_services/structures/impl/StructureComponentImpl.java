@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StructureComponentImpl extends RdfService implements StructureComponent {
@@ -50,8 +49,7 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
         var components = repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true));
         return DiacriticSorter.sort(components.toString(),
                 PartialStructureComponent[].class,
-                PartialStructureComponent::labelLg1,
-                Optional.empty()
+                PartialStructureComponent::labelLg1
         );
     }
 
