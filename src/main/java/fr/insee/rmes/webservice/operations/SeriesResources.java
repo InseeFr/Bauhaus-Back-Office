@@ -145,7 +145,7 @@ public class SeriesResources  {
 	/**
 	 * Get series where stamp is the creator
 	 * @param stamp
-	 * @return id / label / altLabel
+	 * @return id / label / altLabels
 	 * @throws RmesException
 	 */
 	@GetMapping(value = "/series/seriesWithStamp/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)

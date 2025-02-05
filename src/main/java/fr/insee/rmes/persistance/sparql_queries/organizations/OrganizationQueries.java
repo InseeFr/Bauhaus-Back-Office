@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class OrganizationQueries extends GenericQueries{
 
 	public static String organizationQuery(String identifier) {
-		return "SELECT  ?labelLg1 ?labelLg2 ?altLabel ?type ?motherOrganization ?linkedTo ?seeAlso \n"
+		return "SELECT  ?labelLg1 ?labelLg2 ?altLabels ?type ?motherOrganization ?linkedTo ?seeAlso \n"
 				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
 				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
@@ -22,7 +22,7 @@ public class OrganizationQueries extends GenericQueries{
 				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
 				+ "OPTIONAL {?organization skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "') }\n"
-				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
+				+ "OPTIONAL {?organization skos:altLabels ?altLabels .} \n"
 
 				//type (exclude org:Organization and org:OrganizationUnit)
 				+ "OPTIONAL {?organization rdf:type ?type . \n"
@@ -50,7 +50,7 @@ public class OrganizationQueries extends GenericQueries{
 	}
 
 	public static String organizationsTwoLangsQuery() {
-		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabel \n"
+		return "SELECT DISTINCT ?id ?labelLg1  ?labelLg2  ?altLabels \n"
 				+ "FROM <"+config.getOrganizationsGraph()+"> \n "
 				+ "FROM <"+config.getOrgInseeGraph()+"> \n "
 
@@ -63,10 +63,10 @@ public class OrganizationQueries extends GenericQueries{
 				+ "FILTER (lang(?labelLg1) = '" + config.getLg1() + "')} \n"
 				+ "OPTIONAL { ?organization skos:prefLabel ?labelLg2 . \n"
 				+ "FILTER (lang(?labelLg2) = '" + config.getLg2() + "')} \n"
-				+ "OPTIONAL {?organization skos:altLabel ?altLabel .} \n"
+				+ "OPTIONAL {?organization skos:altLabels ?altLabels .} \n"
 
 				+ "} \n" 
-				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?altLabel \n"
+				+ "GROUP BY ?id ?labelLg1 ?labelLg2 ?altLabels \n"
 				+ "ORDER BY ?labelLg1 ";
 	}
 

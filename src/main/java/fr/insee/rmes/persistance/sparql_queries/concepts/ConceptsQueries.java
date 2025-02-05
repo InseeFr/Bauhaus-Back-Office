@@ -68,7 +68,7 @@ public class ConceptsQueries extends GenericQueries {
 		params.put("LG", lang);
 		params.put("ID", id);
 		params.put(CONCEPTS_GRAPH, config.getConceptsGraph());
-		return buildConceptRequest("altLabel.ftlh", params);
+		return buildConceptRequest("altLabels.ftlh", params);
 }
 	
 

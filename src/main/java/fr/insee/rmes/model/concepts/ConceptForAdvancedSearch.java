@@ -1,5 +1,9 @@
 package fr.insee.rmes.model.concepts;
 
+import fr.insee.rmes.model.AppendableLabel;
+import io.soabase.recordbuilder.core.RecordBuilder;
+
+@RecordBuilder
 public record ConceptForAdvancedSearch(
         String id,
         String label,
@@ -11,22 +15,7 @@ public record ConceptForAdvancedSearch(
         String creator,
         String isTopConceptOf,
         String valid,
-        String altLabel) {
+        String altLabels)  implements AppendableLabel<ConceptForAdvancedSearch>, ConceptForAdvancedSearchBuilder.With {
 
-    public static ConceptForAdvancedSearch appendLabel(ConceptForAdvancedSearch p1, ConceptForAdvancedSearch p2){
-        return new ConceptForAdvancedSearch(
-                p1.id(),
-                p1.label(),
-                p1.created(),
-                p1.modified(),
-                p1.disseminationStatus(),
-                p1.validationStatus(),
-                p1.definition(),
-                p1.creator(),
-                p1.isTopConceptOf(),
-                p1.valid(),
-                p1.altLabel() + " || " + p2.altLabel()
-        );
-    }
 }
 
