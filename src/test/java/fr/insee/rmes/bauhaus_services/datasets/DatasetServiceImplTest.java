@@ -32,11 +32,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(properties = {
@@ -702,6 +700,40 @@ class DatasetServiceImplTest {
             verify(repositoryGestion, times(3)).deleteObject(datasetUri);
             verify(repositoryGestion, times(1)).deleteTripletByPredicate(any(IRI.class), eq(DCAT.DATASET), any(IRI.class));
         }
+    }
+
+    @Test
+    void shouldValidateURL(){
+        List<String> URL = Arrays.asList("https://github.com","http://github.com","https://github.com//fr" );
+        List<Boolean> URLTypeActual = new ArrayList<>();
+        URL.forEach(element -> URLTypeActual.add(new DatasetServiceImpl().URLValidator(element)));
+        List<Boolean> URLTypeExpected = Arrays.asList(true,true,true);
+        assertEquals(URLTypeExpected,URLTypeActual);
+        }
+
+    @Test
+    void shouldnotValidateURL(){
+        List<String> URL = Arrays.asList("https:/github.com","test://github.com","https://");
+        List<Boolean> URLTypeActual = new ArrayList<>();
+        URL.forEach(element -> URLTypeActual.add(new DatasetServiceImpl().URLValidator(element)));
+        List<Boolean> URLTypeExpected = Arrays.asList(false,false,false);
+        assertEquals(URLTypeExpected,URLTypeActual);
+    }
+
+    @Test
+    void shouldValidateURN(){
+        String URN = "urn:test:test";
+        boolean URNTypeActual = new DatasetServiceImpl().URNValidator(URN);
+        assertEquals(true,URNTypeActual);
+    }
+
+    @Test
+    void shouldnotValidateURN(){
+        List<String> URN = Arrays.asList("test:test:test","urn:test","urn:test:","urn : : ","urn::");
+        List<Boolean> URNTypeActual = new ArrayList<>();
+        URN.forEach(element -> URNTypeActual.add(new DatasetServiceImpl().URNValidator(element)));
+        List<Boolean> URNTypeExpected = Arrays.asList(false,false,false,false,false);
+        assertEquals(URNTypeExpected,URNTypeActual);
     }
 
 }

@@ -538,10 +538,34 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
         return dataset.getId();
     }
 
+    boolean URNValidator(String URN)  {
+
+        boolean conforme = false;
+        List<String> detailsURN = Arrays.asList(URN.split(":"));
+        if ((detailsURN.size()>=3 && ("urn").equals(detailsURN.getFirst()))) conforme = true;
+        return (conforme);
+    }
+
+    boolean URLValidator(String URL)  {
+
+        boolean conforme = false;
+        List<String> detailsURL = Arrays.asList(URL.split("//"));
+        List<String> referentiel = List.of("http:","https:");
+        if (referentiel.contains(detailsURL.getFirst()) && detailsURL.size()>=2) conforme = true;
+        return (conforme);
+    }
+
+
     private void validate(Dataset dataset) throws RmesException {
+
         if (dataset.getLabelLg1() == null) {
             throw new RmesBadRequestException("The property labelLg1 is required");
         }
+
+        if (!URNValidator(dataset.getDataStructure()) && !URLValidator(dataset.getDataStructure()) ){
+            throw new RmesBadRequestException("URN/URL invalide","Syntaxe non conforme aux standards.");
+        }
+
         if (dataset.getLabelLg2() == null) {
             throw new RmesBadRequestException("The property labelLg2 is required");
         }
