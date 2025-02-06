@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Pattern;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
@@ -120,9 +122,13 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId") String structureId) throws RmesException {
+    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId")  String structureId) throws RmesException {
         structureService.deleteStructure(structureId);
-        return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
+        String safeSId = StringEscapeUtils.escapeHtml4(structureId); // Échappe les caractères spéciaux
+        return ResponseEntity.status(HttpStatus.SC_OK)
+                .header("Content-Type", "text/plain; charset=UTF-8")
+                .header("X-Content-Type-Options", "nosniff")
+                .body(safeSId);
     }
 
     @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
