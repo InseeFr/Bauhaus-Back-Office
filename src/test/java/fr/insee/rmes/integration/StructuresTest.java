@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
-import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.impl.StructureComponentImpl;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.config.Config;
@@ -36,6 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+
 @WebMvcTest(controllers = StructureResources.class,
         properties = {"fr.insee.rmes.bauhaus.env=PROD",
                 "jwt.stamp-claim=" + STAMP_CLAIM,
@@ -63,11 +63,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class,
-        StructureComponentImpl.class})
-class StructuresComponentTest {
+        StructureComponentImpl.class,
+        StructureImpl.class})
+class StructuresTest {
 
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
+    @MockitoBean
+    RepositoryGestion repositoryGestion;
+    @MockitoBean
+    StructureComponentUtils structureComponentUtils;
     @MockitoBean
     protected IdGenerator idGenerator;
     @MockitoBean
@@ -77,17 +82,15 @@ class StructuresComponentTest {
     @MockitoBean
     protected OperationsDocumentationsService documentationsService;
     @MockitoBean
-    RepositoryGestion repositoryGestion;
-    @MockitoBean
-    StructureComponentUtils structureComponentUtils;
-    @MockitoBean
     StampAuthorizationChecker stampAuthorizationChecker;
+    @MockitoBean
+    StructureUtils structureUtils;
+    @MockitoBean
+    CodeListService codeListService;
     @Autowired
     private MockMvc mvc;
     @MockitoBean
     private JwtDecoder jwtDecoder;
-    @MockitoBean
-    private StructureService structureService;
 
     @Test
     void getComponentAsNoRole_ok() throws Exception {
@@ -107,6 +110,29 @@ class StructuresComponentTest {
 
 
         mvc.perform(get("/structures/components/").header("Authorization", "Bearer toto")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(expectedJson));
+    }
+
+    @Test
+    void getAllStructuresAsNoRole_ok() throws Exception {
+        configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of());
+        String jsonSource = """
+                [
+                {"iri":"monIri", "id":"1"},
+                {"iri":"monIri4", "id":"4", "labelLg1": "B"},
+                {"iri":"monIri2", "id":"2"},
+                {"iri":"monIri3", "id":"3", "labelLg1": "A"},
+                ]
+                """;
+        String expectedJson = """
+                [{"iri":"monIri","id":"1","labelLg1":null,"creator":null,"validationState":null},{"iri":"monIri2","id":"2","labelLg1":null,"creator":null,"validationState":null},{"iri":"monIri3","id":"3","labelLg1":"A","creator":null,"validationState":null},{"iri":"monIri4","id":"4","labelLg1":"B","creator":null,"validationState":null}]""";
+        JSONArray resultArray = new JSONArray(jsonSource);
+        when(repositoryGestion.getResponseAsArray(anyString())).thenReturn(resultArray);
+        mvc.perform(get("/structures")
+                        .header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
