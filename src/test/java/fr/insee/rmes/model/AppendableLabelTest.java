@@ -48,11 +48,30 @@ class AppendableLabelTest {
                 .hasMessageContaining(expectedMessage);
     }
 
+    @Test
+    void appendLabelWithBadRecord_shouldRaiseExceptionForBadTypeBecauseNull() {
+        String id = "1";
+        String label = "label";
+        String expectedMessage = "Method 'withAltLabels' from class " + AgainAnOtherBadRecord.class + " should return a type of " + AgainAnOtherBadRecord.class + " instead of null";
+
+        AgainAnOtherBadRecord badRecord = new AgainAnOtherBadRecord(id, label);
+        AgainAnOtherBadRecord other = new AgainAnOtherBadRecord(id, label);
+        assertThatThrownBy(()-> badRecord.appendLabel(other))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(expectedMessage);
+    }
+
     record BadRecord(String id, String altLabels) implements AppendableLabel<BadRecord> {}
 
     public record OtherBadRecord(String id, String altLabels) implements AppendableLabel<OtherBadRecord> {
         public Object withAltLabels(String altLabels) {
             return new Object();
+        }
+    }
+
+    public record AgainAnOtherBadRecord(String id, String altLabels) implements AppendableLabel<AgainAnOtherBadRecord> {
+        public AgainAnOtherBadRecord withAltLabels(String altLabels) {
+            return null;
         }
     }
 
