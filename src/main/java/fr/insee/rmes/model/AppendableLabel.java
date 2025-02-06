@@ -22,7 +22,7 @@ public interface AppendableLabel<R extends AppendableLabel<R>> {
         }
         var instanceWithNewAltLabel = ReflectionUtils.invokeMethod(withAltLabels, instance, newAltLabel);
         if (!classR.isInstance(instanceWithNewAltLabel)) {
-            throw new IllegalStateException("Method 'withAltLabels' sor class : " + classR + " should return a type of " + classR + " instead of " + getClassSafe(instanceWithNewAltLabel) + ". Check that it implements XBuilder.With from @RecordBuilder");
+            throw new IllegalStateException("Method 'withAltLabels' from class " + classR + " should return a type of " + classR + " instead of " + getClassSafe(instanceWithNewAltLabel) + ". Check that it implements XBuilder.With from @RecordBuilder");
         }
         return (R) instanceWithNewAltLabel;
     }
