@@ -7,6 +7,7 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.model.operations.PartialOperationIndicator;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @Qualifier("Indicator")
@@ -40,9 +43,8 @@ public class IndicatorsResources {
 	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public ResponseEntity<Object> getIndicators() throws RmesException {
-		String indicators = operationsService.getIndicators();
-		return ResponseEntity.status(HttpStatus.OK).body(indicators);
+	public List<PartialOperationIndicator> getIndicators() throws RmesException {
+		return operationsService.getIndicators();
 	}
 
 	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)

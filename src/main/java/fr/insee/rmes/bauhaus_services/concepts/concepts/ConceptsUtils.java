@@ -87,10 +87,10 @@ public class ConceptsUtils extends RdfService {
 		JSONArray altLabelLg1 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg1()));
 		JSONArray altLabelLg2 = repoGestion.getResponseAsArray(ConceptsQueries.altLabel(id, config.getLg2()));
 		if(!altLabelLg1.isEmpty()) {
-			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabel"));
+			concept.put(Constants.ALT_LABEL_LG1, JSONUtils.extractFieldToArray(altLabelLg1, "altLabels"));
 		}
 		if(!altLabelLg2.isEmpty()) {
-			concept.put(Constants.ALT_LABEL_LG2, JSONUtils.extractFieldToArray(altLabelLg2, "altLabel"));
+			concept.put(Constants.ALT_LABEL_LG2, JSONUtils.extractFieldToArray(altLabelLg2, "altLabels"));
 		}
 		return concept;
 	}

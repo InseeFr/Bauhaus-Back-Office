@@ -15,10 +15,12 @@ import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.sparql_queries.code_list.CodeListQueries;
 import fr.insee.rmes.utils.DateUtils;
 import fr.insee.rmes.utils.Deserializer;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -34,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class CodeListServiceImpl extends RdfService implements CodeListService  {
 
@@ -229,9 +232,8 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 		}
 
 		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeList> listCodeList = objectMapper.readValue(lists.toString(), new TypeReference<>() {
-        });
-		return listCodeList;
+        return objectMapper.readValue(lists.toString(), new TypeReference<>() {
+});
 	}
 
 
@@ -474,12 +476,12 @@ public class CodeListServiceImpl extends RdfService implements CodeListService  
 	}
 
 	@Override
-	public List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
-		String listCodeListJson = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial)).toString();
-		ObjectMapper objectMapper = new ObjectMapper();
-		List<CodeList> listCodeListResponse = objectMapper.readValue(listCodeListJson, new TypeReference<>() {
-        });
-		return listCodeListResponse;
+	public List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException {
+		var codeslists = repoGestion.getResponseAsArray(CodeListQueries.getAllCodesLists(partial));
+		return DiacriticSorter.sort(codeslists.toString(),
+				PartialCodesList[].class,
+				PartialCodesList::labelLg1
+		);
 	}
 
 	@Override
