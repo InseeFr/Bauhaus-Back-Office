@@ -26,11 +26,6 @@ import org.springframework.stereotype.Service;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class OperationsImpl  extends RdfService implements OperationsService {
@@ -60,18 +55,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public List<PartialOperationSeries> getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
 		var series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery());
-		UnaryOperator<Stream<PartialOperationSeries>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialOperationSeries::id,
-				Function.identity(),
-				PartialOperationSeries::appendLabel
-		)).values().stream();
 
-
-		return DiacriticSorter.sort(series.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series,
 				PartialOperationSeries[].class,
-				PartialOperationSeries::label,
-				Optional.of(businessProcessor)
-		);
+				PartialOperationSeries::label);
 	}
 
 	@Override
@@ -162,18 +149,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		logger.info("Starting to get operations list");
 		var operations = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery());
 
-		UnaryOperator<Stream<PartialOperation>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialOperation::id,
-				Function.identity(),
-				PartialOperation::appendLabel
-		)).values().stream();
-
-
-		return DiacriticSorter.sort(operations.toString(),
+		return DiacriticSorter.sort(operations,
 				PartialOperation[].class,
-				PartialOperation::label,
-				Optional.of(businessProcessor)
-		);
+				PartialOperation::label);
 
 	}
 
@@ -213,11 +191,9 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		logger.info("Starting to get families list");
 		var families = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
 
-		return DiacriticSorter.sort(families.toString(),
+		return DiacriticSorter.sort(families,
 				PartialOperationFamily[].class,
-				PartialOperationFamily::label,
-				Optional.empty()
-		);
+				PartialOperationFamily::label);
 	}
 
 	@Override
@@ -265,18 +241,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	public List<PartialOperationIndicator> getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
 		var indicators = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery());
-		UnaryOperator<Stream<PartialOperationIndicator>> businessProcessor = stream -> stream.collect(Collectors.toMap(
-				PartialOperationIndicator::id,
-				Function.identity(),
-				PartialOperationIndicator::appendLabel
-		)).values().stream();
 
-
-		return DiacriticSorter.sort(indicators.toString(),
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(indicators,
 				PartialOperationIndicator[].class,
-				PartialOperationIndicator::label,
-				Optional.of(businessProcessor)
-		);
+				PartialOperationIndicator::label);
 	}
 
 	@Override

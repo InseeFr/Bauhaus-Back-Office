@@ -47,11 +47,9 @@ public class ConceptsCollectionServiceImpl extends RdfService implements Concept
     public List<PartialCollection> getCollections()  throws RmesException{
         var collections =  repoGestion.getResponseAsArray(CollectionsQueries.collectionsQuery());
 
-        return DiacriticSorter.sort(collections.toString(),
+        return DiacriticSorter.sort(collections,
                 PartialCollection[].class,
-                PartialCollection::label,
-                Optional.empty()
-        );
+                PartialCollection::label);
     }
 
     @Override

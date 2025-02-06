@@ -134,11 +134,9 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
     private List<PartialDataset> getDatasets(String stamp) throws RmesException {
         var datasets = this.repoGestion.getResponseAsArray(DatasetQueries.getDatasets(getDatasetsGraph(), stamp));
-        return DiacriticSorter.sort(datasets.toString(),
+        return DiacriticSorter.sort(datasets,
                 PartialDataset[].class,
-                PartialDataset::label,
-                Optional.empty()
-        );
+                PartialDataset::label);
     }
 
     @Override
