@@ -7,6 +7,7 @@ import fr.insee.rmes.config.swagger.model.IdLabelAltLabel;
 import fr.insee.rmes.config.swagger.model.IdLabelAltLabelSims;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.PartialOperationSeries;
 import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.utils.XMLUtils;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @Qualifier("Series")
@@ -43,9 +46,8 @@ public class SeriesResources  {
 
 	@GetMapping(value = "/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getSeries", summary = "List of series", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
-	public ResponseEntity<Object> getSeries() throws RmesException {
-		String series = operationsService.getSeries();
-		return ResponseEntity.status(HttpStatus.OK).body(series);
+	public List<PartialOperationSeries> getSeries() throws RmesException {
+		return operationsService.getSeries();
 	}
 
 	@GetMapping(value = "/series/withSims", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -143,7 +145,7 @@ public class SeriesResources  {
 	/**
 	 * Get series where stamp is the creator
 	 * @param stamp
-	 * @return id / label / altLabel
+	 * @return id / label / altLabels
 	 * @throws RmesException
 	 */
 	@GetMapping(value = "/series/seriesWithStamp/{stamp}", produces = MediaType.APPLICATION_JSON_VALUE)

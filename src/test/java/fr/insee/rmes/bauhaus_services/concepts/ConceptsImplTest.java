@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
 
+
     @Mock
     ConceptsUtils conceptsUtils;
 
@@ -58,6 +59,72 @@ class ConceptsImplTest {
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
+    }
+
+    @Test
+    void shouldGetConceptsList() throws RmesException {
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
+
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "latLabel1"));
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "latLabel2"));
+        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "elatLabel1"));
+        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "alatLabel1"));
+        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "élatLabel1"));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
+        var concepts = conceptsImpl.getConcepts().stream().toList();
+
+        assertEquals(4, concepts.size());
+
+        assertEquals("3", concepts.get(0).id());
+        assertEquals("alabel 1", concepts.get(0).label());
+        assertEquals("alatLabel1", concepts.get(0).altLabels());
+
+        assertEquals("2", concepts.get(1).id());
+        assertEquals("elabel 1", concepts.get(1).label());
+        assertEquals("elatLabel1", concepts.get(1).altLabels());
+
+        assertEquals("4", concepts.get(2).id());
+        assertEquals("élabel 1", concepts.get(2).label());
+        assertEquals("élatLabel1", concepts.get(2).altLabels());
+
+        assertEquals("1", concepts.get(3).id());
+        assertEquals("label 1", concepts.get(3).label());
+        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabels());
+    }
+
+    @Test
+    void shouldGetConceptsListForAdvancedSearch() throws RmesException {
+        ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, null, collectionExport, 10);
+        Stubber.forRdfService(conceptsImpl).injectRepoGestion(repoGestion);
+
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "latLabel1"));
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabels", "latLabel2"));
+        array.put(new JSONObject().put("id", "2").put("label", "elabel 1").put("altLabels", "elatLabel1"));
+        array.put(new JSONObject().put("id", "3").put("label", "alabel 1").put("altLabels", "alatLabel1"));
+        array.put(new JSONObject().put("id", "4").put("label", "élabel 1").put("altLabels", "élatLabel1"));
+        when(repoGestion.getResponseAsArray(anyString())).thenReturn(array);
+        var concepts = conceptsImpl.getConceptsSearch().stream().toList();
+
+        assertEquals(4, concepts.size());
+
+        assertEquals("3", concepts.get(0).id());
+        assertEquals("alabel 1", concepts.get(0).label());
+        assertEquals("alatLabel1", concepts.get(0).altLabels());
+
+        assertEquals("2", concepts.get(1).id());
+        assertEquals("elabel 1", concepts.get(1).label());
+        assertEquals("elatLabel1", concepts.get(1).altLabels());
+
+        assertEquals("4", concepts.get(2).id());
+        assertEquals("élabel 1", concepts.get(2).label());
+        assertEquals("élatLabel1", concepts.get(2).altLabels());
+
+        assertEquals("1", concepts.get(3).id());
+        assertEquals("label 1", concepts.get(3).label());
+        assertEquals("latLabel1 || latLabel2", concepts.get(3).altLabels());
     }
 
     @Test
@@ -95,8 +162,7 @@ class ConceptsImplTest {
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
         ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, 10);
-        // concept = conceptsExport.getConceptData(id);
-        //    conceptsUtils.getConceptById(id) => ConceptsQueries.conceptQuery, ConceptsQueries.altLabel
+
         JSONObject jsonConcept = new JSONObject("""
                 {
                     "valid": "2023-10-18T00:00:00",
@@ -113,9 +179,7 @@ class ConceptsImplTest {
                 }
                 """);
         when(conceptsUtils.getConceptById(idConcept)).thenReturn(jsonConcept);
-        //     JSONArray links = repoGestion.getResponseAsArray(ConceptsQueries.conceptLinks(id))
         when(repoGestion.getResponseAsArray(anyString())).thenReturn(new JSONArray());
-        //     JSONObject notes = repoGestion.getResponseAsObject(ConceptsQueries.conceptNotesQuery(id, Integer.parseInt(general.getString(CONCEPT_VERSION))));
         when(repoGestion.getResponseAsObject(anyString())).thenReturn(new JSONObject(
         """
                 {
@@ -128,9 +192,7 @@ class ConceptsImplTest {
                     "scopeNoteLg1": "<div xmlns=\\"http://www.w3.org/1999/xhtml\\"><p>Est défini comme accident corporel de la circulation tout accident impliquant au moins un véhicule, survenant sur une voie ouverte à la circulation publique, et dans lequel au moins une personne est blessée ou tuée.<\\/p><\\/div>"
                 }
                 """));
-        // conceptsExport.exportAsResponse
-        //      exportUtils.exportAsResponse
-        //when(exportUtils.exportAsResponse(anyString(), anyMap(), anyString(), anyString(), anyString(), anyString())).the
+
        String expectedXmlForOdtContent = Files.readAllLines(Path.of(ConceptsImplTest.class.getResource("/expectedTestsResult/accidentsCorporelsDeLaCirculation-c1116_content.xml").toURI())).stream()
                .reduce((a,b)->a+"\n"+b).get();
 
@@ -158,12 +220,14 @@ class ConceptsImplTest {
         }
     }
 
-    private static void setoffStreamToEntryContentXML(ZipInputStream zipInputStream) throws IOException {
+    private static ZipEntry setoffStreamToEntryContentXML(ZipInputStream zipInputStream) throws IOException {
         ZipEntry zipEntry;
-        while((zipEntry= zipInputStream.getNextEntry()) != null &&
-                ! "content.xml".equals(zipEntry.getName())) {
-            //loop until entry content.xml found
+        while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+            if ("content.xml".equals(zipEntry.getName())) {
+                return zipEntry;
+            }
         }
+        return null;
     }
 
 }

@@ -13,12 +13,10 @@ import fr.insee.rmes.exceptions.ErrorCodes;
 import fr.insee.rmes.exceptions.RmesBadRequestException;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesUnauthorizedException;
-import fr.insee.rmes.model.concepts.CollectionForExport;
-import fr.insee.rmes.model.concepts.CollectionForExportOld;
-import fr.insee.rmes.model.concepts.ConceptForExport;
-import fr.insee.rmes.model.concepts.MembersLg;
+import fr.insee.rmes.model.concepts.*;
 import fr.insee.rmes.persistance.sparql_queries.concepts.CollectionsQueries;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.utils.XMLUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
@@ -63,16 +61,28 @@ public class ConceptsImpl  extends RdfService implements ConceptsService {
 
 
     @Override
-	public String getConcepts()  throws RmesException{
+	public List<PartialConcept> getConcepts()  throws RmesException {
 		logger.info("Starting to get concepts list");
-		String resQuery = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery()).toString();
-		return QueryUtils.correctEmptyGroupConcat(resQuery);
+
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsQuery());
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts.toString(),
+				PartialConcept[].class,
+				PartialConcept::label
+		);
+
 	}
 
 	@Override
-	public String getConceptsSearch()  throws RmesException{
+	public List<ConceptForAdvancedSearch> getConceptsSearch()  throws RmesException{
 		logger.info("Starting to get concepts list for advanced search");
-		return repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery()).toString();
+		var concepts = repoGestion.getResponseAsArray(ConceptsQueries.conceptsSearchQuery());
+
+
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(concepts.toString(),
+				ConceptForAdvancedSearch[].class,
+				ConceptForAdvancedSearch::label
+		);
 	}
 
 	@Override
