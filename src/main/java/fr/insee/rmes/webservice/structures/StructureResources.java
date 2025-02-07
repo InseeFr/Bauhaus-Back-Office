@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
@@ -119,11 +118,11 @@ public class StructureResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
-    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
+    @PreAuthorize("isAdmin() || isStructureContributor(#structureId.identifier())")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
     public ResponseEntity<Id> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
-        structureService.deleteStructure(structureId.getIdentifier());
+        structureService.deleteStructure(structureId.identifier());
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
     }
 
