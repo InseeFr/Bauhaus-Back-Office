@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -124,7 +125,11 @@ public class ClassificationsResources {
 			@PathVariable(Constants.ID) String id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
 		classificationsService.updateClassification(id, body);
-		return ResponseEntity.status(HttpStatus.OK).body(id);
+		String safeSId = StringEscapeUtils.escapeHtml4(id); // Échappe les caractères spéciaux
+		return ResponseEntity.status(HttpStatus.OK)
+				.header("Content-Type", "text/plain; charset=UTF-8")
+				.header("X-Content-Type-Options", "nosniff")
+				.body(safeSId);
 	}
 
 	@PreAuthorize("isAdmin()")
@@ -133,7 +138,8 @@ public class ClassificationsResources {
 	public ResponseEntity<Object> publishClassification(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 		classificationsService.setClassificationValidation(id);
-		return ResponseEntity.status(HttpStatus.OK).body(id);
+		String safeSId = StringEscapeUtils.escapeHtml4(id);
+		return ResponseEntity.status(HttpStatus.OK).body(safeSId);
 	}
 	
 	@GetMapping(value="/classification/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)
