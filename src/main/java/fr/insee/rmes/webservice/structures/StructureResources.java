@@ -122,9 +122,9 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<String> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
+    public ResponseEntity<Id> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
         structureService.deleteStructure(structureId.getIdentifier());
-        return ResponseEntity.status(HttpStatus.SC_OK).body(structureId.getIdentifier());
+        return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
     }
 
     @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
