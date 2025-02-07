@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice.classifications;
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
@@ -122,24 +123,19 @@ public class ClassificationsResources {
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
 	public ResponseEntity<Object> updateClassification(
-			@PathVariable(Constants.ID) String id,
+			@PathVariable(Constants.ID) Id id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
-		classificationsService.updateClassification(id, body);
-		String safeSId = StringEscapeUtils.escapeHtml4(id); // Échappe les caractères spéciaux
-		return ResponseEntity.status(HttpStatus.OK)
-				.header("Content-Type", "text/plain; charset=UTF-8")
-				.header("X-Content-Type-Options", "nosniff")
-				.body(safeSId);
+		classificationsService.updateClassification(id.getIdentifier(), body);
+		return ResponseEntity.status(HttpStatus.OK).body(id.getIdentifier());
 	}
 
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
-	public ResponseEntity<Object> publishClassification(
-			@PathVariable(Constants.ID) String id) throws RmesException {
-		classificationsService.setClassificationValidation(id);
-		String safeSId = StringEscapeUtils.escapeHtml4(id);
-		return ResponseEntity.status(HttpStatus.OK).body(safeSId);
+	public ResponseEntity<String> publishClassification(
+			@PathVariable(Constants.ID) Id id) throws RmesException {
+		classificationsService.setClassificationValidation(id.getIdentifier());
+		return ResponseEntity.status(HttpStatus.OK).body(id.getIdentifier());
 	}
 	
 	@GetMapping(value="/classification/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)

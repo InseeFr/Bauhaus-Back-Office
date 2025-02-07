@@ -1,4 +1,4 @@
-package fr.insee.rmes.config.swagger.model.code_list;
+package fr.insee.rmes.config.swagger.model;
 
 public class Id {
     private String identifier;

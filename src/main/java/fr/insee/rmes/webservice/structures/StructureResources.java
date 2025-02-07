@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice.structures;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.Structure;
@@ -121,13 +122,9 @@ public class StructureResources {
     @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId")  String structureId) throws RmesException {
-        structureService.deleteStructure(structureId);
-        String safeSId = StringEscapeUtils.escapeHtml4(structureId); // Échappe les caractères spéciaux
-        return ResponseEntity.status(HttpStatus.SC_OK)
-                .header("Content-Type", "text/plain; charset=UTF-8")
-                .header("X-Content-Type-Options", "nosniff")
-                .body(safeSId);
+    public ResponseEntity<String> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
+        structureService.deleteStructure(structureId.getIdentifier());
+        return ResponseEntity.status(HttpStatus.SC_OK).body(structureId.getIdentifier());
     }
 
     @GetMapping(value = "/components/search", produces = MediaType.APPLICATION_JSON_VALUE)
