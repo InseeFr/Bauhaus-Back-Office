@@ -1,13 +1,3 @@
 package fr.insee.rmes.config.swagger.model;
 
-public class Id {
-    private String identifier;
-
-    public Id(String identifier) {
-        this.identifier = identifier;
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-}
+public record Id(String identifier) {}

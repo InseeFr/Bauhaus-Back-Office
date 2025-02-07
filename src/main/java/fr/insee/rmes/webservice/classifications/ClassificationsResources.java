@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -125,7 +124,7 @@ public class ClassificationsResources {
 	public ResponseEntity<Id> updateClassification(
 			@PathVariable(Constants.ID) Id id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
-		classificationsService.updateClassification(id.getIdentifier(), body);
+		classificationsService.updateClassification(id.identifier(), body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
@@ -134,7 +133,7 @@ public class ClassificationsResources {
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
 	public ResponseEntity<Id> publishClassification(
 			@PathVariable(Constants.ID) Id id) throws RmesException {
-		classificationsService.setClassificationValidation(id.getIdentifier());
+		classificationsService.setClassificationValidation(id.identifier());
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
