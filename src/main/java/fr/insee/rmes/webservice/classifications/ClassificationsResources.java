@@ -122,20 +122,20 @@ public class ClassificationsResources {
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
-	public ResponseEntity<Object> updateClassification(
+	public ResponseEntity<Id> updateClassification(
 			@PathVariable(Constants.ID) Id id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
 		classificationsService.updateClassification(id.getIdentifier(), body);
-		return ResponseEntity.status(HttpStatus.OK).body(id.getIdentifier());
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
-	public ResponseEntity<String> publishClassification(
+	public ResponseEntity<Id> publishClassification(
 			@PathVariable(Constants.ID) Id id) throws RmesException {
 		classificationsService.setClassificationValidation(id.getIdentifier());
-		return ResponseEntity.status(HttpStatus.OK).body(id.getIdentifier());
+		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	
 	@GetMapping(value="/classification/{id}/items", produces = MediaType.APPLICATION_JSON_VALUE)
