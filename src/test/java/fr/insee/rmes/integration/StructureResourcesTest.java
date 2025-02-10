@@ -1,9 +1,7 @@
 package fr.insee.rmes.integration;
 
 
-import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
-import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
@@ -30,12 +28,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
-import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = ClassificationsResources.class,
