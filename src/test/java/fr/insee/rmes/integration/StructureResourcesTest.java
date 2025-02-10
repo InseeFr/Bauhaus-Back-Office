@@ -63,7 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
 
-public class StructureResourcesTest {
+class StructureResourcesTest {
     @Autowired
     private MockMvc mvc;
     @MockitoBean
