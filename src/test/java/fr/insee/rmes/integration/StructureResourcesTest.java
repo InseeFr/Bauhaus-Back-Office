@@ -1,8 +1,10 @@
 package fr.insee.rmes.integration;
 
+
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
+import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.roles.Roles;
@@ -28,9 +30,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.*;
+import static fr.insee.rmes.integration.authorizations.TokenForTestsConfiguration.KEY_FOR_ROLES_IN_ROLE_CLAIM;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "logging.level.org.springframework.security=DEBUG",
                 "logging.level.org.springframework.security.web.access=TRACE",
                 "logging.level.fr.insee.rmes.config.auth=TRACE",
-                "fr.insee.rmes.bauhaus.activeModules=classifications",
+                "fr.insee.rmes.bauhaus.activeModules=structures",
                 "fr.insee.rmes.bauhaus.baseGraph=http://",
                 "fr.insee.rmes.bauhaus.sesame.gestion.baseURI=http://",
                 "fr.insee.rmes.bauhaus.datasets.graph=datasetGraph/",
@@ -62,8 +66,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         CommonSecurityConfiguration.class,
         UserProviderFromSecurityContext.class,
         BauhausMethodSecurityExpressionHandler.class})
-class ClassificationsResourcesTest {
 
+public class StructureResourcesTest {
     @Autowired
     private MockMvc mvc;
     @MockitoBean
@@ -72,9 +76,8 @@ class ClassificationsResourcesTest {
     StampAuthorizationChecker stampAuthorizationChecker;
 
     @MockitoSpyBean
-    ClassificationsService classificationsService;
-    @MockitoBean
-    ClassificationItemService classificationItemService;
+    StructureService structureService;
+
     private final String idep = "xxxxxx";
     private final String timbre = "XX59-YYY";
 
@@ -82,18 +85,20 @@ class ClassificationsResourcesTest {
     void xssInjection_shouldBeEscaped() throws Exception {
         configureJwtDecoderMock(jwtDecoder, idep, timbre, List.of(Roles.ADMIN));
         String maliciousId = "&lt;script&gt;alert(1);&lt;/script&gt;";
-        mvc.perform(put("/classifications/classification/" + maliciousId + "/validate").header("Authorization", "Bearer toto")
+        mvc.perform(delete("/structures/structure/" + maliciousId).header("Authorization", "Bearer toto")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.content().bytes(new byte[0]));
-        verify(classificationsService, times(0)).setClassificationValidation(anyString());
+        verify(structureService, times(0)).deleteStructure(anyString());
     }
+
+
 
     @TestConfiguration
     static class ConfigurationForTest {
         @Bean
-        ClassificationsService classificationsService() {
-            return Mockito.mock(ClassificationsService.class);
+        StructureService structureService() {
+            return Mockito.mock(StructureService.class);
         }
     }
 
