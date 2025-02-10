@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice.classifications;
 import fr.insee.rmes.bauhaus_services.ClassificationsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.classifications.item.ClassificationItemService;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
@@ -118,19 +119,19 @@ public class ClassificationsResources {
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "updateClassification", summary = "Update an existing classification" )
-	public ResponseEntity<Object> updateClassification(
-			@PathVariable(Constants.ID) String id,
+	public ResponseEntity<Id> updateClassification(
+			@PathVariable(Constants.ID) Id id,
 			@Parameter(description = "Classification to update", required = true, content = @Content(schema = @Schema(implementation = Classification.class))) @org.springframework.web.bind.annotation.RequestBody String body) throws RmesException {
-		classificationsService.updateClassification(id, body);
+		classificationsService.updateClassification(id.identifier(), body);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@PreAuthorize("isAdmin()")
 	@PutMapping(value="/classification/{id}/validate")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "publishClassification", summary = "Publish a classification")
-	public ResponseEntity<Object> publishClassification(
-			@PathVariable(Constants.ID) String id) throws RmesException {
-		classificationsService.setClassificationValidation(id);
+	public ResponseEntity<Id> publishClassification(
+			@PathVariable(Constants.ID) Id id) throws RmesException {
+		classificationsService.setClassificationValidation(id.identifier());
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 	

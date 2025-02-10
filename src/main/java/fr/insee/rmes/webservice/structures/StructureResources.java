@@ -3,6 +3,7 @@ package fr.insee.rmes.webservice.structures;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
+import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.structures.PartialStructure;
@@ -120,11 +121,11 @@ public class StructureResources {
         return ResponseEntity.status(HttpStatus.SC_OK).body(id);
     }
 
-    @PreAuthorize("isAdmin() || isStructureContributor(#structureId)")
+    @PreAuthorize("isAdmin() || isStructureContributor(#structureId.identifier())")
     @DeleteMapping("/structure/{structureId}")
     @Operation(operationId = "deleteStructure", summary = "Delete a structure")
-    public ResponseEntity<Object> deleteStructure(@PathVariable("structureId") @P("structureId") String structureId) throws RmesException {
-        structureService.deleteStructure(structureId);
+    public ResponseEntity<Id> deleteStructure(@PathVariable("structureId") @P("structureId") Id structureId) throws RmesException {
+        structureService.deleteStructure(structureId.identifier());
         return ResponseEntity.status(HttpStatus.SC_OK).body(structureId);
     }
 
