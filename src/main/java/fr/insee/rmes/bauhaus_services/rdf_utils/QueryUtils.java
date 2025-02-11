@@ -41,7 +41,7 @@ public class QueryUtils {
 	 * @return
 	 */
 	public static String correctEmptyGroupConcat(String res) {
-		if(res.equals("[{\"altLabels\":\"\"}]")) {
+		if(res.equals("[{\"altLabel\":\"\"}]")) {
 			return "[]";
 		}
 		return res;

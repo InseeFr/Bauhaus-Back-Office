@@ -88,7 +88,6 @@
         <saxon.version>12.5</saxon.version>
         <minio.version>8.5.14</minio.version>
         <testcontainers-minio.version>1.20.4</testcontainers-minio.version>
-        <record.builder.version>44</record.builder.version>
 
         <!-- SONAR -->
         <sonar.organization>inseefr</sonar.organization>
@@ -268,31 +267,11 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>io.soabase.record-builder</groupId>
-            <artifactId>record-builder-core</artifactId>
-            <version>${record.builder.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>io.soabase.record-builder</groupId>
-                            <artifactId>record-builder-processor</artifactId>
-                            <version>${record.builder.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

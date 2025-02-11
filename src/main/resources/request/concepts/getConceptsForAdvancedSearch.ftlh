@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus ?validationStatus ?definition ?creator ?isTopConceptOf ?valid ?altLabel
+SELECT DISTINCT ?id ?label ?created ?modified ?disseminationStatus ?validationStatus ?definition ?creator ?isTopConceptOf ?valid (group_concat(?altLabelLg1;separator=' || ') as ?altLabel)
 WHERE
 {
     GRAPH <${CONCEPTS_GRAPH}> {
@@ -8,8 +8,8 @@ WHERE
         FILTER (lang(?label) = '${LG1}') .
 
         OPTIONAL {
-            ?concept skos:altLabel ?altLabelLg .
-            FILTER (lang(?altLabelLg) = '${LG1}')
+            ?concept skos:altLabel ?altLabelLg1 .
+            FILTER (lang(?altLabelLg1) = '${LG1}')
         }
         ?concept dcterms:created ?created .
         BIND (exists{?concept skos:broader ?broa} AS ?broader) .
@@ -37,4 +37,5 @@ WHERE
         }
     }
 }
+GROUP BY ?id ?label ?created ?modified ?disseminationStatus ?validationStatus ?definition ?creator ?isTopConceptOf ?valid
 ORDER BY ?label

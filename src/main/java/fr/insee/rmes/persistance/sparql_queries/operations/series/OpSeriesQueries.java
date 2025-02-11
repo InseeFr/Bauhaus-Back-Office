@@ -179,7 +179,8 @@ public class OpSeriesQueries extends GenericQueries{
 		params.put("ADMIN", isAdmin);
 		return buildSeriesRequest("getSeriesWithStampQuery.ftlh", params);
 	}
-
+	
+	
 	/**
 	 * @return String
 	 * @throws RmesException

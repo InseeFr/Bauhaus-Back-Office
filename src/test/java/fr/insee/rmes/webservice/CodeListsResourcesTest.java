@@ -3,9 +3,9 @@ package fr.insee.rmes.webservice;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.code_list.CodeListItem;
+import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.webservice.codesLists.CodeListsResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,15 +34,19 @@ class CodeListsResourcesTest {
     @Test
     void shouldReturn200WithGetAllCodesLists() throws RmesException, JsonProcessingException {
 
-        PartialCodesList codeList1 = new PartialCodesList("1", "uri", "labelLg1", "labelLg2", "range");
-        PartialCodesList codeList2 = new PartialCodesList("2", "uri", "labelLg1", "labelLg2", "range");
-        List<PartialCodesList> liste = new ArrayList<>();
+        CodeList codeList1 = new CodeList();
+        codeList1.notation="id1";
+        CodeList codeList2 = new CodeList();
+        codeList2.notation="id2";
+        List<CodeList> liste = new ArrayList<>();
         liste.add(codeList1);
         liste.add(codeList2);
 
         when(codeListService.getAllCodesLists(false)).thenReturn(liste);
-        var codesLists = codeListsResources.getAllCodesLists();
-        assertEquals(2, codesLists.size());
+        ResponseEntity<List<CodeList>> response = codeListsResources.getAllCodesLists();
+        assertEquals("id1", response.getBody().get(0).getNotation());
+        assertEquals("id2", response.getBody().get(1).getNotation());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
