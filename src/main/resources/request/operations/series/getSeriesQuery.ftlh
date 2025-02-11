@@ -1,4 +1,4 @@
-SELECT DISTINCT ?iri ?id ?label ?altLabel
+SELECT DISTINCT ?iri ?id ?label (group_concat(?altLabelLg1;separator=' || ') as ?altLabel)
 <#if withSims = "true"> ?idSims
 </#if>	
 	WHERE { 
@@ -8,8 +8,8 @@ SELECT DISTINCT ?iri ?id ?label ?altLabel
 			 FILTER (lang(?label) = '${LG1}') 
 			 BIND(STRAFTER(STR(?iri),'/operations/serie/') AS ?id) .
 			 OPTIONAL{
-			 	?iri skos:altLabel ?altLabel .
-			 	FILTER (lang(?altLabel) = '${LG1}')
+			 	?iri skos:altLabel ?altLabelLg1 .
+			 	FILTER (lang(?altLabelLg1) = '${LG1}')
 			 }
 <#if withSims = "true"> 
 			 OPTIONAL{ 
@@ -21,4 +21,5 @@ SELECT DISTINCT ?iri ?id ?label ?altLabel
 			 
 		}
 	}   
+	GROUP BY ?iri ?id ?label   <#if withSims = "true"> ?idSims</#if>
 	ORDER BY ?label

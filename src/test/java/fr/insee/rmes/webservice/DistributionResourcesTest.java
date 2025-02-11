@@ -7,8 +7,6 @@ import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Distribution;
-import fr.insee.rmes.model.dataset.PartialDataset;
-import fr.insee.rmes.model.dataset.PartialDistribution;
 import fr.insee.rmes.webservice.datasets.DistributionResources;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,23 +37,8 @@ class DistributionResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasets() throws RmesException {
-        List<PartialDistribution> distributions = new ArrayList<>();
-        distributions.add(new PartialDistribution(
-                "1",
-                "2",
-                "labelLg1",
-                "labelLg2",
-                "description Lg1",
-                "description Lg2",
-                "created",
-                "updated",
-                "format",
-                "0",
-                "url"
-        ));
-
-        when(distributionService.getDistributions()).thenReturn(distributions);
-        Assertions.assertEquals(1, distributionResources.getDistributions().size());
+        when(distributionService.getDistributions()).thenReturn("result");
+        Assertions.assertEquals("result", distributionResources.getDistributions());
     }
 
     @Test
@@ -70,28 +52,16 @@ class DistributionResourcesTest {
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndAdmin() throws RmesException {
-        List<PartialDataset> datasets = new ArrayList<>();
-        datasets.add(new PartialDataset(
-                "1",
-                "label"
-        ));
-
-        when(datasetService.getDatasets()).thenReturn(datasets);
+        when(datasetService.getDatasets()).thenReturn("result");
         when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(Roles.ADMIN), "fakeStampForDvAndQf")));
-        Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
+        Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
     }
 
     @Test
     void shouldReturn200IfRmesExceptionWhenFetchingDatasetsForDistributionCreationAndNotAdmin() throws RmesException {
-        List<PartialDataset> datasets = new ArrayList<>();
-        datasets.add(new PartialDataset(
-                "1",
-                "label"
-        ));
-
-        when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn(datasets);
+        when(datasetService.getDatasetsForDistributionCreation("fakeStampForDvAndQf")).thenReturn("result");
         when(userDecoder.fromPrincipal(any())).thenReturn(Optional.of(new User("fakeUser", List.of(), "fakeStampForDvAndQf")));
-        Assertions.assertEquals(1, distributionResources.getDatasetsForDistributionCreation(null).size());
+        Assertions.assertEquals("result", distributionResources.getDatasetsForDistributionCreation(null));
     }
 
     @Test

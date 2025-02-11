@@ -2,14 +2,11 @@ package fr.insee.rmes.bauhaus_services.datasets;
 
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
-import fr.insee.rmes.model.dataset.PartialDataset;
 import fr.insee.rmes.model.dataset.PatchDataset;
-
-import java.util.List;
 
 public interface DatasetService {
 
-    List<PartialDataset> getDatasets() throws RmesException;
+    String getDatasets() throws RmesException;
 
     Dataset getDatasetByID(String id) throws RmesException ;
 
@@ -23,7 +20,7 @@ public interface DatasetService {
 
     void patchDataset(String datasetId, PatchDataset patchDataset) throws RmesException;
 
-    List<PartialDataset> getDatasetsForDistributionCreation(String stamp) throws RmesException;
+    String getDatasetsForDistributionCreation(String stamp) throws RmesException;
 
     String publishDataset(String id) throws RmesException;
 

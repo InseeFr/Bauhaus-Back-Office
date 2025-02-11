@@ -6,7 +6,6 @@ import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.code_list.CodeLabelList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
 import fr.insee.rmes.webservice.GenericResources;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -46,8 +45,13 @@ public class PartialCodeListsResources extends GenericResources {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getAllPartialCodesLists", summary = "Partial List of codes",
             responses = {@ApiResponse(content = @Content(mediaType = "application/json", schema = @Schema(type = "array", implementation = CodeList.class)))})
-    public List<PartialCodesList> getAllPartialCodesLists() throws JsonProcessingException, RmesException {
-        return codeListService.getAllCodesLists(true);
+    public ResponseEntity<Object> getAllPartialCodesLists() throws JsonProcessingException {
+        try {
+            List<CodeList> body = codeListService.getAllCodesLists(true);
+            return ResponseEntity.status(HttpStatus.OK).body(body);
+        } catch (RmesException e) {
+            return returnRmesException(e);
+        }
     }
 
     @GetMapping(value = "/{notation}", produces = MediaType.APPLICATION_JSON_VALUE)

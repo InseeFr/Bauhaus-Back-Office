@@ -16,7 +16,7 @@ class FreeMarkerUtilsTest {
         assertThatCode(()->FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
                 .doesNotThrowAnyException();
         assertThat(FreeMarkerUtils.buildRequest("", "getAllGraphs.ftlh", Map.of()))
-                .contains("""
+                .isEqualTo("""
                         SELECT DISTINCT ?g
                         WHERE {
                           GRAPH ?g {?a ?b ?c }

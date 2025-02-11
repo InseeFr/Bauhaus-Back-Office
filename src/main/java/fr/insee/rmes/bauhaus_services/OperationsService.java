@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services;
 
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.operations.*;
-
-import java.util.List;
+import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 
 public interface OperationsService {
 
@@ -11,7 +11,7 @@ public interface OperationsService {
 	 * FAMILIES
 	 * *******************************************************************************************/
 
-	List<PartialOperationFamily> getFamilies() throws RmesException;
+	String getFamilies() throws RmesException;
 
 	String getFamiliesForSearch() throws RmesException;
 
@@ -29,7 +29,7 @@ public interface OperationsService {
 	 * SERIES
 	 * *******************************************************************************************/
 
-	List<PartialOperationSeries> getSeries() throws RmesException;
+	String getSeries() throws RmesException;
 
 	String getSeriesForSearch() throws RmesException;
 	
@@ -54,7 +54,7 @@ public interface OperationsService {
 	 * OPERATIONS
 	 * *******************************************************************************************/
 
-	List<PartialOperation> getOperations() throws RmesException ;
+	String getOperations() throws RmesException ;
 
 	Operation getOperationById(String id) throws RmesException ;
 
@@ -74,7 +74,7 @@ public interface OperationsService {
 	 * *******************************************************************************************/
 
 
-	List<PartialOperationIndicator> getIndicators() throws RmesException;
+	String getIndicators() throws RmesException;
 
 	String getIndicatorsWithSims() throws RmesException;
 

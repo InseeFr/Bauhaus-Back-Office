@@ -6,8 +6,6 @@ import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.config.swagger.model.Id;
 import fr.insee.rmes.config.swagger.model.structure.StructureById;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.structures.PartialStructure;
-import fr.insee.rmes.model.structures.PartialStructureComponent;
 import fr.insee.rmes.model.structures.Structure;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,8 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/structures")
@@ -59,8 +55,9 @@ public class StructureResources {
     @GetMapping( produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getStructures", summary = "List of structures",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Structure.class))))})
-    public List<PartialStructure> getStructures() throws RmesException {
-        return structureService.getStructures();
+    public ResponseEntity<Object> getStructures() throws RmesException {
+        String structures = structureService.getStructures();
+        return ResponseEntity.status(HttpStatus.SC_OK).body(structures);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -145,8 +142,9 @@ public class StructureResources {
 
     @GetMapping(value = "/components", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getComponents", summary = "Get all mutualized components")
-    public List<PartialStructureComponent> getComponents() throws RmesException {
-        return structureComponentService.getComponents();
+    public ResponseEntity<Object> getComponents() throws RmesException {
+        String components = structureComponentService.getComponents();
+        return ResponseEntity.status(HttpStatus.SC_OK).body(components);
     }
 
     @GetMapping(value = "/components/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

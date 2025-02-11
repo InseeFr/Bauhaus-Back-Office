@@ -5,7 +5,6 @@ import fr.insee.rmes.bauhaus_services.code_list.DetailedCodeList;
 import fr.insee.rmes.config.swagger.model.code_list.CodeList;
 import fr.insee.rmes.config.swagger.model.code_list.Page;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.codeslists.PartialCodesList;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ public interface CodeListService {
 
     String getCodeUri(String notationCodeList, String notationCode) throws RmesException;
 
-    List<PartialCodesList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
+    List<CodeList> getAllCodesLists(boolean partial) throws RmesException, JsonProcessingException;
 
     String getCodesListByIRI(String iri) throws RmesException;
 

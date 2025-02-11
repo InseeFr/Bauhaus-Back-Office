@@ -9,12 +9,13 @@ import fr.insee.rmes.bauhaus_services.operations.series.SeriesUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.QueryUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.operations.*;
+import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.Series;
 import fr.insee.rmes.persistance.sparql_queries.operations.families.OpFamiliesQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.indicators.IndicatorsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.operations.OperationsQueries;
 import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQueries;
-import fr.insee.rmes.utils.DiacriticSorter;
 import fr.insee.rmes.utils.EncodingType;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -52,15 +53,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public List<PartialOperationSeries> getSeries() throws RmesException  {
+	public String getSeries() throws RmesException  {
 		logger.info("Starting to get operation series list");
-		var series = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery());
-
-
-        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(series.toString(),
-				PartialOperationSeries[].class,
-				PartialOperationSeries::label
-		);
+		String resQuery = repoGestion.getResponseAsArray(OpSeriesQueries.seriesQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
@@ -147,16 +143,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public List<PartialOperation> getOperations() throws RmesException  {
+	public String getOperations() throws RmesException  {
 		logger.info("Starting to get operations list");
-		var operations = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery());
-
-
-        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(operations.toString(),
-				PartialOperation[].class,
-				PartialOperation::label
-		);
-
+		String resQuery = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
@@ -191,14 +181,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 *****************************************************************************************************/
 
 	@Override
-	public List<PartialOperationFamily> getFamilies() throws RmesException {
+	public String getFamilies() throws RmesException {
 		logger.info("Starting to get families list");
-		var families = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery());
-
-		return DiacriticSorter.sort(families.toString(),
-				PartialOperationFamily[].class,
-				PartialOperationFamily::label
-		);
+		String resQuery = repoGestion.getResponseAsArray(OpFamiliesQueries.familiesQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override
@@ -243,15 +229,10 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 
 
 	@Override
-	public List<PartialOperationIndicator> getIndicators() throws RmesException {
+	public String getIndicators() throws RmesException {
 		logger.info("Starting to get indicators list");
-		var indicators = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery());
-
-
-        return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(indicators.toString(),
-				PartialOperationIndicator[].class,
-				PartialOperationIndicator::label
-		);
+		String resQuery = repoGestion.getResponseAsArray(IndicatorsQueries.indicatorsQuery()).toString();
+		return QueryUtils.correctEmptyGroupConcat(resQuery);
 	}
 
 	@Override

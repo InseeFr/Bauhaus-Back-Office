@@ -6,7 +6,9 @@ import fr.insee.rmes.bauhaus_services.distribution.DistributionService;
 import fr.insee.rmes.config.auth.roles.Roles;
 import fr.insee.rmes.config.auth.security.UserDecoder;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.dataset.*;
+import fr.insee.rmes.model.dataset.Dataset;
+import fr.insee.rmes.model.dataset.Distribution;
+import fr.insee.rmes.model.dataset.PatchDistribution;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -22,8 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -48,7 +48,7 @@ public class DistributionResources {
     @GetMapping
     @Operation(operationId = "getDistributions", summary = "List of distributions",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Distribution.class))))})
-    public List<PartialDistribution> getDistributions() throws RmesException {
+    public String getDistributions() throws RmesException {
         return this.distributionService.getDistributions();
     }
 
@@ -70,7 +70,7 @@ public class DistributionResources {
     @GetMapping("/datasets")
     @Operation(operationId = "getDatasetsForDistributionCreation", summary = "List of datasets",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = Dataset.class))))})
-    public List<PartialDataset> getDatasetsForDistributionCreation(@AuthenticationPrincipal Object principal) throws RmesException {
+    public String getDatasetsForDistributionCreation(@AuthenticationPrincipal Object principal) throws RmesException {
         var user = userDecoder.fromPrincipal(principal).get();
 
         if (user.hasRole(Roles.ADMIN)) {
