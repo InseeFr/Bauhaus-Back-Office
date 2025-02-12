@@ -1,8 +1,8 @@
 package fr.insee.rmes.utils;
 
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UriUtils {
@@ -28,40 +28,66 @@ public class UriUtils {
 		return (validate);
 	}
 
+	public static boolean isValiURI(String myUri) {
+		boolean response = false;
+		if (myUri != null) {
+			try {
+				URI monUri = URI.create(myUri);
+				response = true;
+			} catch (Exception ignored) {
+			}
+		}
+		return response;
+	}
+
+
 	public static boolean isValiURL(String url) {
-		boolean conforme = false;
+
+		boolean standard = false;
+
 		if (url != null) {
 
-			List<String> referentiel = List.of("http:","https:");
-			List<String> detailsURL = Arrays.asList(url.split("//"));
-			if (referentiel.contains(detailsURL.getFirst()) && detailsURL.size()>=2) conforme = true;
+			List<String> urlBegin1 = List.of("http://","https://");
+			List<String> urlBegin2 = List.of("https://|","https:// ","http://|","http:// ");
 
-			if (url.startsWith("https://]") || url.startsWith("https://|") || url.startsWith("https:// ")  ) conforme= false;
-			if (url.startsWith("http://]") || url.startsWith("http://|") || url.startsWith("http:// ") ) conforme= false;
+			for(String element : urlBegin1){
+				if (url.startsWith(element)) standard = true;
+				if (element.equals(url)) standard = false;
+			}
+
+			for(String element : urlBegin2){if (url.startsWith(element)) standard = false;}
+
+			if (!url.contains("//") ) standard = false;
 
 			int openingBrace = org.springframework.util.StringUtils.countOccurrencesOf(url,"[");
 			int closingBrace = org.springframework.util.StringUtils.countOccurrencesOf(url,"]");
 
-			if(openingBrace==0 && closingBrace==0){
-				if (url.startsWith("https://") && url.length()>=9 && url.substring(8).contains(":")) conforme= false;
-				if (url.startsWith("http://") && url.length()>=8 && url.substring(7).contains(":")) conforme= false;
+			if(openingBrace-closingBrace!=0) {
+				standard =false;}
 
-			}
-
-			if(openingBrace-closingBrace!=0){conforme= false;
-			}else {
-				char order =' ';
-				for( char element : url.toCharArray()){
-					if ('['==element || (']'==element) ) {
-						if (order==element) conforme = false;
-						else {order=element;}
+			if (openingBrace == 0 && closingBrace == 0) {
+					if (StringUtils.countMatches(url, ":") != StringUtils.countMatches(url, "http") ){
+						standard = false;
 					}
 				}
-			}
 
-			if(url.startsWith("http://http://") || url.startsWith("https://\\\\") || url.startsWith("http://\\\\") ){conforme= true;}
+			if (openingBrace - closingBrace == 0 && closingBrace > 0) {
 
+					List<Character> elementsBrace = new ArrayList<>();
+
+					for (char element : url.toCharArray()) {
+						if ('[' == element || (']' == element)) elementsBrace.add(element);
+					}
+
+					if (elementsBrace.size() % 2 != 0) {
+						standard = false;
+					} else {
+						for (int i = 0; i < elementsBrace.size(); ++i) {
+							if ((i%2 == 0 && elementsBrace.get(i)!='[') || (i%2== 1 && elementsBrace.get(i) != ']')) standard = false;
+						}
+					}
+				}
 		}
-		return (conforme);
+		return (standard);
 	}
 }

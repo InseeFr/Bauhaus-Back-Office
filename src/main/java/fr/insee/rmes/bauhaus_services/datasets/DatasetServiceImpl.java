@@ -36,8 +36,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static fr.insee.rmes.exceptions.ErrorCodes.DATASET_PATCH_INCORRECT_BODY;
-import static fr.insee.rmes.utils.UriUtils.isValiURL;
-import static fr.insee.rmes.utils.UriUtils.isValiURN;
+import static fr.insee.rmes.utils.UriUtils.*;
 
 @Service
 public class DatasetServiceImpl extends RdfService implements DatasetService {
@@ -545,6 +544,10 @@ public class DatasetServiceImpl extends RdfService implements DatasetService {
 
         if (dataset.getLabelLg1() == null) {
             throw new RmesBadRequestException("The property labelLg1 is required");
+        }
+
+        if (!isValiURI(dataset.getDataStructure()) ){
+            throw new RmesBadRequestException("URI invalide","Syntaxe non conforme aux standards.");
         }
 
         if (!isValiURN(dataset.getDataStructure()) && !isValiURL(dataset.getDataStructure()) ){
