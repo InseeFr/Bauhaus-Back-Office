@@ -1,6 +1,6 @@
 SELECT DISTINCT ?id ?label ?creator ?valid
 	WHERE {
-	    GRAPH <${CONCEPTS_GRAPH> {
+	    GRAPH <${CONCEPTS_GRAPH}> {
 		    ?concept rdf:type skos:Concept .
 		    BIND(STRAFTER(STR(?concept),'/concepts/definition/') AS ?id) .
 		    ?concept skos:prefLabel ?label .
