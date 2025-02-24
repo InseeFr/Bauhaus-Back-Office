@@ -13,7 +13,6 @@ import com.nimbusds.jose.shaded.gson.JsonElement;
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import fr.insee.rmes.config.auth.user.User;
 import fr.insee.rmes.exceptions.RmesException;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
@@ -96,7 +95,7 @@ class OpenIDConnectSecurityContextTest {
     }
 
     private Jwt springJwt() {
-        Map<String, Object> claims=new HashMap();
+        Map<String, Object> claims = new HashMap<>();
         claims.put("resource_access", Map.of("account", Map.of("account", rolesOfAccount)));
         claims.put("matricule", "0000000000054");
         claims.put("allowed-origins", allowedOrigins);
@@ -172,7 +171,6 @@ class OpenIDConnectSecurityContextTest {
         oidcSecurityContextLogger.addAppender(appender);
     }
 
-    @NotNull
     private static Appender<ILoggingEvent> createOutputStreamAppender(LoggerContext context) {
         PatternLayoutEncoder ple = new PatternLayoutEncoder();
         ple.setPattern("%msg");
