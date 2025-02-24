@@ -1,4 +1,4 @@
-SELECT DISTINCT ?id ?label (GROUP_CONCAT(DISTINCT ?altLabel; SEPARATOR=", ")  AS ?altLabels)
+SELECT DISTINCT ?id ?label ?altLabels
 WHERE {
     GRAPH ?graph {
         ?classification rdf:type skos:ConceptScheme .
@@ -6,12 +6,11 @@ WHERE {
         ?classification skos:prefLabel ?label .
         FILTER (lang(?label) = '${LG1}')
         OPTIONAL {
-            ?classification skos:altLabel ?altLabel .
-            FILTER (lang(?altLabel) = '${LG1}')
+            ?classification skos:altLabel ?altLabels .
+            FILTER (lang(?altLabels) = '${LG1}')
         }
         BIND(STRBEFORE(STRAFTER(STR(?classification),'/codes/'), '/') AS ?id)
     }
     FILTER(REGEX(STR(?graph), '/codes/') )
 }
-GROUP BY ?id ?label
 ORDER BY ?label

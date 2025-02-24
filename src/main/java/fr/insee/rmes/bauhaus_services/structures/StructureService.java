@@ -1,9 +1,12 @@
 package fr.insee.rmes.bauhaus_services.structures;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.structures.PartialStructure;
+
+import java.util.List;
 
 public interface StructureService {
 	
-	String getStructures() throws RmesException;
+	List<PartialStructure> getStructures() throws RmesException;
 
 	String getStructuresForSearch() throws  RmesException;
 
