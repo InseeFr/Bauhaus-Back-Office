@@ -1,12 +1,15 @@
 package fr.insee.rmes.integration;
 
+import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.OperationsDocumentationsService;
 import fr.insee.rmes.bauhaus_services.StampAuthorizationChecker;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.bauhaus_services.structures.impl.StructureComponentImpl;
+import fr.insee.rmes.bauhaus_services.structures.impl.StructureImpl;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
+import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.config.Config;
 import fr.insee.rmes.config.auth.UserProviderFromSecurityContext;
 import fr.insee.rmes.config.auth.security.BauhausMethodSecurityExpressionHandler;

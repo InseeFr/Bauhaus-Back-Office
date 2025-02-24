@@ -69,11 +69,11 @@ public class DiacriticSorter {
         Optional<MethodHandle> wither = findMethodHandle(classR, witherMethodName, classR, String.class);
 
         if (wither.isEmpty()) {
-            throw new IllegalStateException("Method '" + witherMethodName + "' not found for class : " + classR + " The class should implements XBuilder.With from @RecordBuilder");
+            throw new IllegalStateException("Method 'public " + classR + " " + witherMethodName + "(String)' not found for '" + classR + "'. The class should implements XBuilder.With from @RecordBuilder");
         }
         var instanceWithNewAltLabel = safeInvokeMethodHandle(wither.get(), instance, newValue);
         if (!classR.isInstance(instanceWithNewAltLabel)) {
-            throw new IllegalStateException("Method '" + witherMethodName + "' for class : " + classR + " should return a type of " + classR + " instead of " + getClassSafe(instanceWithNewAltLabel) + ". Check that it implements XBuilder.With from @RecordBuilder");
+            throw new IllegalStateException("Method 'public " + classR + " " + witherMethodName + "(String)' for '" + classR + "' should return a type of " + classR + " instead of " + getClassSafe(instanceWithNewAltLabel) + ". Check that it implements XBuilder.With from @RecordBuilder");
         }
         return (R) instanceWithNewAltLabel;
     }

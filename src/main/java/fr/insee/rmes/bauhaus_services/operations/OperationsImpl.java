@@ -149,7 +149,7 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 		logger.info("Starting to get operations list");
 		var operations = repoGestion.getResponseAsArray(OperationsQueries.operationsQuery());
 
-		return DiacriticSorter.sort(operations,
+		return DiacriticSorter.sortGroupingByIdConcatenatingAltLabels(operations,
 				PartialOperation[].class,
 				PartialOperation::label);
 

@@ -5,7 +5,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -34,8 +33,11 @@ public class MethodHandleUtils {
     }
 
     public static Object safeInvokeMethodHandle(MethodHandle methodHandle, Object target, Object... parameters) {
+        Object[] targetThenParameters = new Object[parameters.length + 1];
+        System.arraycopy(parameters, 0, targetThenParameters, 1, parameters.length);
+        targetThenParameters[0] = target;
         try {
-            return requireNonNull(methodHandle).invoke(Objects.requireNonNull(target), parameters);
+            return requireNonNull(methodHandle).invokeWithArguments(targetThenParameters);
         } catch (Throwable e) {
             return null;
         }
