@@ -100,10 +100,6 @@ public class IndicatorsUtils {
 		}
 	}
 
-	public Indicator getIndicatorById(String id) throws RmesException{
-		return buildIndicatorFromJson(getIndicatorJsonById(id), false);
-	}
-	
 	public Indicator getIndicatorById(String id, boolean forXML) throws RmesException{
 		return buildIndicatorFromJson(getIndicatorJsonById(id), forXML);
 	}
@@ -389,12 +385,12 @@ public class IndicatorsUtils {
 		repositoryGestion.loadObjectWithReplaceLinks(indicURI, model);
 	}
 
-	public void setIndicatorValidation(String id)  throws RmesException  {
-		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, id))) {
-			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
-		}
+	public void validateIndicator(String id)  throws RmesException  {
 
-		indicatorPublication.publishIndicator(id);
+		Indicator indicator = getIndicatorById(id, false);
+
+		indicatorPublication.validate(indicator);
+		indicatorPublication.publish(id);
 
 		IRI indicatorURI = RdfUtils.objectIRI(ObjectType.INDICATOR, id);
 

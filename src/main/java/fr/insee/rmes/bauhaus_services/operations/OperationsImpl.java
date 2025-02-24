@@ -268,8 +268,8 @@ public class OperationsImpl  extends RdfService implements OperationsService {
 	 * @throws RmesException 
 	 */
 	@Override
-	public void setIndicatorValidation(String id) throws RmesException{
-		indicatorsUtils.setIndicatorValidation(id);
+	public void validateIndicator(String id) throws RmesException{
+		indicatorsUtils.validateIndicator(id);
 	}
 
 	/**
