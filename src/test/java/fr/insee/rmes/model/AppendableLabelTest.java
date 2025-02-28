@@ -54,7 +54,8 @@ class AppendableLabelTest {
 
     public record AgainAnOtherBadRecord(String id,
                                         String altLabels) implements DiacriticSorter.AppendableLabels<AgainAnOtherBadRecord> {
-        public AgainAnOtherBadRecord withAltLabels(String altLabels) {
+
+        public AgainAnOtherBadRecord withAltLabels(String ignoredAltLabels) {
             return null;
         }
     }
