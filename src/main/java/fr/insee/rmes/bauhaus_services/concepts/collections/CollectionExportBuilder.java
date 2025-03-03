@@ -38,14 +38,14 @@ public class CollectionExportBuilder extends RdfService {
 	@Autowired
 	ExportUtils exportUtils;
 
-	private static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
+	public static final String XSL_FILE = "/xslTransformerFiles/rmes2odt.xsl";
 	private static final String XML_PATERN = "/xslTransformerFiles/collection/collectionPatternContent.xml";
 	private static final String ZIP = "/xslTransformerFiles/collection/toZipForCollection.zip";
 	private static final String ZIP_OLD = "/xslTransformerFiles/collection/toZipForCollectionOld.zip";
 	private static final String XML_PATTERN_FR = "/xslTransformerFiles/collection/collectionFrPatternContent.xml";
 	private static final String XML_PATTERN_EN = "/xslTransformerFiles/collection/collectionEnPatternContent.xml";
-	private static final String XML_PATTERN_ODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
-	private static final String ZIP_ODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
+	public static final String XML_PATTERN_ODS = "/xslTransformerFiles/collection/collectionOdsPatternContent.xml";
+	public static final String ZIP_ODS = "/xslTransformerFiles/collection/toZipForCollectionOds.zip";
 
 	final Collator instance = Collator.getInstance();
 
