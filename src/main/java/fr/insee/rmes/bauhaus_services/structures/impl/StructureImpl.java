@@ -7,9 +7,11 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.structures.StructureService;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureUtils;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.structures.PartialStructure;
 import fr.insee.rmes.persistance.ontologies.QB;
 import fr.insee.rmes.persistance.sparql_queries.concepts.ConceptsQueries;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.eclipse.rdf4j.model.IRI;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class StructureImpl  extends RdfService implements StructureService {
@@ -30,9 +34,13 @@ public class StructureImpl  extends RdfService implements StructureService {
 	CodeListService codeListService;
 
 	@Override
-	public String getStructures() throws RmesException {
+	public List<PartialStructure> getStructures() throws RmesException {
 		logger.info("Starting to get structures");
-		return repoGestion.getResponseAsArray(StructureQueries.getStructures()).toString();
+		var structures = repoGestion.getResponseAsArray(StructureQueries.getStructures());
+		return DiacriticSorter.sort(structures,
+				PartialStructure[].class,
+				PartialStructure::labelLg1);
+
 	}
 
 	@Override

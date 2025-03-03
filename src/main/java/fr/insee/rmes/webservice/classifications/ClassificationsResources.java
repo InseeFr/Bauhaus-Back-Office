@@ -8,8 +8,7 @@ import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.config.swagger.model.classifications.FamilyClass;
 import fr.insee.rmes.config.swagger.model.classifications.Members;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.model.classification.Classification;
-import fr.insee.rmes.model.classification.ClassificationItem;
+import fr.insee.rmes.model.classification.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -25,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -61,9 +62,8 @@ public class ClassificationsResources {
 	@GetMapping(value = "/families", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassificationFamilies", summary = "List of classification families", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getFamilies() throws RmesException {
-		String families = classificationsService.getFamilies();
-		return ResponseEntity.status(HttpStatus.OK).body(families);
+	public List<PartialClassificationFamily> getFamilies() throws RmesException {
+		return classificationsService.getFamilies();
 	}
 	
 	@GetMapping(value="/family/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,9 +85,8 @@ public class ClassificationsResources {
 	@GetMapping(value="/series", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassificationSeries", summary = "List of classification series", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getSeries() throws RmesException {
-		String series = classificationsService.getSeries();
-		return ResponseEntity.status(HttpStatus.OK).body(series);
+	public List<PartialClassificationSeries> getSeries() throws RmesException {
+		return classificationsService.getSeries();
 	}
 	
 	@GetMapping(value="/series/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,9 +106,8 @@ public class ClassificationsResources {
 	@GetMapping(value="",produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getClassifications", summary = "List of classifications", 
 			responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getClassifications() throws RmesException {
-		String classifications = classificationsService.getClassifications();
-		return ResponseEntity.status(HttpStatus.OK).body(classifications);
+	public List<PartialClassification> getClassifications() throws RmesException {
+		return classificationsService.getClassifications();
 	}
 	
 	@GetMapping(value="/classification/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
