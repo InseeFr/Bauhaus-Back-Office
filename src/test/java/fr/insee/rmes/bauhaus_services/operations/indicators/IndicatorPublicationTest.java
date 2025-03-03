@@ -83,7 +83,7 @@ class IndicatorPublicationTest {
             when(stampsRestrictionsService.canValidateIndicator(any())).thenReturn(true);
 
             RmesBadRequestException exception = assertThrows(RmesBadRequestException.class, () -> indicatorPublication.validate(indicator));
-            assertThat(exception.getDetails()).contains("An indicator can be published if and only if all parent series has been published.");
+            assertThat(exception.getDetails()).contains("An indicator can be published if and only if all parent series have been published.");
         }
     }
 
