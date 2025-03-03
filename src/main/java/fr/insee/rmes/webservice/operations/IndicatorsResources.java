@@ -9,6 +9,7 @@ import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Indicator;
 import fr.insee.rmes.model.operations.PartialOperationIndicator;
 import fr.insee.rmes.utils.XMLUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -41,21 +42,21 @@ public class IndicatorsResources {
 	}
 
 	@GetMapping(value="/indicators", produces=MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicators", summary = "List of indicators", 
+	@Operation(operationId = "getIndicators", summary = "List of indicators",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=IdLabelAltLabel.class)))})
 	public List<PartialOperationIndicator> getIndicators() throws RmesException {
 		return operationsService.getIndicators();
 	}
 
 	@GetMapping(value="/indicators/withSims",produces= MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
+	@Operation(operationId = "annotations", summary = "List of series with related sims", responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation= IdLabelAltLabelSims.class)))})
 	public ResponseEntity<Object> getIndicatorsWIthSims() throws RmesException {
 		String indicators = operationsService.getIndicatorsWithSims();
 		return ResponseEntity.status(HttpStatus.OK).body(indicators);
 	}
 
 	@GetMapping(value="/indicators/advanced-search", produces=MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
+	@Operation(operationId = "getIndicatorsForSearch", summary = "List of indicators for search",
 	responses = {@ApiResponse(content=@Content(schema=@Schema(type="array",implementation=Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorsForSearch() throws RmesException {
 		String indicators = operationsService.getIndicatorsForSearch();
@@ -64,7 +65,7 @@ public class IndicatorsResources {
 	}
 
 	@GetMapping(value="/indicator/{id}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-	@io.swagger.v3.oas.annotations.Operation(operationId = "getIndicatorByID", summary = "Get an indicator",
+	@Operation(operationId = "getIndicatorByID", summary = "Get an indicator",
 	responses = { @ApiResponse(content = @Content(schema = @Schema(implementation = Indicator.class)))})
 	public ResponseEntity<Object> getIndicatorByID(@PathVariable(Constants.ID) String id,
 			@Parameter(hidden = true)@RequestHeader(required=false) String accept) throws RmesException {
@@ -76,10 +77,9 @@ public class IndicatorsResources {
 		}
 	}
 
-	//TODO Test : admin then INDICATOR_CONTRIBUTOR with stamp fit then not
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorById", summary = "Update an indicator")
+	@Operation(operationId = "setIndicatorById", summary = "Update an indicator")
 	public ResponseEntity<Object> setIndicatorById(
 			@PathVariable(Constants.ID) String id, 
 			@Parameter(description = "Indicator to update", required = true,
@@ -91,17 +91,17 @@ public class IndicatorsResources {
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PutMapping(value="/indicator/{id}/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
+	@Operation(operationId = "setIndicatorValidation", summary = "Indicator validation")
 	public ResponseEntity<Object> setIndicatorValidation(
 			@PathVariable(Constants.ID) String id) throws RmesException {
 
-		operationsService.setIndicatorValidation(id);
+		operationsService.validateIndicator(id);
 		return ResponseEntity.status(HttpStatus.OK).body(id);
 	}
 
 	@PreAuthorize("hasAnyRole(T(fr.insee.rmes.config.auth.roles.Roles).ADMIN , T(fr.insee.rmes.config.auth.roles.Roles).INDICATOR_CONTRIBUTOR)")
 	@PostMapping(value="/indicator", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@io.swagger.v3.oas.annotations.Operation(operationId = "setIndicator", summary = "Create indicator",
+	@Operation(operationId = "setIndicator", summary = "Create indicator",
 	responses = { @ApiResponse(content = @Content(mediaType = MediaType.TEXT_PLAIN_VALUE))})
 	public ResponseEntity<Object> setIndicator(
 			@Parameter(description = "Indicator to create", required = true,

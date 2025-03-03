@@ -63,19 +63,7 @@
             <http://www.w3.org/ns/org#unitOf>
                     <http://lannuaire.service-public.fr/172232> , <http://lannuaire.service-public.fr/172090> .
     
-    <http://bauhaus/organisations/bdf>
-            a       <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
-            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
-                    <https://www.banque-france.fr/> ;
-            <http://purl.org/dc/terms/identifier>
-                    "BDF" ;
-            <http://www.w3.org/2002/07/owl#sameAs>
-                    <> ;
-            <http://www.w3.org/2004/02/skos/core#prefLabel>
-                    "Direction générale des statistiques de la Banque de France"@fr , "Statistics Directorate-General, Banque de France"@en ;
-            <http://www.w3.org/ns/org#unitOf>
-                    <http://bauhaus/organisations/banque-de-france> .
-    
+
     <http://lannuaire.service-public.fr/172019>
             a       <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
             <http://www.w3.org/2004/02/skos/core#prefLabel>
@@ -159,20 +147,7 @@
                     "Ministère de la Culture et de la Communication"@fr ;
             <http://www.w3.org/ns/org#hasUnit>
                     <http://lannuaire.service-public.fr/171837> .
-    
-    <http://bauhaus/organisations/cepidc>
-            a       <http://www.w3.org/ns/org#Organization> , <http://rdf.insee.fr/def/base#OtherNationalAuthority> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
-            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
-                    <http://www.cepidc.inserm.fr/> ;
-            <http://purl.org/dc/terms/identifier>
-                    "CépiDc" ;
-            <http://www.w3.org/2002/07/owl#sameAs>
-                    <> ;
-            <http://www.w3.org/2004/02/skos/core#prefLabel>
-                    "Centre d'épidémiologie sur les causes médicales de Décès"@fr , "Epidemiology Centre on medical causes of Deaths"@en ;
-            <http://www.w3.org/ns/org#unitOf>
-                    <http://lannuaire.service-public.fr/171851> .
-    
+
     <http://lannuaire.service-public.fr/172240>
             a       <http://www.w3.org/ns/org#Organization> ;
             <http://www.w3.org/2004/02/skos/core#prefLabel>
@@ -281,20 +256,7 @@
                     "Direction de la Recherche, des Études, de l'Évaluation et des Statistiques"@fr , "Directorate of Research, Studies, Evaluation and Statistics"@en ;
             <http://www.w3.org/ns/org#reportsTo>
                     <http://lannuaire.service-public.fr/192696> .
-    
-    <http://bauhaus/organisations/onisr>
-            a       <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
-            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
-                    <http://www.securite-routiere.gouv.fr/la-securite-routiere/l-observatoire-national-interministeriel-de-la-securite-routiere> ;
-            <http://purl.org/dc/terms/identifier>
-                    "ONISR" ;
-            <http://www.w3.org/2002/07/owl#sameAs>
-                    <> ;
-            <http://www.w3.org/2004/02/skos/core#prefLabel>
-                    "Observatoire national interministériel de la sécurité routière"@fr , "National Interministerial Observatory for Road Safety"@en ;
-            <http://www.w3.org/ns/org#unitOf>
-                    <http://lannuaire.service-public.fr/172106> .
-    
+
     <http://lannuaire.service-public.fr/171511>
             a       <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
             <http://www.w3.org/2004/02/skos/core#prefLabel>
@@ -483,20 +445,7 @@
                     "Premier ministre"@fr ;
             <http://www.w3.org/ns/org#linkedTo>
                     <http://lannuaire.service-public.fr/170724> .
-    
-    <http://bauhaus/organisations/bpifrance>
-            a       <http://www.w3.org/ns/org#Organization> ;
-            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
-                    <http://www.bpifrance.fr/> ;
-            <http://purl.org/dc/terms/identifier>
-                    "Bpifrance" ;
-            <http://www.w3.org/2002/07/owl#sameAs>
-                    <> ;
-            <http://www.w3.org/2004/02/skos/core#prefLabel>
-                    "Banque Publique d'Investissement"@fr , "Public Investment Bank"@en ;
-            <http://www.w3.org/ns/org#reportsTo>
-                    <http://lannuaire.service-public.fr/906678> .
-    
+
     <http://lannuaire.service-public.fr/583066>
             a       <http://www.w3.org/ns/org#Organization> ;
             <http://www.w3.org/2004/02/skos/core#prefLabel>
@@ -556,20 +505,7 @@
                     <http://bauhaus/organisations/meos> ;
             <http://www.w3.org/ns/org#unitOf>
                     <http://lannuaire.service-public.fr/172238> .
-    
-    <http://bauhaus/organisations/insee>
-            a       <http://www.w3.org/ns/org#Organization> , <http://rdf.insee.fr/def/base#NationalStatisticalInstitute> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
-            <http://www.w3.org/2000/01/rdf-schema#seeAlso>
-                    <> ;
-            <http://purl.org/dc/terms/identifier>
-                    "Insee" ;
-            <http://www.w3.org/2002/07/owl#sameAs>
-                    <> ;
-            <http://www.w3.org/2004/02/skos/core#prefLabel>
-                    "Institut national de la statistique et des études économiques"@fr , "National Institute of Statistics and Economic Studies"@en ;
-            <http://www.w3.org/ns/org#unitOf>
-                    <http://lannuaire.service-public.fr/172224> .
-    
+
     <http://bauhaus/organisations/dst>
             a       <http://www.w3.org/ns/org#Organization> , <http://www.w3.org/ns/org#OrganizationalUnit> ;
             <http://www.w3.org/2000/01/rdf-schema#seeAlso>
