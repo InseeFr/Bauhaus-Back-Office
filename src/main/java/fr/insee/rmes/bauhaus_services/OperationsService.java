@@ -97,5 +97,5 @@ public interface OperationsService {
 	/**
 	 * PUBLISH
 	 */
-	void setIndicatorValidation(String body) throws RmesException;
+	void validateIndicator(String body) throws RmesException;
 }

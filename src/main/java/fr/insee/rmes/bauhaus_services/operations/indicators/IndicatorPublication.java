@@ -1,12 +1,15 @@
 package fr.insee.rmes.bauhaus_services.operations.indicators;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.rdf_utils.ObjectType;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfService;
-import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
-import fr.insee.rmes.exceptions.ErrorCodes;
-import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.*;
+import fr.insee.rmes.config.auth.security.restrictions.StampsRestrictionsService;
+import fr.insee.rmes.exceptions.*;
+import fr.insee.rmes.exceptions.errors.IndicatorErrorCode;
+import fr.insee.rmes.model.ValidationStatus;
+import fr.insee.rmes.model.links.OperationsLink;
+import fr.insee.rmes.model.operations.Indicator;
+import fr.insee.rmes.utils.ObjectPublication;
 import org.apache.http.HttpStatus;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -18,9 +21,41 @@ import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class IndicatorPublication extends RdfService {
+public class IndicatorPublication implements ObjectPublication<Indicator> {
+	final ParentUtils ownersUtils;
+	final StampsRestrictionsService stampsRestrictionsService;
+	final RepositoryGestion repoGestion;
+	final RepositoryPublication repositoryPublication;
+	final PublicationUtils publicationUtils;
 
-	public void publishIndicator(String indicatorId) throws RmesException {
+	public IndicatorPublication(ParentUtils ownersUtils, StampsRestrictionsService stampsRestrictionsService, RepositoryGestion repoGestion, RepositoryPublication repositoryPublication, PublicationUtils publicationUtils) {
+		this.ownersUtils = ownersUtils;
+		this.stampsRestrictionsService = stampsRestrictionsService;
+		this.repoGestion = repoGestion;
+		this.repositoryPublication = repositoryPublication;
+		this.publicationUtils = publicationUtils;
+	}
+
+	@Override
+	public void validate(Indicator indicator) throws RmesException {
+		if(!stampsRestrictionsService.canValidateIndicator(RdfUtils.objectIRI(ObjectType.INDICATOR, indicator.getId()))) {
+			throw new RmesUnauthorizedException(ErrorCodes.INDICATOR_VALIDATION_RIGHTS_DENIED, "Only authorized users can publish indicators.");
+		}
+
+		if(indicator.isWasGeneratedByEmpty()){
+			throw new RmesBadRequestException(IndicatorErrorCode.EMPTY_WAS_GENERATED_BY, "An indicator should be linked to a series.");
+		}
+
+		for (OperationsLink link : indicator.wasGeneratedBy) {
+			var status = ownersUtils.getValidationStatus(link.getId());
+			if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
+				throw new RmesBadRequestException(IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES, "An indicator can be published if and only if all parent series have been published.");
+			}
+		}
+	}
+
+	@Override
+	public void publish(String indicatorId) throws RmesException {
 
 		Model model = new LinkedHashModel();
 		Resource indicator = RdfUtils.objectIRI(ObjectType.INDICATOR, indicatorId);
@@ -70,5 +105,6 @@ public class IndicatorPublication extends RdfService {
 		repositoryPublication.publishResource(indicatorToPublishRessource, model, "indicator");
 
 	}
+
 
 }
