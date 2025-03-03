@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.dataset.Dataset;
 import org.apache.http.HttpStatus;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -25,6 +26,10 @@ public class Deserializer {
         } catch (IOException e) {
             throw new RmesException(HttpStatus.SC_BAD_REQUEST, "while " , e.getMessage());
         }
+    }
+
+    public static <T> T deserializeJSONArray(JSONArray json, Class<T> target) throws RmesException {
+        return deserializeJsonString(json.toString(), target);
     }
 
     //TODO Use a mapper directly from JSONObject to java class

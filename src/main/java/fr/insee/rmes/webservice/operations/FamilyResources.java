@@ -7,6 +7,7 @@ import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.model.operations.Family;
 import fr.insee.rmes.model.operations.Operation;
+import fr.insee.rmes.model.operations.PartialOperationFamily;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @Qualifier("Family")
@@ -48,9 +51,8 @@ public class FamilyResources  {
 	@GetMapping("/families")
 	@io.swagger.v3.oas.annotations.Operation(operationId = "getFamilies", summary = "List of families", 
 	responses = {@ApiResponse(content=@Content(array=@ArraySchema(schema=@Schema(implementation=IdLabel.class))))})
-	public ResponseEntity<Object> getFamilies() throws RmesException {
-		String families = operationsService.getFamilies();
-		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(families);
+	public List<PartialOperationFamily> getFamilies() throws RmesException {
+		return operationsService.getFamilies();
 	}
 
 	@GetMapping("/families/advanced-search")

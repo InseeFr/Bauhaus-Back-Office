@@ -5,6 +5,7 @@ import fr.insee.rmes.bauhaus_services.ConceptsService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.config.swagger.model.IdLabel;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.model.concepts.PartialCollection;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,10 +17,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/concepts-collections")
@@ -56,9 +58,8 @@ public class ConceptsCollectionsResources {
     @GetMapping(value = "/collections", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(operationId = "getCollections", summary = "List of collections",
             responses = {@ApiResponse(content = @Content(array = @ArraySchema(schema = @Schema(implementation = IdLabel.class))))})
-    public ResponseEntity<Object> getCollections() throws RmesException {
-        String collections = conceptsCollectionService.getCollections();
-        return ResponseEntity.status(HttpStatus.OK).body(collections);
+    public List<PartialCollection> getCollections() throws RmesException {
+        return conceptsCollectionService.getCollections();
     }
 
     @GetMapping(value = "/export/{id}", produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE, "application/vnd.oasis.opendocument.text"})

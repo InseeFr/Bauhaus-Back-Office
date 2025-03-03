@@ -5,13 +5,17 @@ import fr.insee.rmes.bauhaus_services.structures.StructureComponent;
 import fr.insee.rmes.bauhaus_services.structures.utils.StructureComponentUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.model.structures.PartialStructureComponent;
 import fr.insee.rmes.persistance.sparql_queries.structures.StructureQueries;
+import fr.insee.rmes.utils.DiacriticSorter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class StructureComponentImpl extends RdfService implements StructureComponent {
@@ -39,10 +43,13 @@ public class StructureComponentImpl extends RdfService implements StructureCompo
     }
 
     @Override
-    public String getComponents() throws RmesException {
+    public List<PartialStructureComponent> getComponents() throws RmesException {
 
         logger.info("Getting all mutualized components");
-        return repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true)).toString();
+        var components = repoGestion.getResponseAsArray(StructureQueries.getComponents(true, true, true));
+        return DiacriticSorter.sort(components,
+                PartialStructureComponent[].class,
+                PartialStructureComponent::labelLg1);
     }
 
     public JSONObject getComponentObject(String id) throws RmesException {
