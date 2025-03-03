@@ -49,7 +49,7 @@ public class IndicatorPublication implements ObjectPublication<Indicator> {
 		for (OperationsLink link : indicator.wasGeneratedBy) {
 			var status = ownersUtils.getValidationStatus(link.getId());
 			if (!status.equalsIgnoreCase(ValidationStatus.VALIDATED.toString())) {
-				throw new RmesBadRequestException(IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES, "An indicator can be published if and only if all parent series has been published.");
+				throw new RmesBadRequestException(IndicatorErrorCode.VALIDATION_UNVALIDATED_SERIES, "An indicator can be published if and only if all parent series have been published.");
 			}
 		}
 	}
