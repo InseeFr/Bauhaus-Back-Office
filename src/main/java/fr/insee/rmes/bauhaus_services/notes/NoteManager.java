@@ -9,7 +9,6 @@ import fr.insee.rmes.model.notes.concepts.ConceptsDatedNoteTypes;
 import fr.insee.rmes.model.notes.concepts.ConceptsVersionnedNoteTypes;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
