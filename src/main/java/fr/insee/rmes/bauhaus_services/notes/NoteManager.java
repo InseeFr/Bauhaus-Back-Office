@@ -20,8 +20,11 @@ import java.util.Set;
 @Component
 public class NoteManager {
 	
-	@Autowired
-	NotesUtils noteUtils;
+	final NotesUtils noteUtils;
+
+	public NoteManager(NotesUtils noteUtils) {
+		this.noteUtils = noteUtils;
+	}
 
 	public List<List<IRI>> setNotes(Concept concept, Model model) throws RmesException {
 		// TODO : see extreme cases to close notes
