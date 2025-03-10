@@ -2,7 +2,7 @@ name: Build release candidate
 
 on: 
   release:
-    types: [published]
+    types: [released]
 
 jobs:
   check-version:
