@@ -158,7 +158,7 @@ class ConceptsImplTest {
     void exportConceptTest() throws RmesException, IOException, URISyntaxException {
         // GIVEN
         var idConcept = "c1116";
-        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, new ExportUtils(200, null));
+        ConceptsExportBuilder conceptsExportBuilder = new ConceptsExportBuilder(conceptsUtils, new ExportUtils(200));
 
         Stubber.forRdfService(conceptsExportBuilder).injectRepoGestion(repoGestion);
         ConceptsImpl conceptsImpl = new ConceptsImpl(null, null, conceptsExportBuilder, null, 10);
