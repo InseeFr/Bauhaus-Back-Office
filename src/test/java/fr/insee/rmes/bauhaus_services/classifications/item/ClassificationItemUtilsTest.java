@@ -74,7 +74,7 @@ class ClassificationItemUtilsTest {
 
         verify(repositoryGestion, times(1)).loadSimpleObjectWithoutDeletion(eq(iri), model.capture(), any());
 
-        Assertions.assertEquals("[(http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label1\"@fr, http://codeListGraph/1) [http://codeListGraph/1], (http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label2\"@en, http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>Definition Lg1</p>\", http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://rdf-vocabulary.ddialliance.org/xkos#plainText, \"Definition Lg1\", http://codeListGraph/1) [http://codeListGraph/1]]", model.getValue().toString());
+        Assertions.assertEquals("[(http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label1\"@fr, http://codeListGraph/1) [http://codeListGraph/1], (http://uri, http://www.w3.org/2004/02/skos/core#prefLabel, \"label2\"@en, http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://eurovoc.europa.eu/schema#noteLiteral, \"<p>Definition Lg1</p>\", http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://rdf-vocabulary.ddialliance.org/xkos#plainText, \"Definition Lg1\", http://codeListGraph/1) [http://codeListGraph/1], (http://definition-lg1, http://www.w3.org/1999/02/22-rdf-syntax-ns#value, \"<p>Definition Lg1</p>\", http://codeListGraph/1) [http://codeListGraph/1]]", model.getValue().toString());
 
     }
 }
