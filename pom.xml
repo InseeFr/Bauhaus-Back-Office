@@ -83,7 +83,7 @@
         <java-jwt.version>4.5.0</java-jwt.version>
         <json.version>20250107</json.version>
         <flexmark.version>0.64.8</flexmark.version>
-        <jaxb.version>4.0.5.redhat-00001</jaxb.version>
+        <jaxb.version>4.0.5</jaxb.version>
         <zt.version>1.17</zt.version>
         <saxon.version>12.5</saxon.version>
         <minio.version>8.5.17</minio.version>
