@@ -26,24 +26,12 @@ jobs:
       - name: Build API
         run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress
 
-      - name: Upload API jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: target/*.jar
-
   docker:
     needs:
       - build-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download uploaded jar
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target/
       - name: Extract version
         run: echo "VERSION=$(mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: Build and push
