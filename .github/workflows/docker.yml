@@ -2,7 +2,7 @@ name: Build release candidate
 
 on: 
   release:
-    types: [published]
+    types: [released]
 
 jobs:
   check-version:
@@ -55,12 +55,6 @@ jobs:
       - name: Build API
         run: mvn package -Dchangelist=-SNAPSHOT --no-transfer-progress
 
-      - name: Upload API jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: target/*.jar
-
   docker:
     needs:
       - check-version
@@ -68,12 +62,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download uploaded jar
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target/
 
       - name: Publish to Docker Hub
         uses: elgohr/Publish-Docker-Github-Action@v5
