@@ -10,7 +10,7 @@ class FilesUtilsTest {
 
 	@Test
 	void testGenerateFinalFileNameWithExtension() {
-		String fileName = "example_file_œ.txt";
+		String fileName = "example_file_œ’.txt";
 		int maxLength = 10;
 
 		String result = FilesUtils.generateFinalFileNameWithExtension(fileName, maxLength);
@@ -30,7 +30,7 @@ class FilesUtilsTest {
 
 	@Test
 	void testGenerateFinalFileNameWithoutExtension() {
-		String fileName = "example_file_œ.txt";
+		String fileName = "example_file_œ’.txt";
 		int maxLength = 10;
 
 		String result = FilesUtils.generateFinalFileNameWithoutExtension(fileName, maxLength);
@@ -51,7 +51,7 @@ class FilesUtilsTest {
 
 	@Test
 	void testGenerateFinalFileNameWithExtension_SpecialCharacters() {
-		String fileName = "fi!le&na:me?.txt";
+		String fileName = "fi!le&na:me?’.txt";
 		int maxLength = 10;
 
 		String result = FilesUtils.generateFinalFileNameWithExtension(fileName, maxLength);
@@ -61,7 +61,7 @@ class FilesUtilsTest {
 
 	@Test
 	void testGenerateFinalFileNameWithoutExtension_SpecialCharacters() {
-		String fileName = "fi!le&na:me?";
+		String fileName = "fi!le&na:me?’";
 		int maxLength = 10;
 
 		String result = FilesUtils.generateFinalFileNameWithoutExtension(fileName, maxLength);
