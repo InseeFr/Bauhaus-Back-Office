@@ -45,25 +45,25 @@ WHERE {
     OPTIONAL {
         ?classification skos:scopeNote ?scopeNoteUriLg1 .
         ?scopeNoteUriLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?scopeNoteUriLg1 evoc:noteLiteral ?scopeNoteLg1 .
+        ?scopeNoteUriLg1 rdf:value ?scopeNoteLg1 .
     } .
 
     OPTIONAL {
         ?classification skos:scopeNote ?scopeNoteUriLg2 .
         ?scopeNoteUriLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?scopeNoteUriLg2 evoc:noteLiteral ?scopeNoteLg2 .
+        ?scopeNoteUriLg2 rdf:value ?scopeNoteLg2 .
     } .
 
     OPTIONAL {
         ?classification skos:changeNote ?changeNoteUriLg1 .
         ?changeNoteUriLg1 dcterms:language '${LG1}'^^xsd:language .
-        ?changeNoteUriLg1 evoc:noteLiteral ?changeNoteLg1 .
+        ?changeNoteUriLg1 rdf:value ?changeNoteLg1 .
     } .
 
     OPTIONAL {
         ?classification skos:changeNote ?changeNoteUriLg2 .
         ?changeNoteUriLg2 dcterms:language '${LG2}'^^xsd:language .
-        ?changeNoteUriLg2 evoc:noteLiteral ?changeNoteLg2 .
+        ?changeNoteUriLg2 rdf:value ?changeNoteLg2 .
     } .
 
     OPTIONAL {
