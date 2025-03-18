@@ -38,7 +38,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,23 +64,6 @@ class ConceptsImplTest {
         GenericQueries.setConfig(new ConfigStub());
     }
 
-    @Test
-    void shouldNotDeleteConcepts() throws RmesException {
-        JSONArray array = new JSONArray();
-        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
-        array.put(new JSONObject().put("id", "2").put("label", "label 2").put("altLabel", "latLabel2"));
-        when(conceptsUtils.getGraphsWithConcept(anyString())).thenReturn(array);
-        assertTrue(conceptsUtils.getGraphsWithConcept(anyString()).length()>1);
-    }
-
-    @Test
-    void shouldReturnConcept() throws RmesException {
-        JSONObject test = new JSONObject();
-        test.put("label","LABEL");
-        test.put("id","ID");
-        when(conceptsUtils.getConceptById((anyString()))).thenReturn(test);
-        assertEquals("{\"label\":\"LABEL\",\"id\":\"ID\"}",conceptsUtils.getConceptById("id").toString());
-    }
 
     @Test
     void shouldReturnFileNameForExport()  {

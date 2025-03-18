@@ -37,32 +37,6 @@ class CodeListServiceImplTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Test
-    void shouldDisplayCorrectGetCodesAsJSONObject() {
-
-        JSONObject result = new JSONObject();
-        int page = 50;
-        counter.put("count",22);
-
-        JSONArray exampleArray = new JSONArray();
-        JSONObject exampleOne = new JSONObject();
-        exampleOne.put("Number","exampleNumberOne");
-        exampleOne.put("Word","exampleWordOne");
-        exampleArray.put(exampleOne);
-        JSONObject exampleTwo = new JSONObject();
-        exampleTwo.put("Number","exampleNumberTwo");
-        exampleTwo.put("Word","exampleWordTwo");
-        exampleArray.put(exampleTwo);
-
-        result.put("total", counter.get("count"));
-        result.put("page", page);
-        result.put("items", exampleArray);
-
-        String response= "{\"page\":50,\"items\":[{\"Word\":\"exampleWordOne\",\"Number\":\"exampleNumberOne\"},{\"Word\":\"exampleWordTwo\",\"Number\":\"exampleNumberTwo\"}]}";
-
-        assertEquals(response,result.toString());
-    }
-
 
     @Test
     void getAllCodesLists() throws RmesException, JsonProcessingException {

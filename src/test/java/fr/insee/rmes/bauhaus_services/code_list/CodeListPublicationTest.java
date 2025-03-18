@@ -6,8 +6,6 @@ import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
-import fr.insee.rmes.exceptions.RmesNotFoundException;
-import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -25,13 +23,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,30 +48,8 @@ class CodeListPublicationTest {
     PublicationUtils publicationUtils;
 
     @Mock
-    RepositoryResult<Statement> statements;
-
-    @Mock
-    Resource codeList;
-
-    @Mock
     GenericStatement statement;
 
-    @Test
-    void shouldCheckIResourceDoesNotExists() {
-        when(codeList.stringValue()).thenReturn("test");
-        assertThatThrownBy(() -> {
-            if(!statements.hasNext()){
-                throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
-            }
-        }).isInstanceOf(RmesNotFoundException.class);
-    }
-
-    @Test
-    void shouldVerifyWhenMessageWhenResourceDoesNotExists()  {
-        when(codeList.stringValue()).thenReturn("test");
-        RmesNotFoundException exception = new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
-        assertEquals("{\"details\":\"test\",\"message\":\"1105 : CodeList not found\"}",exception.getDetails());
-    }
 
     @Test
     void shouldExcludeTriplet() {
