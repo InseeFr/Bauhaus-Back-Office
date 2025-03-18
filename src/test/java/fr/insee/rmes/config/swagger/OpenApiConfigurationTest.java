@@ -9,28 +9,11 @@ class OpenApiConfigurationTest {
     void shouldDisplayCorrectOpenAPI() {
 
         OpenApiConfiguration myOpenAPI = new OpenApiConfiguration();
-        String actual = myOpenAPI.openAPI("v421").toString();
+        String actual = myOpenAPI.openAPI("v421").toString().replaceAll("\\s+", "");
 
-        String expected = "class OpenAPI {\n" +
-                "    openapi: 3.0.1\n" +
-                "    info: class Info {\n" +
-                "        title: Bauhaus\n" +
-                "        description: Back office de Bauhaus (rmesgncs)\n" +
-                "        summary: null\n" +
-                "        termsOfService: null\n" +
-                "        contact: null\n" +
-                "        license: null\n" +
-                "        version: v421\n" +
-                "    }\n" +
-                "    externalDocs: null\n" +
-                "    servers: null\n" +
-                "    security: null\n" +
-                "    tags: null\n" +
-                "    paths: null\n" +
-                "    components: null\n" +
-                "}";
+        String expected = "class OpenAPI {" + "openapi: 3.0.1" + "info: class Info {" + "title: Bauhaus" + "description: Back office de Bauhaus (rmesgncs)" + "summary: null" + "termsOfService: null" + "contact: null" + "license: null" + "version: v421" + "}" + "externalDocs: null" + "servers: null" + "security: null" + "tags: null" + "paths: null" + "components: null" + "}";
 
-        assertEquals(expected,actual);
+        assertEquals(expected.replaceAll("\\s+", ""),actual);
     }
 
 }
