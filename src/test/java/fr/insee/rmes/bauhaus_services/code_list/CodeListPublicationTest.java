@@ -2,13 +2,19 @@ package fr.insee.rmes.bauhaus_services.code_list;
 
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.rdf_utils.PublicationUtils;
+import fr.insee.rmes.bauhaus_services.rdf_utils.RdfUtils;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryGestion;
 import fr.insee.rmes.bauhaus_services.rdf_utils.RepositoryPublication;
 import fr.insee.rmes.exceptions.RmesException;
+import fr.insee.rmes.exceptions.RmesNotFoundException;
+import fr.insee.rmes.exceptions.errors.CodesListErrorCodes;
 import org.eclipse.rdf4j.common.iteration.CloseableIteratorIteration;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.base.InternedIRI;
+import org.eclipse.rdf4j.model.impl.GenericStatement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.repository.RepositoryResult;
@@ -24,6 +30,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -43,6 +52,40 @@ class CodeListPublicationTest {
 
     @Mock
     PublicationUtils publicationUtils;
+
+    @Mock
+    RepositoryResult<Statement> statements;
+
+    @Mock
+    Resource codeList;
+
+    @Mock
+    GenericStatement statement;
+
+    @Test
+    void shouldCheckIResourceDoesNotExists() throws RmesNotFoundException {
+        when(codeList.stringValue()).thenReturn("test");
+        assertThatThrownBy(() -> {
+            if(!statements.hasNext()){
+                throw new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
+            }
+        }).isInstanceOf(RmesNotFoundException.class);
+    }
+
+    @Test
+    void shouldVerifyWhenMessageWhenResourceDoesNotExists() throws RmesNotFoundException  {
+        when(codeList.stringValue()).thenReturn("test");
+        RmesNotFoundException exception = new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
+        assertEquals("{\"details\":\"test\",\"message\":\"1105 : CodeList not found\"}",exception.getDetails());
+    }
+
+    @Test
+    void shouldExcludeTriplet() throws RmesNotFoundException {
+        InternedIRI myIRI = new InternedIRI("myIRI", "creator");
+        when(statement.getPredicate()).thenReturn(myIRI);
+        String pred = RdfUtils.toString(statement.getPredicate());
+        assertTrue(pred.endsWith("validationState") || pred.endsWith(Constants.CREATOR) || pred.endsWith(Constants.CONTRIBUTOR) || pred.endsWith("lastCodeUriSegment"));
+    }
 
     @Test
     void shouldThrowExceptionIfNoStatements() throws RmesException {
