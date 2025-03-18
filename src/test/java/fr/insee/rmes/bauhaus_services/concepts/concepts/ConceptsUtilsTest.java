@@ -1,11 +1,28 @@
 package fr.insee.rmes.bauhaus_services.concepts.concepts;
 
+import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.model.concepts.ConceptForExport;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConceptsUtilsTest {
+
+    @Test
+    void shouldCreateID() {
+
+        JSONObject json = new JSONObject();
+        json.put("id","ID");
+        json.put("creator","CREATOR");
+        json.put(Constants.NOTATION,"5148");
+
+        String notation = json.getString(Constants.NOTATION);
+        int id = Integer.parseInt(notation.substring(1))+1;
+
+        assertEquals("c149","c" + id);
+
+    }
 
     @Test
     void testGetConceptExportFileName() {
