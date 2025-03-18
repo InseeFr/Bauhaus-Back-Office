@@ -27,9 +27,6 @@ class ConceptsCollectionServiceImplTest {
     @Mock
     RepositoryGestion repoGestion;
 
-    @Mock
-    ConceptsCollectionServiceImpl conceptsCollectionServiceImpl;
-
 
     @BeforeAll
     static void initGenericQueries(){
@@ -37,7 +34,7 @@ class ConceptsCollectionServiceImplTest {
     }
 
     @Test
-    void shouldConvertCollectionInXml() throws RmesException {
+    void shouldConvertCollectionInXml() {
 
         JSONArray members = new JSONArray();
         members.put(new JSONObject().put("id", "ID2").put("creator", "CREATOR").put("prefLabelLg1", "PREFLABELLG1").put("prefLabelLg2", "PREFLABELLG2").put("defCourteLg1", "DEFCOURTELG1").put("defCourteLg2", "DEFCOURTELG2").put("defLongueLg1", "DEFLONGUELG1").put("defLongueLg2", "DEFLONGUELG2").put("isValidated", "ISVALIDATED").put("editorialNoteLg1", "EDITORIALNOTELG1").put("editorialNoteLg2", "EDITORIALNOTELG2").put("createdA", "CREATEA").put("modifiedA", "MODIFIEDA"));

@@ -38,7 +38,7 @@ class CodeListServiceImplTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void shouldDisplayCorrectGetCodesAsJSONObject() throws RmesException{
+    void shouldDisplayCorrectGetCodesAsJSONObject() {
 
         JSONObject result = new JSONObject();
         int page = 50;

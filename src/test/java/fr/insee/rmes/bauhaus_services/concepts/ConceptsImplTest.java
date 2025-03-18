@@ -11,6 +11,7 @@ import fr.insee.rmes.model.concepts.CollectionForExport;
 import fr.insee.rmes.model.concepts.CollectionForExportOld;
 import fr.insee.rmes.persistance.sparql_queries.GenericQueries;
 import fr.insee.rmes.utils.ExportUtils;
+import fr.insee.rmes.utils.FilesUtils;
 import fr.insee.rmes.webservice.concepts.ConceptsCollectionsResources;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,15 +38,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ConceptsImplTest {
-
 
     @Mock
     ConceptsUtils conceptsUtils;
@@ -56,10 +55,40 @@ class ConceptsImplTest {
     @Mock
     CollectionExportBuilder collectionExport;
 
+    @Mock
+    CollectionForExport collectionForExport;
+
     @BeforeAll
     static void initGenericQueries(){
         GenericQueries.setConfig(new ConfigStub());
     }
+
+    @Test
+    void shouldNotDeleteConcepts() throws RmesException {
+        JSONArray array = new JSONArray();
+        array.put(new JSONObject().put("id", "1").put("label", "label 1").put("altLabel", "latLabel1"));
+        array.put(new JSONObject().put("id", "2").put("label", "label 2").put("altLabel", "latLabel2"));
+        when(conceptsUtils.getGraphsWithConcept(anyString())).thenReturn(array);
+        assertTrue(conceptsUtils.getGraphsWithConcept(anyString()).length()>1);
+    }
+
+    @Test
+    void shouldReturnConcept() throws RmesException {
+        JSONObject test = new JSONObject();
+        test.put("label","LABEL");
+        test.put("id","ID");
+        when(conceptsUtils.getConceptById((anyString()))).thenReturn(test);
+        assertEquals("{\"label\":\"LABEL\",\"id\":\"ID\"}",conceptsUtils.getConceptById("id").toString());
+    }
+
+    @Test
+    void shouldReturnFileNameForExport() throws RmesException {
+        when(collectionForExport.getId()).thenReturn("421");
+        when(collectionForExport.getPrefLabelLg1()).thenReturn("FR");
+        String response = FilesUtils.generateFinalFileNameWithoutExtension(collectionForExport.getId() + "-" + collectionForExport.getPrefLabelLg1(), 32);
+        assertEquals("421Fr",response);
+    }
+
 
     @Test
     void shouldGetConceptsList() throws RmesException {

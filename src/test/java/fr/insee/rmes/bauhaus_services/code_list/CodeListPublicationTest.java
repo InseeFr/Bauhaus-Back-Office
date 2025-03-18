@@ -63,7 +63,7 @@ class CodeListPublicationTest {
     GenericStatement statement;
 
     @Test
-    void shouldCheckIResourceDoesNotExists() throws RmesNotFoundException {
+    void shouldCheckIResourceDoesNotExists() {
         when(codeList.stringValue()).thenReturn("test");
         assertThatThrownBy(() -> {
             if(!statements.hasNext()){
@@ -73,14 +73,14 @@ class CodeListPublicationTest {
     }
 
     @Test
-    void shouldVerifyWhenMessageWhenResourceDoesNotExists() throws RmesNotFoundException  {
+    void shouldVerifyWhenMessageWhenResourceDoesNotExists()  {
         when(codeList.stringValue()).thenReturn("test");
         RmesNotFoundException exception = new RmesNotFoundException(CodesListErrorCodes.CODE_LIST_UNKNOWN_ID, "CodeList not found", codeList.stringValue());
         assertEquals("{\"details\":\"test\",\"message\":\"1105 : CodeList not found\"}",exception.getDetails());
     }
 
     @Test
-    void shouldExcludeTriplet() throws RmesNotFoundException {
+    void shouldExcludeTriplet() {
         InternedIRI myIRI = new InternedIRI("myIRI", "creator");
         when(statement.getPredicate()).thenReturn(myIRI);
         String pred = RdfUtils.toString(statement.getPredicate());

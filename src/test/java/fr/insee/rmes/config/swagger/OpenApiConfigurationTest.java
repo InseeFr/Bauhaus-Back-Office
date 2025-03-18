@@ -1,5 +1,7 @@
-package fr.insee.rmes.config.keycloak;
+package fr.insee.rmes.config.swagger;
 
+import fr.insee.rmes.config.keycloak.KeycloakServerZoneConfiguration;
+import fr.insee.rmes.config.keycloak.ServerZone;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -7,7 +9,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class KeycloakServerZoneConfigurationTest {
+class OpenApiConfigurationTest {
 
     @Test
     void shouldNotFindZone() {
@@ -17,5 +19,4 @@ class KeycloakServerZoneConfigurationTest {
         KeycloakServerZoneConfiguration KZC = new KeycloakServerZoneConfiguration();
         KZC.setZoneByServers(zoneByServers);
     }
-
 }
