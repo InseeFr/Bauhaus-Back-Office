@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StructureComponentUtilsTest {
-    
+
     @Mock
     Structure structures;
 
