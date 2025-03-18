@@ -82,7 +82,7 @@ class ConceptsImplTest {
     }
 
     @Test
-    void shouldReturnFileNameForExport() throws RmesException {
+    void shouldReturnFileNameForExport()  {
         when(collectionForExport.getId()).thenReturn("421");
         when(collectionForExport.getPrefLabelLg1()).thenReturn("FR");
         String response = FilesUtils.generateFinalFileNameWithoutExtension(collectionForExport.getId() + "-" + collectionForExport.getPrefLabelLg1(), 32);
