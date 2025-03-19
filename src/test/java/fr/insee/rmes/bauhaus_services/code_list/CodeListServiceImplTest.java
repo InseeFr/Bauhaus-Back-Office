@@ -28,11 +28,15 @@ class CodeListServiceImplTest {
     @Mock
     RepositoryGestion repositoryGestion;
 
+    @Mock
+    JSONObject counter;
+
     @Spy
     @InjectMocks
     CodeListServiceImpl codeListService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
 
     @Test
     void getAllCodesLists() throws RmesException, JsonProcessingException {
