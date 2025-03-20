@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.SKOSXL;
 import org.json.JSONObject;
@@ -108,6 +109,7 @@ public class ClassificationItemUtils extends RdfService {
             String raw = convertHtmlStringToRaw(html);
             model.add(finalIri, EVOC.NOTE_LITERAL, RdfUtils.setLiteralString(html), graph);
             model.add(finalIri, XKOS.PLAIN_TEXT, RdfUtils.setLiteralString(raw), graph);
+            model.add(finalIri, RDF.VALUE, RdfUtils.setLiteralString(value), graph);
         }
     }
 
