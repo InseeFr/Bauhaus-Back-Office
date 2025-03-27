@@ -42,7 +42,7 @@ import java.util.TreeSet;
         @ApiResponse(responseCode = "404", description = "Not found"),
         @ApiResponse(responseCode = "406", description = "Not Acceptable"),
         @ApiResponse(responseCode = "500", description = "Internal server error")})
-public class PublicResources extends GenericResources {
+public class PublicResources {
 
     static final Logger logger = LoggerFactory.getLogger(PublicResources.class);
 

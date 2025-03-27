@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,12 +34,15 @@ import org.springframework.web.bind.annotation.*;
 		@ApiResponse(responseCode = "404", description = "Not found"),
 		@ApiResponse(responseCode = "406", description = "Not Acceptable"),
 		@ApiResponse(responseCode = "500", description = "Internal server error") })
-public class OrganizationsResources  extends GenericResources {
+public class OrganizationsResources {
 
 	static final Logger logger = LoggerFactory.getLogger(OrganizationsResources.class);
 
-	@Autowired
-	OrganizationsService organizationsService;
+	final OrganizationsService organizationsService;
+
+	public OrganizationsResources(OrganizationsService organizationsService) {
+		this.organizationsService = organizationsService;
+	}
 
 	@GetMapping(value = "/organization/{identifier}", 
 			produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
