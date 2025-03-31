@@ -7,6 +7,7 @@ import io.minio.StatObjectArgs;
 import io.minio.errors.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MinIOContainer;
 
@@ -18,6 +19,7 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("integration")
 class TestMinioFilesOperation {
 
     MinIOContainer container = new MinIOContainer("minio/minio:RELEASE.2024-11-07T00-52-20Z");

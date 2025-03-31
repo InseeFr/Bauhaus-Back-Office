@@ -9,11 +9,12 @@ import fr.insee.rmes.persistance.sparql_queries.operations.series.OpSeriesQuerie
 import fr.insee.rmes.testcontainers.queries.WithGraphDBContainer;
 import org.json.JSONArray;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
+@Tag("integration")
 class OpFamiliesQueriesTest  extends WithGraphDBContainer {
     RepositoryGestion repositoryGestion = new RepositoryGestion(getRdfGestionConnectionDetails(), new RepositoryUtils(null, RepositoryInitiator.Type.DISABLED));
 
