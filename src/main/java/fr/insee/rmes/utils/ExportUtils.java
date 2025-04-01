@@ -1,7 +1,6 @@
 package fr.insee.rmes.utils;
 
 import fr.insee.rmes.bauhaus_services.Constants;
-import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.exceptions.RmesException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -27,19 +26,10 @@ import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 @Component
-public class ExportUtils {
+public record ExportUtils(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength) {
     private static final Logger logger = LoggerFactory.getLogger(ExportUtils.class);
     private static final String CAN_T_GENERATE_CODEBOOK = "Can't generate codebook";
     private static final String NULL_STREAM = "Stream is null";
-
-    final int maxLength;
-
-    final DocumentsUtils documentsUtils;
-
-    public ExportUtils(@Value("${fr.insee.rmes.bauhaus.filenames.maxlength}") int maxLength, DocumentsUtils documentsUtils) {
-        this.maxLength = maxLength;
-        this.documentsUtils = documentsUtils;
-    }
 
     public ResponseEntity<Resource> exportAsODT(String fileName, Map<String, String> xmlContent, String xslFile, String xmlPattern, String zip, String objectType) throws RmesException {
         return exportAsFileByExtension(fileName, xmlContent, xslFile, xmlPattern, zip, objectType, FilesUtils.ODT_EXTENSION);

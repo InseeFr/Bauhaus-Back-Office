@@ -20,6 +20,8 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 import java.util.Map;
 
+import static fr.insee.rmes.bauhaus_services.concepts.collections.CollectionExportBuilder.XSL_FILE;
+
 @Component
 public class ConceptsExportBuilder extends RdfService {
 
@@ -29,7 +31,6 @@ public class ConceptsExportBuilder extends RdfService {
 
     private final ExportUtils exportUtils;
 
-    private static final String xslFile = "/xslTransformerFiles/rmes2odt.xsl";
     private static final String xmlPattern = "/xslTransformerFiles/concept/conceptPatternContent.xml";
     private static final String zip = "/xslTransformerFiles/concept/toZipForConcept.zip";
 
@@ -88,13 +89,13 @@ public class ConceptsExportBuilder extends RdfService {
     public ResponseEntity<Resource> exportAsResponse(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-        return exportUtils.exportAsODT(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT);
+        return exportUtils.exportAsODT(fileName, xmlContent, XSL_FILE, xmlPattern, zip, Constants.CONCEPT);
     }
 
     public InputStream exportAsInputStream(String fileName, Map<String, String> xmlContent, boolean lg1, boolean lg2, boolean includeEmptyFields) throws RmesException {
         String parametersXML = XsltUtils.buildParams(lg1, lg2, includeEmptyFields, Constants.CONCEPT);
         xmlContent.put(Constants.PARAMETERS_FILE, parametersXML);
-        return exportUtils.exportAsInputStream(fileName, xmlContent, xslFile, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
+        return exportUtils.exportAsInputStream(fileName, xmlContent, XSL_FILE, xmlPattern, zip, Constants.CONCEPT, FilesUtils.ODT_EXTENSION);
     }
 
 }
