@@ -11,6 +11,7 @@ import fr.insee.rmes.persistance.ontologies.INSEE;
 import fr.insee.rmes.persistance.ontologies.PAV;
 import fr.insee.rmes.persistance.ontologies.XKOS;
 import fr.insee.rmes.persistance.sparql_queries.notes.NotesQueries;
+import fr.insee.rmes.utils.XhtmlToMarkdownUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
@@ -35,8 +36,9 @@ public class NotesUtils  extends RdfService {
 		model.add(note, DCTERMS.LANGUAGE, RdfUtils.setLiteralLanguage(versionableNote.getLang()), RdfUtils.conceptGraph());
 		model.add(note, PAV.VERSION, RdfUtils.setLiteralInt(versionableNote.getVersion()), RdfUtils.conceptGraph());
 		model.add(note, INSEE.CONCEPT_VERSION, RdfUtils.setLiteralInt(versionableNote.getConceptVersion()), RdfUtils.conceptGraph());
-		model.add(note, INSEE.VALIDFROM, RdfUtils.setLiteralDateTime(versionableNote.getValidFrom()), RdfUtils.conceptGraph());	
-		model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(versionableNote.getContent()), RdfUtils.conceptGraph());
+		model.add(note, INSEE.VALIDFROM, RdfUtils.setLiteralDateTime(versionableNote.getValidFrom()), RdfUtils.conceptGraph());
+		model.add(note, EVOC.NOTE_LITERAL, RdfUtils.setLiteralXML(XhtmlToMarkdownUtils.markdownToXhtml(versionableNote.getContent())), RdfUtils.conceptGraph());
+		model.add(note, RDF.VALUE, RdfUtils.setLiteralString(versionableNote.getContent()), RdfUtils.conceptGraph());
 	}
 	
 	public void closeRdfVersionableNote(String conceptId, VersionableNote versionableNote, Model model)  throws RmesException{
