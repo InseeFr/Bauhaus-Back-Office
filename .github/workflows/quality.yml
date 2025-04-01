@@ -33,9 +33,9 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
       - name: Run unit tests
-        run: mvn -B clean test
+        run: mvn -B clean test -DexcludedGroups="integration"
       - name: Run TestContainer
-        run: mvn -B clean test -Ptest-containers
+        run: mvn -B clean test -Dgroups="integration"
       - name: Run Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
