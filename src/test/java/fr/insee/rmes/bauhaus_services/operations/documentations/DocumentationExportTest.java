@@ -1,9 +1,9 @@
 package fr.insee.rmes.bauhaus_services.operations.documentations;
 
 
-import fr.insee.rmes.bauhaus_services.CodeListService;
 import fr.insee.rmes.bauhaus_services.Constants;
 import fr.insee.rmes.bauhaus_services.OrganizationsService;
+import fr.insee.rmes.bauhaus_services.code_list.export.CodesListExport;
 import fr.insee.rmes.bauhaus_services.operations.ParentUtils;
 import fr.insee.rmes.bauhaus_services.operations.documentations.documents.DocumentsUtils;
 import fr.insee.rmes.bauhaus_services.operations.indicators.IndicatorsUtils;
@@ -50,7 +50,7 @@ class DocumentationExportTest {
     private ExportUtils exportUtils;
 
     @Mock
-    private CodeListService codeListService;
+    private CodesListExport codeListService;
 
     @Mock
     private ParentUtils parentUtils;
