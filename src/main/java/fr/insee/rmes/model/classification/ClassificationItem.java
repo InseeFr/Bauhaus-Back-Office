@@ -11,7 +11,7 @@ public class ClassificationItem {
     @Schema(description = "Label lg1", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg1;
 
-    @Schema(description = "Label lg2")
+    @Schema(description = "Label lg2", requiredMode = Schema.RequiredMode.REQUIRED)
     public String prefLabelLg2;
 
     @Schema(description = "idBroader")

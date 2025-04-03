@@ -115,5 +115,8 @@ public class ClassificationItemUtils extends RdfService {
         if(item.getPrefLabelLg1() == null){
             throw new RmesBadRequestException("The property prefLabelLg1 is required");
         }
+        if(item.getPrefLabelLg2() == null){
+            throw new RmesBadRequestException("The property prefLabelLg2 is required");
+        }
     }
 }
